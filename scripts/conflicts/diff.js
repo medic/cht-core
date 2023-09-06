@@ -38,11 +38,11 @@ const createDirectoryIfValid = (conflictDirectoryPath) => {
     try {
       fs.mkdirSync(conflictDirectoryPath);     
       return;
-    } catch(err){
+    } catch (err){
       console.error('Error when creating conflict folder', err);
     }   
   }
-  if(!isDiectoryEmpty(conflictDirectoryPath)){
+  if (!isDiectoryEmpty(conflictDirectoryPath)){
     console.error('Conflict Directory is not empty, exiting');
     process.exit();
   } 
@@ -68,7 +68,7 @@ const getConflictDirectoryPath = (doc_id, mainConflictFilesDirectory) => {
   return conflictDirectoryPath;
 };
 
-DB.query('medic-conflicts/conflicts', {reduce:false})
+DB.query('medic-conflicts/conflicts', {reduce: false})
   .then(conflicts => {
     console.log(`Found ${conflicts.rows.length} conflicts`);
     const mainConflictFilesDirectory = path.join(__dirname, 'doc-conflicts');

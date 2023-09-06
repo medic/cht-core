@@ -28,7 +28,7 @@ const contact = personFactory.build({
 const offlineUser = userFactory.build({
   username: 'offlineuser',
   isOffline: true,
-  roles:['chw'],
+  roles: ['chw'],
   place: health_center._id,
   contact: contact._id,
 });
@@ -70,6 +70,7 @@ describe('- DELETE permissions disabled', async () => {
 
   it(' - Contact Tab - delete contact selected', async () => {
     await commonPage.goToPeople(contact._id);
+    await commonPage.closeReloadModal();
     await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
     expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;

@@ -24,10 +24,6 @@ If you want to allow cross-origin requests, add the flag `--allow-cors` when sta
 
 ## Run
 
-`grunt deploy`
-
-or
-
     node server.js
 
 # Migrations

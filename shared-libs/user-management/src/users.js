@@ -893,7 +893,7 @@ module.exports = {
         response = await createUserEntities(user, appUrl);
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
-      } catch(error) {
+      } catch (error) {
         response = { error: error.message };
         progress.saving.failed++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));

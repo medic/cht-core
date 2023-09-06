@@ -1,11 +1,10 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 
-import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
@@ -14,43 +13,32 @@ import { UpdateFacilityService } from '@mm-services/update-facility.service';
 describe('EditReportComponent', () => {
   let component: EditReportComponent;
   let fixture: ComponentFixture<EditReportComponent>;
-  let bdModalRef;
-  let setProcessing;
-  let setFinished;
-  let setError;
   let contactTypesService;
   let select2SearchService;
   let updateFacilityService;
+  let matDialogRef;
+  let consoleErrorStub;
+  const afterClosed$ = new Subject();
 
-  beforeEach(waitForAsync(() => {
-    bdModalRef = {
-      hide: sinon.stub(),
-      onHidden: new Subject(),
-      onHide: new Subject(),
-    };
-
+  beforeEach(() => {
+    matDialogRef = { close: sinon.stub(), afterClosed: sinon.stub().returns(afterClosed$) };
+    consoleErrorStub = sinon.stub(console, 'error');
     contactTypesService = { getPersonTypes: sinon.stub() };
     select2SearchService = { init: sinon.stub() };
     updateFacilityService = { update: sinon.stub() };
-
-    setProcessing = sinon.stub(MmModalAbstract.prototype, 'setProcessing');
-    setFinished = sinon.stub(MmModalAbstract.prototype, 'setFinished');
-    setError = sinon.stub(MmModalAbstract.prototype, 'setError');
 
     return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [
-          EditReportComponent,
-          MmModal,
-        ],
+        declarations: [ EditReportComponent ],
         providers: [
-          { provide: BsModalRef, useValue: bdModalRef },
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: Select2SearchService, useValue: select2SearchService },
           { provide: UpdateFacilityService, useValue: updateFacilityService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
         ]
       })
       .compileComponents()
@@ -58,29 +46,36 @@ describe('EditReportComponent', () => {
         fixture = TestBed.createComponent(EditReportComponent);
         component = fixture.componentInstance;
       });
-  }));
-
-  afterEach(() => {
-    sinon.restore();
   });
+
+  afterEach(() => sinon.restore());
 
   it('should create', () => {
     expect(component).to.exist;
-    expect(setError.callCount).to.equal(0);
-    expect(setProcessing.callCount).to.equal(0);
-    expect(setFinished.callCount).to.equal(0);
+    expect(component.processing).to.be.false;
   });
 
-  it('should close select2 when modal is hidden', () => {
+  it('should close modal', () => {
+    component.close();
+
+    expect(matDialogRef.close.calledOnce).to.be.true;
+  });
+
+  it('should close select2 when modal is hidden', fakeAsync(() => {
+    contactTypesService.getPersonTypes.resolves();
     const select2Handler = sinon.stub($.fn, 'select2');
     // @ts-ignore
     sinon.spy($, 'find');
-    bdModalRef.onHidden.next();
+
+    component.ngAfterViewInit();
+    afterClosed$.next(true);
+    flush();
+
     expect(select2Handler.callCount).to.equal(1);
     expect(select2Handler.args[0]).to.deep.equal(['close']);
     // @ts-ignore
     expect($.find.args[0][0]).to.equal('#edit-report [name=facility]');
-  });
+  }));
 
   describe('ngAfterViewInit', () => {
     it('should init select2 with person contact types', async () => {
@@ -111,7 +106,7 @@ describe('EditReportComponent', () => {
     });
 
     it('should pass report from as fallback', async () => {
-      component.model.report = {
+      component.report = {
         _id: 'report',
         type: 'data_record',
         from: 'the_phone',
@@ -134,7 +129,7 @@ describe('EditReportComponent', () => {
     });
 
     it('should pass report contact as initialValue', async () => {
-      component.model.report = {
+      component.report = {
         _id: 'report',
         type: 'data_record',
         from: 'the_phone',
@@ -158,108 +153,122 @@ describe('EditReportComponent', () => {
     });
 
     it('should catch contactTypes errors', async () => {
-      const consoleErrorMock = sinon.stub(console, 'error');
+      sinon.resetHistory();
       contactTypesService.getPersonTypes.rejects();
 
       await component.ngAfterViewInit();
 
-      expect(contactTypesService.getPersonTypes.callCount).to.equal(1);
-      expect(select2SearchService.init.callCount).to.equal(0);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error initialising select2');
+      expect(contactTypesService.getPersonTypes.calledOnce).to.be.true;
+      expect(select2SearchService.init.notCalled).to.be.true;
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.args[0][0]).to.equal('Error initialising select2');
     });
 
     it('should catch select2 init errors', async () => {
-      const consoleErrorMock = sinon.stub(console, 'error');
+      sinon.resetHistory();
       contactTypesService.getPersonTypes.resolves([{ id: 'patient', some: 'field' }]);
       select2SearchService.init.rejects();
 
       await component.ngAfterViewInit();
-      expect(contactTypesService.getPersonTypes.callCount).to.equal(1);
-      expect(select2SearchService.init.callCount).to.equal(1);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error initialising select2');
+
+      expect(contactTypesService.getPersonTypes.calledOnce).to.be.true;
+      expect(select2SearchService.init.calledOnce).to.be.true;
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.args[0][0]).to.equal('Error initialising select2');
     });
   });
 
   describe('submit', () => {
     it('should set error if no report', async () => {
-      component.model = undefined;
+      sinon.resetHistory();
+      component.report = undefined;
 
       await component.submit();
-      expect(setError.callCount).to.equal(1);
-      expect(setError.args[0][1]).to.equal('Error updating facility');
 
-      expect(bdModalRef.hide.callCount).to.equal(0);
-      expect(setProcessing.callCount).to.equal(0);
-      expect(updateFacilityService.update.callCount).to.equal(0);
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.args[0]).to.have.deep.members([
+        'Error updating facility',
+        new Error('Validation error'),
+      ]);
+      expect(matDialogRef.close.notCalled).to.be.true;
+      expect(component.processing).to.be.false;
+      expect(updateFacilityService.update.notCalled).to.be.true;
     });
 
     it('should set error if no selected facility', async () => {
-      component.model = { report: { _id: 'report', field: 'a' } };
+      sinon.resetHistory();
+      component.report = { _id: 'report', field: 'a' };
       sinon.stub($.fn, 'val').returns(undefined);
 
       await component.submit();
-      expect(setError.callCount).to.equal(1);
-      expect(setError.args[0][1]).to.equal('Please select a facility');
 
-      expect(bdModalRef.hide.callCount).to.equal(0);
-      expect(setProcessing.callCount).to.equal(0);
-      expect(updateFacilityService.update.callCount).to.equal(0);
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.args[0]).to.have.deep.members([
+        'Please select a facility',
+        new Error('Validation error'),
+      ]);
+      expect(matDialogRef.close.notCalled).to.be.true;
+      expect(component.processing).to.be.false;
+      expect(updateFacilityService.update.notCalled).to.be.true;
     });
 
     it('should not update if no changes are made', async () => {
-      component.model = { report: { _id: 'report', field: 'a', from: 'number' } };
+      sinon.resetHistory();
+      component.report = { _id: 'report', field: 'a', from: 'number' };
       sinon.stub($.fn, 'val').returns('number');
 
       await component.submit();
-      expect(setError.callCount).to.equal(0);
-      expect(setProcessing.callCount).to.equal(0);
-      expect(setFinished.callCount).to.equal(0);
-      expect(updateFacilityService.update.callCount).to.equal(0);
-      expect(bdModalRef.hide.callCount).to.equal(1);
+
+      expect(matDialogRef.close.calledOnce).to.be.true;
+      expect(consoleErrorStub.notCalled).to.be.true;
+      expect(component.processing).to.be.false;
+      expect(updateFacilityService.update.notCalled).to.be.true;
     });
 
     it('should update if changes have been made', async () => {
-      component.model = { report: { _id: 'report', field: 'a' } };
+      sinon.resetHistory();
+      component.report = { _id: 'report', field: 'a' };
       sinon.stub($.fn, 'val').returns('the_facility_id');
       updateFacilityService.update.resolves();
 
       const promise = component.submit();
-      expect(setError.callCount).to.equal(0);
-      expect(setProcessing.callCount).to.equal(1);
-      expect(setFinished.callCount).to.equal(0);
-      expect(updateFacilityService.update.callCount).to.equal(1);
+
+      expect(consoleErrorStub.notCalled).to.be.true;
+      expect(component.processing).to.be.true;
+      expect(updateFacilityService.update.calledOnce).to.be.true;
       expect(updateFacilityService.update.args[0]).to.deep.equal([ 'report', 'the_facility_id' ]);
-      expect(bdModalRef.hide.callCount).to.equal(0);
+      expect(matDialogRef.close.notCalled).to.be.true;
 
       await promise;
-      expect(setFinished.callCount).to.equal(1);
-      expect(bdModalRef.hide.callCount).to.equal(1);
-      expect(setError.callCount).to.equal(0);
+
+      expect(consoleErrorStub.notCalled).to.be.true;
+      expect(component.processing).to.be.false;
+      expect(matDialogRef.close.calledOnce).to.be.true;
     });
 
     it('should catch updateFacility errors', async () => {
-      component.model = { report: { _id: 'rep_id', field: 'a' } };
+      sinon.resetHistory();
+      component.report = { _id: 'rep_id', field: 'a' };
       sinon.stub($.fn, 'val').returns('some_facility');
       updateFacilityService.update.rejects({ error: 'boom' });
 
       const promise = component.submit();
-      expect(setError.callCount).to.equal(0);
-      expect(setProcessing.callCount).to.equal(1);
-      expect(setFinished.callCount).to.equal(0);
-      expect(updateFacilityService.update.callCount).to.equal(1);
+
+      expect(consoleErrorStub.notCalled).to.be.true;
+      expect(component.processing).to.be.true;
+      expect(updateFacilityService.update.calledOnce).to.be.true;
       expect(updateFacilityService.update.args[0]).to.deep.equal([ 'rep_id', 'some_facility' ]);
-      expect(bdModalRef.hide.callCount).to.equal(0);
+      expect(matDialogRef.close.notCalled).to.be.true;
 
       await promise;
-      expect(setFinished.callCount).to.equal(0);
-      expect(bdModalRef.hide.callCount).to.equal(0);
-      expect(setError.callCount).to.equal(1);
-      expect(setError.args[0]).to.deep.equal([
-        { error: 'boom' },
+
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.args[0]).to.deep.equal([
         'Error updating facility',
+        { error: 'boom' },
       ]);
+      expect(component.processing).to.be.false;
+      expect(matDialogRef.close.notCalled).to.be.true;
     });
   });
 

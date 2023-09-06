@@ -116,16 +116,4 @@ describe('Auth', () => {
     });
   });
 
-  describe('checkUrl', () => {
-
-    it('requests the given url and returns status', () => {
-      const head = sinon.stub(request, 'head').resolves({ statusCode: 444 });
-      return auth.checkUrl({ params: { path: '/home/screen' } }).then(actual => {
-        chai.expect(head.callCount).to.equal(1);
-        chai.expect(head.args[0][0].url).to.equal('http://abc.com/home/screen');
-        chai.expect(actual).to.equal(444);
-      });
-    });
-
-  });
 });

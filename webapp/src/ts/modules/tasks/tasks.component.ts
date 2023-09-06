@@ -41,7 +41,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   tasksList;
   selectedTask;
-  error;
+  errorStack;
   hasTasks;
   loading;
   tasksDisabled;
@@ -100,8 +100,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeToChanges();
     this.subscribeToRulesEngine();
-
-    this.error = false;
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
@@ -171,7 +169,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
-      this.error = true;
+      this.errorStack = exception.stack;
       this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);

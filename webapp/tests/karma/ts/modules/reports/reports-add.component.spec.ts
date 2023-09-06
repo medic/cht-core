@@ -17,7 +17,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { ComponentsModule } from '@mm-components/components.module';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -32,7 +32,7 @@ describe('Reports Add Component', () => {
   let lineageModelGeneratorService;
   let geolocationService;
   let geoHandle;
-  let enketoService;
+  let formService;
   let router;
   let route;
 
@@ -44,7 +44,7 @@ describe('Reports Add Component', () => {
     lineageModelGeneratorService = { report: sinon.stub().resolves({ doc: {} }) };
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
-    enketoService = {
+    formService = {
       unload: sinon.stub(),
       save: sinon.stub(),
       render: sinon.stub().resolves(),
@@ -82,7 +82,7 @@ describe('Reports Add Component', () => {
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
           { provide: GeolocationService, useValue: geolocationService },
-          { provide: EnketoService, useValue: enketoService },
+          { provide: FormService, useValue: formService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
           { provide: TelemetryService, useValue: { record: sinon.stub() }},
@@ -194,7 +194,7 @@ describe('Reports Add Component', () => {
         const xmlForm = { _id: 'my_form', some: 'content' };
         const renderedForm = { rendered: 'form', model: {}, instance: {} };
         xmlFormsService.get.resolves(xmlForm);
-        enketoService.render.resolves(renderedForm);
+        formService.render.resolves(renderedForm);
         const setEnketoEditedStatusStub = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
         const setEnketoErrorStub = sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
@@ -210,13 +210,13 @@ describe('Reports Add Component', () => {
         expect(xmlFormsService.get.args[0]).to.deep.equal(['my_form']);
         expect(setEnketoEditedStatusStub.calledOnce).to.be.true;
         expect(setEnketoEditedStatusStub.args[0]).to.deep.equal([false]);
-        expect(enketoService.render.calledOnce).to.be.true;
-        expect(enketoService.render.args[0][1]).to.deep.equal(xmlForm);
-        expect(enketoService.render.args[0][2]).to.equal(undefined);
+        expect(formService.render.calledOnce).to.be.true;
+        expect(formService.render.args[0][1]).to.deep.equal(xmlForm);
+        expect(formService.render.args[0][2]).to.equal(undefined);
         expect(component.form).to.equal(renderedForm);
 
-        const markFormEdited = enketoService.render.args[0][3];
-        const resetFormError = enketoService.render.args[0][4];
+        const markFormEdited = formService.render.args[0][3];
+        const resetFormError = formService.render.args[0][4];
 
         markFormEdited();
         expect(setEnketoEditedStatusStub.calledTwice).to.be.true;
@@ -248,7 +248,7 @@ describe('Reports Add Component', () => {
         tick();
 
         expect(xmlFormsService.get.callCount).to.equal(1);
-        expect(enketoService.render.callCount).to.equal(0);
+        expect(formService.render.callCount).to.equal(0);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Error setting selected doc');
       }));
@@ -258,13 +258,13 @@ describe('Reports Add Component', () => {
         sinon.resetHistory();
         getReportContentService.getReportContent.resolves();
         xmlFormsService.get.resolves({ _id: 'my_form', some: 'content' });
-        enketoService.render.rejects({ some: 'error' });
+        formService.render.rejects({ some: 'error' });
 
         component.ngAfterViewInit();
         tick();
 
         expect(xmlFormsService.get.callCount).to.equal(1);
-        expect(enketoService.render.callCount).to.equal(1);
+        expect(formService.render.callCount).to.equal(1);
         expect(component.form).to.equal(undefined);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Error loading form.');
@@ -283,7 +283,7 @@ describe('Reports Add Component', () => {
       component.save();
       tick();
 
-      expect(enketoService.save.callCount).to.equal(0);
+      expect(formService.save.callCount).to.equal(0);
     }));
 
     it('should call enketo save and update state when new report', fakeAsync(() => {
@@ -293,7 +293,7 @@ describe('Reports Add Component', () => {
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
-      enketoService.save.resolves([{ _id: 'new_report' }]);
+      formService.save.resolves([{ _id: 'new_report' }]);
 
       component.save();
       expect(setEnketoSavingStatus.callCount).to.equal(1);
@@ -301,8 +301,8 @@ describe('Reports Add Component', () => {
       // nothing happened yet
       expect(setEnketoEditedStatus.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
-      expect(enketoService.save.callCount).to.equal(1);
-      expect(enketoService.save.args[0]).to.deep.equal([
+      expect(formService.save.callCount).to.equal(1);
+      expect(formService.save.args[0]).to.deep.equal([
         'some_form',
         { the: 'rendered form' },
         geoHandle,
@@ -328,7 +328,7 @@ describe('Reports Add Component', () => {
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
-      enketoService.save.rejects({ some: 'error' });
+      formService.save.rejects({ some: 'error' });
 
       component.save();
       expect(setEnketoSavingStatus.callCount).to.equal(1);
@@ -336,8 +336,8 @@ describe('Reports Add Component', () => {
       // nothing happened yet
       expect(setEnketoEditedStatus.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
-      expect(enketoService.save.callCount).to.equal(1);
-      expect(enketoService.save.args[0]).to.deep.equal([
+      expect(formService.save.callCount).to.equal(1);
+      expect(formService.save.args[0]).to.deep.equal([
         'delivery',
         { the: 'the form' },
         geoHandle,
@@ -365,7 +365,7 @@ describe('Reports Add Component', () => {
       component.ngOnDestroy();
       expect(spy.callCount).to.equal(1);
       expect(geoHandle.cancel.callCount).to.equal(1);
-      expect(enketoService.unload.callCount).to.equal(1);
+      expect(formService.unload.callCount).to.equal(1);
     });
   });
 

@@ -22,11 +22,11 @@ describe('/sms', function() {
             // TODO we should be aiming for something closer to 500ms, but until we can improve this,
             // let's make the build pass
             const maxMillis = 5000;
-            if(end > start + maxMillis) {
+            if (end > start + maxMillis) {
               const seconds = (end - start) / 1000;
               fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
             }
-            expect(response).toEqual({ messages:[] });
+            expect(response).toEqual({ messages: [] });
           });
       });
 
@@ -45,11 +45,11 @@ describe('/sms', function() {
                 // TODO we should be aiming for something closer to 500ms, but until we can improve this,
                 // let's make the build pass
                 const maxMillis = 5000;
-                if(end > start + maxMillis) {
+                if (end > start + maxMillis) {
                   const seconds = (end - start) / 1000;
                   fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
                 }
-                expect(response).toEqual({ messages:[] });
+                expect(response).toEqual({ messages: [] });
               })
 
               .then(() => db.getMessageStates())
@@ -78,7 +78,7 @@ const generate = {
   oneHundredWtMessages: () => {
     const messages = [];
 
-    for(let i=0; i<100; ++i) {
+    for (let i=0; i<100; ++i) {
       messages.push({
         id: `test-message-${i}`,
         from: `+447890123${i}`,
@@ -94,7 +94,7 @@ const generate = {
   oneHundredWoMessages: () => {
     const messages = [];
 
-    for(let i=0; i<100; ++i) {
+    for (let i=0; i<100; ++i) {
       messages.push({
         id: `wo-message-${i}`,
         content: `wo message ${i}`,
@@ -108,13 +108,13 @@ const generate = {
     const STATUS = ['PENDING', 'SENT', 'DELIVERED', 'FAILED'];
     const updates = [];
 
-    for(let i=0; i<100; ++i) {
+    for (let i=0; i<100; ++i) {
       const update = {
         id: `wo-message-${i}`,
         status: STATUS[i%4],
       };
 
-      if(update.status === 'FAILED') {
+      if (update.status === 'FAILED') {
         update.reason = `excuse #${i}`;
       }
 

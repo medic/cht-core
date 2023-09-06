@@ -451,12 +451,12 @@ describe('ResourceIcons service', () => {
         _id: 'doc',
         _rev: 'doc',
         somefield: 'aaa',
-        _attachments: { a : { content_type: 'xml' }, b : { content_type: 'png' }, c : { content_type: 'jpg' } },
+        _attachments: { a: { content_type: 'xml' }, b: { content_type: 'png' }, c: { content_type: 'jpg' } },
       };
       const noAttachments = {
         _id: 'doc',
         _rev: 'doc',
-        resources: { a : 'a.jpg', b: 'b.png', c: 'c.xml' }
+        resources: { a: 'a.jpg', b: 'b.png', c: 'c.xml' }
       };
 
       get.onCall(3).resolves(noResources);

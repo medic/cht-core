@@ -16,7 +16,7 @@ describe('Testing Incorrect locale', () => {
       'task.days.left': '{DAYS, plural, =1{1 day left} other{# days left}',
       'tasks.none.n.weeks': '{WEEKS, plural, =1{No tasks in the next week.} other{No tasks in the next # weeks.}}',
       'Reports': 'HilReports',
-      'view.all':'View all'
+      'view.all': 'View all'
     });
     await utils.enableLanguage(languageCode);
   };

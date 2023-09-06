@@ -1,10 +1,12 @@
-<mm-modal
-  [status]="status"
+<mm-modal-layout
   id="edit-report"
+  [processing]="processing"
+  [error]="error"
   [titleKey]="'Update Facility'"
-  [submitKey]="'Submit'"
-  [submittingKey]="'Submitting'"
-  (onCancel)="cancel()"
+  [submitKey]="'save'"
+  [submittingKey]="'saving'"
+  [isFlatButton]="true"
+  (onCancel)="close()"
   (onSubmit)="submit()"
 >
   <form>
@@ -15,4 +17,4 @@
       </div>
     </fieldset>
   </form>
-</mm-modal>
+</mm-modal-layout>

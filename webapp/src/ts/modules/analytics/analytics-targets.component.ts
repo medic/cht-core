@@ -10,6 +10,7 @@ export class AnalyticsTargetsComponent implements OnInit {
   targets: any[] = [];
   loading = true;
   targetsDisabled = false;
+  errorStack;
   telemetryData: { start: number; end?: number } = {
     start: Date.now(),
     end: undefined
@@ -33,6 +34,7 @@ export class AnalyticsTargetsComponent implements OnInit {
       })
       .catch(err => {
         console.error('Error getting targets', err);
+        this.errorStack = err.stack;
         return [];
       })
       .then((targets: any[] = []) => {
