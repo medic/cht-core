@@ -31,7 +31,11 @@ const configs = [
   // webapp-js
   // instead of watching the source files which are watched separately, watch the build folder and upload on rebuild
   {
-    files: [ 'api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js' ],
+    files: [
+      'api/build/static/webapp/**/*',
+      '!api/build/static/webapp/service-worker.*',
+      '!api/build/static/webapp/workbox-*'
+    ],
     task: 'update-service-worker',
   },
 
