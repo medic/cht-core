@@ -1,24 +1,26 @@
 <div class="row filters"></div>
 
 <div class="inner">
-  <div class="col-sm-12 page about">
+  <div class="col-sm-12 page about material">
     <div>
       <h3>{{'reload.app' | translate}}</h3>
       <a (click)="reload()" class="btn btn-primary">{{'Reload' | translate}}</a>
     </div>
 
-    <div>
+    <div class="grid">
       <h3 (click)="secretDoor()">{{'about' | translate}}</h3>
-      <dl class="horizontal">
-        <dt>{{'version' | translate}}</dt>
-        <dd>{{version}}</dd>
-        <span>
-          <dt>{{'debug.supported_browser' | translate}}</dt>
-          <dd *ngIf="browserSupport.isUsingSupportedEnvironment; else unsupportedBrowser">
-            <span class="fa fa-check-square browser-support-icon-green"></span>
-          </dd>
+      <div class="cell">
+        <div>
+          <label>{{'version' | translate}}</label>
+          <p>{{version}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'debug.supported_browser' | translate}}</label>
+          <p><span class="fa fa-check-square browser-support-icon-green"></span></p>
           <ng-template #unsupportedBrowser>
-            <dd>
+            <div>
               <span class="fa fa-times browser-support-icon-red"></span>
               <a target="_blank" rel="noopener noreferrer" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">
                 {{'debug.supported_browser.see_requirements' | translate}}
@@ -31,91 +33,132 @@
                   <span *ngSwitchCase="'browser'">{{'login.unsupported_browser.outdated_browser' | translate}}</span>
                 </ng-container>
               </p>
-            </dd>
+            </div>
           </ng-template>
-        </span>
-        <span *ngIf="androidDeviceInfo?.app?.version">
-          <dt>{{'android_app.version.title' | translate}}</dt>
-          <dd>{{androidDeviceInfo.app.version}}</dd>
-        </span>
-        <span *ngIf="androidDeviceInfo?.app?.packageName">
-          <dt>{{'android_app.package_name.title' | translate}}</dt>
-          <dd>{{androidDeviceInfo.app.packageName}}</dd>
-        </span>
-        <span *ngIf="androidDeviceInfo?.app?.versionCode">
-          <dt>{{'android_app.version_code.title' | translate}}</dt>
-          <dd>{{androidDeviceInfo.app.versionCode}}</dd>
-        </span>
-        <span *ngIf="androidDeviceInfo?.software?.androidVersion">
-          <dt>{{'android_app.os_android_version.title' | translate}}</dt>
-          <dd>
+        </div>
+      </div>
+      <div class="cell" *ngIf="androidDeviceInfo?.app?.version">
+        <div>
+          <label>{{'android_app.version.title' | translate}}</label>
+          <p>{{androidDeviceInfo.app.version}}</p>
+        </div>
+      </div>
+      <div class="cell" *ngIf="androidDeviceInfo?.app?.packageName">
+        <div>
+          <label>{{'android_app.package_name.title' | translate}}</label>
+          <p>{{androidDeviceInfo.app.packageName}}</p>
+        </div>
+      </div>
+      <div class="cell" *ngIf="androidDeviceInfo?.app?.versionCode">
+        <div>
+          <label>{{'android_app.version_code.title' | translate}}</label>
+          <p>{{androidDeviceInfo.app.versionCode}}</p>
+        </div>
+      </div>
+      <div class="cell" *ngIf="androidDeviceInfo?.software?.androidVersion">
+        <div>
+          <label>{{'android_app.os_android_version.title' | translate}}</label>
+          <p>
             {{androidDeviceInfo.software.androidVersion}}
             <span *ngIf="androidDeviceInfo?.software?.osApiLevel">(SDK {{androidDeviceInfo.software.osApiLevel}})</span>
-          </dd>
-        </span>
-        <dt>{{'ddoc.version' | translate}}</dt>
-        <dd>{{remoteRev}}</dd>
-        <dt>{{'clientDdoc.version' | translate}}</dt>
-        <dd>{{localRev}}</dd>
-        <dt>{{'url' | translate}}</dt>
-        <dd>{{url}}</dd>
-        <dt>{{'User Name' | translate}}</dt>
-        <dd>{{userCtx.name}}</dd>
-      </dl>
+          </p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'ddoc.version' | translate}}</label>
+          <p>{{remoteRev}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'clientDdoc.version' | translate}}</label>
+          <p>{{localRev}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'url' | translate}}</label>
+          <p>{{url}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'User Name' | translate}}</label>
+          <p>{{userCtx.name}}</p>
+        </div>
+      </div>
     </div>
 
-    <div>
+    <div class="grid">
       <h3>{{'debug.db_info.title' | translate}}</h3>
-      <dl class="horizontal">
-        <dt>{{'debug.db_info.name' | translate}}</dt>
-        <dd>{{dbInfo?.db_name}}</dd>
-        <dt>{{'debug.db_info.docs' | translate}}</dt>
-        <dd>{{dbInfo?.doc_count}}</dd>
-        <dt>{{'debug.db_info.seq' | translate}}</dt>
-        <dd>{{dbInfo?.update_seq}}</dd>
-        <dt>{{'replication.last.success.to' | translate}}</dt>
-        <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
-          {{replicationStatus.lastSuccessTo | simpleDateTime}}
-        </dd>
-        <dd *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessTo">
-          {{'replication.last.success.unknown' | translate}}
-        </dd>
-        <dd *ngIf="replicationStatus.disabled">
-          {{'replication.disabled' | translate}}
-        </dd>
-        <dt>{{'replication.last.success.from' | translate}}</dt>
-        <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessFrom">
-          {{replicationStatus.lastSuccessFrom | simpleDateTime}}
-        </dd>
-        <dd *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessFrom">
-          {{'replication.last.success.unknown' | translate}}
-        </dd>
-        <dd *ngIf="replicationStatus.disabled">
-          {{'replication.disabled' | translate}}
-        </dd>
-      </dl>
+      <div class="cell">
+        <div>
+          <label>{{'debug.db_info.name' | translate}}</label>
+          <p>{{dbInfo?.db_name}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'debug.db_info.docs' | translate}}</label>
+          <p>{{dbInfo?.doc_count}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'debug.db_info.seq' | translate}}</label>
+          <p>{{dbInfo?.update_seq}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'replication.last.success.to' | translate}}</label>
+          <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">{{replicationStatus.lastSuccessTo | simpleDateTime}}</p>
+          <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessTo">{{'replication.last.success.unknown' | translate}}</p>
+          <p *ngIf="replicationStatus.disabled">{{'replication.disabled' | translate}}</p>
+        </div>
+      </div>
+      <div class="cell">
+        <div>
+          <label>{{'replication.last.success.from' | translate}}</label>
+          <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessFrom">{{replicationStatus.lastSuccessFrom | simpleDateTime}}</p>
+          <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessFrom">{{'replication.last.success.unknown' | translate}}</p>
+          <p *ngIf="replicationStatus.disabled">{{'replication.disabled' | translate}}</p>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="androidDataUsage">
+    <div class="grid" *ngIf="androidDataUsage">
       <h3>{{'android_app.data_usage.title' | translate}}</h3>
       <p>{{'android_app.data_usage.description' | translate}}</p>
+
       <h4>{{'android_app.data_usage.system.title' | translate}}</h4>
-      <dl class="horizontal">
-        <dt>{{'android_app.data_usage.rx' | translate}}</dt>
-        <dd translate [translateParams]="{ number: androidDataUsage?.system?.rx | number }">number.bytes</dd>
-        <dt>{{'android_app.data_usage.tx' | translate}}</dt>
-        <dd translate [translateParams]="{ number: androidDataUsage?.system?.tx | number }">number.bytes</dd>
-      </dl>
+      <div class="cell">
+        <div>
+          <label>{{'android_app.data_usage.rx' | translate}}</label>
+          <p translate [translateParams]="{ number: androidDataUsage?.system?.rx | number }">number.bytes</p>
+        </div>
+        <div>
+          <label>{{'android_app.data_usage.tx' | translate}}</label>
+          <p translate [translateParams]="{ number: androidDataUsage?.system?.tx | number }">number.bytes</p>
+        </div>
+      </div>
+
       <h4>{{'android_app.data_usage.app.title' | translate}}</h4>
-      <dl class="horizontal">
-        <dt>{{'android_app.data_usage.rx' | translate}}</dt>
-        <dd translate [translateParams]="{ number: androidDataUsage?.app?.rx | number }">number.bytes</dd>
-        <dt>{{'android_app.data_usage.tx' | translate}}</dt>
-        <dd translate [translateParams]="{ number: androidDataUsage?.app?.tx | number }">number.bytes</dd>
-      </dl>
+      <div class="cell">
+        <div>
+          <label>{{'android_app.data_usage.rx' | translate}}</label>
+          <p translate [translateParams]="{ number: androidDataUsage?.app?.rx | number }">number.bytes</p>
+        </div>
+        <div>
+          <label>{{'android_app.data_usage.tx' | translate}}</label>
+          <p translate [translateParams]="{ number: androidDataUsage?.app?.tx | number }">number.bytes</p>
+        </div>
+      </div>
+
     </div>
 
-    <div *ngIf="partners?.length" class="partners">
+    <div class="grid partners" *ngIf="partners?.length">
       <h3>{{'partner.supporting' | translate}}</h3>
       <ul class="list-inline">
         <li *ngFor="let partner of partners">
