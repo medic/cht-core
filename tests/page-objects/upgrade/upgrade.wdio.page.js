@@ -35,7 +35,7 @@ const upgradeModalConfirm = async () => {
 };
 
 const getCurrentVersion = async () => {
-  const version = () => $('.material .cell p');
+  const version = () => $('dl.horizontal dd');
   await browser.waitUntil(async () => await (await version()).getText());
   return await (await version()).getText();
 };
