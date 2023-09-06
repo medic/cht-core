@@ -1,11 +1,11 @@
 const genericFormPage = require('./generic-form.wdio.page');
-const modalPage = require('../common/modal.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 const ENKETO_MODAL = '.enketo-modal';
 
 const trainingCardsForm = () => $(ENKETO_MODAL);
 const cardText = (context, field) => $(`.question-label[lang="en"][data-itext-id="/${context}/${field}`);
-const quitTrainingBtn = () => $(`${ENKETO_MODAL} .item-content .btn.btn-danger`);
+const quitTrainingBtn = () => $(`${ENKETO_MODAL} .item-content button[test-id="quit-training"]`);
 
 const waitForTrainingCards = async () => {
   await (await trainingCardsForm()).waitForDisplayed();

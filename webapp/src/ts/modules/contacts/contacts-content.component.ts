@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
-import { first } from 'rxjs/operators';
+import { first, take } from 'rxjs/operators';
 import * as moment from 'moment';
 import { groupBy as _groupBy } from 'lodash-es';
 
@@ -16,7 +16,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -448,13 +448,16 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
     this.modalService
       .show(ContactsMutedComponent)
-      .then(() => this.router.navigate(['/contacts', this.selectedContact?._id, 'report', form.code]))
-      .catch(() => {});
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe(navigate => {
+        if (navigate) {
+          this.router.navigate(['/contacts', this.selectedContact?._id, 'report', form.code]);
+        }
+      });
   }
 
   private openSendMessageModal(sendTo) {
-    this.modalService
-      .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-      .catch(() => {});
+    this.modalService.show(SendMessageComponent, { data: { to: sendTo } });
   }
 }

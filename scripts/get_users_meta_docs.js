@@ -41,7 +41,7 @@ const db = PouchDB(couchUrl);
 const fetchNextDocs = async (startkey) => {
   const options = {
     include_docs: true,
-    limit : 100,
+    limit: 100,
     endkey: `${type}-\ufff0`,
   };
   if (startkey) {

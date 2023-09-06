@@ -13,7 +13,7 @@ import { LocationService } from '@mm-services/location.service';
 })
 export class SessionService {
   userCtxCookieValue: any = null
-  httpOptions = { headers: new HttpHeaders({ Accept:  'application/json' }) };
+  httpOptions = { headers: new HttpHeaders({ Accept: 'application/json' }) };
 
   constructor(
     private cookieService: CookieService,

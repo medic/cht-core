@@ -68,7 +68,7 @@ const getConflictDirectoryPath = (doc_id, mainConflictFilesDirectory) => {
   return conflictDirectoryPath;
 };
 
-DB.query('medic-conflicts/conflicts', {reduce:false})
+DB.query('medic-conflicts/conflicts', {reduce: false})
   .then(conflicts => {
     console.log(`Found ${conflicts.rows.length} conflicts`);
     const mainConflictFilesDirectory = path.join(__dirname, 'doc-conflicts');
