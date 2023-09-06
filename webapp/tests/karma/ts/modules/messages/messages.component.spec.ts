@@ -10,7 +10,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -133,7 +133,6 @@ describe('Messages Component', () => {
 
   it('should update fast actions', async () => {
     sinon.resetHistory();
-    modalService.show.resolves();
     messageContactService.getList.resolves([
       { key: 'a', message: { inAllMessages: true } },
       { key: 'c', message: { inAllMessages: true } },

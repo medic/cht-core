@@ -10,7 +10,7 @@ const {
 const slack = require('./slack')(process.env.SLACK_WEBHOOK_URL);
 
 const upload = async (opts) => {
-  if(validTranslations(opts.file)) {
+  if (validTranslations(opts.file)) {
     opts.language = opts.file.split('-').pop().split('.')[0];
     const form = {file: readStream(`${process.cwd()}/${opts.file}`)};
     delete opts.file;
@@ -22,7 +22,7 @@ const upload = async (opts) => {
         formData: form});
       res = JSON.parse(res.body);
       console.log(opts.language);
-      if(res.response.code !== '200') {
+      if (res.response.code !== '200') {
         error('Unable to upload translation.');
         console.log(res.response);
       } else {
@@ -30,14 +30,14 @@ const upload = async (opts) => {
         slack.send(`Translations ${mmVersion()}: ${JSON.stringify(res.result)}`);
       }
       return res.response;
-    } catch(err) {
+    } catch (err) {
       console.log(err);
     }
   }
 };
 
 const download = async (opts) => {
-  if(validDirectory(opts.file)) {
+  if (validDirectory(opts.file)) {
     const dir = `${process.cwd()}/${opts.file}`;
     delete opts.file;
     const langs = opts.language === 'all' ? await languages(opts) : [opts.language];
@@ -52,7 +52,7 @@ const download = async (opts) => {
         url: `${process.env.POE_API_URL}/projects/export`,
         body: form});
       const {response, result} = JSON.parse(res.body);
-      if(response.code !== '200') {
+      if (response.code !== '200') {
         console.log(response);
         process.exit(1);
       }

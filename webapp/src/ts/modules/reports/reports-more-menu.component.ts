@@ -3,8 +3,8 @@ import { Data, NavigationStart, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
+import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
@@ -35,6 +35,8 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   private loadingContent: boolean;
   private snapshotData: Data | undefined;
   private isOnlineOnly: boolean;
+  private dialogRef: MatDialogRef<any> | undefined;
+  private bottomSheetRef: MatBottomSheetRef<any> | undefined;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -161,11 +163,11 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     this.closeVerifyReportComponents();
 
     if (this.responsiveService.isMobile()) {
-      this.matBottomSheet.open(this.verifyReportWrapper);
+      this.bottomSheetRef = this.matBottomSheet.open(this.verifyReportWrapper);
       return;
     }
 
-    this.matDialog.open(this.verifyReportWrapper, {
+    this.dialogRef = this.matDialog.open(this.verifyReportWrapper, {
       autoFocus: false,
       minWidth: 300,
       minHeight: 150,
@@ -173,7 +175,14 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   }
 
   closeVerifyReportComponents() {
-    this.matBottomSheet.dismiss();
-    this.matDialog.closeAll();
+    if (this.bottomSheetRef) {
+      this.bottomSheetRef.dismiss();
+      this.bottomSheetRef = undefined;
+    }
+
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      this.dialogRef = undefined;
+    }
   }
 }

@@ -31,7 +31,7 @@ const updateBranding = async (doc) => {
   if (!doc) {
     try {
       await utils.deleteDoc('branding');
-    } catch(err) {
+    } catch (err) {
       if (err.statusCode === 404) {
         return; // already not there - success!
       }

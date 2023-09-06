@@ -89,12 +89,12 @@ const getMessageContents = () => {
   return allMessageDocs()
     .then(docs => docs.reduce((acc, doc) => {
 
-      if(doc.kujua_message) {
+      if (doc.kujua_message) {
         doc.tasks.forEach(task =>
           task.messages.forEach(m => acc.push(m.message)));
       }
 
-      if(doc.sms_message) {
+      if (doc.sms_message) {
         acc.push(doc.sms_message.message);
       }
 

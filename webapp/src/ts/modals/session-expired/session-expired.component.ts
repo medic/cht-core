@@ -1,23 +1,22 @@
-import { MmModalAbstract } from '../mm-modal/mm-modal';
+import { Component } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+
 import { SessionService } from '@mm-services/session.service';
-
-import { BsModalRef } from 'ngx-bootstrap/modal';
-import {Component} from '@angular/core';
-
 
 @Component({
   selector: 'session-expired',
   templateUrl: './session-expired.component.html'
 })
-export class SessionExpiredComponent extends MmModalAbstract {
-
-  static id = 'session-expired-modal'; // to make the modal singleton
+export class SessionExpiredComponent {
+  static id = 'session-expired-modal';
 
   constructor(
-    bsModalRef:BsModalRef,
     private sessionService:SessionService,
-  ) {
-    super(bsModalRef);
+    private matDialogRef: MatDialogRef<SessionExpiredComponent>,
+  ) { }
+
+  close() {
+    this.matDialogRef.close();
   }
 
   submit() {

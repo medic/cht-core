@@ -1,16 +1,14 @@
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ComponentFixture, fakeAsync, TestBed, flush, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, flush } from '@angular/core/testing';
+import { MatDialogRef } from '@angular/material/dialog';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { Subject } from 'rxjs';
-import { BsModalRef } from 'ngx-bootstrap/modal';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
-import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 import { SetLanguageService, LanguageService } from '@mm-services/language.service';
 
 describe('EditUserSettingsComponent', () => {
@@ -21,9 +19,10 @@ describe('EditUserSettingsComponent', () => {
   let languageService;
   let languagesService;
   let setLanguageService;
-  let bdModalRef;
+  let matDialogRef;
+  let consoleErrorStub;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     userSettingsService = {
       get: sinon.stub().resolves(
         {
@@ -47,14 +46,12 @@ describe('EditUserSettingsComponent', () => {
       )
     };
     setLanguageService = { set: sinon.stub().resolves() };
-    bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
+    matDialogRef = { close: sinon.stub() };
+    consoleErrorStub = sinon.stub(console, 'error');
 
     return TestBed
       .configureTestingModule({
-        declarations: [
-          EditUserSettingsComponent,
-          MmModal,
-        ],
+        declarations: [ EditUserSettingsComponent ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
@@ -65,7 +62,7 @@ describe('EditUserSettingsComponent', () => {
           { provide: LanguageService, useValue: languageService },
           { provide: LanguagesService, useValue: languagesService },
           { provide: SetLanguageService, useValue: setLanguageService },
-          { provide: BsModalRef, useValue: bdModalRef },
+          { provide: MatDialogRef, useValue: matDialogRef },
         ]
       })
       .compileComponents()
@@ -76,10 +73,16 @@ describe('EditUserSettingsComponent', () => {
         fixture.detectChanges();
         return fixture.whenStable();
       });
-  }));
+  });
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  it('should close modal', () => {
+    component.close();
+
+    expect(matDialogRef.close.calledOnce).to.be.true;
   });
 
   it('should state been initialized correctly', () => {
@@ -96,32 +99,49 @@ describe('EditUserSettingsComponent', () => {
       {code: 'es', name: 'Español (Spanish)'},
       {code: 'fr', name: 'Français (French)'},
     ]);
-    expect(component.errors).to.deep.equal({});
+    expect(component.error).to.be.undefined;
   });
 
-  it('editUserSettings() should not trigger any error', fakeAsync(async () => {
-    component.editUserModel.language.code = 'en';
-    component.editUserModel.fullname = 'Sir Admin';
-    component.editUserModel.phone = '11 123 4567';
+  describe('editUserSettings()', () => {
+    it('should not trigger any error and process successfully', fakeAsync(async () => {
+      sinon.resetHistory();
+      component.editUserModel.language.code = 'en';
+      component.editUserModel.fullname = 'Sir Admin';
+      component.editUserModel.phone = '11 123 4567';
 
-    component.status = {
-      processing: false,
-      error: true,    // There was an error before
-      severity: true,
-    };
+      component.editUserSettings();
 
-    component.editUserSettings();
+      expect(component.processing).to.be.true;
 
-    expect(component.status).to.deep.equal({
-      processing: true,   // Processing ...
-      error: false,       // The error was cleared
-      severity: false,
-    });
-    flush();
-    expect(component.status).to.deep.equal({
-      processing: false,    // Processing finished
-      error: false,         // No more errors
-      severity: false,
-    });
-  }));
+      flush();
+
+      expect(component.processing).to.be.false;
+      expect(component.error).to.be.undefined;
+      expect(consoleErrorStub.notCalled).to.be.true;
+      expect(matDialogRef.close.calledOnce).to.be.true;
+    }));
+
+    it('should catch any error and not close the modal', fakeAsync(async () => {
+      sinon.resetHistory();
+      userSettingsService.put.rejects(new Error('some error'));
+      component.editUserModel.language.code = 'en';
+      component.editUserModel.fullname = 'Sir Admin';
+      component.editUserModel.phone = '11 123 4567';
+
+      component.editUserSettings();
+
+      expect(component.processing).to.be.true;
+
+      flush();
+
+      expect(component.processing).to.be.false;
+      expect(component.error).to.equal('Error updating user');
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.args[0]).to.have.deep.members([
+        'Error updating user',
+        new Error('some error'),
+      ]);
+      expect(matDialogRef.close.notCalled).to.be.true;
+    }));
+  });
 });

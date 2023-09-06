@@ -20,7 +20,7 @@ export class ExceptionHandlerProvider implements ErrorHandler {
   }
 
   private shouldGenerateFeedback(message) {
-    if(!message){
+    if (!message){
       return false;
     }
 
@@ -46,7 +46,7 @@ export class ExceptionHandlerProvider implements ErrorHandler {
         this.feedbackService.submit(error).catch(err => {
           console.error('Error saving feedback', err);
         });
-      } catch(e) {
+      } catch (e) {
         // stop infinite loop of exceptions
         console.error('Error while trying to record error', JSON.stringify(error), e.toString(), e);
       }

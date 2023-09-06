@@ -189,7 +189,7 @@ const bulkUpdate = infoDocs => {
   return db.sentinel.bulkDocs(infoDocs).then(results => {
     const conflictingInfoDocs = [];
     results.forEach((result, idx) => {
-      if(result.error === 'conflict') {
+      if (result.error === 'conflict') {
         conflictingInfoDocs.push(infoDocs[idx]);
       } else {
         infoDocs[idx]._rev = result.rev;
