@@ -1,0 +1,19 @@
+version: "3.7"
+services:
+  mock-couchdb:
+    image: mockserver/mockserver:5.15.0
+    environment:
+      MOCKSERVER_SERVER_PORT: 5984
+      # MOCKSERVER_LOG_LEVEL: WARN
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
+    volumes:
+      - ./mock-config/:/config/
+
+  haproxy-healthcheck:
+    build: .
+    environment:
+      COUCHDB_SERVERS: mock-couchdb
+      COUCHDB_USER: someuser
+      COUCHDB_PASSWORD: insecure_pw
+    ports:
+      - 127.0.0.1:5555:5555

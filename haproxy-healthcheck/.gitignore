@@ -1,0 +1,7 @@
+/*.egg-info/
+/*.whl
+/.*_cache/
+/.venv/
+/build/
+__pycache__/
+
