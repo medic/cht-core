@@ -1,11 +1,14 @@
-<mm-modal
-  [status]="status"
+<mm-modal-layout
   id="send-message"
+  [processing]="processing"
+  [error]="errors.submit"
   [titleKey]="'Send Message'"
   [submitKey]="'Send'"
   [submittingKey]="'Sending'"
-  (onCancel)="cancel()"
-  (onSubmit)="submit()">
+  [isFlatButton]="true"
+  (onCancel)="close()"
+  (onSubmit)="submit()"
+>
   <form action="" method="POST" class="message-form">
     <div class="form-group" [ngClass]="{ 'has-error': errors.phone }">
       <select class="form-control" id="send-message-phone" name="phone" autocomplete="off" multiple="multiple"></select>
@@ -16,11 +19,11 @@
       <textarea name="message"
         class="form-control"
         [placeholder]="'tasks.0.messages.0.message' | translate"
-        [(ngModel)]="fields.message">
+        [(ngModel)]="messageInput">
       </textarea>
       <span class="help-block" *ngIf="errors.message">{{ errors.message }}</span>
       <!-- Count is done by CountMessageService -->
       <span class="count"></span>
     </div>
   </form>
-</mm-modal>
+</mm-modal-layout>

@@ -20,7 +20,7 @@ const spoofUserAgent = (userAgent: string) => {
 
 const restoreUserAgent = () => spoofUserAgent(baseUserAgent);
 
-const getChtAndroidUserAgent = (androidAppVersion: string, webviewVersion = '80.0.3987') =>
+const getChtAndroidUserAgent = (androidAppVersion: string, webviewVersion = '90.0.3987') =>
   'Mozilla/5.0 (Linux; Android 5.1.1; One S Build/LMY49J; wv) ' +
   'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 ' +
   `Chrome/${webviewVersion} Mobile Safari/537.36 ` +

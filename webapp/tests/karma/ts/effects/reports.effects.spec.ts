@@ -16,7 +16,7 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { ReportsEffects } from '@mm-effects/reports.effects';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
@@ -31,6 +31,7 @@ describe('Reports effects', () => {
   let reportViewModelGeneratorService;
   let markReadService;
   let modalService;
+  let toPromiseStub;
   let dbService;
   let router;
   let searchService;
@@ -51,12 +52,19 @@ describe('Reports effects', () => {
 
     reportViewModelGeneratorService = { get: sinon.stub().resolves() };
     markReadService = { markAsRead: sinon.stub().resolves() };
-    modalService = { show: sinon.stub() };
     dbService = { get: sinon.stub(), put: sinon.stub() };
     router = { navigate: sinon.stub() };
     searchService = { search: sinon.stub() };
     authService = { has: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
+    toPromiseStub = sinon.stub();
+    modalService = {
+      show: sinon
+        .stub()
+        .returns({
+          afterClosed: () => ({ toPromise: toPromiseStub }),
+        }),
+    };
 
     TestBed.configureTestingModule({
       declarations: [
@@ -723,7 +731,6 @@ describe('Reports effects', () => {
       store.overrideSelector(Selectors.getSelectMode, false);
       store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, false);
-      modalService.show.resolves();
 
       actions$ = of(ReportActionList.setRightActionBar);
       effects.setRightActionBar.subscribe();
@@ -735,7 +742,7 @@ describe('Reports effects', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         SendMessageComponent,
-        { initialState: { fields: { to: 'number' } } },
+        { data: { to: 'number' } },
       ]);
     });
 
@@ -744,7 +751,6 @@ describe('Reports effects', () => {
       store.overrideSelector(Selectors.getSelectMode, false);
       store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, false);
-      modalService.show.rejects();
 
       actions$ = of(ReportActionList.setRightActionBar);
       effects.setRightActionBar.subscribe();
@@ -756,7 +762,7 @@ describe('Reports effects', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         SendMessageComponent,
-        { initialState: { fields: { to: 'send to' } } },
+        { data: { to: 'send to' } },
       ]);
     });
   });
@@ -776,7 +782,6 @@ describe('Reports effects', () => {
 
     it('should pass selected report doc to EditReport modal', () => {
       const selectedReport = { _id: 'report1', doc: { _id: 'report1', contact: { _id: 'contact' } } };
-      modalService.show.resolves();
       store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
@@ -785,13 +790,12 @@ describe('Reports effects', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         EditReportComponent,
-        { initialState: { model: { report: { _id: 'report1', contact: { _id: 'contact' } } } } },
+        { data: { report: { _id: 'report1', contact: { _id: 'contact' } } } },
       ]);
     });
 
     it('should catch modal rejections', waitForAsync(() => {
       const selectedReport = { _id: 'r', doc: { _id: 'r', contact: { _id: 'ct' } } };
-      modalService.show.rejects();
       store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
@@ -800,34 +804,32 @@ describe('Reports effects', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         EditReportComponent,
-        { initialState: { model: { report: { _id: 'r', contact: { _id: 'ct' } } } } },
+        { data: { report: { _id: 'r', contact: { _id: 'ct' } } } },
       ]);
     }));
 
     it('should handle undefined selected reports', () => {
       store.overrideSelector(Selectors.getSelectedReport, undefined);
-      modalService.show.resolves();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
 
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         EditReportComponent,
-        { initialState: { model: { report: undefined } } },
+        { data: { report: undefined } },
       ]);
     });
 
     it('should handle empty selected reports', () => {
       store.overrideSelector(Selectors.getSelectedReport, {});
       store.refreshState();
-      modalService.show.resolves();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
 
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         EditReportComponent,
-        { initialState: { model: { report: undefined } } },
+        { data: { report: undefined } },
       ]);
     });
   });
@@ -1085,7 +1087,6 @@ describe('Reports effects', () => {
       authService.has.resolves(false);
       store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
-      modalService.show.rejects(); // user clicks no
 
       actions$ = of(ReportActionList.verifyReport(false));
       effects.verifyReport.subscribe();
@@ -1097,7 +1098,7 @@ describe('Reports effects', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         VerifyReportComponent,
-        { initialState: { model: { proposedVerificationState: 'reports.verify.invalid' } } }
+        { data: { proposedVerificationState: 'reports.verify.invalid' } }
       ]);
     }));
 
@@ -1106,7 +1107,6 @@ describe('Reports effects', () => {
       authService.has.resolves(false);
       store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
-      modalService.show.rejects(); // user clicks no
 
       actions$ = of(ReportActionList.verifyReport(true));
       effects.verifyReport.subscribe();
@@ -1118,7 +1118,7 @@ describe('Reports effects', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         VerifyReportComponent,
-        { initialState: { model: { proposedVerificationState: 'reports.verify.valid' } } }
+        { data: { proposedVerificationState: 'reports.verify.valid' } }
       ]);
     }));
 
@@ -1176,7 +1176,7 @@ describe('Reports effects', () => {
         sinon.stub(Date, 'now').returns(0); // using faketimers breaks fakeAsync's tick :(
 
         canEdit ? authService.has.resolves(true) : authService.has.resolves(false);
-        confirm ? modalService.show.resolves() : modalService.show.rejects();
+        confirm ? toPromiseStub.resolves(true) :  toPromiseStub.resolves(false);
         dbService.put.resolves();
         dbService.get.resolves({ _id: 'def', name: 'hello', _rev: '1', form: 'P' });
         store.overrideSelector(Selectors.getSelectedReport, selectedReport);

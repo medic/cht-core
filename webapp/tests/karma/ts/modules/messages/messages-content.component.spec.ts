@@ -15,7 +15,7 @@ import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { SendMessageService } from '@mm-services/send-message.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
 import { PipesModule } from '@mm-pipes/pipes.module';

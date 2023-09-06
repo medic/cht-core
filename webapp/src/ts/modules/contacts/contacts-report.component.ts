@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -38,7 +38,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
   constructor(
     private store: Store,
-    private enketoService: EnketoService,
+    private formService: FormService,
     private geolocationService: GeolocationService,
     private telemetryService: TelemetryService,
     private xmlFormsService: XmlFormsService,
@@ -68,7 +68,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.geoHandle && this.geoHandle.cancel();
-    this.enketoService.unload(this.form);
+    this.formService.unload(this.form);
     this.globalActions.clearNavigation();
     this.globalActions.clearEnketoStatus();
   }
@@ -136,7 +136,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         const markFormEdited = this.markFormEdited.bind(this);
         const resetFormError = this.resetFormError.bind(this);
 
-        return this.enketoService.render(
+        return this.formService.render(
           '#contact-report',
           form,
           instanceData,
@@ -228,7 +228,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
-    this.enketoService
+    this.formService
       .save(this.routeSnapshot.params.formId, this.form, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);

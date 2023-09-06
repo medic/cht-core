@@ -156,8 +156,7 @@ describe('Submit Enketo form', () => {
     await (await genericForm.nameField()).setValue('Jones');
     await (await genericForm.cancelButton()).click();
 
-    await (await modalPage.submit()).waitForDisplayed();
-    await (await modalPage.submit()).click();
+    await modalPage.submit();
 
     await commonElements.waitForPageLoaded();
     await (await reportsPage.noReportSelectedLabel()).waitForDisplayed();

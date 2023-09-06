@@ -11,7 +11,7 @@ const issues = async () => {
 
   try {
     return await octokit.issues.getForRepo(data);
-  } catch(err) {
+  } catch (err) {
     console.log('An error occured getting issues' + err);
   }
 };

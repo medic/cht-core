@@ -2521,7 +2521,7 @@ describe('ServerSidePurge', () => {
     it('should be possible to use hasPermissions from cht script api in purge function', () => {
       const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
       const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
-        if(chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
+        if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
           return [ 'purge 1', 'purge 2' ];
         }
       };
@@ -2547,7 +2547,7 @@ describe('ServerSidePurge', () => {
     it('should be possible to use hasAnyPermission from cht script api in purge function', () => {
       const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
       const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
-        if(chtScript.v1.hasAnyPermission(['can_export_messages', 'can_edit'], userCtx.roles, settings)) {
+        if (chtScript.v1.hasAnyPermission(['can_export_messages', 'can_edit'], userCtx.roles, settings)) {
           return [ 'purge 1', 'purge 2' ];
         }
       };

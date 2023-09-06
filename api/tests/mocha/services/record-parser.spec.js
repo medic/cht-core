@@ -253,7 +253,7 @@ describe('record parser', () => {
     };
     try {
       records.createRecordByJSON(body);
-    } catch(e) {
+    } catch (e) {
       chai.expect(e.publicMessage).to.equal('Form not found: FOO');
       done();
     }
