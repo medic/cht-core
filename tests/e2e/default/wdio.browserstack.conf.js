@@ -1,12 +1,14 @@
 const wdioBaseConfig = require('../wdio.conf');
 const { suites } = require('./suites');
+const BROWSERSTACK_USER = process.env.DEBUG;
+const BROWSERSTACK_KEY = process.env.DEBUG;
 
 const browserStackConfig = Object.assign(wdioBaseConfig.config, {
   suites,
   specs: ['../default/**/*.wdio-spec.js'],
 
-  user: 'lorenarodriguez_eCRVrZ',
-  key: 'XTofPLhNQKzcPayV5nGq',
+  user: BROWSERSTACK_USER,
+  key: BROWSERSTACK_KEY,
   hostname: 'hub.browserstack.com',
 
   capabilities: [
