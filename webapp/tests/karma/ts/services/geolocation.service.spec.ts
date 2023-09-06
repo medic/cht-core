@@ -36,7 +36,7 @@ describe('Geolocation service', () => {
     sinon.replaceGetter(window, 'navigator', () => ({}));
     return service.init()().then(returned => {
       expect(returned).to.deep.equal({
-        code: -1,
+        code: -3,
         message: 'Geolocation API unavailable.',
       });
     });
