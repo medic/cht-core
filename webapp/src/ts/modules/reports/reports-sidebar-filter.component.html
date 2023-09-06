@@ -9,7 +9,7 @@
     </div>
 
     <div class="sidebar-body">
-      <mat-accordion>
+      <mat-accordion multi>
         <!-- 1. Form Type -->
         <mat-expansion-panel id="form-filter-accordion">
           <mat-expansion-panel-header>
@@ -46,15 +46,13 @@
             </ng-container>
           </mat-expansion-panel-header>
           <mat-panel-description>
-            <mat-expansion-panel-header>
-              <mm-facility-filter
-                class="filter"
-                fieldId="placeFilter"
-                (search)="applyFilters()"
-                [disabled]="disabled"
-                [inline]="true">
-              </mm-facility-filter>
-            </mat-expansion-panel-header>
+            <mm-facility-filter
+              class="filter"
+              fieldId="placeFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled"
+              [inline]="true">
+            </mm-facility-filter>
           </mat-panel-description>
         </mat-expansion-panel>
 
