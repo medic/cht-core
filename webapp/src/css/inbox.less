@@ -374,6 +374,7 @@ body {
     vertical-align: top;
     .dropdown-menu {
       padding-top: 0;
+      top: 0 !important; // Overrides element.style
     }
     .mm-dropdown {
       display: block;
@@ -951,7 +952,7 @@ a.fa:hover {
     margin: 0 auto 10px;
     pointer-events: auto;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
-    display: flex;
+    display: flex !important; // Overrides Bootstrap's style that has !important
     flex-direction: row;
     justify-content: center;
     min-height: 78px;
@@ -962,7 +963,11 @@ a.fa:hover {
       width: 100%;
     }
 
-    > * {
+.left-pane .action-container .dropdown-menu {
+  top: -3px !important; // Overrides element.style
+}
+
+> * {
       margin: 10px 0 0;
       flex-grow: 1;
       max-width: 120px;
@@ -1207,8 +1212,8 @@ mm-search-bar {
       }
 
       .mm-dropdown-menu {
-        left: -270px;
-        margin: 40px 0;
+        left: -215px !important; // Override element.style
+        margin: 0;
         box-shadow: 0 6px 12px rgb(0 0 0 / 40%);
 
         .dropdown-header {
@@ -1719,12 +1724,6 @@ mm-search-bar {
 
       mm-freetext-filter.filter {
         display: none;
-      }
-
-      mm-sort-filter .mm-dropdown-menu {
-        top: 115px;
-        left: 10px;
-        margin: 0;
       }
 
       .search-bar-left-icon {
