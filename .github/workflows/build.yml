@@ -151,7 +151,7 @@ jobs:
         run: npm install -g cht-conf
       - run: npm ci
       - name: "Running test on BrowserStack" # Invokes the actual test script that would run on BrowserStack browsers
-        run: npm run wdio run ./tests/e2e/default/wdio.browserstack.conf.js
+        run: npm run "ci-webdriver-default-browserstack"
       - name: "BrowserStackLocal Stop" # Terminating the BrowserStackLocal tunnel connection
         uses: browserstack/github-actions/setup-local@master
         with:

@@ -43,6 +43,7 @@
     "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
     "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "ci-webdriver-standard": "wdio run ./tests/e2e/standard/wdio.conf.js",
+    "ci-webdriver-default-browserstack": "wdio run ./tests/e2e/default/wdio.browserstack.conf.js",
     "publish-for-testing": "npm run build-service-images && npm run publish-service-images && npm run compile-ddocs-staging && npm run push-ddoc-to-staging",
     "test-config-default": "cd config/default && npm ci && npm run test",
     "test-config-standard": "cd config/standard && npm ci && npm run ci",
