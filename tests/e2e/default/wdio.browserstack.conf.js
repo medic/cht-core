@@ -20,12 +20,12 @@ const browserStackConfig = Object.assign(wdioBaseConfig.config, {
         browserVersion: '90.0',
         os: 'Windows',
         osVersion: '10',
-        buildName: "bstack-demo",
-        buildIdentifier: "${BUILD_NUMBER}",
-        projectName: "BrowserStack Sample",
-        debug: "true",
-        networkLogs: "true",
-        consoleLogs: "info"
+        buildName: 'bstack-demo',
+        buildIdentifier: '${BUILD_NUMBER}',
+        projectName: 'BrowserStack Sample',
+        debug: 'true',
+        networkLogs: 'true',
+        consoleLogs: 'info'
       }
     }
   ],
