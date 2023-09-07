@@ -1,10 +1,11 @@
 const wdioBaseConfig = require('../wdio.conf');
+const { suites } = require('./suites');
 const BROWSERSTACK_USER = process.env.BROWSERSTACK_USERNAME;
 const BROWSERSTACK_KEY = process.env.BROWSERSTACK_ACCESS_KEY;
 
 const browserStackConfig = Object.assign(wdioBaseConfig.config, {
-  specs: ['../default/privacy-policy/privacy-policy.wdio-spec.js'],
-
+  suites,
+  specs: ['../default/**/*.wdio-spec.js'],
   user: BROWSERSTACK_USER,
   key: BROWSERSTACK_KEY,
   hostname: 'hub.browserstack.com',
@@ -18,11 +19,9 @@ const browserStackConfig = Object.assign(wdioBaseConfig.config, {
         browserVersion: '90.0',
         os: 'Windows',
         osVersion: '10',
-        buildName: 'bstack-demo',
+        buildName: '${BRANCH}',
         buildIdentifier: '${BUILD_NUMBER}',
-        projectName: 'BrowserStack Sample',
-        debug: 'true',
-        networkLogs: 'true',
+        projectName: 'Chrome v90',
         consoleLogs: 'info'
       }
     }
