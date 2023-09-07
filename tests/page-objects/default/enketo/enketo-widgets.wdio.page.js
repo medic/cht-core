@@ -17,8 +17,10 @@ const patientId = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/pa
 const patientName = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/name"]`);
 const patientNameErrorLabel = () => $(`${FORM} label.invalid-constraint`);
 const phoneField = () => $('input.ignore[type="tel"]:has(+ input[name="/enketo_widgets/enketo_test_select/phone"])');
-const phoneFieldRequiredMessage = () => $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-required-msg.active');
-const phoneFieldConstraintMessage = () => $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-constraint-msg.active');
+const phoneFieldRequiredMessage = () =>
+  $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-required-msg.active');
+const phoneFieldConstraintMessage = () =>
+  $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-constraint-msg.active');
 
 const getFormTitle = async () => {
   const title = await formTitle();
