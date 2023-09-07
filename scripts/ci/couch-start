@@ -1,7 +1,14 @@
 #!/bin/bash -eu
 
+set -e
+
 # start couchdb 2.x docker instance
-docker run -d -p 5984:5984 --name couch -e COUCHDB_PASSWORD=pass -e COUCHDB_USER=admin medicmobile/cht-couchdb:clustered-test4
+docker run -d -p 5984:5984 -e COUCHDB_PASSWORD=pass -e COUCHDB_USER=admin -e SVC_NAME=localhost -e COUCHDB_LOG_LEVEL=debug public.ecr.aws/medic/cht-couchdb:4.2.2
 echo "Starting CouchDB"
+
 until nc -z localhost 5984; do sleep 1; done
+sleep 2
+curl -X PUT http://admin:pass@localhost:5984/medic
+curl -X PUT http://admin:pass@localhost:5984/medic-sentinel
+
 echo "CouchDB Started"
