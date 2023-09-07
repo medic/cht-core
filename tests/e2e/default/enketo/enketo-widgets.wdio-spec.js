@@ -16,7 +16,7 @@ describe('Enketo Widgets', () => {
   const offlineUser = userFactory.build({
     place: districtHospital._id,
     roles: ['chw'],
-    contact: { _id: '987 654 321', name: 'Ben', phone: phoneNumber },
+    contact: { _id: '987 654 321', name: 'Ben', phone: '+50689999999' },
   });
   const formDoc = {
     _id: 'form:enketo_widgets_test',
@@ -106,6 +106,19 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'd');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option d');
+
+    // try to move to next page without filling the mandatory phone number field
+    await genericForm.nextPage();
+    expect(await enketoWidgetsPage.phoneFieldRequiredMessage().getAttribute('data-i18n'))
+      .to.equal('constraint.required');
+
+    // try to move to next page with an invalid phone number
+    await enketoWidgetsPage.setPhoneNumber('+4076');
+    await genericForm.nextPage();
+    expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
+      .to.equal('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg');
+
+    // finally set a valid phone number and continue
     await enketoWidgetsPage.setPhoneNumber(phoneNumber);
 
     await genericForm.nextPage();
