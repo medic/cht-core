@@ -374,7 +374,7 @@ body {
     vertical-align: top;
     .dropdown-menu {
       padding-top: 0;
-      top: 0 !important; // Overrides element.style
+      top: 0 !important; // Support for old design: Overrides Bootstrap element.style
     }
     .mm-dropdown {
       display: block;
@@ -942,9 +942,7 @@ a.fa:hover {
 
   .actions {
     max-width: 500px;
-    background-color: @label-color;
     background-color: rgba(0, 0, 0, 0.65);
-    border-color: @separator-color;
     border-color: rgba(0, 0, 0, 0.8);
     border-width: 1px;
     border-style: solid;
@@ -952,7 +950,7 @@ a.fa:hover {
     margin: 0 auto 10px;
     pointer-events: auto;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
-    display: flex !important; // Overrides Bootstrap's style that has !important
+    display: flex !important; // Support for old design: Overrides Bootstrap element.style
     flex-direction: row;
     justify-content: center;
     min-height: 78px;
@@ -964,7 +962,7 @@ a.fa:hover {
     }
 
 .left-pane .action-container .dropdown-menu {
-  top: -3px !important; // Overrides element.style
+  top: -3px !important; // Support for old design: Overrides Bootstrap element.style
 }
 
 > * {
@@ -1212,7 +1210,7 @@ mm-search-bar {
       }
 
       .mm-dropdown-menu {
-        left: -215px !important; // Override element.style
+        left: -215px !important; // Support for old design: Overrides Bootstrap element.style
         margin: 0;
         box-shadow: 0 6px 12px rgb(0 0 0 / 40%);
 
@@ -1756,6 +1754,21 @@ mm-search-bar {
           margin: 0 10px;
         }
       }
+    }
+  }
+
+  .basic-filters {
+    // Support for old design: Overrides Bootstrap element.style
+    .mobile-freetext-filter .dropdown-menu,
+    .mm-status-filter .dropdown-menu {
+      top: 0 !important;
+      left: -100px !important;
+    }
+
+    // Support for old design: Overrides Bootstrap element.style
+    .sort-dropdown .dropdown-menu {
+      top: 0 !important;
+      left: -230px !important;
     }
   }
 }
