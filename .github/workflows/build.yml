@@ -6,66 +6,65 @@ env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
-  MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
+  MARKET_URL_READ: "https://staging.dev.medicmobile.org"
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
-  DOCKERHUB_USERNAME: 'dockermedic'
-  ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
-  ECR_PUBLIC_REPO: 'public.ecr.aws/medic'
-  COUCHDB_LOG_LEVEL: 'debug'
+  DOCKERHUB_USERNAME: "dockermedic"
+  ECR_REPO: "720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic"
+  ECR_PUBLIC_REPO: "public.ecr.aws/medic"
+  COUCHDB_LOG_LEVEL: "debug"
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
 
 jobs:
-
   build:
     name: Compile the app
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ env.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        mask-password: 'true'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: "true"
 
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-    - name: Couch Start
-      run: ./scripts/ci/couch-start
-    - name: Create logs directory
-      run: mkdir tests/logs
-    - run: npm ci
-    - name: Compile
-      run: npm run ci-compile
-    - name: Publish for testing
-      run: npm run publish-for-testing
-    - name: Upload docker images as artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: cht-images
-        path: images/
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Couch Start
+        run: ./scripts/ci/couch-start
+      - name: Create logs directory
+        run: mkdir tests/logs
+      - run: npm ci
+      - name: Compile
+        run: npm run ci-compile
+      - name: Publish for testing
+        run: npm run publish-for-testing
+      - name: Upload docker images as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: cht-images
+          path: images/
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
   config-tests:
     needs: build
@@ -74,17 +73,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['test-config-standard', 'test-config-default']
+        cmd: ["test-config-standard", "test-config-default"]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-    - run: npm ci
-    - name: Run Tests
-      run: npm run ${{ matrix.cmd }}
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - run: npm ci
+      - name: Run Tests
+        run: npm run ${{ matrix.cmd }}
 
   tests:
     needs: build
@@ -96,7 +95,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        cmd:
+          [
+            "ci-webdriver-standard",
+            "ci-e2e-integration",
+            "ci-webdriver-default-mobile",
+          ]
         suite: [all]
         include:
           - cmd: ci-webdriver-default
@@ -111,117 +115,135 @@ jobs:
             suite: workflows
 
     steps:
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ env.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        mask-password: 'true'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: "true"
 
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-    - uses: actions/checkout@v3
-    - name: Download docker images artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: cht-images
-        path: images/
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-    - name: Load docker images
-      run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
-      working-directory: images/
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - uses: actions/checkout@v3
+      - name: Download docker images artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: cht-images
+          path: images/
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      - name: Load docker images
+        run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+        working-directory: images/
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Set ENV
-      run: |        
-        echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
-    - name: Create logs directory
-      run: mkdir tests/logs
-    - name: Install pyxform
-      run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-    - name: Install cht-conf
-      run:  npm install -g cht-conf
-    - run: npm ci
-    - name: Fetch allure history
-      uses: actions/checkout@v3
-      with:
-        repository: 'medic/build-history-data'
-        path: 'build-history-data'
-        persist-credentials: false
-    - name: Copy allure history
-      run: |
-        mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
-    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }}
-      run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
-    
-    - name: Fetch allure history
-      if: always()
-      uses: actions/checkout@v3
-      with:
-        repository: 'medic/build-history-data'
-        path: 'build-history-data-new'
-        persist-credentials: false
-    - name: Copy new allure history
-      if: always()
-      run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}allure-report | true
-    - name: Upload allure report history
-      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-      uses: actions-js/push@master
-      with:
-        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-        directory: 'build-history-data-new'
-        repository: 'medic/build-history-data'
-        force: true
-    - name: Fetch report repo
-      if: always()
-      uses: actions/checkout@v3
-      with:
-        repository: 'medic/build-history'
-        path: 'build-history'
-        persist-credentials: false
-    - name: Copy new report
-      if: always()
-      run: |
-        mkdir -p build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}
-        cp -r allure-report build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }} | true
-    - name: Upload allure report
-      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-      uses: actions-js/push@master
-      with:
-        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-        directory: 'build-history'
-        repository: 'medic/build-history'
-        force: true
-    - name: Archive Results
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
-        path: |
-          allure-results
-          allure-report
-          tests/logs
-          tests/results/
-      if: ${{ failure() }}
+      - name: Set ENV
+        run: |
+          echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
+      - name: Create logs directory
+        run: mkdir tests/logs
+      - name: Install pyxform
+        run: python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+      - name: Install cht-conf
+        run: npm install -g cht-conf
+      - run: npm ci
+      - name: Fetch allure history
+        uses: actions/checkout@v3
+        with:
+          repository: "medic/build-history-data"
+          path: "build-history-data"
+          persist-credentials: false
+      - name: Copy allure history
+        run: |
+          mkdir -p allure-results/history
+          cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
+
+      - name: "BrowserStack Env Setup" # Invokes the setup-env action
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          username: "lorenarodriguez_eCRVrZ"
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      - name: "BrowserStack Local Tunnel Setup" # Invokes the setup-local action
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: random
+      - name: "Running test on BrowserStack" # Invokes the actual test script that would run on BrowserStack browsers
+        run: export VERSION=$(node ./scripts/build/get-version.js) && npm run build-service-images && wdio run ./tests/e2e/default/wdio.browserstack.conf.js,
+      - name: "BrowserStackLocal Stop" # Terminating the BrowserStackLocal tunnel connection
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop
+
+      - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }}
+        run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
+
+      - name: Fetch allure history
+        if: always()
+        uses: actions/checkout@v3
+        with:
+          repository: "medic/build-history-data"
+          path: "build-history-data-new"
+          persist-credentials: false
+      - name: Copy new allure history
+        if: always()
+        run: |
+          mkdir -p build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/history
+          cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}allure-report | true
+      - name: Upload allure report history
+        if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+          directory: "build-history-data-new"
+          repository: "medic/build-history-data"
+          force: true
+      - name: Fetch report repo
+        if: always()
+        uses: actions/checkout@v3
+        with:
+          repository: "medic/build-history"
+          path: "build-history"
+          persist-credentials: false
+      - name: Copy new report
+        if: always()
+        run: |
+          mkdir -p build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}
+          cp -r allure-report build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }} | true
+      - name: Upload allure report
+        if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+          directory: "build-history"
+          repository: "medic/build-history"
+          force: true
+      - name: Archive Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}
 
   publish:
     needs: [tests, config-tests]
@@ -230,48 +252,48 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
-    - name: Delete image artifacts
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-      uses: geekyeggo/delete-artifact@v1
-      with:
-        name: cht-images
+      - name: Delete image artifacts
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: cht-images
 
-    - name: Configure AWS credentials
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-    - name: Login to Amazon ECR
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        mask-password: 'true'
+      - name: Configure AWS credentials
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+      - name: Login to Amazon ECR
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: "true"
 
-    - name: Configure AWS credentials Public
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    - name: Login to Public Amazon ECR
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      id: login-ecr-public
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        registry-type: public
-        mask-password: 'true'
+      - name: Configure AWS credentials Public
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to Public Amazon ECR
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+          mask-password: "true"
 
-    - uses: actions/checkout@v3
-    - name: Publish
-      run: |
-        cd scripts/ci
-        npm ci
-        node ./publish.js
-        node ./tag-docker-images.js
+      - uses: actions/checkout@v3
+      - name: Publish
+        run: |
+          cd scripts/ci
+          npm ci
+          node ./publish.js
+          node ./tag-docker-images.js
 
   upgrade:
     needs: [publish]
@@ -293,7 +315,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registry-type: public
-          mask-password: 'true'
+          mask-password: "true"
       - uses: actions/checkout@v3
       - name: Set ENV
         run: |
