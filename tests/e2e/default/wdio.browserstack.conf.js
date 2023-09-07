@@ -3,7 +3,7 @@ const BROWSERSTACK_USER = process.env.BROWSERSTACK_USERNAME;
 const BROWSERSTACK_KEY = process.env.BROWSERSTACK_ACCESS_KEY;
 
 const browserStackConfig = Object.assign(wdioBaseConfig.config, {
-  specs: ['../default/default/about/about.wdio-spec.js'],
+  specs: ['../default/privacy-policy/privacy-policy.wdio-spec.js'],
 
   user: BROWSERSTACK_USER,
   key: BROWSERSTACK_KEY,
