@@ -17,7 +17,6 @@ env:
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
   BROWSERSTACK_USERNAME: "lorenarodriguez_eCRVrZ"
-  BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
 
 jobs:
   build:
@@ -87,6 +86,29 @@ jobs:
       - name: Run Tests
         run: npm run ${{ matrix.cmd }}
 
+  browserstack-tests:
+    needs: build
+    name: Run test on BrowserStack
+    runs-on: ubuntu-22.04
+    env:
+      NODE: 16.x
+    steps:
+      - name: "BrowserStack Env Setup" # Invokes the setup-env action
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          username: ${{ env.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      - name: "BrowserStack Local Tunnel Setup" # Invokes the setup-local action
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: random
+      - name: "Running test on BrowserStack" # Invokes the actual test script that would run on BrowserStack browsers
+        run: export VERSION=$(node ./scripts/build/get-version.js) && npm run build-service-images && wdio run ./tests/e2e/default/wdio.browserstack.conf.js,
+      - name: "BrowserStackLocal Stop" # Terminating the BrowserStackLocal tunnel connection
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop
   tests:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}
@@ -175,23 +197,6 @@ jobs:
         run: |
           mkdir -p allure-results/history
           cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
-
-      - name: "BrowserStack Env Setup" # Invokes the setup-env action
-        uses: browserstack/github-actions/setup-env@master
-        with:
-          username: BROWSERSTACK_USERNAME
-          access-key: BROWSERSTACK_ACCESS_KEY
-      - name: "BrowserStack Local Tunnel Setup" # Invokes the setup-local action
-        uses: browserstack/github-actions/setup-local@master
-        with:
-          local-testing: start
-          local-identifier: random
-      - name: "Running test on BrowserStack" # Invokes the actual test script that would run on BrowserStack browsers
-        run: export VERSION=$(node ./scripts/build/get-version.js) && npm run build-service-images && wdio run ./tests/e2e/default/wdio.browserstack.conf.js,
-      - name: "BrowserStackLocal Stop" # Terminating the BrowserStackLocal tunnel connection
-        uses: browserstack/github-actions/setup-local@master
-        with:
-          local-testing: stop
 
       - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }}
         run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
