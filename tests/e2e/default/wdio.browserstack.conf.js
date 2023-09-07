@@ -1,10 +1,8 @@
 const wdioBaseConfig = require('../wdio.conf');
-const { suites } = require('./suites');
-const BROWSERSTACK_USER = process.env.DEBUG;
-const BROWSERSTACK_KEY = process.env.DEBUG;
+const BROWSERSTACK_USER = process.env.BROWSERSTACK_USERNAME;
+const BROWSERSTACK_KEY = process.env.BROWSERSTACK_ACCESS_KEY;
 
 const browserStackConfig = Object.assign(wdioBaseConfig.config, {
-  //suites,
   specs: ['../default/default/about/about.wdio-spec.js'],
 
   user: BROWSERSTACK_USER,

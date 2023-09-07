@@ -16,6 +16,8 @@ env:
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
+  BROWSERSTACK_USERNAME: "lorenarodriguez_eCRVrZ"
+  BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
 
 jobs:
   build:
@@ -177,8 +179,8 @@ jobs:
       - name: "BrowserStack Env Setup" # Invokes the setup-env action
         uses: browserstack/github-actions/setup-env@master
         with:
-          username: "lorenarodriguez_eCRVrZ"
-          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          username: BROWSERSTACK_USERNAME
+          access-key: BROWSERSTACK_ACCESS_KEY
       - name: "BrowserStack Local Tunnel Setup" # Invokes the setup-local action
         uses: browserstack/github-actions/setup-local@master
         with:
