@@ -238,7 +238,7 @@ module.exports = {
       try {
         const body = await getUserList(req, res);
         res.json(body);
-      } catch(err) {
+      } catch (err) {
         serverUtils.error(err, req, res);
       }
     },

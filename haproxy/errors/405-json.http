@@ -1,0 +1,10 @@
+HTTP/1.1 405 Method Not Allowed
+Content-length: 164
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "405 Method Not Allowed",
+  "reason": "A request was made of a resource using a request method not supported by that resource",
+  "server": "haproxy"
+}

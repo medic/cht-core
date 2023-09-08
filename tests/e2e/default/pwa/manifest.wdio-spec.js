@@ -13,7 +13,7 @@ const DEFAULT_MANIFEST = {
   theme_color: '#323232',
   icons: [
     { src: '/img/icon.png', sizes: 'any', purpose: 'any' },
-    { src: '/favicon.ico', sizes:'32x32', type: 'image' }
+    { src: '/favicon.ico', sizes: '32x32', type: 'image' }
   ]
 };
 
@@ -31,7 +31,7 @@ const updateBranding = async (doc) => {
   if (!doc) {
     try {
       await utils.deleteDoc('branding');
-    } catch(err) {
+    } catch (err) {
       if (err.statusCode === 404) {
         return; // already not there - success!
       }
@@ -62,6 +62,10 @@ const getBrandingDoc = async () => {
 };
 
 describe('manifest.json', () => {
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
 
   it('works without branding doc', async () => {
     await updateBranding();

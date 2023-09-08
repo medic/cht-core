@@ -13,7 +13,7 @@ import { LocationService } from '@mm-services/location.service';
 })
 export class SessionService {
   userCtxCookieValue: any = null
-  httpOptions = { headers: new HttpHeaders({ Accept:  'application/json' }) };
+  httpOptions = { headers: new HttpHeaders({ Accept: 'application/json' }) };
 
   constructor(
     private cookieService: CookieService,
@@ -58,7 +58,7 @@ export class SessionService {
     if (!this.userCtxCookieValue) {
       try {
         this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
-      } catch(error) {
+      } catch (error) {
         console.error('Cookie parsing error', error);
         this.userCtxCookieValue = null;
       }
@@ -115,8 +115,7 @@ export class SessionService {
   }
 
   isAdmin(userCtx?) {
-    return this.isDbAdmin(userCtx) ||
-      this.hasRole('national_admin', userCtx); // deprecated: kept for backwards compatibility: #4525
+    return this.isDbAdmin(userCtx);
   }
 
   isDbAdmin(userCtx?) {

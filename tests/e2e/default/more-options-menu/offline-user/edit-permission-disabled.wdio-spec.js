@@ -28,7 +28,7 @@ const contact = personFactory.build({
 const offlineUser = userFactory.build({
   username: 'offlineuser',
   isOffline: true,
-  roles:['chw'],
+  roles: ['chw'],
   place: health_center._id,
   contact: contact._id,
 });
@@ -70,6 +70,7 @@ describe('- EDIT permissions disabled', async () => {
 
   it(' - Contact Tab - contact selected', async () => {
     await commonPage.goToPeople(patient._id);
+    await commonPage.closeReloadModal();
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
   });
 

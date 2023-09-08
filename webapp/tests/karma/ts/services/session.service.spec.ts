@@ -161,10 +161,10 @@ describe('Session service', () => {
       expect(actual).to.equal(true);
     });
 
-    it('returns true for national_admin', () => {
+    it('returns false for national_admin', () => {
       cookieGet.returns(JSON.stringify({ roles: [ 'national_admin', 'some_other_role' ] }));
       const actual = service.isAdmin();
-      expect(actual).to.equal(true);
+      expect(actual).to.equal(false);
     });
 
     it('returns false for everyone else', () => {

@@ -163,7 +163,7 @@ export class XmlFormsService {
         user,
         contactSummary
       );
-    } catch(err) {
+    } catch (err) {
       console.error(`Unable to evaluate expression for form: ${form._id}`, err);
       return false;
     }

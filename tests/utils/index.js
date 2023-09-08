@@ -48,6 +48,7 @@ const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
@@ -205,7 +206,7 @@ const formDocProcessing = async (docs) => {
   const waitForForms = await Promise.all(formsWatchers);
 
   return {
-    promise:() => Promise.all(waitForForms.map(wait => wait.promise)),
+    promise: () => Promise.all(waitForForms.map(wait => wait.promise)),
     cancel: () => waitForForms.forEach(wait => wait.cancel),
   };
 };
@@ -226,7 +227,7 @@ const saveDoc = async doc => {
   }
 };
 
-const saveDocs = async docs => {
+const saveDocs = async (docs) => {
   const waitForForms = await formDocProcessing(docs);
   const results = await requestOnTestDb({
     path: '/_bulk_docs',
@@ -239,6 +240,12 @@ const saveDocs = async docs => {
   }
 
   await waitForForms.promise();
+  return results;
+};
+
+const saveDocsRevs = async (docs) => {
+  const results = await saveDocs(docs);
+  results.forEach(({ rev }, idx) => docs[idx]._rev = rev);
   return results;
 };
 
@@ -599,7 +606,7 @@ const revertDb = async (except, ignoreRefresh) => {
     watcher && watcher.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise;
+    await watcher && watcher.promise; // NOSONAR
   } else {
     watcher && watcher.cancel();
   }
@@ -1196,7 +1203,7 @@ const getContainerName = (service, project = PROJECT_NAME) => {
   return `${project}${separator}${service}${separator}1`;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {
@@ -1205,16 +1212,15 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
     settings.permissions[permission].push(...roles);
   });
 
-  removePermissions.forEach(permission => {
-    settings.permissions[permission] = [];
-  });
-  await updateSettings({ permissions: settings.permissions }, true);
+  (removePermissions || []).forEach(permission => settings.permissions[permission] = []);
+  await updateSettings({ permissions: settings.permissions }, ignoreReload);
 };
 
 module.exports = {
   db,
   sentinelDb,
   logsDb,
+  usersDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
@@ -1228,6 +1234,7 @@ module.exports = {
   requestOnMedicDb,
   saveDoc,
   saveDocs,
+  saveDocsRevs,
   saveDocIfNotExists,
   saveMetaDocs,
   getDoc,

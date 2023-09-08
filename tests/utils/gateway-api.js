@@ -7,7 +7,7 @@ const get = () => {
   return testUtils.request({
     path: '/api/sms',
     method: 'GET',
-    headers: { 'Content-Type':'application/json' },
+    headers: { 'Content-Type': 'application/json' },
   });
 };
 
@@ -15,7 +15,7 @@ const post = (body) => {
   return testUtils.request({
     path: '/api/sms',
     method: 'POST',
-    headers: { 'Content-Type':'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: body,
   });
 };
@@ -29,7 +29,7 @@ const postMessages = (...messages) => {
 };
 
 const postStatus = (messageId, newStatus) => {
-  return postStatuses({ id:messageId, status:newStatus });
+  return postStatuses({ id: messageId, status: newStatus });
 };
 
 const postStatuses = (...updates) => {
@@ -79,7 +79,7 @@ const getMessageStates = () => {
       doc.tasks.forEach(task => task.messages.forEach(m => {
         const states = task.state_history &&
                        task.state_history.map(h => h.state);
-        acc.push({ id:m.uuid, states });
+        acc.push({ id: m.uuid, states });
       }));
       return acc;
     }, []));
@@ -89,12 +89,12 @@ const getMessageContents = () => {
   return allMessageDocs()
     .then(docs => docs.reduce((acc, doc) => {
 
-      if(doc.kujua_message) {
+      if (doc.kujua_message) {
         doc.tasks.forEach(task =>
           task.messages.forEach(m => acc.push(m.message)));
       }
 
-      if(doc.sms_message) {
+      if (doc.sms_message) {
         acc.push(doc.sms_message.message);
       }
 
@@ -104,7 +104,7 @@ const getMessageContents = () => {
 
 const allMessageDocs = () => {
   return testUtils.db.query('medic-client/messages_by_contact_date',
-    { reduce:false, include_docs:true })
+    { reduce: false, include_docs: true })
     .then(res => res.rows.map(row => row.doc));
 };
 

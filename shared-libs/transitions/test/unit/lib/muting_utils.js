@@ -146,23 +146,23 @@ describe('mutingUtils', () => {
   describe('updateContacts', () => {
     it('should update all contacts with muted state', () => {
       const timestamp = moment(2500);
-      const contacts = [ { _id:  'a' }, { _id:  'b' }, { _id:  'c' } ];
+      const contacts = [ { _id: 'a' }, { _id: 'b' }, { _id: 'c' } ];
       db.medic.bulkDocs.resolves();
       return mutingUtils._updateContacts(contacts, timestamp).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'a', muted: timestamp }, { _id:  'b', muted: timestamp }, { _id:  'c', muted: timestamp }
+          { _id: 'a', muted: timestamp }, { _id: 'b', muted: timestamp }, { _id: 'c', muted: timestamp }
         ]]);
       });
     });
 
     it('should delete muted property when unmuting', () => {
-      const contacts = [ { _id:  'a', muted: true }, { _id:  'b', muted: 123 }, { _id:  'c', muted: 'something' } ];
+      const contacts = [ { _id: 'a', muted: true }, { _id: 'b', muted: 123 }, { _id: 'c', muted: 'something' } ];
       db.medic.bulkDocs.resolves();
       return mutingUtils._updateContacts(contacts, false).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'a' }, { _id:  'b' }, { _id:  'c' }
+          { _id: 'a' }, { _id: 'b' }, { _id: 'c' }
         ]]);
       });
     });

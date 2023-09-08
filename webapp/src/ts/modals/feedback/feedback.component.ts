@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 
 import { FeedbackService } from '@mm-services/feedback.service';
-import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -11,58 +10,61 @@ import { TranslateService } from '@mm-services/translate.service';
   selector: 'feedback-modal',
   templateUrl: './feedback.component.html'
 })
-export class FeedbackComponent extends MmModalAbstract {
+export class FeedbackComponent {
   private globalActions;
-  error:{ message? } = {};
+  processing = false;
+  errors:{ message?; submit? } = {};
   model:{ message? } = {};
 
   static id = 'feedback-modal';
 
   constructor(
-    bsModalRef: BsModalRef,
     private feedbackService: FeedbackService,
     private store: Store,
-    private translateService:TranslateService,
+    private translateService: TranslateService,
+    private matDialogRef: MatDialogRef<FeedbackComponent>,
   ) {
-    super(bsModalRef);
     this.globalActions = new GlobalActions(store);
   }
 
   private validateMessage(message) {
     if (message) {
-      this.error.message = false;
+      this.errors.message = false;
       return Promise.resolve();
-    } else {
-      return this.translateService
-        .fieldIsRequired('Bug description')
-        .then(value => this.error.message = value);
     }
+    return this.translateService
+      .fieldIsRequired('Bug description')
+      .then(value => this.errors.message = value);
+  }
+
+  close() {
+    this.matDialogRef.close();
   }
 
   submit() {
-    this.setProcessing();
+    this.processing = true;
 
-    const message = this.model.message && this.model.message.trim();
+    const message = this.model?.message?.trim();
     return this
       .validateMessage(message)
       .then(() => {
-        if (this.error.message) {
-          this.setFinished();
+        if (this.errors.message) {
           return;
         }
 
         return this.feedbackService
           .submit(message, true)
           .then(() => {
-            this.setFinished();
             this.close();
             this.translateService
               .get('feedback.submitted')
               .then(value => this.globalActions.setSnackbarContent(value));
           })
-          .catch(err => {
-            this.setError(err, 'Error saving feedback');
+          .catch(error => {
+            this.errors.submit = 'Error saving feedback';
+            console.error(this.errors.submit, error);
           });
-      });
+      })
+      .finally(() => this.processing = false);
   }
 }

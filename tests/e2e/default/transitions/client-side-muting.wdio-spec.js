@@ -20,11 +20,11 @@ describe('Muting', () => {
     name: 'contact1', parent: { _id: healthCenter._id, parent: district._id } });
   const clinic1 = Object.assign({}, 
     places.get('clinic'),
-    { name:'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id }});
+    { name: 'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id }});
 
   const clinic2 = Object.assign({}, 
     places.get('clinic'),
-    { name:'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id }});
+    { name: 'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id }});
 
   const onlineUser = userFactory.build({
     username: 'online',
@@ -194,7 +194,7 @@ describe('Muting', () => {
     });
 
     it('should not process client-side when muting as an online user', async () => {
-      await loginPage.login({username:onlineUser.username, password: onlineUser.password});
+      await loginPage.login({username: onlineUser.username, password: onlineUser.password});
       await utils.stopSentinel();
       await utils.updateSettings(settings);
       
@@ -253,7 +253,7 @@ describe('Muting', () => {
     before(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([offlineUser]);
-      await loginPage.login({username:offlineUser.username, password: offlineUser.password});      
+      await loginPage.login({username: offlineUser.username, password: offlineUser.password});      
     });
 
     after(async () => {

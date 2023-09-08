@@ -15,19 +15,45 @@
     "./shared-libs/*"
   ],
   "scripts": {
-    "test": "grunt eslint && grunt unit && grunt test-api-integration",
-    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
-    "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
-    "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js",
-    "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
-    "e2e-integration-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && mocha --config tests/integration/.mocharc.js ",
-    "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
-    "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
-    "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js",
-    "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
-    "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files",
+    "postinstall": "cd webapp && ng cache clean && cd ..",
     "prepare": "husky install",
-    "postinstall": "cd webapp && ng cache clean && cd .."
+    "-- DEV BUILD SCRIPTS": "-----------------------------------------------------------------------------------------------",
+    "build-ddocs": "mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/ && node scripts/build/cli setDdocsVersion && node scripts/build/cli setBuildInfo && node ./scripts/build/ddoc-compile.js primary && mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/",
+    "build-dev": "./scripts/build/build-prepare.sh && npm run build-webapp-dev && ./scripts/build/copy-static-files.sh",
+    "build-dev-watch": "npm run build-dev && cd webapp && npm run build -- --configuration=development --watch=true & node ./scripts/build/watch.js",
+    "build-documentation": "./scripts/build/build-documentation.sh",
+    "build-webapp-dev": "cd webapp && npm run build -- --configuration=development && npm run compile",
+    "copy-api-resources": "cp -r api/src/public/* api/build/static/",
+    "dev-api": "./scripts/build/copy-static-files.sh && TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'api/build/static' --ignore 'api/build/public' --watch api --watch 'shared-libs/**/src/**' api/server.js -- --allow-cors",
+    "dev-sentinel": "TZ=UTC nodemon --inspect=0.0.0.0:9228 --watch sentinel --watch 'shared-libs/**/src/**' sentinel/server.js",
+    "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && node scripts/build/cli localDockerComposeFiles",
+    "update-service-worker": "node scripts/build/cli updateServiceWorker",
+    "-- DEV TEST SCRIPTS": "-----------------------------------------------------------------------------------------------",
+    "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
+    "e2e-integration-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-e2e-integration",
+    "integration-api": "cd api && npm ci && cd .. && mocha 'api/tests/integration/**/*.js' -t 10000",
+    "lint": "eslint --color --cache . && ./scripts/build/blank-link-check.sh",
+    "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/standard/wdio.conf.js --suite=all",
+    "test": "npm run lint && npm run unit && npm run integration-api",
+    "unit": "node scripts/build/cli npmCiModules && npm run unit-webapp && npm run unit-admin && npm run unit-shared-lib && npm run unit-api && npm run unit-sentinel",
+    "unit-admin": "node ./scripts/ci/run-karma.js",
+    "unit-api": "UNIT_TEST_ENV=1 mocha 'api/tests/mocha/**/*.js'",
+    "unit-sentinel": "UNIT_TEST_ENV=1 mocha 'sentinel/tests/**/*.js'",
+    "unit-shared-lib": "UNIT_TEST_ENV=1 npm test --workspaces --if-present",
+    "unit-webapp": "UNIT_TEST_ENV=1 mocha 'webapp/tests/mocha/**/*.spec.js' && cd webapp && npm run unit -- --watch=false",
+    "unit-webapp-continuous": "cd webapp && npm run unit -- --watch=true",
+    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default/wdio.conf.js",
+    "-- CI SCRIPTS ": "-----------------------------------------------------------------------------------------------",
+    "build": "./scripts/build/build-ci.sh",
+    "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run build && npm run integration-api && npm run unit",
+    "ci-e2e-integration": "mocha --config tests/integration/.mocharc.js",
+    "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
+    "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
+    "ci-webdriver-standard": "wdio run ./tests/e2e/standard/wdio.conf.js",
+    "publish-for-testing": "./scripts/build/build-service-images.sh && mkdir -p images && node scripts/build/cli publishServiceImages && node ./scripts/build/ddoc-compile.js staging && node ./scripts/build/push-ddoc-to-staging.js",
+    "test-config-default": "cd config/default && npm ci && npm run test",
+    "test-config-standard": "cd config/standard && npm ci && npm run ci",
+    "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
@@ -66,7 +92,6 @@
     "bikram-sambat": "^1.7.0",
     "browserify": "^17.0.0",
     "browserify-ngannotate": "^2.0.0",
-    "bundlesize": "^0.18.1",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.1.0",
@@ -92,8 +117,6 @@
     "faker": "^5.5.3",
     "flat": "^5.0.2",
     "gaze": "^1.1.3",
-    "grunt": "^1.5.3",
-    "grunt-exec": "^3.0.0",
     "husky": "^8.0.0",
     "jasmine-spec-reporter": "^7.0.0",
     "jsdoc": "^4.0.2",
@@ -107,7 +130,7 @@
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-spec-reporter": "0.0.32",
     "less": "^4.1.3",
-    "lodash": "4.17.19",
+    "lodash": "^4.17.21",
     "loose-envify": "^1.4.0",
     "medic-conf": "^3.2.1",
     "mocha": "^10.2.0",
@@ -116,7 +139,6 @@
     "moment-locales-webpack-plugin": "^1.2.0",
     "mustache": "^4.2.0",
     "nodemon": "^2.0.20",
-    "optimize-js": "^1.0.3",
     "patch-package": "^7.0.2",
     "postcss": "^8.4.20",
     "pouchdb-adapter-http": "^7.3.1",
@@ -144,26 +166,7 @@
       "uglify-js": ">=2.6.0"
     }
   },
-  "bundlesize": [
-    {
-      "path": "./api/build/static/webapp/main.js",
-      "maxSize": "950 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/polyfills.js",
-      "maxSize": "20 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/runtime.js",
-      "maxSize": "1 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/scripts.js",
-      "maxSize": "55 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/styles.css",
-      "maxSize": "70 kB"
-    }
-  ]
+  "dependencies": {
+    "google-libphonenumber": "^3.2.31"
+  }
 }

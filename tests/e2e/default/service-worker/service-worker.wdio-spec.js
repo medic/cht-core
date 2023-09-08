@@ -101,10 +101,14 @@ describe('Service worker cache', () => {
     await loginIfNeeded();
   });
 
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
+
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
-    expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
+    expect(cacheDetails.name.startsWith('cht-precache-v2-')).to.be.true;
     expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
@@ -178,6 +182,7 @@ describe('Service worker cache', () => {
     await waitForLogs.promise;
 
     await commonPage.sync(true);
+    await commonPage.closeReloadModal();
     await commonPage.logout();
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');
@@ -190,7 +195,7 @@ describe('Service worker cache', () => {
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync();
+    await commonPage.sync(true);
 
     const cacheDetails = await getCachedRequests(true);
 
@@ -200,7 +205,7 @@ describe('Service worker cache', () => {
       'some': 'thing',
     });
     await waitForLogs.promise;
-    await commonPage.sync(false);
+    await commonPage.sync(true);
 
     const updatedCacheDetails = await getCachedRequests(true);
 

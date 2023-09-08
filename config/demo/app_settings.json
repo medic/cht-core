@@ -186,7 +186,6 @@
       "program_officer"
     ],
     "can_export_dhis": [
-      "national_admin",
       "crfo"
     ],
     "can_verify_reports": [

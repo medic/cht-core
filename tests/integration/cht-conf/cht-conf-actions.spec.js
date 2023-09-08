@@ -50,7 +50,7 @@ describe('cht-conf actions tests', () => {
 
   it('should upload branding', async () => {
     const branding = await utils.getDoc('branding').catch(error => {
-      if (error) {
+      if (error){
         console.err(error);
       }
     });
@@ -62,7 +62,7 @@ describe('cht-conf actions tests', () => {
       path: '/api/v1/forms',
       method: 'GET'
     }).catch(error => {
-      if(error){
+      if (error){
         console.log(error);
       }
     });
@@ -91,7 +91,7 @@ describe('cht-conf actions tests', () => {
 
   it('should upload resources', async () => {
     const resources = await utils.getDoc('resources').catch(error => {
-      if(error){
+      if (error){
         console.log(error);
       }
     });
