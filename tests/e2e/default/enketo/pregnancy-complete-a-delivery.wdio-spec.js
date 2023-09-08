@@ -75,14 +75,14 @@ describe('Contact Delivery Form', () => {
     await genericForm.nextPage();
 
     const summaryInfo = await deliveryForm.getSummaryInfo();
-    expect(summaryInfo.sumPatientName).to.equal(pregnantWoman.name);
-    expect(summaryInfo.sumPatientAge).to.equal('25');
-    expect(summaryInfo.sumWomanCondition).to.equal('Alive and well');
-    expect(summaryInfo.sumDeliveryDate).to.equal(BABY_DOB);
-    expect(summaryInfo.sumDeliveryPlace).to.equal('Health facility');
-    expect(summaryInfo.sumDeliveredBabies).to.equal('1');
-    expect(summaryInfo.sumDeceasedBabies).to.equal('0');
-    expect(summaryInfo.sumPncVisits).to.equal('None');
+    expect(summaryInfo.patientName).to.equal(pregnantWoman.name);
+    expect(summaryInfo.patientAge).to.equal('25');
+    expect(summaryInfo.womanCondition).to.equal('Alive and well');
+    expect(summaryInfo.deliveryDate).to.equal(BABY_DOB);
+    expect(summaryInfo.deliveryPlace).to.equal('Health facility');
+    expect(summaryInfo.deliveredBabies).to.equal('1');
+    expect(summaryInfo.deceasedBabies).to.equal('0');
+    expect(summaryInfo.pncVisits).to.equal('None');
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

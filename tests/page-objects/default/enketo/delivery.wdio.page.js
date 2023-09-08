@@ -130,7 +130,6 @@ const selectDeliveryOutcomeBabiesDelivered = async (value) => {
 
 const selectDeliveryOutcomeBabiesAlive = async (value) => {
   const babiesAlive = await deliveryOutcomeBabiesAliveField(value);
-  await babiesAlive.waitForDisplayed();
   await babiesAlive.waitForClickable();
   await babiesAlive.click();
 };
@@ -149,7 +148,6 @@ const selectDeliveryOutcomeDeliveryPlace = async (value) => {
 
 const selectDeliveryOutcomeDeliveryMode = async (value) => {
   const deliveryMode =  await deliveryModeField(value);
-  await deliveryMode.waitForDisplayed();
   await deliveryMode.waitForClickable();
   await deliveryMode.click();
 };
@@ -264,14 +262,14 @@ const selectDeliveryPncVisits = async (value) => {
 
 const getSummaryInfo = async () => {
   return {
-    sumPatientName: await sumPatientName().getText(),
-    sumPatientAge: await sumPatientAge().getText(),
-    sumWomanCondition: await sumWomanCondition().getText(),
-    sumDeliveryDate: await sumDeliveryDate().getText(),
-    sumDeliveryPlace: await sumDeliveryPlace().getText(),
-    sumDeliveredBabies: await sumDeliveredBabies().getText(),
-    sumDeceasedBabies: await sumDeceasedBabies().getText(),
-    sumPncVisits: await sumPncVisits().getText(),
+    patientName: await sumPatientName().getText(),
+    patientAge: await sumPatientAge().getText(),
+    womanCondition: await sumWomanCondition().getText(),
+    deliveryDate: await sumDeliveryDate().getText(),
+    deliveryPlace: await sumDeliveryPlace().getText(),
+    deliveredBabies: await sumDeliveredBabies().getText(),
+    deceasedBabies: await sumDeceasedBabies().getText(),
+    pncVisits: await sumPncVisits().getText(),
   };
 };
 
