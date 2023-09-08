@@ -123,7 +123,7 @@ describe('Enketo Form service', () => {
         await service.renderForm(formContext, doc, userSettings);
         flush();
         expect.fail('Should throw error');
-      } catch(error) {
+      } catch (error) {
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal('["nope","still nope"]');
       }

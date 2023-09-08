@@ -303,7 +303,7 @@ angular.module('services').factory('MessageQueue',
           })
           .catch(function(err) {
             $log.error('Error fetching languages', err);
-            throw(err);
+            throw (err);
           });
       },
 

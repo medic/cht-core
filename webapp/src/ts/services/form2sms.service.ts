@@ -62,7 +62,7 @@ export class Form2smsService {
   }
 
   transform(doc) {
-    if(!doc) {
+    if (!doc) {
       return Promise.reject(new Error('No doc provided.'));
     }
 

@@ -83,7 +83,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.geoHandle = this.geolocationService.init();
       const form = await this.xmlFormsService.get(this.trainingCardFormId);
       await this.ngZone.run(() => this.renderForm(form));
-    } catch(error) {
+    } catch (error) {
       this.setError(error);
       const message = 'Training Cards :: Error fetching form.';
       console.error(message, error);
@@ -98,7 +98,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.formNoTitle = !form?.title;
       this.loadingContent = false;
       this.recordTelemetryPostRender();
-    } catch(error) {
+    } catch (error) {
       this.setError(error);
       const message = 'Training Cards :: Error rendering form.';
       console.error(message, error);
@@ -176,7 +176,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.recordTelemetryPostSave();
       this.close();
 
-    } catch(error) {
+    } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
       const message = 'Training Cards :: Error submitting form data.';
       console.error(message, error);

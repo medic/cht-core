@@ -68,7 +68,7 @@ angular.module('inboxServices').factory('Changes',
         if (!options.filter || options.filter(change)) {
           try {
             options.callback(change);
-          } catch(e) {
+          } catch (e) {
             $log.error(new Error('Error executing changes callback: ' + key), e);
           }
         }

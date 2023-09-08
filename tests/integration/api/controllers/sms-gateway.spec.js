@@ -211,9 +211,9 @@ const assert = {
           .then(actualContents => {
             actualContents = JSON.stringify(actualContents);
 
-            if(actualContents === expectedContents) {
+            if (actualContents === expectedContents) {
               resolve();
-            } else if(Date.now() < endTime) {
+            } else if (Date.now() < endTime) {
               setTimeout(check, 100);
             } else {
               reject(`Expected:\n      ${actualContents}\n    to equal:\n      ${expectedContents}`);
@@ -239,7 +239,7 @@ const assert = {
 
   messageStates: (...expectedStates) => {
     expectedStates.forEach(expectation => {
-      if(expectation.state) {
+      if (expectation.state) {
         expectation.states = [ expectation.state ];
         delete expectation.state;
       }
@@ -255,9 +255,9 @@ const assert = {
           .then(actualStates => {
             actualStates = JSON.stringify(actualStates);
 
-            if(actualStates === expectedStates) {
+            if (actualStates === expectedStates) {
               resolve();
-            } else if(Date.now() < endTime) {
+            } else if (Date.now() < endTime) {
               setTimeout(check, 100);
             } else {
               reject(`Expected:\n      ${actualStates}\n    to equal:\n      ${expectedStates}`);

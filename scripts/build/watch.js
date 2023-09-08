@@ -13,50 +13,61 @@ const configs = [
   // admin css
   { 
     files: [ 'admin/src/css/**/*' ],
-    task: 'css-admin',
+    cmd: 'lessc',
+    args: [ 'admin/src/css/main.less', 'api/build/static/admin/css/main.css' ]
   },
 
   // admin-js
   {
     files: [ 'admin/src/js/**/*', 'shared-libs/*/src/**/*' ],
-    task: 'browserify-admin',
+    cmd: './scripts/build/browserify-admin.sh',
+    args: [ ]
   },
 
   // admin-templates
   {
     files: [ 'admin/src/templates/**/*' ],
-    task: 'compile-admin-templates',
+    cmd: 'node',
+    args: [ './scripts/build/build-angularjs-template-cache.js' ]
   },
 
   // webapp-js
   // instead of watching the source files which are watched separately, watch the build folder and upload on rebuild
   {
-    files: [ 'api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js' ],
-    task: 'update-service-worker',
+    files: [
+      'api/build/static/webapp/**/*',
+      '!api/build/static/webapp/service-worker.*',
+      '!api/build/static/webapp/workbox-*'
+    ],
+    cmd: 'npm',
+    args: [ 'run', 'update-service-worker' ]
   },
 
   // api-public-files
   {
     files: [ 'api/src/public/**/*' ],
-    task: 'copy-api-resources',
+    cmd: 'npm',
+    args: [ 'run', 'copy-api-resources' ]
   },
 
   // ddocs
   {
     files: [ 'ddocs/*-db/**/*' ],
-    task: 'build-ddocs',
+    cmd: 'npm',
+    args: [ 'run', 'build-ddocs' ]
   },
 ];
 
 // debounce to make sure the task isn't run multiple times
 const debounceCache = {};
 
-const run = (task) => {
-  if (debounceCache[task]) {
-    clearTimeout(debounceCache[task]);
+const run = ({ cmd, args }) => {
+  const name = `${cmd}-${args.join('-')}`;
+  if (debounceCache[name]) {
+    clearTimeout(debounceCache[name]);
   }
-  debounceCache[task] = setTimeout(() => {
-    const child = spawn('npm', [ 'run', task ], { cwd: rootdir });
+  debounceCache[name] = setTimeout(() => {
+    const child = spawn(cmd, args, { cwd: rootdir });
     child.stdout.on('data', data => console.log(data.toString()));
     child.stderr.on('data', data => console.error(data.toString()));
     child.on('error', err => console.error(err));
@@ -70,7 +81,7 @@ const startWatchers = () => {
     watchers.push(watcher);
     watcher.on('all', (event, filepath) => {
       console.log(`${filepath} updated...`);
-      run(config.task);
+      run(config);
     });
   }
 };

@@ -121,7 +121,7 @@ describe('multi report alerts', () => {
     config.get.returns(alerts);
     try {
       transition.init();
-    } catch(e) {
+    } catch (e) {
       assert.equal(config.get.getCall(0).args[0], 'multi_report_alerts');
       done();
     }
