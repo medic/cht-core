@@ -144,10 +144,10 @@ describe('Session service', function() {
       done();
     });
 
-    it('returns true for national_admin', function(done) {
+    it('returns false for national_admin', function(done) {
       ipCookie.returns({ roles: [ 'national_admin', 'some_other_role' ] });
       const actual = service.isAdmin();
-      chai.expect(actual).to.equal(true);
+      chai.expect(actual).to.equal(false);
       done();
     });
 

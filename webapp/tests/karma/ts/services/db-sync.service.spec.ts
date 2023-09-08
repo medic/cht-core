@@ -898,18 +898,6 @@ describe('DBSync service', () => {
   });
 
   describe('on change', () => {
-    // todo!!!
-    xit('"changes" from handle calls RulesEngine.monitorExternalChanges', () => {
-      isOnlineOnly.returns(false);
-      hasAuth.resolves(true);
-      const replicationResult = { this: 'is', a: 'replication result' };
-      return service.sync().then(() => {
-        expect(rulesEngine.monitorExternalChanges.callCount).to.equal(1);
-        expect(rulesEngine.monitorExternalChanges.args[0]).to.deep.equal([replicationResult]);
-        expectSyncCall(1);
-      });
-    });
-
     describe('replicate meta', () => {
       beforeEach(() => {
         hasAuth.resolves(true);
