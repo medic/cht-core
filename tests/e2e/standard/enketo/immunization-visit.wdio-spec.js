@@ -1,5 +1,4 @@
 const utils = require('@utils');
-const sentinelUtils = require('@utils/sentinel');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
