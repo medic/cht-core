@@ -92,8 +92,7 @@ const _ = require('lodash/core');
 
       const isAdmin = function(userCtx) {
         userCtx = userCtx || getUserCtx();
-        return hasRole(userCtx, '_admin') ||
-               hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
+        return hasRole(userCtx, '_admin');
       };
 
       const isDbAdmin = function(userCtx) {
