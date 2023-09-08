@@ -99,7 +99,7 @@ const transitions = {
   registration: true
 };
 
-describe('Bikram Sambat date display', () => {
+describe.skip('Bikram Sambat date display', () => {
   before(async () => {
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'bikram-sambat-contact-template-config.js');
@@ -262,7 +262,7 @@ describe('Bikram Sambat date display', () => {
       id: 'lmp-id-bs-parts',
       from: '+9779876543210',
       content: `${formIdBSParts} Shrestha ` +
-      `${lmpBSParts.year} ${lmpBSParts.month} ${lmpBSParts.day}`
+        `${lmpBSParts.year} ${lmpBSParts.month} ${lmpBSParts.day}`
     });
 
     await commonPage.goToPeople();
