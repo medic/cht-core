@@ -175,7 +175,6 @@ export class FormService {
       }
       const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
       console.error(errorMessage, error.message);
-      this.feedbackService.submit(errorMessage + error.message, false);
       throw new Error(errorMessage + error.message);
     }
   }

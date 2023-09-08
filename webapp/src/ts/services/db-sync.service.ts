@@ -236,7 +236,11 @@ export class DBSyncService {
     }
   }
 
-  private syncMeta() {
+  syncMeta() {
+    if (!this.isEnabled()) {
+      return Promise.resolve();
+    }
+
     const telemetryEntry = new DbSyncTelemetry(this.telemetryService, 'meta', 'sync');
     const remote = this.dbService.get({ meta: true, remote: true });
     const local = this.dbService.get({ meta: true });

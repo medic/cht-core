@@ -1,5 +1,6 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -30,9 +31,19 @@ export class FeedbackService {
   };
 
   private logIdx = 0;
+  private lastErrorMessage;
   private readonly LEVELS = ['error', 'warn', 'log', 'info'];
   private readonly LOG_LENGTH = 20;
   private readonly logCircularBuffer = new Array(this.LOG_LENGTH);
+  // List of Error messages to not automatically log to feedback
+  // Can be a lower-cased partial string or a regular expression
+  private readonly NO_FEEDBACK_MESSAGES = [
+    'failed to fetch',
+    'error while trying to record error',
+    /http failure .* unknown error/gi // server offline
+  ];
+
+  private readonly FEEDBACK_LEVEL = 'error';
 
   // converts the logCircularBuffer into an ordered array of log events
   private getLog() {
@@ -41,6 +52,42 @@ export class FeedbackService {
     return [...olderLogEvents, ...newerLogEvents]
       .reverse()
       .filter(i => !!i);
+  }
+
+  private shouldGenerateFeedback(level:string, message:string) {
+    if (this.FEEDBACK_LEVEL !== level) {
+      return false;
+    }
+
+    if (!message){
+      return false;
+    }
+
+    // don't double-log errors as a basic infinite loop defense
+    if (this.lastErrorMessage === message) {
+      return false;
+    }
+
+    const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES.find(
+      (item:string|RegExp) => item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item)
+    );
+
+    return !matchesNoFeedback;
+  }
+
+  private async generateFeedbackOnError(level, ...args) {
+    const exception = args.find(arg => arg instanceof Error || arg?.stack || arg instanceof HttpErrorResponse);
+    const message = exception?.message || args[0];
+
+    if (this.shouldGenerateFeedback(level, message)) {
+      this.lastErrorMessage = message;
+      try {
+        await this.createAndSave( { message: message, stack: exception?.stack });
+      } catch (e) {
+        // stop infinite loop of exceptions
+        console.error('Error while trying to record error', e);
+      }
+    }
   }
 
   private getUrl() {
@@ -76,7 +123,7 @@ export class FeedbackService {
       this.options.console[level] = (...args) => {
         const logEvent = {
           level,
-          arguments: JSON.stringify(args, getCircularReplacer()).substring(0, 1000),
+          arguments: JSON.stringify(args, getCircularReplacer()).substring(0, 5000),
           time: new Date().toISOString(),
         };
 
@@ -88,6 +135,7 @@ export class FeedbackService {
 
         // output to the console as per usual
         original.apply(this.options.console, args);
+        this.generateFeedbackOnError(level, ...args);
       };
     });
 
@@ -124,8 +172,9 @@ export class FeedbackService {
     };
   }
 
-  private createAndSave(info, isManual?) {
-    return this.create(info, isManual).then(doc => this.dbService.get({ meta: true }).post(doc));
+  private async createAndSave(info, isManual?) {
+    const feedbackDoc = await this.create(info, isManual);
+    return await this.dbService.get({ meta: true }).post(feedbackDoc);
   }
 
   private submitExisting() {

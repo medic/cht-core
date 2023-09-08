@@ -399,15 +399,6 @@ describe('AppComponent', () => {
     expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
   }));
 
-  it('handles rulesEngine failure to initialize', async () => {
-    rulesEngineService.isEnabled.rejects({ msg: 'explosion' });
-
-    await getComponent();
-    await component.setupPromise;
-
-    expect(feedbackService.submit.calledOnce).to.be.true;
-  });
-
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {
       dbSyncService.isEnabled.returns(false);

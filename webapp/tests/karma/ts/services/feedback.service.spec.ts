@@ -7,6 +7,7 @@ import { VersionService } from '@mm-services/version.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 import { LanguageService } from '@mm-services/language.service';
+import { resolve } from '@angular/compiler-cli';
 
 describe('Feedback service', () => {
   let clock;
@@ -53,12 +54,12 @@ describe('Feedback service', () => {
     post.resolves();
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('es');
-    service.init();
     service._setOptions({
       console: mockConsole,
       window: mockWindow,
       document: mockDocument
     });
+    service.init();
 
     // JSON.stringify(new Error('foo')) yields {} by default
     mockConsole.log(new Error('msg'));
@@ -69,11 +70,11 @@ describe('Feedback service', () => {
 
     await service.submit({ message: 'hello world' });
 
-    expect(post.calledOnce).to.be.true;
+    expect(post.callCount).to.equal(2);
     const submittedDoc = post.args[0][0];
 
     expect(submittedDoc.type).to.equal('feedback');
-    expect(submittedDoc.info.message).to.equal('hello world');
+    expect(submittedDoc.info.message).to.equal('Failed to save');
     expect(submittedDoc.meta.user.name).to.equal('fred');
     expect(submittedDoc.meta.language).to.equal('es');
     expect(submittedDoc.meta.version).to.equal('0.5.0');

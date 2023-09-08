@@ -267,8 +267,6 @@ describe('TrainingCardsComponent', () => {
         'Training Cards :: Error submitting form data.',
         { some: 'error' }
       ]);
-      expect(feedbackService.submit.calledOnce).to.be.true;
-      expect(feedbackService.submit.args[0]).to.deep.equal([ 'Training Cards :: Error submitting form data.' ]);
       expect(globalActions.setEnketoError.calledOnce).to.be.true;
       expect(globalActions.setEnketoError.args[0]).to.deep.equal([ 'training_cards.error.save' ]);
       expect(globalActions.setEnketoSavingStatus.calledTwice).to.be.true;
@@ -340,8 +338,6 @@ describe('TrainingCardsComponent', () => {
         'Training Cards :: Error fetching form.',
         { error: 'boom' }
       ]);
-      expect(feedbackService.submit.calledOnce).to.be.true;
-      expect(feedbackService.submit.args[0]).to.deep.equal([ 'Training Cards :: Error fetching form.' ]);
       expect(component.errorTranslationKey).to.equal('training_cards.error.loading');
       expect(component.loadingContent).to.be.false;
       expect(component.hideModalFooter).to.be.false;
@@ -364,8 +360,6 @@ describe('TrainingCardsComponent', () => {
         'Training Cards :: Error rendering form.',
         { some: 'error' }
       ]);
-      expect(feedbackService.submit.calledOnce).to.be.true;
-      expect(feedbackService.submit.args[0]).to.deep.equal([ 'Training Cards :: Error rendering form.' ]);
     }));
   });
 });

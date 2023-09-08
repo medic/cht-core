@@ -204,8 +204,6 @@ describe('Reports Component', () => {
 
     await component.ngAfterViewInit();
 
-    expect(feedbackService.submit.calledOnce).to.be.true;
-    expect(feedbackService.submit.args[0]).to.have.members([ 'some error' ]);
     expect(userContactService.get.calledOnce).to.be.true;
   });
 

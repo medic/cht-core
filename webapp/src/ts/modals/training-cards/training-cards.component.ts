@@ -87,7 +87,6 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.setError(error);
       const message = 'Training Cards :: Error fetching form.';
       console.error(message, error);
-      this.feedbackService.submit(message);
     }
   }
 
@@ -102,7 +101,6 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.setError(error);
       const message = 'Training Cards :: Error rendering form.';
       console.error(message, error);
-      this.feedbackService.submit(message);
     }
   }
 
@@ -180,7 +178,6 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.globalActions.setEnketoSavingStatus(false);
       const message = 'Training Cards :: Error submitting form data.';
       console.error(message, error);
-      this.feedbackService.submit(message);
       const friendlyMessage = await this.translateService.get('training_cards.error.save');
       this.globalActions.setEnketoError(friendlyMessage);
     }

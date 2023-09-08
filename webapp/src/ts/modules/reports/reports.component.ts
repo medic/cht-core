@@ -335,7 +335,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       const userContact = await this.userContactService.get();
       return userContact?.parent;
     } catch (error) {
-      this.feedbackService.submit(error.message);
+      console.error(error.message, error);
     }
   }
 

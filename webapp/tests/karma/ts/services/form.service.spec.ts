@@ -271,8 +271,6 @@ describe('Enketo service', () => {
         expect(error.message).to.equal(expectedErrorMessage);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorMessage);
       }
     }));
 
@@ -554,11 +552,6 @@ describe('Enketo service', () => {
         expect(consoleErrorMock.args[0]).to.deep.equal([
           'Failed during the form "myform" rendering : ',
           'invalid user'
-        ]);
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0]).to.deep.equal([
-          'Failed during the form "myform" rendering : invalid user',
-          false
         ]);
       }
     }));

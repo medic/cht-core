@@ -1238,8 +1238,6 @@ describe('XmlForms service', () => {
           expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.match(new RegExp(expectedErrorTitle));
         });
     });
 
@@ -1264,8 +1262,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1323,8 +1319,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1351,8 +1345,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
   });
@@ -1381,8 +1373,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1408,8 +1398,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 

@@ -338,11 +338,7 @@ export class XmlFormsService {
           return Promise.reject(new Error(errorTitle + errorMessage));
         }
         return doc;
-      }).catch(err => {
-        this.feedbackService.submit(err.message, false);
-        throw err;
       });
-
   }
 
   getDocAndFormAttachment(internalId) {
@@ -359,7 +355,6 @@ export class XmlFormsService {
               errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
             }
             console.error(errorTitle, errorMessage);
-            this.feedbackService.submit(errorTitle + errorMessage, false);
             return Promise.reject(new Error(errorTitle + errorMessage));
           });
       });
