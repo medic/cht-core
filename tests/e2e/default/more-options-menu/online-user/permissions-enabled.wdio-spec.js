@@ -50,7 +50,7 @@ const smsReport = reportFactory
     { patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id }, },
   );
 
-describe.skip('Online User', async () => {
+describe('Online User', async () => {
 
   afterEach(async () => await commonPage.goToBase());
 

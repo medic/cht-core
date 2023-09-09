@@ -99,7 +99,7 @@ const transitions = {
   registration: true
 };
 
-describe.skip('Bikram Sambat date display', () => {
+describe('Bikram Sambat date display', () => {
   before(async () => {
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'bikram-sambat-contact-template-config.js');
