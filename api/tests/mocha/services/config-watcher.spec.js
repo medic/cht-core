@@ -247,7 +247,7 @@ describe('Configuration', () => {
           });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
-        return emitChange({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
