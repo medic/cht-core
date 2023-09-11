@@ -45,7 +45,7 @@ export class CHTScriptApiService {
       if (extensionLibs && extensionLibs.length) {
         return Promise.all(extensionLibs.map(name => this.loadScript(name)));
       }
-    } catch(e) {
+    } catch (e) {
       console.error(`Error loading extension libs`, e);
     }
   }
@@ -57,7 +57,7 @@ export class CHTScriptApiService {
       const module = { exports: null };
       new Function('module', result)(module);
       this.extensionLibs[name] = module.exports;
-    } catch(e) {
+    } catch (e) {
       console.error(`Error loading extension lib: "${name}"`, e);
     }
   }

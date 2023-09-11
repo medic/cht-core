@@ -162,7 +162,7 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(() => utils.requestOnTestDb(offlineRequestOptions))
       .then(result => {
         expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
@@ -180,7 +180,7 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="allowed_contact"'}, offlineRequestOptions)),
         utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="denied_contact"'}, offlineRequestOptions))
@@ -211,7 +211,7 @@ describe('all_docs handler', () => {
     };
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(request, offlineRequestOptions)),
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
@@ -237,7 +237,7 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
           { path: '/_all_docs?start_key="10"&end_key="8"' }, offlineRequestOptions
@@ -263,7 +263,7 @@ describe('all_docs handler', () => {
     const keys = docs.map(doc => doc._id);
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
           { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions
@@ -289,7 +289,7 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
           { path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions
@@ -316,13 +316,12 @@ describe('all_docs handler', () => {
     const keys = docs.map(doc => doc._id);
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(result => {
         result.forEach((stub, key) => {
-          docs[key]._rev = stub.rev;
           docs[key]._deleted = true;
         });
-        return utils.saveDocs(docs);
+        return utils.saveDocsRevs(docs);
       })
       .then(() =>
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
@@ -406,8 +405,7 @@ describe('all_docs handler', () => {
     const opts = _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions);
 
     return utils
-      .saveDocs(docs)
-      .then(result => result.forEach((r, idx) => docs[idx]._rev = r.rev))
+      .saveDocsRevs(docs)
       .then(() => utils.requestOnMedicDb(opts))
       .then(result => {
         expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
@@ -423,7 +421,7 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(() => utils.requestOnMedicDb(offlineRequestOptions))
       .then(result => {
         expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
@@ -584,7 +582,7 @@ describe('all_docs handler', () => {
       const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
       return utils
         .updateSettings(settings, true)
-        .then(() => utils.saveDocs(docs))
+        .then(() => utils.saveDocsRevs(docs))
         .then(() => Promise.all([
           utils.requestOnMedicDb(Object.assign({ qs: { keys: keys  } }, supervisorRequestOptions)),
           utils.requestOnMedicDb(supervisorRequestOptions),

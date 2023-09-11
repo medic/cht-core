@@ -374,7 +374,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
-          if(!this.appending) {
+          if (!this.appending) {
             if (homeIndex !== -1) {
               // move it to the top
               updatedContacts.splice(homeIndex, 1);

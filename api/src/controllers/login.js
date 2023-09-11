@@ -17,8 +17,7 @@ const template = require('../services/template');
 
 const templates = {
   login: {
-    content: null,
-    file: 'index.html',
+    file: path.join(__dirname, '..', 'templates', 'login', 'index.html'),
     translationStrings: [
       'login',
       'login.error',
@@ -36,8 +35,7 @@ const templates = {
     ],
   },
   tokenLogin: {
-    content: null,
-    file: 'token-login.html',
+    file: path.join(__dirname, '..', 'templates', 'login', 'token-login.html'),
     translationStrings: [
       'login.token.missing',
       'login.token.expired',
@@ -92,9 +90,7 @@ const getEnabledLocales = () => {
 };
 
 const getTemplate = (page) => {
-  const filepath = path.join(__dirname, '..', 'templates', 'login', templates[page].file);
-  templates[page].content = template.getTemplate(filepath);
-  return templates[page].content;
+  return template.getTemplate(templates[page].file);
 };
 
 const getTranslationsString = page => {

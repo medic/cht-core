@@ -121,7 +121,7 @@ export class AndroidApiService {
 
     // If the hotdog hamburger options menu is open, close it
     const $optionsMenu = $('.dropdown.options.open');
-    if($optionsMenu.length) {
+    if ($optionsMenu.length) {
       $optionsMenu.removeClass('open');
       return true;
     }
@@ -180,7 +180,7 @@ export class AndroidApiService {
   mrdtResponse(response) {
     try {
       this.mrdtService.respond(JSON.parse(response));
-    } catch(e) {
+    } catch (e) {
       return console.error(
         new Error(`Unable to parse JSON response from android app: "${response}", error message: "${e.message}"`)
       );
@@ -194,7 +194,7 @@ export class AndroidApiService {
   mrdtTimeTakenResponse(response) {
     try {
       this.mrdtService.respondTimeTaken(JSON.parse(response));
-    } catch(e) {
+    } catch (e) {
       return console.error(
         new Error(`Unable to parse JSON response from android app: "${response}", error message: "${e.message}"`)
       );

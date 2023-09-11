@@ -54,7 +54,7 @@ export class UpdatePasswordComponent {
       await this.updatePasswordService.update(username, currentPassword, newPassword);
       try {
         await this.userLoginService.login(username, newPassword);
-      } catch(err) {
+      } catch (err) {
         if (err.status === 302) {
           this.close();
           const snackText = await this.translateService.get('password.updated');
@@ -63,7 +63,7 @@ export class UpdatePasswordComponent {
           window.location.reload();
         }
       }
-    } catch(error) {
+    } catch (error) {
       if (error.status === 0) { // Offline status
         const message = await this.translateService.get('online.action.message');
         await this.setError(ErrorType.SUBMIT, message, error);

@@ -100,7 +100,7 @@ const noSelectedTask = () => $(noSelectedTaskSelector);
 
 const openTaskById = async (id, taskType) => {
   await getTaskById(`${id}${taskType}`).click();
-  await $('#task-report').waitForDisplayed();
+  await $(taskFormSelector).waitForDisplayed();
 };
 
 module.exports = {

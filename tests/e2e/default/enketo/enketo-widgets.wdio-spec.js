@@ -16,7 +16,8 @@ describe('Enketo Widgets', () => {
   const offlineUser = userFactory.build({
     place: districtHospital._id,
     roles: ['chw'],
-    contact: { _id: '987 654 321', name: 'Ben', phone: '+50689999999' },
+    //The "name" value is deliberately <4 characters to violate the inputs constraint in the form
+    contact: {_id: '987 654 321', name: 'Ben', phone: '+50689999999'}
   });
   const formDoc = {
     _id: 'form:enketo_widgets_test',
@@ -57,7 +58,7 @@ describe('Enketo Widgets', () => {
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
-    expect(firstReportInfo.heading).to.equal(name);//offlineUser.contact.name
+    expect(firstReportInfo.heading).to.equal(name);
     expect(firstReportInfo.form).to.equal('Enketo Widgets Test');
 
     await reportsPage.openSelectedReport(firstReport);

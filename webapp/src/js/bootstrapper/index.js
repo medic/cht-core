@@ -158,7 +158,7 @@
             return redirectToLogin(dbInfo);
           }
           setUiError(err);
-          throw(err);
+          throw (err);
         }
       });
 

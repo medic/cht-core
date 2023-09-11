@@ -67,19 +67,6 @@ module.exports = {
       });
   },
 
-  checkUrl: req => {
-    if (!req.params || !req.params.path) {
-      return Promise.reject(new Error('No path given'));
-    }
-    const dbUrl = new URL(req.params.path, environment.serverUrlNoAuth);
-    return request.head({
-      url: dbUrl.toString(),
-      headers: req.headers,
-      resolveWithFullResponse: true
-    })
-      .then(res => res && res.statusCode);
-  },
-
   /**
    * Extract Basic Auth credentials from a request
    *

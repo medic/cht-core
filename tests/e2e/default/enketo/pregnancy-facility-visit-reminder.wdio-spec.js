@@ -8,7 +8,9 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const healthFacilityAncReminderPage = require('@page-objects/default/tasks/health-facility-anc-reminder.wdio.page');
+const pregnancyFacilityVisitReminderPage = require(
+  '@page-objects/default/enketo/pregnancy-facility-visit-reminder.wdio.page'
+);
 
 describe('Health Facility ANC Reminder task', () => {
   const places = placeFactory.generateHierarchy();
@@ -33,27 +35,28 @@ describe('Health Facility ANC Reminder task', () => {
 
     await commonPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.firstReport());
-    pregnancyId = (await browser.getUrl()).split('reports/')[1];
+    pregnancyId = await reportsPage.getCurrentReportId();
   });
 
   it('should submit the health facility ANC reminder task', async () => {
     await commonPage.goToTasks();
     await taskPage.openTaskById(pregnancyId, '~pregnancy-facility-visit-reminder~anc.facility_reminder');
 
-    const {title, visitDate} = await healthFacilityAncReminderPage.getAncReminderInfo();
+    const {title, visitDate} = await pregnancyFacilityVisitReminderPage.getAncReminderInfo();
     expect(title).to.equal('Health facility ANC reminder');
-    expect(visitDate).to.equal(ancDate.format('D MMM, YYYY'));
+    expect(Date.parse(visitDate)).to.equal(Date.parse(ancDate.format('D MMM, YYYY')));
 
-    await healthFacilityAncReminderPage.submitAncReminder();
+    await pregnancyFacilityVisitReminderPage.submitAncReminder();
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.firstReport());
     await commonPage.waitForPageLoaded();
 
+    //The pregnancyId value should be loaded into the "pregnancy_facility_visit_reminder" form via the "contact-summary"
     expect((await reportsPage.getDetailReportRowContent('pregnancy_uuid_ctx')).rowValues[0]).to.equal(pregnancyId);
-    expect((await reportsPage.getDetailReportRowContent('visit_date_for_task')).rowValues[0])
-      .to.equal(ancDate.format('D MMM, YYYY'));
+    expect(Date.parse((await reportsPage.getDetailReportRowContent('visit_date_for_task')).rowValues[0]))
+      .to.equal(Date.parse(ancDate.format('D MMM, YYYY')));
     expect((await reportsPage.getDetailReportRowContent('remind_method')).rowValues[0]).to.equal('in_person');
   });
 

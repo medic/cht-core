@@ -39,6 +39,10 @@ describe('ongoing replication', function() {
     await sentinelUtils.waitForSentinel();
   });
 
+  afterEach(async () => {
+    await browser.throttle('online');
+  });
+
   it('should download new documents ', async () => {
     await loginPage.login(userAllowedDocs.user);
 

@@ -18,7 +18,7 @@ angular.module('inboxServices').factory('Select2Search',
     'ngInject';
 
     const defaultTemplateResult = function(row) {
-      if(!row.doc) {
+      if (!row.doc) {
         return $('<span>' + (row.text || '&nbsp;') + '</span>');
       }
       // format escapes the content for us, and if we just return
@@ -27,7 +27,7 @@ angular.module('inboxServices').factory('Select2Search',
     };
 
     const defaultTemplateSelection = function(row) {
-      if(row.doc) {
+      if (row.doc) {
         return row.doc.name + (row.doc.muted ? ' (' + $translate.instant('contact.muted') + ')': '');
       }
       return row.text;

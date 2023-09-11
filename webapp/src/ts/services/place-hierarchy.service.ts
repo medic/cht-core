@@ -18,7 +18,7 @@ export class PlaceHierarchyService {
 
   private getIdLineage(place) {
     const path: any[] = [];
-    while(place && place._id) {
+    while (place && place._id) {
       path.splice(0, 0, place._id);
       place = place.parent;
     }

@@ -876,23 +876,16 @@ describe('db-doc handler', () => {
       ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, key) => (docs[key]._rev = result.rev));
-
-          return utils.saveDocs(docs);
-        })
-        .then(results => {
-          results.forEach((result, key) => (docs[key]._rev = result.rev));
-
+        .saveDocsRevs(docs)
+        .then(() => utils.saveDocsRevs(docs))
+        .then(() => {
           docs[0].parent = { _id: 'fixture:online' };
           docs[1].parent = { _id: 'fixture:offline' };
 
-          return utils.saveDocs(docs);
+          return utils.saveDocsRevs(docs);
         })
-        .then(results => {
+        .then(() => {
           const deletes = [];
-          results.forEach((result, key) => (docs[key]._rev = result.rev));
 
           deletes.push({
             _id: docs[0]._id,
@@ -1514,10 +1507,8 @@ describe('db-doc handler', () => {
       ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
-
+        .saveDocsRevs(docs)
+        .then(() => {
           const updates = [
             {
               _id: 'n_put_1',
@@ -1816,9 +1807,8 @@ describe('db-doc handler', () => {
       const docs = [ allowedTask, deniedTask, allowedTarget, deniedTarget ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
+        .saveDocsRevs(docs)
+        .then(() => {
           const updates = docs.map(doc => Object.assign({ updated: true }, doc));
           const promises = updates.map(doc =>
             utils
@@ -2220,10 +2210,8 @@ describe('db-doc handler', () => {
       ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
-
+        .saveDocsRevs(docs)
+        .then(() => {
           const updates = [
             { _id: 'n_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'n1' }, // new allowed
             { _id: 'n_put_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'n2' }, // new denied

@@ -1,4 +1,8 @@
+const EventEmitter = require('events');
+const configUpdatesEvents = new EventEmitter();
+
 const db = require('../db');
+const dbWatcher = require('./db-watcher');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
@@ -41,7 +45,7 @@ const initTransitionLib = () => {
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);
-  } catch(err) {
+  } catch (err) {
     logger.error(err);
   }
   config.setTransitionsLib(transitionsLib);
@@ -89,7 +93,10 @@ const handleSettingsChange = () => {
       process.exit(1);
     })
     .then(() => initTransitionLib())
-    .then(() => logger.debug('Settings updated'));
+    .then(() => {
+      configUpdatesEvents.emit('updated');
+      logger.debug('Settings updated');
+    });
 };
 
 const handleTranslationsChange = () => {
@@ -100,7 +107,7 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
-  logger.info('Detected form change for', change.id);
+  logger.info('Detected form change for %s', change.id);
   if (change.deleted) {
     return Promise.resolve();
   }
@@ -141,42 +148,40 @@ const load = () => {
 };
 
 const listen = () => {
-  db.medic
-    .changes({ live: true, since: 'now', return_docs: false })
-    .on('change', change => {
+  dbWatcher.listen();
+  dbWatcher.medic(change => {
+    if (tombstoneUtils.isTombstoneId(change.id)) {
+      return Promise.resolve();
+    }
 
-      if (tombstoneUtils.isTombstoneId(change.id)) {
-        return Promise.resolve();
-      }
+    if (change.id === MEDIC_DDOC_ID) {
+      return handleDdocChange();
+    }
 
-      if (change.id === MEDIC_DDOC_ID) {
-        return handleDdocChange();
-      }
+    if (change.id === settingsService.SETTINGS_DOC_ID) {
+      return handleSettingsChange();
+    }
 
-      if (change.id === settingsService.SETTINGS_DOC_ID) {
-        return handleSettingsChange();
-      }
+    if (change.id.startsWith('messages-')) {
+      return handleTranslationsChange();
+    }
 
-      if (change.id.startsWith('messages-')) {
-        return handleTranslationsChange();
-      }
+    if (change.id.startsWith('form:')) {
+      return handleFormChange(change);
+    }
 
-      if (change.id.startsWith('form:')) {
-        return handleFormChange(change);
-      }
+    if (change.id === 'branding') {
+      return handleBrandingChanges();
+    }
 
-      if (change.id === 'branding') {
-        return handleBrandingChanges();
-      }
+    if (extensionLibs.isLibChange(change)) {
+      return handleLibsChanges();
+    }
+  });
+};
 
-      if (extensionLibs.isLibChange(change)) {
-        return handleLibsChanges();
-      }
-    })
-    .on('error', err => {
-      logger.error('Error watching changes, restarting: %o', err);
-      process.exit(1);
-    });
+const watch = (callback) => {
+  configUpdatesEvents.on('updated', callback);
 };
 
 module.exports = {
@@ -184,4 +189,5 @@ module.exports = {
   listen,
   updateServiceWorker,
   loadTranslations,
+  watch,
 };
