@@ -3,7 +3,6 @@ require('chai').use(require('chai-as-promised'));
 const { expect } = require('chai');
 const rewire = require('rewire');
 const rpn = require('request-promise-native');
-process.env.UNIT_TEST_ENV = 1;
 
 let db;
 let unitTestEnv;
