@@ -91,7 +91,7 @@ describe('Reports Component', () => {
       online: sinon.stub().resolves(false),
     };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false)
     };
     datePipe = { transform: sinon.stub() };
@@ -309,7 +309,7 @@ describe('Reports Component', () => {
     it('should not set default facility report when it is admin user', async () => {
       searchService.search.resetHistory();
       authService.has.resetHistory();
-      sessionService.isDbAdmin.returns(true);
+      sessionService.isAdmin.returns(true);
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(true);
       const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
