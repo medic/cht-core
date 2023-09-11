@@ -23,6 +23,9 @@ describe('roles', () => {
         ['some_role'],
         ['one_role', 'district_manager', 'admin'],
         ['one_role', 'not_district_admin', 'not_admin'],
+        ['not_chw', 'national_admin'],
+        ['random', 'national_admin'],
+        ['national_admin'],
       ];
       scenarios.forEach(userRoles => {
         const message = `hasOnlineRole failed for ${userRoles}`;
@@ -35,9 +38,6 @@ describe('roles', () => {
         ['_admin'],
         ['_admin', 'other_role'],
         ['chw', '_admin'],
-        ['not_chw', 'national_admin'],
-        ['random', 'national_admin'],
-        ['national_admin'],
         ['mm-online'],
         ['mm-online', 'other'],
         ['not-mm-online', 'mm-online'],
@@ -57,8 +57,8 @@ describe('roles', () => {
     });
 
     it('checks "national_admin" role', () => {
-      chai.expect(roles.isOnlineOnly({ roles: ['national_admin'] })).to.equal(true);
-      chai.expect(roles.isOnlineOnly({ roles: ['national_admin', 'chw'] })).to.equal(true);
+      chai.expect(roles.isOnlineOnly({ roles: ['national_admin'] })).to.equal(false);
+      chai.expect(roles.isOnlineOnly({ roles: ['national_admin', 'chw'] })).to.equal(false);
     });
 
     it('should check for "mm-online" role', () => {

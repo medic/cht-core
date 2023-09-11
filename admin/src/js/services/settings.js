@@ -36,7 +36,7 @@
             listeners[event].forEach(function(callback) {
               try {
                 callback(data);
-              } catch(e) {
+              } catch (e) {
                 $log.error('Error triggering listener callback.', event, data, callback);
               }
             });

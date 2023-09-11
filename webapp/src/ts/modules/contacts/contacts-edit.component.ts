@@ -282,7 +282,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     return Promise
       .resolve(form.validate())
       .then((valid) => {
-        if(!valid) {
+        if (!valid) {
           throw new Error('Validation failed.');
         }
 

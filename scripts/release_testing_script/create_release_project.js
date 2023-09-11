@@ -28,7 +28,7 @@ const createProjectAddColumnsAndIssues = async () => {
     const issueIds = response.data.map(x => x.id);
     await projects.addIssuesToColumn(config.columnNamesData.toDo.columnId, issueIds);
     console.log('Project created at: ' + projectResponse.data.html_url);
-  } catch(err){
+  } catch (err){
     console.error(err);
   }
 };

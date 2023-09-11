@@ -69,7 +69,7 @@ export class TransitionsService {
   }
 
   async applyTransitions(docs) {
-    if(!docs || !docs.every(doc => doc)) {
+    if (!docs || !docs.every(doc => doc)) {
       throw new Error('An array of valid doc objects must be provided.');
     }
 

@@ -60,7 +60,7 @@ describe('Contacts component', () => {
     searchService = { search: sinon.stub().resolves([]) };
     settingsService = { get: sinon.stub().resolves([]) };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
     authService = { has: sinon.stub().resolves(false) };
@@ -1183,7 +1183,7 @@ describe('Contacts component', () => {
           settingsService.get.resolves({
             uhc: { contacts_default_sort: 'last_visited_date' },
           });
-          sessionService.isDbAdmin.returns(true);
+          sessionService.isAdmin.returns(true);
           authService.has.resetHistory();
           searchService.search.resetHistory();
           component.ngOnInit();
