@@ -22,7 +22,6 @@ const hasOnlineRole = roles => {
   const onlineRoles = [
     DB_ADMIN_ROLE,
     ONLINE_ROLE,
-    'national_admin', // kept for backwards compatibility
   ];
   return roles.some(role => onlineRoles.includes(role));
 };
