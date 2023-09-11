@@ -9,7 +9,10 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('Add new district tests : ', () => {
   before(async () => await loginPage.cookieLogin());
-  afterEach(() => sentinelUtils.waitForSentinel());
+  afterEach(async () => {
+    sentinelUtils.waitForSentinel();
+    await utils.revertDb([/^form:/], true);
+  });
 
   it('should add new district with a new person', async () => {
     await commonPage.goToPeople();
