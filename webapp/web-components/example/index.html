@@ -6,20 +6,52 @@
   <script src="../../dist/cht-form/polyfills.js"></script>
   <script src="../../dist/cht-form/main.js"></script>
   <link rel="stylesheet" href="../../dist/cht-form/styles.css">
-  <!--  <script src="../../dist/cht-form/vendor.js"></script>-->
-<!--    <script src="cht-form.js"></script>-->
-<!--    <link rel="stylesheet" href="cht-form.css">-->
 </head>
 <body>
 <div>
   <h1 class="display-4">Helloo, world!</h1>
   <hr class="my-4">
   <cht-form id="myform" form-id="report-form"></cht-form>
-<!--  <p><cht-form thankyou-message="You da real MVP"></cht-form></p>-->
 </div>
 </body>
 
 <script>
-  document.getElementById('myform').setAttribute('thankyou-message', 'somevalue');
+  const formHtml = `
+<form autocomplete="off" novalidate="novalidate" class="or clearfix pages" dir="ltr" data-form-id="undo_death_report">
+<section class="form-logo"></section><h3 dir="auto" id="form-title">Undo death report</h3>
+<select id="form-languages" style="display:none;" data-default-lang=""><option value="en">en</option> </select>
+
+
+    <section class="or-group-data or-branch pre-init or-appearance-field-list " name="/undo_death_report/inputs" data-relevant="./source = 'user'"><section class="or-group-data " name="/undo_death_report/inputs/contact"><label class="question non-select or-appearance-db-object "><span lang="en" class="question-label active" data-itext-id="/undo_death_report/inputs/contact/_id:label">What is the patient's name?</span><input type="text" name="/undo_death_report/inputs/contact/_id" data-type-xml="person"></label><section class="or-group-data " name="/undo_death_report/inputs/contact/parent"><section class="or-group-data " name="/undo_death_report/inputs/contact/parent/parent"><section class="or-group-data " name="/undo_death_report/inputs/contact/parent/parent/contact">
+      </section>
+      </section>
+      </section>
+      </section>
+      </section>
+    <section class="or-group-data or-appearance-field-list " name="/undo_death_report/undo"><fieldset class="question simple-select or-appearance-multiline ">
+<fieldset>
+<legend>
+<span lang="en" class="question-label active" data-itext-id="/undo_death_report/undo/undo_information:label">Submitting this form will undo the death report of <span class="or-output" data-value=" /undo_death_report/patient_display_name "> </span>. Are you sure you want to undo the death report?</span><span class="required">*</span>
+          </legend>
+<div class="option-wrapper">
+<label class=""><input type="radio" name="/undo_death_report/undo/undo_information" data-name="/undo_death_report/undo/undo_information" value="yes" data-required="true()" data-constraint=". = 'yes'" data-type-xml="select1"><span lang="" class="option-label active">Yes</span></label><label class=""><input type="radio" name="/undo_death_report/undo/undo_information" data-name="/undo_death_report/undo/undo_information" value="no" data-required="true()" data-constraint=". = 'yes'" data-type-xml="select1"><span lang="" class="option-label active">No</span></label>
+</div>
+</fieldset>
+<span lang="en" class="or-constraint-msg active" data-itext-id="/undo_death_report/undo/undo_information:jr:constraintMsg">Only submit this report if you want to undo the death report.</span><span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span>
+</fieldset>
+      </section>
+    <section class="or-group-data or-appearance-hidden " name="/undo_death_report/data"><section class="or-group-data " name="/undo_death_report/data/meta">
+      </section>
+      </section>
+
+<fieldset id="or-calculated-items" style="display:none;">
+<label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_age_in_years" data-calculate="floor( difference-in-months(  /undo_death_report/inputs/contact/date_of_birth , today() ) div 12 )" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_age_in_months" data-calculate="difference-in-months(  /undo_death_report/inputs/contact/date_of_birth , today() )" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_age_in_days" data-calculate="floor(decimal-date-time(today()) - decimal-date-time( /undo_death_report/inputs/contact/date_of_birth ) )" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_uuid" data-calculate="../inputs/contact/_id" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_id" data-calculate="../inputs/contact/patient_id" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_name" data-calculate="../inputs/contact/name" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_short_name" data-calculate="../inputs/contact/short_name" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/patient_display_name" data-calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/data/__confirm_undo" data-calculate=" /undo_death_report/undo/undo_information " data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/data/meta/__patient_uuid" data-calculate="../../../inputs/contact/_id" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/data/meta/__patient_id" data-calculate="../../../inputs/contact/patient_id" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/data/meta/__household_uuid" data-calculate="../../../inputs/contact/parent/_id" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/data/meta/__source" data-calculate="../../../inputs/source" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/data/meta/__source_id" data-calculate="../../../inputs/source_id" data-type-xml="string"></label><label class="calculation non-select "><input type="hidden" name="/undo_death_report/meta/instanceID" data-calculate="concat('uuid:', uuid())" data-type-xml="string"></label>
+</fieldset>
+</form>
+`;
+  // document.body.insertAdjacentHTML( 'beforeend', `<cht-form id="myform" form-id="report-form"></cht-form>` );
+
+  // document.getElementById('myform').setAttribute('form-html', formHtml);
+  document.getElementById('myform').setAttribute('form-html', formHtml);
 </script>
 </html>
