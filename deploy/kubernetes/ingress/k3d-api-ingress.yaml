@@ -5,10 +5,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - cht-dev.my.local-ip.co
+    - cht-dev.local-ip.medicmobile.org
     secretName: api-tls-secret
   rules:
-  - host: cht-dev.my.local-ip.co
+  - host: cht-dev.local-ip.medicmobile.org
     http:
       paths:
       - pathType: Prefix

@@ -70,8 +70,8 @@ def obtain_certificate_and_key(c, values):
         else:
             raise Exception("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'")
     elif values.get('cert_source', '') == 'my-ip-co':
-        subprocess.run(["curl", "http://local-ip.co/cert/server.pem", "-o", "certificate.crt"], check=True)
-        subprocess.run(["curl", "http://local-ip.co/cert/server.key", "-o", "private.key"], check=True)
+        subprocess.run(["curl", "https://local-ip.medicmobile.org/fullchain", "-o", "certificate.crt"], check=True)
+        subprocess.run(["curl", "https://local-ip.medicmobile.org/key", "-o", "private.key"], check=True)
     elif values.get('cert_source', '') == 'eks-medic':
         print("Moving on. Certificate provided by the eks cluster.")
     else:
