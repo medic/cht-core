@@ -159,25 +159,4 @@ describe('Session service', function() {
     });
 
   });
-
-  describe('isDbAdmin', () => {
-    it('should return false if not logged in', () => {
-      ipCookie.returns({});
-      chai.expect(service.isDbAdmin()).to.equal(false);
-    });
-
-    it('returns true for _admin', () => {
-      ipCookie.returns({ roles: [ '_admin' ] });
-      chai.expect(service.isDbAdmin()).to.equal(true);
-      chai.expect(service.isDbAdmin({ roles: ['_admin', 'aaaa'] })).to.equal(true);
-    });
-
-    it('returns false for everyone else', () => {
-      ipCookie.returns({ roles: [ 'district_admin', 'some_other_role' ] });
-      chai.expect(service.isDbAdmin()).to.equal(false);
-      ipCookie.returns({ roles: [ 'national_admin', 'some_other_role' ] });
-      chai.expect(service.isDbAdmin()).to.equal(false);
-      chai.expect(service.isDbAdmin({ roles: ['role1', 'national_admin'] })).to.equal(false);
-    });
-  });
 });
