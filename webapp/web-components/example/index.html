@@ -11,7 +11,7 @@
 <div>
   <h1 class="display-4">Helloo, world!</h1>
   <hr class="my-4">
-  <cht-form id="myform" form-id="report-form"></cht-form>
+  <cht-form id="myform" form-id="my-first-form"></cht-form>
 </div>
 </body>
 
@@ -49,9 +49,71 @@
 </fieldset>
 </form>
 `;
-  // document.body.insertAdjacentHTML( 'beforeend', `<cht-form id="myform" form-id="report-form"></cht-form>` );
 
-  // document.getElementById('myform').setAttribute('form-html', formHtml);
+  const formModel = `
+  <model>
+    <instance>
+        <undo_death_report xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="undo_death_report" prefix="J1!undo_death_report!" delimiter="#" version="2022-08-19 15:59:55">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <short_name/>
+              <patient_id/>
+              <date_of_birth>0</date_of_birth>
+              <sex/>
+              <parent>
+                <_id/>
+                <parent>
+                  <contact>
+                    <name/>
+                    <phone/>
+                  </contact>
+                </parent>
+              </parent>
+            </contact>
+          </inputs>
+          <patient_age_in_years tag="hidden">0</patient_age_in_years>
+          <patient_age_in_months tag="hidden">0</patient_age_in_months>
+          <patient_age_in_days tag="hidden"/>
+          <patient_uuid tag="hidden"/>
+          <patient_id tag="hidden"/>
+          <patient_name tag="hidden"/>
+          <patient_short_name tag="hidden"/>
+          <patient_display_name tag="hidden"/>
+          <undo>
+            <undo_information/>
+          </undo>
+          <data tag="hidden">
+            <__confirm_undo/>
+            <meta tag="hidden">
+              <__patient_uuid/>
+              <__patient_id/>
+              <__household_uuid/>
+              <__source/>
+              <__source_id/>
+            </meta>
+          </data>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </undo_death_report>
+      </instance>
+    <instance id="contact-summary"/>
+  </model>
+`;
+
   document.getElementById('myform').setAttribute('form-html', formHtml);
+  document.getElementById('myform').setAttribute('form-model', formModel);
 </script>
 </html>

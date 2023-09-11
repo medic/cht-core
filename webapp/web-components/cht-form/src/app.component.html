@@ -1,6 +1,4 @@
 <div [attr.id]="formId" class="enketo" [attr.data-editing]="editing">
-  <h4>Message for jkuester: {{ thankyouMessage }}</h4>
-
   <div class="container pages"></div>
   <div class="form-footer">
     <button (click)="onCancel.emit()" class="btn btn-link cancel" [disabled]="status?.saving">{{'Cancel' | translate}}</button>
