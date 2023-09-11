@@ -13,6 +13,10 @@ spec:
       port: 5984
       protocol: TCP
       targetPort: 5984
+    - name: cluster-api
+      port: 5986
+      protocol: TCP
+      targetPort: 5986
     - name: epmd
       port: 4369
       protocol: TCP

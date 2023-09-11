@@ -38,7 +38,9 @@ nodes:
   node-2: "gamma-cht-couchdb-2" # This is the name of the second node where couchdb will be deployed
   node-3: "gamma-cht-couchdb-3" # This is the name of the third node where couchdb will be deployed
   # For single couchdb node, use the following:
-  single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration
+  # Leave it empty if you don't know what it means.
+  # Leave it empty if you want to let kubernetes deploy this on any available node. (Recommended)
+  single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration. 
 
 # -----------------------------------------
 #       Pre-existing data section
