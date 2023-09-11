@@ -95,11 +95,6 @@ const _ = require('lodash/core');
         return hasRole(userCtx, '_admin');
       };
 
-      const isDbAdmin = function(userCtx) {
-        userCtx = userCtx || getUserCtx();
-        return hasRole(userCtx, '_admin');
-      };
-
       return {
         logout: logout,
 
@@ -114,14 +109,10 @@ const _ = require('lodash/core');
         checkCurrentSession: checkCurrentSession,
 
         /**
-         * Returns true if the logged in user has the db or national admin role.
+         * Returns true if the logged in user has the the _admin role
          * @param {userCtx} (optional) Will get the current userCtx if not provided.
          */
         isAdmin: isAdmin,
-
-        // Returns true if the logged in user is a DB admin
-        // @param {userCtx} (optional) Will get the current userCtx if not provided.
-        isDbAdmin: isDbAdmin,
 
         /**
          * Returns true if the logged in user is online only

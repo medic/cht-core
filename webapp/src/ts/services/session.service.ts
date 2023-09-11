@@ -115,10 +115,6 @@ export class SessionService {
   }
 
   isAdmin(userCtx?) {
-    return this.isDbAdmin(userCtx);
-  }
-
-  isDbAdmin(userCtx?) {
     return this.hasRole('_admin', userCtx);
   }
 

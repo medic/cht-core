@@ -85,7 +85,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
     this.hasEditPermission = await this.authService.has('can_edit');
     this.hasDeletePermission = await this.authService.has('can_delete_contacts');
     this.hasExportPermission = await this.authService.any([[ 'can_export_all' ], [ 'can_export_contacts' ]]);
-    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
+    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   private getUserSettings() {

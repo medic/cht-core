@@ -68,7 +68,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   }
 
   private async checkPermissions() {
-    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
+    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   /**

@@ -32,7 +32,7 @@ describe('FastActionButtonComponent', () => {
     };
     authService = { has: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };
-    sessionService = { isDbAdmin: sinon.stub() };
+    sessionService = { isAdmin: sinon.stub() };
     matBottomSheetRef = { dismiss: sinon.stub() };
     matBottomSheet = { open: sinon.stub().returns(matBottomSheetRef) };
     matDialogRef = { close: sinon.stub() };

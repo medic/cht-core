@@ -11,7 +11,7 @@ const isAdmin = (userRoles) => {
     return false;
   }
 
-  return [ADMIN_ROLE].some(role => userRoles.includes(role));
+  return userRoles.includes(ADMIN_ROLE);
 };
 
 const groupPermissions = (permissions) => {
