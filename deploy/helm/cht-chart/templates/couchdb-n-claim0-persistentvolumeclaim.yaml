@@ -1,4 +1,4 @@
-{{- if $.Values.couchdb.clusteredCouch_enabled }}
+{{- if eq (toString $.Values.couchdb.clusteredCouch_enabled) "true" }}
 {{- range $i, $e := until (int $.Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: v1
@@ -13,7 +13,7 @@ spec:
   resources:
     requests:
       storage: {{ $.Values.couchdb.couchdb_node_storage_size }}
-  {{- if eq $.Values.cluster_type "k3s-k3d" }}
+  {{- if eq (toString $.Values.cluster_type) "k3s-k3d" }}
   storageClassName: local-storage
   volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
   {{- else }}

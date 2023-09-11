@@ -1,4 +1,4 @@
-{{- if not .Values.couchdb.clusteredCouch_enabled }}
+{{- if eq (toString .Values.couchdb.clusteredCouch_enabled) "false" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -58,7 +58,7 @@ spec:
           ports:
             - containerPort: 5984
           resources: {}
-          {{- if eq .Values.cluster_type "k3s-k3d" }}
+          {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
           volumeMounts:
             - mountPath: /opt/couchdb/data
               name: local-volume
@@ -76,7 +76,7 @@ spec:
               subPath: local.d
           {{- end }}
       restartPolicy: Always
-      {{- if eq .Values.cluster_type "k3s-k3d" }}
+      {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
       volumes:
         - name: local-volume
           hostPath:

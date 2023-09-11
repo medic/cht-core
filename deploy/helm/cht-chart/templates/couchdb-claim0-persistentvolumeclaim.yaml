@@ -1,4 +1,4 @@
-{{- if and (not .Values.couchdb.clusteredCouch_enabled) (eq .Values.cluster_type "eks") }}
+{{- if and (eq (toString .Values.couchdb.clusteredCouch_enabled) "false") (eq (toString .Values.cluster_type) "eks") }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -11,7 +11,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.couchdb.couchdb_node_storage_size }}
-  {{- if .Values.couchdb_data.preExistingDataAvailable }}
+  {{- if eq (toString .Values.couchdb_data.preExistingDataAvailable) "true" }}
   volumeName: couchdb-pv-{{ .Values.namespace }}
   storageClassName: ""
   {{- else }}

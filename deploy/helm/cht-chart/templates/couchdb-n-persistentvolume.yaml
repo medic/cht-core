@@ -1,4 +1,4 @@
-{{- if and ($.Values.couchdb.clusteredCouch_enabled) (eq $.Values.cluster_type "k3s-k3d") }}
+{{- if and (eq (toString $.Values.couchdb.clusteredCouch_enabled) "true") (eq (toString $.Values.cluster_type) "k3s-k3d") }}
 {{- range $i, $e := until (int $.Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: v1
@@ -14,7 +14,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: {{- if $.Values.couchdb_data.preExistingDataAvailable }}
+    path: {{- if eq (toString $.Values.couchdb_data.preExistingDataAvailable) "true" }}
             {{- if hasKey $.Values.local_storage (printf "preExistingDiskPath-%d" $nodeNumber) }}
               {{ index $.Values.local_storage (printf "preExistingDiskPath-%d" $nodeNumber) }}
             {{- else }}

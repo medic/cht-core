@@ -1,4 +1,4 @@
-{{- if and (eq .Values.cluster_type "eks") (.Values.couchdb_data.preExistingDataAvailable) }}
+{{- if and (eq .Values.cluster_type "eks") (eq (toString .Values.couchdb_data.preExistingDataAvailable) "true") }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
