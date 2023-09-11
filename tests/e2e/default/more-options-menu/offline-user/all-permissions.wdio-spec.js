@@ -68,8 +68,6 @@ describe('More Options Menu - Offline User', async () => {
 
   afterEach(async () => await commonPage.goToBase());
 
-  after(async () => await utils.revertSettings(true));
-
   describe('all permissions enabled', async () => {
     it('- Message tab', async () => {
       await commonPage.goToMessages();
@@ -125,8 +123,8 @@ describe('More Options Menu - Offline User', async () => {
       const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all',
         'can_export_contacts', 'can_export_messages',
         'can_delete_reports', 'can_update_reports'];
-      await utils.updatePermissions(offlineUser.roles, [], allPermissions);
-      await commonPage.closeReloadModal();
+      await utils.updatePermissions(offlineUser.roles, [], allPermissions, true);
+      await commonPage.sync(true);
     });
 
     after(async () => await utils.revertSettings(true));
