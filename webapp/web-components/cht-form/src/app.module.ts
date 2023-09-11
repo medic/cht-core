@@ -28,7 +28,7 @@ import { reducers } from '../../../src/ts/reducers';
     StoreModule.forRoot(reducers, { metaReducers: [] }),
   ],
   providers: [],
-  entryComponents: [AppComponent]
+  // entryComponents: [AppComponent]
 })
 export class AppModule {
   constructor(injector: Injector) {
