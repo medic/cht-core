@@ -173,7 +173,7 @@
         </translation>
       </itext>
       <instance>
-        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-08-31 00:00:00">
+        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-09-11 00:00:00">
           <enketo_test_select>
             <select_spinner/>
             <select1_spinner/>
@@ -359,7 +359,6 @@
       <bind calculate="../inputs/contact/_id" nodeset="/enketo_widgets/patient_uuid" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/enketo_widgets/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/enketo_widgets/patient_name" type="string"/>
-      <bind nodeset="/enketo_widgets/phone_widget/phone" type="tel" required="true()"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/enketo_widgets/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
