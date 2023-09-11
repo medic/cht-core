@@ -35,7 +35,6 @@ describe('cht-conf actions tests', () => {
     const result = await runCommand('upload-app-settings', configPath);
     expect(result).to.contain(`INFO Settings updated successfully`);
     const settings = await utils.getDoc('settings');
-    console.log('newVersion', settings._rev);
     const newVersion = Number(settings._rev.charAt(0));
     expect(newVersion).to.be.greaterThanOrEqual(originalVersion);
     expect(settings.settings.roles).to.include.all.keys('program_officer', 'chw_supervisor', 'chw');
@@ -51,7 +50,7 @@ describe('cht-conf actions tests', () => {
   it('should upload branding', async () => {
     const branding = await utils.getDoc('branding').catch(error => {
       if (error){
-        console.err(error);
+        console.error(error);
       }
     });
     expect(branding.title).to.equal('Medic');
@@ -63,7 +62,7 @@ describe('cht-conf actions tests', () => {
       method: 'GET'
     }).catch(error => {
       if (error){
-        console.log(error);
+        console.error(error);
       }
     });
     expect(forms).to.deep.equal([
@@ -92,7 +91,7 @@ describe('cht-conf actions tests', () => {
   it('should upload resources', async () => {
     const resources = await utils.getDoc('resources').catch(error => {
       if (error){
-        console.log(error);
+        console.error(error);
       }
     });
     expect(resources.resources).to.deep.equal({
