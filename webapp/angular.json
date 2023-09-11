@@ -145,7 +145,7 @@
             "outputPath": "dist/cht-form",
             "index": "web-components/cht-form/src/index.html",
             "main": "web-components/cht-form/src/main.ts",
-            "polyfills": "web-components/cht-form/src/polyfills.ts",
+            "polyfills": "src/ts/polyfills.ts",
             "tsConfig": "web-components/cht-form/tsconfig.app.json",
             "aot": true,
             "inlineStyleLanguage": "less",

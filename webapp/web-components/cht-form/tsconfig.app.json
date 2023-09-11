@@ -9,23 +9,13 @@
       "@mm-reducers/*": ["src/ts/reducers/*"],
       "@mm-selectors/*": ["src/ts/selectors/*"],
       "@mm-services/*": ["src/ts/services/*"],
-      "@mm-services/cht-script-api.service": ["web-components/cht-form/src/stubs/cht-script-api.service.ts"],
-      "@mm-services/contact-summary.service": ["web-components/cht-form/src/stubs/contact-summary.service.ts"],
       "@mm-services/db.service": ["web-components/cht-form/src/stubs/db.service.ts"],
-      "@mm-services/feedback.service": ["web-components/cht-form/src/stubs/feedback.service.ts"],
-      "@mm-services/language.service": ["web-components/cht-form/src/stubs/language.service.ts"],
-      "@mm-services/search.service": ["web-components/cht-form/src/stubs/search.service.ts"],
-      "@mm-services/submit-form-by-sms.service": ["web-components/cht-form/src/stubs/submit-form-by-sms.service.ts"],
-      "@mm-services/training-cards.service": ["web-components/cht-form/src/stubs/training-cards.service.ts"],
-      "@mm-services/transitions.service": ["web-components/cht-form/src/stubs/transitions.service.ts"],
-      "@mm-services/user-settings.service": ["web-components/cht-form/src/stubs/user-settings.service.ts"],
-      "@mm-services/xml-forms.service": ["web-components/cht-form/src/stubs/xml-forms.service.ts"],
-      "@mm-services/z-score.service": ["web-components/cht-form/src/stubs/z-score.service.ts"],
     }
   },
   "files": [
     "src/main.ts",
-    "src/polyfills.ts",
+//    "src/polyfills.ts",
+    "../../src/ts/polyfills.ts"
   ],
   "include": [
     "src/**/*.d.ts"
