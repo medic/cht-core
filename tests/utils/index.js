@@ -51,17 +51,7 @@ const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-senti
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
-const db1Data = makeTempDir('ci-dbdata');
-const db2Data = makeTempDir('ci-dbdata');
-const db3Data = makeTempDir('ci-dbdata');
-const env = {
-  ...process.env,
-  CHT_NETWORK: NETWORK,
-  DB1_DATA: db1Data,
-  DB2_DATA: db2Data,
-  DB3_DATA: db3Data,
-  COUCHDB_SECRET: 'monkey',
-};
+let env;
 
 const dockerPlatformName = () => {
   try {
@@ -973,6 +963,18 @@ const createLogDir = async () => {
 };
 
 const startServices = async () => {
+  const db1Data = makeTempDir('ci-dbdata');
+  const db2Data = makeTempDir('ci-dbdata');
+  const db3Data = makeTempDir('ci-dbdata');
+  env = {
+    ...process.env,
+    CHT_NETWORK: NETWORK,
+    DB1_DATA: db1Data,
+    DB2_DATA: db2Data,
+    DB3_DATA: db3Data,
+    COUCHDB_SECRET: 'monkey',
+  };
+
   await dockerComposeCmd('up', '-d');
   const services = await dockerComposeCmd('ps', '-q');
   if (!services.length) {
