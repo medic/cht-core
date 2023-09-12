@@ -7,7 +7,6 @@ import { VersionService } from '@mm-services/version.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 import { LanguageService } from '@mm-services/language.service';
-import { resolve } from '@angular/compiler-cli';
 
 describe('Feedback service', () => {
   let clock;
