@@ -4,6 +4,7 @@ import { expect } from 'chai';
 
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { DbService } from '@mm-services/db.service';
+import { DBSyncService } from '@mm-services/db-sync.service';
 import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
 
@@ -13,6 +14,7 @@ describe('UnreadRecordsService', () => {
   let dbInstance;
   let changesService;
   let sessionService;
+  let dbSyncService;
 
   beforeEach(() => {
     dbInstance = {
@@ -22,17 +24,19 @@ describe('UnreadRecordsService', () => {
       query: sinon.stub()
     };
     dbService = { get: () => dbInstance };
+    dbSyncService = { syncMeta: sinon.stub().resolves() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isOnlineOnly: sinon.stub() };
-    
+
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: dbService },
+        { provide: DBSyncService, useValue: dbSyncService },
         { provide: SessionService, useValue: sessionService },
         { provide: ChangesService, useValue: changesService }
       ]
     });
-    
+
     service = TestBed.inject(UnreadRecordsService);
   });
 
@@ -61,6 +65,7 @@ describe('UnreadRecordsService', () => {
       tick();
 
       expect(result).to.deep.equal({ report: 0, message: 0 });
+      expect(dbSyncService.syncMeta.callCount).to.equal(1);
     }));
 
     it('should return all data_records when none read', fakeAsync(() => {

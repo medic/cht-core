@@ -58,7 +58,6 @@ describe('Feedback service', () => {
       window: mockWindow,
       document: mockDocument
     });
-    service.init();
 
     // JSON.stringify(new Error('foo')) yields {} by default
     mockConsole.log(new Error('msg'));
