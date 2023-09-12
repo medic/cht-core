@@ -46,6 +46,8 @@ if (UNIT_TEST_ENV) {
     'saveDocs',
     'createVault',
     'wipeCacheDb',
+    'addRoleAsAdmin',
+    'addRoleAsMember',
   ];
 
   const notStubbed = (first, second) => {
@@ -178,4 +180,40 @@ if (UNIT_TEST_ENV) {
 
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
   };
+
+  const getDefaultSecurityStructure = () => ({
+    names: [],
+    roles: [],
+  });
+
+  const addRoleToSecurity = async (dbname, role, addAsAdmin) => {
+    if (!dbname || !role) {
+      throw new Error(`Cannot add security: invalid db name ${dbname} or role ${role}`);
+    }
+
+    const securityUrl = new URL(environment.serverUrl);
+    securityUrl.pathname = `${dbname}/_security`;
+
+    const securityObject = await rpn.get({ url: securityUrl.toString(), json: true });
+    const property = addAsAdmin ? 'admins' : 'members';
+
+    if (!securityObject[property]) {
+      securityObject[property] = getDefaultSecurityStructure();
+    }
+
+    if (!securityObject[property].roles || !Array.isArray(securityObject[property].roles)) {
+      securityObject[property].roles = [];
+    }
+
+    if (securityObject[property].roles.includes(role)) {
+      return;
+    }
+
+    logger.info(`Adding "${role}" role to ${dbname} ${property}`);
+    securityObject[property].roles.push(role);
+    await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
+  };
+
+  module.exports.addRoleAsAdmin = (dbname, role) => addRoleToSecurity(dbname, role, true);
+  module.exports.addRoleAsMember = (dbname, role) => addRoleToSecurity(dbname, role, false);
 }
