@@ -9,6 +9,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
+const chtDbUtils = require('@utils/cht-db');
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');
@@ -27,7 +28,7 @@ describe('Targets', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const clinic = places.get('clinic');
-  
+
   const contact = personFactory.build({
     name: 'CHW',
     phone: '+50683333333',
@@ -112,5 +113,9 @@ describe('Targets', () => {
     expect(await (await errorStack.isDisplayed())).to.be.true;
     expect(await (await errorStack.getText())).to
       .include('TypeError: Cannot read properties of undefined (reading \'muted\')');
+
+    const feedbackDocs = await chtDbUtils.feedBackDocs();
+    expect(feedbackDocs.length).to.equal(1);
+    await chtDbUtils.clearFeedbackDocs();
   });
 });

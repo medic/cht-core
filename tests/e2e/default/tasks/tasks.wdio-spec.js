@@ -7,6 +7,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
+const chtDbUtils = require('@utils/cht-db');
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');
@@ -73,5 +74,9 @@ describe('Task list', () => {
     expect(await (await errorStack.isDisplayed())).to.be.true;
     expect(await (await errorStack.getText())).to
       .include('TypeError: Cannot read properties of undefined (reading \'name\')');
+
+    const feedbackDocs = await chtDbUtils.feedBackDocs();
+    expect(feedbackDocs.length).to.equal(1);
+    await chtDbUtils.clearFeedbackDocs();
   });
 });

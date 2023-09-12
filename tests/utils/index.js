@@ -581,6 +581,14 @@ const setUserContactDoc = (attempt=0) => {
     });
 };
 
+const deleteMetaDbs = async () => {
+  const allDbs = await request({ path: '/_all_dbs' });
+  const metaDbs = allDbs.filter(db => db.endsWith('-meta'));
+  for (const metaDb of metaDbs) {
+    await request({ method: 'DELETE', path: `/${metaDb}` });
+  }
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -603,6 +611,8 @@ const revertDb = async (except, ignoreRefresh) => {
   } else {
     watcher && watcher.cancel();
   }
+
+  await deleteMetaDbs();
 
   await setUserContactDoc();
 };

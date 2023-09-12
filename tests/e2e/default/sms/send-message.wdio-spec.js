@@ -48,7 +48,8 @@ describe('Send message', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), bob]);
     await utils.createUsers([offlineUser]);
-    await loginPage.login(offlineUser);    
+    await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
+    await loginPage.login(offlineUser);
   });
 
   beforeEach(async () => {

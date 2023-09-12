@@ -45,7 +45,7 @@ const baseConfig = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  
+
   suites: {
     all: ['**/*.wdio-spec.js']
   },
@@ -85,7 +85,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']: 
+      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']:
         ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
     }
 
@@ -278,18 +278,16 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-    const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
-    existingFeedBackDocIds.push(feedBackDocs);
-    if (feedBackDocs) {
-      if (passed) {
-        context.test.callback(new Error('Feedback docs were generated during the test.'));
-      }
-      passed = false;
-    }
+    await utils.apiLogTestEnd(test.title);
     if (passed === false) {
       await browser.takeScreenshot();
     }
-    await utils.apiLogTestEnd(test.title);
+
+    const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
+    if (feedBackDocs.length) {
+      existingFeedBackDocIds.push(...feedBackDocs);
+      context.test.callback(new Error('Feedback docs were generated during the test.'));
+    }
   },
 
   /**

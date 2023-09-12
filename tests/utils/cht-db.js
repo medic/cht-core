@@ -1,18 +1,42 @@
 const fs = require('fs');
+const path = require('path');
 
 /* global window */
 
-const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
-  const feedBackDocs = await browser.executeAsync(feedBackDocsScript);
-  const flattened = feedBackDocs.flat();
-  const newDocIds = flattened.map(doc => existingDocIds.indexOf(doc.id) === -1);
-  if (newDocIds && newDocIds.length > 0) {
-    fs.writeFileSync(`./tests/logs/feedbackDocs-${testName}.json`, JSON.stringify(flattened, null, 2));
-    return flattened.map(doc => doc.id);
-  }
+const getFeedbackDocs = async () => {
+  return await browser.executeAsync(feedBackDocsReadScript);
 };
 
-const feedBackDocsScript = async (done) => {
+const clearFeedbackDocs = async () => {
+  const feedbackDocs = await getFeedbackDocs();
+  await browser.executeAsync(feedBackDocDeleteScript, feedbackDocs);
+};
+
+const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
+  const feedBackDocs = await getFeedbackDocs();
+  const feedbackDocsArray = Object.values(feedBackDocs).flat();
+  const newFeedbackDocs = feedbackDocsArray.filter(doc => !existingDocIds.includes(doc._id));
+
+  if (!newFeedbackDocs?.length) {
+    return [];
+  }
+
+  const filePath = path.resolve(__dirname, '..', 'logs', `feedbackDocs-${testName.replace(/\s/g, '-')}.json`);
+  fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
+  return newFeedbackDocs.map(doc => doc._id);
+};
+
+const feedBackDocDeleteScript = async (feedbackDocs, done) => {
+  for (const [dbName, rows] of Object.entries(feedbackDocs)) {
+    // eslint-disable-next-line no-undef
+    const metaDb = new PouchDB(dbName);
+    const deletes = rows.map(row => (row.doc._deleted = true) && row.doc);
+    await metaDb.bulkDocs(deletes);
+  }
+  done();
+};
+
+const feedBackDocsReadScript = async (done) => {
   // sometimes tests end when the user is _not_ on an angular page
   // eslint-disable-next-line no-undef
   if (!window.PouchDB) {
@@ -22,13 +46,15 @@ const feedBackDocsScript = async (done) => {
   // eslint-disable-next-line no-undef
   const allDbList = await indexedDB.databases();
   const metaDbList = allDbList.filter(db => db.name.includes('pouch_medic-user') && db.name.endsWith('-meta'));
-  done(Promise.all(metaDbList.map(async (db) => {
-    const nameStripped = db.name.replace('_pouch_', '');
+  const feedbackDocs = { };
+  for (const metaDbName of metaDbList) {
+    const nameStripped = metaDbName.name.replace('_pouch_', '');
     // eslint-disable-next-line no-undef
     const metaDb = new PouchDB(nameStripped);
-    const docs = await metaDb.allDocs({ include_docs: true, startkey: 'feedback-', endkey: 'feedback-\ufff0' });
-    return docs.rows;
-  })));
+    const result = await metaDb.allDocs({ include_docs: true, startkey: 'feedback-', endkey: 'feedback-\ufff0' });
+    feedbackDocs[nameStripped] = result.rows;
+  }
+  done(feedbackDocs);
 };
 
 const createDoc = async (doc) => {
@@ -129,6 +155,8 @@ const info = async () => {
 };
 
 module.exports = {
+  getFeedbackDocs,
+  clearFeedbackDocs,
   feedBackDocs,
   createDoc,
   updateDoc,
