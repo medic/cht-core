@@ -22,7 +22,7 @@ describe('UHCStats Service', () => {
     clock = sinon.useFakeTimers(moment('2021-04-07 18:18:18').valueOf());
     localDb = { query: sinon.stub() };
     dbService = { get: sinon.stub().returns(localDb) };
-    sessionService = { isDbAdmin: sinon.stub() };
+    sessionService = { isAdmin: sinon.stub() };
     authService = { has: sinon.stub() };
     contactTypesService = {
       getTypeId: sinon.stub(),
@@ -78,7 +78,7 @@ describe('UHCStats Service', () => {
     };
     authService.has.returns(true);
     contactTypesService.get.returns({ count_visits: true });
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
     // Query - last visited date
     localDb.query.onCall(0).returns({ rows: [
       {
@@ -107,7 +107,7 @@ describe('UHCStats Service', () => {
     });
     expect(authService.has.callCount).to.equal(1);
     expect(contactTypesService.get.callCount).to.equal(1);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(2);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
@@ -131,7 +131,7 @@ describe('UHCStats Service', () => {
     };
     authService.has.returns(true);
     contactTypesService.get.returns({ count_visits: true });
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
     // Query - last visited date
     localDb.query.onCall(0).returns({ rows: [
       {
@@ -168,7 +168,7 @@ describe('UHCStats Service', () => {
     });
     expect(authService.has.callCount).to.equal(1);
     expect(contactTypesService.get.callCount).to.equal(1);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(2);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
@@ -188,7 +188,7 @@ describe('UHCStats Service', () => {
     };
     authService.has.returns(true);
     contactTypesService.get.returns({ count_visits: true });
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
     // Query - last visited date
     localDb.query.onCall(0).returns({ rows: [
       {
@@ -206,7 +206,7 @@ describe('UHCStats Service', () => {
     });
     expect(authService.has.callCount).to.equal(1);
     expect(contactTypesService.get.callCount).to.equal(1);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(1);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
@@ -222,7 +222,7 @@ describe('UHCStats Service', () => {
     };
     authService.has.returns(true);
     contactTypesService.get.returns({ count_visits: true });
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
     // Query - last visited date
     localDb.query.onCall(0).returns({ rows: [
       {
@@ -240,7 +240,7 @@ describe('UHCStats Service', () => {
     });
     expect(authService.has.callCount).to.equal(1);
     expect(contactTypesService.get.callCount).to.equal(1);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(1);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
@@ -260,7 +260,7 @@ describe('UHCStats Service', () => {
     };
     authService.has.returns(true);
     contactTypesService.get.returns({ count_visits: true });
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
     // Query - last visited date
     localDb.query.onCall(0).returns({ rows: [
       {
@@ -280,7 +280,7 @@ describe('UHCStats Service', () => {
     });
     expect(authService.has.callCount).to.equal(1);
     expect(contactTypesService.get.callCount).to.equal(1);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(2);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
@@ -295,37 +295,37 @@ describe('UHCStats Service', () => {
   it('should do nothing if visit settings and contact id arent provided', async () => {
     authService.has.returns(true);
     contactTypesService.get.returns({ count_visits: true });
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
 
     const result = await service.getHomeVisitStats(null, null as any);
 
     expect(result).to.equal(undefined);
     expect(authService.has.callCount).to.equal(0);
     expect(contactTypesService.get.callCount).to.equal(0);
-    expect(sessionService.isDbAdmin.callCount).to.equal(0);
+    expect(sessionService.isAdmin.callCount).to.equal(0);
     expect(localDb.query.callCount).to.equal(0);
   });
 
   it('should do nothing if user is DB Admin', async () => {
-    sessionService.isDbAdmin.returns(true);
+    sessionService.isAdmin.returns(true);
 
     const result = await service.getHomeVisitStats({ _id: '2b' }, { monthStartDate: 26 });
 
     expect(result).to.equal(undefined);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(authService.has.callCount).to.equal(0);
     expect(contactTypesService.get.callCount).to.equal(0);
     expect(localDb.query.callCount).to.equal(0);
   });
 
   it('should do nothing if user doesnt have permission', async () => {
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
     authService.has.returns(false);
 
     const result = await service.getHomeVisitStats({ _id: '2b' }, { monthStartDate: 26 });
 
     expect(result).to.equal(undefined);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(authService.has.callCount).to.equal(1);
     expect(contactTypesService.get.callCount).to.equal(0);
     expect(localDb.query.callCount).to.equal(0);
@@ -333,13 +333,13 @@ describe('UHCStats Service', () => {
 
   it('should do nothing if contact type doesnt count visits', async () => {
     authService.has.returns(true);
-    sessionService.isDbAdmin.returns(false);
+    sessionService.isAdmin.returns(false);
     contactTypesService.get.returns({ count_visits: false });
 
     const result = await service.getHomeVisitStats({ _id: '2b' }, { monthStartDate: 26 });
 
     expect(result).to.equal(undefined);
-    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(authService.has.callCount).to.equal(1);
     expect(contactTypesService.get.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(0);

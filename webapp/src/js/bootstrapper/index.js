@@ -80,9 +80,7 @@
   };
 
   const hasFullDataAccess = function(userCtx) {
-    return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           hasRole(userCtx, ONLINE_ROLE);
+    return hasRole(userCtx, '_admin') || hasRole(userCtx, ONLINE_ROLE);
   };
 
   /* pouch db set up function */

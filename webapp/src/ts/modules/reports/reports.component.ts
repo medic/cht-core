@@ -125,7 +125,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async checkPermissions() {
     this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
-    const isAdmin = this.sessionService.isDbAdmin();
+    const isAdmin = this.sessionService.isAdmin();
     const isDisabled = !isAdmin && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSidebarFilter = !isDisabled;
     this.canDefaultFilter = !isAdmin && this.isOnlineOnly && await this.authService.has(CAN_DEFAULT_FACILITY_FILTER);

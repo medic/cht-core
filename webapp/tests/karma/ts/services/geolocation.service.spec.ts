@@ -36,8 +36,8 @@ describe('Geolocation service', () => {
     sinon.replaceGetter(window, 'navigator', () => ({}));
     return service.init()().then(returned => {
       expect(returned).to.deep.equal({
-        code: -1,
-        message: 'Geolocation API unavailable.',
+        code: -3,
+        message: 'Geolocation API unavailable',
       });
     });
   });
@@ -197,7 +197,7 @@ describe('Geolocation service', () => {
 
       return deferred().then(error => {
         expect(error).to.deep.equal({
-          code: -1,
+          code: -2,
           message: 'Geolocation timeout exceeded'
         });
       });

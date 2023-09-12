@@ -567,7 +567,7 @@ describe('Users API', () => {
 
     it('should throw error when requesting for online roles', () => {
       const params = {
-        role: 'national_admin',
+        role: JSON.stringify(['national_admin', 'mm-online']),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -582,7 +582,7 @@ describe('Users API', () => {
 
     it('should throw error for array roles of online user', () => {
       const params = {
-        role: JSON.stringify(['random', 'national_admin', 'random']),
+        role: JSON.stringify(['random', 'national_admin', 'mm-online']),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);

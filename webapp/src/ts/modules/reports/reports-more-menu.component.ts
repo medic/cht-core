@@ -112,7 +112,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     this.hasExportPermission = await this.authService.any([[ 'can_export_all' ], [ 'can_export_messages' ]]);
     this.hasVerifyPermission = await this.authService.has('can_verify_reports');
     this.hasEditVerifyPermission = await this.authService.has('can_edit_verification');
-    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
+    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   deleteReport() {

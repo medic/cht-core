@@ -130,8 +130,7 @@ describe('AppComponent', () => {
     };
     sessionService = {
       init: sinon.stub().resolves(),
-      isAdmin: sinon.stub().returns(true),
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
     };

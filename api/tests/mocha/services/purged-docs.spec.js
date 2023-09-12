@@ -3,23 +3,22 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const db = require('../../../src/db');
+const dbWatcher = require('../../../src/services/db-watcher');
+const purgedDocsCache = require('../../../src/services/purged-docs-cache');
 const environment = require('../../../src/environment');
-const cacheService = require('../../../src/services/cache');
 const purgingUtils = require('@medic/purging-utils');
+const config = require('../../../src/config');
+const configWatcher = require('../../../src/services/config-watcher');
 const _ = require('lodash');
 
 let service;
-let recursiveOn;
 
 describe('Purged Docs service', () => {
   beforeEach(() => {
-    recursiveOn = sinon.stub();
-    recursiveOn.callsFake(() => {
-      const promise = sinon.stub().resolves();
-      promise.on = recursiveOn;
-      return promise;
-    });
-    sinon.stub(db.sentinel, 'changes').returns({ on: recursiveOn });
+    sinon.stub(configWatcher, 'watch');
+    sinon.stub(dbWatcher, 'medic');
+    sinon.stub(dbWatcher, 'sentinel');
+    sinon.stub(dbWatcher, 'users');
     service = rewire('../../../src/services/purged-docs');
   });
 
@@ -28,91 +27,132 @@ describe('Purged Docs service', () => {
   });
 
   describe('listen', () => {
-    it('should listen to sentinel changes once', () => {
+    it('should listen to sentinel, medic and users changes once', () => {
       const listen = service.__get__('listen');
       listen();
-      chai.expect(db.sentinel.changes.callCount).to.equal(1);
-      chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
+      chai.expect(dbWatcher.medic.callCount).to.equal(1);
+      chai.expect(dbWatcher.sentinel.callCount).to.equal(1);
+      chai.expect(dbWatcher.users.callCount).to.equal(1);
+      chai.expect(configWatcher.watch.callCount).to.equal(1);
     });
 
-    it('should process changes correctly', () => {
+    it('should process sentinel changes correctly', () => {
+      sinon.stub(purgedDocsCache, 'wipe');
       const listen = service.__get__('listen');
-      let onChangeCallback;
-      recursiveOn.withArgs('change').callsFake((e, callback) => {
-        onChangeCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOn;
-        return promise;
-      });
       listen();
-      const cache = {
-        flushAll: sinon.stub(),
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
-
+      const onChangeCallback = dbWatcher.sentinel.args[0][0];
       chai.expect(onChangeCallback).to.be.a('function');
 
       onChangeCallback({ id: 'random-info', seq: 1 });
-      chai.expect(cache.flushAll.callCount).to.equal(0);
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
       onChangeCallback({ id: 'random-other-info', seq: 2 });
-      chai.expect(cache.flushAll.callCount).to.equal(0);
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
       onChangeCallback({ id: 'purgelog:some-random-date', changes: [{ rev: '2-something' }], deleted: true, seq: 3 });
-      chai.expect(cache.flushAll.callCount).to.equal(0);
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
       onChangeCallback({ id: 'purgelog:some-other-date', changes: [{ rev: '1-something' }], seq: 4 });
-      chai.expect(cache.flushAll.callCount).to.equal(1);
-
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(1);
       onChangeCallback({ id: 'purgelog:111', changes: [{ rev: '1-bla123' }], seq: 5 });
-      chai.expect(cache.flushAll.callCount).to.equal(2);
-
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(2);
       onChangeCallback({ id: 'purgelog:2222', changes: [{ rev: '1-post' }], seq: 6 });
-      chai.expect(cache.flushAll.callCount).to.equal(3);
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(3);
     });
 
-    it('should restart listener on error', () => {
+    it('should process medic changes correctly', async () => {
+      sinon.stub(purgedDocsCache, 'clear');
+      sinon.stub(purgedDocsCache, 'wipe');
       const listen = service.__get__('listen');
-      let onChangeCallback;
-      let onErrorCallback;
+      listen();
+      const onChangeCallback = dbWatcher.medic.args[0][0];
 
-      recursiveOn.withArgs('change').callsFake((e, callback) => {
-        onChangeCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOn;
-        return promise;
+      chai.expect(onChangeCallback).to.be.a('function');
+
+      await onChangeCallback({ id: 'random', seq: 1 });
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
+
+      await onChangeCallback({ id: 'random-other', seq: 2 });
+      chai.expect(purgedDocsCache.clear.callCount).to.equal(0);
+
+      await onChangeCallback({
+        id: 'org.couchdb.user:rnduser',
+        changes: [{ rev: '2-something' }],
+        deleted: true,
+        seq: 3,
       });
-      recursiveOn.withArgs('error').callsFake((e, callback) => {
-        onErrorCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOn;
-        return promise;
+      chai.expect(purgedDocsCache.clear.callCount).to.equal(1);
+      chai.expect(purgedDocsCache.clear.args[0]).to.deep.equal(['rnduser']);
+
+      await onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
+      chai.expect(purgedDocsCache.clear.callCount).to.equal(2);
+      chai.expect(purgedDocsCache.clear.args[1]).to.deep.equal(['some-other-user']);
+
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
+    });
+
+    it('should process users changes correctly', async () => {
+      sinon.stub(purgedDocsCache, 'clear');
+      sinon.stub(purgedDocsCache, 'wipe');
+
+      const listen = service.__get__('listen');
+      listen();
+      const onChangeCallback = dbWatcher.users.args[0][0];
+      chai.expect(onChangeCallback).to.be.a('function');
+
+      await onChangeCallback({ id: 'random', seq: 1 });
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
+
+      await onChangeCallback({ id: 'random-other', seq: 2 });
+      chai.expect(purgedDocsCache.clear.callCount).to.equal(0);
+
+      await onChangeCallback({
+        id: 'org.couchdb.user:rnduser',
+        changes: [{ rev: '2-something' }],
+        deleted: true,
+        seq: 3,
       });
+      chai.expect(purgedDocsCache.clear.callCount).to.equal(1);
+      chai.expect(purgedDocsCache.clear.args[0]).to.deep.equal(['rnduser']);
+
+      await onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
+      chai.expect(purgedDocsCache.clear.callCount).to.equal(2);
+      chai.expect(purgedDocsCache.clear.args[1]).to.deep.equal(['some-other-user']);
+
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
+    });
+
+    it('should process config changes correctly', () => {
+      sinon.stub(purgedDocsCache, 'wipe');
+
+      const configKey = 'district_admins_access_unallocated_messages';
+      sinon.stub(config, 'get');
+
+      config.get.returns('true');
+      let onSettingsChangeCb;
+      configWatcher.watch.callsFake(callback => onSettingsChangeCb = callback);
+      const listen = service.__get__('listen');
 
       listen();
-      chai.expect(db.sentinel.changes.callCount).to.equal(1);
-      chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
-      onErrorCallback();
-      chai.expect(db.sentinel.changes.callCount).to.equal(2);
-      chai.expect(db.sentinel.changes.args[1]).to.deep.equal([{ live: true, since: 'now' }]);
-      onChangeCallback({ id: 'some-info', changes: [{ rev: '1-post' }], seq: 6 });
-      onErrorCallback();
-      chai.expect(db.sentinel.changes.callCount).to.equal(3);
-      chai.expect(db.sentinel.changes.args[2]).to.deep.equal([{ live: true, since: 6 }]);
+      chai.expect(onSettingsChangeCb).to.be.a('function');
+      onSettingsChangeCb();
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(0);
+      chai.expect(config.get.args).to.deep.equal([[configKey], [configKey]]);
+
+      config.get.returns('false');
+      onSettingsChangeCb();
+      chai.expect(config.get.callCount).to.equal(3);
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(1);
+
+      onSettingsChangeCb();
+      chai.expect(config.get.callCount).to.equal(4);
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(1);
+
+      config.get.returns('true');
+      onSettingsChangeCb();
+      chai.expect(config.get.callCount).to.equal(5);
+      chai.expect(purgedDocsCache.wipe.callCount).to.equal(2);
     });
   });
 
   describe('getPurgedIds', () => {
-    describe('getCacheKey', () => {
-      it('should return unique hash depending on all params', () => {
-        const getCacheKey = service.__get__('getCacheKey');
-        const hash1 = getCacheKey({ roles: [ 1, 2, 3 ] }, [1, 2, 3]);
-        const hash2 = getCacheKey({ roles: [ 1, 2 ] }, [1, 2, 3]);
-        const hash3 = getCacheKey({ roles: [ 1, 2, 3 ] }, [1, 2, 3, 4]);
-
-        chai.expect(hash1).not.to.equal(hash2);
-        chai.expect(hash1).not.to.equal(hash3);
-        chai.expect(hash3).not.to.equal(hash2);
-      });
-    });
-
     it('should return empty list when no ids provided', () => {
       return service.getPurgedIds(['a', 'b']).then(result => {
         chai.expect(result).to.deep.equal([]);
@@ -128,29 +168,23 @@ describe('Purged Docs service', () => {
     it('should respond from cache if cache is already available', () => {
       const ids = [1, 2, 3, 4, 5, 6];
       const cachedPurgedIds = [1, 4, 6];
-      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
-      const cache = {
-        get: sinon.stub().returns(cachedPurgedIds),
-        ttl: sinon.stub()
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
+      sinon.stub(purgedDocsCache, 'get').resolves(cachedPurgedIds);
 
-      return service.getPurgedIds({ roles: [ 'a', 'b' ] }, ids).then(result => {
+      return service.getPurgedIds({ roles: [ 'a', 'b' ], name: 'meka' }, ids).then(result => {
         chai.expect(result).to.deep.equal(cachedPurgedIds);
-        chai.expect(cache.get.callCount).to.equal(1);
-        chai.expect(cache.get.args[0]).to.deep.equal(['unique_cache_key']);
-        chai.expect(cache.ttl.callCount).to.equal(1);
-        chai.expect(cache.ttl.args[0]).to.deep.equal(['unique_cache_key']);
+        chai.expect(purgedDocsCache.get.args).to.deep.equal([['meka']]);
       });
     });
 
     it('should return empty list when purgeDb does not exist', () => {
       const ids = [1, 2, 3, 4];
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').resolves();
+
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
       sinon.stub(db, 'exists').resolves(false);
-
-      return service.getPurgedIds(['a', 'b'], ids).then(result => {
+      return service.getPurgedIds({ roles: ['a', 'b'], name: 'meh' }, ids).then(result => {
         chai.expect(result).to.deep.equal([]);
       });
     });
@@ -163,15 +197,9 @@ describe('Purged Docs service', () => {
         .onCall(0).resolves(purgeDb)
         .onCall(1).resolves(false);
       sinon.stub(db, 'close');
-      const userCtx = { roles: [ 'a', 'b' ] };
-
-      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
-      const cache = {
-        get: sinon.stub().returns(false),
-        ttl: sinon.stub(),
-        set: sinon.stub()
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
+      const userCtx = { roles: [ 'a', 'b' ], name: 'omg' };
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').resolves();
 
       return service
         .getPurgedIds(userCtx, ['1', '2', '3'])
@@ -196,14 +224,8 @@ describe('Purged Docs service', () => {
       const purgeDb = { changes: sinon.stub().rejects({ status: 500 }) };
       sinon.stub(db, 'exists').resolves(purgeDb);
       sinon.stub(db, 'close');
-
-      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
-      const cache = {
-        get: sinon.stub().returns(false),
-        ttl: sinon.stub(),
-        set: sinon.stub()
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').resolves();
 
       return service
         .getPurgedIds({ roles: [ 'a', 'b' ] }, ['1', '2', '3'])
@@ -221,13 +243,10 @@ describe('Purged Docs service', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
-      service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
-      const cache = {
-        get: sinon.stub().returns(false),
-        ttl: sinon.stub(),
-        set: sinon.stub()
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
+
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').resolves();
+
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'exists').resolves(purgeDb);
       sinon.stub(db, 'close');
@@ -241,12 +260,10 @@ describe('Purged Docs service', () => {
         ]
       });
 
-      return service.getPurgedIds({ roles: [ 'a', 'b' ] }, ids).then(result => {
+      return service.getPurgedIds({ roles: [ 'a', 'b' ], name: 'tom' }, ids).then(result => {
         chai.expect(result).to.deep.equal(['2', '3', '4', '6']);
 
-        chai.expect(cache.get.callCount).to.equal(1);
-        chai.expect(cache.get.args[0]).to.deep.equal(['unique_cache_key']);
-        chai.expect(cache.ttl.callCount).to.equal(0);
+        chai.expect(purgedDocsCache.get.args).to.deep.equal([['tom']]);
 
         chai.expect(purgingUtils.getPurgeDbName.callCount).to.equal(1);
         chai.expect(purgingUtils.getPurgeDbName.args[0]).to.deep.equal([environment.db, 'some_random_hash']);
@@ -259,21 +276,43 @@ describe('Purged Docs service', () => {
           seq_interval: ids.length
         }]);
 
-        chai.expect(cache.set.callCount).to.equal(1);
-        chai.expect(cache.set.args[0]).to.deep.equal(['unique_cache_key', result]);
+        chai.expect(purgedDocsCache.set.args).to.deep.equal([['tom', result]]);
         chai.expect(db.close.callCount).to.equal(1);
         chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
       });
     });
 
+    it('should throw other cache update errors', async () => {
+      const ids = ['1', '2', '3', '4', '5', '6'];
+      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
+      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').rejects({ status: 500 });
+      const purgeDb = { changes: sinon.stub() };
+      sinon.stub(db, 'exists').resolves(purgeDb);
+      sinon.stub(db, 'close');
+      purgeDb.changes.resolves({
+        last_seq: '111-seq',
+        results: [
+          { id: 'purged:2' },
+          { id: 'purged:3' },
+          { id: 'purged:4' },
+          { id: 'purged:6' },
+        ]
+      });
+
+      try {
+        await service.getPurgedIds({ roles: [ 'a', 'b' ], name: 'tom' }, ids);
+        chai.expect.fail('should have thrown');
+      } catch (err) {
+        chai.expect(err).to.deep.equal({ status: 500 });
+      }
+    });
+
     it('should skip deleted purges', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
-      const cache = {
-        get: sinon.stub().returns(false),
-        ttl: sinon.stub(),
-        set: sinon.stub(),
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').resolves();
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'exists').resolves(purgeDb);
       sinon.stub(db, 'close');
@@ -302,12 +341,8 @@ describe('Purged Docs service', () => {
 
     it('should throw db changes errors', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
-      const cache = {
-        get: sinon.stub().returns(false),
-        ttl: sinon.stub(),
-        set: sinon.stub(),
-      };
-      sinon.stub(cacheService, 'instance').returns(cache);
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').resolves();
       const purgeDb = { changes: sinon.stub() };
       sinon.stub(db, 'exists').resolves(purgeDb);
       sinon.stub(db, 'close');

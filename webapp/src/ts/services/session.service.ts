@@ -115,11 +115,6 @@ export class SessionService {
   }
 
   isAdmin(userCtx?) {
-    return this.isDbAdmin(userCtx) ||
-      this.hasRole('national_admin', userCtx); // deprecated: kept for backwards compatibility: #4525
-  }
-
-  isDbAdmin(userCtx?) {
     return this.hasRole('_admin', userCtx);
   }
 
