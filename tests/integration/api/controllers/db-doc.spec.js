@@ -448,7 +448,7 @@ describe('db-doc handler', () => {
       ];
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
-        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
@@ -766,7 +766,7 @@ describe('db-doc handler', () => {
 
         const docs = reportScenarios.map(scenario => scenario.doc);
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+          .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
             _.defaults({ path: `/${patient._id}` }, offlineRequestOptions)
@@ -876,23 +876,16 @@ describe('db-doc handler', () => {
       ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, key) => (docs[key]._rev = result.rev));
-
-          return utils.saveDocs(docs);
-        })
-        .then(results => {
-          results.forEach((result, key) => (docs[key]._rev = result.rev));
-
+        .saveDocsRevs(docs)
+        .then(() => utils.saveDocsRevs(docs))
+        .then(() => {
           docs[0].parent = { _id: 'fixture:online' };
           docs[1].parent = { _id: 'fixture:offline' };
 
-          return utils.saveDocs(docs);
+          return utils.saveDocsRevs(docs);
         })
-        .then(results => {
+        .then(() => {
           const deletes = [];
-          results.forEach((result, key) => (docs[key]._rev = result.rev));
 
           deletes.push({
             _id: docs[0]._id,
@@ -1073,7 +1066,7 @@ describe('db-doc handler', () => {
       };
 
       return utils
-        .updateSettings({ replication_depth: [{ role:'district_admin', depth: 2 }]}, true)
+        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2 }]}, true)
         .then(() => utils.saveDocs([ allowedTask, deniedTask, allowedTarget, deniedTarget ]))
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/task1' }, offlineRequestOptions)),
@@ -1418,7 +1411,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))
@@ -1514,10 +1507,8 @@ describe('db-doc handler', () => {
       ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
-
+        .saveDocsRevs(docs)
+        .then(() => {
           const updates = [
             {
               _id: 'n_put_1',
@@ -1724,9 +1715,9 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: `/${scenario.doc._id}`, body:scenario.doc }, offlineRequestOptions)
+          _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
@@ -1816,9 +1807,8 @@ describe('db-doc handler', () => {
       const docs = [ allowedTask, deniedTask, allowedTarget, deniedTarget ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
+        .saveDocsRevs(docs)
+        .then(() => {
           const updates = docs.map(doc => Object.assign({ updated: true }, doc));
           const promises = updates.map(doc =>
             utils
@@ -2220,10 +2210,8 @@ describe('db-doc handler', () => {
       ];
 
       return utils
-        .saveDocs(docs)
-        .then(results => {
-          results.forEach((result, idx) => (docs[idx]._rev = result.rev));
-
+        .saveDocsRevs(docs)
+        .then(() => {
           const updates = [
             { _id: 'n_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'n1' }, // new allowed
             { _id: 'n_put_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'n2' }, // new denied

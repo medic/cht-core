@@ -791,5 +791,18 @@ exports.forms = {
         required: true
       }
     }
+  },
+  NP: {
+    meta: {
+      code: 'NP'
+    },
+    fields: {
+      patient_age: {
+        type: 'integer'
+      },
+      phone_number: {
+        type: 'phone_number'
+      }
+    }
   }
 };

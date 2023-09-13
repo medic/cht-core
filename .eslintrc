@@ -34,6 +34,8 @@
     "func-style": ["error", "expression"],
     "function-call-argument-newline": ["error", "consistent"],
     "function-paren-newline": ["error", "consistent"],
+    "key-spacing": ["error", { "beforeColon": false, "afterColon": true }],
+    "keyword-spacing": ["error", { "before": true, "after": true }],
     "linebreak-style": ["error", "unix"],
     "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
     "no-alert": "error",
@@ -52,20 +54,6 @@
   },
   "overrides": [
     {
-      "files": [ "Gruntfile.js" ],
-      "env": {
-        "node": true
-      }
-    },
-    {
-      "files": [ "build/service-worker.js" ],
-      "rules": {
-        "max-len": "off",
-        "no-console": "off",
-        "no-var": "off"
-      }
-    },
-    {
       "files": [ "**/test/**", "**/tests/**" ],
       "rules": {
         "promise/catch-or-return": "error"
@@ -78,20 +66,15 @@
         "array-bracket-newline": "off",
         "func-style": "off",
         "function-call-argument-newline": "off",
-        "function-paren-newline": "off"
-      }
-    },
-    {
-      "files": ["build/service-worker.js"],
-      "rules": {
-        "array-callback-return": "off",
-        "func-style": "off"
+        "function-paren-newline": "off",
+        "key-spacing": "off"
       }
     },
     {
       "files": ["ddocs/**/*.js"],
       "rules": {
-        "function-paren-newline": "off"
+        "function-paren-newline": "off",
+        "keyword-spacing": "off",
       }
     }
   ]

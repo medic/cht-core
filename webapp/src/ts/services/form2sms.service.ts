@@ -6,6 +6,7 @@ import { GetReportContentService } from '@mm-services/get-report-content.service
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class Form2smsService {
     private fileReaderService: FileReaderService,
     private parseProvider:ParseProvider,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
+    private userSettingsService:UserSettingsService,
   ) {
   }
 
@@ -51,15 +53,16 @@ export class Form2smsService {
     return Promise
       .all([
         this.getReportContentService.getReportContent(doc),
-        this.getFormModel(form)
+        this.getFormModel(form),
+        this.userSettingsService.getWithLanguage()
       ])
-      .then(([reportModel, formModel]) => {
-        return this.enketoPrepopulationDataService.get(formModel, reportModel);
+      .then(([reportModel, formModel, userSettings]) => {
+        return this.enketoPrepopulationDataService.get(userSettings, formModel, reportModel);
       });
   }
 
   transform(doc) {
-    if(!doc) {
+    if (!doc) {
       return Promise.reject(new Error('No doc provided.'));
     }
 
@@ -79,7 +82,7 @@ export class Form2smsService {
         };
 
         if (typeof form.xml2sms === 'string') {
-          return this.parseProvider.parse(form.xml2sms)(context, { doc:doc.fields });
+          return this.parseProvider.parse(form.xml2sms)(context, { doc: doc.fields });
         } else {
           console.debug('Checking for standard odk tags in form submission...');
           return this.getReportXml(doc.form, doc).then(odkForm2sms);

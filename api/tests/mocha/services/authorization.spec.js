@@ -36,7 +36,7 @@ describe('Authorization service', () => {
   describe('getDepth', () => {
     it('unlimited depth for no roles', () => {
       service.__get__('getDepth')({}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
-      service.__get__('getDepth')({ name : 'a'}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ name: 'a'}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
       service.__get__('getDepth')({ roles: []}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
     });
 
@@ -911,7 +911,7 @@ describe('Authorization service', () => {
       it('returns true for reports with unknown subject and allowed submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', 'submitter' ];
         viewResults = {
-          replicationKeys: [{ key: false, value:  { submitter: 'submitter', type: 'data_record' }}],
+          replicationKeys: [{ key: false, value: { submitter: 'submitter', type: 'data_record' }}],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1244,7 +1244,7 @@ describe('Authorization service', () => {
           { key: ['new_contact_id'], value: 'new_patient_id' },
           { key: ['new_contact_id', 0], value: 'new_patient_id' },
           { key: [userCtx.facility_id], value: 'new_patient_id' },
-          { key: [userCtx.facility_id, 1], value:  'new_patient_id' }
+          { key: [userCtx.facility_id, 1], value: 'new_patient_id' }
         ];
 
         service.updateContext(true, feed, viewResults).should.equal(true);
@@ -1633,7 +1633,7 @@ describe('Authorization service', () => {
           viewResults: {
             contactsByDepth: [
               { key: ['c1'], value: '123456' },
-              { key: ['p1'], value : '123456' },
+              { key: ['p1'], value: '123456' },
               { key: ['facility_id'], value: '123456' },
             ],
             replicationKeys: [{ key: 'c1', value: { type: 'contact' }}],

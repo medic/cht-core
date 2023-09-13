@@ -253,14 +253,14 @@ describe('replication', () => {
       it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled',
         async () => {
           await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
-          await utils.saveDoc({ _id:'unallocated_report', type:'data_record' });
+          await utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' });
           const response = await requestDocs('bob');
           assertDocIds(response, ...bobsIds, 'unallocated_report');
         });
 
       it('should not be supplied if user has perm but district_admins_access_unallocated_messages is disabled',
         async () => {
-          await utils.saveDoc({ _id:'unallocated_report', type:'data_record' });
+          await utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' });
           const response = await requestDocs('bob');
           assertDocIds(response, ...bobsIds);
         });
@@ -269,19 +269,19 @@ describe('replication', () => {
     describe('replication depth', () => {
       const docs = [
         {
-          _id:'depth_clinic',
-          type:'clinic',
-          parent: { _id:'fixture:chwville' },
+          _id: 'depth_clinic',
+          type: 'clinic',
+          parent: { _id: 'fixture:chwville' },
         },
         {
-          _id:'depth_person',
-          type:'person',
-          parent: { _id:'depth_clinic', parent: { _id:'fixture:chwville' } },
+          _id: 'depth_person',
+          type: 'person',
+          parent: { _id: 'depth_clinic', parent: { _id: 'fixture:chwville' } },
         }
       ];
 
       it('should show contacts to a user only if they are within the configured depth', async () => {
-        await utils.updateSettings({ replication_depth: [{ role:'district_admin', depth:1 }] }, true);
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true);
         await utils.saveDocs(docs);
         const response = await requestDocs('chw');
         assertDocIds(response, ...chwIds, 'depth_clinic');
@@ -291,8 +291,8 @@ describe('replication', () => {
         await utils.updateSettings(
           {
             replication_depth: [
-              { role:'district_admin', depth:1 },
-              { role:'analytics', depth:2 },
+              { role: 'district_admin', depth: 1 },
+              { role: 'analytics', depth: 2 },
             ]
           },
           true
@@ -436,13 +436,13 @@ describe('replication', () => {
           _id: 'clinic_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
         };
         const healthCenterPatient = {
           _id: 'health_center_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+          parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
         };
         return utils.saveDocs([patient, healthCenterPatient]);
       });
@@ -456,7 +456,9 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            }
           }
         };
         const clinicReport2 = {
@@ -467,7 +469,9 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            }
           }
         };
         const healthCenterReport = {
@@ -478,7 +482,7 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
           }
         };
         const bobReport = {
@@ -489,11 +493,11 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
           }
         };
 
-        await utils.updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true);
+        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true);
         await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -511,7 +515,9 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            }
           }
         };
         const clinicReport2 = {
@@ -522,7 +528,9 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            }
           }
         };
         const healthCenterReport = {
@@ -533,7 +541,7 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
           }
         };
         const bobReport = {
@@ -544,11 +552,11 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
           }
         };
 
-        await utils.updateSettings({ replication_depth: [{ role:'district_admin', depth: 1 }]}, true);
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }]}, true);
         await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -580,7 +588,9 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            }
           }
         };
         const clinicReport2 = {
@@ -591,7 +601,9 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            }
           }
         };
         const healthCenterReport = {
@@ -602,7 +614,7 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
           }
         };
         const bobReport = {
@@ -613,11 +625,11 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
           }
         };
 
-        await utils.updateSettings({replication_depth: [{ role:'district_admin', depth: 1, report_depth: 0 }]}, true);
+        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }]}, true);
         await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');

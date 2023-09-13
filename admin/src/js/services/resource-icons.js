@@ -50,7 +50,7 @@ angular.module('inboxServices').factory('ResourceIcons',
           cache[i].htmlContent[name] = content;
         }
         return cache[i].htmlContent[name];
-      } catch(e) {
+      } catch (e) {
         return '&nbsp';
       }
     };

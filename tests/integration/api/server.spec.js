@@ -217,6 +217,7 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startApi(false);
       await utils.startHaproxy();
+      await utils.delayPromise(1000);
 
       await utils.listenForApi();
       await utils.delayPromise(1000);

@@ -31,7 +31,7 @@ describe('/sms', function() {
 
       it('should accept requests with missing fields', function() {
         return api.post({})
-          .then(assert.response({ messages:[] }));
+          .then(assert.response({ messages: [] }));
       });
 
       it('should save supplied messages to DB', function() {
@@ -51,19 +51,19 @@ describe('/sms', function() {
             sms_received: 1511189020577,
           }
         )
-          .then(assert.response({ messages:[] }))
+          .then(assert.response({ messages: [] }))
 
           .then(() => assert.messagesInDb('test 1', 'test 2'));
       });
 
       it('should not reject bad message content', function() {
-        return api.postMessage({ missing_fields:true })
-          .then(assert.response({ messages:[] }));
+        return api.postMessage({ missing_fields: true })
+          .then(assert.response({ messages: [] }));
       });
 
       it('should save all good messages in a request containing some good and some bad', function() {
         return api.postMessages(
-          { bad_message:true },
+          { bad_message: true },
           {
             good_message: true,
             id: 'abc-123',
@@ -72,9 +72,9 @@ describe('/sms', function() {
             sms_sent: 1520354329376,
             sms_received: 1520354329386,
           },
-          { good_message:false }
+          { good_message: false }
         )
-          .then(assert.response({ messages:[] }))
+          .then(assert.response({ messages: [] }))
 
           .then(() => assert.messageInDb('should be saved'));
       });
@@ -89,7 +89,7 @@ describe('/sms', function() {
             sms_received: 1520354329389,
           }
         )
-          .then(assert.response({ messages:[] }))
+          .then(assert.response({ messages: [] }))
           .then(() => assert.messageInDb('once-only'))
 
           .then(() => api.postMessage(
@@ -101,7 +101,7 @@ describe('/sms', function() {
               sms_received: 1520354329392,
             }
           ))
-          .then(assert.response({ messages:[] }))
+          .then(assert.response({ messages: [] }))
           .then(() => assert.messageInDb('once-only'));
       });
 
@@ -114,7 +114,7 @@ describe('/sms', function() {
           .then(() => assert.messageWithoutState('abc-123'))
 
           .then(() => api.postStatus('abc-123', 'SENT'))
-          .then(assert.response({ messages:[] }))
+          .then(assert.response({ messages: [] }))
 
           .then(() => assert.messageState('abc-123', 'sent'));
       });
@@ -124,12 +124,12 @@ describe('/sms', function() {
           .then(() => assert.messageWithoutState('abc-123'))
 
           .then(() => api.postStatuses(
-            { id:'abc-123', status:'SENT' },
-            { id:'abc-123', status:'DELIVERED' }
+            { id: 'abc-123', status: 'SENT' },
+            { id: 'abc-123', status: 'DELIVERED' }
           ))
-          .then(assert.response({ messages:[] }))
+          .then(assert.response({ messages: [] }))
 
-          .then(() => assert.messageStates({ id:'abc-123', states:['sent', 'delivered'] }));
+          .then(() => assert.messageStates({ id: 'abc-123', states: ['sent', 'delivered'] }));
       });
 
       it('should not reject messages with unexpected status values', function() {
@@ -137,7 +137,7 @@ describe('/sms', function() {
           .then(() => assert.messageWithoutState('abc-123'))
 
           .then(() => api.postStatus('abc-123', 'WEIRD_STATUS'))
-          .then(assert.response({ messages:[] }))
+          .then(assert.response({ messages: [] }))
 
           .then(() => assert.messageState('abc-123', 'unrecognised'));
       });
@@ -146,8 +146,8 @@ describe('/sms', function() {
         return setup.saveWoMessage('abc-123', 'hello from webapp')
           .then(() => assert.messageWithoutState('abc-123'))
 
-          .then(() => api.post({ updates:[ { id:'abc-123' } ] }))
-          .then(assert.response({ messages:[] }))
+          .then(() => api.post({ updates: [ { id: 'abc-123' } ] }))
+          .then(assert.response({ messages: [] }))
 
           .then(() => assert.messageState('abc-123', 'unrecognised'));
       });
@@ -157,12 +157,12 @@ describe('/sms', function() {
           .then(() => assert.messageWithoutState('abc-123'))
 
           .then(() => api.postStatus('abc-123', 'SENT'))
-          .then(assert.response({ messages:[] }))
-          .then(() => assert.messageStates({ id:'abc-123', states:['sent'] }))
+          .then(assert.response({ messages: [] }))
+          .then(() => assert.messageStates({ id: 'abc-123', states: ['sent'] }))
 
           .then(() => api.postStatus('abc-123', 'SENT'))
-          .then(assert.response({ messages:[] }))
-          .then(() => assert.messageStates({ id:'abc-123', states:['sent'] }));
+          .then(assert.response({ messages: [] }))
+          .then(() => assert.messageStates({ id: 'abc-123', states: ['sent'] }));
       });
 
     });
@@ -172,11 +172,11 @@ describe('/sms', function() {
         .then(() => assert.messageWithoutState('abc-123'))
 
         .then(() => api.postStatuses(
-          { id:'abc-123', status:'SENT' },
-          { id:'def-456', status:'DELIVERED' }
+          { id: 'abc-123', status: 'SENT' },
+          { id: 'def-456', status: 'DELIVERED' }
         ))
-        .then(assert.response({ messages:[] }))
-        .then(() => assert.messageStates({ id:'abc-123', states:['sent'] }));
+        .then(assert.response({ messages: [] }))
+        .then(() => assert.messageStates({ id: 'abc-123', states: ['sent'] }));
     });
 
     it('should still save messages when an unrecognised status update is received', function() {
@@ -184,8 +184,8 @@ describe('/sms', function() {
         .then(() => assert.messageWithoutState('abc-123'))
 
         .then(() => api.postStatus('abc-123', 'WTF'))
-        .then(assert.response({ messages:[] }))
-        .then(() => assert.messageStates({ id:'abc-123', states:['unrecognised'] }));
+        .then(assert.response({ messages: [] }))
+        .then(() => assert.messageStates({ id: 'abc-123', states: ['unrecognised'] }));
     });
 
   });
@@ -211,9 +211,9 @@ const assert = {
           .then(actualContents => {
             actualContents = JSON.stringify(actualContents);
 
-            if(actualContents === expectedContents) {
+            if (actualContents === expectedContents) {
               resolve();
-            } else if(Date.now() < endTime) {
+            } else if (Date.now() < endTime) {
               setTimeout(check, 100);
             } else {
               reject(`Expected:\n      ${actualContents}\n    to equal:\n      ${expectedContents}`);
@@ -239,7 +239,7 @@ const assert = {
 
   messageStates: (...expectedStates) => {
     expectedStates.forEach(expectation => {
-      if(expectation.state) {
+      if (expectation.state) {
         expectation.states = [ expectation.state ];
         delete expectation.state;
       }
@@ -255,9 +255,9 @@ const assert = {
           .then(actualStates => {
             actualStates = JSON.stringify(actualStates);
 
-            if(actualStates === expectedStates) {
+            if (actualStates === expectedStates) {
               resolve();
-            } else if(Date.now() < endTime) {
+            } else if (Date.now() < endTime) {
               setTimeout(check, 100);
             } else {
               reject(`Expected:\n      ${actualStates}\n    to equal:\n      ${expectedStates}`);

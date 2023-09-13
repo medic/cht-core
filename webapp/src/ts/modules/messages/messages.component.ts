@@ -10,7 +10,7 @@ import { MessagesActions } from '@mm-actions/messages';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
 import { ExportService } from '@mm-services/export.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -141,7 +141,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     this.fastActionList = await this.fastActionButtonService.getMessageActions({
-      callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent).catch(() => {})
+      callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent),
     });
   }
 
@@ -157,9 +157,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
-    modalService
-      .show(SendMessageComponent)
-      .catch(() => {});
+    modalService.show(SendMessageComponent);
   }
 
   private setConversations(conversations: Record<string, any>[] = [], {merge = false} = {}) {
