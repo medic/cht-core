@@ -5,7 +5,7 @@ SLEEP_SECONDS="${SLEEP_SECONDS:-5}"
 NODE_COUNT=3
 
 verify_membership(){
-    curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_membership | jq ".all_nodes == .cluster_nodes and (.all_nodes | length) === $NODE_COUNT"
+    curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_membership | jq ".all_nodes == .cluster_nodes and (.all_nodes | length) == $NODE_COUNT"
 }
 
 enable_cluster(){
