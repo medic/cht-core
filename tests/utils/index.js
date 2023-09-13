@@ -580,7 +580,7 @@ const setUserContactDoc = (attempt=0) => {
 
 const deleteMetaDbs = async () => {
   const allDbs = await request({ path: '/_all_dbs' });
-  const metaDbs = allDbs.filter(db => db.endsWith('-meta'));
+  const metaDbs = allDbs.filter(db => db.endsWith('-meta') && !db.endsWith('-users-meta'));
   for (const metaDb of metaDbs) {
     await request({ method: 'DELETE', path: `/${metaDb}` });
   }
@@ -653,14 +653,6 @@ const deleteUsers = async (users, meta = false) => {
   const errors = results.flat().filter(result => !result.ok);
   if (errors.length) {
     return deleteUsers(users, meta);
-  }
-
-  if (!meta) {
-    return;
-  }
-
-  for (const user of users) {
-    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'DELETE' });
   }
 };
 
