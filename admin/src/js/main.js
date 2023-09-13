@@ -9,7 +9,6 @@ require('angular-pouchdb');
 require('angular-route');
 require('angular-sanitize');
 require('angular-translate');
-require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('@uirouter/angularjs');
 
@@ -183,7 +182,6 @@ angular.module('adminApp').config(function(
 
   $translateProvider.useLoader('TranslationLoader', {});
   $translateProvider.useSanitizeValueStrategy('escape');
-  $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
   $translateProvider.addInterpolation('TranslationNullInterpolation');
 
   $ngReduxProvider.createStoreWith(RootReducer, []);
