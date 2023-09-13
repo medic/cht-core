@@ -241,7 +241,6 @@ export class EnketoService {
                 window.history.pushState({ enketo_page_number: currentIndex }, '');
               }
               this.setupNavButtons($wrapper, currentIndex);
-              this.pauseMultimedia($wrapper);
             }
             this.forceRecalculate(form);
           });
@@ -264,16 +263,8 @@ export class EnketoService {
 
         this.setupNavButtons($wrapper, pageIndex);
         this.forceRecalculate(form);
-        this.pauseMultimedia($wrapper);
         return false;
       });
-  }
-
-  // This code can be removed once this issue is fixed: https://github.com/enketo/enketo-core/issues/816
-  private pauseMultimedia($wrapper) {
-    $wrapper
-      .find('audio, video')
-      .each((idx, element) => element.pause());
   }
 
   private addPopStateHandler(form, $wrapper) {
