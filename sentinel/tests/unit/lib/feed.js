@@ -9,6 +9,7 @@ const feed = require('../../../src/lib/feed');
 const metadata = require('../../../src/lib/metadata');
 const logger = require('../../../src/lib/logger');
 const tombstoneUtils = require('@medic/tombstone-utils');
+const changeRetryHistory = require('../../../src/lib/change-retry-history');
 
 describe('feed', () => {
 
@@ -183,6 +184,28 @@ describe('feed', () => {
         });
     });
 
+    it('should skip docs that should not be retried', () => {
+      const doc1 = { id: 'some-uuid' };
+      const doc2 = { id: 'other-uuid' };
+      sinon.stub(metadata, 'getTransitionSeq').resolves('123');
+      sinon.stub(changeRetryHistory, 'shouldProcess')
+        .withArgs(doc1).returns(false)
+        .withArgs(doc2).returns(true);
+
+      const push = sinon.stub(feed._changeQueue, 'push');
+      return feed
+        .listen()
+        .then(() => {
+          const callbackFn = handler.on.args[0][1];
+          callbackFn(doc1);
+          callbackFn(doc2);
+        })
+        .then(() => {
+          chai.expect(push.callCount).to.equal(1);
+          chai.expect(push.args[0][0]).to.deep.equal(doc2);
+        });
+    });
+
     it('stops listening when the number of changes in the queue is above the limit', () => {
       const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getTransitionSeq').resolves('123');
@@ -301,6 +324,26 @@ describe('feed', () => {
       });
     });
 
+    it('should pushes doc to retry on transitions error', (done) => {
+      sinon.stub(feed._changeQueue, 'length').returns(0);
+      sinon.stub(metadata, 'setTransitionSeq').resolves();
+      sinon.stub(changeRetryHistory, 'add');
+      sinon.stub(feed._transitionsLib, 'processChange').callsArgWith(1, 'an error');
+
+      feed._enqueue({ id: 'a change' });
+
+      feed._changeQueue.drain(() => {
+        return Promise.resolve().then(() => {
+          assert.equal(feed._transitionsLib.processChange.callCount, 1);
+          return Promise.resolve().then(() => {
+            assert.equal(metadata.setTransitionSeq.callCount, 0);
+            assert.deepEqual(changeRetryHistory.add.args, [[{ id: 'a change' }]]);
+            done();
+          });
+        });
+      });
+    });
+
     it('processes deleted changes through TombstoneUtils to create tombstones', done => {
       sinon.stub(tombstoneUtils, 'processChange').resolves();
       sinon.stub(metadata, 'setTransitionSeq').resolves();
@@ -325,7 +368,7 @@ describe('feed', () => {
       });
     });
 
-    it('does not advance metadata document if creating tombstone fails', done => {
+    it('advances metadata document if creating tombstone fails', done => {
       sinon.stub(tombstoneUtils, 'processChange').rejects();
       sinon.stub(metadata, 'setTransitionSeq').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
@@ -341,7 +384,7 @@ describe('feed', () => {
             deleted: true,
           });
           return Promise.resolve().then(() => {
-            assert.equal(metadata.setTransitionSeq.callCount, 0);
+            assert.equal(metadata.setTransitionSeq.callCount, 1);
             done();
           });
         });

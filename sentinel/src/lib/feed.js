@@ -2,6 +2,7 @@ const async = require('async');
 const logger = require('./logger');
 const db = require('../db');
 const metadata = require('./metadata');
+const changeRetryHistory = require('./change-retry-history');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const transitionsLib = require('../config').getTransitionsLib();
 
@@ -43,8 +44,11 @@ const registerFeed = (seq) => {
   request = db.medic
     .changes({ live: true, since: seq })
     .on('change', change => {
-      if (!change.id.match(IDS_TO_IGNORE) &&
-          !tombstoneUtils.isTombstoneId(change.id)) {
+      if (
+        !change.id.match(IDS_TO_IGNORE) &&
+        !tombstoneUtils.isTombstoneId(change.id) &&
+        changeRetryHistory.shouldProcess(change)
+      ) {
         enqueue(change);
 
         const queueSize = changeQueue.length();
@@ -74,13 +78,16 @@ const changeQueue = async.queue((change, callback) => {
     );
   }
   if (change.deleted) {
-    return tombstoneUtils.processChange(Promise, db.medic, change, logger)
-      .then(() => updateMetadata(change, callback))
-      .catch(callback);
+    return tombstoneUtils
+      .processChange(Promise, db.medic, change, logger)
+      .catch(() => {}) // error already logged by tombstoneUtils
+      // advance sentinel seq even when tombstone creation fails
+      .then(() => updateMetadata(change, callback));
   }
 
   transitionsLib.processChange(change, err => {
     if (err) {
+      changeRetryHistory.add(change);
       return callback(err);
     }
 
