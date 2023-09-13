@@ -52,7 +52,11 @@ const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
-let env;
+const env = {
+  ...process.env,
+  CHT_NETWORK: NETWORK,
+  COUCHDB_SECRET: 'monkey',
+};
 
 const dockerPlatformName = () => {
   try {
@@ -962,17 +966,9 @@ const createLogDir = async () => {
 };
 
 const startServices = async () => {
-  const db1Data = makeTempDir('ci-dbdata');
-  const db2Data = makeTempDir('ci-dbdata');
-  const db3Data = makeTempDir('ci-dbdata');
-  env = {
-    ...process.env,
-    CHT_NETWORK: NETWORK,
-    DB1_DATA: db1Data,
-    DB2_DATA: db2Data,
-    DB3_DATA: db3Data,
-    COUCHDB_SECRET: 'monkey',
-  };
+  env.DB1_DATA = makeTempDir('ci-dbdata');
+  env.DB2_DATA = makeTempDir('ci-dbdata');
+  env.DB3_DATA = makeTempDir('ci-dbdata');
 
   await dockerComposeCmd('up', '-d');
   const services = await dockerComposeCmd('ps', '-q');
