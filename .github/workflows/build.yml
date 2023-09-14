@@ -165,8 +165,8 @@ jobs:
         run: npm install -g cht-conf
       - run: npm ci
       - name: Install Chrome 90
+        if: ${{ matrix.cmd=='ci-webdriver-default-chrome90' }}
         run: |
-          sudo apt-get install -y fonts-liberation libasound2 libatk-bridge2.0-0  libatk1.0-0 libatspi2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libxrandr2 libxshmfence1 xdg-utils
           wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
           sudo dpkg -i "google-chrome-stable_current_amd64.deb"
       - name: Fetch allure history
