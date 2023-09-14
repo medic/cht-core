@@ -63,7 +63,7 @@ describe('Contacts content component', () => {
     translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub() };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
     userSettingsService = {

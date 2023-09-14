@@ -33,7 +33,7 @@ describe('Contacts More Menu Component', () => {
       any: sinon.stub().resolves(false),
       online: sinon.stub().returns(false),
     };
-    sessionService = { isDbAdmin: sinon.stub().returns(false) };
+    sessionService = { isAdmin: sinon.stub().returns(false) };
     responsiveService = { isMobile: sinon.stub().returns(false) };
     userSettingsService = { get: sinon.stub().resolves(undefined) };
 
