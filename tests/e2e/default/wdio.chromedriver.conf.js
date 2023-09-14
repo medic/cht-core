@@ -1,7 +1,7 @@
 const wdioBaseConfig = require('../wdio.conf');
 
 const defaultMinimumBrowserConfig = Object.assign(wdioBaseConfig.config, {
-  specs: ['/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/e2e/default/admin/admin-access.wdio-spec.js'],
+  specs: ['./about/about.wdio-spec.js'],
   capabilities: [{
     maxInstances: 1,
     browserName: 'chrome',
