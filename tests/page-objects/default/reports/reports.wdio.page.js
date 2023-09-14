@@ -32,8 +32,8 @@ const reviewReportOptionById = (id) => $(`${REVIEW_REPORT_CONTAINER} button.${id
 const activeReviewOption = () => $(`${REVIEW_REPORT_CONTAINER} button.active-option`);
 const reviewReportCloseButton = () => $(`${REVIEW_REPORT_CONTAINER} .panel-header .panel-header-close`);
 
-const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
-const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion mat-expansion-panel-header');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion mat-panel-description');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
 const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');

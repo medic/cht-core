@@ -4,8 +4,7 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-/* global caches fetch Response navigator */
-
+// global caches fetch Response navigator
 const getCachedRequests = async (raw) => {
   const cacheDetails = await browser.executeAsync(async (callback) => {
     const cacheNames = await caches.keys();
