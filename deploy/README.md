@@ -4,7 +4,7 @@
 
 This guide walks you through the process of deploying the Community Health Toolkit (CHT) Core application on a Kubernetes cluster. The deployment process utilizes a set of scripts and Helm charts for a simplified deployment experience.
 
-The primary script, `deploy-cht`, automatically installs the required Python packages and initiates the deployment of CHT Core on your Kubernetes cluster.
+The primary script, `cht-deploy`, automatically installs the required Python packages and initiates the deployment of CHT Core on your Kubernetes cluster.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ This script is set to install all the necessary prerequisites.
 
 ## Values Configuration
 
-Before running the `deploy-cht` script, you need to provide values in the `values.yaml` file. Here is an explanation of the values you need to replace:
+Before running the `cht-deploy` script, you need to provide values in the `values.yaml` file. Here is an explanation of the values you need to replace:
 
 - `project_name`: Replace `<your-project-name>` with your preferred project name.
 - `namespace`: Replace `"cht-dev-namespace"` with the desired namespace for the deployment.
@@ -31,10 +31,10 @@ Before running the `deploy-cht` script, you need to provide values in the `value
 
 ## Running the Script
 
-To initiate the deployment process, you need to run the `deploy-cht` script with the `-f` flag followed by the path to your `values.yaml` file, like so:
+To initiate the deployment process, you need to run the `cht-deploy` script with the `-f` flag followed by the path to your `values.yaml` file, like so:
 
 ```bash
-./deploy-cht -f <path-to-your-values.yaml>
+./cht-deploy -f <path-to-your-values.yaml>
 ```
 
 The script will then install the necessary Python packages, read your values.yaml file, and initiate the deployment process.
@@ -78,11 +78,3 @@ Example usage:
     ./describe-deployment cht-dev-namespace cht-couchdb-1
 
 Keep in mind that you will need to replace cht-dev-namespace and cht-couchdb-1 with your specific namespace and deployment names.
-
-## Known Issue
-
-Race condition may happen during deployment or sometimes after the upgrade-service has upgraded instances when you click on upgrade via the UI. The fix is scripted right now in the deploy-race-condition-fix script. Run the following:
-    
-    ./deploy-race-condition-fix
-
-This restarts API and the upgrade service and redeploys the services for both.
