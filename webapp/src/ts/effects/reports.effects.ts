@@ -173,8 +173,10 @@ export class ReportsEffects {
       .get()
       .get(id)
       .catch(err => {
-        // log the error but continue anyway
-        console.error('Error fetching contact for action bar', err);
+        if (err.status !== 404) {
+          // Log the error but continue anyway.
+          console.error('Error fetching contact for action bar', err);
+        }
       });
   }
 

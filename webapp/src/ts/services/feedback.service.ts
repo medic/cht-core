@@ -77,7 +77,7 @@ export class FeedbackService {
 
   private async generateFeedbackOnError(level, ...args) {
     const exception = args.find(arg => arg instanceof Error || arg?.stack || arg instanceof HttpErrorResponse);
-    const message = exception?.message || args[0];
+    const message = exception?.reason || exception?.message || args[0];
 
     if (this.shouldGenerateFeedback(level, message)) {
       this.lastErrorMessage = message;

@@ -203,8 +203,10 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       .get()
       .get(contactId)
       .catch(error => {
-        // Log the error but continue anyway.
-        console.error('Error fetching contact for fast action button', error);
+        if (error.status !== 404) {
+          // Log the error but continue anyway.
+          console.error('Error fetching contact for fast action button', error);
+        }
       });
   }
 

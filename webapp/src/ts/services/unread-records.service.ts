@@ -15,6 +15,7 @@ export class UnreadRecordsService implements OnDestroy {
   subscriptions: Subscription = new Subscription();
   private readonly TYPES = [ 'report', 'message' ];
   private callback;
+  private inited;
 
   constructor(
     private dbService: DbService,
@@ -35,9 +36,8 @@ export class UnreadRecordsService implements OnDestroy {
   }
 
   private getRead() {
-    return this.dbService
-      .get({ meta: true })
-      .query('medic-user/read', { group: true })
+    return this.inited
+      .then(() => this.dbService.get({ meta: true }).query('medic-user/read', { group: true }))
       .catch(err => {
         if (err.status !== 404) {
           throw err;
@@ -105,7 +105,7 @@ export class UnreadRecordsService implements OnDestroy {
   init(callback) {
     this.callback = callback;
     // wait for meta db sync to avoid querying meta view before the ddoc was synced from the server
-    this.dbSyncService
+    this.inited = this.dbSyncService
       .syncMeta()
       .then(() => {
         // get the initial count
@@ -132,7 +132,7 @@ export class UnreadRecordsService implements OnDestroy {
   }
 
   count() {
-    return this.getCount(this.callback);
+    return this.inited.then(() => this.getCount(this.callback));
   }
 
 }
