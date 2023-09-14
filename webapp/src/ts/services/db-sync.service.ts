@@ -250,13 +250,11 @@ export class DBSyncService {
       ]))
       .then(([ push, pull ]) => {
         telemetryEntry.recordSuccess({ push, pull });
+        this.ngZone.runOutsideAngular(() => purger.writeMetaPurgeLog(local, { syncedSeq: currentSeq }));
       })
       .catch(err => {
         telemetryEntry.recordFailure(err, this.knownOnlineState);
-      })
-      .then(() => this.ngZone.runOutsideAngular(() => {
-        purger.writeMetaPurgeLog(local, { syncedSeq: currentSeq });
-      }));
+      });
   }
 
   private sendUpdate(syncState: SyncState) {
