@@ -1,4 +1,5 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Inject, Injectable, NgZone } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
 import * as moment from 'moment';
 
@@ -8,92 +9,33 @@ import { SessionService } from '@mm-services/session.service';
 @Injectable({
   providedIn: 'root'
 })
-/**
- * TelemetryService: Records, aggregates, and submits telemetry data.
- */
 export class TelemetryService {
+  private readonly TELEMETRY_PREFIX = 'telemetry';
+  private readonly NAME_DIVIDER = '-';
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
-  private DB_ID_KEY;
-  private FIRST_AGGREGATED_DATE_KEY;
 
   private queue = Promise.resolve();
+  private windowRef;
 
   constructor(
     private dbService:DbService,
     private sessionService:SessionService,
     private ngZone:NgZone,
+    @Inject(DOCUMENT) private document:Document,
   ) {
-    // Intentionally scoped to the specific user, as they may perform a
-    // different role (online vs. offline being being the most obvious) with different performance implications
-    this.DB_ID_KEY = ['medic', this.sessionService.userCtx().name, 'telemetry-db'].join('-');
-    this.FIRST_AGGREGATED_DATE_KEY = ['medic', this.sessionService.userCtx().name, 'telemetry-date'].join('-');
-  }
-
-  private getDb() {
-    let dbName = window.localStorage.getItem(this.DB_ID_KEY);
-
-    if (!dbName) {
-      // We're adding a UUID onto the end of the DB name to make it unique. In
-      // the past we've had trouble with PouchDB being able to delete a DB and
-      // then instantly create a new DB with the same name.
-      dbName = 'medic-user-' + this.sessionService.userCtx().name + '-telemetry-' + uuidv4();
-      window.localStorage.setItem(this.DB_ID_KEY, dbName);
-    }
-    return window.PouchDB(dbName); // avoid angular-pouch as digest isn't necessary here
+    this.windowRef = this.document.defaultView;
   }
 
   getUniqueDeviceId() {
-    let uniqueDeviceId = window.localStorage.getItem(this.DEVICE_ID_KEY);
+    let uniqueDeviceId = this.windowRef.localStorage.getItem(this.DEVICE_ID_KEY);
 
     if (!uniqueDeviceId) {
       uniqueDeviceId = uuidv4();
-      window.localStorage.setItem(this.DEVICE_ID_KEY, uniqueDeviceId!);
+      this.windowRef.localStorage.setItem(this.DEVICE_ID_KEY, uniqueDeviceId!);
     }
 
     return uniqueDeviceId;
-  }
-
-  /**
-   * Returns a Moment object when the first telemetry record was created.
-   *
-   * This date is computed and stored in milliseconds (since Unix epoch)
-   * when we call this method for the first time and after every aggregation.
-   */
-  private getFirstAggregatedDate() {
-    let date = parseInt(window.localStorage.getItem(this.FIRST_AGGREGATED_DATE_KEY)!);
-
-    if (!date) {
-      date = Date.now();
-      window.localStorage.setItem(this.FIRST_AGGREGATED_DATE_KEY, date.toString());
-    }
-
-    return moment(date);
-  }
-
-  private storeIt(db, key, value) {
-    return db.post({
-      key: key,
-      value: value,
-      date_recorded: Date.now(),
-    });
-  }
-
-  // moment when the aggregation starts (the beginning of the current day)
-  private aggregateStartsAt() {
-    return moment().startOf('day');
-  }
-
-  // if there is telemetry data from previous days, aggregation is performed and the data destroyed
-  private submitIfNeeded(db) {
-    const startOf = this.aggregateStartsAt();
-    const dbDate = this.getFirstAggregatedDate();
-
-    if (dbDate.isBefore(startOf)) {
-      return this
-        .aggregate(db)
-        .then(() => this.reset(db));
-    }
   }
 
   private convertReduceToKeyValues(reduce) {
@@ -106,13 +48,22 @@ export class TelemetryService {
 
   private generateAggregateDocId(metadata) {
     return [
-      'telemetry',
+      this.TELEMETRY_PREFIX,
       metadata.year,
       metadata.month,
       metadata.day,
       metadata.user,
       metadata.deviceId,
-    ].join('-');
+    ].join(this.NAME_DIVIDER);
+  }
+
+  private generateTelemetryDBName(today: TodayMoment): string {
+    return [
+      this.TELEMETRY_PREFIX,
+      today.formatted,
+      // Scoped by user as they may perform a different role (online vs offline) with different performance implications
+      this.sessionService.userCtx().name,
+    ].join(this.NAME_DIVIDER);
   }
 
   private generateMetadataSection() {
@@ -122,8 +73,8 @@ export class TelemetryService {
         this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true }),
         this.dbService.get().allDocs({ key: 'settings' })
       ])
-      .then(([ddoc, formResults, settingsResults]) => {
-        const date = this.getFirstAggregatedDate();
+      .then(([ ddoc, formResults, settingsResults ]) => {
+        const date = this.getToday().today;
         const version = ddoc?.build_info?.version || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
           keyToVersion[row.doc.internalId] = row.doc._rev;
@@ -164,65 +115,101 @@ export class TelemetryService {
     };
   }
 
-  // This should never happen (famous last words..), because we should only
-  // generate a new document for every month, which is part of the _id.
+  private async getTelemetryDBs(): Promise<undefined|string[]> {
+    const databases = await this.document.defaultView?.indexedDB?.databases();
+
+    if (!databases?.length) {
+      return;
+    }
+
+    return databases
+      .filter(db => db.name?.startsWith(this.TELEMETRY_PREFIX))
+      .map(db => db.name || '');
+  }
+
+  /**
+   * This should never happen (famous last words..), because we should only
+   * generate a new document for every month, which is part of the _id.
+   */
   private storeConflictedAggregate(aggregateDoc) {
     aggregateDoc.metadata.conflicted = true;
-    aggregateDoc._id = [aggregateDoc._id, 'conflicted', Date.now()].join('-');
+    aggregateDoc._id = [ aggregateDoc._id, 'conflicted', Date.now() ].join(this.NAME_DIVIDER);
 
     return this.dbService
       .get({meta: true})
       .put(aggregateDoc);
   }
 
-  private aggregate(db) {
-    const reduceQuery = db.query(
-      {
-        map: (doc, emit) => emit(doc.key, doc.value),
-        reduce: '_stats',
-      },
-      {
-        group: true,
-      }
+  private async aggregate(db) {
+    const metadata = await this.generateMetadataSection();
+    const dbInfo = await this.dbService.get().info();
+    const reduceResult = await db.query(
+      { reduce: '_stats', map: (doc, emit) => emit(doc.key, doc.value) },
+      { group: true }
     );
 
-    return Promise
-      .all([
-        reduceQuery,
-        this.dbService.get().info(),
-        this.generateMetadataSection()
-      ])
-      .then(qAll => {
-        const reduceResult = qAll[0];
-        const infoResult = qAll[1];
-        const metadata = qAll[2];
+    const aggregateDoc = {
+      _id: this.generateAggregateDocId(metadata),
+      type: this.TELEMETRY_PREFIX,
+      metrics: this.convertReduceToKeyValues(reduceResult),
+      device: this.generateDeviceStats(),
+      metadata,
+      dbInfo,
+    };
 
-        const aggregateDoc: any = { type: 'telemetry' };
-
-        aggregateDoc.metrics = this.convertReduceToKeyValues(reduceResult);
-        aggregateDoc.metadata = metadata;
-        aggregateDoc._id = this.generateAggregateDocId(aggregateDoc.metadata);
-        aggregateDoc.device = this.generateDeviceStats();
-        aggregateDoc.dbInfo = infoResult;
-
-        return this.dbService
-          .get({ meta: true })
-          .put(aggregateDoc)
-          .catch(err => {
-            if (err.status === 409) {
-              return this.storeConflictedAggregate(aggregateDoc);
-            }
-
-            throw err;
-          });
-      });
+    try {
+      await this.dbService
+        .get({ meta: true })
+        .put(aggregateDoc);
+    } catch (error) {
+      if (error.status === 409) {
+        return this.storeConflictedAggregate(aggregateDoc);
+      }
+      throw error;
+    }
   }
 
-  private reset(db) {
-    window.localStorage.removeItem(this.DB_ID_KEY);
-    window.localStorage.removeItem(this.FIRST_AGGREGATED_DATE_KEY);
+  /**
+   * Moment when the aggregation starts (i.e. the beginning of the current day)
+   */
+  private getToday(): TodayMoment {
+    const today = moment().startOf('day');
+    return {
+      today,
+      formatted: today.format('YYYY-MM-DD'),
+    };
+  }
 
-    return db.destroy();
+  private async getCurrentTelemetryDB(today: TodayMoment) {
+    const telemetryDBs = await this.getTelemetryDBs();
+    let currentDB = telemetryDBs?.find(db => db.includes(today.formatted));
+
+    if (!currentDB) {
+      currentDB = this.generateTelemetryDBName(today);
+    }
+
+    return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
+  }
+
+  private storeIt(db, key, value) {
+    return db.post({
+      key: key,
+      value: value,
+      date_recorded: Date.now(),
+    });
+  }
+
+  private async submitIfNeeded(today: TodayMoment, telemetryDBs: string[] = []) {
+    for (const dbName of telemetryDBs) {
+      if (dbName.includes(today.formatted)) {
+        // Don't submit today's telemetry records
+        return;
+      }
+
+      const db = this.windowRef.PouchDB(dbName);
+      await this.aggregate(db);
+      db.destroy();
+    }
   }
 
   /**
@@ -232,7 +219,7 @@ export class TelemetryService {
    * are recording a timing (as opposed to an event) a value.
    *
    * The first time this API is called each month, the telemetry recording
-   * is followed by an aggregation of all of the previous months data.
+   * is followed by an aggregation of all the previous months' data.
    * Aggregation is done using the `_stats` reduce function, which
    * generates data like so:
    *
@@ -268,19 +255,21 @@ export class TelemetryService {
       value = 1;
     }
 
-    let db;
+    let currentDB;
+    const today = this.getToday();
+
     this.queue = this.queue
-      .then(() => db = this.getDb())
-      .then(() => this.submitIfNeeded(db))
-      .then(() => db = this.getDb())  // db is fetched again in case submitIfNeeded dropped the old reference
-      .then(() => this.storeIt(db, key, value))
-      .catch(err => console.error('Error in telemetry service', err))
+      .then(() => this.getTelemetryDBs())
+      .then(telemetryDBs => this.submitIfNeeded(today, telemetryDBs))
+      .then(() => currentDB = this.getCurrentTelemetryDB(today))
+      .then(() => this.storeIt(currentDB, key, value))
+      .catch(error => console.error('Error in telemetry service', error))
       .finally(() => {
-        if (!db || db._destroyed || db._closed) {
+        if (!currentDB || currentDB._destroyed || currentDB._closed) {
           return;
         }
         try {
-          db.close();
+          currentDB.close();
         } catch (err) {
           console.error('Error closing telemetry DB', err);
         }
@@ -288,4 +277,9 @@ export class TelemetryService {
 
     return this.queue;
   }
+}
+
+type TodayMoment = {
+  today: Record<string, any>;
+  formatted: string;
 }
