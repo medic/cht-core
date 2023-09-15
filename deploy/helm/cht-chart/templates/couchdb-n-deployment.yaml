@@ -41,7 +41,7 @@ spec:
               key: COUCHDB_SYNC_ADMINS_NODE
         {{- end }}        
         - name: COUCHDB_LOG_LEVEL
-          value: error
+          value: info
         - name: COUCHDB_PASSWORD
           valueFrom:
             secretKeyRef:
