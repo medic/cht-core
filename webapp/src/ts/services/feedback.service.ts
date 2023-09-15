@@ -39,8 +39,9 @@ export class FeedbackService {
   // Can be a lower-cased partial string or a regular expression
   private readonly NO_FEEDBACK_MESSAGES = [
     'failed to fetch',
-    'error while trying to record error',
-    /http failure .* unknown error/gi // server offline
+    /http failure .* unknown error/i, // server offline
+    /missing/i,
+    /document not found/i,
   ];
 
   private readonly FEEDBACK_LEVEL = 'error';
@@ -69,8 +70,16 @@ export class FeedbackService {
     }
 
     const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES.find(
-      (item:string|RegExp) => item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item)
+      (item:string|RegExp) => {
+        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
+        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
+        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
+        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
+        return item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item);
+      }
     );
+
+    console.log(matchesNoFeedback, message, this.NO_FEEDBACK_MESSAGES);
 
     return !matchesNoFeedback;
   }

@@ -76,9 +76,7 @@ export class ReportsEffects {
           .get(reportId)
           .then(report => this.reportActions.openReportContent(report))
           .catch(error => {
-            if (error.code !== 404) {
-              console.error('Error selecting report to open', error);
-            }
+            console.error('Error selecting report to open', error);
 
             this.globalActions.unsetSelected();
           }));
