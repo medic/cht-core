@@ -42,6 +42,13 @@ nodes:
   # Leave it empty if you want to let kubernetes deploy this on any available node. (Recommended)
   single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration. 
 
+# Applicable only if using k3s
+k3s_use_vSphere_storage_class: "false" # "true" or "false"
+# vSphere specific configurations. If you set "true" for k3s_use_vSphere_storage_class, fill in the details below.
+vSphere:
+  datastoreName: "DatastoreName"  # Replace with your datastore name
+  diskPath: "path/to/disk"         # Replace with your disk path
+
 # -----------------------------------------
 #       Pre-existing data section
 # -----------------------------------------

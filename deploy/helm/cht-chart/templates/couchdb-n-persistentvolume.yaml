@@ -12,7 +12,12 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
+  storageClassName: {{ if and ($.Values.k3s_use_vSphere_storage_class) (eq (toString $.Values.k3s_use_vSphere_storage_class) "true") }}vsphere-storage-class{{ else }}local-storage{{ end }}
+  {{- if and ($.Values.k3s_use_vSphere_storage_class) (eq (toString $.Values.k3s_use_vSphere_storage_class) "true") }}
+  vsphereVolume:
+    volumePath: "[{{ $.Values.vSphere.datastoreName }}] {{ $.Values.vSphere.diskPath }}/{{ $.Values.namespace }}-couchdb{{ $nodeNumber }}"
+    fsType: ext4
+  {{- else }}
   local:
     path: {{- if eq (toString $.Values.couchdb_data.preExistingDataAvailable) "true" }}
             {{- if hasKey $.Values.local_storage (printf "preExistingDiskPath-%d" $nodeNumber) }}
@@ -23,6 +28,7 @@ spec:
           {{- else }}
             /var/lib/{{ $.Values.namespace }}-couchdb{{ $nodeNumber }}
           {{- end }}
+  {{- end }}
   nodeAffinity:
     required:
       nodeSelectorTerms:

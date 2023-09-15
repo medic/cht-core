@@ -14,7 +14,7 @@ spec:
     requests:
       storage: {{ $.Values.couchdb.couchdb_node_storage_size }}
   {{- if eq (toString $.Values.cluster_type) "k3s-k3d" }}
-  storageClassName: local-storage
+  storageClassName: {{ if and ($.Values.k3s_use_vSphere_storage_class) (eq (toString $.Values.k3s_use_vSphere_storage_class) "true") }}vsphere-storage-class{{ else }}local-storage{{ end }}
   volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
   {{- else }}
   storageClassName: ebs-gp2
