@@ -8,30 +8,31 @@ homeDir=
 green='\033[0;32m'   #'0;32' is Green's ANSI color code
 red='\033[0;31m'   #'0;31' is Red's ANSI color code
 noColor='\033[0m'
+stagingUrl='https://staging.dev.medicmobile.org/_couch/builds_4'
 
 get_existing_projects() {
-	find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
+  find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
 }
 
 init_env_file() {
-	httpPort=10080
-	httpsPort=10443
+  httpPort=10080
+  httpsPort=10443
 
-	projects=$(get_existing_projects)
-	for file in $projects; do
-		tmpHttpPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTP_PORT=\([0-9]\{3,5\}\).*$/\1/")
-		if [ "$tmpHttpPort" -ge "$httpPort" ]; then
-			httpPort=$((tmpHttpPort + 1))
-		fi
+  projects=$(get_existing_projects)
+  for file in $projects; do
+    tmpHttpPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTP_PORT=\([0-9]\{3,5\}\).*$/\1/")
+    if [ "$tmpHttpPort" -ge "$httpPort" ]; then
+      httpPort=$((tmpHttpPort + 1))
+    fi
 
-		tmpHttpsPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTPS_PORT=\([0-9]\{3,5\}\).*$/\1/")
-		if [ "$tmpHttpsPort" -ge "$httpsPort" ]; then
-			httpsPort=$((tmpHttpsPort + 1))
-		fi
-	done
+    tmpHttpsPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTPS_PORT=\([0-9]\{3,5\}\).*$/\1/")
+    if [ "$tmpHttpsPort" -ge "$httpsPort" ]; then
+      httpsPort=$((tmpHttpsPort + 1))
+    fi
+  done
 
-	touch "./$projectFile"
-	cat >"./$projectFile" <<EOL
+  touch "./$projectFile"
+  cat >"./$projectFile" <<EOL
 NGINX_HTTP_PORT=$httpPort
 NGINX_HTTPS_PORT=$httpsPort
 COUCHDB_USER=medic
@@ -46,18 +47,31 @@ CHT_NETWORK=$projectName-cht-net
 EOL
 }
 
-get_latest_release() {
-  latest=$(curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*')
-  echo "https://staging.dev.medicmobile.org/_couch/builds_4/${latest}"
+get_compose_download_url() {
+  preferredRelease=$1
+  if [ -z "$preferredRelease" ]; then
+    preferredRelease=$(get_latest_version_string)
+  fi
+  echo "${stagingUrl}/medic:medic:${preferredRelease}"
+}
+
+get_all_known_versions() {
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?descending\=true |  tr -d \\n | grep -o "medic\:medic\:[A-Za-z0-9\.\_\/\-]*" | cut -f3 -d: | sort
+}
+
+get_latest_version_string() {
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*' | cut -f3 -d:
 }
 
 create_compose_files() {
+  preferredRelease=$1
+  echo
   echo "Downloading compose files ..." | tr -d '\n'
-  stagingUrlBase=$(get_latest_release)
+  stagingUrlBase=$(get_compose_download_url "$preferredRelease")
   mkdir -p "$homeDir/couch"
   mkdir -p "$homeDir/compose"
   curl -s -o "$homeDir/upgrade-service.yml" \
-  	https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
+    https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
   curl -s -o "$homeDir/compose/cht-core.yml" ${stagingUrlBase}/docker-compose/cht-core.yml
   curl -s -o "$homeDir/compose/couchdb.yml" ${stagingUrlBase}/docker-compose/cht-couchdb.yml
 
@@ -65,7 +79,7 @@ create_compose_files() {
 }
 
 get_home_dir() {
-	echo "$HOME/.medic/cht-docker/$1-dir"
+  echo "$HOME/.medic/cht-docker/$1-dir"
 }
 
 show_help_intro() {
@@ -140,12 +154,12 @@ required_apps_installed(){
 }
 
 get_nginx_container_id() {
-	docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
+  docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
 }
 
 get_is_container_running() {
-	containerId=$1
-	docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
+  containerId=$1
+  docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
 }
 
 if [ -n "$(required_apps_installed "docker-compose")" ];then
@@ -157,132 +171,147 @@ fi
 
 # can pass a project .env file as argument
 if [[ -n "${1-}" ]]; then
-	if [[ "$1" == "--help" ]] || [[  "$1" == "-h" ]]; then
+  if [[ "$1" == "--help" ]] || [[  "$1" == "-h" ]]; then
     show_help_intro
     show_help_existing_stop_and_destroy
     exit 0
-	elif [[ -f "$1" ]]; then
-		projectFile=$1
-		projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
-		homeDir=$(get_home_dir "$projectName")
-	else
-	  echo ""
-		echo -e "${red}File \"$1\" doesnt exist - be sure to include \".env\" at the end!${noColor}"
+  elif [[ -f "$1" ]]; then
+    projectFile=$1
+    projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
+    homeDir=$(get_home_dir "$projectName")
+  else
+    echo ""
+    echo -e "${red}File \"$1\" doesnt exist - be sure to include \".env\" at the end!${noColor}"
     show_help_existing_stop_and_destroy
     exit 0
-	fi
+  fi
 fi
 
 if [[ -n "${2-}" && -n $projectName ]]; then
-	containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
-	case $2 in
-	"stop")
-		echo "Stopping project \"${projectName}\"..." | tr -d '\n'
-		docker kill $containerIds 1>/dev/null
-		echo -e "${green} done${noColor} "
-		exit 0
-		;;
-	"destroy")
-		echo "Destroying project \"${projectName}\"."
+  containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
+  case $2 in
+  "stop")
+    echo "Stopping project \"${projectName}\"..." | tr -d '\n'
+    docker kill $containerIds 1>/dev/null
+    echo -e "${green} done${noColor} "
+    exit 0
+    ;;
+  "destroy")
+    echo "Destroying project \"${projectName}\"."
 
-		if [[ -n $containerIds ]]; then
-			echo "Removing project's docker containers..." | tr -d '\n'
-			docker kill $containerIds 1>/dev/null
-			docker rm $containerIds 1>/dev/null
-			echo -e "${green} done${noColor} "
-		else
-			echo "No docker container found, skipping."
-		fi
+    if [[ -n $containerIds ]]; then
+      echo "Removing project's docker containers..." | tr -d '\n'
+      docker kill $containerIds 1>/dev/null
+      docker rm $containerIds 1>/dev/null
+      echo -e "${green} done${noColor} "
+    else
+      echo "No docker container found, skipping."
+    fi
 
-		networks=$(docker network ls --filter "name=${projectName}" --quiet)
-		if [[ -n $networks ]]; then
-			echo "Removing project's docker networks..." | tr -d '\n'
-			docker network rm $networks 1>/dev/null
-			echo -e "${green} done${noColor} "
-		else
-			echo "No docker network found, skipping."
-		fi
+    networks=$(docker network ls --filter "name=${projectName}" --quiet)
+    if [[ -n $networks ]]; then
+      echo "Removing project's docker networks..." | tr -d '\n'
+      docker network rm $networks 1>/dev/null
+      echo -e "${green} done${noColor} "
+    else
+      echo "No docker network found, skipping."
+    fi
 
-		volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
-		if [[ -n $volumes ]]; then
-			echo "Removing project's docker volumes..." | tr -d '\n'
-			docker volume rm $volumes 1>/dev/null
-			echo -e "${green} done${noColor} "
-		else
-			echo "No docker container volume, skipping."
-		fi
+    volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
+    if [[ -n $volumes ]]; then
+      echo "Removing project's docker volumes..." | tr -d '\n'
+      docker volume rm $volumes 1>/dev/null
+      echo -e "${green} done${noColor} "
+    else
+      echo "No docker container volume, skipping."
+    fi
 
-		if [[ -d $homeDir ]]; then
-			echo "Removing project files which needs sudo..."
-			sudo rm -rf "$homeDir"
-			echo -e "${green} done${noColor} "
-		else
-			echo "No project-specific found, skipping."
-		fi
+    if [[ -d $homeDir ]]; then
+      echo "Removing project files which needs sudo..."
+      sudo rm -rf "$homeDir"
+      echo -e "${green} done${noColor} "
+    else
+      echo "No project-specific found, skipping."
+    fi
 
-		if [[ -f "${projectName}.env" ]]; then
-			echo "Removing .env file in this directory..." | tr -d '\n'
-			rm ${projectName}.env
-			echo -e "${green} done${noColor} "
-		else
-			echo "No .env file found, skipping."
-		fi
+    if [[ -f "${projectName}.env" ]]; then
+      echo "Removing .env file in this directory..." | tr -d '\n'
+      rm ${projectName}.env
+      echo -e "${green} done${noColor} "
+    else
+      echo "No .env file found, skipping."
+    fi
 
 
-		echo "Project \"${projectName}\" successfully removed from your computer."
-		exit 0
-		;;
-	esac
+    echo "Project \"${projectName}\" successfully removed from your computer."
+    exit 0
+    ;;
+  esac
 fi
 
 if [[ -z "$projectName" ]]; then
-	projects=$(get_existing_projects)
+  projects=$(get_existing_projects)
 
-	if [[ -z "$projects" ]]; then
-		echo 'No project found, follow the prompts to create a project .env file.'
-	fi
+  if [[ -z "$projects" ]]; then
+    echo 'No project found, follow the prompts to create a project .env file.'
+  fi
 
-	read -p "Would you like to initialize a new project [y/N]? " yn
-	case $yn in
-	[Yy]*)
-		while [[ -z "$projectName" ]]; do
-			read -p "How do you want to name the project? " projectName
+  echo
+  read -p "Would you like to initialize a new project [y/N]? " yn
+  case $yn in
+  [Yy]*)
+    while [[ -z "$projectName" ]]; do
+      preferredRelease=$(get_latest_version_string)
+      echo
+      read -p "Do you want to run the latest CHT Core version (${preferredRelease}) [Y/n]? " runLatest
+      case $runLatest in
+      [nN]*)
+        allKnownVersions=$(get_all_known_versions)
+        echo
+        echo "Which version to you want to run? (ctrl + c to quit)"
+        select preferredRelease in $allKnownVersions; do
+          break
+        done
+      esac
+      echo
+      read -p "How do you want to name the project? " projectName
 
-			projectName="${projectName//[^[:alnum:]]/_}"
-			projectName=$(echo $projectName | tr '[:upper:]' '[:lower:]')
-			projectFile="$projectName.env"
-			homeDir=$(get_home_dir "$projectName")
-			if test -f "./$projectFile"; then
-				echo "./$projectFile already exists"
-				projectName=
-				projectFile=
-				homeDir=
-			fi
-		done
+      projectName="${projectName//[^[:alnum:]]/_}"
+      projectName=$(echo $projectName | tr '[:upper:]' '[:lower:]')
+      projectFile="$projectName.env"
+      homeDir=$(get_home_dir "$projectName")
+      if test -f "./$projectFile"; then
+        echo "./$projectFile already exists"
+        projectName=
+        projectFile=
+        homeDir=
+      fi
+    done
 
-		init_env_file
-		create_compose_files
-		projects=$(get_existing_projects)
-		;;
-	esac
+    init_env_file
+    create_compose_files "$preferredRelease"
+    projects=$(get_existing_projects)
+    ;;
+  esac
 
-	envCount=$(find . -name "*.env" -type f | wc -l)
-	if [ "$envCount" -gt 0 ]; then
-		while [[ -z "$projectName" ]]; do
-			echo "Which project do you want to use? (ctrl + c to quit) "
-			select project in $projects; do
-				projectName=$project
-				projectFile="$projectName.env"
-				homeDir=$(get_home_dir "$projectName")
-				break
-			done
-		done
-	else
-		echo ""
-		echo -e "${red}No projects found, please initialize a new one.${noColor}"
-		show_help_existing_stop_and_destroy
-		exit 1
-	fi
+  envCount=$(find . -name "*.env" -type f | wc -l)
+  if [ "$envCount" -gt 0 ]; then
+    while [[ -z "$projectName" ]]; do
+      echo
+      echo "Which project do you want to use? (ctrl + c to quit) "
+      select project in $projects; do
+        projectName=$project
+        projectFile="$projectName.env"
+        homeDir=$(get_home_dir "$projectName")
+        break
+      done
+    done
+  else
+    echo ""
+    echo -e "${red}No projects found, please initialize a new one.${noColor}"
+    show_help_existing_stop_and_destroy
+    exit 1
+  fi
 fi
 
 # shellcheck disable=SC1090
@@ -300,23 +329,23 @@ nginxContainerId=$(get_nginx_container_id)
 isNginxRunning=$(get_is_container_running "$nginxContainerId")
 i=0
 while [[ "$isNginxRunning" != "true" ]]; do
-	if [[ $i -gt 300 ]]; then
-		echo ""
-		echo ""
-		echo "${red}Failed to start - check docker logs for errors and try again.${noColor}"
-		echo ""
-		exit 1
-	fi
+  if [[ $i -gt 300 ]]; then
+    echo ""
+    echo ""
+    echo "${red}Failed to start - check docker logs for errors and try again.${noColor}"
+    echo ""
+    exit 1
+  fi
 
-	echo '.' | tr -d '\n'
-	((i++))
-	sleep 1
+  echo '.' | tr -d '\n'
+  ((i++))
+  sleep 1
 
-	if [[ $nginxContainerId = "" ]]; then
-		nginxContainerId=$(get_nginx_container_id)
-	fi
+  if [[ $nginxContainerId = "" ]]; then
+    nginxContainerId=$(get_nginx_container_id)
+  fi
 
-	isNginxRunning=$(get_is_container_running "$nginxContainerId")
+  isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"

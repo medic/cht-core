@@ -1,98 +1,51 @@
 import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
-import { Store } from '@ngrx/store';
 import type JQuery from 'jquery';
-import { toBik_text } from 'bikram-sambat';
-import * as moment from 'moment';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
-import * as enketoConstants from './../../js/enketo/constants';
-import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { FileReaderService } from '@mm-services/file-reader.service';
-import { GetReportContentService } from '@mm-services/get-report-content.service';
-import { LanguageService } from '@mm-services/language.service';
-import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { SearchService } from '@mm-services/search.service';
-import { SubmitFormBySmsService } from '@mm-services/submit-form-by-sms.service';
+import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { UserContactService } from '@mm-services/user-contact.service';
-import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { ZScoreService } from '@mm-services/z-score.service';
-import { ServicesActions } from '@mm-actions/services';
-import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { TransitionsService } from '@mm-services/transitions.service';
-import { FeedbackService } from '@mm-services/feedback.service';
-import { GlobalActions } from '@mm-actions/global';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
-import { TrainingCardsService } from '@mm-services/training-cards.service';
 
+/**
+ * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
+ * reused by code outside the CHT (e.g. cht-conf-test-harness). All logic that is proper to Enketo functionality should
+ * be included here. Logic that is peripheral to Enketo forms (needed to support form functionality in the CHT, but not
+ * required for interacting with Enekto forms) should be included in the FormService.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class EnketoService {
   constructor(
-    private store: Store,
     private attachmentService: AttachmentService,
-    private contactSummaryService: ContactSummaryService,
     private dbService: DbService,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
     private enketoTranslationService: EnketoTranslationService,
     private extractLineageService: ExtractLineageService,
-    private fileReaderService: FileReaderService,
-    private getReportContentService: GetReportContentService,
-    private languageService: LanguageService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private searchService: SearchService,
-    private submitFormBySmsService: SubmitFormBySmsService,
     private translateFromService: TranslateFromService,
-    private userContactService: UserContactService,
-    private xmlFormsService: XmlFormsService,
-    private zScoreService: ZScoreService,
-    private trainingCardsService: TrainingCardsService,
-    private transitionsService: TransitionsService,
     private translateService: TranslateService,
-    private feedbackService:FeedbackService,
     private ngZone: NgZone,
-    private chtScriptApiService: CHTScriptApiService
-  ) {
-    this.inited = this.init();
-    this.globalActions = new GlobalActions(store);
-    this.servicesActions = new ServicesActions(this.store);
-  }
+  ) { }
 
-  private globalActions: GlobalActions;
-  private servicesActions: ServicesActions;
-  private readonly HTML_ATTACHMENT_NAME = 'form.html';
-  private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
   private readonly objUrls: string[] = [];
-  private inited;
-
   private currentForm;
+
   getCurrentForm() {
     return this.currentForm;
   }
 
-  private init() {
-    if (this.inited) {
-      return this.inited;
-    }
-    return Promise.all([
-      this.zScoreService.getScoreUtil(),
-      this.chtScriptApiService.getApi()
-    ])
-      .then(([zscoreUtil, api]) => {
-        medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
-      })
-      .catch((err) => {
-        console.error('Error initialising enketo service', err);
-      });
+  private replaceDataI18nTranslations(formHtml) {
+    formHtml.find('[data-i18n]').each((idx, element) => {
+      const $element = $(element);
+      $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
+    });
   }
 
   private replaceJavarosaMediaWithLoaders(formHtml) {
@@ -126,36 +79,6 @@ export class EnketoService {
           elem.closest('.loader').hide();
         });
     });
-  }
-
-  private getAttachment(id, name) {
-    return this.dbService
-      .get()
-      .getAttachment(id, name)
-      .then(blob => this.fileReaderService.utf8(blob));
-  }
-
-  private transformXml(form) {
-    return Promise
-      .all([
-        this.getAttachment(form._id, this.HTML_ATTACHMENT_NAME),
-        this.getAttachment(form._id, this.MODEL_ATTACHMENT_NAME)
-      ])
-      .then(([html, model]) => {
-        const $html = $(html);
-        $html.find('[data-i18n]').each((idx, element) => {
-          const $element = $(element);
-          $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
-        });
-
-        const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
-        return {
-          html: $html,
-          model: model,
-          title: form.title,
-          hasContactSummary: hasContactSummary
-        };
-      });
   }
 
   private handleKeypressOnInputField(e) {
@@ -210,42 +133,6 @@ export class EnketoService {
     }
   }
 
-  private getLineage(contact) {
-    return this.lineageModelGeneratorService
-      .contact(contact._id)
-      .then((model) => model.lineage)
-      .catch((err) => {
-        if (err.code === 404) {
-          console.warn(`Enketo failed to get lineage of contact '${contact._id}' because document does not exist`, err);
-          return [];
-        }
-
-        throw err;
-      });
-  }
-
-  private getContactReports(contact) {
-    const subjectIds = [contact._id];
-    const shortCode = contact.patient_id || contact.place_id;
-    if (shortCode) {
-      subjectIds.push(shortCode);
-    }
-    return this.searchService.search('reports', { subjectIds: subjectIds }, { include_docs: true });
-  }
-
-  private getContactSummary(doc, instanceData) {
-    const contact = instanceData?.contact;
-    if (!doc.hasContactSummary || !contact) {
-      return Promise.resolve();
-    }
-    return Promise
-      .all([
-        this.getContactReports(contact),
-        this.getLineage(contact),
-      ])
-      .then(([reports, lineage]) => this.contactSummaryService.get(contact, reports, lineage));
-  }
-
   private convertContactSummaryToXML(summary) {
     if (!summary) {
       return;
@@ -263,34 +150,28 @@ export class EnketoService {
     }
   }
 
-  private getEnketoForm(wrapper, doc, instanceData, contactSummary) {
+  private async getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings) {
     const contactSummaryXML = this.convertContactSummaryToXML(contactSummary);
-    return Promise
-      .all([
-        this.enketoPrepopulationDataService.get(doc.model, instanceData),
-        this.languageService.get(),
-      ])
-      .then(([ instanceStr, language ]) => {
-        const options: EnketoOptions = {
-          modelStr: doc.model,
-          instanceStr: instanceStr,
-        };
-        if (contactSummaryXML) {
-          options.external = [ contactSummaryXML ];
-        }
-        const form = wrapper.find('form')[0];
-        return new window.EnketoForm(form, options, { language });
-      });
+    const instanceStr = await this.enketoPrepopulationDataService.get(userSettings, doc.model, instanceData);
+    const options: EnketoOptions = {
+      modelStr: doc.model,
+      instanceStr: instanceStr,
+    };
+    if (contactSummaryXML) {
+      options.external = [ contactSummaryXML ];
+    }
+    const form = wrapper.find('form')[0];
+    return new window.EnketoForm(form, options, { language: userSettings.language });
   }
 
-  private renderFromXmls(xmlFormContext: XmlFormContext) {
+  private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
     const { doc, instanceData, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0)!);
 
     return this
-      .getEnketoForm(wrapper, doc, instanceData, contactSummary)
+      .getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings)
       .then((form) => {
         this.currentForm = form;
         const loadErrors = this.currentForm.init();
@@ -405,7 +286,7 @@ export class EnketoService {
         const targetPage = event.originalEvent.state.enketo_page_number;
         const pages = form.pages;
         const currentIndex = pages._getCurrentIndex();
-        if(targetPage > currentIndex) {
+        if (targetPage > currentIndex) {
           pages._next();
         } else {
           pages._prev();
@@ -434,14 +315,6 @@ export class EnketoService {
     });
   }
 
-  private canAccessForm(formDoc, user, instanceData, contactSummary) {
-    return this.xmlFormsService.canAccessForm(
-      formDoc,
-      user,
-      { doc: instanceData?.contact, contactSummary: contactSummary?.context },
-    );
-  }
-
   private registerEnketoListeners($selector, form, formContext: EnketoFormContext) {
     this.registerAddrepeatListener($selector, formContext.formDoc);
     this.registerEditedListener($selector, formContext.editedListener);
@@ -450,81 +323,31 @@ export class EnketoService {
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  private async renderForm(formContext: EnketoFormContext) {
+  public async renderForm(formContext: EnketoFormContext, doc, userSettings, contactSummary) {
     const {
       formDoc,
       instanceData,
       selector,
       titleKey,
       isFormInModal,
-      userContact,
     } = formContext;
 
-    try {
-      this.unload(this.currentForm);
-      const doc = await this.transformXml(formDoc);
-      const contactSummary = await this.getContactSummary(doc, instanceData);
-
-      if (!await this.canAccessForm(formDoc, userContact, instanceData, contactSummary)) {
-        throw { translationKey: 'error.loading.form.no_authorized' };
-      }
-
-      this.replaceJavarosaMediaWithLoaders(doc.html);
-      const xmlFormContext: XmlFormContext = {
-        doc,
-        wrapper: $(selector),
-        instanceData,
-        titleKey,
-        isFormInModal,
-        contactSummary,
-      };
-      const form = await this.renderFromXmls(xmlFormContext);
-      const formContainer = xmlFormContext.wrapper.find('.container').first();
-      this.replaceMediaLoaders(formContainer, formDoc);
-      this.registerEnketoListeners(xmlFormContext.wrapper, form, formContext);
-      window.CHTCore.debugFormModel = () => form.model.getStr();
-      return form;
-    } catch (error) {
-      if (error.translationKey) {
-        throw error;
-      }
-      const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
-      console.error(errorMessage, error.message);
-      this.feedbackService.submit(errorMessage + error.message, false);
-      throw new Error(errorMessage + error.message);
-    }
-  }
-
-  render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal = false) {
-    return this.ngZone.runOutsideAngular(() => {
-      return this._render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal);
-    });
-  }
-
-  private _render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal) {
-    return Promise
-      .all([
-        this.inited,
-        this.getUserContact(),
-      ])
-      .then(([ , userContact]) => {
-        const formContext: EnketoFormContext = {
-          selector,
-          formDoc: form,
-          instanceData,
-          editedListener,
-          valuechangeListener,
-          isFormInModal,
-          userContact,
-        };
-        return this.renderForm(formContext);
-      });
-  }
-
-  async renderContactForm(formContext: EnketoFormContext) {
-    // Users can access contact forms even when they don't have a contact associated. So not throwing an error.
-    formContext.userContact = await this.userContactService.get();
-    return this.renderForm(formContext);
+    this.replaceDataI18nTranslations(doc.html);
+    this.replaceJavarosaMediaWithLoaders(doc.html);
+    const xmlFormContext: XmlFormContext = {
+      doc,
+      wrapper: $(selector),
+      instanceData,
+      titleKey,
+      isFormInModal,
+      contactSummary,
+    };
+    const form = await this.renderFromXmls(xmlFormContext, userSettings);
+    const formContainer = xmlFormContext.wrapper.find('.container').first();
+    this.replaceMediaLoaders(formContainer, formDoc);
+    this.registerEnketoListeners(xmlFormContext.wrapper, form, formContext);
+    window.CHTCore.debugFormModel = () => form.model.getStr();
+    return form;
   }
 
   private xmlToDocs(doc, formXml, xmlVersion, record) {
@@ -678,28 +501,11 @@ export class EnketoService {
     record = getOuterHTML($record[0]);
 
     // remove old style content attachment
-    this.attachmentService.remove(doc, this.getReportContentService.REPORT_ATTACHMENT_NAME);
+    this.attachmentService.remove(doc, REPORT_ATTACHMENT_NAME);
     docsToStore.unshift(doc);
 
     doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
     return docsToStore;
-  }
-
-  private saveDocs(docs) {
-    return this.dbService
-      .get()
-      .bulkDocs(docs)
-      .then((results) => {
-        results.forEach((result) => {
-          if (result.error) {
-            console.error('Error saving report', result);
-            throw new Error('Error saving report');
-          }
-          const idx = docs.findIndex(doc => doc._id === result.id);
-          docs[idx] = { ...docs[idx], _rev: result.rev };
-        });
-        return docs;
-      });
   }
 
   private update(docId) {
@@ -715,39 +521,15 @@ export class EnketoService {
     });
   }
 
-  private getUserContact() {
-    return this.userContactService
-      .get()
-      .then((contact) => {
-        if (!contact) {
-          const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
-            'associated contact. Talk to your administrator to correct this.');
-          err.translationKey = 'error.loading.form.no_contact';
-          throw err;
-        }
-        return contact;
-      });
-  }
-
-  private create(formInternalId) {
-    return this
-      .getUserContact()
-      .then(contact => {
-        const doc:any = {
-          form: formInternalId,
-          type: 'data_record',
-          content_type: 'xml',
-          reported_date: Date.now(),
-          contact: this.extractLineageService.extract(contact),
-          from: contact && contact.phone
-        };
-
-        if (this.trainingCardsService.isTrainingCardForm(formInternalId)) {
-          doc._id = this.trainingCardsService.getTrainingCardDocId();
-        }
-
-        return doc;
-      });
+  private create(formInternalId, contact) {
+    return  {
+      form: formInternalId,
+      type: 'data_record',
+      content_type: 'xml',
+      reported_date: Date.now(),
+      contact: this.extractLineageService.extract(contact),
+      from: contact && contact.phone
+    };
   }
 
   private forceRecalculate(form) {
@@ -777,88 +559,34 @@ export class EnketoService {
     }
   }
 
-  private saveGeo(geoHandle, docs) {
-    if (!geoHandle) {
-      return docs;
+  private async prepareForSave(form) {
+    const valid = await form.validate();
+    if (!valid) {
+      throw new Error('Form is invalid');
     }
 
-    return geoHandle()
-      .catch(err => err)
-      .then(geoData => {
-        docs.forEach(doc => {
-          doc.geolocation_log = doc.geolocation_log || [];
-          doc.geolocation_log.push({
-            timestamp: Date.now(),
-            recording: geoData
-          });
-          doc.geolocation = geoData;
-        });
-        return docs;
-      });
+    $('form.or').trigger('beforesave');
   }
 
-  private async validateAttachments(docs) {
-    const oversizeDoc = docs.find(doc => {
-      let attachmentsSize = 0;
-
-      if (doc._attachments) {
-        Object
-          .keys(doc._attachments)
-          .forEach(name => {
-            const data = doc._attachments[name]?.data; // It can be Base64 (binary) or object (file)
-            const size = typeof data === 'string' ? data.length : (data?.size || 0);
-            attachmentsSize += size;
-          });
-      }
-
-      return attachmentsSize > enketoConstants.maxAttachmentSize;
+  async completeNewReport(formInternalId, form, formDoc, contact) {
+    await this.prepareForSave(form);
+    return this.ngZone.runOutsideAngular(async () => {
+      const doc = this.create(formInternalId, contact);
+      return this._save(form, formDoc, doc);
     });
-
-    if (oversizeDoc) {
-      const errorMessage = await this.translateService.get('enketo.error.max_attachment_size');
-      this.globalActions.setSnackbarContent(errorMessage);
-      return Promise.reject(new Error(errorMessage));
-    }
-
-    return docs;
   }
 
-  save(formInternalId, form, geoHandle, docId?) {
-    return Promise
-      .resolve(form.validate())
-      .then((valid) => {
-        if (!valid) {
-          throw new Error('Form is invalid');
-        }
-
-        $('form.or').trigger('beforesave');
-
-        return this.ngZone.runOutsideAngular(() => this._save(formInternalId, form, geoHandle, docId));
-      });
+  async completeExistingReport(form, formDoc, docId) {
+    await this.prepareForSave(form);
+    return this.ngZone.runOutsideAngular(async () => {
+      const doc = await this.update(docId);
+      return this._save(form, formDoc, doc);
+    });
   }
 
-  private _save(formInternalId, form, geoHandle, docId?) {
-    const getDocPromise = docId ? this.update(docId) : this.create(formInternalId);
-
-    return Promise
-      .all([
-        getDocPromise,
-        this.xmlFormsService.getDocAndFormAttachment(formInternalId)
-      ])
-      .then(([doc, formDoc]) => {
-        const dataString = form.getDataStr({ irrelevant: false });
-        return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
-      })
-      .then(docs => this.validateAttachments(docs))
-      .then((docs) => this.saveGeo(geoHandle, docs))
-      .then((docs) => this.transitionsService.applyTransitions(docs))
-      .then((docs) => this.saveDocs(docs))
-      .then((docs) => {
-        this.servicesActions.setLastChangedDoc(docs[0]);
-        // submit by sms _after_ saveDocs so that the main doc's ID is available
-        this.submitFormBySmsService.submit(docs[0]);
-        return docs;
-      });
+  private async _save(form, formDoc, doc) {
+    const dataString = form.getDataStr({ irrelevant: false });
+    return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
   }
 
   unload(form) {

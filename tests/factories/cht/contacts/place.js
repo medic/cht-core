@@ -12,7 +12,8 @@ const place = () => {
     .attr('notes', '')
     .attr('place_id', uuid.v4)
     .attr('reported_date', () => new Date())
-    .attr('contact');
+    .attr('contact')
+    .attr('contact_type', '');
 };
 
 

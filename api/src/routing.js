@@ -376,20 +376,6 @@ app.get('/api/deploy-info', async (req, res) => {
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
 app.get('/api/v2/monitoring', monitoring.getV2);
 
-app.get('/api/auth/:path', function(req, res) {
-  auth.checkUrl(req)
-    .then(status => {
-      if (status && status >= 400 && status < 500) {
-        res.status(403).send('Forbidden');
-      } else {
-        res.json({ status: status });
-      }
-    })
-    .catch(err => {
-      serverUtils.serverError(err, req, res);
-    });
-});
-
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);

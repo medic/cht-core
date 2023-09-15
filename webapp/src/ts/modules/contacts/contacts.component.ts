@@ -156,7 +156,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
-    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSearchNewDesign = !isDisabled;
   }
 
@@ -223,7 +223,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private canViewLastVisitedDate() {
-    if (this.sessionService.isDbAdmin()) {
+    if (this.sessionService.isAdmin()) {
     // disable UHC for DB admins
       return Promise.resolve(false);
     }
@@ -374,7 +374,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
-          if(!this.appending) {
+          if (!this.appending) {
             if (homeIndex !== -1) {
               // move it to the top
               updatedContacts.splice(homeIndex, 1);

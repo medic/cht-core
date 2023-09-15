@@ -161,7 +161,7 @@ body {
     padding-right: 5px;
 
     a {
-      width: 40px;
+      width: @header-bar-extras;
       margin-top: 10px;
       border-radius: @radius-size @radius-size 0 0;
 
@@ -188,9 +188,14 @@ body {
     height: auto;
   }
 
+  .dropdown.options.open.show {
+    display: inline !important; // Overriding BS' "display" that uses !important;
+  }
+
   .options .dropdown-menu {
-    width: 250px;
-    left: auto;
+    width: @header-dropdown-width;
+    top: 0 !important; // Overriding element.style
+    left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
     margin-top: 30px;
     font-size: 0;
     a {
@@ -369,6 +374,7 @@ body {
     vertical-align: top;
     .dropdown-menu {
       padding-top: 0;
+      top: 0 !important; // Support for old design: Overrides Bootstrap element.style
     }
     .mm-dropdown {
       display: block;
@@ -936,9 +942,7 @@ a.fa:hover {
 
   .actions {
     max-width: 500px;
-    background-color: @label-color;
     background-color: rgba(0, 0, 0, 0.65);
-    border-color: @separator-color;
     border-color: rgba(0, 0, 0, 0.8);
     border-width: 1px;
     border-style: solid;
@@ -946,7 +950,7 @@ a.fa:hover {
     margin: 0 auto 10px;
     pointer-events: auto;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
-    display: flex;
+    display: flex !important; // Support for old design: Overrides Bootstrap element.style
     flex-direction: row;
     justify-content: center;
     min-height: 78px;
@@ -957,7 +961,11 @@ a.fa:hover {
       width: 100%;
     }
 
-    > * {
+.left-pane .action-container .dropdown-menu {
+  top: -3px !important; // Support for old design: Overrides Bootstrap element.style
+}
+
+> * {
       margin: 10px 0 0;
       flex-grow: 1;
       max-width: 120px;
@@ -1088,10 +1096,6 @@ a.fa:hover {
   margin: 0;
 }
 
-.modal .datepicker {
-  max-width: 300px;
-}
-
 .daterangepicker.dropdown-menu {
   z-index: 1050;
 }
@@ -1131,15 +1135,6 @@ a.fa:hover {
 .mobile-only,
 #mobile-detection {
   display: none;
-}
-
-#medic-reporter-modal .modal-body {
-  padding: 0;
-  iframe {
-    height: 470px;
-    border: 0;
-    width: 100%;
-  }
 }
 
 .upgrade-config .status {
@@ -1215,8 +1210,8 @@ mm-search-bar {
       }
 
       .mm-dropdown-menu {
-        left: -270px;
-        margin: 40px 0;
+        left: -215px !important; // Support for old design: Overrides Bootstrap element.style
+        margin: 0;
         box-shadow: 0 6px 12px rgb(0 0 0 / 40%);
 
         .dropdown-header {
@@ -1729,12 +1724,6 @@ mm-search-bar {
         display: none;
       }
 
-      mm-sort-filter .mm-dropdown-menu {
-        top: 115px;
-        left: 10px;
-        margin: 0;
-      }
-
       .search-bar-left-icon {
         margin: 0 12px 0 0;
       }
@@ -1765,6 +1754,21 @@ mm-search-bar {
           margin: 0 10px;
         }
       }
+    }
+  }
+
+  .basic-filters {
+    // Support for old design: Overrides Bootstrap element.style
+    .mobile-freetext-filter .dropdown-menu,
+    .mm-status-filter .dropdown-menu {
+      top: 0 !important;
+      left: -100px !important;
+    }
+
+    // Support for old design: Overrides Bootstrap element.style
+    .sort-dropdown .dropdown-menu {
+      top: 0 !important;
+      left: -230px !important;
     }
   }
 }

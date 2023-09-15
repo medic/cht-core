@@ -1,4 +1,5 @@
 const commonElements = require('../common/common.wdio.page');
+const modalPage = require('../common/modal.wdio.page');
 const searchElements = require('../search/search.wdio.page');
 const utils = require('@utils');
 
@@ -31,8 +32,8 @@ const reviewReportOptionById = (id) => $(`${REVIEW_REPORT_CONTAINER} button.${id
 const activeReviewOption = () => $(`${REVIEW_REPORT_CONTAINER} button.active-option`);
 const reviewReportCloseButton = () => $(`${REVIEW_REPORT_CONTAINER} .panel-header .panel-header-close`);
 
-const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
-const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion mat-expansion-panel-header');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion mat-panel-description');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
 const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
@@ -48,8 +49,7 @@ const automaticReplyRecipient = () => $(`${AUTOMATIC_REPLY_SECTION} .recipient`)
 
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
-const DELETE_CONFIRM_MODAL = 'mm-modal#bulk-delete-confirm';
-const bulkDeleteModal = () => $(DELETE_CONFIRM_MODAL);
+const bulkDeleteModal = () => $('#bulk-delete-confirm');
 const dateFilter = () => $('#date-filter');
 const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]');
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
@@ -168,13 +168,9 @@ const deleteSelectedReports = async () => {
   await (await deleteAllButton()).click();
 
   await (await bulkDeleteModal()).waitForDisplayed();
-  await (await $(`${DELETE_CONFIRM_MODAL} .btn.submit.btn-danger`)).click();
+  await (await modalPage.submit());
+  await (await modalPage.checkModalHasClosed());
 
-  const bulkDeleteConfirmBtn = () => $(`${DELETE_CONFIRM_MODAL} [test-id="bulkdelete.complete.action"]`);
-  await (await bulkDeleteConfirmBtn()).waitForDisplayed();
-  await (await bulkDeleteConfirmBtn()).click();
-
-  await (await bulkDeleteModal()).waitForDisplayed({ reverse: true });
   await commonElements.waitForPageLoaded();
   await (await reportList()).waitForDisplayed();
 };

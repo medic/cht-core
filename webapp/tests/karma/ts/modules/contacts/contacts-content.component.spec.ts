@@ -15,7 +15,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { GlobalActions } from '@mm-actions/global';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
@@ -61,9 +61,9 @@ describe('Contacts content component', () => {
     settingsService = { get: sinon.stub().resolves(settings) };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     translateFromService = { get: sinon.stub().returnsArg(0) };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
     userSettingsService = {

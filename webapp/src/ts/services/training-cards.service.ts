@@ -7,7 +7,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
 import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { FeedbackService } from '@mm-services/feedback.service';
@@ -88,11 +88,7 @@ export class TrainingCardsService {
     // Send the promise returned by .show() to an observable, so that it
     // can be used externally after handleTrainingCards has been called
     // through xmlFormsService
-    this.observable.next(
-      this.modalService
-        .show(TrainingCardsComponent, { backdrop: 'static', keyboard: false })
-        .catch(() => {})
-    );
+    this.observable.next(this.modalService.show(TrainingCardsComponent));
   }
 
   private deployEmpty() {
@@ -122,7 +118,6 @@ export class TrainingCardsService {
 
       this.globalActions.setTrainingCardFormId(firstChronologicalTrainingCard.code);
       this.deployTrainingCards();
-
     } catch (error) {
       const message = 'Training Cards :: Error showing modal.';
       console.error(message, error);

@@ -21,7 +21,7 @@ describe('Messages More Menu Component', () => {
       any: sinon.stub().resolves(false),
       online: sinon.stub().returns(false),
     };
-    sessionService = { isDbAdmin: sinon.stub().returns(false) };
+    sessionService = { isAdmin: sinon.stub().returns(false) };
     responsiveService = { isMobile: sinon.stub().returns(false) };
 
     return TestBed

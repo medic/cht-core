@@ -7,7 +7,7 @@ import {
   OnInit
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subscription, take } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { minBy as _minBy } from 'lodash-es';
 
@@ -20,7 +20,7 @@ import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { SendMessageService } from '@mm-services/send-message.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 /**
@@ -349,16 +349,12 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   addRecipients() {
-    const modalContext = {
-      fields: {
-        to: this.selectedConversation.id,
-        message: this.send.message
-      }
-    };
+    const data = { to: this.selectedConversation.id, message: this.send.message };
     this.modalService
-      .show(SendMessageComponent, { initialState: modalContext })
-      .catch(() => {})
-      .finally(() => $('#message-footer textarea').focus());
+      .show(SendMessageComponent, { data })
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe(() => $('#message-footer textarea').focus());
     this.send.message = '';
   }
 

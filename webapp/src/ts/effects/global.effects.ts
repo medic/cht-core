@@ -5,7 +5,7 @@ import { select, Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 
 import { Actions as GlobalActionsList, GlobalActions } from '@mm-actions/global';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
@@ -27,11 +27,7 @@ export class GlobalEffects {
   deleteDocConfirm$ = createEffect(
     ():any => this.actions$.pipe(
       ofType(GlobalActionsList.deleteDocConfirm),
-      tap(({ payload: { doc } }) => {
-        this.modalService
-          .show(DeleteDocConfirmComponent, { initialState: { model: { doc } } })
-          .catch(() => {});
-      }),
+      tap(({ payload: { doc } }) => this.modalService.show(DeleteDocConfirmComponent, { data: { doc } })),
     ),
     { dispatch: false }
   );
@@ -61,15 +57,13 @@ export class GlobalEffects {
   }
 
   private showModal({ cancelTranslationKey, recordTelemetry }) {
-    const modalInitialState = {
-      messageTranslationKey: cancelTranslationKey,
-      telemetryEntry: recordTelemetry,
-    };
-
     return this.modalService
-      .show(NavigationConfirmComponent, { initialState: modalInitialState })
-      .then(() => true)
-      .catch(() => false);
+      .show(
+        NavigationConfirmComponent,
+        { data: { messageTranslationKey: cancelTranslationKey, telemetryEntry: recordTelemetry } },
+      )
+      .afterClosed()
+      .toPromise();
   }
 
   private navigate(nextUrl: string, cancelCallback: () => void) {

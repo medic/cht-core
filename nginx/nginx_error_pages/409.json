@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "409 Conflict",
+  "server": "nginx"
+}

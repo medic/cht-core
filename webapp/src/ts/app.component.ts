@@ -1,10 +1,10 @@
-import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
+import { ActivationEnd, ActivationStart, Router } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
 import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
-import { combineLatest } from 'rxjs';
+import { combineLatest, take } from 'rxjs';
 
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { Selectors } from '@mm-selectors/index';
@@ -15,7 +15,7 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { environment } from '@mm-environments/environment';
@@ -142,7 +142,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     this.adminUrl = this.locationService.adminPath;
 
-    setBootstrapTheme('bs3');
+    setBootstrapTheme('bs4');
   }
 
   private loadTranslations() {
@@ -165,7 +165,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       return tab;
     };
 
-    this.router.events.subscribe((event:RouterEvent) => {
+    this.router.events.subscribe((event:ActivationStart|ActivationEnd) => {
       // close all select2 menus on navigation
       // https://github.com/medic/cht-core/issues/2927
       if (event instanceof ActivationStart) {
@@ -360,7 +360,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       },
       callback: (change) => {
         if (change.id === 'service-worker-meta') {
-          this.updateServiceWorker.update(() => this.showUpdateReady());
+          this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
+
         } else {
           !environment.production && this.globalActions.setSnackbarContent(`${change.id} changed`);
           this.showUpdateReady();
@@ -421,10 +422,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.databaseConnectionMonitorService
       .listenForDatabaseClosed()
       .subscribe(() => {
-        this.modalService
-          .show(DatabaseClosedComponent)
-          .catch(() => {});
-
+        this.modalService.show(DatabaseClosedComponent);
         this.closeDropdowns();
       });
   }
@@ -455,7 +453,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async subscribeToSideFilterStore() {
-    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
 
     if (isDisabled) {
       return;
@@ -467,7 +465,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async enableOldActionBar() {
-    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
+    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   private initForms() {
@@ -544,20 +542,21 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private showSessionExpired() {
-    this.modalService
-      .show(SessionExpiredComponent)
-      .catch(() => {});
+    this.modalService.show(SessionExpiredComponent);
   }
 
   private showUpdateReady() {
     const TWO_HOURS = 2 * 60 * 60 * 1000;
     this.modalService
       .show(ReloadingComponent)
-      .catch(() => {
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe(reloaded => {
+        if (reloaded) {
+          return;
+        }
         console.debug('Delaying update');
-        setTimeout(() => {
-          this.showUpdateReady();
-        }, TWO_HOURS);
+        setTimeout(() => this.showUpdateReady(), TWO_HOURS);
       });
     this.closeDropdowns();
   }
