@@ -22,7 +22,7 @@ spec:
       containers:
         - env:
             - name: BUILDS_URL
-              value: https://staging.dev.medicmobile.org/_couch/builds_4
+              value: {{ .Values.upstream_servers.builds_url }}
             - name: COUCH_URL
               valueFrom:
                 secretKeyRef:
@@ -32,7 +32,7 @@ spec:
               value: http://upgrade-service.{{ .Values.namespace }}.svc.cluster.local:5008
             - name: API_PORT
               value: '5988'
-          image: public.ecr.aws/medic/cht-api:{{ .Values.cht_image_tag }}
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-api:{{ .Values.cht_image_tag }}
           name: cht-api
           ports:
             - containerPort: 5988

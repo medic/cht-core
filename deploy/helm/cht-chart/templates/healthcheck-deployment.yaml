@@ -32,7 +32,7 @@ spec:
                 secretKeyRef:
                   name: cht-couchdb-credentials
                   key: COUCHDB_USER
-          image: public.ecr.aws/medic/cht-haproxy-healthcheck:{{ .Values.cht_image_tag }}
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-haproxy-healthcheck:{{ .Values.cht_image_tag }}
           name: cht-haproxy-healthcheck
           resources: {}
           ports:

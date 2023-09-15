@@ -2,6 +2,13 @@ project_name: <your-project-name>
 namespace: "<your-namespace>" # e.g. "cht-dev-namespace"
 chtversion: 4.2.2
 #cht_image_tag: 4.1.1-4.1.1 #- This is filled in automatically by the deploy script. Don't uncomment this line.
+
+# Don't change upstream-servers unless you know what you're doing.
+upstream_servers:
+  docker_registry: "public.ecr.aws/medic"
+  builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4"
+
+# CouchDB Settings
 couchdb:
   password: <password-value>
   secret: <secret-value>

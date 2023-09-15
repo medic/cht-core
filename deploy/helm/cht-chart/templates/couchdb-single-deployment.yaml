@@ -53,7 +53,7 @@ spec:
                   key: COUCHDB_UUID
             - name: SVC_NAME
               value: couchdb.{{ .Values.namespace }}.svc.cluster.local
-          image: public.ecr.aws/medic/cht-couchdb:{{ .Values.cht_image_tag }}
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-couchdb:{{ .Values.cht_image_tag }}
           name: cht-couchdb
           ports:
             - containerPort: 5984

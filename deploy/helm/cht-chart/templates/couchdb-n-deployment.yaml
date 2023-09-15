@@ -29,7 +29,7 @@ spec:
         kubernetes.io/hostname: {{ index $root.Values.nodes (printf "node-%d" $nodeNumber) }}
       containers:
       - name: cht-couchdb-{{ $nodeNumber }}
-        image: public.ecr.aws/medic/cht-couchdb:{{ $root.Values.cht_image_tag }}
+        image: {{ $root.Values.upstream_servers.docker_registry }}/cht-couchdb:{{ $root.Values.cht_image_tag }}
         ports:
         - containerPort: 5984
         env:

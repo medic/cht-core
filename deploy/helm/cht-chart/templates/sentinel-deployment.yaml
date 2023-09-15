@@ -26,7 +26,7 @@ spec:
                   key: COUCH_URL
             - name: API_PORT
               value: '5988'
-          image: public.ecr.aws/medic/cht-sentinel:{{ .Values.cht_image_tag }}
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-sentinel:{{ .Values.cht_image_tag }}
           name: cht-sentinel
           resources: {}
       restartPolicy: Always
