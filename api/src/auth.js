@@ -11,7 +11,7 @@ const get = (path, headers) => {
     url: url.toString(),
     headers: headers,
     json: true
-  });
+  }).auth(environment.username, environment.password, false);
 };
 
 const hasPermission = (userCtx, permission) => {
