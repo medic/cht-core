@@ -76,10 +76,15 @@ export class ContactsEffects {
             if (err.code === 'SELECTED_CONTACT_CHANGED') {
               return of();
             }
-            if (err.code === 404 && !silent) {
-              this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
+
+            if (err.code === 404) {
+              if (!silent) {
+                this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
+              }
+            } else {
+              console.error('Error selecting contact', err);
             }
-            console.error('Error selecting contact', err);
+
             this.globalActions.unsetSelected();
             return of(this.contactsActions.clearSelection());
           });

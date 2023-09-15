@@ -85,7 +85,7 @@ export class FeedbackService {
         await this.createAndSave( { message: message, stack: exception?.stack });
       } catch (e) {
         // stop infinite loop of exceptions
-        console.error('Error while trying to record error', e);
+        console.warn('Error while trying to record error', e);
       }
     }
   }

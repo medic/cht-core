@@ -197,8 +197,7 @@ describe('Contacts effects', () => {
       effects.selectContact.subscribe();
       flush();
 
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error selecting contact');
+      expect(consoleErrorMock.callCount).to.equal(0);
       expect(setSnackbarContent.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
       expect(clearSelectionStub.calledOnce).to.be.true;
