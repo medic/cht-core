@@ -13,6 +13,7 @@ const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
 const config = require('../config');
+const environment = require('../environment');
 const extensionLibs = require('./extension-libs');
 
 const MEDIC_DDOC_ID = '_design/medic';
@@ -92,6 +93,7 @@ const handleSettingsChange = () => {
       logger.error('Failed to reload settings: %o', err);
       process.exit(1);
     })
+    .then(() => addUserRolesToDb())
     .then(() => initTransitionLib())
     .then(() => {
       configUpdatesEvents.emit('updated');
@@ -143,6 +145,7 @@ const load = () => {
   loadViewMaps();
   return loadTranslations()
     .then(() => loadSettings())
+    .then(() => addUserRolesToDb())
     .then(() => initTransitionLib())
     .then(() => db.createVault());
 };
@@ -184,10 +187,22 @@ const watch = (callback) => {
   configUpdatesEvents.on('updated', callback);
 };
 
+const addUserRolesToDb = async () => {
+  const roles = config.get('roles');
+  if (!roles || typeof roles !== 'object') {
+    return;
+  }
+
+  for (const role of Object.keys(roles)) {
+    await db.addRoleAsMember(environment.db, role);
+  }
+};
+
 module.exports = {
   load,
   listen,
   updateServiceWorker,
   loadTranslations,
   watch,
+  addUserRolesToDb,
 };

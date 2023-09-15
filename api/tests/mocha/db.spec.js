@@ -233,4 +233,175 @@ describe('db', () => {
       expect(db.close.args).to.deep.equal([[dbObject]]);
     });
   });
+
+  describe('addRoleToSecurity', () => {
+    it('should add role as member to db security', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsMember('dbname', 'rolename');
+
+      expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/dbname/_security',
+          json: true,
+          body: {
+            admins: { roles: ['role1'] },
+            members: { roles: ['role2', 'rolename'] },
+          }
+        }
+      ]]);
+    });
+
+    it('should add role as admin to db security', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsAdmin('dbname', 'rolename');
+
+      expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/dbname/_security',
+          json: true,
+          body: {
+            admins: { roles: ['role1', 'rolename'], },
+            members: { roles: ['role2'] },
+          }
+        }
+      ]]);
+    });
+
+    it('should skip member roles that already exist', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsMember('dbname', 'role2');
+
+      expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
+      expect(rpn.put.called).to.equal(false);
+    });
+
+    it('should skip admin roles that already exist', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsAdmin('dbname', 'role1');
+
+      expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
+      expect(rpn.put.called).to.equal(false);
+    });
+
+    it('should set members security property if not existing', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] } });
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsMember('dbname', 'rolename');
+
+      expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/dbname/_security',
+          json: true,
+          body: {
+            admins: { roles: ['role1'] },
+            members: { roles: ['rolename'], names: [], },
+          }
+        }
+      ]]);
+    });
+
+    it('should not mutate default roles', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').callsFake(() => ({ members: {} }));
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsMember('dbname1', 'rolename1');
+      await db.addRoleAsMember('dbname2', 'rolename2');
+
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/dbname1/_security',
+          json: true,
+          body: {
+            members: { roles: ['rolename1'] },
+          }
+        }
+      ], [
+        {
+          url: 'http://admin:pass@couchdb:5984/dbname2/_security',
+          json: true,
+          body: {
+            members: { roles: ['rolename2'] },
+          }
+        }
+      ]]);
+    });
+
+    it('should set admins security property if not existing', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pwd@host:6984');
+      sinon.stub(rpn, 'get').resolves({ members: { roles: ['role2'] } });
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsAdmin('name', 'arole');
+
+      expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pwd@host:6984/name/_security', json: true } ]]);
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pwd@host:6984/name/_security',
+          json: true,
+          body: {
+            admins: { roles: ['arole'], names: [] },
+            members: { roles: ['role2'] },
+          }
+        }
+      ]]);
+    });
+
+    it('should throw get security errors', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').rejects(new Error('not_found'));
+
+      await expect(db.addRoleAsMember('data', 'attr')).to.be.rejectedWith(Error, 'not_found');
+    });
+
+    it('should throw put security errors', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').resolves({ members: { roles: ['role2'] } });
+      sinon.stub(rpn, 'put').rejects(new Error('forbidden or something'));
+
+      await expect(db.addRoleAsMember('data', 'attr')).to.be.rejectedWith(Error, 'forbidden or something');
+    });
+
+    it('should set default security when security is invalid', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').resolves({ members: false });
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsMember('data', 'attr');
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/data/_security',
+          json: true,
+          body: {
+            members: { roles: ['attr'], names: [], },
+          }
+        }
+      ]]);
+
+    });
+
+    it('should throw when missing dbname or role', async () => {
+      await expect(db.addRoleAsMember('', 'arole'))
+        .to.be.rejectedWith(Error, `Cannot add security: invalid db name  or role arole`);
+      await expect(db.addRoleAsMember('dbanme', ''))
+        .to.be.rejectedWith(Error, `Cannot add security: invalid db name dbanme or role`);
+    });
+  });
 });
