@@ -70,16 +70,8 @@ export class FeedbackService {
     }
 
     const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES.find(
-      (item:string|RegExp) => {
-        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
-        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
-        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
-        console.log(item, item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item), message);
-        return item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item);
-      }
+      (item:string|RegExp) => item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item)
     );
-
-    console.log(matchesNoFeedback, message, this.NO_FEEDBACK_MESSAGES);
 
     return !matchesNoFeedback;
   }

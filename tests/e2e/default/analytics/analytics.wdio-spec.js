@@ -116,6 +116,9 @@ describe('Targets', () => {
 
     const feedbackDocs = await chtDbUtils.feedBackDocs();
     expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include(
+      'TypeError: Cannot read properties of undefined (reading \'muted\')'
+    );
     await chtDbUtils.clearFeedbackDocs();
   });
 });

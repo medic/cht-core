@@ -48,6 +48,7 @@ describe('Unauthorized form', () => {
 
     const feedbackDocs = await chtDbUtils.feedBackDocs();
     expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include(EXPECTED_UNAUTHORIZED_MESSAGE);
     await chtDbUtils.clearFeedbackDocs();
   });
 
@@ -62,6 +63,7 @@ describe('Unauthorized form', () => {
 
     const feedbackDocs = await chtDbUtils.feedBackDocs();
     expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include(EXPECTED_UNAUTHORIZED_MESSAGE);
     await chtDbUtils.clearFeedbackDocs();
   });
 

@@ -77,7 +77,6 @@ export class ReportsEffects {
           .then(report => this.reportActions.openReportContent(report))
           .catch(error => {
             console.error('Error selecting report to open', error);
-
             this.globalActions.unsetSelected();
           }));
       }),
@@ -174,10 +173,8 @@ export class ReportsEffects {
       .get()
       .get(id)
       .catch(err => {
-        if (err.status !== 404) {
-          // Log the error but continue anyway.
-          console.error('Error fetching contact for action bar', err);
-        }
+        // log the error but continue anyway
+        console.error('Error fetching contact for action bar', err);
       });
   }
 
