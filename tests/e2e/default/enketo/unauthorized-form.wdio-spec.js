@@ -46,9 +46,10 @@ describe('Unauthorized form', () => {
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
 
-    const feedbackDocs = await chtDbUtils.feedBackDocs();
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
     expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include(EXPECTED_UNAUTHORIZED_MESSAGE);
+    expect(feedbackDocs[0].info.message).to.include('Error loading form');
+
     await chtDbUtils.clearFeedbackDocs();
   });
 
@@ -61,9 +62,10 @@ describe('Unauthorized form', () => {
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
 
-    const feedbackDocs = await chtDbUtils.feedBackDocs();
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
     expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include(EXPECTED_UNAUTHORIZED_MESSAGE);
+    expect(feedbackDocs[0].info.message).to.include('Error loading contact form.');
+
     await chtDbUtils.clearFeedbackDocs();
   });
 

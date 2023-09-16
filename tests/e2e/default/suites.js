@@ -26,10 +26,10 @@ const SUITES = {
     './pwa/**/*.wdio-spec.js',
     './service-worker/**/*.wdio-spec.js',
     './transitions/**/*.wdio-spec.js'
-  ],  
+  ],
   enketo: [
     './enketo/**/*.wdio-spec.js',
   ]};
-  
+
 exports.suites = SUITES;
-  
+

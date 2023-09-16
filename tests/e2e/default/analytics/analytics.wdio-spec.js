@@ -114,11 +114,9 @@ describe('Targets', () => {
     expect(await (await errorStack.getText())).to
       .include('TypeError: Cannot read properties of undefined (reading \'muted\')');
 
-    const feedbackDocs = await chtDbUtils.feedBackDocs();
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
     expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include(
-      'TypeError: Cannot read properties of undefined (reading \'muted\')'
-    );
+    expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'muted\')');
     await chtDbUtils.clearFeedbackDocs();
   });
 });

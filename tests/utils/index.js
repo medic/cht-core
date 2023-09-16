@@ -13,6 +13,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
+const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
@@ -1216,6 +1217,20 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
   await updateSettings({ permissions: settings.permissions }, ignoreReload);
 };
 
+const saveFeedbackDocs = async (filename, existingFeedbackDocIds) => {
+  const feedBackDocs = await chtDbUtils.getFeedbackDocs();
+  const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
+  if (!newFeedbackDocs.length) {
+    return false;
+  }
+
+  const fileName = `feedbackDocs-${filename}.json`;
+  const filePath = path.resolve(__dirname, '..', 'logs', fileName);
+  fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
+
+  return feedBackDocs.map(doc => doc._id);
+};
+
 module.exports = {
   db,
   sentinelDb,
@@ -1282,4 +1297,5 @@ module.exports = {
   updateContainerNames,
   updatePermissions,
   formDocProcessing,
+  saveFeedbackDocs,
 };

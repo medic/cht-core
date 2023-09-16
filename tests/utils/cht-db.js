@@ -1,42 +1,38 @@
-const fs = require('fs');
-const path = require('path');
-
 /* global window */
 
-const getFeedbackDocs = async () => {
-  return await browser.executeAsync(feedBackDocsReadScript);
+const getFeedbackDocsByDb = async () => {
+  return await browser.executeAsync(feedbackDocsReadScript);
 };
 
 const clearFeedbackDocs = async () => {
-  const feedbackDocs = await getFeedbackDocs();
-  await browser.executeAsync(feedBackDocDeleteScript, feedbackDocs);
-};
-
-const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
-  const feedBackDocs = await getFeedbackDocs();
-  const feedbackDocsArray = Object.values(feedBackDocs).flat();
-  const newFeedbackDocs = feedbackDocsArray.filter(doc => !existingDocIds.includes(doc._id));
-
-  if (!newFeedbackDocs?.length) {
-    return [];
-  }
-
-  const filePath = path.resolve(__dirname, '..', 'logs', `feedbackDocs-${testName.replace(/\s/g, '-')}.json`);
-  fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
-  return newFeedbackDocs.map(doc => doc._id);
-};
-
-const feedBackDocDeleteScript = async (feedbackDocs, done) => {
+  const feedbackDocs = await getFeedbackDocsByDb();
+  const deletes = {};
   for (const [dbName, rows] of Object.entries(feedbackDocs)) {
+    deletes[dbName] = rows.map(row => (row.doc._deleted = true) && row.doc);
+  }
+  console.log(JSON.stringify(deletes, null, 2));
+  return await browser.executeAsync(feedbackDocDeleteScript, deletes);
+};
+
+const getFeedbackDocs = async () => {
+  const feedbackDocs = await getFeedbackDocsByDb();
+  return Object
+    .values(feedbackDocs)
+    .flat()
+    .map(row => row.doc);
+};
+
+const feedbackDocDeleteScript = async (feedbackDocs, done) => {
+  const results = {};
+  for (const [dbName, docs] of Object.entries(feedbackDocs)) {
     // eslint-disable-next-line no-undef
     const metaDb = new PouchDB(dbName);
-    const deletes = rows.map(row => (row.doc._deleted = true) && row.doc);
-    await metaDb.bulkDocs(deletes);
+    results[dbName] = await metaDb.bulkDocs(docs);
   }
-  done();
+  done(results);
 };
 
-const feedBackDocsReadScript = async (done) => {
+const feedbackDocsReadScript = async (done) => {
   // sometimes tests end when the user is _not_ on an angular page
   // eslint-disable-next-line no-undef
   if (!window.PouchDB) {
@@ -155,9 +151,8 @@ const info = async () => {
 };
 
 module.exports = {
-  getFeedbackDocs,
   clearFeedbackDocs,
-  feedBackDocs,
+  getFeedbackDocs,
   createDoc,
   updateDoc,
   getDoc,

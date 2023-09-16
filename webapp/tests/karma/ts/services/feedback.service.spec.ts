@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -158,6 +158,61 @@ describe('Feedback service', () => {
     expect(submittedDoc.meta.source).to.equal('manual');
     expect(submittedDoc.meta.language).to.equal('en');
     expect(submittedDoc.meta.deviceId).to.exist;
+  });
+
+  it('should not record network errors', fakeAsync(() => {
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    mockConsole.error('Error replicating', new Error('Failed to fetch'));
+    flush();
+    expect(post.calledOnce).to.be.false;
+  }));
+
+  it('should not record network errors', fakeAsync(() => {
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    mockConsole.error(
+      'Error replicating',
+      new Error('Http failure response for /api/v1/replication/get-ids: 0 Unknown Error')
+    );
+    flush();
+    expect(post.calledOnce).to.be.false;
+  }));
+
+  it('should not record missing docs', () => {
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    mockConsole.error('Error selecting contact', new Error('missing'));
+    flush();
+    expect(post.calledOnce).to.be.false;
+  });
+
+  it('should not record missing docs', () => {
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    mockConsole.error('Error selecting repport', new Error('Document not found: 4327849274892'));
+    flush();
+    expect(post.calledOnce).to.be.false;
   });
 
 });

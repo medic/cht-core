@@ -9,12 +9,11 @@ chai.use(require('chai-as-promised'));
 const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
-const chtDbUtils = require('@utils/cht-db');
 const browserLogsUtils = require('@utils/browser-logs');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
-const existingFeedBackDocIds = [];
+const existingFeedbackDocIds = [];
 let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
@@ -283,9 +282,10 @@ const baseConfig = {
       await browser.takeScreenshot();
     }
 
-    const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
-    if (feedBackDocs.length) {
-      existingFeedBackDocIds.push(...feedBackDocs);
+    const feedbackDocFileName = `${test.parent} ${test.title}`.replace(/\s/g, '-');
+    const savedFeedbackDocs = await utils.saveFeedbackDocs(feedbackDocFileName, existingFeedbackDocIds);
+    if (savedFeedbackDocs) {
+      existingFeedbackDocIds.push(...savedFeedbackDocs);
       context.test.callback(new Error('Feedback docs were generated during the test.'));
     }
   },
