@@ -142,9 +142,9 @@ export class TelemetryService {
   private getDBDate(dbName) {
     const parts = dbName.split(this.NAME_DIVIDER);
     return {
-      year: parts[1],
-      month: parts[2],
-      date: parts[3],
+      year: Number(parts[1]),
+      month: Number(parts[2]),
+      date: Number(parts[3]),
     };
   }
 
@@ -211,7 +211,7 @@ export class TelemetryService {
     for (const dbName of telemetryDBs) {
       if (dbName.includes(today.formatted)) {
         // Don't submit today's telemetry records
-        return;
+        continue;
       }
 
       const db = this.windowRef.PouchDB(dbName);
