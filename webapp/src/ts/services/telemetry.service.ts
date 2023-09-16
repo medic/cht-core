@@ -13,6 +13,7 @@ export class TelemetryService {
   private readonly TELEMETRY_PREFIX = 'telemetry';
   private readonly POUCH_PREFIX = '_pouch_';
   private readonly NAME_DIVIDER = '-';
+  private readonly DATE_FORMAT = 'YYYY-MM-DD';
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private windowRef;
@@ -184,7 +185,7 @@ export class TelemetryService {
     const today = moment().startOf('day');
     return {
       today,
-      formatted: today.format('YYYY-MM-DD'),
+      formatted: today.format(this.DATE_FORMAT),
     };
   }
 
