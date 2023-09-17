@@ -29,7 +29,6 @@ describe('Feedback service', () => {
     };
     getLocal = sinon.stub();
     mockWindow = sinon.stub();
-    clock = sinon.useFakeTimers();
     languageService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
@@ -46,10 +45,11 @@ describe('Feedback service', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock.restore();
+    clock?.restore();
   });
 
   it('should submit feedback when there is an unhandled error', async () => {
+    clock = sinon.useFakeTimers();
     post.resolves();
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('es');
@@ -119,6 +119,7 @@ describe('Feedback service', () => {
   });
 
   it('should blank out password in URL', async () => {
+    clock = sinon.useFakeTimers();
     post.resolves();
     getLocal.resolves(({ version: '0.5.0' }));
     mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
@@ -144,7 +145,6 @@ describe('Feedback service', () => {
     post.resolves();
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('en');
-    service.init();
     service._setOptions({
       console: mockConsole,
       window: mockWindow,
@@ -168,6 +168,7 @@ describe('Feedback service', () => {
       document: mockDocument
     });
 
+
     mockConsole.error('Error replicating', new Error('Failed to fetch'));
     flush();
     expect(post.calledOnce).to.be.false;
@@ -189,7 +190,7 @@ describe('Feedback service', () => {
     expect(post.calledOnce).to.be.false;
   }));
 
-  it('should not record missing docs', () => {
+  it('should not record missing docs',  fakeAsync(() => {
     service.init();
     service._setOptions({
       console: mockConsole,
@@ -200,9 +201,9 @@ describe('Feedback service', () => {
     mockConsole.error('Error selecting contact', new Error('missing'));
     flush();
     expect(post.calledOnce).to.be.false;
-  });
+  }));
 
-  it('should not record missing docs', () => {
+  it('should not record missing docs', fakeAsync(() => {
     service.init();
     service._setOptions({
       console: mockConsole,
@@ -213,6 +214,5 @@ describe('Feedback service', () => {
     mockConsole.error('Error selecting repport', new Error('Document not found: 4327849274892'));
     flush();
     expect(post.calledOnce).to.be.false;
-  });
-
+  }));
 });
