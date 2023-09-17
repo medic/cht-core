@@ -34,8 +34,9 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   @Input() inline;
   @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
-  @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
+
+  // initialize variable to avoid change detection errors
+  @ViewChild(MultiDropdownFilterComponent) dropdownFilter = new MultiDropdownFilter();
 
   constructor(
     private store:Store,

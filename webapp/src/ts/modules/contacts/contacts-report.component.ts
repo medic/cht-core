@@ -26,7 +26,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   };
 
   subscription: Subscription = new Subscription();
-  enketoEdited
+  enketoEdited;
   enketoStatus;
   enketoSaving;
   enketoError;
