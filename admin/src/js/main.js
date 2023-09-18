@@ -105,7 +105,6 @@ require('./services/db');
 require('./services/export');
 require('./services/extract-lineage');
 require('./services/file-reader');
-require('./services/format-date');
 require('./services/get-data-records');
 require('./services/get-subject-summaries');
 require('./services/get-summaries');
