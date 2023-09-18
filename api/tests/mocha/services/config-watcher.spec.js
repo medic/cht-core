@@ -13,6 +13,7 @@ const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
 const manifest = require('../../../src/services/manifest');
+const environment = require('../../../src/environment');
 
 describe('Configuration', () => {
   beforeEach(() => {
@@ -217,6 +218,9 @@ describe('Configuration', () => {
         settingsService.get.resolves({ settings: 'yes' });
         const listener = sinon.stub();
         bootstrap.watch(listener);
+        sinon.stub(db, 'addRoleAsMember');
+        sinon.stub(config, 'get').withArgs('roles').returns({ chw: {} });
+        sinon.stub(environment, 'db').get(() => 'medicdb');
 
         return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
@@ -224,6 +228,37 @@ describe('Configuration', () => {
           chai.expect(config.set.callCount).to.equal(1);
           chai.expect(config.set.args[0]).to.deep.equal([{ settings: 'yes' }]);
           chai.expect(listener.callCount).to.equal(1);
+          chai.expect(config.get.withArgs('roles').callCount).to.equal(1);
+          chai.expect(db.addRoleAsMember.args).to.deep.equal([['medicdb', 'chw']]);
+        });
+      });
+
+      it('should add all configured user roles to the main database', () => {
+        settingsService.update.resolves();
+        settingsService.get.resolves({ settings: 'yes' });
+        sinon.stub(db, 'addRoleAsMember');
+        sinon.stub(config, 'get')
+          .withArgs('roles')
+          .returns({
+            chw1: {},
+            chw2: {},
+            chw3: {},
+            chw4: {},
+          });
+        sinon.stub(environment, 'db').get(() => 'medicdb');
+
+        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
+          chai.expect(settingsService.update.callCount).to.equal(1);
+          chai.expect(settingsService.get.callCount).to.equal(1);
+          chai.expect(config.set.callCount).to.equal(1);
+          chai.expect(config.set.args[0]).to.deep.equal([{ settings: 'yes' }]);
+          chai.expect(config.get.withArgs('roles').callCount).to.equal(1);
+          chai.expect(db.addRoleAsMember.args).to.deep.equal([
+            ['medicdb', 'chw1'],
+            ['medicdb', 'chw2'],
+            ['medicdb', 'chw3'],
+            ['medicdb', 'chw4'],
+          ]);
         });
       });
 

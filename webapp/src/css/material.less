@@ -1,8 +1,11 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
-/**
- * Material color's override
- */
+html, body {
+  &:not(mat-icon),
+  *:not(mat-icon) {
+    font-family: @font-family-main;
+  }
+}
 
 .mat-mdc-button,
 .mat-mdc-unelevated-button {
