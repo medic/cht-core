@@ -1,3 +1,4 @@
+const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
 const PASSWORD_MINIMUM_LENGTH = 8;
@@ -25,7 +26,6 @@ angular
     ContactTypes,
     CreateUser,
     DB,
-    FormatDate,
     Select2Search,
     Settings,
     Translate,
@@ -53,6 +53,10 @@ angular
       });
     };
 
+    const formatDate = (date) => {
+      return moment(date).format('DD-MMM-YYYY HH:mm:ss');
+    };
+
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
 
     const determineEditUserModel = function() {
@@ -70,9 +74,9 @@ angular
           const tokenLoginData = $scope.model.token_login;
           const tokenLoginEnabled = tokenLoginData &&
             {
-              expirationDate: FormatDate.datetime(tokenLoginData.expiration_date),
+              expirationDate: formatDate(tokenLoginData.expiration_date),
               active: tokenLoginData.active,
-              loginDate: tokenLoginData.login_date && FormatDate.datetime(tokenLoginData.login_date),
+              loginDate: tokenLoginData.login_date && formatDate(tokenLoginData.login_date),
               expired: tokenLoginData.expiration_date <= new Date().getTime(),
             };
 
