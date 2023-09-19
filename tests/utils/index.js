@@ -983,7 +983,7 @@ const prepServices = async (defaultSettings) => {
 
   updateContainerNames();
 
-  await tearDownServices(true);
+  await tearDownServices();
   await startServices();
   await listenForApi();
   if (defaultSettings) {
@@ -1038,10 +1038,8 @@ const saveLogs = async () => {
   }
 };
 
-const tearDownServices = async (removeOrphans) => {
-  if (removeOrphans) {
-    return dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
-  }
+const tearDownServices = async () => {
+  await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
   await saveLogs();
 };
 
