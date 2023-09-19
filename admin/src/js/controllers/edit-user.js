@@ -53,8 +53,9 @@ angular
       });
     };
 
-    const formatDate = (date) => {
-      return moment(date).format('DD-MMM-YYYY HH:mm:ss');
+    const formatDate = (settings, date) => {
+      const format = settings.reported_date_format || 'DD-MMM-YYYY HH:mm:ss';
+      return moment(date).format(format);
     };
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
@@ -74,9 +75,9 @@ angular
           const tokenLoginData = $scope.model.token_login;
           const tokenLoginEnabled = tokenLoginData &&
             {
-              expirationDate: formatDate(tokenLoginData.expiration_date),
+              expirationDate: formatDate(settings, tokenLoginData.expiration_date),
               active: tokenLoginData.active,
-              loginDate: tokenLoginData.login_date && formatDate(tokenLoginData.login_date),
+              loginDate: tokenLoginData.login_date && formatDate(settings, tokenLoginData.login_date),
               expired: tokenLoginData.expiration_date <= new Date().getTime(),
             };
 

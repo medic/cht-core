@@ -52,7 +52,6 @@
     "jquery": "3.5.1",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
-    "messageformat": "^2.3.0",
     "moment": "^2.29.1",
     "mustache": "^4.2.0",
     "ngrx-store-logger": "^0.2.4",
