@@ -74,9 +74,11 @@ const changeQueue = async.queue((change, callback) => {
     );
   }
   if (change.deleted) {
-    return tombstoneUtils.processChange(Promise, db.medic, change, logger)
-      .then(() => updateMetadata(change, callback))
-      .catch(callback);
+    return tombstoneUtils
+      .processChange(Promise, db.medic, change, logger)
+      .catch(() => {}) // error already logged by tombstoneUtils
+      // advance sentinel seq even when tombstone creation fails #8539
+      .then(() => updateMetadata(change, callback));
   }
 
   transitionsLib.processChange(change, err => {
