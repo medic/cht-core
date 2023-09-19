@@ -1,4 +1,3 @@
-const rewire = require('rewire');
 const defaultConfigSettingsDoc = require('../../../config/default/app_settings.json');
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
@@ -131,9 +130,9 @@ module.exports = {
   RestorableRulesStateStore: () => restorable('../src/rules-state-store', ['state', 'currentUser', 'onStateChange']),
 };
 
+// TODO this is no longer needed
 const restorable = (path, attributes = []) => {
-  const mod = rewire(path);
-  mod.restore = () => attributes.forEach(attr => mod.__set__(attr, undefined));
+  const mod = require(path);
   return mod;
 };
 

@@ -9,6 +9,8 @@ const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
 chai.use(chaiExclude);
 
+let clock;
+
 const mockUserSettingsDoc = { _id: 'org.couchdb.user:username' };
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
@@ -149,12 +151,15 @@ describe('pouchdb provider', () => {
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
 
-    sinon.useFakeTimers(100000000);
+    clock = sinon.useFakeTimers(100000000);
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    clock && clock.restore();
+    sinon.restore();
+  });
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev')
@@ -232,7 +237,7 @@ describe('pouchdb provider', () => {
       const ignoredUpdate = await db.get('target~2019-07~user~org.couchdb.user:username');
       expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
 
-      sinon.useFakeTimers(Date.now() + MS_IN_DAY);
+      clock.tick(MS_IN_DAY);
       await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag);
       expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
         _id: 'target~2019-07~user~org.couchdb.user:username',

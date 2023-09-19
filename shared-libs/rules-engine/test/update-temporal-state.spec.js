@@ -5,14 +5,16 @@ const { MS_IN_DAY, mockEmission } = require('./mocks');
 const transformToDoc = require('../src/transform-task-emission-to-doc');
 const updateTemporalStates = require('../src/update-temporal-states');
 
+let clock;
 const NOW = 1000;
 
 describe('update-temporal-states', () => {
   beforeEach(() => {
-    sinon.useFakeTimers(NOW);
+    clock = sinon.useFakeTimers(NOW);
   });
 
   afterEach(() => {
+    clock && clock.restore();
     sinon.restore();
   });
 
@@ -29,7 +31,7 @@ describe('update-temporal-states', () => {
       'stateHistory[0].state': 'Draft',
     });
 
-    sinon.useFakeTimers(NOW + MS_IN_DAY + 10);
+    clock.tick(MS_IN_DAY + 10);
     expect(updateTemporalStates([taskDoc])).to.deep.eq([taskDoc]);
     expect(taskDoc).to.nested.include({
       state: 'Ready',
@@ -37,7 +39,7 @@ describe('update-temporal-states', () => {
       'stateHistory[1].state': 'Ready',
     });
 
-    sinon.useFakeTimers(NOW + MS_IN_DAY * 3);
+    clock.tick(MS_IN_DAY * 3);
     expect(updateTemporalStates([taskDoc])).to.deep.eq([taskDoc]);
     expect(taskDoc).to.nested.include({
       state: 'Failed',
@@ -75,7 +77,7 @@ describe('update-temporal-states', () => {
       'stateHistory[0].state': 'Failed',
     });
 
-    sinon.useFakeTimers(-MS_IN_DAY * 3);
+    clock.tick(MS_IN_DAY * 3);
     expect(updateTemporalStates([taskDoc])).to.deep.eq([]);
   });
 });

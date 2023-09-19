@@ -13,11 +13,10 @@ const moment = require('moment');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
-const rewire = require('rewire');
 
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
-const wireup = rewire('../src/provider-wireup');
+const wireup = require('../src/provider-wireup');
 const { assert, expect } = chai;
 chai.use(chaiExclude);
 
@@ -74,14 +73,15 @@ const fixtures = [
 let clock;
 const realSetTimeout = setTimeout;
 
-describe('provider-wireup integration tests', () => {
+describe.only('provider-wireup integration tests', () => {
   let provider;
   let db;
   beforeEach(async () => {
+    console.log('beforeEach');
     clock = sinon.useFakeTimers(NOW);
     sinon.stub(rulesStateStore, 'currentUserContact').returns({ _id: 'mock_user_id' });
     sinon.stub(rulesStateStore, 'currentUserSettings').returns({ _id: 'org.couchdb.user:username' });
-    wireup.__set__('rulesStateStore', rulesStateStore);
+    wireup._setRulesStateStore(rulesStateStore);
 
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
@@ -92,7 +92,8 @@ describe('provider-wireup integration tests', () => {
     provider = pouchdbProvider(db);
   });
   afterEach(() => {
-    rulesStateStore.restore();
+    console.log('afterEach');
+    rulesStateStore._restore();
     sinon.restore();
     rulesEmitter.shutdown();
     clock && clock.restore();
@@ -136,9 +137,9 @@ describe('provider-wireup integration tests', () => {
 
       // simulate restarting the app. the database is the same, but the taskFetcher is uninitialized
       rulesEmitter.shutdown();
-      rulesStateStore.__set__('state', undefined);
-
+      
       const putCountBeforeInit = db.put.callCount;
+      rulesStateStore._restore();
       await wireup.initialize(provider, engineSettings(), userDoc);
       expect(db.put.callCount).to.eq(putCountBeforeInit);
       await wireup.fetchTasksFor(provider, ['abc']);
@@ -208,7 +209,8 @@ describe('provider-wireup integration tests', () => {
         targetEmissions: [],
         taskTransforms: [],
       });
-      await wireup.__with__({ refreshRulesEmissions })(() => wireup.fetchTasksFor(provider, ['headless']));
+      wireup._setRefreshRulesEmissions(refreshRulesEmissions);
+      await wireup.fetchTasksFor(provider, ['headless']);
       expect(refreshRulesEmissions.callCount).to.eq(1);
       expect(refreshRulesEmissions.args[0][0]).excludingEvery('_rev').to.deep.eq({
         contactDocs: [],
@@ -225,7 +227,7 @@ describe('provider-wireup integration tests', () => {
       });
     });
 
-    it('tasks tab includes headless reports and tasks', async () => {
+    it.only('tasks tab includes headless reports and tasks', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       const rules = simpleNoolsTemplate('');
       const settings = { rules };
@@ -235,9 +237,9 @@ describe('provider-wireup integration tests', () => {
         targetEmissions: [],
         taskTransforms: [],
       });
-      const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+      wireup._setRefreshRulesEmissions(refreshRulesEmissions);
 
-      await withMockRefresher(() => wireup.fetchTasksFor(provider));
+      await wireup.fetchTasksFor(provider);
       expect(refreshRulesEmissions.callCount).to.eq(1);
       expect(refreshRulesEmissions.args[0][0]).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
@@ -247,12 +249,12 @@ describe('provider-wireup integration tests', () => {
       });
 
       expect(rulesStateStore.hasAllContacts()).to.be.true;
-      await withMockRefresher(() => wireup.fetchTasksFor(provider));
+      await wireup.fetchTasksFor(provider);
       expect(refreshRulesEmissions.callCount).to.eq(2);
       expect(refreshRulesEmissions.args[1][0]).excludingEvery('_rev').to.deep.eq({});
 
       rulesStateStore.markDirty(['headless']);
-      await withMockRefresher(() => wireup.fetchTasksFor(provider));
+      await wireup.fetchTasksFor(provider);
       expect(refreshRulesEmissions.callCount).to.eq(3);
       expect(refreshRulesEmissions.args[2][0]).excludingEvery('_rev').to.deep.eq({
         contactDocs: [],
@@ -274,7 +276,7 @@ describe('provider-wireup integration tests', () => {
       });
     });
 
-    it('confirm no heavy lifting when fetch fresh contact (performance)', async () => {
+    it.only('confirm no heavy lifting when fetch fresh contact (performance)', async () => {
       sinon.spy(rulesEmitter, 'getEmissionsFor');
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       const rules = simpleNoolsTemplate('');

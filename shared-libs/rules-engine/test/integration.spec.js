@@ -87,7 +87,6 @@ const declarativeScenarios = [true, false];
 
 describe(`Rules Engine Integration Tests`, () => {
   before(async () => {
-    clock = sinon.useFakeTimers(TEST_START);
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
     await rulesEngine.initialize(engineSettings());
@@ -101,7 +100,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
   afterEach(() => {
     sinon.restore();
-    clock.restore();
+    clock && clock.restore();
   });
 
   for (const rulesAreDeclarative of declarativeScenarios) {
@@ -149,12 +148,12 @@ describe(`Rules Engine Integration Tests`, () => {
       it('fail facility_reminder due to time window', async () => {
         // the task is 5 days old when it is discovered
         const NOW = TEST_START + MS_IN_DAY * 5;
-        sinon.useFakeTimers(NOW);
+        clock.tick(MS_IN_DAY * 5);
 
         await triggerFacilityReminderInReadyState(['patient']);
 
         // the task expires four days later, but the contact is not dirty. so no recalculation, just decay
-        sinon.useFakeTimers(TEST_START + MS_IN_DAY * 9);
+        clock.tick(MS_IN_DAY * 4);
         const noTasks = await rulesEngine.fetchTasksFor(['patient']);
         expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
         expect(noTasks).to.have.property('length', 0);
@@ -178,7 +177,7 @@ describe(`Rules Engine Integration Tests`, () => {
         });
 
         // a month later, no new doc will be created
-        sinon.useFakeTimers(TEST_START + MS_IN_DAY * 39);
+        clock.tick(MS_IN_DAY * 30);
         const monthLater = await rulesEngine.fetchTasksFor(['patient']);
         expect(monthLater).to.have.property('length', 0);
         expect(db.bulkDocs.callCount).to.eq(3);
@@ -196,7 +195,7 @@ describe(`Rules Engine Integration Tests`, () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
         // move forward 9 days, the contact is dirty, the task is recalculated
-        sinon.useFakeTimers(TEST_START + MS_IN_DAY * 9);
+        clock.tick(MS_IN_DAY * 9);
         const noTasks = await rulesEngine.fetchTasksFor(['patient']);
         expect(db.query.args.map(args => args[0]))
           .to.deep.eq([...expectedQueriesForFreshData, ...expectedQueriesForFreshData]);
@@ -363,7 +362,8 @@ describe(`Rules Engine Integration Tests`, () => {
         const tasks = await rulesEngine.fetchTasksFor();
         expect(tasks).to.have.property('length', 1);
 
-        sinon.useFakeTimers(moment().add(90, 'days').valueOf());
+        clock.restore();
+        clock = sinon.useFakeTimers(moment().add(90, 'days').valueOf());
         const purgedTask = {
           _id: tasks[0]._id,
           _rev: tasks[0]._rev,
@@ -616,7 +616,6 @@ describe(`Rules Engine Integration Tests`, () => {
           return targets;
         };
 
-        clock = sinon.useFakeTimers(TEST_START);
         const patientContact2 = Object.assign({}, patientContact, { _id: 'patient2', patient_id: 'patient_id2', });
         const pregnancyRegistrationReport2 = Object.assign(
           {},
@@ -667,6 +666,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
   // interface is not used within cht-core but is used by cht-conf-test-harness
   it('custom emitter', async () => {
+    clock = sinon.useFakeTimers(TEST_START);
     const expectedEmission = {
       _id: 'emitted',
       contact: patientContact,

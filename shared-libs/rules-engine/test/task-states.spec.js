@@ -9,10 +9,16 @@ const TaskStates = rewire('../src/task-states');
 const definedStates = Object.keys(TaskStates).filter(key => typeof TaskStates[key] === 'string');
 
 const NOW = 7200000000;
+let clock;
 
 describe('task-states', () => {
-  before(() => sinon.useFakeTimers(NOW));
-  after(() => sinon.restore());
+  beforeEach(() => {
+    clock = sinon.useFakeTimers(NOW);
+  });
+  afterEach(() => {
+    sinon.restore();
+    clock.restore();
+  });
 
   it('definedStates', () => expect(definedStates.length).to.eq(5));
 

@@ -8,12 +8,12 @@ const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 
 const TaskStates = require('./task-states');
-const refreshRulesEmissions = require('./refresh-rules-emissions');
 const rulesEmitter = require('./rules-emitter');
-const rulesStateStore = require('./rules-state-store');
 const updateTemporalStates = require('./update-temporal-states');
 const calendarInterval = require('@medic/calendar-interval');
 
+let refreshRulesEmissions = require('./refresh-rules-emissions');
+let rulesStateStore = require('./rules-state-store');
 let wireupOptions;
 
 module.exports = {
@@ -175,6 +175,14 @@ module.exports = {
     // this function accepts subject ids, but rulesStateStore accepts a contact id, so a conversion is required
     return provider.contactsBySubjectId(subjectIds)
       .then(contactIds => rulesStateStore.markDirty(contactIds));
+  },
+
+  // used for testing only
+  _setRulesStateStore: (store) => {
+    rulesStateStore = store;
+  },
+  _setRefreshRulesEmissions: (emissions) => {
+    refreshRulesEmissions = emissions;
   },
 };
 

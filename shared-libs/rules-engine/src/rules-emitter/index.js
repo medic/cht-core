@@ -16,6 +16,7 @@ let emitter;
 * Sets the rules emitter to an uninitialized state.
 */
 const shutdown = () => {
+  console.log('~~~~~~~~~~ shutting down');
   if (emitter) {
     emitter.shutdown();
   }

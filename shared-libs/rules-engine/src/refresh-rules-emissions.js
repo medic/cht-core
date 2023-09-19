@@ -29,6 +29,7 @@ const transformTaskEmissionToDoc = require('./transform-task-emission-to-doc');
  */
 module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTasks=true, enableTargets=true }={}) => {
   const { contactDocs = [], reportDocs = [], taskDocs = [] } = freshData;
+  console.log('calling rules emitter');
   return rulesEmitter.getEmissionsFor(contactDocs, reportDocs, taskDocs)
     .then(emissions => Promise.all([
       enableTasks ? getUpdatedTaskDocs(emissions.tasks, freshData, calculationTimestamp, enableTasks) : [],

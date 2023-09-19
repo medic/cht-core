@@ -296,5 +296,13 @@ module.exports = Object.keys(self).reduce((agg, key) => {
 
     return self[key](...args);
   };
+  // used for testing
+  agg._restore = () => {
+    console.log('!!!!!!!! restoring');
+    state = undefined;
+    onStateChange = undefined;
+    currentUserContact = undefined;
+    currentUserSettings = undefined;
+  }
   return agg;
 }, {});
