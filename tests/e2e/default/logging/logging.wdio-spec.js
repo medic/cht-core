@@ -33,8 +33,6 @@ describe('audit log', () => {
     expect(auditLogs[0]).to.contain('name=admin&password=***');
   });
 
-  // <150>Sep 19 03:30:58 haproxy[12]: 172.22.0.7,couchdb,201,9,0,0,POST,/_replicator,-,medic,'{"user_ctx":{"name":"medic","roles":["_admin","_reader","_writer"]},"source":{"url":"https://192-168-50-17.local-ip.medicmobile.org:10443/medic","headers":{"Authorization":"Basic bWVkaWM6cGFzc3dvcmQ="}},"target":{"url":"https://192-168-50-17.local-ip.medicmobile.org:10443/medic2","headers":{"Authorization":"Basic bWVkaWM6cGFzc3dvcmQ="}},"create_target":false,"continuous":false}',421,9,95,'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0'
-
   it('should mask password basic auth header', async () => {
     const collectAuditLogs = await utils.collectHaproxyLogs(/POST,\/_replicator/);
     const body = {
