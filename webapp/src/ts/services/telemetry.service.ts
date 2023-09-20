@@ -11,11 +11,10 @@ import { SessionService } from '@mm-services/session.service';
 })
 export class TelemetryService {
   private readonly TELEMETRY_PREFIX = 'telemetry';
+  private readonly POUCH_PREFIX = '_pouch_';
   private readonly NAME_DIVIDER = '-';
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
-
-  private queue = Promise.resolve();
   private windowRef;
 
   constructor(
@@ -66,7 +65,7 @@ export class TelemetryService {
     ].join(this.NAME_DIVIDER);
   }
 
-  private generateMetadataSection() {
+  private generateMetadataSection(dbName) {
     return Promise
       .all([
         this.dbService.get().get('_design/medic-client'),
@@ -74,7 +73,7 @@ export class TelemetryService {
         this.dbService.get().allDocs({ key: 'settings' })
       ])
       .then(([ ddoc, formResults, settingsResults ]) => {
-        const date = this.getToday().today;
+        const date = this.getDBDate(dbName);
         const version = ddoc?.build_info?.version || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
           keyToVersion[row.doc.internalId] = row.doc._rev;
@@ -83,9 +82,9 @@ export class TelemetryService {
         }, {});
 
         return {
-          year: date.year(),
-          month: date.month() + 1,
-          day: date.date(),
+          year: date.year,
+          month: date.month,
+          day: date.date,
           user: this.sessionService.userCtx().name,
           deviceId: this.getUniqueDeviceId(),
           versions: {
@@ -123,8 +122,8 @@ export class TelemetryService {
     }
 
     return databases
-      .filter(db => db.name?.startsWith(this.TELEMETRY_PREFIX))
-      .map(db => db.name || '');
+      .map(db => db.name?.replace(this.POUCH_PREFIX, '') || '')
+      .filter(dbName => dbName?.startsWith(this.TELEMETRY_PREFIX));
   }
 
   /**
@@ -140,8 +139,17 @@ export class TelemetryService {
       .put(aggregateDoc);
   }
 
-  private async aggregate(db) {
-    const metadata = await this.generateMetadataSection();
+  private getDBDate(dbName) {
+    const parts = dbName.split(this.NAME_DIVIDER);
+    return {
+      year: parts[1],
+      month: parts[2],
+      date: parts[3],
+    };
+  }
+
+  private async aggregate(db, dbName) {
+    const metadata = await this.generateMetadataSection(dbName);
     const dbInfo = await this.dbService.get().info();
     const reduceResult = await db.query(
       { reduce: '_stats', map: (doc, emit) => emit(doc.key, doc.value) },
@@ -207,7 +215,7 @@ export class TelemetryService {
       }
 
       const db = this.windowRef.PouchDB(dbName);
-      await this.aggregate(db);
+      await this.aggregate(db, dbName);
       db.destroy();
     }
   }
@@ -250,32 +258,31 @@ export class TelemetryService {
     return this.ngZone.runOutsideAngular(() => this._record(key, value));
   }
 
-  private _record(key, value?) {
+  private async _record(key, value?) {
     if (value === undefined) {
       value = 1;
     }
 
     let currentDB;
-    const today = this.getToday();
+    try {
+      const today = this.getToday();
+      const telemetryDBs = await this.getTelemetryDBs();
+      await this.submitIfNeeded(today, telemetryDBs);
+      currentDB = await this.getCurrentTelemetryDB(today);
+      await this.storeIt(currentDB, key, value);
+    } catch (error) {
+      console.error('Error in telemetry service', error);
+    }
 
-    this.queue = this.queue
-      .then(() => this.getTelemetryDBs())
-      .then(telemetryDBs => this.submitIfNeeded(today, telemetryDBs))
-      .then(() => currentDB = this.getCurrentTelemetryDB(today))
-      .then(() => this.storeIt(currentDB, key, value))
-      .catch(error => console.error('Error in telemetry service', error))
-      .finally(() => {
-        if (!currentDB || currentDB._destroyed || currentDB._closed) {
-          return;
-        }
-        try {
-          currentDB.close();
-        } catch (err) {
-          console.error('Error closing telemetry DB', err);
-        }
-      });
+    if (!currentDB || currentDB?._destroyed || currentDB?._closed) {
+      return;
+    }
 
-    return this.queue;
+    try {
+      currentDB.close();
+    } catch (error) {
+      console.error('Error closing telemetry DB', error);
+    }
   }
 }
 
