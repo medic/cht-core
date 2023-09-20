@@ -64,7 +64,7 @@ export class FormatProvider {
     if (options?.phone) {
       parts.push('<span test-id="phone">' + _.escape(options.phone) + '</span>');
     }
-    const position = this.lineage(options.parent || options.lineage);
+    const position = this.lineage(options?.parent || options?.lineage);
     if (position) {
       parts.push('<div class="position">' + position + '</div>');
     }
