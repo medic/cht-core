@@ -1,4 +1,5 @@
 const utils = require('@utils');
+const chtDbUtils = require('@utils/cht-db');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
@@ -48,7 +49,7 @@ describe('Send message', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), bob]);
     await utils.createUsers([offlineUser]);
-    await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
+    // await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
     await loginPage.login(offlineUser);
   });
 
@@ -64,8 +65,7 @@ describe('Send message', () => {
       `${healthCenter.name} - all  contacts`
     );
 
-    const messages = await messagesPage.messagesListLeftPanel();
-    expect(messages.length).to.equal(2);
+    await browser.waitUntil(async () => (await messagesPage.messagesListLeftPanel()).length === 2, 3000);
 
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);
@@ -81,6 +81,13 @@ describe('Send message', () => {
     await messagesPage.openMessage(rawNumber);
     await verifyMessageHeader(rawNumber, '');
     await verifyLastSmsContent('raw');
+
+    await commonPage.sync();
+
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include('Denied replicating to remote server');
+    await chtDbUtils.clearFeedbackDocs();
   });
 
   it('should send a message to a contact with a phone number', async () => {
@@ -94,15 +101,19 @@ describe('Send message', () => {
     await messagesPage.openMessage(rawNumber);
     await verifyMessageHeader(rawNumber, '');
     await messagesPage.sendReply(smsMsg('raw', 'reply'));
-    await browser.refresh();
     await verifyLastSmsContent('raw', 'reply');
+    await commonPage.sync();
+
+    /*const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include('Denied replicating to remote server');
+    await chtDbUtils.clearFeedbackDocs();*/
   });
 
   it('should reply to an existing message - contact with a phone number',  async () => {
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);
     await messagesPage.sendReply(smsMsg(anne.name, 'reply'));
-    await browser.refresh();
     await verifyLastSmsContent(anne.name, 'reply');
   });
 
@@ -114,7 +125,6 @@ describe('Send message', () => {
     await messagesPage.replyAddRecipients(newMessage);
     await verifyMessageModalContent(rawNumber, newMessage);
     await messagesPage.sendReplyNewRecipient(anotherRawNumber, anotherRawNumber);
-    await browser.refresh();
     await verifyLastSmsContent('raw', 'add recipient');
 
     await messagesPage.openMessage(anotherRawNumber);
@@ -130,7 +140,6 @@ describe('Send message', () => {
     await messagesPage.replyAddRecipients(newMessage);
     await verifyMessageModalContent(anne.name, newMessage);
     await messagesPage.sendReplyNewRecipient(bob.name, bob.phone);
-    await browser.refresh();
     await verifyLastSmsContent('all', 'add recipient');
 
     await messagesPage.openMessage(bob._id);
@@ -149,5 +158,12 @@ describe('Send message', () => {
     await messagesPage.openMessage(bob._id);
     await verifyMessageHeader(bob.name, bob.phone);
     await verifyLastSmsContent(bob.name, 'People\'s Tab');
+
+    await commonPage.sync();
+
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include('Denied replicating to remote server');
+    await chtDbUtils.clearFeedbackDocs();
   });
 });

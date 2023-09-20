@@ -10,7 +10,6 @@ const clearFeedbackDocs = async () => {
   for (const [dbName, rows] of Object.entries(feedbackDocs)) {
     deletes[dbName] = rows.map(row => (row.doc._deleted = true) && row.doc);
   }
-  console.log(JSON.stringify(deletes, null, 2));
   return await browser.executeAsync(feedbackDocDeleteScript, deletes);
 };
 
