@@ -20,9 +20,9 @@ process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
+const DEBUG = process.env.DEBUG;
 
 let originalSettings;
-let e2eDebug;
 let dockerVersion;
 let browserLogStream;
 
@@ -390,7 +390,7 @@ const deleteAllDocs = (except) => {
         }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
-      if (e2eDebug) {
+      if (DEBUG) {
         console.log(`Deleting docs and infodocs: ${ids}`);
       }
       const infoIds = ids.map(id => `${id}-info`);
@@ -402,7 +402,7 @@ const deleteAllDocs = (except) => {
             body: { docs: toDelete },
           })
           .then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted docs: ${JSON.stringify(response)}`);
             }
           }),
@@ -420,7 +420,7 @@ const deleteAllDocs = (except) => {
             // it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
             return module.exports.sentinelDb.bulkDocs(deletes);
           }).then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
             }
           })
@@ -1039,8 +1039,10 @@ const saveLogs = async () => {
 };
 
 const tearDownServices = async () => {
-  await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
   await saveLogs();
+  if (!DEBUG) {
+    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+  }
 };
 
 const killSpawnedProcess = (proc) => {
