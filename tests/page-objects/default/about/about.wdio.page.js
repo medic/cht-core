@@ -19,5 +19,5 @@ module.exports = {
   userName,
   partners,
   getPartnerImage,
-  getVersion
+  getVersion,
 };
