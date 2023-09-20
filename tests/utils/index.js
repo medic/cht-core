@@ -172,7 +172,7 @@ const requestOnTestDb = (options, debug) => {
   if (pathAndReqType !== '/GET') {
     options.path = '/' + constants.DB_NAME + (options.path || '');
   }
-  return request(options, { debug });
+  return request(options, debug);
 };
 
 const requestOnTestMetaDb = (options, debug) => {
@@ -182,7 +182,7 @@ const requestOnTestMetaDb = (options, debug) => {
     };
   }
   options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const requestOnMedicDb = (options, debug) => {
@@ -190,7 +190,7 @@ const requestOnMedicDb = (options, debug) => {
     options = { path: options };
   }
   options.path = `/medic${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const formDocProcessing = async (docs) => {
@@ -1166,6 +1166,8 @@ const collectSentinelLogs = (...regex) => collectLogs('sentinel', ...regex);
 
 const collectApiLogs = (...regex) => collectLogs('api', ...regex);
 
+const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
+
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
 const apiLogTestStart = (name) => {
@@ -1277,6 +1279,7 @@ module.exports = {
   waitForApiLogs,
   collectSentinelLogs,
   collectApiLogs,
+  collectHaproxyLogs,
   apiLogTestStart,
   apiLogTestEnd,
   updateContainerNames,
