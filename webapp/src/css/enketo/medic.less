@@ -19,9 +19,13 @@
       display: none;
     }
     .option-wrapper {
+      padding: 5px;
       .option-label {
         white-space: normal;
-        word-break: normal;
+        word-break: break-all;
+        width: calc(100% - 30px);
+        display: inline-block;
+        margin: 0;
       }
     }
   }
@@ -263,7 +267,7 @@
   }
 
   .option-wrapper > label:not(.filler) {
-    margin-right: 10px;
+    margin: 0;
     padding-top: 8px;
     padding-bottom: 8px;
     border-radius: @radius-size-small;
@@ -434,8 +438,7 @@
     .option-wrapper > label:not(.filler) {
       padding-top: 9px;
       padding-bottom: 9px;
-      margin-top: 1px;
-      margin-bottom: 1px;
+      margin: 0;
 
       &:hover {
         background-color: inherit;
