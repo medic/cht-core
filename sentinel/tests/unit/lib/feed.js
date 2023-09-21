@@ -325,7 +325,7 @@ describe('feed', () => {
       });
     });
 
-    it('does not advance metadata document if creating tombstone fails', done => {
+    it('does advance metadata document if creating tombstone fails', done => {
       sinon.stub(tombstoneUtils, 'processChange').rejects();
       sinon.stub(metadata, 'setTransitionSeq').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
@@ -341,7 +341,7 @@ describe('feed', () => {
             deleted: true,
           });
           return Promise.resolve().then(() => {
-            assert.equal(metadata.setTransitionSeq.callCount, 0);
+            assert.equal(metadata.setTransitionSeq.callCount, 1);
             done();
           });
         });
