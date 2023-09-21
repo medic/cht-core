@@ -174,7 +174,6 @@ export class FormService {
         throw error;
       }
       const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
-      console.error(errorMessage, error.message);
       throw new Error(errorMessage + error.message);
     }
   }
@@ -218,8 +217,7 @@ export class FormService {
       .then((results) => {
         results.forEach((result) => {
           if (result.error) {
-            console.error('Error saving report', result);
-            throw new Error('Error saving report');
+            throw new Error('Error saving report: ' + result.error);
           }
           const idx = docs.findIndex(doc => doc._id === result.id);
           docs[idx] = { ...docs[idx], _rev: result.rev };

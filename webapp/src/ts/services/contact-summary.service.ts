@@ -105,7 +105,7 @@ export class ContactSummaryService {
       const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDoc);
       return this.applyFilters(summary);
     } catch (error) {
-      console.error('Configuration error in contact-summary function: ' + error);
+      console.error('Configuration error in contact-summary function: ', error);
       throw new Error('Configuration error');
     }
   }

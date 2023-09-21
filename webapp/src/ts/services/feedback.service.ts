@@ -40,8 +40,14 @@ export class FeedbackService {
   private readonly NO_FEEDBACK_MESSAGES = [
     'failed to fetch',
     /http failure .* unknown error/i, // server offline
+    /service unavailable/i, // server starting up
     /missing/i,
     /document not found/i,
+    /denied replicating to remote server/i,
+    /phone number not unique/i,
+    /invalid phone number/i,
+    /validation failed/i,
+    /form is invalid/i,
   ];
 
   private readonly FEEDBACK_LEVEL = 'error';
@@ -55,12 +61,12 @@ export class FeedbackService {
       .filter(i => !!i);
   }
 
-  private shouldGenerateFeedback(level:string, message:string) {
+  private shouldGenerateFeedback(level:string, message:string, exception) {
     if (this.FEEDBACK_LEVEL !== level) {
       return false;
     }
 
-    if (!message){
+    if (!exception){
       return false;
     }
 
@@ -76,11 +82,23 @@ export class FeedbackService {
     return !matchesNoFeedback;
   }
 
+  private getExceptionMessage(exception) {
+    if (!exception) {
+      return;
+    }
+
+    if (typeof exception.error === 'string') {
+      return exception.error;
+    }
+
+    return exception.reason || exception.message;
+  }
+
   private async generateFeedbackOnError(level, ...args) {
     const exception = args.find(arg => arg instanceof Error || arg?.stack || arg instanceof HttpErrorResponse);
-    const message = exception?.reason || exception?.message || args[0];
+    const message = this.getExceptionMessage(exception) || args[0];
 
-    if (this.shouldGenerateFeedback(level, message)) {
+    if (this.shouldGenerateFeedback(level, message, exception)) {
       this.lastErrorMessage = message;
       try {
         await this.createAndSave( { message: message, stack: exception?.stack });

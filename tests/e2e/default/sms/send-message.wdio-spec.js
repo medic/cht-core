@@ -49,7 +49,6 @@ describe('Send message', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), bob]);
     await utils.createUsers([offlineUser]);
-    // await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
     await loginPage.login(offlineUser);
   });
 
@@ -81,13 +80,6 @@ describe('Send message', () => {
     await messagesPage.openMessage(rawNumber);
     await verifyMessageHeader(rawNumber, '');
     await verifyLastSmsContent('raw');
-
-    await commonPage.sync();
-
-    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include('Denied replicating to remote server');
-    await chtDbUtils.clearFeedbackDocs();
   });
 
   it('should send a message to a contact with a phone number', async () => {
@@ -102,12 +94,6 @@ describe('Send message', () => {
     await verifyMessageHeader(rawNumber, '');
     await messagesPage.sendReply(smsMsg('raw', 'reply'));
     await verifyLastSmsContent('raw', 'reply');
-    await commonPage.sync();
-
-    /*const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include('Denied replicating to remote server');
-    await chtDbUtils.clearFeedbackDocs();*/
   });
 
   it('should reply to an existing message - contact with a phone number',  async () => {
@@ -158,12 +144,5 @@ describe('Send message', () => {
     await messagesPage.openMessage(bob._id);
     await verifyMessageHeader(bob.name, bob.phone);
     await verifyLastSmsContent(bob.name, 'People\'s Tab');
-
-    await commonPage.sync();
-
-    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include('Denied replicating to remote server');
-    await chtDbUtils.clearFeedbackDocs();
   });
 });
