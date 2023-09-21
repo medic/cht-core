@@ -145,7 +145,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.calledOnce).to.be.true;
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
       expect(telemetryDb.post.args[0][0].date_recorded).to.be.above(0);
-      expect(windowMock.indexedDB.databases.calledTwice).to.be.true;
+      expect(windowMock.indexedDB.databases.calledOnce).to.be.true;
       expect(windowMock.PouchDB.calledTwice).to.be.true;
       expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-09-greg' ]);
       expect(windowMock.PouchDB.args[1]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
