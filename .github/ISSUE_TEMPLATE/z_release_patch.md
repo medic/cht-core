@@ -42,7 +42,7 @@ If all is good, then in 24h, I will start the release. Thanks!
         - The Director of Technology or a developer
         - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
 - [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Ensure the release notes PR above is merged. Link to the release notes in the description of the release.
-- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds_4/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the "Product - Releases" category using this template:
 ```
 *Announcing the release of {{version}}*
