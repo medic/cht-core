@@ -284,12 +284,12 @@
 </h:html>
   `;
 
-  document.getElementById('myform').setAttribute('form-html', formHtml);
-  document.getElementById('myform').setAttribute('form-model', formModel);
-  document.getElementById('myform').setAttribute('form-xml', formXml);
+  const myForm = document.getElementById('myform');
+  myForm.formHtml = formHtml;
+  myForm.formModel = formModel;
+  myForm.formXml = formXml;
 
-
-  document.getElementById('myform').addEventListener('onSubmit', (e) => {
+  myForm.addEventListener('onSubmit', async (e) => {
     console.log('form submitted', e.detail);
   });
 </script>
