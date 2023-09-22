@@ -123,6 +123,9 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   ngAfterViewChecked() {
+    if (this.inline) {
+      return;
+    }
     // add the scroll event listener after we have a list element to attach it to!
     this.addOnScrollEventListener();
 
@@ -216,7 +219,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   itemLabel(facility) {
-    if (facility.doc && facility.doc.name) {
+    if (facility?.doc?.name) {
       return Promise.resolve(facility.doc.name);
     }
 
