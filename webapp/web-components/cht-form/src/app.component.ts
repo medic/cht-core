@@ -89,7 +89,7 @@ export class AppComponent {
       // isFormInModal,
       // userContact,
     };
-    const formDetails = this.getFormDetails({ title: 'Undo death report' });
+    const formDetails = this.getFormDetails();
     const userSettings = {
       contact_id: 'user_contact_id',
       language: 'en',
@@ -107,13 +107,13 @@ export class AppComponent {
     }
   }
 
-  private getFormDetails(form) {
+  private getFormDetails() {
     const $html = $(this._formHtml!);
     const hasContactSummary = $(this._formModel!).find('> instance[id="contact-summary"]').length === 1;
     return {
       html: $html,
       model: this._formModel,
-      title: form.title,
+      // title: form.title,
       hasContactSummary: hasContactSummary
     };
   }
