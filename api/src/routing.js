@@ -12,15 +12,22 @@ const prometheusMiddleware = require('prometheus-api-metrics');
 const rateLimiterMiddleware = require('./middleware/rate-limiter');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
-const target = 'http://' + environment.host + ':' + environment.port;
-const proxy = require('http-proxy').createProxyServer({ target: target });
+
+const port = typeof environment.port !== 'undefined' && environment.port !== null ? `:${environment.port}` : '';
+const target = `${environment.protocol}//${environment.host}${port}`;
+const proxy = require('http-proxy').createProxyServer({
+  target: target, 
+  changeOrigin: environment.proxies.changeOrigin
+});
 const proxyForAuth = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: environment.proxies.changeOrigin
 });
 const proxyForChanges = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: environment.proxies.changeOrigin
 });
 const login = require('./controllers/login');
 const smsGateway = require('./controllers/sms-gateway');
