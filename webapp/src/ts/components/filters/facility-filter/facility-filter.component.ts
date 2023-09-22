@@ -10,6 +10,7 @@ import {
   AfterViewInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -22,6 +23,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { InlineFilter } from '@mm-components/filters/inline-filter';
+import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'mm-facility-filter',
@@ -42,6 +44,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   private scrollEventListenerAdded = false;
   private displayNewFacilityQueued = false;
   private readonly MAX_LIST_HEIGHT = 300; // this is set in CSS
+  private subscriptions: Subscription = new Subscription();
 
   @Input() disabled;
   @Input() inline;
@@ -67,14 +70,21 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   ngAfterViewInit() {
     if (this.inline) {
-      this.loadingFacilities = this.loadFacilities();
+      const subscription = this.store
+        .select(Selectors.getSidebarFilter)
+        .subscribe(sidebarFilter => {
+          if (sidebarFilter.isOpen) {
+            this.loadingFacilities = this.loadFacilities();
+          }
+        });
+      this.subscriptions.add(subscription);
     }
   }
 
   // this method is called on dropdown open
   loadFacilities() {
     if (this.facilities.length) {
-      this.displayOneMoreFacility();
+      this.displayMoreFacility();
       return;
     }
 
@@ -84,17 +94,18 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
         hierarchy = this.sortHierarchyAndAddFacilityLabels(hierarchy);
         this.facilities = hierarchy;
         this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
-        this.displayOneMoreFacility();
+        const quantity = this.inline ? this.facilities.length : 1;
+        this.displayMoreFacility(quantity);
       })
       .catch(err => console.error('Error loading facilities', err));
   }
 
-  private displayOneMoreFacility() {
+  private displayMoreFacility(quantity = 1) {
     if (this.totalFacilitiesDisplayed >= this.facilities.length) {
       return;
     }
 
-    this.totalFacilitiesDisplayed += 1;
+    this.totalFacilitiesDisplayed += quantity;
     this.displayedFacilities = this.facilities.slice(0, this.totalFacilitiesDisplayed);
   }
 
@@ -115,7 +126,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
         if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
           this.displayNewFacilityQueued = true;
           setTimeout(() => {
-            this.ngZone.run(() => this.displayOneMoreFacility());
+            this.ngZone.run(() => this.displayMoreFacility());
           });
         }
       });
@@ -137,7 +148,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       const listHeight = $('#facility-dropdown-list')[0]?.scrollHeight;
       const hasScroll = listHeight > this.MAX_LIST_HEIGHT;
       if (!hasScroll) {
-        setTimeout(() => this.displayOneMoreFacility());
+        setTimeout(() => this.displayMoreFacility());
       } else {
         this.listHasScroll = true;
       }
