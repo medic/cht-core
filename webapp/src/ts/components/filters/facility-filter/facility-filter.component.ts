@@ -79,9 +79,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       .select(Selectors.getSidebarFilter)
       .subscribe(sidebarFilter => {
         if (sidebarFilter?.isOpen && !this.facilities?.length) {
-          this
-            .loadFacilities()
-            .then(() => this.selectDefault());
+          this.loadFacilities();
         }
       });
     this.subscriptions.add(subscription);
@@ -165,6 +163,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     this.defaultFacilityId = facilityId;
   }
 
+  // TODO fix default to load based on store filter values
   private selectDefault() {
     const facility = this.flattenedFacilities.find(facility => facility.doc?._id === this.defaultFacilityId);
     if (facility) {
