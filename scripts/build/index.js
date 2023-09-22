@@ -1,7 +1,7 @@
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 const path = require('path');
-const rpn = require('request-promise-native');
+const request = require('request-promise-native');
 const mustache = require('mustache');
 
 const packageJson = require('../../package.json');
@@ -158,7 +158,7 @@ const saveServiceTags = () => {
 const updateServiceWorker = () => {
   const updateSWUrl = getApiUrl('/api/v2/upgrade/service-worker');
 
-  return rpn.get(updateSWUrl).catch(err => {
+  return request.get(updateSWUrl).catch(err => {
     if (err.status === 401) {
       throw new Error('Environment variable COUCH_URL has invalid authentication');
     }

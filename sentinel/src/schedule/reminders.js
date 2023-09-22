@@ -1,7 +1,7 @@
 const { performance } = require('perf_hooks');
 const _ = require('lodash');
 const moment = require('moment');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 const config = require('../config');
 const db = require('../db');

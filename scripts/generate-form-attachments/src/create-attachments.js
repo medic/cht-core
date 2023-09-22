@@ -1,4 +1,4 @@
-const rpn = require('request-promise-native');
+const request = require('request-promise-native');
 const xmlJs = require('xml-js');
 
 
@@ -7,7 +7,7 @@ const getUrl = (couchUrl, path) => {
 };
 
 const getReports = async (uri, opts) => {
-  const result = await rpn.get({ uri, json: true, qs: opts });
+  const result = await request.get({ uri, json: true, qs: opts });
 
   const startKeyDocId = opts.start_key_doc_id || (opts.start_key && JSON.parse(opts.start_key));
 
@@ -138,7 +138,7 @@ const createAttachments = async (couchUrl, reports) => {
     return;
   }
 
-  await rpn.post({ uri: getUrl(couchUrl, '_bulk_docs'), json: true, body: { docs: updates } });
+  await request.post({ uri: getUrl(couchUrl, '_bulk_docs'), json: true, body: { docs: updates } });
 };
 
 const create = async (couchUrl, allDocs = false) => {

@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const url = require('url');
 
-const rpn = require('request-promise-native');
+const request = require('request-promise-native');
 
 let createAttachmentsSpec;
 
@@ -84,7 +84,7 @@ describe('generate form attachments', () => {
     const couchUrl = url.parse('http://admin:password@127.0.0.1/dbname');
     it('should skip startKey and startKeyDocId when not provided', async () => {
       const getReportsByForm = createAttachmentsSpec.__get__('getReportsByForm');
-      sinon.stub(rpn, 'get').resolves({
+      sinon.stub(request, 'get').resolves({
         rows: [
           { id: 'report1', key: ['form1'], doc: { _id: 'report1', fields: {} } },
           { id: 'report2', key: ['form1'], doc: { _id: 'report2', fields: {} } },
@@ -104,8 +104,8 @@ describe('generate form attachments', () => {
         ]
       });
 
-      chai.expect(rpn.get.callCount).to.equal(1);
-      chai.expect(rpn.get.args[0]).to.deep.equal([{
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0]).to.deep.equal([{
         uri: 'http://admin:password@127.0.0.1/dbname/_design/medic-client/_view/reports_by_form',
         qs: {
           limit: 1000,
@@ -118,7 +118,7 @@ describe('generate form attachments', () => {
 
     it('should request with provided startkey and startkeydocId', async () => {
       const getReportsByForm = createAttachmentsSpec.__get__('getReportsByForm');
-      sinon.stub(rpn, 'get').resolves({
+      sinon.stub(request, 'get').resolves({
         rows: [
           { id: 'report4', key: ['form2'], doc: { _id: 'report4', fields: {} } },
           { id: 'report5', key: ['form2'], doc: { _id: 'report5', fields: {} } },
@@ -140,8 +140,8 @@ describe('generate form attachments', () => {
         ]
       });
 
-      chai.expect(rpn.get.callCount).to.equal(1);
-      chai.expect(rpn.get.args[0]).to.deep.equal([{
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0]).to.deep.equal([{
         uri: 'http://admin:password@127.0.0.1/dbname/_design/medic-client/_view/reports_by_form',
         qs: {
           limit: 1000,
@@ -159,7 +159,7 @@ describe('generate form attachments', () => {
     const couchUrl = url.parse('http://admin:pass@127.0.0.1/dbname');
     it('should request with provided start key when empty', async () => {
       const getReportsByAllDocs = createAttachmentsSpec.__get__('getReportsByAllDocs');
-      sinon.stub(rpn, 'get').resolves({
+      sinon.stub(request, 'get').resolves({
         rows: [
           { id: 'report1', key: 'report1', doc: { _id: 'report1', fields: {} } },
           { id: 'report2', key: 'report2', doc: { _id: 'report2', fields: {} } },
@@ -179,8 +179,8 @@ describe('generate form attachments', () => {
         ]
       });
 
-      chai.expect(rpn.get.callCount).to.equal(1);
-      chai.expect(rpn.get.args[0]).to.deep.equal([{
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0]).to.deep.equal([{
         uri: 'http://admin:pass@127.0.0.1/dbname/_all_docs',
         qs: {
           limit: 1000,
@@ -193,7 +193,7 @@ describe('generate form attachments', () => {
 
     it('should request with provided start key when not empty', async () => {
       const getReportsByAllDocs = createAttachmentsSpec.__get__('getReportsByAllDocs');
-      sinon.stub(rpn, 'get').resolves({
+      sinon.stub(request, 'get').resolves({
         rows: [
           { id: 'report4', key: 'report4', doc: { _id: 'report4', fields: {} } },
           { id: 'report5', key: 'report5', doc: { _id: 'report5', fields: {} } },
@@ -213,8 +213,8 @@ describe('generate form attachments', () => {
         ]
       });
 
-      chai.expect(rpn.get.callCount).to.equal(1);
-      chai.expect(rpn.get.args[0]).to.deep.equal([{
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0]).to.deep.equal([{
         uri: 'http://admin:pass@127.0.0.1/dbname/_all_docs',
         qs: {
           limit: 1000,
@@ -270,7 +270,7 @@ describe('generate form attachments', () => {
 
     it('should create attachments for "simple" docs', async () => {
       const createAttachments = createAttachmentsSpec.__get__('createAttachments');
-      sinon.stub(rpn, 'post').resolves([]);
+      sinon.stub(request, 'post').resolves([]);
 
       const reports = [
         {
@@ -324,8 +324,8 @@ describe('generate form attachments', () => {
 
       await createAttachments(couchUrl, reports);
 
-      chai.expect(rpn.post.callCount).to.equal(1);
-      chai.expect(rpn.post.args[0]).to.deep.equal([{
+      chai.expect(request.post.callCount).to.equal(1);
+      chai.expect(request.post.args[0]).to.deep.equal([{
         uri: 'http://admin:password@127.0.0.1/dbname/_bulk_docs',
         json: true,
         body: {
@@ -378,7 +378,7 @@ describe('generate form attachments', () => {
 
     it('should support "array" fields', async () => {
       const createAttachments = createAttachmentsSpec.__get__('createAttachments');
-      sinon.stub(rpn, 'post').resolves([]);
+      sinon.stub(request, 'post').resolves([]);
 
       const reports = [
         {
@@ -428,8 +428,8 @@ describe('generate form attachments', () => {
 
       await createAttachments(couchUrl, reports);
 
-      chai.expect(rpn.post.callCount).to.equal(1);
-      chai.expect(rpn.post.args[0]).to.deep.equal([{
+      chai.expect(request.post.callCount).to.equal(1);
+      chai.expect(request.post.args[0]).to.deep.equal([{
         uri: 'http://admin:password@127.0.0.1/dbname/_bulk_docs',
         json: true,
         body: {
@@ -473,7 +473,7 @@ describe('generate form attachments', () => {
 
     it('should create attachments for complex reports', async () => {
       const createAttachments = createAttachmentsSpec.__get__('createAttachments');
-      sinon.stub(rpn, 'post').resolves([]);
+      sinon.stub(request, 'post').resolves([]);
 
       const reports = [
         {
@@ -598,8 +598,8 @@ describe('generate form attachments', () => {
 
       await createAttachments(couchUrl, reports);
 
-      chai.expect(rpn.post.callCount).to.equal(1);
-      chai.expect(rpn.post.args[0]).to.deep.equal([{
+      chai.expect(request.post.callCount).to.equal(1);
+      chai.expect(request.post.args[0]).to.deep.equal([{
         uri: 'http://admin:password@127.0.0.1/dbname/_bulk_docs',
         json: true,
         body: {

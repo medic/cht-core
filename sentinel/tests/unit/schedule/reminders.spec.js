@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const rewire = require('rewire');
 const db = require('../../../src/db');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 let reminders;
 let clock;

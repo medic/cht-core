@@ -12,15 +12,28 @@ const prometheusMiddleware = require('prometheus-api-metrics');
 const rateLimiterMiddleware = require('./middleware/rate-limiter');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
-const target = 'http://' + environment.host + ':' + environment.port;
-const proxy = require('http-proxy').createProxyServer({ target: target });
+
+const isString = value => typeof value === 'string' || value instanceof String;
+const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
+
+const { 
+  PROXY_CHANGE_ORIGIN = false,
+  PROXY_CHANGE_ORIGIN_AUTH = false,
+  PROXY_CHANGE_ORIGIN_CHANGES = false
+} = process.env;
+
+const port = environment.port != null ? `:${environment.port}` : '';
+const target = `${environment.protocol}//${environment.host}${port}`;
+const proxy = require('http-proxy').createProxyServer({ target: target, changeOrigin: isTrue(PROXY_CHANGE_ORIGIN) });
 const proxyForAuth = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: isTrue(PROXY_CHANGE_ORIGIN_AUTH)
 });
 const proxyForChanges = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: isTrue(PROXY_CHANGE_ORIGIN_CHANGES)
 });
 const login = require('./controllers/login');
 const smsGateway = require('./controllers/sms-gateway');
