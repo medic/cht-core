@@ -488,7 +488,7 @@ describe('Facility Filter Component', () => {
   });
 
   describe('setDefault', () => {
-    it('should set default value to filter when facility found', async () => {
+    it('should set default value to filter when facility found', fakeAsync(() => {
       const facilities = [
         {
           _id: '1',
@@ -509,16 +509,18 @@ describe('Facility Filter Component', () => {
       placeHierarchyService.get.resolves(facilities);
       const searchSpy = sinon.spy(component.search, 'emit');
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
+      component.inline = true;
 
-      await component.loadFacilities();
-      await component.setDefault('1-1');
+      component.setDefault('1-1');
+      component.ngAfterViewInit();
+      flush();
 
       expect(searchSpy.calledOnce).to.be.true;
       expect(setFilterStub.calledOnce).to.be.true;
       expect(setFilterStub.args[0][0]).to.deep.equal({ facilities: { selected: [ '1-1', '1-1-2', '1-1-1' ] } });
-    });
+    }));
 
-    it('should not default value to filter when facility not found', async () => {
+    it('should not default value to filter when facility not found', fakeAsync(() => {
       const facilities = [
         {
           _id: '1',
@@ -539,13 +541,15 @@ describe('Facility Filter Component', () => {
       placeHierarchyService.get.resolves(facilities);
       const searchSpy = sinon.spy(component.search, 'emit');
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
+      component.inline = true;
 
-      await component.loadFacilities();
-      await component.setDefault('3-1');
+      component.setDefault('3-1');
+      component.ngAfterViewInit();
+      flush();
 
       expect(searchSpy.calledOnce).to.be.true;
       expect(setFilterStub.calledOnce).to.be.true;
       expect(setFilterStub.args[0][0]).to.deep.equal({ facilities: undefined });
-    });
+    }));
   });
 });

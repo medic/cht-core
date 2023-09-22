@@ -30,14 +30,14 @@ import { Selectors } from '@mm-selectors/index';
   templateUrl: './facility-filter.component.html'
 })
 export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter, AfterViewChecked {
-  private globalActions;
-  private isOnlineOnly;
   inlineFilter: InlineFilter;
   facilities = [];
   flattenedFacilities: any[] = [];
   displayedFacilities = [];
 
-  private loadingFacilities;
+  private globalActions;
+  private isOnlineOnly;
+  private defaultFacilityId;
   private totalFacilitiesDisplayed = 0;
   private listHasScroll = false;
   private togglingFacilities = false;
@@ -79,7 +79,9 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       .select(Selectors.getSidebarFilter)
       .subscribe(sidebarFilter => {
         if (sidebarFilter?.isOpen && !this.facilities?.length) {
-          this.loadingFacilities = this.loadFacilities();
+          this
+            .loadFacilities()
+            .then(() => this.selectDefault());
         }
       });
     this.subscriptions.add(subscription);
@@ -89,7 +91,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   loadFacilities() {
     if (this.facilities.length) {
       this.displayMoreFacility();
-      return;
+      return Promise.resolve();
     }
 
     return this.placeHierarchyService
@@ -160,9 +162,11 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   async setDefault(facilityId) {
-    await this.loadingFacilities;
-    const facility = this.flattenedFacilities.find(facility => facility.doc?._id === facilityId);
+    this.defaultFacilityId = facilityId;
+  }
 
+  private selectDefault() {
+    const facility = this.flattenedFacilities.find(facility => facility.doc?._id === this.defaultFacilityId);
     if (facility) {
       this.select(null, facility, this.inlineFilter, true);
       return;
