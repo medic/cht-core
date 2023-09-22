@@ -70,15 +70,19 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   ngAfterViewInit() {
     if (this.inline) {
-      const subscription = this.store
-        .select(Selectors.getSidebarFilter)
-        .subscribe(sidebarFilter => {
-          if (sidebarFilter.isOpen) {
-            this.loadingFacilities = this.loadFacilities();
-          }
-        });
-      this.subscriptions.add(subscription);
+      this.subscribeToSidebarStore();
     }
+  }
+
+  private subscribeToSidebarStore() {
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(sidebarFilter => {
+        if (sidebarFilter?.isOpen && !this.facilities?.length) {
+          this.loadingFacilities = this.loadFacilities();
+        }
+      });
+    this.subscriptions.add(subscription);
   }
 
   // this method is called on dropdown open

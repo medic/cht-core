@@ -1,5 +1,5 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -18,11 +18,13 @@ import {
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Facility Filter Component', () => {
   let component:FacilityFilterComponent;
   let fixture:ComponentFixture<FacilityFilterComponent>;
   let sessionService;
+  let store;
 
   let placeHierarchyService;
 
@@ -58,6 +60,7 @@ describe('Facility Filter Component', () => {
         fixture = TestBed.createComponent(FacilityFilterComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
+        store = TestBed.inject(MockStore);
       });
   }));
 
@@ -248,6 +251,73 @@ describe('Facility Filter Component', () => {
         { _id: '3', doc: { name: 'seven' } },
       ]);
     });
+
+    it('should not load facilities if sidebar is close', fakeAsync(() => {
+      const facilities = [{
+        _id: '1',
+        doc: { name: 'not_first', },
+        children: [
+          {
+            _id: '2',
+            doc: { name: 'some_child' },
+            children: [
+              { _id: '3', doc: { name: 'seven' } },
+              { _id: '4', doc: { name: 'five' } },
+            ],
+          },
+        ],
+      }];
+
+      placeHierarchyService.get.resolves(facilities);
+      store.overrideSelector(Selectors.getSidebarFilter, { isOpen: false });
+      store.refreshState();
+      component.inline = true;
+
+      component.ngAfterViewInit();
+      flush();
+
+      expect(component.facilities.length).to.equal(0);
+    }));
+
+    it('should not load facilities if sidebar is open', fakeAsync(() => {
+      const facilities = [{
+        _id: '1',
+        doc: { name: 'not_first', },
+        children: [
+          {
+            _id: '2',
+            doc: { name: 'some_child' },
+            children: [
+              { _id: '3', doc: { name: 'seven' } },
+              { _id: '4', doc: { name: 'five' } },
+            ],
+          },
+        ],
+      }];
+
+      placeHierarchyService.get.resolves(facilities);
+      store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
+      store.refreshState();
+      component.inline = true;
+
+      component.ngAfterViewInit();
+      flush();
+
+      expect(component.facilities).excludingEvery('label').to.have.deep.members([{
+        _id: '1',
+        doc: { name: 'not_first', },
+        children: [
+          {
+            _id: '2',
+            doc: { name: 'some_child' },
+            children: [
+              { _id: '4', doc: { name: 'five' } },
+              { _id: '3', doc: { name: 'seven' } },
+            ],
+          },
+        ],
+      }]);
+    }));
   });
 
   it('should apply filter correctly', async () => {
