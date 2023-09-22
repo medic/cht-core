@@ -17,6 +17,7 @@ type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateF
 export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
+  @Input() canFilterByFacility = false;
 
   @ViewChild(FormTypeFilterComponent)
   formTypeFilter: FormTypeFilterComponent;

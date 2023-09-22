@@ -31,7 +31,7 @@
         </accordion-group>
 
         <!-- 2. Place -->
-        <accordion-group id="place-filter-accordion">
+        <accordion-group id="place-filter-accordion" *ngIf="canFilterByFacility">
           <ng-container
             accordion-heading
             [ngTemplateOutlet]="headerTemplate"

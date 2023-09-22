@@ -28,6 +28,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
+const CAN_USE_FILTER_BY_FACILITY = 'can_use_filter_by_facility';
 
 @Component({
   templateUrl: './reports.component.html'
@@ -64,6 +65,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isExporting = false;
   userParentPlace;
   fastActionList: FastAction[];
+  canFilterByFacility = false;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -129,6 +131,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     const isDisabled = !isAdmin && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSidebarFilter = !isDisabled;
     this.canDefaultFilter = !isAdmin && this.isOnlineOnly && await this.authService.has(CAN_DEFAULT_FACILITY_FILTER);
+    this.canFilterByFacility = !isAdmin && await this.authService.has(CAN_USE_FILTER_BY_FACILITY);
   }
 
   private subscribeToStore() {

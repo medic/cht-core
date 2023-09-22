@@ -230,7 +230,8 @@
     ],
     "can_view_uhc_stats": [],
     "can_view_old_filter_and_search": [],
-    "can_view_old_action_bar": []
+    "can_view_old_action_bar": [],
+    "can_use_filter_by_facility": []
   },
   "outgoing_phone_replace": {
     "match": "",
