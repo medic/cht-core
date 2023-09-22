@@ -4,7 +4,7 @@ const rewire = require('rewire');
 
 const db = require('../../../../src/db');
 const env = require('../../../../src/environment');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const databases = require('../../../../src/services/setup/databases');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 
@@ -42,7 +42,7 @@ describe('View indexer service', () => {
         ],
       });
 
-      sinon.stub(rpn, 'get').resolves();
+      sinon.stub(request, 'get').resolves();
       sinon.stub(env, 'serverUrl').value('http://localhost');
 
       const result = await viewIndexer.getViewsToIndex();
@@ -50,12 +50,12 @@ describe('View indexer service', () => {
       expect(result.length).to.equal(5);
       result.forEach(item => expect(item).to.be.a('function'));
 
-      expect(rpn.get.callCount).to.equal(0);
+      expect(request.get.callCount).to.equal(0);
 
       await Promise.all(result.map(item => item()));
 
-      expect(rpn.get.callCount).to.equal(5);
-      expect(rpn.get.args).to.deep.equal([
+      expect(request.get.callCount).to.equal(5);
+      expect(request.get.args).to.deep.equal([
         [{
           uri: 'http://localhost/thedb/_design/:staged:one/_view/view1',
           json: true,
@@ -92,13 +92,13 @@ describe('View indexer service', () => {
 
   describe('indexView', () => {
     it('should query the view with a timeout', async () => {
-      sinon.stub(rpn, 'get').resolves();
+      sinon.stub(request, 'get').resolves();
       sinon.stub(env, 'serverUrl').value('http://localhost');
 
       await viewIndexer.__get__('indexView')('medic', '_design/:staged:medic', 'contacts');
 
-      expect(rpn.get.callCount).to.equal(1);
-      expect(rpn.get.args[0]).to.deep.equal([{
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{
         uri: 'http://localhost/medic/_design/:staged:medic/_view/contacts',
         json: true,
         qs: { limit: 1 },
@@ -108,45 +108,45 @@ describe('View indexer service', () => {
 
     it('should retry if the error is a ESOCKETTIMEDOUT error', async () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
-      sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
-      rpn.get.onCall(20).resolves();
+      sinon.stub(request, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
+      request.get.onCall(20).resolves();
       viewIndexer.__set__('continueIndexing', true);
 
       await viewIndexer.__get__('indexView')('other', '_design/mydesign', 'viewname');
 
-      expect(rpn.get.callCount).to.equal(21);
+      expect(request.get.callCount).to.equal(21);
       const params = {
         uri: 'http://localhost/other/_design/mydesign/_view/viewname',
         json: true,
         qs: { limit: 1 },
         timeout: 2000,
       };
-      expect(rpn.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
+      expect(request.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
     });
 
     it('should retry if the error is a ETIMEDOUT error', async () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
-      sinon.stub(rpn, 'get').rejects({ error: { code: 'ETIMEDOUT' } });
-      rpn.get.onCall(20).resolves();
+      sinon.stub(request, 'get').rejects({ error: { code: 'ETIMEDOUT' } });
+      request.get.onCall(20).resolves();
       viewIndexer.__set__('continueIndexing', true);
 
       await viewIndexer.__get__('indexView')('other', '_design/mydesign', 'viewname');
 
-      expect(rpn.get.callCount).to.equal(21);
+      expect(request.get.callCount).to.equal(21);
       const params = {
         uri: 'http://localhost/other/_design/mydesign/_view/viewname',
         json: true,
         qs: { limit: 1 },
         timeout: 2000,
       };
-      expect(rpn.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
+      expect(request.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
     });
 
 
     it('should terminate when other errors are thrown', async () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
-      sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
-      rpn.get.onCall(10).rejects({ name: 'error' });
+      sinon.stub(request, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
+      request.get.onCall(10).rejects({ name: 'error' });
       viewIndexer.__set__('continueIndexing', true);
 
       try {
@@ -154,21 +154,21 @@ describe('View indexer service', () => {
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ name: 'error' });
-        expect(rpn.get.callCount).to.equal(11);
+        expect(request.get.callCount).to.equal(11);
       }
     });
 
     it('should not throw errors when indexing should stop', async () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
-      sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
-      rpn.get.onCall(10).callsFake(() => {
+      sinon.stub(request, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
+      request.get.onCall(10).callsFake(() => {
         viewIndexer.stopIndexing();
         return Promise.reject({ name: 'error' });
       });
       viewIndexer.__set__('continueIndexing', true);
 
       await viewIndexer.__get__('indexView')('other', '_design/mydesign', 'viewname');
-      expect(rpn.get.callCount).to.equal(11);
+      expect(request.get.callCount).to.equal(11);
     });
   });
 
@@ -191,7 +191,7 @@ describe('View indexer service', () => {
       const timeoutFn = () => new Promise((resolve, reject) => {
         setTimeout(() => reject({ error: { code: 'ESOCKETTIMEDOUT' } }));
       }); // sinon stubs that resolve actually act like they would be synchronous
-      sinon.stub(rpn, 'get').callsFake(timeoutFn);
+      sinon.stub(request, 'get').callsFake(timeoutFn);
 
       const viewToIndexFunctions = [
         () => viewIndexer.__get__('indexView')('other', '_design/mydesign', 'v1'),
@@ -203,11 +203,11 @@ describe('View indexer service', () => {
 
       await nextTick();
       expect(upgradeLogService.setIndexing.callCount).to.equal(1);
-      expect(rpn.get.callCount).to.equal(3);
+      expect(request.get.callCount).to.equal(3);
       await nextTick();
-      expect(rpn.get.callCount).to.equal(6);
+      expect(request.get.callCount).to.equal(6);
       await nextTick();
-      expect(rpn.get.callCount).to.equal(9);
+      expect(request.get.callCount).to.equal(9);
 
       viewIndexer.stopIndexing();
       await Promise.resolve();

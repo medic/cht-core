@@ -16,6 +16,7 @@
           "@medic/cht-script-api",
           "@medic/contact-types-utils",
           "@medic/contacts",
+          "@medic/couch-request",
           "@medic/infodoc",
           "@medic/lineage",
           "@medic/message-utils",
@@ -42,7 +43,8 @@
         "tests/**/*.js"
       ],
       "rules": {
-        "node/no-extraneous-require": "off"
+        "node/no-extraneous-require": "off",
+        "eqeqeq": ["error", "always", { "null": "ignore" }] // foo != null is a convenient way to check for null or undefined.
       }
     }
   ]
