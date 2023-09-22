@@ -230,4 +230,29 @@ describe('Server utils', () => {
 
   });
 
+  describe('wantsJSON', () => {
+    it('should return true when accept header is just json', () => {
+      req.get.returns('application/json');
+      chai.expect(serverUtils.wantsJSON(req)).to.equal(true);
+    });
+
+    it('should return true when accept header includes json', () => {
+      req.get.returns('application/json, text/plain, */*');
+      chai.expect(serverUtils.wantsJSON(req)).to.equal(true);
+
+      req.get.returns('application/xml, application/json, text/plain, */*');
+      chai.expect(serverUtils.wantsJSON(req)).to.equal(true);
+    });
+
+    it('should return false when accept header excludes json', () => {
+      req.get.returns('application/xml, text/plain, */*');
+      chai.expect(serverUtils.wantsJSON(req)).to.equal(false);
+    });
+
+    it('should return false when there is no accept header', () => {
+      req.get.returns(undefined);
+      chai.expect(serverUtils.wantsJSON(req)).to.equal(false);
+    });
+  });
+
 });
