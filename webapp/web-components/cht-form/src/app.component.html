@@ -1,11 +1,12 @@
 <div [attr.id]="formId" class="enketo" [attr.data-editing]="editing">
   <div class="container pages"></div>
   <div class="form-footer">
-    <button (click)="onCancel.emit()" class="btn btn-link cancel" [disabled]="status?.saving">{{'Cancel' | translate}}</button>
+<!-- TODO The cancel button is not visible on the page. I think something is missing.... -->
+    <button (click)="cancelForm()" class="btn btn-link cancel" [disabled]="status?.saving">{{'Cancel' | translate}}</button>
     <div class="loader inline small" *ngIf="status?.saving"></div>
     <span class="error" *ngIf="status?.error">{{status?.error}}</span>
     <button class="btn btn-default previous-page" [disabled]="status?.saving">{{'Previous' | translate}}</button>
     <button class="btn btn-primary next-page" [disabled]="status?.saving">{{'Next' | translate}}</button>
-    <button (click)="onSubmit.emit()" class="btn submit btn-primary" [disabled]="status?.saving">{{'Submit' | translate}}</button>
+    <button (click)="submitForm()" class="btn submit btn-primary" [disabled]="status?.saving">{{'Submit' | translate}}</button>
   </div>
 </div>

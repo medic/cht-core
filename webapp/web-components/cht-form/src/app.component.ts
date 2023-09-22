@@ -21,6 +21,7 @@ export class AppComponent {
   // function: to be called when submitting the form
   @Output() onSubmit: EventEmitter<any> = new EventEmitter();
 
+  @Input() formXml: string;
   private _formModel: string;
   private _formHtml : string;
 
@@ -80,8 +81,28 @@ export class AppComponent {
     };
     const contactSummary = null;
 
+    const currentForm = this._enketoService.getCurrentForm();
+    if (currentForm) {
+      this._enketoService.unload(currentForm);
+    }
     await this._enketoService.renderForm(formContext, doc, userSettings, contactSummary);
   }
 
-  // TODO Need to figure out the save process
+  async cancelForm() {
+    this.onCancel.emit();
+  }
+
+  async submitForm() {
+    const currentForm = this._enketoService.getCurrentForm();
+    const formDoc = {
+      xml: this.formXml,
+      doc: {}
+    };
+    const contact = {
+      phone: '1234567890',
+    };
+
+    const submittedDocs = await this._enketoService.completeNewReport(this.formId, currentForm, formDoc, contact);
+    this.onSubmit.emit(submittedDocs);
+  }
 }
