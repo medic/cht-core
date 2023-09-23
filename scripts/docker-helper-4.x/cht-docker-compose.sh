@@ -113,7 +113,7 @@ get_lan_ip() {
   # getting localhost's IP.  Otherwise use MacOS style command
   # HOWEVER!! "ip" doesn't exist on windows git BASH, so check for that before going into the first if (and
   # skip it on the second elif because windows won't have "system_profiler"
-  if [[ -n "$(required_apps_installed "system_profiler")" ]] && [[ "$(required_apps_installed "ip")" ]] ;then
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
     # todo - some of these calls fail when there's no network connectivity - output stuff it shouldn't:
     #       Device "" does not exist.
     routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
