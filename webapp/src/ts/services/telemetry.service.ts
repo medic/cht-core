@@ -217,7 +217,7 @@ export class TelemetryService {
 
       const db = this.windowRef.PouchDB(dbName);
       await this.aggregate(db, dbName);
-      db.destroy();
+      await db.destroy();
     }
   }
 
