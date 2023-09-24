@@ -151,12 +151,16 @@ export class TelemetryService {
   }
 
   private async aggregate(db, dbName) {
-    const metadata = await this.generateMetadataSection(dbName);
-    const dbInfo = await this.dbService.get().info();
-    const reduceResult = await db.query(
-      { reduce: '_stats', map: (doc, emit) => emit(doc.key, doc.value) },
-      { group: true }
-    );
+    const [ metadata, dbInfo, reduceResult ] = await Promise.all([
+      this.generateMetadataSection(dbName),
+      this.dbService
+        .get()
+        .info(),
+      db.query(
+        { reduce: '_stats', map: (doc, emit) => emit(doc.key, doc.value) },
+        { group: true },
+      )
+    ]);
 
     const aggregateDoc = {
       _id: this.generateAggregateDocId(metadata),
@@ -190,8 +194,7 @@ export class TelemetryService {
     };
   }
 
-  private async getCurrentTelemetryDB(today: TodayMoment) {
-    const telemetryDBs = await this.getTelemetryDBs();
+  private async getCurrentTelemetryDB(today: TodayMoment, telemetryDBs) {
     let currentDB = telemetryDBs?.find(db => db.includes(today.formatted));
 
     if (!currentDB) {
@@ -210,9 +213,15 @@ export class TelemetryService {
   }
 
   private async submitIfNeeded(today: TodayMoment, telemetryDBs: string[] = []) {
+    if (this.isAggregationRunning) {
+      // Avoid multiple calls of the telemetry record function to prevent from doing duplicate aggregation work.
+      // It can throw "Failed to execute transaction on IDBDatabase" exception.
+      return;
+    }
+
     for (const dbName of telemetryDBs) {
-      if (this.isAggregationRunning || dbName.includes(today.formatted)) {
-        // Skip if aggregation is running and don't submit today's telemetry records
+      if (dbName.includes(today.formatted)) {
+        // Don't submit today's telemetry records
         continue;
       }
 
@@ -226,6 +235,18 @@ export class TelemetryService {
       } finally {
         this.isAggregationRunning = false;
       }
+    }
+  }
+
+  private closeDataBase(db) {
+    if (!db || db?._destroyed || db?._closed) {
+      return;
+    }
+
+    try {
+      db.close();
+    } catch (error) {
+      console.error('Error closing telemetry DB', error);
     }
   }
 
@@ -272,25 +293,16 @@ export class TelemetryService {
       value = 1;
     }
 
-    let currentDB;
     try {
       const today = this.getToday();
       const telemetryDBs = await this.getTelemetryDBs();
       await this.submitIfNeeded(today, telemetryDBs);
-      currentDB = await this.getCurrentTelemetryDB(today);
-      await this.storeIt(currentDB, key, value);
+      const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
+      await this
+        .storeIt(currentDB, key, value)
+        .finally(() => this.closeDataBase(currentDB));
     } catch (error) {
       console.error('Error in telemetry service', error);
-    }
-
-    if (!currentDB || currentDB?._destroyed || currentDB?._closed) {
-      return;
-    }
-
-    try {
-      currentDB.close();
-    } catch (error) {
-      console.error('Error closing telemetry DB', error);
     }
   }
 }
