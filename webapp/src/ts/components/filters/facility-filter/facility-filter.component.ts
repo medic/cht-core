@@ -31,13 +31,12 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter, AfterViewChecked {
   inlineFilter: InlineFilter;
-  facilities = [];
+  facilities: Record<string, any>[] = [];
   flattenedFacilities: any[] = [];
-  displayedFacilities = [];
+  displayedFacilities: Record<string, any>[] = [];
 
   private globalActions;
   private isOnlineOnly;
-  private defaultFacilityId;
   private totalFacilitiesDisplayed = 0;
   private listHasScroll = false;
   private togglingFacilities = false;
@@ -95,8 +94,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return this.placeHierarchyService
       .get()
       .then((hierarchy = []) => {
-        hierarchy = this.sortHierarchyAndAddFacilityLabels(hierarchy);
-        this.facilities = hierarchy;
+        this.facilities = this.sortHierarchyAndAddFacilityLabels(hierarchy);
         this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
         const quantity = this.inline ? this.facilities.length : 1;
         this.displayMoreFacility(quantity);
@@ -159,20 +157,19 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     }
   }
 
-  async setDefault(facilityId) {
-    this.defaultFacilityId = facilityId;
-  }
-
-  // TODO fix default to load based on store filter values
-  private selectDefault() {
-    const facility = this.flattenedFacilities.find(facility => facility.doc?._id === this.defaultFacilityId);
-    if (facility) {
-      this.select(null, facility, this.inlineFilter, true);
+  async setDefault(facility) {
+    if (!facility) {
+      // Should avoid dead-ends and apply empty filter.
+      this.applyFilter();
       return;
     }
 
-    // Should avoid dead-ends and apply empty filter.
-    this.applyFilter();
+    const descendants = await this.placeHierarchyService.getDescendants(facility._id, true);
+    this.toggle(
+      facility._id,
+      [ facility._id, ...descendants.map(descendant => descendant.doc._id) ],
+      this.inlineFilter,
+    );
   }
 
   private sortHierarchyAndAddFacilityLabels(hierarchy) {
@@ -194,14 +191,12 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return _sortBy(hierarchy, iteratee => iteratee.doc?.name);
   }
 
-  applyFilter(facilities: any[] = []) {
+  applyFilter(facilityIds: string[] = []) {
     if (this.disabled || this.togglingFacilities) {
       return;
     }
 
-    const facilityIds = facilities.map(facility => facility.doc?._id);
     let selectedFacilities;
-
     if (facilityIds.length) {
       selectedFacilities = { selected: facilityIds };
     }
@@ -222,15 +217,14 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return facilities;
   }
 
-  private toggle(facility, filter) {
+  private toggle(facilityId, hierarchy:string[], filter) {
     this.togglingFacilities = true;
+    const newToggleValue = !filter.selected.has(facilityId);
 
-    const recursiveFacilities = this.getFacilitiesRecursive(facility);
-    const newToggleValue = !filter.selected.has(facility);
     // Exclude places with already correct toggle state, then toggle the rest.
-    recursiveFacilities
-      .filter(place => filter.selected.has(place) !== newToggleValue)
-      .forEach(place => filter.toggle(place));
+    hierarchy
+      .filter(facilityId => filter.selected.has(facilityId) !== newToggleValue)
+      .forEach(facilityId => filter.toggle(facilityId));
 
     this.togglingFacilities = false;
     this.applyFilter(Array.from(filter.selected));
@@ -271,6 +265,9 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       return;
     }
 
-    this.toggle(facility, filter);
+    const hierarchy = this
+      .getFacilitiesRecursive(facility)
+      .map(descendant => descendant.doc._id);
+    this.toggle(facility.doc._id, hierarchy, filter);
   }
 }

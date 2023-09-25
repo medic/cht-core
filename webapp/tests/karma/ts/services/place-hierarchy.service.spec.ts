@@ -6,12 +6,15 @@ import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('PlaceHierarchy Service', () => {
   let service:PlaceHierarchyService;
   let contactService;
   let contactTypesService;
   let settingsService;
+  let medicDb;
+  let dbService;
 
   beforeEach(() => {
     const placeTypes = [
@@ -22,12 +25,19 @@ describe('PlaceHierarchy Service', () => {
     contactTypesService = { getPlaceTypes: sinon.stub().resolves(placeTypes) };
     settingsService =  { get: sinon.stub().resolves({}) };
     contactService = { get: sinon.stub() };
+    medicDb = { query: sinon.stub() };
+    dbService = {
+      get: sinon
+        .stub()
+        .returns(medicDb)
+    };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: ContactsService, useValue: contactService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: SettingsService, useValue: settingsService },
+        { provide: DbService, useValue: dbService },
       ]
     });
 
@@ -161,3 +171,10 @@ describe('PlaceHierarchy Service', () => {
     });
   });
 });
+
+/*
+[
+          'medic-client/contacts_by_place',
+          { key: ['patient'], include_docs: true },
+        ]
+ */

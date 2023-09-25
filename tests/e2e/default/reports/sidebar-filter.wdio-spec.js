@@ -105,8 +105,7 @@ describe('Reports Sidebar Filter', () => {
     expect(await (await reportsPage.reportByUUID(visitDistrictHospital)).isDisplayed()).to.be.true;
   });
 
-  // TODO enable once we fix the default filter
-  xit('should filter by user associated place when the permission to default filter is enabled', async () => {
+  it('should filter by user associated place when the permission to default filter is enabled', async () => {
     const pregnancyHealthCenter = savedReports[0];
     const visitHealthCenter = savedReports[2];
 

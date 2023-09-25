@@ -31,6 +31,7 @@ describe('Facility Filter Component', () => {
   beforeEach(waitForAsync(() => {
     placeHierarchyService = {
       get: sinon.stub(),
+      getDescendants: sinon.stub(),
     };
 
     sessionService = {
@@ -321,7 +322,7 @@ describe('Facility Filter Component', () => {
   });
 
   it('should apply filter correctly', async () => {
-    const facilities = [{ doc: { _id: '' } }, { some: 'field' }, { doc: { _id: 'b' } }];
+    const facilities = [ '', '123' ];
     const spySearch = sinon.spy(component.search, 'emit');
     component.applyFilter(facilities);
     expect(spySearch.callCount).to.equal(1);
@@ -336,9 +337,18 @@ describe('Facility Filter Component', () => {
     const dropdownFilterToggleSpy = sinon.spy(component.dropdownFilter, 'toggle');
     const facility = {
       _id: 'parent',
+      doc: { _id: 'parent' },
       children: [
-        { _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] },
-        { _id: 'child2' },
+        {
+          _id: 'child1',
+          doc: { _id: 'child1' },
+          children: [{
+            _id: 'child3',
+            doc: { _id: 'child3' },
+            children: [{ _id: 'child4', doc: { _id: 'child4' } }],
+          }],
+        },
+        { _id: 'child2', doc: { _id: 'child2'} },
       ]
     };
 
@@ -346,11 +356,7 @@ describe('Facility Filter Component', () => {
 
     expect(dropdownFilterToggleSpy.callCount).to.equal(5);
     expect(dropdownFilterToggleSpy.args).to.deep.equal([
-      [facility],
-      [{ _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] }],
-      [{ _id: 'child3', children: [{ _id: 'child4' }] }],
-      [{ _id: 'child4' }],
-      [{ _id: 'child2' }],
+      [ 'parent' ], [ 'child1' ], [ 'child3' ], [ 'child4' ], [ 'child2' ],
     ]);
   });
 
@@ -358,9 +364,18 @@ describe('Facility Filter Component', () => {
     const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
     const facility = {
       _id: 'parent',
+      doc: { _id: 'parent' },
       children: [
-        { _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] },
-        { _id: 'child2' },
+        {
+          _id: 'child1',
+          doc: { _id: 'child1' },
+          children: [{
+            _id: 'child3',
+            doc: { _id: 'child3' },
+            children: [{ _id: 'child4', doc: { _id: 'child4' } }],
+          }],
+        },
+        { _id: 'child2', doc: { _id: 'child2'} },
       ]
     };
 
@@ -368,11 +383,7 @@ describe('Facility Filter Component', () => {
 
     expect(inlineFilterToggleSpy.callCount).to.equal(5);
     expect(inlineFilterToggleSpy.args).to.deep.equal([
-      [facility],
-      [{ _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] }],
-      [{ _id: 'child3', children: [{ _id: 'child4' }] }],
-      [{ _id: 'child4' }],
-      [{ _id: 'child2' }],
+      [ 'parent' ], [ 'child1' ], [ 'child3' ], [ 'child4' ], [ 'child2' ],
     ]);
   });
 
@@ -380,22 +391,27 @@ describe('Facility Filter Component', () => {
     const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
     const facility = {
       _id: 'parent',
+      doc: { _id: 'parent' },
       children: [
-        { _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] },
-        { _id: 'child2' },
+        {
+          _id: 'child1',
+          doc: { _id: 'child1' },
+          children: [{
+            _id: 'child3',
+            doc: { _id: 'child3' },
+            children: [{ _id: 'child4', doc: { _id: 'child4' } }],
+          }],
+        },
+        { _id: 'child2', doc: { _id: 'child2'} },
       ]
     };
-    component.inlineFilter.selected.add(facility.children[0].children![0]);
-    component.inlineFilter.selected.add(facility.children[1]);
+    component.inlineFilter.selected.add(facility.children[0].children![0].doc._id);
+    component.inlineFilter.selected.add(facility.children[1].doc._id);
 
     component.select(null, facility, component.inlineFilter);
 
     expect(inlineFilterToggleSpy.callCount).to.equal(3);
-    expect(inlineFilterToggleSpy.args).to.deep.equal([
-      [facility],
-      [{ _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] }],
-      [{ _id: 'child4' }],
-    ]);
+    expect(inlineFilterToggleSpy.args).to.deep.equal([ [ 'parent' ], [ 'child1' ], [ 'child4' ] ]);
   });
 
   describe('getLabel', () => {
@@ -449,15 +465,12 @@ describe('Facility Filter Component', () => {
     expect(result).to.equal(2);
   });
 
-  it('should set correct selected facility ids', () => {
+  it('should set correct selected facility ids when filter is not disabled', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
-    const selectedFacilities = [
-      { doc: { _id: 'one' }, children: [{ doc: { _id: 'child1' } }, { doc: { _id: 'child2' } }] },
-      { doc: { _id: 'child1' } },
-      { doc: { _id: 'child2' } },
-      { doc: { _id: 'parent1' }, children: [] },
-    ];
+    const selectedFacilities = [ 'one', 'child1', 'child2', 'parent1' ];
+
     component.applyFilter(selectedFacilities);
+
     expect(setFilter.callCount).to.equal(1);
     expect(setFilter.args[0]).to.deep.equal([
       { facilities: { selected: ['one', 'child1', 'child2', 'parent1'] } }
@@ -470,7 +483,7 @@ describe('Facility Filter Component', () => {
     const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
     const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
     const spySearch = sinon.spy(component.search, 'emit');
-    const facilities = [{ _id: 'some', doc: { _id: 'some' } }];
+    const facilities = [ '123' ];
     component.disabled = true;
 
     component.clear();
@@ -487,65 +500,36 @@ describe('Facility Filter Component', () => {
     expect(inlineFilterToggleSpy.notCalled).to.be.true;
   });
 
-  // TODO update once we fix the default filter
-  xdescribe('setDefault', () => {
+  describe('setDefault', () => {
     it('should set default value to filter when facility found', fakeAsync(() => {
       const facilities = [
-        {
-          _id: '1',
-          doc: {  _id: '1', name: 'not_first', },
-          children: [
-            {
-              _id: '1-1',
-              doc: { _id: '1-1', name: 'some_child' },
-              children: [
-                { _id: '1-1-1', doc: { _id: '1-1-1', name: 'seven' } },
-                { _id: '1-1-2', doc: { _id: '1-1-2', name: 'five' } },
-              ]
-            }
-          ]
-        },
-        { _id: '2', doc: { name: 'first' } },
+        { _id: 'child-1', doc: {  _id: 'child-1', name: 'not_first' } },
+        { _id: 'child-2', doc: { _id: 'child-2', name: 'first' } },
       ];
-      placeHierarchyService.get.resolves(facilities);
+      placeHierarchyService.getDescendants.resolves(facilities);
       const searchSpy = sinon.spy(component.search, 'emit');
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
       component.inline = true;
 
-      component.setDefault('1-1');
-      component.ngAfterViewInit();
+      component.setDefault({ _id: 'parent' });
       flush();
 
       expect(searchSpy.calledOnce).to.be.true;
       expect(setFilterStub.calledOnce).to.be.true;
-      expect(setFilterStub.args[0][0]).to.deep.equal({ facilities: { selected: [ '1-1', '1-1-2', '1-1-1' ] } });
+      expect(setFilterStub.args[0][0]).to.deep.equal({ facilities: { selected: [ 'parent', 'child-1', 'child-2' ] } });
     }));
 
-    it('should not default value to filter when facility not found', fakeAsync(() => {
+    it('should not default value when facility is undefined', fakeAsync(() => {
       const facilities = [
-        {
-          _id: '1',
-          doc: { name: 'not_first', },
-          children: [
-            {
-              _id: '1-1',
-              doc: { name: 'some_child' },
-              children: [
-                { _id: '1-1-1', doc: { name: 'seven' } },
-                { _id: '1-1-2', doc: { name: 'five' } },
-              ]
-            }
-          ]
-        },
-        { _id: '2', doc: { name: 'first' } },
+        { _id: 'child-1', doc: {  _id: 'child-1', name: 'not_first' } },
+        { _id: 'child-2', doc: { _id: 'child-2', name: 'first' } },
       ];
-      placeHierarchyService.get.resolves(facilities);
+      placeHierarchyService.getDescendants.resolves(facilities);
       const searchSpy = sinon.spy(component.search, 'emit');
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
       component.inline = true;
 
-      component.setDefault('3-1');
-      component.ngAfterViewInit();
+      component.setDefault(undefined);
       flush();
 
       expect(searchSpy.calledOnce).to.be.true;
