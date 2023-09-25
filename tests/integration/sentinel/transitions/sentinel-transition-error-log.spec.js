@@ -20,7 +20,7 @@ describe('Sentinel transition error log', async function() {
     await sentinelUtils.getCurrentSeq();
     const logs = await collectLogs();
     expect(logs).to.have.lengthOf(1);
-    await setTimeout(5 * 60 * 1000); // every 5 minutes
+    await setTimeout(5 * 60 * 1000); // logs every 5 minutes
     expect(await collectLogs()).to.have.lengthOf(2);
   });
 });
