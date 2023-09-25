@@ -6,6 +6,10 @@ require(`../../../src/js/enketo/main.js`);
 platformBrowserDynamic()
   .bootstrapModule(AppModule)
   .then(() => {
-    window.CHTCore = { Select2Search: { init: async () => {} } };
+    window.CHTCore = {
+      Language: { get: async () => 'en' },
+      Select2Search: { init: async () => {} },
+      Translate: { instant: (key) => key },
+    };
   })
   .catch(err => console.error(err));
