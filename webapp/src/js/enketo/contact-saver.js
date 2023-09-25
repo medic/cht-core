@@ -93,7 +93,7 @@ const prepareAndAttachSiblingDocs = (extractLineageService, dbService, doc, orig
 };
 
 const prepareRepeatedDocs = (extractLineageService, doc, repeated) => {
-  const childData = repeated ? repeated.child_data : [];
+  const childData = repeated && repeated.child_data || [];
   return childData.map(child => {
     child.parent = extractLineageService.extract(doc);
     return prepare(child);
