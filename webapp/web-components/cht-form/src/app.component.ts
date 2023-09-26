@@ -21,8 +21,9 @@ export class AppComponent {
   private _formModel?: string;
   private _formHtml?: string;
   private _contactSummary?: Record<string, any>;
+  private _content: Record<string, any> | null;
   private _user: Record<string, any> = {
-    contact_id: 'user_contact_id',
+    contact_id: 'default_user',
     language: 'en',
   };
 
@@ -59,7 +60,16 @@ export class AppComponent {
   }
 
   @Input() set contactSummary(value: Record<string, any> | undefined) {
-    this._contactSummary = value;
+    this._contactSummary = value ? { context: value } : undefined;
+    this.renderForm();
+  }
+
+  @Input() set content(value: Record<string, any> | null) {
+    this._content = value;
+    if(this._content?.contact && !this._content.source) {
+      this._content.source = 'contact';
+    }
+
     this.renderForm();
   }
 
@@ -105,8 +115,8 @@ export class AppComponent {
   }
 
   private async renderForm() {
+    this.unloadForm();
     if (!this._formHtml || !this._formModel || !this._formXml) {
-      this.unloadForm();
       return;
     }
 
@@ -116,15 +126,12 @@ export class AppComponent {
     const formContext: EnketoFormContext = {
       selector: `#${this._formId}`,
       formDoc: { _id: this._formId },
-      instanceData: null,
+      instanceData: this._content,
       editedListener,
       valuechangeListener,
-      // isFormInModal,
-      // userContact,
     };
     const formDetails = this.getFormDetails();
 
-    this.unloadForm();
     await this.enketoService.renderForm(formContext, formDetails, this._user, this._contactSummary);
   }
 
