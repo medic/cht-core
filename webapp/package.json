@@ -20,6 +20,7 @@
     "postinstall": "patch-package",
     "unit": "UNIT_TEST_ENV=1 ng test webapp",
     "build": "ng build",
+    "build:cht-form": "ng build cht-form",
     "compile": "ngc"
   },
   "dependencies": {
