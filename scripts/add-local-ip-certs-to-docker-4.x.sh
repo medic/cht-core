@@ -5,18 +5,18 @@
 ############################################################################
 
 # Helper script to download the certificate and private key
-# from the http://local-ip.co service and install it
+# from the http://local-ip.medicmobile.org service and install it
 # in cht-nginx container in nginx. This script is safe to re-run
 # as many times as needed or if you need to refresh expired
 # certificates.
 #
 # After running this, you get a valid certificate with the format
-# of https://YOUR-IP-HERE.my.local-ip.co
+# of https://YOUR-IP-HERE.local-ip.medicmobile.org
 #
 # For example, if your localhost IP is 10.0.2.4, you would use this as
 # your URL for CHT:
 #
-#   https://10-0-2-4.my.local-ip.co
+#   https://10-0-2-4.local-ip.medicmobile.org
 #
 # By default this will use a container called "cht-nginx".  You can specify
 # the container if you have a different cht-nginx named container, like this:
@@ -26,9 +26,9 @@
 # As well, you can pass a second argument to specify which cert to install
 # into the specified container. There are three options:
 #
-#   refresh - refresh the local-ip.co certificate [default action]
+#   refresh - refresh the local-ip.medicmobile.org certificate [default action]
 #   self - re-install the original self signed certificate
-#   expire - install an expired local-ip.co certificate
+#   expire - install an expired local-ip.medicmobile.org certificate
 #
 # For example if you had a container called "cht-3-14" and you wanted to
 # install an expired cert, you would call:
@@ -55,7 +55,7 @@ if [ "$status" = "true" ]; then
     docker exec -it $container bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
     docker exec -it $container bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
   elif [ "$action" = "expire" ]; then
-    result="installed expired local-ip.co"
+    result="installed expired local-ip.medicmobile.org"
     docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem
     docker cp ./tls_certificates/local-ip-expired.key "$container":/etc/nginx/private/key.pem
   elif [ "$action" = "self" ]; then
