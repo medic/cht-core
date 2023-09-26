@@ -1,4 +1,3 @@
-// TODO Compare with actual app.module...
 import { TranslateCompiler, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { DbService } from '@mm-services/db.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
@@ -7,8 +6,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, Injector } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { AppComponent } from './app.component';
-import { StoreModule } from '@ngrx/store';
-import { reducers } from '../../../src/ts/reducers';
 
 @NgModule({
   declarations: [AppComponent],
@@ -25,16 +22,15 @@ import { reducers } from '../../../src/ts/reducers';
         useClass: TranslateMessageFormatCompilerProvider,
       },
     }),
-    StoreModule.forRoot(reducers, { metaReducers: [] }),
-  ],
-  providers: [],
-  // entryComponents: [AppComponent]
+  ]
 })
 export class AppModule {
   constructor(injector: Injector) {
-    const el = createCustomElement(AppComponent, { injector });
-    customElements.define('cht-form', el);
+    const chtForm = createCustomElement(AppComponent, { injector });
+    customElements.define('cht-form', chtForm);
   }
 
-  ngDoBootstrap() {}
+  ngDoBootstrap() {
+    // For some reason, this is required for Angular Elements to work
+  }
 }

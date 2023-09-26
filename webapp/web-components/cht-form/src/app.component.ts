@@ -21,7 +21,7 @@ export class AppComponent {
   private _formModel?: string;
   private _formHtml?: string;
 
-  @Output() onCancel: EventEmitter<any> = new EventEmitter();
+  @Output() onCancel: EventEmitter<undefined> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
   constructor(
@@ -33,12 +33,12 @@ export class AppComponent {
     medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
   }
 
-  @Input() set formHtml(value) {
+  @Input() set formHtml(value: string | undefined) {
     this._formHtml = value;
     this.renderForm();
   }
 
-  @Input() set formModel(value) {
+  @Input() set formModel(value: string | undefined) {
     this._formModel = value;
     this.renderForm();
   }
@@ -74,6 +74,7 @@ export class AppComponent {
 
   private async renderForm() {
     if (!this._formHtml || !this._formModel) {
+      this.unloadForm();
       return;
     }
 

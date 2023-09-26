@@ -8,7 +8,7 @@ platformBrowserDynamic()
   .then(() => {
     window.CHTCore = {
       Language: { get: async () => 'en' },
-      Select2Search: { init: async () => {} },
+      Select2Search: { init: async () => { } },
       Translate: { instant: (key) => key },
     };
   })
