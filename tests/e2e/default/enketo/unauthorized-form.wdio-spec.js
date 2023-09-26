@@ -45,12 +45,8 @@ describe('Unauthorized form', () => {
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
-
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include('Error loading form');
-
-    await chtDbUtils.clearFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(0);
   });
 
   it('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
@@ -61,12 +57,8 @@ describe('Unauthorized form', () => {
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
-
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include('Error loading contact form.');
-
-    await chtDbUtils.clearFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(0);
   });
 
   it('should not display unauthorized error message in contacts tab when user has the form permission', async () => {

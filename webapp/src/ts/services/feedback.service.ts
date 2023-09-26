@@ -41,7 +41,6 @@ export class FeedbackService {
     'failed to fetch',
     /http failure .* unknown error/i, // server offline
     /service unavailable/i, // server starting up
-    /missing/i,
     /document not found/i,
     /denied replicating to remote server/i,
     /phone number not unique/i,
