@@ -66,7 +66,7 @@ export class FeedbackService {
       return false;
     }
 
-    if (!exception){
+    if (!message || !exception) {
       return false;
     }
 

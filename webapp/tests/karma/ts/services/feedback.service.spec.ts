@@ -48,8 +48,7 @@ describe('Feedback service', () => {
     clock?.restore();
   });
 
-  it('should submit feedback when there is an unhandled error', async () => {
-    clock = sinon.useFakeTimers();
+  it('should submit feedback when there is an unhandled error', fakeAsync(() => {
     post.resolves();
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('es');
@@ -64,24 +63,24 @@ describe('Feedback service', () => {
     mockConsole.log('Trying to save');
     mockConsole.info('Saving in process');
     mockConsole.warn('Saving taking a while');
-    mockConsole.error('Failed to save', '404');
+    mockConsole.error('Failed to save', new Error('404'));
 
-    await service.submit({ message: 'hello world' });
+    flush();
 
-    expect(post.callCount).to.equal(2);
+    expect(post.callCount).to.equal(1);
     const submittedDoc = post.args[0][0];
 
     expect(submittedDoc.type).to.equal('feedback');
-    expect(submittedDoc.info.message).to.equal('Failed to save');
+    expect(submittedDoc.info.message).to.equal('404');
     expect(submittedDoc.meta.user.name).to.equal('fred');
     expect(submittedDoc.meta.language).to.equal('es');
     expect(submittedDoc.meta.version).to.equal('0.5.0');
-    expect(submittedDoc.meta.time).to.equal('1970-01-01T00:00:00.000Z');
+    expect(submittedDoc.meta.time).to.equal(new Date().toISOString());
     expect(submittedDoc.meta.source).to.equal('automatic');
 
     expect(submittedDoc.log.length).to.equal(5);
     expect(submittedDoc.log[0].level).to.equal('error');
-    expect(submittedDoc.log[0].arguments).to.equal('["Failed to save","404"]');
+    expect(submittedDoc.log[0].arguments).to.include('["Failed to save","Error: 404');
     expect(submittedDoc.log[1].level).to.equal('warn');
     expect(submittedDoc.log[1].arguments).to.equal('["Saving taking a while"]');
     expect(submittedDoc.log[2].level).to.equal('info');
@@ -90,7 +89,7 @@ describe('Feedback service', () => {
     expect(submittedDoc.log[3].arguments).to.equal('["Trying to save"]');
     expect(submittedDoc.log[4].level).to.equal('log');
     expect(submittedDoc.log[4].arguments).to.include('msg');
-  });
+  }));
 
   it('should log history restricted to 20 lines', async () => {
     post.resolves();

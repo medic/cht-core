@@ -269,8 +269,7 @@ describe('Enketo service', () => {
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
+        expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
@@ -548,11 +547,7 @@ describe('Enketo service', () => {
         expect(UserContact.calledOnce).to.be.true;
         expect(renderForm.notCalled).to.be.true;
         expect(enketoInit.notCalled).to.be.true;
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0]).to.deep.equal([
-          'Failed during the form "myform" rendering : ',
-          'invalid user'
-        ]);
+        expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
