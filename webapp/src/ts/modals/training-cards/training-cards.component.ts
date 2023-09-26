@@ -85,8 +85,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       await this.ngZone.run(() => this.renderForm(form));
     } catch (error) {
       this.setError(error);
-      const message = 'Training Cards :: Error fetching form.';
-      console.error(message, error);
+      console.error('Training Cards :: Error fetching form.', error);
     }
   }
 
@@ -99,8 +98,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.recordTelemetryPostRender();
     } catch (error) {
       this.setError(error);
-      const message = 'Training Cards :: Error rendering form.';
-      console.error(message, error);
+      console.error('Training Cards :: Error rendering form.', error);
     }
   }
 
@@ -176,8 +174,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
     } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
-      const message = 'Training Cards :: Error submitting form data.';
-      console.error(message, error);
+      console.error('Training Cards :: Error submitting form data.', error);
       const friendlyMessage = await this.translateService.get('training_cards.error.save');
       this.globalActions.setEnketoError(friendlyMessage);
     }

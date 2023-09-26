@@ -1,5 +1,4 @@
 const utils = require('@utils');
-const chtDbUtils = require('@utils/cht-db');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
