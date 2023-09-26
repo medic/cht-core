@@ -171,10 +171,3 @@ describe('PlaceHierarchy Service', () => {
     });
   });
 });
-
-/*
-[
-          'medic-client/contacts_by_place',
-          { key: ['patient'], include_docs: true },
-        ]
- */

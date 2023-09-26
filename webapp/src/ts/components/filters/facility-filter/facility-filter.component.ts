@@ -95,10 +95,10 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       .get()
       .then((hierarchy = []) => {
         this.facilities = this.sortHierarchyAndAddFacilityLabels(hierarchy);
-        this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
         if (this.inline) {
           this.displayedFacilities = this.facilities;
         } else {
+          this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
           this.displayOneMoreFacility();
         }
       })
@@ -197,6 +197,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     }
 
     let selectedFacilities;
+
     if (facilityIds.length) {
       selectedFacilities = { selected: facilityIds };
     }
