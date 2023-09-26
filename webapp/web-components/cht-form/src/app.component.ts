@@ -16,10 +16,15 @@ export class AppComponent {
     error: null
   };
 
-  @Input() formId?: string;
-  @Input() formXml?: string;
+  private _formId: string = 'cht-form-id';
+  private _formXml?: string;
   private _formModel?: string;
   private _formHtml?: string;
+  private _contactSummary?: Record<string, any>;
+  private _user: Record<string, any> = {
+    contact_id: 'user_contact_id',
+    language: 'en',
+  };
 
   @Output() onCancel: EventEmitter<undefined> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
@@ -33,6 +38,11 @@ export class AppComponent {
     medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
   }
 
+  @Input() set formId(value: string) {
+    this._formId = value;
+    this.renderForm();
+  }
+
   @Input() set formHtml(value: string | undefined) {
     this._formHtml = value;
     this.renderForm();
@@ -41,6 +51,28 @@ export class AppComponent {
   @Input() set formModel(value: string | undefined) {
     this._formModel = value;
     this.renderForm();
+  }
+
+  @Input() set formXml(value: string | undefined) {
+    this._formXml = value;
+    this.renderForm();
+  }
+
+  @Input() set contactSummary(value: Record<string, any> | undefined) {
+    this._contactSummary = value;
+    this.renderForm();
+  }
+
+  @Input() set user(user: Record<string, any>) {
+    if (!user) {
+      throw new Error('User data must be provided.')
+    }
+    this._user = { ...user, language: user.language || 'en'};
+    this.renderForm();
+  }
+
+  get formId() {
+    return this._formId;
   }
 
   async cancelForm() {
@@ -54,14 +86,14 @@ export class AppComponent {
     try {
       const currentForm = this.enketoService.getCurrentForm();
       const formDoc = {
-        xml: this.formXml,
+        xml: this._formXml,
         doc: {}
       };
       const contact = {
         phone: '1234567890',
       };
 
-      const submittedDocs = await this.enketoService.completeNewReport(this.formId, currentForm, formDoc, contact);
+      const submittedDocs = await this.enketoService.completeNewReport(this._formId, currentForm, formDoc, contact);
       this.tearDownForm();
       this.onSubmit.emit(submittedDocs);
     } catch (e) {
@@ -73,7 +105,7 @@ export class AppComponent {
   }
 
   private async renderForm() {
-    if (!this._formHtml || !this._formModel) {
+    if (!this._formHtml || !this._formModel || !this._formXml) {
       this.unloadForm();
       return;
     }
@@ -82,8 +114,8 @@ export class AppComponent {
     const valuechangeListener = () => this.status.error = null;
 
     const formContext: EnketoFormContext = {
-      selector: `#${this.formId}`,
-      formDoc: { _id: this.formId },
+      selector: `#${this._formId}`,
+      formDoc: { _id: this._formId },
       instanceData: null,
       editedListener,
       valuechangeListener,
@@ -91,14 +123,9 @@ export class AppComponent {
       // userContact,
     };
     const formDetails = this.getFormDetails();
-    const userSettings = {
-      contact_id: 'user_contact_id',
-      language: 'en',
-    };
-    const contactSummary = null;
 
     this.unloadForm();
-    await this.enketoService.renderForm(formContext, formDetails, userSettings, contactSummary);
+    await this.enketoService.renderForm(formContext, formDetails, this._user, this._contactSummary);
   }
 
   private unloadForm() {

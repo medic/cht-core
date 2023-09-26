@@ -6,6 +6,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, Injector } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { AppComponent } from './app.component';
+import { TranslateService } from '@mm-services/translate.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -25,12 +26,25 @@ import { AppComponent } from './app.component';
   ]
 })
 export class AppModule {
-  constructor(injector: Injector) {
+  constructor(
+    injector: Injector,
+    private dbService: DbService,
+    private translateService: TranslateService
+  ) {
     const chtForm = createCustomElement(AppComponent, { injector });
     customElements.define('cht-form', chtForm);
+
   }
 
   ngDoBootstrap() {
-    // For some reason, this is required for Angular Elements to work
+    window.CHTCore = {
+      // AndroidAppLauncher: { isEnabled: () => false },
+      Language: { get: async () => 'en' },
+      // MRDT: { enabled: () => false },
+      Select2Search: { init: async () => { } },
+      Settings: { get: async () => ({ default_country_code: '1' }) },
+      Translate: this.translateService,
+      DB: this.dbService,
+    };
   }
 }
