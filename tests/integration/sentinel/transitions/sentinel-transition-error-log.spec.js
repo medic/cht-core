@@ -12,6 +12,7 @@ describe('Sentinel transition error log', async function() {
         something: true
       }
     };
+    
     const collectLogs = await utils.collectSentinelLogs(unknownTransitionPattern);
     await utils.updateSettings(settings, 'sentinel');
     const logs = await collectLogs();
