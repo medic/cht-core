@@ -41,7 +41,9 @@ export class AppModule {
       // AndroidAppLauncher: { isEnabled: () => false },
       Language: { get: async () => 'en' },
       // MRDT: { enabled: () => false },
-      Select2Search: { init: async () => { } },
+      Select2Search: {
+        init: async () => {}
+      },
       Settings: { get: async () => ({ default_country_code: '1' }) },
       Translate: this.translateService,
       DB: this.dbService,

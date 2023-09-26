@@ -32,10 +32,10 @@ export class AppComponent {
 
   constructor(
     private enketoService: EnketoService,
-    private translateService:TranslateService,
+    private translateService: TranslateService,
   ) {
-    const zscoreUtil = { };
-    const api = { };
+    const zscoreUtil = {};
+    const api = {};
     medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
   }
 
@@ -66,7 +66,7 @@ export class AppComponent {
 
   @Input() set content(value: Record<string, any> | null) {
     this._content = value;
-    if(this._content?.contact && !this._content.source) {
+    if (this._content?.contact && !this._content.source) {
       this._content.source = 'contact';
     }
 
@@ -77,7 +77,7 @@ export class AppComponent {
     if (!user) {
       throw new Error('User data must be provided.')
     }
-    this._user = { ...user, language: user.language || 'en'};
+    this._user = { ...user, language: user.language || 'en' };
     this.renderForm();
   }
 
@@ -144,7 +144,9 @@ export class AppComponent {
 
   private getFormDetails() {
     const $html = $(this._formHtml!);
-    const hasContactSummary = $(this._formModel!).find('> instance[id="contact-summary"]').length === 1;
+    const hasContactSummary = $(this._formModel!)
+      .find('> instance[id="contact-summary"]')
+      .length === 1;
     return {
       html: $html,
       model: this._formModel,
