@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Example Website with Embedded Angular Web Component</title>
+  <title>Example Website with Embedded cht-form Web Component</title>
   <script src="../../dist/cht-form/runtime.js"></script>
   <script src="../../dist/cht-form/polyfills.js"></script>
   <script src="../../dist/cht-form/main.js"></script>
@@ -10,7 +10,18 @@
   <script type="text/javascript" src="enketo_widgets.js"></script>
 </head>
 <body>
-    <cht-form id="myform"></cht-form>
+    <div class="container-fluid">
+      <div id="cancelBanner" style="display: none" class="row">
+        <h1>Form Canceled</h1>
+      </div>
+      <div class="row">
+        <cht-form id="myform"></cht-form>
+      </div>
+      <div id="submitBanner" style="display: none; height: 100%; overflow: scroll" class="row">
+        <h1>Form Submitted</h1>
+        <pre id="submittedData"></pre>
+      </div>
+    </div>
 </body>
 
 <script>
@@ -27,7 +38,16 @@
   myForm.formXml = formData.formXml;
 
   myForm.addEventListener('onSubmit', async (e) => {
-    console.log('form submitted', e.detail);
+    myForm.style.display = 'none';
+    const submittedData = document.getElementById('submittedData');
+    submittedData.innerText = JSON.stringify(e.detail, null, 2);
+    const submitBanner = document.getElementById('submitBanner');
+    submitBanner.style.display = 'block';
+  });
+  myForm.addEventListener('onCancel', async (e) => {
+    myForm.style.display = 'none';
+    const cancelBanner = document.getElementById('cancelBanner');
+    cancelBanner.style.display = 'block';
   });
 
 </script>
