@@ -24,7 +24,6 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { ModalService } from '@mm-services/modal.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
@@ -79,7 +78,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private exportService:ExportService,
     private ngZone:NgZone,
     private userContactService:UserContactService,
-    private feedbackService:FeedbackService,
     private sessionService:SessionService,
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,

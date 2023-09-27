@@ -37,7 +37,11 @@ describe('Enketo service', () => {
     return {
       _id: `form:${formInternalId}`,
       internalId: formInternalId,
-      _attachments: { xml: { something: true } },
+      _attachments: {
+        xml: { something: true },
+        'form.html': { something: true },
+        'model.xml': { something: true },
+      },
     };
   };
 
@@ -122,6 +126,8 @@ describe('Enketo service', () => {
       get: xmlFormGet,
       getDocAndFormAttachment: xmlFormGetWithAttachment,
       canAccessForm: sinon.stub(),
+      HTML_ATTACHMENT_NAME: 'form.html',
+      MODEL_ATTACHMENT_NAME: 'model.xml',
     };
     window.EnketoForm = EnketoForm;
     window.URL.createObjectURL = createObjectURL;
@@ -260,7 +266,11 @@ describe('Enketo service', () => {
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
           {
-            _attachments: { xml: { something: true } },
+            _attachments: {
+              xml: { something: true },
+              'model.xml': { something: true },
+              'form.html': { something: true },
+            },
             _id: 'form:myform',
             internalId: 'myform',
           },
@@ -568,7 +578,11 @@ describe('Enketo service', () => {
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
           {
-            _attachments: { xml: { something: true } },
+            _attachments: {
+              xml: { something: true },
+              'form.html': { something: true },
+              'model.xml': { something: true },
+            },
             _id: 'form:myform',
             internalId: 'myform',
           },

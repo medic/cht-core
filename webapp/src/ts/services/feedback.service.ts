@@ -41,6 +41,7 @@ export class FeedbackService {
     'failed to fetch',
     /http failure .* unknown error/i, // server offline
     /service unavailable/i, // server starting up
+    /missing/i,
     /document not found/i,
     /denied replicating to remote server/i,
     /phone number not unique/i,
@@ -65,6 +66,7 @@ export class FeedbackService {
       return false;
     }
 
+    // requiring a valid error to be logged to avoid cascades of feedback docs
     if (!message || !exception) {
       return false;
     }

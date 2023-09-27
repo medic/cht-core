@@ -10,7 +10,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 
 export const TRAINING_PREFIX: string = 'training:';
 
@@ -27,7 +26,6 @@ export class TrainingCardsService {
     private modalService: ModalService,
     private sessionService: SessionService,
     private routeSnapshotService: RouteSnapshotService,
-    private feedbackService: FeedbackService,
   ) {
     this.globalActions = new GlobalActions(store);
   }

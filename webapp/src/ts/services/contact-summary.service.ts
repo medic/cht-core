@@ -2,7 +2,6 @@ import { Injectable, NgZone } from '@angular/core';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { PipesService } from '@mm-services/pipes.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
@@ -24,7 +23,6 @@ export class ContactSummaryService {
   constructor(
     private settingsService:SettingsService,
     private pipesService:PipesService,
-    private feedbackService:FeedbackService,
     private ngZone:NgZone,
     private uhcSettingsService:UHCSettingsService,
     private uhcStatsService:UHCStatsService,

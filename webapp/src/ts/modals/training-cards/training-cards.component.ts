@@ -10,7 +10,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 
 @Component({
   selector: 'training-cards-modal',
@@ -26,7 +25,6 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     private geolocationService: GeolocationService,
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
-    private feedbackService: FeedbackService,
     private matDialogRef: MatDialogRef<TrainingCardsComponent>,
   ) {
     this.globalActions = new GlobalActions(this.store);
