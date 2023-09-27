@@ -279,7 +279,9 @@ describe('Reports Component', () => {
       await component.ngAfterViewInit();
 
       expect(setDefaultFacilityFilter.calledOnce).to.be.true;
-      expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({ facility: 'parent' });
+      expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({
+        facility: { _id: 'parent', name: 'parent', parent: { _id: 'grandparent' } }
+      });
       expect(authService.has.calledThrice).to.be.true;
       expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
       expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');

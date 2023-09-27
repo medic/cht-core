@@ -1,5 +1,5 @@
 import { TranslateCompiler } from '@ngx-translate/core';
-import * as MessageFormat from 'messageformat';
+import MessageFormat from '@messageformat/core';
 
 export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
   private messageFormat;

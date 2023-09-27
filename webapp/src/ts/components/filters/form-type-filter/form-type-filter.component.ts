@@ -26,8 +26,9 @@ import { InlineFilter } from '@mm-components/filters/inline-filter';
 })
 export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   private globalActions;
+  private formsSubscription;
   forms;
-  subscription: Subscription = new Subscription();
+  subscriptions: Subscription = new Subscription();
   inlineFilter: InlineFilter;
 
   @Input() disabled;
@@ -45,10 +46,21 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   ngOnInit() {
+    this.subscribeToSidebarStore();
+  }
+
+  private subscribeToSidebarStore() {
     const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(sidebarFilter => sidebarFilter?.isOpen && !this.formsSubscription && this.subscribeToFormStore());
+    this.subscriptions.add(subscription);
+  }
+
+  private subscribeToFormStore() {
+    this.formsSubscription = this.store
       .select(Selectors.getForms)
       .subscribe(forms => this.forms = _sortBy(forms, 'title'));
-    this.subscription.add(subscription);
+    this.subscriptions.add(this.formsSubscription);
   }
 
   applyFilter(forms) {
@@ -63,7 +75,7 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 
   trackByFn(idx, element) {

@@ -25,7 +25,8 @@ const SUITES = {
   lowLevel: [
     './pwa/**/*.wdio-spec.js',
     './service-worker/**/*.wdio-spec.js',
-    './transitions/**/*.wdio-spec.js'
+    './transitions/**/*.wdio-spec.js',
+    './logging/**/*.wdio-spec.js'
   ],
   enketo: [
     './enketo/**/*.wdio-spec.js',
