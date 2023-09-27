@@ -61,7 +61,7 @@ describe('Form Type Filter Component', () => {
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
-    const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
+    const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
     component.ngOnDestroy();
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
@@ -143,6 +143,7 @@ describe('Form Type Filter Component', () => {
       }
     ];
     store.overrideSelector(Selectors.getForms, forms);
+    store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
     store.refreshState();
 
     component.ngOnInit();
@@ -165,6 +166,35 @@ describe('Form Type Filter Component', () => {
         title: 'Form C'
       }
     ]);
+  }));
+
+
+  it('should do nothing if sidebar is not open', fakeAsync(() => {
+    const forms = [
+      {
+        _id: 'id-A',
+        code: 'code-A',
+        title: 'Form A'
+      },
+      {
+        _id: 'id-C',
+        code: 'code-C',
+        title: 'Form C'
+      },
+      {
+        _id: 'id-B',
+        code: 'code-B',
+        title: 'Form B'
+      }
+    ];
+    store.overrideSelector(Selectors.getForms, forms);
+    store.overrideSelector(Selectors.getSidebarFilter, { isOpen: false });
+    store.refreshState();
+
+    component.ngOnInit();
+    flush();
+
+    expect(component.forms).to.be.undefined;
   }));
 
   it('should do nothing if component is disabled', () => {
