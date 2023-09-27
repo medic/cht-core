@@ -528,11 +528,11 @@ describe('TrainingCardsService', () => {
     expect(modalService.show.notCalled).to.be.true;
 
     expect(consoleErrorMock.calledThrice).to.be.true;
-    expect(consoleErrorMock.args[0][0])
+    expect(consoleErrorMock.args[0][0].message)
       .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-1');
-    expect(consoleErrorMock.args[1][0])
+    expect(consoleErrorMock.args[1][0].message)
       .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-2');
-    expect(consoleErrorMock.args[2][0])
+    expect(consoleErrorMock.args[2][0].message)
       .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-3');
   });
 

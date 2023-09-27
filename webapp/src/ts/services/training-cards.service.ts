@@ -43,8 +43,7 @@ export class TrainingCardsService {
       }))
       .filter(form => {
         if (!this.isTrainingCardForm(form.code)) {
-          const error = `Training Cards :: Incorrect internalId format. Doc ID: ${form.id}`;
-          console.error(error);
+          console.error(new Error(`Training Cards :: Incorrect internalId format. Doc ID: ${form.id}`));
           return false;
         }
 
@@ -81,8 +80,7 @@ export class TrainingCardsService {
 
   private async handleTrainingCards(error, xForms) {
     if (error) {
-      const message = 'Training Cards :: Error fetching forms.';
-      console.error(message, error);
+      console.error('Training Cards :: Error fetching forms.', error);
       return;
     }
 
@@ -101,8 +99,7 @@ export class TrainingCardsService {
       this.modalService.show(TrainingCardsComponent);
 
     } catch (error) {
-      const message = 'Training Cards :: Error showing modal.';
-      console.error(message, error);
+      console.error('Training Cards :: Error showing modal.', error);
       return;
     }
   }
