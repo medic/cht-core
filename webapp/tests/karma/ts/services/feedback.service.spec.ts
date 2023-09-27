@@ -210,7 +210,48 @@ describe('Feedback service', () => {
       document: mockDocument
     });
 
-    mockConsole.error('Error selecting repport', new Error('Document not found: 4327849274892'));
+    mockConsole.error('Error selecting report', new Error('Document not found: 4327849274892'));
+    flush();
+    expect(post.calledOnce).to.be.false;
+  }));
+
+  it('should not record denied replication', fakeAsync(() => {
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    mockConsole.error(
+      'Denied replicating to remote server',
+      { id: '123', error: 'forbidden', name: 'forbidden', status: 500, stack: 'something' }
+    );
+    flush();
+    expect(post.calledOnce).to.be.false;
+  }));
+
+  it('should not record invalid phone number errors', fakeAsync(() => {
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    mockConsole.error(new Error('invalid phone number: "4r324234"'));
+    flush();
+    expect(post.calledOnce).to.be.false;
+  }));
+
+  it('should not record duplicate phone number errors', fakeAsync(() => {
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    mockConsole.error(new Error('phone number not unique: "4r324234"'));
     flush();
     expect(post.calledOnce).to.be.false;
   }));

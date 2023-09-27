@@ -61,7 +61,7 @@ export class FeedbackService {
       .filter(i => !!i);
   }
 
-  private shouldGenerateFeedback(level:string, message:string, exception) {
+  private shouldGenerateFeedback(level:string, message:string, exceptionMessage:string, exception?) {
     if (this.FEEDBACK_LEVEL !== level) {
       return false;
     }
@@ -72,13 +72,19 @@ export class FeedbackService {
     }
 
     // don't double-log errors as a basic infinite loop defense
-    if (this.lastErrorMessage === message) {
+    if (this.lastErrorMessage === message || this.lastErrorMessage === exceptionMessage) {
       return false;
     }
 
-    const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES.find(
-      (item:string|RegExp) => item instanceof RegExp ? item.test(message) : message.toLowerCase().includes(item)
-    );
+    message = message?.toLowerCase() || '';
+    exceptionMessage = exceptionMessage?.toLowerCase() || '';
+
+    const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES.find((item:string|RegExp) => {
+      if (item instanceof RegExp) {
+        return item.test(message) || item.test(exceptionMessage);
+      }
+      return message.includes(item) || exceptionMessage.includes(item);
+    });
 
     return !matchesNoFeedback;
   }
@@ -97,12 +103,14 @@ export class FeedbackService {
 
   private async generateFeedbackOnError(level, ...args) {
     const exception = args.find(arg => arg instanceof Error || arg?.stack || arg instanceof HttpErrorResponse);
-    const message = this.getExceptionMessage(exception) || args[0];
+    const exceptionMessage = this.getExceptionMessage(exception);
+    const loggedMessage = String(args[0]);
 
-    if (this.shouldGenerateFeedback(level, message, exception)) {
+    if (this.shouldGenerateFeedback(level, loggedMessage, exceptionMessage, exception)) {
+      const message = exceptionMessage || loggedMessage;
       this.lastErrorMessage = message;
       try {
-        await this.createAndSave( { message: message, stack: exception?.stack });
+        await this.createAndSave( { message, stack: exception?.stack });
       } catch (e) {
         // stop infinite loop of exceptions
         console.warn('Error while trying to record error', e);
