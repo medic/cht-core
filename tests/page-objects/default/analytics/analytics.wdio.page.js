@@ -18,7 +18,7 @@ const targetNumberPercent = (targetElement) => targetElement.$('.body .target-pr
 
 const targetNumberPercentCount = (targetElement) => targetElement.$('.body .target-progress .number span:nth-child(2)');
 
-const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
+const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal');
 
 const errorLog = () => $(`.page error-log`);
 
@@ -45,7 +45,8 @@ const getTargetInfo = async (targetElement) => {
   };
 
   if (await (await targetGoal(targetElement)).isExisting()) {
-    target.goal = await (await targetGoalValue(targetElement)).getText();
+    const fullText = await (await targetGoalValue(targetElement)).getText();
+    target.goal = fullText.split(' ').pop();
   }
 
   if (await (await targetCountNumber(targetElement)).isExisting()) {
