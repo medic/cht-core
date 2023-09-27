@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactsService } from '@mm-services/contacts.service';
+import { DbService } from '@mm-services/db.service';
 
 
 @Injectable({
@@ -13,6 +14,7 @@ export class PlaceHierarchyService {
     private contactTypesService:ContactTypesService,
     private settingsService:SettingsService,
     private contactsService:ContactsService,
+    private dbService:DbService,
   ) {
   }
 
@@ -100,5 +102,18 @@ export class PlaceHierarchyService {
   */
   get() {
     return this.getContacts().then(places => this.buildHierarchy(places));
+  }
+
+  async getDescendants(id, onlyPlaces = false) {
+    const results = await this.dbService
+      .get()
+      .query('medic-client/contacts_by_place', { key: [ id ], include_docs: true });
+
+    if (!onlyPlaces) {
+      return results.rows;
+    }
+
+    const settings = await this.settingsService.get();
+    return results.rows.filter(contact => settings.place_hierarchy_types?.includes(contact.doc.type));
   }
 }
