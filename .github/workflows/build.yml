@@ -59,6 +59,7 @@ jobs:
     name: Config Tests
     runs-on: ubuntu-22.04
     strategy:
+     fail-fast: false
       matrix:
         grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
 
@@ -103,6 +104,7 @@ jobs:
       NODE: ${{ matrix.node-version }}
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: ['8.x', '10.x', '12.x']
         grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
