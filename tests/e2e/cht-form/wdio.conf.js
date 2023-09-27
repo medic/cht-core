@@ -239,7 +239,7 @@ const baseConfig = {
    */
   before: async function () {
     global.expect = chai.expect;
-    await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
+    // await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
   },
   /**
    * Runs before a WebdriverIO command gets executed.
@@ -343,27 +343,27 @@ const baseConfig = {
   onComplete: async () => {
     // fileDownloadUtils.deleteDownloadDirectory();
     // await utils.tearDownServices();
-    const reportError = new Error('Could not generate Allure report');
-    const timeoutError = new Error('Timeout generating report');
-    const generation = allure(['generate', 'allure-results']);
-
-    return new Promise((resolve, reject) => {
-      const generationTimeout = setTimeout(
-        () => reject(timeoutError),
-        60 * 1000
-      );
-
-      generation.on('exit', (exitCode) => {
-        clearTimeout(generationTimeout);
-
-        if (exitCode !== 0) {
-          return reject(reportError);
-        }
-
-        console.log('Allure report successfully generated');
-        resolve();
-      });
-    });
+    // const reportError = new Error('Could not generate Allure report');
+    // const timeoutError = new Error('Timeout generating report');
+    // const generation = allure(['generate', 'allure-results']);
+    //
+    // return new Promise((resolve, reject) => {
+    //   const generationTimeout = setTimeout(
+    //     () => reject(timeoutError),
+    //     60 * 1000
+    //   );
+    //
+    //   generation.on('exit', (exitCode) => {
+    //     clearTimeout(generationTimeout);
+    //
+    //     if (exitCode !== 0) {
+    //       return reject(reportError);
+    //     }
+    //
+    //     console.log('Allure report successfully generated');
+    //     resolve();
+    //   });
+    // });
   },
   /**
    * Gets executed when a refresh happens.
