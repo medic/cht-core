@@ -172,7 +172,7 @@ describe('Outbound', () => {
           'completed_tasks[0].name': 'working',
           'completed_tasks[1].type': 'outbound',
           'completed_tasks[1].name': 'also_working',
-        })
+        });
         chai.expect(infoDocs[2]).to.nested.include({
           _id: 'cron-test-info',
           type: 'info',

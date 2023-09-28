@@ -233,7 +233,7 @@ describe('mark_for_outbound', () => {
             type: 'info',
             doc_id: report._id
           });
-          expect(infoDoc).to.not.have.property("completed_tasks");
+          expect(infoDoc).to.not.have.property('completed_tasks');
 
         });
     });
