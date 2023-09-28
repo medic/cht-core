@@ -16,6 +16,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { FormService } from '@mm-services/form.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { FormContext } from '@mm-services/enketo.service';
 
 
 @Component({
@@ -193,38 +194,34 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
           })));
   }
 
-  private renderForm(form, reportContent, model) {
-    return this.formService
-      .render(
-        '#report-form',
-        form,
-        reportContent,
-        this.markFormEdited.bind(this),
-        this.resetFormError.bind(this),
-      )
-      .then((form) => {
-        this.form = form;
-        this.globalActions.setLoadingContent(false);
-        if (!model.doc || !model.doc._id) {
-          return;
-        }
+  private async renderForm(formDoc, reportContent, model) {
+    const formObj = new FormContext('#report-form', 'report', formDoc);
+    formObj.data = reportContent;
+    formObj.editing = !!reportContent;
+    formObj.editedListener = this.markFormEdited.bind(this);
+    formObj.valuechangeListener = this.resetFormError.bind(this);
 
-        return this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(model));
-      })
-      .then(() => {
-        this.telemetryData.postRender = Date.now();
-        this.telemetryData.action = model.doc ? 'edit' : 'add';
-        this.telemetryData.form = model.formInternalId;
+    try {
+      const form = await this.formService.render(formObj);
+      this.form = form;
+      this.globalActions.setLoadingContent(false);
+      if (!model.doc || !model.doc._id) {
+        return;
+      }
 
-        this.telemetryService.record(
-          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender
-        );
-      })
-      .catch((err) => {
-        this.setError(err);
-        console.error('Error loading form.', err);
-      });
+      await this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(model));
+
+      this.telemetryData.postRender = Date.now();
+      this.telemetryData.action = model.doc ? 'edit' : 'add';
+      this.telemetryData.form = model.formInternalId;
+      this.telemetryService.record(
+        `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+        this.telemetryData.postRender - this.telemetryData.preRender
+      );
+    } catch (err) {
+      this.setError(err);
+      console.error('Error loading form.', err);
+    }
   }
 
   private setError(err) {

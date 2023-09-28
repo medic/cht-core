@@ -21,7 +21,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { EnketoService, FormContext } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
 /**
@@ -142,20 +142,20 @@ export class FormService {
       .then(([reports, lineage]) => this.contactSummaryService.get(contact, reports, lineage));
   }
 
-  private canAccessForm(formDoc, user, instanceData, contactSummary) {
+  private canAccessForm(formContext: FormContext) {
     return this.xmlFormsService.canAccessForm(
-      formDoc,
-      user,
-      { doc: instanceData?.contact, contactSummary: contactSummary?.context },
+      formContext.formDoc,
+      formContext.userContact,
+      {
+        doc: typeof formContext.data !== 'string' && formContext.data?.contact,
+        contactSummary: formContext.contactSummary?.context,
+        evaluateExpression: formContext.evaluateExpression(),
+      },
     );
   }
 
-  private async renderForm(formContext: EnketoFormContext) {
-    const {
-      formDoc,
-      instanceData,
-      userContact,
-    } = formContext;
+  private async renderForm(formContext: FormContext) {
+    const { formDoc, data } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());
@@ -163,12 +163,12 @@ export class FormService {
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
-      const contactSummary = await this.getContactSummary(doc, instanceData);
+      formContext.contactSummary = await this.getContactSummary(doc, data);
 
-      if (!await this.canAccessForm(formDoc, userContact, instanceData, contactSummary)) {
+      if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
-      return await this.enketoService.renderForm(formContext, doc, userSettings, contactSummary);
+      return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
       if (error.translationKey) {
         throw error;
@@ -180,36 +180,14 @@ export class FormService {
     }
   }
 
-  render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal = false) {
-    return this.ngZone.runOutsideAngular(() => {
-      return this._render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal);
-    });
+  render(formObj: FormContext) {
+    return this.ngZone.runOutsideAngular(() => this._render(formObj));
   }
 
-  private _render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal) {
-    return Promise
-      .all([
-        this.inited,
-        this.getUserContact(),
-      ])
-      .then(([ , userContact]) => {
-        const formContext: EnketoFormContext = {
-          selector,
-          formDoc: form,
-          instanceData,
-          editedListener,
-          valuechangeListener,
-          isFormInModal,
-          userContact,
-        };
-        return this.renderForm(formContext);
-      });
-  }
-
-  async renderContactForm(formContext: EnketoFormContext) {
-    // Users can access contact forms even when they don't have a contact associated. So not throwing an error.
-    formContext.userContact = await this.userContactService.get();
-    return this.renderForm(formContext);
+  private async _render(formObj: FormContext) {
+    await this.inited;
+    formObj.userContact = await this.getUserContact(formObj.requiresContact());
+    return this.renderForm(formObj);
   }
 
   private saveDocs(docs) {
@@ -229,18 +207,15 @@ export class FormService {
       });
   }
 
-  private getUserContact() {
-    return this.userContactService
-      .get()
-      .then((contact) => {
-        if (!contact) {
-          const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
-            'associated contact. Talk to your administrator to correct this.');
-          err.translationKey = 'error.loading.form.no_contact';
-          throw err;
-        }
-        return contact;
-      });
+  private async getUserContact(requiresContact:boolean) {
+    const contact = await this.userContactService.get();
+    if (requiresContact && !contact) {
+      const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
+        'associated contact. Talk to your administrator to correct this.');
+      err.translationKey = 'error.loading.form.no_contact';
+      throw err;
+    }
+    return contact;
   }
 
   private saveGeo(geoHandle, docs) {
@@ -296,7 +271,7 @@ export class FormService {
       return this.enketoService.completeExistingReport(form, formDoc, docId);
     }
 
-    const contact = await this.getUserContact();
+    const contact = await this.getUserContact(true);
     return this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
   }
 
@@ -325,3 +300,4 @@ export class FormService {
     this.enketoService.unload(form);
   }
 }
+

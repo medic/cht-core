@@ -29,7 +29,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoService, FormContext } from '@mm-services/enketo.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -212,14 +212,16 @@ describe('Enketo service', () => {
 
   describe('render', () => {
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      sinon.stub(medicXpathExtensions, 'init');
       service = TestBed.inject(FormService);
+      await service.init();
     });
 
     it('renders error when user does not have associated contact', () => {
       UserContact.resolves();
       return service
-        .render(null, 'not-defined')
+        .render(new FormContext('#', 'report', { }))
         .then(() => {
           expect.fail('Should throw error');
         })
@@ -251,8 +253,10 @@ describe('Enketo service', () => {
       const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
       enketoInit.returns(expectedErrorDetail);
 
+      const formContext = new FormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+
       try {
-        await service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData);
+        await service.render(formContext);
         flush();
         expect.fail('Should throw error');
       } catch (error) {
@@ -265,7 +269,7 @@ describe('Enketo service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false } },
+          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, evaluateExpression: true },
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
@@ -286,7 +290,7 @@ describe('Enketo service', () => {
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves('<xml></xml>');
-      return service.render($('<div></div>'), mockEnketoDoc('myform')).then(() => {
+      return service.render(new FormContext('#div', 'task', mockEnketoDoc('myform'))).then(() => {
         expect(UserContact.callCount).to.equal(1);
         expect(EnketoPrepopulationData.callCount).to.equal(1);
         expect(FileReader.utf8.callCount).to.equal(2);
@@ -314,7 +318,8 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
       EnketoPrepopulationData.resolves(data);
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
+      const formContext = new FormContext('div', 'report', mockEnketoDoc('myform'), data);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
         expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
@@ -350,8 +355,10 @@ describe('Enketo service', () => {
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new FormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
+        console.log(JSON.stringify(EnketoForm.args[0], null, 2));
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
@@ -404,7 +411,8 @@ describe('Enketo service', () => {
         }
       });
       LineageModelGenerator.contact.resolves({ lineage: [] });
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new FormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
@@ -441,7 +449,8 @@ describe('Enketo service', () => {
           name: 'sharon'
         }
       };
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new FormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external).to.equal(undefined);
         expect(ContactSummary.callCount).to.equal(0);
@@ -474,7 +483,8 @@ describe('Enketo service', () => {
       };
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new FormContext('div', 'report',  mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(ContactSummary.callCount).to.equal(1);
@@ -494,7 +504,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>first form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
 
-      await service.render($('<div id="first-form"></div>'), mockEnketoDoc('firstForm'));
+      await service.render(new FormContext('#div', 'report',  mockEnketoDoc('firstForm')));
       expect(form.resetView.notCalled).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
       expect(EnketoPrepopulationData.calledOnce).to.be.true;
@@ -512,7 +522,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>second form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
 
-      await service.render($('<div id="second-form"></div>'), mockEnketoDoc('secondForm'));
+      await service.render(new FormContext('#div', 'report', mockEnketoDoc('secondForm')));
       expect(form.resetView.calledOnce).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
       expect(EnketoPrepopulationData.calledOnce).to.be.true;
@@ -542,7 +552,7 @@ describe('Enketo service', () => {
       const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
       try {
-        await service.render($('<div></div>'), mockEnketoDoc('myform'), data);
+        await service.render(new FormContext('div', 'report', mockEnketoDoc('myform'), data));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
@@ -572,10 +582,11 @@ describe('Enketo service', () => {
       ContactSummary.resolves({ context: { pregnant: false } });
 
       try {
-        await service.render($('<div></div>'), mockEnketoDoc('myform'));
+        await service.render(new FormContext('div', 'report', mockEnketoDoc('myform')));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
+        expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });
         expect(UserContact.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
@@ -585,10 +596,9 @@ describe('Enketo service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: undefined, contactSummary: undefined },
+          { doc: undefined, contactSummary: undefined, evaluateExpression: true },
         ]);
         expect(enketoInit.notCalled).to.be.true;
-        expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });
         expect(consoleErrorMock.notCalled).to.be.true;
         expect(feedbackService.submit.notCalled).to.be.true;
       }

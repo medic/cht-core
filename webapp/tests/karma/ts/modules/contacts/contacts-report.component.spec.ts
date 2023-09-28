@@ -160,17 +160,17 @@ describe('contacts report component', () => {
       flush();
 
       expect(formService.render.callCount).to.equal(1);
-      expect(formService.render.args[0][0]).to.equal('#contact-report');
-      expect(formService.render.args[0][1]).to.deep.equal({ title: 'formTitle' });
-      expect(formService.render.args[0][2]).to.deep.equal(
-        {
+      expect(formService.render.args[0][0]).to.deep.include({
+        selector: '#contact-report',
+        formDoc: { title: 'formTitle' },
+        data: {
           source: 'contact',
           contact: {
             _id: 'test_id',
             contact_type: 'test_type'
           }
         }
-      );
+      });
     }));
 
     it('should unsubscribe and unload form on destroy', async () => {

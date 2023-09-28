@@ -11,6 +11,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { FormContext } from '@mm-services/enketo.service';
 
 @Component({
   selector: 'training-cards-modal',
@@ -91,11 +92,14 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async renderForm(form) {
+  private async renderForm(formDoc) {
     try {
-      const selector = `#${this.formWrapperId}`;
-      this.form = await this.formService.render(selector, form, null, null, this.resetFormError.bind(this), true);
-      this.formNoTitle = !form?.title;
+      const formObj = new FormContext(`#${this.formWrapperId}`, 'training-card', formDoc);
+      formObj.isFormInModal = true;
+      formObj.valuechangeListener = this.resetFormError.bind(this);
+
+      this.form = await this.formService.render(formObj);
+      this.formNoTitle = !formDoc?.title;
       this.loadingContent = false;
       this.recordTelemetryPostRender();
     } catch (error) {

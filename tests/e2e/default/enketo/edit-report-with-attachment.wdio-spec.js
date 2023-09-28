@@ -30,6 +30,9 @@ const formDoc = {
       content_type: 'application/octet-stream',
       data: Buffer.from(oneTextForm).toString('base64'),
     }
+  },
+  context: {
+    expression: 'summary.alive',
   }
 };
 const reportDoc ={
@@ -71,7 +74,6 @@ describe('Edit report with attachmnet', () => {
     await commonElements.goToReports();
 
     await reportsPage.editReport(reportDoc._id);
-    // await browser.debug();
     await reportsPage.submitForm();
 
     const editedReport = await utils.getDoc(reportDoc._id);
