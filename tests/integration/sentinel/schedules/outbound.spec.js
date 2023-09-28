@@ -1,8 +1,10 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
-const sinon = require('sinon');
 
+const sentinelDate = utils.getSentinelDate();
+const minute = sentinelDate.get('minute') - 1;
+const hour = sentinelDate.get('hour');
 const outboundConfig = (port) => ({
   working: {
     destination: {
@@ -25,7 +27,7 @@ const outboundConfig = (port) => ({
     relevant_to: 'doc._id.startsWith("test")'
   },
   working_with_cron: {
-    cron: '5 1 * * *',
+    cron: minute + ' ' + hour + ' * * *',
     destination: {
       base_url: utils.hostURL(port),
       path: '/test-working'
@@ -33,7 +35,7 @@ const outboundConfig = (port) => ({
     mapping: {
       id: 'doc._id'
     },
-    relevant_to: 'doc._id.startsWith("test-cron")'
+    relevant_to: 'doc._id.startsWith("cron-test")'
   },
   broken: {
     destination: {
@@ -50,7 +52,7 @@ const outboundConfig = (port) => ({
 const docs = [
   { _id: 'test-aaa' },
   { _id: 'test-zzz' },
-  { _id: 'test-cron' }
+  { _id: 'cron-test' }
 ];
 
 
@@ -74,7 +76,7 @@ const waitForPushes = (expectedTasks = 1) => {
   });
 };
 
-const getTasks = () => utils.sentinelDb.allDocs({ start_key: 'task:outbound:', end_key: 'task:outbound:\ufff0'});
+const getTasks = () => utils.sentinelDb.allDocs({ start_key: 'task:outbound:', end_key: 'task:outbound:\ufff0' });
 
 const wipeTasks = () => {
   return getTasks().then(result => {
@@ -84,7 +86,6 @@ const wipeTasks = () => {
 };
 
 describe('Outbound', () => {
-  let clock;
   before(() => {
     // get a random port assigned. we will reuse this port when starting the server again.
     // the known port is necessary for the outbound config
@@ -95,13 +96,11 @@ describe('Outbound', () => {
 
   after(() => {
     server.close();
-    clock?.reset();
   });
 
   afterEach(() => utils.revertDb([], true).then(() => wipeTasks()));
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
-    clock = sinon.useFakeTimers(new Date('2023-08-28T01:05:00')).reset();
     const settings = {
       outbound: outboundConfig(port),
       transitions: {
@@ -130,11 +129,11 @@ describe('Outbound', () => {
           { id: 'test-aaa' },
           { id: 'test-zzz' },
           { id: 'test-zzz' },
-          { id: 'test-cron' }
+          { id: 'cron-test' }
         ]);
 
         chai.expect(inboxes.broken).to.have.deep.members([
-          {id: 'test-aaa'}
+          { id: 'test-aaa' }
         ]);
       })
       .then(() => utils.sentinelDb.allDocs({ keys: docs.map(doc => `task:outbound:${doc._id}`), include_docs: true }))
@@ -155,7 +154,7 @@ describe('Outbound', () => {
   const checkInfoDocs = (retry = 10) =>
     sentinelUtils.getInfoDocs(docs.map(doc => doc._id))
       .then(infoDocs => {
-        chai.expect(infoDocs).to.have.lengthOf(2);
+        chai.expect(infoDocs).to.have.lengthOf(3);
         chai.expect(infoDocs[0]).to.nested.include({
           _id: 'test-aaa-info',
           type: 'info',
@@ -173,14 +172,14 @@ describe('Outbound', () => {
           'completed_tasks[0].name': 'working',
           'completed_tasks[1].type': 'outbound',
           'completed_tasks[1].name': 'also_working',
+        })
+        chai.expect(infoDocs[2]).to.nested.include({
+          _id: 'cron-test-info',
+          type: 'info',
+          doc_id: 'cron-test',
+          'completed_tasks[0].type': 'outbound',
+          'completed_tasks[0].name': 'working_with_cron',
         });
-        // chai.expect(infoDocs[1]).to.nested.include({
-        //   _id: 'test-cron-info',
-        //   type: 'info',
-        //   doc_id: 'test-cron',
-        //   'completed_tasks[0].type': 'outbound',
-        //   'completed_tasks[0].name': 'working_with_cron',
-        // });
       }).catch(err => {
         // We don't really have a reliable way to know when these writes happen, because of how
         // schedules work. Calling `waitForPushes` is only half the story, so sometimes this can
