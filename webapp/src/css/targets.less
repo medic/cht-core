@@ -6,10 +6,10 @@
   padding: 35px 0;
 
   .target {
-    width: 350px;
-    min-height: 180px;
+    width: 296px;
+    min-height: 151px;
     background-color: @gray-ultra-light;
-    border: 1px solid @separator-color;
+    border: 1px solid @gray-light;
     border-radius: @radius-size;
     margin: 15px;
     display: flex;
@@ -17,40 +17,50 @@
     justify-content: space-between;
 
     .heading {
+      display: flex;
       padding: 10px;
       background-color: @white;
       border-bottom-left-radius: @radius-size;
       border-bottom-right-radius: @radius-size;
       .title {
-        margin-left: 65px;
+        margin-left: 10px;
         h2 {
           margin: 0;
+          color: @gray-ultra-dark;
+          font-size: @font-medium;
+          font-weight: 700;
+          line-height: 20px;
         }
         p {
-          color: @label-color;
+          color: @gray-dark;
+          font-size: @font-small;
+          font-weight: 400px;
         }
       }
       .icon {
         float: left;
+        align-self: center;
         img,
         svg {
-          width: @icon-large;
-          height: @icon-large;
+          width: 35px;
+          height: 35px;
         }
       }
     }
     .body {
       clear: both;
-      padding: 20px 10px 0;
+      padding: 10px 10px 0;
       position: relative;
       margin: 0 5px;
+      min-height: 74px;
       .percent {
         position: relative;
       }
       .count {
         text-align: center;
         .number {
-          font-size: 56px;
+          text-align: center;
+          font-size: 48px;
           line-height: 1;
           font-weight: bold;
         }
@@ -60,9 +70,11 @@
           margin-right: 10px;
           color: @label-color;
           p {
-            font-size: @font-large;
-            line-height: 1;
+            font-size: @font-small;
+            font-weight: 400;
+            line-height: 24px;
             margin-bottom: 0;
+            color: @gray-dark;
           }
           label {
             font-size: @font-extra-extra-large;
@@ -130,7 +142,7 @@
     }
 
     .value {
-      font-size: @font-extra-extra-large;
+      font-size: @font-medium;
       line-height: 1;
       font-weight: bold;
     }
