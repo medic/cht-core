@@ -3,7 +3,6 @@ const { expect } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const sinon = require('sinon');
 
 // Mock server code, consider moving this elsewhere?
 const express = require('express');
@@ -24,7 +23,7 @@ mockApp.post(WORKING_ENDPOINT, (req, res) => {
 
 mockApp.post(BROKEN_ENDPOINT, (req, res) => {
   brokenEndpointRequests.push(req.body);
-  res.status(500).json({error: 500, some: 'error response'}).end();
+  res.status(500).json({ error: 500, some: 'error response' }).end();
 });
 
 const startMockApp = () => {
@@ -71,7 +70,7 @@ const wipeTasks = () => getTasks()
       headers: {
         'Content-Type': 'application/json'
       },
-      body: {docs: tasks}
+      body: { docs: tasks }
     });
   });
 
@@ -80,12 +79,9 @@ describe('mark_for_outbound', () => {
   after(() => utils.revertDb([], true));
 
   describe('when external server is up', () => {
-    let clock;
-
     beforeEach(() => startMockApp());
     afterEach(() => {
       stopMockApp();
-      clock?.reset();
     });
 
     it('correctly creates and sends an outbound request immediately', () => {
@@ -138,7 +134,7 @@ describe('mark_for_outbound', () => {
     });
 
     it('correctly creates and sends outbound request immediately with due "cron"', () => {
-      clock = sinon.useFakeTimers(new Date('2023-08-28T01:05:00'));
+      const sentinelDate = utils.getSentinelDate();
       const report = makeReport();
       const config = {
         transitions: {
@@ -147,7 +143,7 @@ describe('mark_for_outbound', () => {
         outbound: {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
-            cron: '5 1 * * *',
+            cron: sentinelDate.get('minute') + ' ' + sentinelDate.get('hour') + ' * * *',
             destination: {
               base_url: utils.hostURL(server.address().port),
               path: WORKING_ENDPOINT
@@ -189,7 +185,9 @@ describe('mark_for_outbound', () => {
     });
 
     it('correctly skips outbound request immediately with not due "cron"', () => {
-      clock = sinon.useFakeTimers(new Date('2023-08-28T01:05:00'));
+      const sentinelDate = utils.getSentinelDate();
+      const minute = sentinelDate.get('minute');
+      const hour = sentinelDate.get('hour') + 1;
       const report = makeReport();
       const config = {
         transitions: {
@@ -198,7 +196,7 @@ describe('mark_for_outbound', () => {
         outbound: {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
-            cron: '5 2 * * *',
+            cron: minute + ' ' + hour + ' * * *',
             destination: {
               base_url: utils.hostURL(server.address().port),
               path: WORKING_ENDPOINT
@@ -217,20 +215,26 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks).to.be.empty;
-        })
-        .then(() => utils.getDoc(report._id))
-        .then(report => {
-          expect(brokenEndpointRequests).to.be.empty;
-          expect(workingEndpointRequests).to.have.lengthOf(1);
-          expect(workingEndpointRequests[0]).to.deep.equal({
-            id: report._id,
-            rev: report._rev
+          expect(tasks).to.have.lengthOf(1);
+          expect(tasks[0]).to.include({
+            _id: `task:outbound:${report._id}`,
+            type: 'task:outbound',
+            doc_id: report._id
           });
+          expect(tasks[0].queue).to.deep.equal(['test']);
+        })
+        .then(() => {
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.be.empty;
         })
         .then(() => sentinelUtils.getInfoDoc(report._id))
-        .then(response => {
-          console.log('mark-for-outbound-debug', response);
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id
+          });
+          expect(infoDoc).to.not.have.property("completed_tasks");
+
         });
     });
 
