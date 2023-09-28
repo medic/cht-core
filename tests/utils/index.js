@@ -1222,14 +1222,6 @@ const getSentinelDate = () => getContainerDate('sentinel');
 const getContainerDate = (container) => {
   container = getContainerName(container);
   try {
-    // Native
-    //const datePattern = /^(\d{4})-(\d{2})-(\d{2})\s(\d{1,2}):(\d{2})$/;
-    //const [, year, month, day, rawHour, min] = datePattern.exec('2010-10-20 4:30');
-    //new Date(`${year}-${month}-${day}T${('0' + rawHour).slice(-2)}:${min}:00`);
-    // => "2010-10-19T17:30:00.000Z"
-
-    //var m = moment('2015-11-32', 'YYYY-MM-DD HH:mm:ss');
-
     return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
   } catch (error) {
     console.log('docker exec date failed. NOTE this error is not relevant if running outside of docker');
