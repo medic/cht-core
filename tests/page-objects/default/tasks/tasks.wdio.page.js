@@ -98,6 +98,11 @@ const waitForTasksGroupLoaded = async () => {
 const getTasksInGroup = () => $$(`${tasksGroupSelector} li`);
 const noSelectedTask = () => $(noSelectedTaskSelector);
 
+const openTaskById = async (id, taskType) => {
+  await getTaskById(`${id}${taskType}`).click();
+  await $(taskFormSelector).waitForDisplayed();
+};
+
 module.exports = {
   tasksList,
   getTasks,
@@ -111,5 +116,6 @@ module.exports = {
   waitForTasksGroupLoaded,
   getTasksInGroup,
   noSelectedTask,
-  getErrorLog
+  getErrorLog,
+  openTaskById,
 };
