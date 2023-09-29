@@ -12,6 +12,8 @@ const targetGoal = (targetElement) => targetElement.$('.body .count .goal');
 
 const targetCountNumber = (targetElement) => targetElement.$('.body .count .number');
 
+const targetCountNumberColor = (targetElement) => targetElement.$('.body .count .number:not(.goal-met)');
+
 const targetProgressNumber = (targetElement) => targetElement.$('.body .target-progress .number');
 
 const targetNumberPercent = (targetElement) => targetElement.$('.body .target-progress .number .value');
@@ -51,6 +53,10 @@ const getTargetInfo = async (targetElement) => {
 
   if (await (await targetCountNumber(targetElement)).isExisting()) {
     target.count = await (await targetCountNumber(targetElement)).getText();
+  }
+
+  if (await (await targetCountNumberColor(targetElement)).isExisting()) {
+    target.countNumberColor = (await (await targetCountNumberColor(targetElement)).getCSSProperty('color')).parsed.hex;
   }
 
   if (await (await targetProgressNumber(targetElement)).isExisting()) {
