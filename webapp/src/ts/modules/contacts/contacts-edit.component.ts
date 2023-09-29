@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { FormService } from '@mm-services/form.service';
-import { FormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
@@ -244,8 +244,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     const formDoc = await this.dbService.get().get(formId);
     this.xmlVersion = formDoc.xmlVersion;
 
-    const formObj = new FormContext('#contact-form', 'contact', formDoc);
-    formObj.data = this.getFormInstanceData();
+    const formObj = new EnketoFormContext('#contact-form', 'contact', formDoc, this.getFormInstanceData());
     formObj.editedListener = this.markFormEdited.bind(this);
     formObj.valuechangeListener = this.resetFormError.bind(this);
     formObj.titleKey = titleKey;

@@ -165,13 +165,13 @@ export class EnketoService {
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
-    const { doc, data, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
+    const { doc, instanceData, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0)!);
 
     return this
-      .getEnketoForm(wrapper, doc, data, contactSummary, userSettings)
+      .getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings)
       .then((form) => {
         this.currentForm = form;
         const loadErrors = this.currentForm.init();
@@ -315,7 +315,7 @@ export class EnketoService {
     });
   }
 
-  private registerEnketoListeners($selector, form, formContext: FormContext) {
+  private registerEnketoListeners($selector, form, formContext: EnketoFormContext) {
     this.registerAddrepeatListener($selector, formContext.formDoc);
     this.registerEditedListener($selector, formContext.editedListener);
     this.registerValuechangeListener($selector, formContext.valuechangeListener);
@@ -323,10 +323,10 @@ export class EnketoService {
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  public async renderForm(formContext: FormContext, doc, userSettings) {
+  public async renderForm(formContext: EnketoFormContext, doc, userSettings) {
     const {
       formDoc,
-      data,
+      instanceData,
       selector,
       titleKey,
       isFormInModal,
@@ -337,7 +337,7 @@ export class EnketoService {
     const xmlFormContext: XmlFormContext = {
       doc,
       wrapper: $(selector),
-      data,
+      instanceData,
       titleKey,
       isFormInModal,
       contactSummary: formContext.contactSummary,
@@ -626,18 +626,18 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  data: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
   contactSummary?: Record<string, any>;
 }
 
-export class FormContext {
+export class EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
   type: 'contact'|'report'|'task'|'training-card';
   editing: boolean;
-  data: null|string|Record<string, any>;
+  instanceData: null|string|Record<string, any>;
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;
@@ -645,11 +645,11 @@ export class FormContext {
   userContact?: Record<string, any>;
   contactSummary? :Record<string, any>;
 
-  constructor(selector?, type?, formDoc?, data?) {
+  constructor(selector?, type?, formDoc?, instanceData?) {
     this.selector = selector;
     this.type = type;
     this.formDoc = formDoc;
-    this.data = data;
+    this.instanceData = instanceData;
   }
 
   evaluateExpression() {

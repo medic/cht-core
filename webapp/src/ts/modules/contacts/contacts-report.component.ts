@@ -6,7 +6,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { FormService } from '@mm-services/form.service';
-import { FormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -130,8 +130,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
         this.setCancelCallback();
 
-        const formObj = new FormContext('#contact-report', 'report', formDoc);
-        formObj.data = { source: 'contact', contact };
+        const formObj = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
         formObj.editedListener = this.markFormEdited.bind(this);
         formObj.valuechangeListener = this.resetFormError.bind(this);
 

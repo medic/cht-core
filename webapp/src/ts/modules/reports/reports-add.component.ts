@@ -16,7 +16,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { FormService } from '@mm-services/form.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { FormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 
 
 @Component({
@@ -195,8 +195,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async renderForm(formDoc, reportContent, model) {
-    const formObj = new FormContext('#report-form', 'report', formDoc);
-    formObj.data = reportContent;
+    const formObj = new EnketoFormContext('#report-form', 'report', formDoc, reportContent);
     formObj.editing = !!reportContent;
     formObj.editedListener = this.markFormEdited.bind(this);
     formObj.valuechangeListener = this.resetFormError.bind(this);

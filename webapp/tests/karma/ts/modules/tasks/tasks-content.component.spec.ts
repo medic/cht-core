@@ -142,7 +142,7 @@ describe('TasksContentComponent', () => {
       selector: '#task-report',
       type: 'task',
       formDoc: form,
-      data: 'nothing'
+      instanceData: 'nothing'
     });
 
     expect(get.callCount).to.eq(0);
@@ -172,7 +172,7 @@ describe('TasksContentComponent', () => {
     expect(get.args).to.deep.eq([['contact']]);
     expect(geolocationService.init.callCount).to.equal(1);
     expect(render.callCount).to.eq(1);
-    expect(render.args[0][0].data).to.deep.eq({
+    expect(render.args[0][0].instanceData).to.deep.eq({
       contact: { _id: 'contact' },
       something: 'nothing',
       task_id: '123',
@@ -252,7 +252,7 @@ describe('TasksContentComponent', () => {
     expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['dne']]);
     expect(render.callCount).to.eq(1);
-    expect(render.args[0][0].data).to.deep.eq({ contact: { _id: 'dne' }, task_id: '123' });
+    expect(render.args[0][0].instanceData).to.deep.eq({ contact: { _id: 'dne' }, task_id: '123' });
   });
 
   it('should work when form not found', async () => {
@@ -364,7 +364,7 @@ describe('TasksContentComponent', () => {
     tick();
 
     expect(render.callCount).to.equal(1);
-    expect(render.args[0][0].data).to.deep.eq({
+    expect(render.args[0][0].instanceData).to.deep.eq({
       contact: { _id: 'contact' },
       something: 'other',
       task_id: '123',
@@ -506,7 +506,7 @@ describe('TasksContentComponent', () => {
         selector: '#task-report',
         type: 'task',
         formDoc: form,
-        data: action.content,
+        instanceData: action.content,
       });
 
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);
@@ -566,7 +566,7 @@ describe('TasksContentComponent', () => {
         selector: '#task-report',
         type: 'task',
         formDoc: { ...form },
-        data: { ...action.content },
+        instanceData: { ...action.content },
       });
 
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);

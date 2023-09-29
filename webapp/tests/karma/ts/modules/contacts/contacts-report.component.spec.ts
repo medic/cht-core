@@ -163,7 +163,7 @@ describe('contacts report component', () => {
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#contact-report',
         formDoc: { title: 'formTitle' },
-        data: {
+        instanceData: {
           source: 'contact',
           contact: {
             _id: 'test_id',

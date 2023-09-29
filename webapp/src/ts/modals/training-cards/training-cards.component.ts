@@ -11,7 +11,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { FormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 
 @Component({
   selector: 'training-cards-modal',
@@ -94,7 +94,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   private async renderForm(formDoc) {
     try {
-      const formObj = new FormContext(`#${this.formWrapperId}`, 'training-card', formDoc);
+      const formObj = new EnketoFormContext(`#${this.formWrapperId}`, 'training-card', formDoc);
       formObj.isFormInModal = true;
       formObj.valuechangeListener = this.resetFormError.bind(this);
 

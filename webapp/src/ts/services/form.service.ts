@@ -21,7 +21,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoService, FormContext } from '@mm-services/enketo.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
 /**
@@ -142,20 +142,20 @@ export class FormService {
       .then(([reports, lineage]) => this.contactSummaryService.get(contact, reports, lineage));
   }
 
-  private canAccessForm(formContext: FormContext) {
+  private canAccessForm(formContext: EnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
       formContext.formDoc,
       formContext.userContact,
       {
-        doc: typeof formContext.data !== 'string' && formContext.data?.contact,
+        doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
         contactSummary: formContext.contactSummary?.context,
         evaluateExpression: formContext.evaluateExpression(),
       },
     );
   }
 
-  private async renderForm(formContext: FormContext) {
-    const { formDoc, data } = formContext;
+  private async renderForm(formContext: EnketoFormContext) {
+    const { formDoc, instanceData } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());
@@ -163,7 +163,7 @@ export class FormService {
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
-      formContext.contactSummary = await this.getContactSummary(doc, data);
+      formContext.contactSummary = await this.getContactSummary(doc, instanceData);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
@@ -180,11 +180,11 @@ export class FormService {
     }
   }
 
-  render(formObj: FormContext) {
+  render(formObj: EnketoFormContext) {
     return this.ngZone.runOutsideAngular(() => this._render(formObj));
   }
 
-  private async _render(formObj: FormContext) {
+  private async _render(formObj: EnketoFormContext) {
     await this.inited;
     formObj.userContact = await this.getUserContact(formObj.requiresContact());
     return this.renderForm(formObj);
