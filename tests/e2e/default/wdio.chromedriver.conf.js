@@ -1,5 +1,5 @@
 const wdioBaseConfig = require('../wdio.conf');
-const { suites } = require('./suites');
+//const { suites } = require('./suites');
 
 const defaultMinimumBrowserConfig = Object.assign(wdioBaseConfig.config, {
   //suites,
