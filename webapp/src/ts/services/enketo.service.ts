@@ -434,11 +434,15 @@ export class EnketoService {
     });
   }
 
-  private canAccessForm(formDoc, user, instanceData, contactSummary) {
+  private canAccessForm(formContext: EnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
-      formDoc,
-      user,
-      { doc: instanceData?.contact, contactSummary: contactSummary?.context },
+      formContext.formDoc,
+      formContext.userContact,
+      {
+        doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
+        contactSummary: formContext.contactSummary?.context,
+        evaluateExpression: formContext.evaluateExpression(),
+      },
     );
   }
 
@@ -451,36 +455,27 @@ export class EnketoService {
   }
 
   private async renderForm(formContext: EnketoFormContext) {
-    const {
-      formDoc,
-      instanceData,
-      selector,
-      titleKey,
-      isFormInModal,
-      userContact,
-    } = formContext;
-
     try {
       this.unload(this.currentForm);
-      const doc = await this.transformXml(formDoc);
-      const contactSummary = await this.getContactSummary(doc, instanceData);
+      const doc = await this.transformXml(formContext.formDoc);
+      formContext.contactSummary = await this.getContactSummary(doc, formContext.instanceData);
 
-      if (!await this.canAccessForm(formDoc, userContact, instanceData, contactSummary)) {
+      if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
 
       this.replaceJavarosaMediaWithLoaders(doc.html);
       const xmlFormContext: XmlFormContext = {
         doc,
-        wrapper: $(selector),
-        instanceData,
-        titleKey,
-        isFormInModal,
-        contactSummary,
+        wrapper: $(formContext.selector),
+        instanceData: formContext.instanceData,
+        titleKey: formContext.titleKey,
+        isFormInModal: formContext.isFormInModal,
+        contactSummary: formContext.contactSummary,
       };
       const form = await this.renderFromXmls(xmlFormContext);
       const formContainer = xmlFormContext.wrapper.find('.container').first();
-      this.replaceMediaLoaders(formContainer, formDoc);
+      this.replaceMediaLoaders(formContainer, formContext.formDoc);
       this.registerEnketoListeners(xmlFormContext.wrapper, form, formContext);
       window.CHTCore.debugFormModel = () => form.model.getStr();
       return form;
@@ -488,35 +483,25 @@ export class EnketoService {
       if (error.translationKey) {
         throw error;
       }
-      const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
+      const errorMessage = `Failed during the form "${formContext.formDoc?.internalId}" rendering : `;
       console.error(errorMessage, error.message);
       this.feedbackService.submit(errorMessage + error.message, false);
       throw new Error(errorMessage + error.message);
     }
   }
 
-  render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal = false) {
-    return this.ngZone.runOutsideAngular(() => {
-      return this._render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal);
-    });
+  render(formContext:EnketoFormContext) {
+    return this.ngZone.runOutsideAngular(() => this._render(formContext));
   }
 
-  private _render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal) {
+  private _render(formContext) {
     return Promise
       .all([
         this.inited,
         this.getUserContact(),
       ])
       .then(([ , userContact]) => {
-        const formContext: EnketoFormContext = {
-          selector,
-          formDoc: form,
-          instanceData,
-          editedListener,
-          valuechangeListener,
-          isFormInModal,
-          userContact,
-        };
+        formContext.userContact = userContact;
         return this.renderForm(formContext);
       });
   }
@@ -901,16 +886,38 @@ interface XmlFormContext {
   instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
-  contactSummary: Record<string, any>;
+  contactSummary?: Record<string, any>;
 }
 
-export interface EnketoFormContext {
+export class EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
-  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  type: 'contact'|'report'|'task'|'training-card';
+  editing: boolean;
+  instanceData: null|string|Record<string, any>;
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;
   isFormInModal?: boolean;
   userContact?: Record<string, any>;
+  contactSummary? :Record<string, any>;
+
+  constructor(selector?, type?, formDoc?, data?) {
+    this.selector = selector;
+    this.type = type;
+    this.formDoc = formDoc;
+    this.instanceData = data;
+  }
+
+  evaluateExpression() {
+    if (this.type === 'report' && this.editing) {
+      return false;
+    }
+    return true;
+  }
+
+  requiresContact() {
+    // Users can access contact forms even when they don't have a contact associated.
+    return this.type !== 'contact';
+  }
 }

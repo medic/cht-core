@@ -12,6 +12,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 
 @Component({
   selector: 'training-cards-modal',
@@ -93,11 +94,15 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     }
   }
 
-  private async renderForm(form) {
+  private async renderForm(formDoc) {
     try {
-      const selector = `#${this.formWrapperId}`;
-      this.form = await this.enketoService.render(selector, form, null, null, this.resetFormError.bind(this), true);
-      this.formNoTitle = !form?.title;
+      const formObj = new EnketoFormContext(`#${this.formWrapperId}`, 'training-card', formDoc);
+      formObj.isFormInModal = true;
+      formObj.valuechangeListener = this.resetFormError.bind(this);
+
+      this.form = await this.enketoService.render(formObj);
+      this.formNoTitle = !formDoc?.title;
+
       this.loadingContent = false;
       this.recordTelemetryPostRender();
     } catch(error) {

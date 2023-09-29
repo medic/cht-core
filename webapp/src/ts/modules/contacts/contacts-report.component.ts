@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -129,20 +129,13 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         this.globalActions.setTitle(this.translateFromService.get(form.title));
         this.setCancelCallback();
 
-        const instanceData = {
-          source: 'contact',
-          contact,
-        };
-        const markFormEdited = this.markFormEdited.bind(this);
-        const resetFormError = this.resetFormError.bind(this);
+        const instanceData = { source: 'contact', contact, };
 
-        return this.enketoService.render(
-          '#contact-report',
-          form,
-          instanceData,
-          markFormEdited,
-          resetFormError
-        );
+        const formContext = new EnketoFormContext('#contact-report', 'report', form, instanceData);
+        formContext.editedListener = this.markFormEdited.bind(this);
+        formContext.valuechangeListener = this.resetFormError.bind(this);
+
+        return this.enketoService.render(formContext);
       })
       .then((formInstance) => {
         this.form = formInstance;
