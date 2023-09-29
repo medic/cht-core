@@ -197,6 +197,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     const formContext = new EnketoFormContext('#report-form', 'report', form, reportContent);
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
+    formContext.editing = !!reportContent;
 
     return this.enketoService
       .render(formContext)
