@@ -216,12 +216,12 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   private renderForm(action, formDoc) {
     this.globalActions.setEnketoEditedStatus(false);
 
-    const formObj = new EnketoFormContext('#task-report', 'task', formDoc, action.content);
-    formObj.editedListener = this.markFormEdited.bind(this);
-    formObj.valuechangeListener = this.resetFormError.bind(this);
+    const formContext = new EnketoFormContext('#task-report', 'task', formDoc, action.content);
+    formContext.editedListener = this.markFormEdited.bind(this);
+    formContext.valuechangeListener = this.resetFormError.bind(this);
 
     return this.formService
-      .render(formObj)
+      .render(formContext)
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;

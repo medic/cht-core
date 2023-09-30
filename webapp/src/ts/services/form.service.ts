@@ -180,14 +180,14 @@ export class FormService {
     }
   }
 
-  render(formObj: EnketoFormContext) {
-    return this.ngZone.runOutsideAngular(() => this._render(formObj));
+  render(formContext: EnketoFormContext) {
+    return this.ngZone.runOutsideAngular(() => this._render(formContext));
   }
 
-  private async _render(formObj: EnketoFormContext) {
+  private async _render(formContext: EnketoFormContext) {
     await this.inited;
-    formObj.userContact = await this.getUserContact(formObj.requiresContact());
-    return this.renderForm(formObj);
+    formContext.userContact = await this.getUserContact(formContext.requiresContact());
+    return this.renderForm(formContext);
   }
 
   private saveDocs(docs) {

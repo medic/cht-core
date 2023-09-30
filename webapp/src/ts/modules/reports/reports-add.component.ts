@@ -195,13 +195,13 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async renderForm(formDoc, reportContent, model) {
-    const formObj = new EnketoFormContext('#report-form', 'report', formDoc, reportContent);
-    formObj.editing = !!reportContent;
-    formObj.editedListener = this.markFormEdited.bind(this);
-    formObj.valuechangeListener = this.resetFormError.bind(this);
+    const formContext = new EnketoFormContext('#report-form', 'report', formDoc, reportContent);
+    formContext.editing = !!reportContent;
+    formContext.editedListener = this.markFormEdited.bind(this);
+    formContext.valuechangeListener = this.resetFormError.bind(this);
 
     try {
-      const form = await this.formService.render(formObj);
+      const form = await this.formService.render(formContext);
       this.form = form;
       this.globalActions.setLoadingContent(false);
       if (!model.doc || !model.doc._id) {

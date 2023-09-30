@@ -94,11 +94,11 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   private async renderForm(formDoc) {
     try {
-      const formObj = new EnketoFormContext(`#${this.formWrapperId}`, 'training-card', formDoc);
-      formObj.isFormInModal = true;
-      formObj.valuechangeListener = this.resetFormError.bind(this);
+      const formContext = new EnketoFormContext(`#${this.formWrapperId}`, 'training-card', formDoc);
+      formContext.isFormInModal = true;
+      formContext.valuechangeListener = this.resetFormError.bind(this);
 
-      this.form = await this.formService.render(formObj);
+      this.form = await this.formService.render(formContext);
       this.formNoTitle = !formDoc?.title;
       this.loadingContent = false;
       this.recordTelemetryPostRender();

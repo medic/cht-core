@@ -130,11 +130,11 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
         this.setCancelCallback();
 
-        const formObj = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
-        formObj.editedListener = this.markFormEdited.bind(this);
-        formObj.valuechangeListener = this.resetFormError.bind(this);
+        const formContext = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
+        formContext.editedListener = this.markFormEdited.bind(this);
+        formContext.valuechangeListener = this.resetFormError.bind(this);
 
-        return this.formService.render(formObj);
+        return this.formService.render(formContext);
       })
       .then((formInstance) => {
         this.form = formInstance;
