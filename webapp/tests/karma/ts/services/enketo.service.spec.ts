@@ -268,7 +268,7 @@ describe('Enketo service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, evaluateExpression: true },
+          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
@@ -652,7 +652,7 @@ describe('Enketo service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: undefined, contactSummary: undefined, evaluateExpression: true },
+          { doc: undefined, contactSummary: undefined, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.notCalled).to.be.true;
         expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });

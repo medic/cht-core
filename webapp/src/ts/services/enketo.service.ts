@@ -441,7 +441,7 @@ export class EnketoService {
       {
         doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
         contactSummary: formContext.contactSummary?.context,
-        evaluateExpression: formContext.evaluateExpression(),
+        shouldEvaluateExpression: formContext.shouldEvaluateExpression(),
       },
     );
   }
@@ -909,7 +909,7 @@ export class EnketoFormContext {
     this.instanceData = data;
   }
 
-  evaluateExpression() {
+  shouldEvaluateExpression() {
     if (this.type === 'report' && this.editing) {
       return false;
     }
