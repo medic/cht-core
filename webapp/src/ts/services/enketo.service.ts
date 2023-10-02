@@ -652,7 +652,7 @@ export class EnketoFormContext {
     this.instanceData = instanceData;
   }
 
-  evaluateExpression() {
+  shouldEvaluateExpression() {
     if (this.type === 'report' && this.editing) {
       return false;
     }

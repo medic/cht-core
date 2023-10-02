@@ -244,7 +244,7 @@ export class XmlFormsService {
       return false;
     }
 
-    if (options?.evaluateExpression === false) {
+    if (options?.shouldEvaluateExpression === false) {
       return true;
     }
 

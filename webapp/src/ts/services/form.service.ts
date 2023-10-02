@@ -149,7 +149,7 @@ export class FormService {
       {
         doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
         contactSummary: formContext.contactSummary?.context,
-        evaluateExpression: formContext.evaluateExpression(),
+        shouldEvaluateExpression: formContext.shouldEvaluateExpression(),
       },
     );
   }

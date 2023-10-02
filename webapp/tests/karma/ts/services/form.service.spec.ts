@@ -31,7 +31,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 
-describe('Enketo service', () => {
+describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
     return {
@@ -269,7 +269,7 @@ describe('Enketo service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, evaluateExpression: true },
+          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
@@ -596,7 +596,7 @@ describe('Enketo service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: undefined, contactSummary: undefined, evaluateExpression: true },
+          { doc: undefined, contactSummary: undefined, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.notCalled).to.be.true;
         expect(consoleErrorMock.notCalled).to.be.true;
