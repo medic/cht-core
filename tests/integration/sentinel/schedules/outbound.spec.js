@@ -2,10 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 
-const sentinelDate = utils.getSentinelDate();
-const minute = sentinelDate.get('minute') - 1;
-const hour = sentinelDate.get('hour');
-const outboundConfig = (port) => ({
+const outboundConfig = (port, minute, hour) => ({
   working: {
     destination: {
       base_url: utils.hostURL(port),
@@ -66,6 +63,9 @@ destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body
 destinationApp.post('/test-broken', (req, res) => inboxes.broken.push(req.body) && res.status(500).end());
 let server;
 let port;
+let sentinelDate;
+let minute;
+let hour;
 
 const waitForPushes = (expectedTasks = 1) => {
   return getTasks().then(result => {
@@ -91,6 +91,9 @@ describe('Outbound', () => {
     // the known port is necessary for the outbound config
     server = destinationApp.listen();
     port = server.address().port;
+    sentinelDate = utils.getSentinelDate();
+    minute = sentinelDate.get('minute') - 1;
+    hour = sentinelDate.get('hour');
     server.close();
   });
 
@@ -102,7 +105,7 @@ describe('Outbound', () => {
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
     const settings = {
-      outbound: outboundConfig(port),
+      outbound: outboundConfig(port, minute, hour),
       transitions: {
         mark_for_outbound: true,
       }
