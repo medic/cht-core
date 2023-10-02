@@ -1,4 +1,5 @@
-
+/* eslint-disable max-len */
+/* eslint-disable-next-line no-undef */
 formData = {
   formHtml: `<form autocomplete="off" novalidate="novalidate" class="or clearfix pages" dir="ltr" data-form-id="pregnancy_danger_sign_follow_up">
 <section class="form-logo"></section><h3 dir="auto" id="form-title">Pregnancy danger sign follow-up</h3>

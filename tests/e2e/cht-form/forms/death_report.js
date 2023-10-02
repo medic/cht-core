@@ -1,4 +1,5 @@
-
+/* eslint-disable max-len */
+/* eslint-disable-next-line no-undef */
 formData = {
   formHtml: `<form autocomplete="off" novalidate="novalidate" class="or clearfix pages" dir="ltr" data-form-id="death_report">
 <section class="form-logo"></section><h3 dir="auto" id="form-title">Death report</h3>
@@ -402,4 +403,4 @@ concat(../../patient_age_in_years, ' years old')))"/>
   </h:body>
 </h:html>
 `,   
-}
+};
