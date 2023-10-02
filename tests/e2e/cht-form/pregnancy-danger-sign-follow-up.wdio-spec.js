@@ -1,7 +1,7 @@
 const mockConfig = require('./mock-config');
 const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyDangerSignForm = require('@page-objects/default/enketo/pregnancy-danger-sign.wdio.page');
+const pregnancyDangerSignForm = require('@page-objects/default/enketo/pregnancy-danger-sign-follow-up.wdio.page');
 
 describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
