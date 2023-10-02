@@ -245,15 +245,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     const instanceData = this.getFormInstanceData();
     const markFormEdited = this.markFormEdited.bind(this);
     const resetFormError = this.resetFormError.bind(this);
-    const formContext: EnketoFormContext = {
-      selector: '#contact-form',
-      formDoc,
-      instanceData,
-      editedListener: markFormEdited,
-      valuechangeListener: resetFormError,
-      titleKey,
-    };
-
+    const formContext = new EnketoFormContext('#contact-form', 'contact', formDoc, instanceData);
+    formContext.editedListener = markFormEdited;
+    formContext.valuechangeListener = resetFormError;
+    formContext.titleKey = titleKey;
     this.globalActions.setEnketoEditedStatus(false);
 
     return this.enketoService.renderContactForm(formContext);

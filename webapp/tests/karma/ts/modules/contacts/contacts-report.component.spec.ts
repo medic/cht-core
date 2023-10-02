@@ -160,17 +160,17 @@ describe('contacts report component', () => {
       flush();
 
       expect(enketoService.render.callCount).to.equal(1);
-      expect(enketoService.render.args[0][0]).to.equal('#contact-report');
-      expect(enketoService.render.args[0][1]).to.deep.equal({ title: 'formTitle' });
-      expect(enketoService.render.args[0][2]).to.deep.equal(
-        {
+      expect(enketoService.render.args[0][0]).to.deep.include({
+        selector: '#contact-report',
+        formDoc: { title: 'formTitle' },
+        instanceData: {
           source: 'contact',
           contact: {
             _id: 'test_id',
             contact_type: 'test_type'
           }
         }
-      );
+      });
     }));
 
     it('should unsubscribe and unload form on destroy', async () => {

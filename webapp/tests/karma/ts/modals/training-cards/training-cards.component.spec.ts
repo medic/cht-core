@@ -137,8 +137,7 @@ describe('TrainingCardsComponent', () => {
     expect(xmlFormsService.get.calledOnce).to.be.true;
     expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);
     expect(enketoService.render.calledOnce).to.be.true;
-    expect(enketoService.render.args[0][1]).to.deep.equal(xmlForm);
-    expect(enketoService.render.args[0][2]).to.equal(null);
+    expect(enketoService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
     expect(component.form).to.equal(renderedForm);
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -298,15 +297,14 @@ describe('TrainingCardsComponent', () => {
       expect(xmlFormsService.get.calledOnce).to.be.true;
       expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);
       expect(enketoService.render.calledOnce).to.be.true;
-      expect(enketoService.render.args[0][1]).to.deep.equal(xmlForm);
-      expect(enketoService.render.args[0][2]).to.equal(null);
+      expect(enketoService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
       expect(component.form).to.equal(renderedForm);
       expect(consoleErrorMock.notCalled).to.be.true;
       expect(feedbackService.submit.notCalled).to.be.true;
       expect(telemetryService.record.calledOnce).to.be.true;
       expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
 
-      const resetFormError = enketoService.render.args[0][4];
+      const resetFormError = enketoService.render.args[0][0].valuechangeListener;
       resetFormError();
       expect(globalActions.setEnketoError.notCalled).to.be.true; // No error so no call
       component.enketoError = 'some error';

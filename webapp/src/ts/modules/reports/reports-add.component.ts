@@ -13,7 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
-import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -194,14 +194,13 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private renderForm(form, reportContent, model) {
+    const formContext = new EnketoFormContext('#report-form', 'report', form, reportContent);
+    formContext.editedListener = this.markFormEdited.bind(this);
+    formContext.valuechangeListener = this.resetFormError.bind(this);
+    formContext.editing = !!reportContent;
+
     return this.enketoService
-      .render(
-        '#report-form',
-        form,
-        reportContent,
-        this.markFormEdited.bind(this),
-        this.resetFormError.bind(this),
-      )
+      .render(formContext)
       .then((form) => {
         this.form = form;
         this.globalActions.setLoadingContent(false);

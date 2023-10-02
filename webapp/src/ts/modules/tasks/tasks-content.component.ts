@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 import { combineLatest, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -214,11 +214,14 @@ export class TasksContentComponent implements OnInit, OnDestroy {
 
   private renderForm(action, formDoc) {
     this.globalActions.setEnketoEditedStatus(false);
-    const markFormEdited = this.markFormEdited.bind(this);
-    const resetFormError = this.resetFormError.bind(this);
+
+    const formContext = new EnketoFormContext('#task-report', 'task', formDoc, action.content);
+    formContext.editedListener = this.markFormEdited.bind(this);
+    formContext.valuechangeListener = this.resetFormError.bind(this);
+
 
     return this.enketoService
-      .render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
+      .render(formContext)
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;
