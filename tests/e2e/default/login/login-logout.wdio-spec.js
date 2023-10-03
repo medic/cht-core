@@ -69,6 +69,11 @@ describe('Login page funcionality tests', () => {
     const wrongUsername = 'fakeuser';
     const wrongPassword = 'fakepass';
     const incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
+    let expirationDateFieldName;
+
+    before(async () => {
+      expirationDateFieldName = driver.capabilities['browserVersion'] === '90.0.4430.93' ? 'expiry' : 'expires';
+    });
 
     it('should log in using username and password fields', async () => {
       await loginPage.login(auth);
@@ -80,23 +85,21 @@ describe('Login page funcionality tests', () => {
       await loginPage.login(auth);
       await (await commonPage.analyticsTab()).waitForDisplayed();
 
-      const cookies = await browser.getCookies();
+      const cookies = await browser.getAllCookies();
       expect(cookies.length).to.equal(3);
 
       const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
       expect(authSessionCookie).to.include({
         httpOnly: true,
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         secure: false,
         path: '/'
       });
-      expect(authSessionCookie.expires).to.be.greaterThan(0);
+      expect(authSessionCookie[expirationDateFieldName]).to.be.greaterThan(0);
 
       const userCtxCookie = cookies.find(cookie => cookie.name === 'userCtx');
       expect(userCtxCookie).to.include({
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         path: '/',
@@ -108,7 +111,6 @@ describe('Login page funcionality tests', () => {
 
       const localeCookie = cookies.find(cookie => cookie.name === 'locale');
       expect(localeCookie).to.include({
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         path: '/',
