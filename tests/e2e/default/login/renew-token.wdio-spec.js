@@ -10,6 +10,7 @@ describe('should renew token', async () => {
   beforeEach(async () => {
     // eslint-disable-next-line no-undef
     expirationDateFieldName = driver.capabilities.browserVersion === '90.0.4430.93' ? 'expiry' : 'expires';
+    console.log('Field name: ' + expirationDateFieldName);
     await loginPage.cookieLogin();
   });
 

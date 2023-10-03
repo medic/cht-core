@@ -74,6 +74,7 @@ describe('Login page funcionality tests', () => {
     before(() => {
       // eslint-disable-next-line no-undef
       expirationDateFieldName = driver.capabilities.browserVersion === '90.0.4430.93' ? 'expiry' : 'expires';
+      console.log('Field name: ' + expirationDateFieldName);
     });
 
     it('should log in using username and password fields', async () => {
