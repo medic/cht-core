@@ -1,9 +1,9 @@
 const wdioBaseConfig = require('../wdio.conf');
-//const { suites } = require('./suites');
+const { suites } = require('./suites');
 
 const defaultMinimumBrowserConfig = Object.assign(wdioBaseConfig.config, {
-  //suites,
-  specs: ['tests/e2e/default/login/login-logout.wdio-spec.js'],
+  suites,
+  specs: ['**/*.wdio-spec.js'],
   capabilities: [{
     maxInstances: 1,
     browserName: 'chrome',

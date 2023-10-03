@@ -71,8 +71,9 @@ describe('Login page funcionality tests', () => {
     const incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
     let expirationDateFieldName;
 
-    before(async () => {
-      expirationDateFieldName = driver.capabilities['browserVersion'] === '90.0.4430.93' ? 'expiry' : 'expires';
+    before(() => {
+      // eslint-disable-next-line no-undef
+      expirationDateFieldName = driver.capabilities.browserVersion === '90.0.4430.93' ? 'expiry' : 'expires';
     });
 
     it('should log in using username and password fields', async () => {
