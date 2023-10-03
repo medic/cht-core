@@ -262,7 +262,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         this.telemetryData.form = formId;
 
         this.telemetryService.record(
-          `enketo:contacts:${this.telemetryData.form}:add:render`,
+          `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:render`,
           this.telemetryData.postRender - this.telemetryData.preRender
         );
 
@@ -286,7 +286,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.telemetryData.preSave = Date.now();
     this.telemetryService.record(
-      `enketo:contacts:${this.telemetryData.form}:add:save`,
+      `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
       this.telemetryData.preSave - this.telemetryData.postRender
     );
 
@@ -315,7 +315,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
             this.telemetryData.postSave = Date.now();
             this.telemetryService.record(
-              `enketo:contacts:${this.telemetryData.form}:add:save`,
+              `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:save`,
               this.telemetryData.postSave - this.telemetryData.preSave
             );
 
