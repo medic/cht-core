@@ -75,7 +75,7 @@ export class AppComponent {
 
   @Input() set user(user: Record<string, any>) {
     if (!user) {
-      throw new Error('User data must be provided.')
+      throw new Error('User data must be provided.');
     }
     this._user = { ...user, language: user.language || 'en' };
     this.renderForm();
