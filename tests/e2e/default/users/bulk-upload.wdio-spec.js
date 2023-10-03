@@ -1,13 +1,15 @@
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Bulk User Creation ->', () => {
   before(async () => {
+    await commonPage.goToBase();
     await loginPage.cookieLogin();
   });
 
   beforeEach(async () => {
-    await browser.execute(function() {
+    await browser.execute(function () {
       this.localStorage.setItem('isTestEnv', true);
     });
     await usersAdminPage.goToAdminUser();
@@ -15,7 +17,7 @@ describe('Bulk User Creation ->', () => {
   });
 
   afterEach(() => {
-    browser.execute(function() {
+    browser.execute(function () {
       this.localStorage.removeItem('isTestEnv');
     });
   });
