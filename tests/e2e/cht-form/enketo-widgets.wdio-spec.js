@@ -6,7 +6,7 @@ const { getFormTitle } = require('@page-objects/default/enketo/generic-form.wdio
 describe('cht-form web component', () => {
   const mockApp = express();
   mockApp.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-  mockApp.use(express.static(path.join(__dirname, '../../../webapp/dist/cht-form')));
+  mockApp.use(express.static(path.join(__dirname, '../../../build/cht-form')));
 
 
   let server;

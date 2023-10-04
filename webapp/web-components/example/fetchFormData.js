@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const COUCH_URL = process.env.COUCH_URL;
-const COUCH_URL_PATTERN = /^(https?:\/\/)(.+):(.+)@(.+)\/medic$/g;
+const COUCH_URL_PATTERN = /^(https?:\/\/)(.+):(.+)@(.+)\/medic$/g; // NOSONAR
 const [
   ,
   PROTOCOL,
