@@ -111,6 +111,8 @@ get_lan_ip() {
 
   # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
   # getting localhost's IP.  Otherwise use MacOS style command
+  # HOWEVER!! "ip" doesn't exist on windows git BASH, so check for that before going into the first if (and
+  # skip it on the second elif because windows won't have "system_profiler"
   if [ -n "$(required_apps_installed "system_profiler")" ];then
     # todo - some of these calls fail when there's no network connectivity - output stuff it shouldn't:
     #       Device "" does not exist.
@@ -121,7 +123,7 @@ get_lan_ip() {
     fi
     lanInterface=$(ip r | grep $subnet | grep default | head -n1 | cut -d' ' -f 5)
     lanAddress=$(ip a s "$lanInterface" | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
-  else
+  elif [ "$(required_apps_installed "system_profiler")" ];then
     subnet=$(netstat -rn| grep default | awk '{print $2}'|grep -Ev '^[a-f]' |cut -f1,2,3 -d'.')
     ifconfig_line=$(ifconfig|grep inet|grep "$subnet" | cut -d' ' -f 2)
     lanAddress=$ifconfig_line
@@ -348,9 +350,9 @@ while [[ "$isNginxRunning" != "true" ]]; do
   isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
-docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
-docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
-docker exec -it $nginxContainerId bash -c "nginx -s reload"
+docker exec $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
+docker exec $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
+docker exec $nginxContainerId bash -c "nginx -s reload"
 
 echo ""
 echo ""
