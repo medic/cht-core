@@ -211,12 +211,11 @@ describe('Reports Add Component', () => {
         expect(setEnketoEditedStatusStub.calledOnce).to.be.true;
         expect(setEnketoEditedStatusStub.args[0]).to.deep.equal([false]);
         expect(formService.render.calledOnce).to.be.true;
-        expect(formService.render.args[0][1]).to.deep.equal(xmlForm);
-        expect(formService.render.args[0][2]).to.equal(undefined);
+        expect(formService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
         expect(component.form).to.equal(renderedForm);
 
-        const markFormEdited = formService.render.args[0][3];
-        const resetFormError = formService.render.args[0][4];
+        const markFormEdited = formService.render.args[0][0].editedListener;
+        const resetFormError = formService.render.args[0][0].valuechangeListener;
 
         markFormEdited();
         expect(setEnketoEditedStatusStub.calledTwice).to.be.true;
