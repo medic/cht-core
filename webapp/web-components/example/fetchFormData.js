@@ -29,6 +29,7 @@ const fetchOnDb = async (method, url, data) => {
 
 (async () => {
   const [formName] = process.argv.slice(2);
+  // eslint-disable-next-line no-console
   console.log(`Fetching form data for ${formName}...`);
   const formXml = await fetchOnDb('GET', `${formName}/xml`);
   const formHtml = await fetchOnDb('GET', `${formName}/form.html`);
@@ -46,5 +47,6 @@ formData = {
   const fileName = contactForm ? formNameParts.slice(2).join('_') : formNameParts[1];
   const filePath = path.join(__dirname, `${fileName}.js`);
   fs.writeFileSync(filePath, formDataString);
+  // eslint-disable-next-line no-console
   console.log(`Wrote form data to ${filePath}`);
 })();

@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable-next-line no-undef */
 formData = {
   formHtml: `
 <form autocomplete="off" novalidate="novalidate" class="or clearfix pages" dir="ltr" data-form-id="enketo_widgets">
