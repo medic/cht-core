@@ -100,6 +100,7 @@ describe('Online User', async () => {
 
     before(async () => {
       await utils.createUsers([onlineUser]);
+      await browser.url('/');
       await loginPage.cookieLogin({ ...onlineUser, createUser: false });
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
