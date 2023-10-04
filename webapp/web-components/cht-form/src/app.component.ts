@@ -99,10 +99,7 @@ export class AppComponent {
         xml: this._formXml,
         doc: {}
       };
-      const contact = {
-        phone: '1234567890',
-      };
-
+      const contact = null;  // Only used for setting `from` and `contact` fields on docs
       const submittedDocs = await this.enketoService.completeNewReport(this._formId, currentForm, formDoc, contact);
       this.tearDownForm();
       this.onSubmit.emit(submittedDocs);
