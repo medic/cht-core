@@ -9,9 +9,9 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 
-describe('Enketo Form service', () => {
+describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
     return {
@@ -291,18 +291,14 @@ describe('Enketo Form service', () => {
       };
       enketoInit.returns([]);
       EnketoPrepopulationData.resolves(data);
-      const formContext = {
-        selector: $('<div></div>'),
-        formDoc: mockEnketoDoc('myform'),
-        instanceData
-      };
+      const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      formContext.contactSummary = { context: { pregnant: true } };
       const doc = {
         html: $('<div>my form</div>'),
         model: VISIT_MODEL_WITH_CONTACT_SUMMARY,
       };
       const userSettings = { language: 'en' };
-      const contactSummary = { context: { pregnant: true } };
-      return service.renderForm(formContext, doc, userSettings, contactSummary).then(() => {
+      return service.renderForm(formContext, doc, userSettings).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
