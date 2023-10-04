@@ -4,7 +4,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Bulk User Creation ->', () => {
   before(async () => {
-    await commonPage.goToBase();
+    await browser.url('/');
     await loginPage.cookieLogin();
   });
 
