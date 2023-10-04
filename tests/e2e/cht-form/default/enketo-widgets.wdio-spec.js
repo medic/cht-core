@@ -1,12 +1,12 @@
 const { getFormTitle } = require('@page-objects/default/enketo/generic-form.wdio.page');
-const mockConfig = require('./mock-config');
+const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.wdio.page');
 
 describe('cht-form web component - Enketo Widgets', () => {
 
   it('should render form', async () => {
-    const url = await mockConfig.startMockApp('enketo_widgets');
+    const url = await mockConfig.startMockApp('default', 'enketo_widgets');
     await browser.url(url);
 
     const title  = await getFormTitle();

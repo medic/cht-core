@@ -1,4 +1,4 @@
-const mockConfig = require('./mock-config');
+const mockConfig = require('../mock-config');
 const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const moment = require('moment/moment');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
@@ -7,7 +7,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 describe('cht-form web component - Death Report Form', () => {
 
   it('should submit a death report', async () => {
-    const url = await mockConfig.startMockApp('death_report');
+    const url = await mockConfig.startMockApp('default', 'death_report');
     await browser.url(url);
 
     const date = moment().format('YYYY-MM-DD');

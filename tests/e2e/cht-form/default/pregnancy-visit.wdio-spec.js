@@ -1,4 +1,4 @@
-const mockConfig = require('./mock-config');
+const mockConfig = require('../mock-config');
 const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
@@ -6,7 +6,7 @@ const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit
 describe('cht-form web component - Pregnancy Visit Form', () => {
 
   it('should submit a pregnancy home visit', async () => {
-    const url = await mockConfig.startMockApp('pregnancy_home_visit');
+    const url = await mockConfig.startMockApp('default', 'pregnancy_home_visit');
     await browser.url(url);
 
     let countDangerSigns = 0;

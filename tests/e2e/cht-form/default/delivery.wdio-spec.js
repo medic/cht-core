@@ -1,4 +1,4 @@
-const mockConfig = require('./mock-config');
+const mockConfig = require('../mock-config');
 const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const moment = require('moment/moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
@@ -7,7 +7,7 @@ const deliveryForm = require('@page-objects/default/enketo/delivery.wdio.page');
 describe('cht-form web component - Delivery Form', () => {
 
   it('should submit a delivery', async () => {
-    const url = await mockConfig.startMockApp('delivery');
+    const url = await mockConfig.startMockApp('default', 'delivery');
     await browser.url(url);
 
     const BABY_NAME = 'Benja';
