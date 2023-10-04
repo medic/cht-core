@@ -635,7 +635,7 @@ interface XmlFormContext {
 export class EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
-  type: 'contact'|'report'|'task'|'training-card';
+  type: string; // 'contact'|'report'|'task'|'training-card'
   editing: boolean;
   instanceData: null|string|Record<string, any>;
   editedListener: () => void;
@@ -645,7 +645,7 @@ export class EnketoFormContext {
   userContact?: Record<string, any>;
   contactSummary? :Record<string, any>;
 
-  constructor(selector?, type?, formDoc?, instanceData?) {
+  constructor(selector:string, type:string, formDoc:Record<string, any>, instanceData?) {
     this.selector = selector;
     this.type = type;
     this.formDoc = formDoc;

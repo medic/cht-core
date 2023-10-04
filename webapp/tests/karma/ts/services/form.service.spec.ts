@@ -358,7 +358,6 @@ describe('Form service', () => {
       const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
-        console.log(JSON.stringify(EnketoForm.args[0], null, 2));
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');

@@ -11,7 +11,7 @@ import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 
-describe('Enketo Form service', () => {
+describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
     return {
