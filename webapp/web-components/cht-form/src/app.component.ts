@@ -119,17 +119,15 @@ export class AppComponent {
 
     const editedListener = () => this.editing = true;
     const valuechangeListener = () => this.status.error = null;
-
-    const formContext: EnketoFormContext = {
-      selector: `#${this._formId}`,
-      formDoc: { _id: this._formId },
-      instanceData: this._content,
-      editedListener,
-      valuechangeListener,
-    };
+    const selector = `#${this._formId}`;
+    const formDoc = { _id: this._formId };
+    const formContext = new EnketoFormContext(selector, 'report', formDoc, this._content);
+    formContext.editedListener = editedListener;
+    formContext.valuechangeListener = valuechangeListener;
+    formContext.contactSummary = this._contactSummary;
     const formDetails = this.getFormDetails();
 
-    await this.enketoService.renderForm(formContext, formDetails, this._user, this._contactSummary);
+    await this.enketoService.renderForm(formContext, formDetails, this._user);
   }
 
   private unloadForm() {
