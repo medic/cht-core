@@ -1,20 +1,20 @@
 require('../../aliases');
 const path = require('path');
-const allure = require('allure-commandline');
+// const allure = require('allure-commandline');
 const fs = require('fs');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 chai.use(require('chai-as-promised'));
 // const constants = require('@constants');
-const utils = require('@utils');
-const fileDownloadUtils = require('@utils/file-download');
-const chtDbUtils = require('@utils/cht-db');
-const browserLogsUtils = require('@utils/browser-logs');
+// const utils = require('@utils');
+// const fileDownloadUtils = require('@utils/file-download');
+// const chtDbUtils = require('@utils/cht-db');
+// const browserLogsUtils = require('@utils/browser-logs');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
-const logLevels = ['error', 'warning', 'debug'];
-const existingFeedBackDocIds = [];
+// const logLevels = ['error', 'warning', 'debug'];
+// const existingFeedBackDocIds = [];
 let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
@@ -257,7 +257,7 @@ const baseConfig = {
   /**
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
-  beforeTest: async (test) => {
+  beforeTest: (test) => {
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
     fs.appendFileSync(browserLogPath, title);
@@ -278,7 +278,7 @@ const baseConfig = {
   /**
    * Function to be executed after a test (in Mocha/Jasmine).
    */
-  afterTest: async (test, context, { passed }) => {
+  afterTest: () => {
     // const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     // existingFeedBackDocIds.push(feedBackDocs);
     // if (feedBackDocs) {
@@ -316,7 +316,7 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  after: async () => {
+  after: () => {
     // // Replaces After hook in test file with a common clean up
     // const users = await utils.getCreatedUsers();
     // if (users.length) {
@@ -340,7 +340,7 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {<Object>} results object containing test results
    */
-  onComplete: async () => {
+  onComplete: () => {
     // fileDownloadUtils.deleteDownloadDirectory();
     // await utils.tearDownServices();
     // const reportError = new Error('Could not generate Allure report');

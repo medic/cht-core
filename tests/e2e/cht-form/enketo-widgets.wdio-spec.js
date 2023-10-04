@@ -28,7 +28,7 @@ describe('cht-form web component', () => {
   });
 
   it('should render form', async () => {
-    const url = await startMockApp('enketo_widgets')
+    const url = await startMockApp('enketo_widgets');
     await browser.url(url);
 
     const title  = await getFormTitle();
