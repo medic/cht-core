@@ -17,7 +17,7 @@ waitForBuildAvailable() {
 runInstance () {
   # --profile CA \ # for local runs
   echo $(aws ec2 run-instances \
-    --image-id ami-0c3d8c5445511bd1d \
+    --image-id ami-0a24ca1ef53e3d20f \
     --instance-type c5.2xlarge \
     --block-device-mappings file://block-device-mapping.json \
     --user-data file://$1 \
