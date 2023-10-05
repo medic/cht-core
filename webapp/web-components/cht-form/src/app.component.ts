@@ -99,10 +99,7 @@ export class AppComponent {
         xml: this._formXml,
         doc: {}
       };
-      const contact = {
-        phone: '1234567890',
-      };
-
+      const contact = null;  // Only used for setting `from` and `contact` fields on docs
       const submittedDocs = await this.enketoService.completeNewReport(this._formId, currentForm, formDoc, contact);
       this.tearDownForm();
       this.onSubmit.emit(submittedDocs);
@@ -122,17 +119,15 @@ export class AppComponent {
 
     const editedListener = () => this.editing = true;
     const valuechangeListener = () => this.status.error = null;
-
-    const formContext: EnketoFormContext = {
-      selector: `#${this._formId}`,
-      formDoc: { _id: this._formId },
-      instanceData: this._content,
-      editedListener,
-      valuechangeListener,
-    };
+    const selector = `#${this._formId}`;
+    const formDoc = { _id: this._formId };
+    const formContext = new EnketoFormContext(selector, 'report', formDoc, this._content);
+    formContext.editedListener = editedListener;
+    formContext.valuechangeListener = valuechangeListener;
+    formContext.contactSummary = this._contactSummary;
     const formDetails = this.getFormDetails();
 
-    await this.enketoService.renderForm(formContext, formDetails, this._user, this._contactSummary);
+    await this.enketoService.renderForm(formContext, formDetails, this._user);
   }
 
   private unloadForm() {

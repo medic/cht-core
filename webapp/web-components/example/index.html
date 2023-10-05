@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>Example Website with Embedded cht-form Web Component</title>
-  <script src="../../dist/cht-form/runtime.js"></script>
-  <script src="../../dist/cht-form/polyfills.js"></script>
-  <script src="../../dist/cht-form/main.js"></script>
-  <link rel="stylesheet" href="../../dist/cht-form/styles.css">
+  <script src="../../../build/cht-form/runtime.js"></script>
+  <script src="../../../build/cht-form/polyfills.js"></script>
+  <script src="../../../build/cht-form/main.js"></script>
+  <link rel="stylesheet" href="../../../build/cht-form/styles.css">
 
   <script type="text/javascript" src="enketo_widgets.js"></script>
 </head>
@@ -31,7 +31,10 @@
     contact_id: 'test_user'
   };
   myForm.contactSummary = { pregnancy_uuid : 'myPregUUID'};
-  myForm.content = { contact: { name: "My Test Patient" } };
+  myForm.content = {
+    contact: { name: "My Test Patient" },
+    text_widgets: { text: "hello world" },
+  };
 
   myForm.formHtml = formData.formHtml;
   myForm.formModel = formData.formModel;

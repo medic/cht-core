@@ -28,8 +28,8 @@ Once all issues have been merged into `master` then the release process can star
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`).
 - [ ] Once the CI completes successfully notify the team by writing a message in the #product-team Slack channel:
 ```
-@product_team, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
-Please let me know if there’s any final update we need to make. 
+@product_team, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag.
+Please let me know if there’s any final update we need to make.
 If all is good, then in 24h, I will start the release. Thanks!
 ```
 - [ ] Add release notes to the [Core Framework Releases](https://docs.communityhealthtoolkit.org/core/releases/) page:
@@ -49,4 +49,5 @@ If all is good, then in 24h, I will start the release. Thanks!
 
 This release fixes {{number of bugs}}. Read the [release notes]({{url}}) for full details.
 ```
+- [ ] Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.
 - [ ] Mark this issue "done" and close the Milestone.
