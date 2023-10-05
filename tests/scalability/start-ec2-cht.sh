@@ -10,6 +10,7 @@ echo Triggering EC2 Run Instance Command and getting Instance ID
 waitForBuildAvailable() {
   until [ "$(curl -s -w '%{http_code}' -o /dev/null "$MARKET_URL_READ/$STAGING_SERVER/medic:medic:$TAG")" -eq 200 ]
   do
+    echo Waiting for CHT build to be available. Sleeping for 30.
     sleep 30
   done
 }
