@@ -168,7 +168,9 @@
                 "src/css"
               ]
             },
-            "scripts": [],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js"
+            ],
 
             "customWebpackConfig": {
               "path": "./custom-webpack.config.js"
