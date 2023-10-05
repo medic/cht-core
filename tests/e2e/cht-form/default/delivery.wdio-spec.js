@@ -10,6 +10,11 @@ describe('cht-form web component - Delivery Form', () => {
     const url = await mockConfig.startMockApp('default', 'delivery');
     await browser.url(url);
 
+    await browser.execute(() => {
+      const myForm = document.getElementById('myform');
+      myForm.contactSummary = { pregnancy_uuid: 'test UUID' };
+    });
+
     const BABY_NAME = 'Benja';
     const BABY_DOB = moment().format('YYYY-MM-DD');
     const BABY_SEX = 'male';
@@ -64,9 +69,11 @@ describe('cht-form web component - Delivery Form', () => {
     await genericForm.submitForm();
 
     const data = await $('#submittedData').getText();
+
     const jsonObjMother = JSON.parse(data)[0].fields;
     const jsonObjBaby = JSON.parse(data)[1];
 
+    expect(jsonObjMother.data.meta.__pregnancy_uuid).to.equal('test UUID');
     expect(jsonObjMother.condition.woman_outcome).to.equal('alive_well');
     expect(jsonObjMother.pnc_danger_sign_check.r_pnc_danger_sign_present).to.equal('no');
     expect(jsonObjMother.delivery_outcome.babies_delivered).to.equal('1');
@@ -83,6 +90,7 @@ describe('cht-form web component - Delivery Form', () => {
     expect(jsonObjBaby.sex).to.equal(BABY_SEX);
     expect(jsonObjBaby.date_of_birth).to.equal(BABY_DOB);
     expect(jsonObjBaby.t_danger_signs_referral_follow_up).to.equal('no');
-
   });
 });
+
+
