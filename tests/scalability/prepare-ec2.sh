@@ -2,24 +2,24 @@
 set -e
 
 shutdown -P +60
-mkdir /cht
+mkdir -p /cht
 chmod 777 /cht;
 
 # Install Docker CE
-apt-get update
+apt-get update --allow-insecure-repositories
 apt-get install -y \
     apt-transport-https \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release \
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo \
   "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io
+apt-get update --allow-insecure-repositories
+apt-get install -y docker-ce docker-ce-cli containerd.io --allow-insecure-repositories
 
 # Install docker-compose
 curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
