@@ -13,7 +13,7 @@ git clone --single-branch --branch $TAG https://github.com/medic/cht-core.git;
 
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
-apt-get update --allow-insecure-repositories
+apt-get update
 
 echo installing JAVA
 apt-get install default-jre -y
