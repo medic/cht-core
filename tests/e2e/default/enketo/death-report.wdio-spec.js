@@ -53,6 +53,14 @@ describe('Submit a death report', () => {
     expect(deathCardInfo.deathPlace).to.equal('Health facility');
   });
 
+  it('should edit the report', async () => {
+    await commonPage.goToReports();
+    const reportId = await reportsPage.getLastSubmittedReportId();
+    await reportsPage.editReport(reportId);
+    await genericForm.nextPage();
+    await reportsPage.submitForm();
+  });
+
   it('Should verify that the report related to the death was created', async () => {
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
