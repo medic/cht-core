@@ -13,6 +13,8 @@ describe('cht-form web component - Delivery Form', () => {
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
       myForm.contactSummary = { pregnancy_uuid: 'test UUID' };
+      // *** ERROR IN THE NEXT LINE JOSH ***
+      //myForm.content = { contact: { _id: '12345', patient_id: '79376', name: 'Pregnant Woman', sex: 'female' } };
     });
 
     const BABY_NAME = 'Benja';
@@ -29,13 +31,16 @@ describe('cht-form web component - Delivery Form', () => {
     await deliveryForm.selectDeliveryPostnatalDangerVaginalBleeding('no');
     await deliveryForm.selectDeliveryPostnatalDangerVaginalDischarge('no');
     await deliveryForm.selectDeliveryPostnatalDangerConvulsion('no');
+
     await genericForm.nextPage();
     await deliveryForm.selectDeliveryOutcomeBabiesDelivered('1');
     await deliveryForm.selectDeliveryOutcomeBabiesAlive('1');
     await deliveryForm.selectDeliveryOutcomeDeliveryPlace('health_facility');
     await deliveryForm.selectDeliveryOutcomeDeliveryMode('vaginal');
     await deliveryForm.setDeliveryOutcomeDateOfDelivery(BABY_DOB);
+
     await genericForm.nextPage();
+
     await deliveryForm.selectDeliveryBabyCondition('alive_well');
     await deliveryForm.setDeliveryBabyName(BABY_NAME);
     await deliveryForm.selectDeliveryBabySex(BABY_SEX);
@@ -69,7 +74,7 @@ describe('cht-form web component - Delivery Form', () => {
     await genericForm.submitForm();
 
     const data = await $('#submittedData').getText();
-
+    console.log(data);
     const jsonObjMother = JSON.parse(data)[0].fields;
     const jsonObjBaby = JSON.parse(data)[1];
 
