@@ -74,7 +74,6 @@ describe('cht-form web component - Delivery Form', () => {
     await genericForm.submitForm();
 
     const data = await $('#submittedData').getText();
-    console.log(data);
     const jsonObjMother = JSON.parse(data)[0].fields;
     const jsonObjBaby = JSON.parse(data)[1];
 

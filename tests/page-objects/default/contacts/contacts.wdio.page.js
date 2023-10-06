@@ -454,4 +454,9 @@ module.exports = {
   getVisitLabel,
   getNumberOfReports,
   getDisplayedContactsNames,
+  personName,
+  dateOfBirthField,
+  phoneField,
+  sexField,
+  roleField,
 };
