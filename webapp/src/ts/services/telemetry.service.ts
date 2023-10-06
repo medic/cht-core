@@ -16,6 +16,7 @@ export class TelemetryService {
   private readonly DATE_FORMAT = 'YYYY-MM-DD';
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
+  private isAggregationRunning = false;
   private windowRef;
 
   constructor(
@@ -210,14 +211,21 @@ export class TelemetryService {
 
   private async submitIfNeeded(today: TodayMoment, telemetryDBs: string[] = []) {
     for (const dbName of telemetryDBs) {
-      if (dbName.includes(today.formatted)) {
-        // Don't submit today's telemetry records
+      if (this.isAggregationRunning || dbName.includes(today.formatted)) {
+        // Skip if aggregation is running and don't submit today's telemetry records
         continue;
       }
 
-      const db = this.windowRef.PouchDB(dbName);
-      await this.aggregate(db, dbName);
-      await db.destroy();
+      try {
+        this.isAggregationRunning = true;
+        const db = this.windowRef.PouchDB(dbName);
+        await this.aggregate(db, dbName);
+        await db.destroy();
+      } catch (error) {
+        console.error('Error when aggregating the telemetry records', error);
+      } finally {
+        this.isAggregationRunning = false;
+      }
     }
   }
 
