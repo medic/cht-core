@@ -17,7 +17,7 @@ describe('Reports Sidebar Filter', () => {
   const districtHospitalUser = userFactory.build({
     username: 'user_filter_district_hospital',
     place: districtHospital._id,
-    roles: [ 'chw' ],
+    roles: ['chw'],
     contact: districtHospitalContact,
   });
 
@@ -26,7 +26,7 @@ describe('Reports Sidebar Filter', () => {
   const healthCenterUser = userFactory.build({
     username: 'user_filter_health_center',
     place: healthCenter._id,
-    roles: [ 'program_officer' ],
+    roles: ['program_officer'],
     contact: healthCenterContact,
   });
 
@@ -40,7 +40,7 @@ describe('Reports Sidebar Filter', () => {
           form: 'P',
           reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
         },
-        { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' }}
+        { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' } }
       ),
     reportFactory
       .report()
@@ -49,7 +49,7 @@ describe('Reports Sidebar Filter', () => {
           form: 'P',
           reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
         },
-        { patient, submitter: districtHospitalContact, fields: { lmp_date: 'Feb 16, 2022' }}
+        { patient, submitter: districtHospitalContact, fields: { lmp_date: 'Feb 16, 2022' } }
       ),
     reportFactory
       .report()
@@ -58,7 +58,7 @@ describe('Reports Sidebar Filter', () => {
           form: 'V',
           reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
         },
-        { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' }}
+        { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' } }
       ),
     reportFactory
       .report()
@@ -67,15 +67,15 @@ describe('Reports Sidebar Filter', () => {
           form: 'V',
           reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
         },
-        { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' }}
+        { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' } }
       ),
   ];
   let savedReports;
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), patient ]);
+    await utils.saveDocs([...places.values(), patient]);
     savedReports = (await utils.saveDocs(reports)).map(result => result.id);
-    await utils.createUsers([ districtHospitalUser, healthCenterUser ]);
+    await utils.createUsers([districtHospitalUser, healthCenterUser]);
   });
 
   afterEach(async () => {
@@ -86,6 +86,7 @@ describe('Reports Sidebar Filter', () => {
   it('should filter by date', async () => {
     const pregnancyDistrictHospital = savedReports[1];
     const visitDistrictHospital = savedReports[3];
+    await browser.url('/');
 
     await loginPage.login(districtHospitalUser);
     await commonPage.waitForPageLoaded();
@@ -93,7 +94,7 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.goToReports();
     await (await reportsPage.firstReport()).waitForDisplayed();
     expect((await reportsPage.allReports()).length).to.equal(savedReports.length);
-    
+
     await reportsPage.openSidebarFilter();
     await reportsPage.openSidebarFilterDateAccordion();
     await reportsPage.setSidebarFilterFromDate();
@@ -108,13 +109,14 @@ describe('Reports Sidebar Filter', () => {
   it('should filter by user associated place when the permission to default filter is enabled', async () => {
     const pregnancyHealthCenter = savedReports[0];
     const visitHealthCenter = savedReports[2];
+    await browser.url('/');
 
     await loginPage.login(healthCenterUser);
     await commonPage.waitForPageLoaded();
 
     const settings = await utils.getSettings();
     const newSettings = {
-      permissions: { ...settings.permissions, can_default_facility_filter: [ 'program_officer' ] },
+      permissions: { ...settings.permissions, can_default_facility_filter: ['program_officer'] },
     };
     await utils.updateSettings(newSettings);
 

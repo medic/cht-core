@@ -291,16 +291,39 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
   await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
+const oldCloseReloadModal = async () => {
+  try {
+    const reloadModalUpdate = $('#update-available [test-id="Update"]');
+    await browser.waitUntil(async () => await (await reloadModalUpdate).waitForExist({ timeout: 5000 }));
+    // Wait for the animation to complete
+    await browser.pause(500);
+    await (await reloadModalUpdate).click();
+    await browser.pause(500);
+    return true;
+  } catch (err) {
+    console.error('Reload modal not showed up');
+    return false;
+  }
+};
+
 const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(false, 0);
+    if (driver.capabilities.browserVersion.split('.').shift() !== '90') {
+      closedModal = await closeReloadModal(false, 0);
+    } else {
+      closedModal = await oldCloseReloadModal();
+    }
   }
 
   await syncAndWaitForSuccess(timeout);
   if (expectReload && !closedModal) {
-    await closeReloadModal();
+    if (driver.capabilities.browserVersion.split('.').shift() !== '90') {
+      await closeReloadModal();
+    } else {
+      await oldCloseReloadModal();
+    }
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess(timeout);

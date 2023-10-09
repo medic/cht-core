@@ -46,8 +46,9 @@ describe('Task list', () => {
   });
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), contact, owl ]);
-    await utils.createUsers([ chw ]);
+    await utils.saveDocs([...places.values(), contact, owl]);
+    await utils.createUsers([chw]);
+    await browser.url('/');
     await loginPage.login(chw);
   });
 

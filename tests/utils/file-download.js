@@ -59,10 +59,12 @@ const waitForDownload = (term) => {
 
 const setupDownloadFolder = () => {
   createDownloadDirectory();
-  browser.cdp('Page', 'setDownloadBehavior', {
+  global.downloadDir = DOWNLOAD_PATH;
+
+  /*browser.cdp('Page', 'setDownloadBehavior', {
     behavior: 'allow',
     downloadPath: DOWNLOAD_PATH,
-  });
+  });*/
 };
 
 module.exports = {

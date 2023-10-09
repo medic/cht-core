@@ -14,17 +14,17 @@ describe('Send message', () => {
   const anne = personFactory.build({
     name: 'Anne',
     phone: '+50683333333',
-    parent: {_id: healthCenter._id, parent: healthCenter.parent}
+    parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
   const bob = personFactory.build({
     name: 'Bob',
     phone: '+50683444444',
-    parent: {_id: healthCenter._id, parent: healthCenter.parent}
+    parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
 
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: anne });
 
-  const smsMsg = (person, type = 'regular')  => `Test SMS - ${person} - ${type}`;
+  const smsMsg = (person, type = 'regular') => `Test SMS - ${person} - ${type}`;
 
   const verifyMessageHeader = async (personName, phoneNumber) => {
     const { name, phone } = await messagesPage.getMessageHeader();
@@ -48,7 +48,8 @@ describe('Send message', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), bob]);
     await utils.createUsers([offlineUser]);
-    await loginPage.login(offlineUser);    
+    await browser.url('/');
+    await loginPage.login(offlineUser);
   });
 
   beforeEach(async () => {
@@ -97,7 +98,7 @@ describe('Send message', () => {
     await verifyLastSmsContent('raw', 'reply');
   });
 
-  it('should reply to an existing message - contact with a phone number',  async () => {
+  it('should reply to an existing message - contact with a phone number', async () => {
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);
     await messagesPage.sendReply(smsMsg(anne.name, 'reply'));

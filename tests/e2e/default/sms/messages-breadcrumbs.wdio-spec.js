@@ -40,7 +40,7 @@ describe('Message tab breadcrumbs', () => {
   });
   const onlineUser = userFactory.build({
     username: 'onlineuser_messages',
-    roles: [ 'program_officer' ],
+    roles: ['program_officer'],
     place: district_hospital._id,
     contact: contact2._id,
   });
@@ -48,16 +48,18 @@ describe('Message tab breadcrumbs', () => {
     _id: 'patient1',
     phone: '+14152223344',
     name: 'patient1',
-    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
+    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id } } }
   });
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), contact, contact2, patient ]);
-    await utils.createUsers([ onlineUser, offlineUser ]);
+    await utils.saveDocs([...places.values(), contact, contact2, patient]);
+    await utils.createUsers([onlineUser, offlineUser]);
+    await browser.url('/');
   });
 
   afterEach(async () => {
     await commonElements.logout();
+    await browser.url('/');
   });
 
   it('should display messages with breadcrumbs for online user', async () => {
@@ -66,7 +68,7 @@ describe('Message tab breadcrumbs', () => {
     await commonElements.goToMessages();
     await messagesPage.sendMessage('Contact', patient.phone, patient.name);
 
-    const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
+    const { lineage } = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name.concat(health_center.name, district_hospital.name);
 
     expect(lineage).to.equal(expectedLineage);
@@ -78,7 +80,7 @@ describe('Message tab breadcrumbs', () => {
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
 
-    const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
+    const { lineage } = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name;
 
     expect(lineage).to.equal(expectedLineage);

@@ -55,9 +55,9 @@ const updateSettings = async (updates = {}) => {
 describe('Task list due dates', () => {
   before(async () => {
     await utils.saveDocs(contacts);
-    await utils.createUsers([ chw ]);
+    await utils.createUsers([chw]);
     await sentinelUtils.waitForSentinel();
-
+    await browser.url('/');
     await loginPage.login({ username: chw.username, password: chw.password });
     await (await commonPage.analyticsTab()).waitForDisplayed();
   });
@@ -107,7 +107,6 @@ describe('Task list due dates', () => {
 
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
-
     expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false, lineage: '' },
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false, lineage: '' },
