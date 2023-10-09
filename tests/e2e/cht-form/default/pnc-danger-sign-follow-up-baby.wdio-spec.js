@@ -9,7 +9,7 @@ describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
     await browser.url(url);
 
     const title  = await getFormTitle();
-    expect(title).to.eq('PNC danger sign follow-up - baby');
+    expect(title).to.equal('PNC danger sign follow-up - baby');
 
     await genericForm.nextPage();
     await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.VISIT_CONFIRMATION);

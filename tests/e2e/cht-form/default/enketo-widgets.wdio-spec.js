@@ -1,16 +1,15 @@
-const { getFormTitle } = require('@page-objects/default/enketo/generic-form.wdio.page');
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.wdio.page');
 
 describe('cht-form web component - Enketo Widgets', () => {
 
-  it('should render form', async () => {
+  it('should submit the Enketo Widgets form', async () => {
     const url = await mockConfig.startMockApp('default', 'enketo_widgets');
     await browser.url(url);
 
-    const title  = await getFormTitle();
-    expect(title).to.eq('Enketo Widgets');
+    const title  = await genericForm.getFormTitle();
+    expect(title).to.equal('Enketo Widgets');
 
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.selectMultipleDropdown());
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectMultipleDropdown(), 'checkbox', 'a');
@@ -84,5 +83,15 @@ describe('cht-form web component - Enketo Widgets', () => {
     expect(jsonObj.cascading_widgets.group2.country2).to.equal('nl');
     expect(jsonObj.cascading_widgets.group2.city2).to.equal('dro');
     expect(jsonObj.cascading_widgets.group2.neighborhood2).to.equal('havendr');
+  });
+
+  it('should verify the cancel button', async () => {
+    const url = await mockConfig.startMockApp('default', 'enketo_widgets');
+    await browser.url(url);
+    expect(await genericForm.getFormTitle()).to.equal('Enketo Widgets');
+
+    await genericForm.cancelForm();
+    expect(await (await enketoWidgetsPage.cancelBanner()).isDisplayed()).to.be.true;
+    expect(await enketoWidgetsPage.getCancelBannerTittle()).to.equal('Form Canceled');
   });
 });

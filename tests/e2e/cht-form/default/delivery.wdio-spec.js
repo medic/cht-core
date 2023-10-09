@@ -21,7 +21,7 @@ describe('cht-form web component - Delivery Form', () => {
     const BABY_DOB = moment().format('YYYY-MM-DD');
     const BABY_SEX = 'male';
     const title  = await getFormTitle();
-    expect(title).to.eq('Delivery');
+    expect(title).to.equal('Delivery');
 
     await genericForm.nextPage();
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');

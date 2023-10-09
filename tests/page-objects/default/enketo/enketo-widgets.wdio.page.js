@@ -21,6 +21,7 @@ const phoneFieldRequiredMessage = () =>
   $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-required-msg.active');
 const phoneFieldConstraintMessage = () =>
   $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-constraint-msg.active');
+const cancelBanner = () => $('#cancelBanner');
 
 const getFormTitle = async () => {
   const title = await formTitle();
@@ -91,8 +92,15 @@ const setPatientName = async (value = 'Emilio') => {
 };
 
 const setPhoneNumber = async (value) => {
-  await phoneField().waitForDisplayed();
-  await (await phoneField()).setValue(value);
+  const phone = await phoneField();
+  await phone.waitForDisplayed();
+  await (phone).setValue(value);
+};
+
+const getCancelBannerTittle = async () => {
+  const cancel = await cancelBanner();
+  await cancel.waitForDisplayed();
+  return await (cancel.$('h1')).getText();
 };
 
 module.exports = {
@@ -116,4 +124,6 @@ module.exports = {
   setPhoneNumber,
   phoneFieldRequiredMessage,
   phoneFieldConstraintMessage,
+  cancelBanner,
+  getCancelBannerTittle,
 };

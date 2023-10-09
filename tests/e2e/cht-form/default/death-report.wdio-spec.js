@@ -13,7 +13,7 @@ describe('cht-form web component - Death Report Form', () => {
     const date = moment().format('YYYY-MM-DD');
     const deathNote = 'Test note';
     const title  = await getFormTitle();
-    expect(title).to.eq('Death report');
+    expect(title).to.equal('Death report');
 
     await genericForm.nextPage();
     await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);

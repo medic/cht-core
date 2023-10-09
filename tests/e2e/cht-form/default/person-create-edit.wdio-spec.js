@@ -6,19 +6,12 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 describe('cht-form web component - Create and Edit Person Form', () => {
   let fieldsDataNewPerson;
 
-  /*afterEach(async () => {
-    await mockConfig.stopMockApp();
-    await browser.reloadSession();
-  });*/
-
-
   it('should create a new person', async () => {
-    console.log('-------- IT #1 ----------');
     const url = await mockConfig.startMockApp('default', 'person_create');
     await browser.url(url);
 
     const title  = await getFormTitle();
-    expect(title).to.eq('New Person');
+    expect(title).to.equal('New Person');
 
     await (await contactPage.personName()).setValue('Filippo');
     await (await contactPage.sexField('person', 'male')).click();
@@ -150,7 +143,7 @@ describe('cht-form web component - Create and Edit Person Form', () => {
     });
 
     const title  = await getFormTitle();
-    expect(title).to.eq('Edit Person');
+    expect(title).to.equal('Edit Person');
 
     await genericForm.nextPage();
 

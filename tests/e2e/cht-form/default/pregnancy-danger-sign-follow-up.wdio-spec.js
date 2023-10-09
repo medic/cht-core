@@ -10,7 +10,7 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     await browser.url(url);
 
     const title  = await getFormTitle();
-    expect(title).to.eq('Pregnancy danger sign follow-up');
+    expect(title).to.equal('Pregnancy danger sign follow-up');
 
     await genericForm.nextPage();
     await pregDangerSignFollowUpForm.selectVisitedHealthFacility(true);

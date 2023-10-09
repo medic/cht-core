@@ -15,7 +15,7 @@ describe('cht-form web component - Pregnancy Form', () => {
     const edd = moment().add(30, 'days');
     const nextANCVisit = moment().add(1, 'day').format('YYYY-MM-DD');
     const title  = await getFormTitle();
-    expect(title).to.eq('Pregnancy registration');
+    expect(title).to.equal('Pregnancy registration');
 
     await genericForm.nextPage();
     await pregnancyForm.selectGestationAge();

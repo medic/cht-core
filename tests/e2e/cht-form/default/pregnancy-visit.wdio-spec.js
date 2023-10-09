@@ -11,7 +11,7 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
 
     let countDangerSigns = 0;
     const title  = await getFormTitle();
-    expect(title).to.eq('Pregnancy home visit');
+    expect(title).to.equal('Pregnancy home visit');
 
     await genericForm.nextPage();
     await pregnancyVisitForm.selectVisitOption();
