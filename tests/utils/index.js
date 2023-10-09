@@ -461,7 +461,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForDockerLogs('sentinel', /Reminder messages allowed between/);
+    return waitForSentinelLogs( /Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };
@@ -1067,7 +1067,7 @@ const waitForDockerLogs = (container, ...regex) => {
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterwards.
+  // steps of testing afterward.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
@@ -1111,6 +1111,7 @@ const waitForDockerLogs = (container, ...regex) => {
 };
 
 const waitForApiLogs = (...regex) => waitForDockerLogs('api', ...regex);
+const waitForSentinelLogs = (...regex) => waitForDockerLogs('sentinel', ...regex);
 
 /**
  * Collector that listens to the given container logs and collects lines that match at least one of the
@@ -1133,7 +1134,7 @@ const collectLogs = (container, ...regex) => {
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterwards.
+  // steps of testing afterward.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
@@ -1277,6 +1278,7 @@ module.exports = {
   saveBrowserLogs,
   tearDownServices,
   waitForApiLogs,
+  waitForSentinelLogs,
   collectSentinelLogs,
   collectApiLogs,
   collectHaproxyLogs,
