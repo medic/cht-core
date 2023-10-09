@@ -19,7 +19,7 @@ describe('Reports Subject', () => {
   const person = personFactory.build({
     phone: '+50689999999',
     patient_id: '123456',
-    parent: {_id: clinic._id, parent: clinic.parent}
+    parent: { _id: clinic._id, parent: clinic.parent }
   });
 
   const waitElementTextEquals = async (elementGetter, expectedText) => await browser.waitUntil(async () =>
@@ -45,14 +45,14 @@ describe('Reports Subject', () => {
     formName,
     subject,
     lineage = `${clinic.name}${healthCenter.name}${districtHospital.name}`,
-    senderName = `Submitted by ${user.contact.name} `,
+    senderName = `Submitted by ${user.contact.name}`,
     senderPhone = user.phone
   }) => {
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(subject);
-    expect(openReportInfo.reportName).to.equal(formName);
+    expect(openReportInfo.reportName.trimEnd()).to.equal(formName);
     expect(openReportInfo.lineage).to.equal(lineage);
-    expect(openReportInfo.senderName).to.equal(senderName);
+    expect(openReportInfo.senderName.trimEnd()).to.equal(senderName);
     expect(openReportInfo.senderPhone).to.equal(senderPhone);
   };
 
@@ -66,7 +66,7 @@ describe('Reports Subject', () => {
   after(async () => await utils.revertSettings(true));
 
   afterEach(async () => await utils.deleteAllDocs([/^form:/].concat(...places.values()).concat(person._id)));
-  
+
   it('should create a report using patient_id', async () => {
     const report = {
       _id: 'REF_REF_V1',
@@ -185,7 +185,7 @@ describe('Reports Subject', () => {
     await sentinelUtils.waitForSentinel([report._id]);
 
     await verifyListReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
-    await  verifyOpenReportContent({ formName: 'NAM_NAM ', subject: 'Unknown subject' });
+    await verifyOpenReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
   });
 
   it('should create a report using place_id with a place_uuid', async () => {
@@ -339,7 +339,7 @@ describe('Reports Subject', () => {
     });
   });
 
-  it('changes to a loaded or list report should be reflected in the UI ',  async () => {
+  it('changes to a loaded or list report should be reflected in the UI ', async () => {
     const reportTest = {
       _id: 'REF_REF_V3',
       form: 'RR',
@@ -364,13 +364,13 @@ describe('Reports Subject', () => {
       phone: '+50689888888',
       patient_id: '654321',
       name: 'Cleo',
-      parent: {_id: healthCenter._id, parent: healthCenter.parent}
+      parent: { _id: healthCenter._id, parent: healthCenter.parent }
     });
     const newPerson = personFactory.build({
       phone: '+50689777777',
       patient_id: '098765',
       name: 'Filippo',
-      parent: {_id: healthCenter._id, parent: healthCenter.parent}
+      parent: { _id: healthCenter._id, parent: healthCenter.parent }
     });
 
     const newUser = userFactory.build({ username: 'new-user', place: healthCenter._id, contact: userContact });
@@ -380,7 +380,7 @@ describe('Reports Subject', () => {
 
     // change both patient and submitter
     const reportDoc = await utils.getDoc(reportTest._id);
-    reportDoc.contact = {_id: newUser.contact._id, parent: newUser.contact.parent};
+    reportDoc.contact = { _id: newUser.contact._id, parent: newUser.contact.parent };
     reportDoc.fields.patient_id = newPerson.patient_id;
     await utils.saveDoc(reportDoc);
 
@@ -397,7 +397,7 @@ describe('Reports Subject', () => {
       formName: 'REF_REF',
       subject: newPerson.name,
       lineage: `${healthCenter.name}${districtHospital.name}`,
-      senderName: `Submitted by ${newUser.contact.name} `,
+      senderName: `Submitted by ${newUser.contact.name}`,
       senderPhone: newUser.contact.phone,
     });
   });
@@ -422,6 +422,6 @@ describe('Reports Subject', () => {
     await sentinelUtils.waitForSentinel([report._id]);
 
     await verifyListReportContent({ formName: 'SURVEY', subject: user.contact.name });
-    await verifyOpenReportContent({ formName: 'SURVEY', senderName: `${user.contact.name} `});
+    await verifyOpenReportContent({ formName: 'SURVEY', senderName: `${user.contact.name}` });
   });
 });
