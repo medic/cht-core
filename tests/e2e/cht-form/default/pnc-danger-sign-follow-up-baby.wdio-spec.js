@@ -3,7 +3,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const pncDangerSignFollowUpBabyForm = require('@page-objects/default/enketo/pnc-danger-sign-follow-up-baby.wdio.page');
 
 describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
-  it('should ', async () => {
+  it('should submit a PNC danger sign follow-up - baby form', async () => {
     const url = await mockConfig.startMockApp('default', 'pnc_danger_sign_follow_up_baby');
     await browser.url(url);
 
@@ -11,17 +11,17 @@ describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
     expect(title).to.equal('PNC danger sign follow-up - baby');
 
     await genericForm.nextPage();
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.VISIT_CONFIRMATION);
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.DANGER_SIGNS_PRESENT);
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.INFECTED_UMBILICAL_CORD);
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.CONVULSION, 'no');
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.DIFFICULTY_FEEDING);
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.VOMIT, 'no');
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.DROWSY);
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.STIFFNESS, 'no');
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.YELLOW_SKIN);
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.FEVER, 'no');
-    await pncDangerSignFollowUpBabyForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.BLUE_SKIN);
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.VISIT_CONFIRMATION);
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.DANGER_SIGNS_PRESENT);
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.INFECTED_UMBILICAL_CORD);
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.CONVULSION, 'no');
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.DIFFICULTY_FEEDING);
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.VOMIT, 'no');
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.DROWSY);
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.STIFFNESS, 'no');
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.YELLOW_SKIN);
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.FEVER, 'no');
+    await genericForm.selectYesNoOption(pncDangerSignFollowUpBabyForm.BLUE_SKIN);
     await genericForm.submitForm();
 
     const data = await $('#submittedData').getText();

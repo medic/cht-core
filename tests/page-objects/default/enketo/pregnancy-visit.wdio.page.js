@@ -77,13 +77,6 @@ const confirmGestationalAge = async (value = 'yes') => {
   await gestationalAge.click();
 };
 
-const selectYesNoOption = async (selector, value = 'yes') => {
-  const element = await $(`${FORM} ${selector}[value="${value}"]`);
-  await element.waitForDisplayed();
-  await element.click();
-  return value === 'yes';
-};
-
 const countSummaryDangerSigns = async () => {
   return await $$(
     'section[name="/pregnancy_home_visit/summary"] ' +
@@ -116,6 +109,5 @@ module.exports = {
   uploadPregnancyVisitForm,
   selectVisitOption,
   confirmGestationalAge,
-  selectYesNoOption,
   countSummaryDangerSigns,
 };

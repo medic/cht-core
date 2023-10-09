@@ -89,13 +89,6 @@ const setFutureVisitDate = async (value = moment().add(1, 'day').format('YYYY-MM
   await date.setValue(value);
 };
 
-const selectYesNoOption = async (selector, value = 'yes') => {
-  const element = await $(`${FORM} ${selector}[value="${value}"]`);
-  await element.waitForDisplayed();
-  await element.click();
-  return value === 'yes';
-};
-
 // The selector for the 'riskFactors' is different depending on the option selected in the 'first pregnancy' question
 const selectAllRiskFactors = async (value = FIRST_PREGNANCY_VALUE.no) => {
   const cbRisks = await riskFactors(value);
@@ -151,35 +144,35 @@ const submitPregnancy = async ({
   await genericForm.nextPage();
   await setANCVisitsPast(ancVisitPastValue);
   await genericForm.nextPage();
-  await selectYesNoOption(KNOWN_FUTURE_VISITS, knowFutureVisitsValue);
+  await genericForm.selectYesNoOption(KNOWN_FUTURE_VISITS, knowFutureVisitsValue);
   await setFutureVisitDate(futureVisitDateValue);
   await genericForm.nextPage();
-  await selectYesNoOption(FIRST_PREGNANCY, firstPregnancyValue);
-  await selectYesNoOption(MISCARRIAGE, miscarriageValue);
+  await genericForm.selectYesNoOption(FIRST_PREGNANCY, firstPregnancyValue);
+  await genericForm.selectYesNoOption(MISCARRIAGE, miscarriageValue);
   await genericForm.nextPage();
   await selectAllRiskFactors(firstPregnancySelectedValue);
-  await selectYesNoOption(ADDITIONAL_FACTORS, aditionalFactorsValue);
+  await genericForm.selectYesNoOption(ADDITIONAL_FACTORS, aditionalFactorsValue);
   await genericForm.nextPage();
-  await selectYesNoOption(VAGINAL_BLEEDING, vaginalBleedingValue);
-  await selectYesNoOption(FITS, fitsValue);
-  await selectYesNoOption(ABDOMINAL_PAIN, abdominalPainValue);
-  await selectYesNoOption(HEADACHE, headacheValue);
-  await selectYesNoOption(VERY_PALE, veryPaleValue);
-  await selectYesNoOption(FEVER, feverValue);
-  await selectYesNoOption(REDUCE_FETAL_MOV, reduceFetalMovValue);
-  await selectYesNoOption(BREAKING_OF_WATER, breakingWaterValue);
-  await selectYesNoOption(EASILY_TIRED, easilyTiredValue);
-  await selectYesNoOption(SWELLING_HANDS, swellingHandsValue);
-  await selectYesNoOption(BREATHLESSNESS, breathlessnessValue);
+  await genericForm.selectYesNoOption(VAGINAL_BLEEDING, vaginalBleedingValue);
+  await genericForm.selectYesNoOption(FITS, fitsValue);
+  await genericForm.selectYesNoOption(ABDOMINAL_PAIN, abdominalPainValue);
+  await genericForm.selectYesNoOption(HEADACHE, headacheValue);
+  await genericForm.selectYesNoOption(VERY_PALE, veryPaleValue);
+  await genericForm.selectYesNoOption(FEVER, feverValue);
+  await genericForm.selectYesNoOption(REDUCE_FETAL_MOV, reduceFetalMovValue);
+  await genericForm.selectYesNoOption(BREAKING_OF_WATER, breakingWaterValue);
+  await genericForm.selectYesNoOption(EASILY_TIRED, easilyTiredValue);
+  await genericForm.selectYesNoOption(SWELLING_HANDS, swellingHandsValue);
+  await genericForm.selectYesNoOption(BREATHLESSNESS, breathlessnessValue);
   await genericForm.nextPage();
-  await selectYesNoOption(LLIN, llinValue);
+  await genericForm.selectYesNoOption(LLIN, llinValue);
   await genericForm.nextPage();
-  await selectYesNoOption(IRON_FOLATE, ironFolateValue);
+  await genericForm.selectYesNoOption(IRON_FOLATE, ironFolateValue);
   await genericForm.nextPage();
-  await selectYesNoOption(DEWORMING_MEDICATION, dewormingMedicationValue);
+  await genericForm.selectYesNoOption(DEWORMING_MEDICATION, dewormingMedicationValue);
   await genericForm.nextPage();
   await genericForm.nextPage();
-  await selectYesNoOption(HIV_TESTED, hivTestedValue);
+  await genericForm.selectYesNoOption(HIV_TESTED, hivTestedValue);
   await genericForm.nextPage();
   await genericForm.submitForm();
 };
@@ -210,7 +203,6 @@ module.exports = {
   setDeliveryDate,
   getConfirmationDetails,
   setANCVisitsPast,
-  selectYesNoOption,
   setFutureVisitDate,
   selectAllRiskFactors,
   submitPregnancy,
