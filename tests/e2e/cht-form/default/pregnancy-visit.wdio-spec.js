@@ -1,5 +1,4 @@
 const mockConfig = require('../mock-config');
-const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
 
@@ -10,7 +9,7 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
     await browser.url(url);
 
     let countDangerSigns = 0;
-    const title  = await getFormTitle();
+    const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy home visit');
 
     await genericForm.nextPage();
