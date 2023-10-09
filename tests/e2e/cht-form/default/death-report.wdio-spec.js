@@ -1,5 +1,4 @@
 const mockConfig = require('../mock-config');
-const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const moment = require('moment/moment');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
@@ -12,7 +11,7 @@ describe('cht-form web component - Death Report Form', () => {
 
     const date = moment().format('YYYY-MM-DD');
     const deathNote = 'Test note';
-    const title  = await getFormTitle();
+    const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Death report');
 
     await genericForm.nextPage();

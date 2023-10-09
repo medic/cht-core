@@ -1,5 +1,4 @@
 const mockConfig = require('../mock-config');
-const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregDangerSignFollowUpForm = require('@page-objects/default/enketo/pregnancy-danger-sign-follow-up.wdio.page');
 
@@ -9,7 +8,7 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     const url = await mockConfig.startMockApp('default', 'pregnancy_danger_sign_follow_up');
     await browser.url(url);
 
-    const title  = await getFormTitle();
+    const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy danger sign follow-up');
 
     await genericForm.nextPage();

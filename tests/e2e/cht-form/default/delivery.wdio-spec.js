@@ -1,5 +1,4 @@
 const mockConfig = require('../mock-config');
-const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const moment = require('moment/moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deliveryForm = require('@page-objects/default/enketo/delivery.wdio.page');
@@ -20,7 +19,7 @@ describe('cht-form web component - Delivery Form', () => {
     const BABY_NAME = 'Benja';
     const BABY_DOB = moment().format('YYYY-MM-DD');
     const BABY_SEX = 'male';
-    const title  = await getFormTitle();
+    const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Delivery');
 
     await genericForm.nextPage();

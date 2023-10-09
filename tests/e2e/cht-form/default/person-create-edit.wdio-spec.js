@@ -1,5 +1,4 @@
 const mockConfig = require('../mock-config');
-const {getFormTitle} = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
@@ -10,7 +9,7 @@ describe('cht-form web component - Create and Edit Person Form', () => {
     const url = await mockConfig.startMockApp('default', 'person_create');
     await browser.url(url);
 
-    const title  = await getFormTitle();
+    const title  = await genericForm.getFormTitle();
     expect(title).to.equal('New Person');
 
     await (await contactPage.personName()).setValue('Filippo');
@@ -142,7 +141,7 @@ describe('cht-form web component - Create and Edit Person Form', () => {
       };
     });
 
-    const title  = await getFormTitle();
+    const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Edit Person');
 
     await genericForm.nextPage();
