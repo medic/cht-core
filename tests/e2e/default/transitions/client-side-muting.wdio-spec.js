@@ -254,7 +254,7 @@ describe('Muting', () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([offlineUser]);
 
-      await commonPage.goToBase();
+      await browser.url('/');
       await loginPage.login({username: offlineUser.username, password: offlineUser.password});
     });
 
