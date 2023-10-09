@@ -1226,8 +1226,8 @@ const getContainerDate = (container) => {
   try {
     return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
   } catch (error) {
-    console.log('docker exec date failed. NOTE this error is not relevant if running outside of docker');
-    console.log(error.message);
+    console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
+    console.error(error.message);
   }
 };
 
