@@ -5,7 +5,7 @@ const ID_LENGTH_PARAM = 'current_length';
 const MIN_ID_LENGTH = 5;
 const INITIAL_ID_LENGTH = MIN_ID_LENGTH;
 const MAX_ID_LENGTH = 13;
-const MAX_IDS_TO_CACHE = 100;
+const MAX_IDS_TO_GENERATE = 200;
 
 /*
 Is not used to actually directly check ID validity: instead, it introduces an inherent
@@ -43,7 +43,7 @@ const generateId = length => {
   }
 
   if (length < MIN_ID_LENGTH) {
-    // This minimum is mostly arbitrary. However, MAX_IDS_TO_CACHE is somewhat
+    // This minimum is mostly arbitrary. However, MAX_IDS_TO_GENERATE is somewhat
     // based on what is good for lengths of 5-7 digits (ie realistic default
     // lengths). If we want shorter IDs in the future we'd need to re-calcuate
     // this value, or potentially make it a function of current id length.
@@ -99,15 +99,19 @@ const putIdLengthDoc = (db, idLengthDoc) => {
 /*
  * Given a collection of ids return an array of those not used already
  */
-const findUnusedIds = (db, keys) => {
+const findUnusedId = (db, keys) => {
   return db.medic
     .query('medic/docs_by_shortcode', { keys })
     .then(results => {
-      const uniqueIds = new Set(keys);
+      if (results.rows.length === keys.length) {
+        // there are no unused keys in this batch
+        return;
+      }
+      const used = new Set();
       results.rows.forEach(row => {
-        uniqueIds.delete(row.key);
+        used.add(row.key);
       });
-      return uniqueIds;
+      return keys.find(key => !used.has(key));
     });
 };
 
@@ -115,42 +119,35 @@ const generateNewIds = currentIdLength => {
   const freshIds = new Set();
   do {
     freshIds.add(generateId(currentIdLength));
-  } while (freshIds.size < MAX_IDS_TO_CACHE);
+  } while (freshIds.size < MAX_IDS_TO_GENERATE);
 
   return Array.from(freshIds);
 };
 
 const generator = function*(db) {
-  let cachedIds = new Set().values();
-
   // Developers NB: if you set the cache size too high it will take forever
   // or potentially be impossible to actually generate enough unique randomly
   // generated ids.
-  if (MAX_IDS_TO_CACHE * 10 > Math.pow(10, INITIAL_ID_LENGTH)) {
-    throw new Error('MAX_IDS_TO_CACHE too high compared to DEFAULT_ID_LENGTH');
+  if (MAX_IDS_TO_GENERATE * 10 > Math.pow(10, INITIAL_ID_LENGTH)) {
+    throw new Error('MAX_IDS_TO_GENERATE too high compared to DEFAULT_ID_LENGTH');
   }
 
   const getNextValue = () => {
-    const { value, done } = cachedIds.next();
-    if (done) {
-      return getIdLengthDoc(db).then(idLengthDoc =>
-        findUnusedIds(db, generateNewIds(idLengthDoc[ID_LENGTH_PARAM])).then(
-          unusedIds => {
-            if (unusedIds.size === 0) {
-              // Couldn't do it at this length, increase the length and attempt
-              // getNextValue again, thus attempting another cache replenish
-              logger.warn(`Could not create a unique id of length ${idLengthDoc[ID_LENGTH_PARAM]}, increasing length`);
-              idLengthDoc[ID_LENGTH_PARAM] += 1;
-              return putIdLengthDoc(db, idLengthDoc).then(getNextValue);
-            } else {
-              cachedIds = unusedIds.values();
-              return getNextValue();
-            }
+    return getIdLengthDoc(db).then(idLengthDoc => {
+      const ids = generateNewIds(idLengthDoc[ID_LENGTH_PARAM]);
+      return findUnusedId(db, ids).then(
+        id => {
+          if (id) {
+            return id;
           }
-        ));
-    } else {
-      return Promise.resolve(value);
-    }
+          // Couldn't do it at this length, increase the length and attempt
+          // getNextValue again, thus attempting another cache replenish
+          logger.warn(`Could not create a unique id of length ${idLengthDoc[ID_LENGTH_PARAM]}, increasing length`);
+          idLengthDoc[ID_LENGTH_PARAM] += 1;
+          return putIdLengthDoc(db, idLengthDoc).then(getNextValue);
+        }
+      );
+    });
   };
 
   while (true) {
