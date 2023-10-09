@@ -461,7 +461,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForDockerLogs('sentinel', /Reminder messages allowed between/);
+    return waitForSentinelLogs( /Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };

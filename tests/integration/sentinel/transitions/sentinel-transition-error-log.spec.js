@@ -12,9 +12,9 @@ describe('Sentinel transition error log', async function() {
       }
     };
 
-    const collectLogs = await utils.waitForSentinelLogs(unknownTransitionPattern);
+    const waitForLogs = await utils.waitForSentinelLogs(unknownTransitionPattern);
     await utils.updateSettings(settings, 'sentinel');
-    await collectLogs.promise;
+    await waitForLogs.promise;
   });
 });
 
