@@ -3,10 +3,14 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const moment = require('moment');
 const utils = require('@utils');
+let expirationDateFieldName;
 
 describe('should renew token', async () => {
 
   beforeEach(async () => {
+    // eslint-disable-next-line no-undef
+    expirationDateFieldName = driver.capabilities.browserVersion === '90.0.4430.72' ? 'expiry' : 'expires';
+    console.log('Field name: ' + expirationDateFieldName);
     await loginPage.cookieLogin();
   });
 
@@ -30,7 +34,7 @@ describe('should renew token', async () => {
 
 const getCtxCookieExpiry = async () => {
   const userCtxCookie = await browser.getCookies('userCtx');
-  const momentObj = moment.unix(userCtxCookie[0].expires);
+  const momentObj = moment.unix(userCtxCookie[0][expirationDateFieldName]);
   if (!momentObj.isValid()) {
     throw new Error(`Unable to construct moment object from cookie expiration: ${userCtxCookie}`);
   }
