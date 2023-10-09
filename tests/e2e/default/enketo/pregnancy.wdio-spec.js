@@ -41,7 +41,7 @@ describe('Pregnancy registration', () => {
     await genericForm.nextPage();
 
     const confirmationDetails = await pregnancyForm.getConfirmationDetails();
-    expect(confirmationDetails.eddConfirm).to.equal(edd.format('D MMM, YYYY'));
+    expect(Date.parse(confirmationDetails.eddConfirm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
 
     await genericForm.nextPage();
     await pregnancyForm.setANCVisitsPast();
@@ -80,7 +80,7 @@ describe('Pregnancy registration', () => {
     const summaryDetails = await pregnancyForm.getSummaryDetails();
     expect(summaryDetails.patientNameSumm).to.equal(pregnantWoman.name);
     expect(summaryDetails.weeksPregnantSumm).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(summaryDetails.eddSumm).to.equal(edd.format('D MMM, YYYY'));
+    expect(Date.parse(summaryDetails.eddSumm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(summaryDetails.riskFactorsSumm).to.equal(countRiskFactors);
     expect(summaryDetails.dangerSignsSumm).to.equal(countDangerSigns);
 
@@ -91,9 +91,9 @@ describe('Pregnancy registration', () => {
 
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
     expect(pregnancyCardInfo.weeksPregnant).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(pregnancyCardInfo.deliveryDate).to.equal(edd.format('D MMM, YYYY'));
+    expect(Date.parse(pregnancyCardInfo.deliveryDate)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(pregnancyCardInfo.risk).to.equal('High risk');
-    expect(pregnancyCardInfo.ancVisit).to.equal(nextANCVisit.format('D MMM, YYYY'));
+    expect(Date.parse(pregnancyCardInfo.ancVisit)).to.equal(Date.parse(nextANCVisit.format('D MMM, YYYY')));
 
   });
 

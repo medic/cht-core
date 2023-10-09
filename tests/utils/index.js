@@ -21,9 +21,9 @@ process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
+const DEBUG = process.env.DEBUG;
 
 let originalSettings;
-let e2eDebug;
 let dockerVersion;
 let browserLogStream;
 
@@ -173,7 +173,7 @@ const requestOnTestDb = (options, debug) => {
   if (pathAndReqType !== '/GET') {
     options.path = '/' + constants.DB_NAME + (options.path || '');
   }
-  return request(options, { debug });
+  return request(options, debug);
 };
 
 const requestOnTestMetaDb = (options, debug) => {
@@ -183,7 +183,7 @@ const requestOnTestMetaDb = (options, debug) => {
     };
   }
   options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const requestOnMedicDb = (options, debug) => {
@@ -191,7 +191,7 @@ const requestOnMedicDb = (options, debug) => {
     options = { path: options };
   }
   options.path = `/medic${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const formDocProcessing = async (docs) => {
@@ -391,7 +391,7 @@ const deleteAllDocs = (except) => {
         }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
-      if (e2eDebug) {
+      if (DEBUG) {
         console.log(`Deleting docs and infodocs: ${ids}`);
       }
       const infoIds = ids.map(id => `${id}-info`);
@@ -403,7 +403,7 @@ const deleteAllDocs = (except) => {
             body: { docs: toDelete },
           })
           .then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted docs: ${JSON.stringify(response)}`);
             }
           }),
@@ -421,7 +421,7 @@ const deleteAllDocs = (except) => {
             // it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
             return module.exports.sentinelDb.bulkDocs(deletes);
           }).then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
             }
           })
@@ -984,7 +984,7 @@ const prepServices = async (defaultSettings) => {
 
   updateContainerNames();
 
-  await tearDownServices(true);
+  await tearDownServices();
   await startServices();
   await listenForApi();
   if (defaultSettings) {
@@ -1039,11 +1039,11 @@ const saveLogs = async () => {
   }
 };
 
-const tearDownServices = async (removeOrphans) => {
-  if (removeOrphans) {
-    return dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
-  }
+const tearDownServices = async () => {
   await saveLogs();
+  if (!DEBUG) {
+    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+  }
 };
 
 const killSpawnedProcess = (proc) => {
@@ -1166,6 +1166,8 @@ const collectLogs = (container, ...regex) => {
 const collectSentinelLogs = (...regex) => collectLogs('sentinel', ...regex);
 
 const collectApiLogs = (...regex) => collectLogs('api', ...regex);
+
+const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
@@ -1290,6 +1292,7 @@ module.exports = {
   waitForApiLogs,
   collectSentinelLogs,
   collectApiLogs,
+  collectHaproxyLogs,
   apiLogTestStart,
   apiLogTestEnd,
   updateContainerNames,
