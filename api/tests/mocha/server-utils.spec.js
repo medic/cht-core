@@ -14,6 +14,7 @@ describe('Server utils', () => {
     req = {
       url: '',
       get: sinon.stub(),
+      accepts: sinon.stub(),
     };
     res = {
       writeHead: sinon.stub(),
@@ -169,10 +170,10 @@ describe('Server utils', () => {
     });
 
     it('responds with JSON if requested', () => {
-      req.get.returns('application/json');
+      req.accepts.returns(true);
       serverUtils.notLoggedIn(req, res);
-      chai.expect(req.get.callCount).to.equal(1);
-      chai.expect(req.get.args[0][0]).to.equal('Accept');
+      chai.expect(req.accepts.callCount).to.equal(1);
+      chai.expect(req.accepts.args[0][0]).to.equal('application/json');
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(401);
       chai.expect(res.type.callCount).to.equal(1);
@@ -207,10 +208,10 @@ describe('Server utils', () => {
     });
 
     it('responds with JSON', () => {
-      req.get.withArgs('Accept').returns('application/json');
+      req.accepts.returns('application/json');
       serverUtils.serverError({ foo: 'bar' }, req, res);
-      chai.expect(req.get.callCount).to.equal(1);
-      chai.expect(req.get.args[0][0]).to.equal('Accept');
+      chai.expect(req.accepts.callCount).to.equal(1);
+      chai.expect(req.accepts.args[0][0]).to.equal('application/json');
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(500);
       chai.expect(res.end.callCount).to.equal(1);
@@ -218,10 +219,10 @@ describe('Server utils', () => {
     });
 
     it('handles uncaught payload size exceptions', () => {
-      req.get.withArgs('Accept').returns('application/json');
+      req.accepts.returns('application/json');
       serverUtils.serverError({ foo: 'bar', type: 'entity.too.large' }, req, res);
-      chai.expect(req.get.callCount).to.equal(1);
-      chai.expect(req.get.args[0][0]).to.equal('Accept');
+      chai.expect(req.accepts.callCount).to.equal(1);
+      chai.expect(req.accepts.args[0][0]).to.equal('application/json');
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(413);
       chai.expect(res.end.callCount).to.equal(1);
@@ -231,26 +232,13 @@ describe('Server utils', () => {
   });
 
   describe('wantsJSON', () => {
-    it('should return true when accept header is just json', () => {
-      req.get.returns('application/json');
-      chai.expect(serverUtils.wantsJSON(req)).to.equal(true);
-    });
-
     it('should return true when accept header includes json', () => {
-      req.get.returns('application/json, text/plain, */*');
-      chai.expect(serverUtils.wantsJSON(req)).to.equal(true);
-
-      req.get.returns('application/xml, application/json, text/plain, */*');
+      req.accepts.returns('application/json');
       chai.expect(serverUtils.wantsJSON(req)).to.equal(true);
     });
 
     it('should return false when accept header excludes json', () => {
-      req.get.returns('application/xml, text/plain, */*');
-      chai.expect(serverUtils.wantsJSON(req)).to.equal(false);
-    });
-
-    it('should return false when there is no accept header', () => {
-      req.get.returns(undefined);
+      req.accepts.returns(false);
       chai.expect(serverUtils.wantsJSON(req)).to.equal(false);
     });
   });

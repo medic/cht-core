@@ -6,7 +6,7 @@ const logger = require('./logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const cookie = require('./services/cookie');
 
-const wantsJSON = req => !!req.get('Accept')?.includes('application/json');
+const wantsJSON = req => !!req.accepts('application/json');
 
 const writeJSON = (res, code, error, details) => {
   if (!res.headersSent) {

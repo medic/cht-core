@@ -13,7 +13,6 @@ const browserLogsUtils = require('@utils/browser-logs');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
-const existingFeedbackDocIds = [];
 let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
@@ -282,10 +281,8 @@ const baseConfig = {
       await browser.takeScreenshot();
     }
 
-    const feedbackDocFileName = `${test.parent} ${test.title}`.replace(/\s/g, '-');
-    const savedFeedbackDocs = await utils.saveFeedbackDocs(feedbackDocFileName, existingFeedbackDocIds);
+    const savedFeedbackDocs = await utils.logFeedbackDocs(test);
     if (savedFeedbackDocs) {
-      existingFeedbackDocIds.push(...savedFeedbackDocs);
       context.test.callback(new Error('Feedback docs were generated during the test.'));
     }
   },

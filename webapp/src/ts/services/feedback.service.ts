@@ -34,11 +34,12 @@ export class FeedbackService {
   private lastErrorMessage;
   private readonly LEVELS = ['error', 'warn', 'log', 'info'];
   private readonly LOG_LENGTH = 20;
+  private readonly STACK_LENGTH = 5000;
   private readonly logCircularBuffer = new Array(this.LOG_LENGTH);
   // List of Error messages to not automatically log to feedback
   // Can be a lower-cased partial string or a regular expression
   private readonly NO_FEEDBACK_MESSAGES = [
-    'failed to fetch',
+    /failed to fetch/i,
     /http failure .* unknown error/i, // server offline
     /service unavailable/i, // server starting up
     /missing/i,
@@ -61,11 +62,7 @@ export class FeedbackService {
       .filter(i => !!i);
   }
 
-  private shouldGenerateFeedback(level:string, message:string, exceptionMessage:string, exception?) {
-    if (this.FEEDBACK_LEVEL !== level) {
-      return false;
-    }
-
+  private shouldGenerateFeedback(message:string, exceptionMessage:string, exception?) {
     // requiring a valid error to be logged to avoid cascades of feedback docs
     if (!message || !exception) {
       return false;
@@ -76,15 +73,8 @@ export class FeedbackService {
       return false;
     }
 
-    message = message?.toLowerCase() || '';
-    exceptionMessage = exceptionMessage?.toLowerCase() || '';
-
-    const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES.find((item:string|RegExp) => {
-      if (item instanceof RegExp) {
-        return item.test(message) || item.test(exceptionMessage);
-      }
-      return message.includes(item) || exceptionMessage.includes(item);
-    });
+    const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES
+      .find((item:RegExp) => item.test(message) || item.test(exceptionMessage));
 
     return !matchesNoFeedback;
   }
@@ -102,11 +92,15 @@ export class FeedbackService {
   }
 
   private async generateFeedbackOnError(level, ...args) {
+    if (this.FEEDBACK_LEVEL !== level) {
+      return false;
+    }
+
     const exception = args.find(arg => arg instanceof Error || arg?.stack || arg instanceof HttpErrorResponse);
     const exceptionMessage = this.getExceptionMessage(exception);
     const loggedMessage = String(args[0]);
 
-    if (this.shouldGenerateFeedback(level, loggedMessage, exceptionMessage, exception)) {
+    if (this.shouldGenerateFeedback(loggedMessage, exceptionMessage, exception)) {
       const message = exceptionMessage || loggedMessage;
       this.lastErrorMessage = message;
       try {
@@ -151,7 +145,7 @@ export class FeedbackService {
       this.options.console[level] = (...args) => {
         const logEvent = {
           level,
-          arguments: JSON.stringify(args, getCircularReplacer()).substring(0, 5000),
+          arguments: JSON.stringify(args, getCircularReplacer()).substring(0, this.STACK_LENGTH),
           time: new Date().toISOString(),
         };
 

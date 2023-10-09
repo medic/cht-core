@@ -51,6 +51,7 @@ const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
+const existingFeedbackDocIds = [];
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -1219,18 +1220,20 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
   await updateSettings({ permissions: settings.permissions }, ignoreReload);
 };
 
-const saveFeedbackDocs = async (filename, existingFeedbackDocIds) => {
+const logFeedbackDocs = async (test) => {
+
   const feedBackDocs = await chtDbUtils.getFeedbackDocs();
   const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
   if (!newFeedbackDocs.length) {
     return false;
   }
 
-  const fileName = `feedbackDocs-${filename}.json`;
-  const filePath = path.resolve(__dirname, '..', 'logs', fileName);
+  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/\s/g, '-');
+  const filePath = path.resolve(__dirname, '..', 'logs', filename);
   fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
+  existingFeedbackDocIds.push(...newFeedbackDocs.map(doc => doc._id));
 
-  return feedBackDocs.map(doc => doc._id);
+  return true;
 };
 
 module.exports = {
@@ -1300,5 +1303,5 @@ module.exports = {
   updateContainerNames,
   updatePermissions,
   formDocProcessing,
-  saveFeedbackDocs,
+  logFeedbackDocs,
 };

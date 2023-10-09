@@ -5,7 +5,6 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const customTypeFactory = require('@factories/cht/contacts/custom_type');
 const utils = require('@utils');
-const chtDbUtils = require('@utils/cht-db');
 
 describe('Unauthorized form', () => {
 
@@ -45,8 +44,6 @@ describe('Unauthorized form', () => {
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
-    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(0);
   });
 
   it('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
@@ -57,8 +54,6 @@ describe('Unauthorized form', () => {
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
-    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(0);
   });
 
   it('should not display unauthorized error message in contacts tab when user has the form permission', async () => {

@@ -6,7 +6,6 @@ import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { ReadDocsProvider } from '@mm-providers/read-docs.provider';
-import { DBSyncService } from '@mm-services/db-sync.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +14,9 @@ export class UnreadRecordsService implements OnDestroy {
   subscriptions: Subscription = new Subscription();
   private readonly TYPES = [ 'report', 'message' ];
   private callback;
-  private inited;
 
   constructor(
     private dbService: DbService,
-    private dbSyncService: DBSyncService,
     private changesService: ChangesService,
     private sessionService: SessionService,
     private readDocsProvider: ReadDocsProvider
@@ -36,13 +33,9 @@ export class UnreadRecordsService implements OnDestroy {
   }
 
   private getRead() {
-    return this.inited
-      .then(() => this.dbService.get({ meta: true }).query('medic-user/read', { group: true }))
-      .catch(err => {
-        if (err.status !== 404) {
-          throw err;
-        }
-      });
+    return this.dbService
+      .get({ meta: true })
+      .query('medic-user/read', { group: true });
   }
 
   private getRowValueForType(type, response:any = {}) {
@@ -104,9 +97,10 @@ export class UnreadRecordsService implements OnDestroy {
 
   init(callback) {
     this.callback = callback;
-    // wait for meta db sync to avoid querying meta view before the ddoc was synced from the server
-    this.inited = this.dbSyncService
-      .syncMeta()
+    // wait for db.info to avoid uncaught exceptions: #3754
+    this.dbService
+      .get()
+      .info()
       .then(() => {
         // get the initial count
         this.getCount(this.callback);
@@ -132,7 +126,7 @@ export class UnreadRecordsService implements OnDestroy {
   }
 
   count() {
-    return this.inited.then(() => this.getCount(this.callback));
+    return this.getCount(this.callback);
   }
 
 }
