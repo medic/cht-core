@@ -28,6 +28,10 @@ describe('Export Messages', () => {
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
   });
+  afterEach(async () => {
+    await utils.deleteUsers([onlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
 
   it('Should download export file', async () => {
     await messagesPage.sendMessage('It is working!', patient.phone, patient.name);

@@ -12,19 +12,23 @@ const utils = require('@utils');
 describe('Export Contacts', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
-  const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
+  const onlineUser = userFactory.build({ place: healthCenter._id, roles: ['program_officer'] });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const today = moment();
 
   const savedContactIds = [];
   beforeEach(async () => {
     await fileDownloadUtils.setupDownloadFolder();
-    const contactDocs = await utils.saveDocs([ ...places.values(), patient ]);
+    const contactDocs = await utils.saveDocs([...places.values(), patient]);
     contactDocs.forEach(savedContact => savedContactIds.push(savedContact.id));
-    await utils.createUsers([ onlineUser ]);
+    await utils.createUsers([onlineUser]);
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToPeople();
+  });
+  afterEach(async () => {
+    await utils.deleteUsers([onlineUser]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('Should download export file', async () => {
