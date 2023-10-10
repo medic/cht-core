@@ -10,7 +10,7 @@ const defaultMinimumBrowserConfig = Object.assign(wdioBaseConfig.config, {
     browserVersion: '90.0.4430.72',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'no-sandbox'],
+      args: ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'no-sandbox', 'window-size=1200,900'],
       binary: '/usr/bin/google-chrome-stable'
     }
   }],
@@ -18,3 +18,4 @@ const defaultMinimumBrowserConfig = Object.assign(wdioBaseConfig.config, {
 });
 
 exports.config = defaultMinimumBrowserConfig;
+
