@@ -100,6 +100,7 @@ jobs:
             'ci-webdriver-standard',
             'ci-e2e-integration',
             'ci-webdriver-default-mobile',
+            'ci-webdriver-standard-minimum-chrome',
           ]
         suite: [all]
         include:
@@ -113,8 +114,16 @@ jobs:
             suite: lowLevel
           - cmd: ci-webdriver-default
             suite: workflows
-          - cmd: ci-webdriver-default-chrome90
+          - cmd: ci-webdriver-default-minimum-chrome
             suite: core
+          - cmd: ci-webdriver-default-minimum-chrome
+            suite: workflows
+          - cmd: ci-webdriver-default-minimum-chrome
+            suite: data
+          - cmd: ci-webdriver-default-minimum-chrome
+            suite: enketo
+          - cmd: ci-webdriver-default-minimum-chrome
+            suite: lowLevel
 
     steps:
       - name: Login to Docker Hub
@@ -166,7 +175,7 @@ jobs:
         run: npm install -g cht-conf
       - run: npm ci
       - name: Install Chrome 90
-        if: ${{ matrix.cmd=='ci-webdriver-default-chrome90' }}
+        if: ${{ matrix.cmd=='ci-webdriver-default-minimum-chrome' || matrix.cmd=='ci-webdriver-standard-minimum-chrome'}}
         run: |
           wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
           sudo dpkg -i "google-chrome-stable_current_amd64.deb"
