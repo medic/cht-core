@@ -310,6 +310,7 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
+    // eslint-disable-next-line no-undef
     if (driver.capabilities.browserVersion.split('.').shift() !== '90') {
       closedModal = await closeReloadModal(false, 0);
     } else {
@@ -319,6 +320,7 @@ const sync = async (expectReload, timeout) => {
 
   await syncAndWaitForSuccess(timeout);
   if (expectReload && !closedModal) {
+    // eslint-disable-next-line no-undef
     if (driver.capabilities.browserVersion.split('.').shift() !== '90') {
       await closeReloadModal();
     } else {
