@@ -1,8 +1,6 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const pncDangerSignFollowUpMotherForm = require(
-  '@page-objects/default/enketo/pnc-danger-sign-follow-up-mother.wdio.page'
-);
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('cht-form web component - PNC Danger Sign Follow-up Mother', () => {
   it('should submit PNC danger sign follow-up - mother form', async () => {
@@ -13,13 +11,13 @@ describe('cht-form web component - PNC Danger Sign Follow-up Mother', () => {
     expect(title).to.equal('PNC danger sign follow-up - mother');
 
     await genericForm.nextPage();
-    await genericForm.selectYesNoOption(pncDangerSignFollowUpMotherForm.VISIT_CONFIRMATION);
-    await genericForm.selectYesNoOption(pncDangerSignFollowUpMotherForm.DANGER_SIGNS_PRESENT);
-    await genericForm.selectYesNoOption(pncDangerSignFollowUpMotherForm.FEVER);
-    await genericForm.selectYesNoOption(pncDangerSignFollowUpMotherForm.HEADACHE, 'no');
-    await genericForm.selectYesNoOption(pncDangerSignFollowUpMotherForm.VAGINAL_BLEEDING);
-    await genericForm.selectYesNoOption(pncDangerSignFollowUpMotherForm.VAGINAL_DISCHARGE, 'no');
-    await genericForm.selectYesNoOption(pncDangerSignFollowUpMotherForm.CONVULSION);
+    await genericForm.selectYesNoOption(dangerSignPage.visitConfirmation('pnc_danger_sign_follow_up_mother'));
+    await genericForm.selectYesNoOption(dangerSignPage.dangerSignsPresent('pnc_danger_sign_follow_up_mother'));
+    await genericForm.selectYesNoOption(dangerSignPage.fever('pnc_danger_sign_follow_up_mother'));
+    await genericForm.selectYesNoOption(dangerSignPage.headache('pnc_danger_sign_follow_up_mother'), 'no');
+    await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pnc_danger_sign_follow_up_mother'));
+    await genericForm.selectYesNoOption(dangerSignPage.vaginalDischarge('pnc_danger_sign_follow_up_mother'), 'no');
+    await genericForm.selectYesNoOption(dangerSignPage.convulsion('pnc_danger_sign_follow_up_mother'));
 
     await genericForm.submitForm();
 

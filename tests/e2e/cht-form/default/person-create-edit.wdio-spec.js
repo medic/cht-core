@@ -34,7 +34,7 @@ describe('cht-form web component - Create and Edit Person Form', () => {
   });
 
   // eslint-disable-next-line no-only-tests/no-only-tests
-  it.skip('should edit a person', async () => {
+  it('should edit a person', async () => {
     console.log('-------- IT #2 ----------');
     const url = await mockConfig.startMockApp('default', 'person_edit');
     await browser.url(url);

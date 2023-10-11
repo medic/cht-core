@@ -16,17 +16,6 @@ const formDocument = {
 };
 
 const FORM = 'form[data-form-id="pregnancy_home_visit"]';
-const VAGINAL_BLEEDING = 'input[name="/pregnancy_home_visit/danger_signs/vaginal_bleeding"]';
-const FITS = 'input[name="/pregnancy_home_visit/danger_signs/fits"]';
-const ABDOMINAL_PAIN = 'input[name="/pregnancy_home_visit/danger_signs/severe_abdominal_pain"]';
-const HEADACHE = 'input[name="/pregnancy_home_visit/danger_signs/severe_headache"]';
-const VERY_PALE = 'input[name="/pregnancy_home_visit/danger_signs/very_pale"]';
-const FEVER = 'input[name="/pregnancy_home_visit/danger_signs/fever"]';
-const REDUCE_FETAL_MOV = 'input[name="/pregnancy_home_visit/danger_signs/reduced_or_no_fetal_movements"]';
-const BREAKING_OF_WATER = 'input[name="/pregnancy_home_visit/danger_signs/breaking_water"]';
-const EASILY_TIRED = 'input[name="/pregnancy_home_visit/danger_signs/easily_tired"]';
-const SWELLING_HANDS = 'input[name="/pregnancy_home_visit/danger_signs/face_hand_swelling"]';
-const BREATHLESSNESS = 'input[name="/pregnancy_home_visit/danger_signs/breathlessness"]';
 const LLIN = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use"]';
 const IRON_FOLATE = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
 const HIV_TESTED = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested"]';
@@ -85,17 +74,6 @@ const countSummaryDangerSigns = async () => {
 };
 
 module.exports = {
-  VAGINAL_BLEEDING,
-  FITS,
-  ABDOMINAL_PAIN,
-  HEADACHE,
-  VERY_PALE,
-  FEVER,
-  REDUCE_FETAL_MOV,
-  BREAKING_OF_WATER,
-  EASILY_TIRED,
-  SWELLING_HANDS,
-  BREATHLESSNESS,
   LLIN,
   IRON_FOLATE,
   HIV_TESTED,

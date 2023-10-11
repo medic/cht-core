@@ -1,6 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('cht-form web component - Pregnancy Visit Form', () => {
 
@@ -16,17 +17,17 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
     await pregnancyVisitForm.selectVisitOption();
     await pregnancyVisitForm.confirmGestationalAge();
     await genericForm.nextPage();
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.VAGINAL_BLEEDING);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.FITS);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.ABDOMINAL_PAIN);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.HEADACHE);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.VERY_PALE);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.FEVER);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.REDUCE_FETAL_MOV);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.BREAKING_OF_WATER);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.EASILY_TIRED);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.SWELLING_HANDS);
-    countDangerSigns += await genericForm.selectYesNoOption(pregnancyVisitForm.BREATHLESSNESS);
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.fits('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.abdominalPain('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.headache('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.veryPale('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.fever('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.reduceFetalMov('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.breakingOfWater('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.easilyTired('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.swellingHands('pregnancy_home_visit'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.breathlessness('pregnancy_home_visit'));
     await genericForm.nextPage();
     await genericForm.selectYesNoOption(pregnancyVisitForm.LLIN);
     await genericForm.nextPage();

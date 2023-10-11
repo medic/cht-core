@@ -9,6 +9,7 @@
 const moment = require('moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 const GESTATION_AGE = {lmp: 'method_lmp', lmpApprox: 'method_approx', edd: 'method_edd', none: 'none'};
 const FIRST_PREGNANCY_VALUE = {yes: 'primary', no: 'secondary'};
@@ -20,18 +21,7 @@ const KNOWN_FUTURE_VISITS =
 const FIRST_PREGNANCY = 'input[data-name="/pregnancy/risk_factors/risk_factors_history/first_pregnancy"]';
 const MISCARRIAGE = 'input[name="/pregnancy/risk_factors/risk_factors_history/previous_miscarriage"]';
 const ADDITIONAL_FACTORS = 'input[name="/pregnancy/risk_factors/risk_factors_present/additional_risk_check"]';
-const VAGINAL_BLEEDING = 'input[name="/pregnancy/danger_signs/vaginal_bleeding"]';
-const FITS = 'input[name="/pregnancy/danger_signs/fits"]';
-const ABDOMINAL_PAIN = 'input[name="/pregnancy/danger_signs/severe_abdominal_pain"]';
-const HEADACHE = 'input[name="/pregnancy/danger_signs/severe_headache"]';
-const VERY_PALE = 'input[name="/pregnancy/danger_signs/very_pale"]';
-const FEVER = 'input[name="/pregnancy/danger_signs/fever"]';
-const REDUCE_FETAL_MOV = 'input[name="/pregnancy/danger_signs/reduced_or_no_fetal_movements"]';
-const BREAKING_OF_WATER = 'input[name="/pregnancy/danger_signs/breaking_water"]';
-const EASILY_TIRED = 'input[name="/pregnancy/danger_signs/easily_tired"]';
-const SWELLING_HANDS = 'input[name="/pregnancy/danger_signs/face_hand_swelling"]';
-const BREATHLESSNESS = 'input[name="/pregnancy/danger_signs/breathlessness"]';
-const LLIN = 'input[name="/pregnancy/safe_pregnancy_practices/malaria/uses_llin"]'; 
+const LLIN = 'input[name="/pregnancy/safe_pregnancy_practices/malaria/uses_llin"]';
 const IRON_FOLATE = 'input[name="/pregnancy/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
 const DEWORMING_MEDICATION = 'input[name="/pregnancy/safe_pregnancy_practices/deworming/deworming_med"]';
 const HIV_TESTED = 'input[name="/pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested"]';
@@ -153,17 +143,17 @@ const submitPregnancy = async ({
   await selectAllRiskFactors(firstPregnancySelectedValue);
   await genericForm.selectYesNoOption(ADDITIONAL_FACTORS, aditionalFactorsValue);
   await genericForm.nextPage();
-  await genericForm.selectYesNoOption(VAGINAL_BLEEDING, vaginalBleedingValue);
-  await genericForm.selectYesNoOption(FITS, fitsValue);
-  await genericForm.selectYesNoOption(ABDOMINAL_PAIN, abdominalPainValue);
-  await genericForm.selectYesNoOption(HEADACHE, headacheValue);
-  await genericForm.selectYesNoOption(VERY_PALE, veryPaleValue);
-  await genericForm.selectYesNoOption(FEVER, feverValue);
-  await genericForm.selectYesNoOption(REDUCE_FETAL_MOV, reduceFetalMovValue);
-  await genericForm.selectYesNoOption(BREAKING_OF_WATER, breakingWaterValue);
-  await genericForm.selectYesNoOption(EASILY_TIRED, easilyTiredValue);
-  await genericForm.selectYesNoOption(SWELLING_HANDS, swellingHandsValue);
-  await genericForm.selectYesNoOption(BREATHLESSNESS, breathlessnessValue);
+  await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pregnancy'), vaginalBleedingValue);
+  await genericForm.selectYesNoOption(dangerSignPage.fits('pregnancy'), fitsValue);
+  await genericForm.selectYesNoOption(dangerSignPage.abdominalPain('pregnancy'), abdominalPainValue);
+  await genericForm.selectYesNoOption(dangerSignPage.headache('pregnancy'), headacheValue);
+  await genericForm.selectYesNoOption(dangerSignPage.veryPale('pregnancy'), veryPaleValue);
+  await genericForm.selectYesNoOption(dangerSignPage.fever('pregnancy'), feverValue);
+  await genericForm.selectYesNoOption(dangerSignPage.reduceFetalMov('pregnancy'), reduceFetalMovValue);
+  await genericForm.selectYesNoOption(dangerSignPage.breakingOfWater('pregnancy'), breakingWaterValue);
+  await genericForm.selectYesNoOption(dangerSignPage.easilyTired('pregnancy'), easilyTiredValue);
+  await genericForm.selectYesNoOption(dangerSignPage.swellingHands('pregnancy'), swellingHandsValue);
+  await genericForm.selectYesNoOption(dangerSignPage.breathlessness('pregnancy'), breathlessnessValue);
   await genericForm.nextPage();
   await genericForm.selectYesNoOption(LLIN, llinValue);
   await genericForm.nextPage();
@@ -184,17 +174,6 @@ module.exports = {
   FIRST_PREGNANCY,
   MISCARRIAGE,
   ADDITIONAL_FACTORS,
-  VAGINAL_BLEEDING,
-  FITS,
-  ABDOMINAL_PAIN,
-  HEADACHE,
-  VERY_PALE,
-  FEVER,
-  REDUCE_FETAL_MOV,
-  BREAKING_OF_WATER,
-  EASILY_TIRED,
-  SWELLING_HANDS,
-  BREATHLESSNESS,
   LLIN,
   IRON_FOLATE,
   DEWORMING_MEDICATION,
