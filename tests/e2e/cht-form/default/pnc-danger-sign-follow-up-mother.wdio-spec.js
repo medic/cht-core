@@ -18,7 +18,6 @@ describe('cht-form web component - PNC Danger Sign Follow-up Mother', () => {
     await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pnc_danger_sign_follow_up_mother'));
     await genericForm.selectYesNoOption(dangerSignPage.vaginalDischarge('pnc_danger_sign_follow_up_mother'), 'no');
     await genericForm.selectYesNoOption(dangerSignPage.convulsion('pnc_danger_sign_follow_up_mother'));
-
     await genericForm.submitForm();
 
     const data = await $('#submittedData').getText();
