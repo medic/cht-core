@@ -12,8 +12,7 @@ describe('cht-form web component - Delivery Form', () => {
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
       myForm.contactSummary = { pregnancy_uuid: 'test UUID' };
-      // *** ERROR IN THE NEXT LINE JOSH ***
-      //myForm.content = { contact: { _id: '12345', patient_id: '79376', name: 'Pregnant Woman', sex: 'female' } };
+      myForm.content = { contact: { _id: '12345', patient_id: '79376', name: 'Pregnant Woman' } };
     });
 
     const BABY_NAME = 'Benja';
@@ -76,6 +75,9 @@ describe('cht-form web component - Delivery Form', () => {
     const jsonObjMother = JSON.parse(data)[0].fields;
     const jsonObjBaby = JSON.parse(data)[1];
 
+    expect(jsonObjMother.patient_uuid).to.equal('12345');
+    expect(jsonObjMother.patient_id).to.equal('79376');
+    expect(jsonObjMother.patient_name).to.equal('Pregnant Woman');
     expect(jsonObjMother.data.meta.__pregnancy_uuid).to.equal('test UUID');
     expect(jsonObjMother.condition.woman_outcome).to.equal('alive_well');
     expect(jsonObjMother.pnc_danger_sign_check.r_pnc_danger_sign_present).to.equal('no');
@@ -95,5 +97,3 @@ describe('cht-form web component - Delivery Form', () => {
     expect(jsonObjBaby.t_danger_signs_referral_follow_up).to.equal('no');
   });
 });
-
-
