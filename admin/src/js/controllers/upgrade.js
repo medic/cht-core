@@ -26,7 +26,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
-    const UPGRADE_CONTAINER_WAIT_PERIOD = 60 * 1000; // 1 minute
+    const UPGRADE_CONTAINER_WAIT_PERIOD = 3 * 60 * 1000; // 3 minutes
     let containerWaitPeriodTimeout;
 
     const logError = (error, key) => {
