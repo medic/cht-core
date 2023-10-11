@@ -17,7 +17,10 @@ describe('mutingUtils', () => {
     sinon.stub(db.medic, 'query');
     sinon.stub(db.medic, 'allDocs');
   });
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clock && clock.restore();
+  });
 
   describe('updateRegistrations', () => {
     it('should do nothing if no patientIds are supplied', () => {
@@ -681,7 +684,6 @@ describe('mutingUtils', () => {
     });
 
     it('should return next reports, sorted by date, when requested', () => {
-      clock = sinon.useFakeTimers();
       const reportId = 'reportid';
       const hydratedPlace = {
         _id: 'my-place',
@@ -1772,7 +1774,7 @@ describe('mutingUtils', () => {
 
     it('should set muting history when available', () => {
       const timestamp = 4567;
-      clock = sinon.useFakeTimers(timestamp);
+      clock.setSystemTime(timestamp);
       const mutedContact = {
         muted: 2000,
         muting_history: {
