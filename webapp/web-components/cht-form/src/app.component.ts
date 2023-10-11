@@ -27,6 +27,8 @@ export class AppComponent {
     language: 'en',
   };
 
+  private currentRender: Promise<void> = Promise.resolve();
+
   @Output() onCancel: EventEmitter<undefined> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
@@ -41,27 +43,27 @@ export class AppComponent {
 
   @Input() set formId(value: string) {
     this._formId = value;
-    this.renderForm();
+    this.queueRenderForm();
   }
 
   @Input() set formHtml(value: string | undefined) {
     this._formHtml = value;
-    this.renderForm();
+    this.queueRenderForm();
   }
 
   @Input() set formModel(value: string | undefined) {
     this._formModel = value;
-    this.renderForm();
+    this.queueRenderForm();
   }
 
   @Input() set formXml(value: string | undefined) {
     this._formXml = value;
-    this.renderForm();
+    this.queueRenderForm();
   }
 
   @Input() set contactSummary(value: Record<string, any> | undefined) {
     this._contactSummary = value ? { context: value } : undefined;
-    this.renderForm();
+    this.queueRenderForm();
   }
 
   @Input() set content(value: Record<string, any> | null) {
@@ -70,7 +72,7 @@ export class AppComponent {
       this._content.source = 'contact';
     }
 
-    this.renderForm();
+    this.queueRenderForm();
   }
 
   @Input() set user(user: Record<string, any>) {
@@ -78,7 +80,7 @@ export class AppComponent {
       throw new Error('User data must be provided.');
     }
     this._user = { ...user, language: user.language || 'en' };
-    this.renderForm();
+    this.queueRenderForm();
   }
 
   get formId() {
@@ -109,6 +111,11 @@ export class AppComponent {
     } finally {
       this.status.saving = false;
     }
+  }
+
+  private queueRenderForm() {
+    // Ensure that only one render is happening at a time
+    this.currentRender = this.currentRender.then(() => this.renderForm());
   }
 
   private async renderForm() {
