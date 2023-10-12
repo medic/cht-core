@@ -45,9 +45,9 @@ nodes:
   node-2: "gamma-cht-couchdb-2" # This is the name of the second node where couchdb will be deployed
   node-3: "gamma-cht-couchdb-3" # This is the name of the third node where couchdb will be deployed
   # For single couchdb node, use the following:
-  # Leave it empty if you don't know what it means.
-  # Leave it empty if you want to let kubernetes deploy this on any available node. (Recommended)
-  single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration. 
+  # Leave it commented out if you don't know what it means.
+  # Leave it commented out if you want to let kubernetes deploy this on any available node. (Recommended)
+  # single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration. 
 
 # Applicable only if using k3s
 k3s_use_vSphere_storage_class: "false" # "true" or "false"
