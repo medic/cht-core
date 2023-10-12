@@ -170,10 +170,10 @@ describe('Server utils', () => {
     });
 
     it('responds with JSON if requested', () => {
-      req.accepts.returns(true);
+      req.accepts.returns('json');
       serverUtils.notLoggedIn(req, res);
       chai.expect(req.accepts.callCount).to.equal(1);
-      chai.expect(req.accepts.args[0][0]).to.equal('application/json');
+      chai.expect(req.accepts.args[0][0]).to.deep.equal([ 'text', 'json' ]);
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(401);
       chai.expect(res.type.callCount).to.equal(1);
@@ -208,10 +208,10 @@ describe('Server utils', () => {
     });
 
     it('responds with JSON', () => {
-      req.accepts.returns('application/json');
+      req.accepts.returns('json');
       serverUtils.serverError({ foo: 'bar' }, req, res);
       chai.expect(req.accepts.callCount).to.equal(1);
-      chai.expect(req.accepts.args[0][0]).to.equal('application/json');
+      chai.expect(req.accepts.args[0][0]).to.deep.equal([ 'text', 'json' ]);
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(500);
       chai.expect(res.end.callCount).to.equal(1);
@@ -219,10 +219,10 @@ describe('Server utils', () => {
     });
 
     it('handles uncaught payload size exceptions', () => {
-      req.accepts.returns('application/json');
+      req.accepts.returns('json');
       serverUtils.serverError({ foo: 'bar', type: 'entity.too.large' }, req, res);
       chai.expect(req.accepts.callCount).to.equal(1);
-      chai.expect(req.accepts.args[0][0]).to.equal('application/json');
+      chai.expect(req.accepts.args[0][0]).to.deep.equal([ 'text', 'json' ]);
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(413);
       chai.expect(res.end.callCount).to.equal(1);
@@ -233,12 +233,12 @@ describe('Server utils', () => {
 
   describe('wantsJSON', () => {
     it('should return true when accept header includes json', () => {
-      req.accepts.returns('application/json');
+      req.accepts.returns('json');
       chai.expect(serverUtils.wantsJSON(req)).to.equal(true);
     });
 
     it('should return false when accept header excludes json', () => {
-      req.accepts.returns(false);
+      req.accepts.returns('text');
       chai.expect(serverUtils.wantsJSON(req)).to.equal(false);
     });
   });
