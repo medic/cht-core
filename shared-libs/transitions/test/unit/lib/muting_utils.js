@@ -1773,8 +1773,7 @@ describe('mutingUtils', () => {
     });
 
     it('should set muting history when available', () => {
-      const timestamp = 4567;
-      clock.setSystemTime(timestamp);
+      clock = sinon.useFakeTimers(4567);
       const mutedContact = {
         muted: 2000,
         muting_history: {
@@ -1805,13 +1804,14 @@ describe('mutingUtils', () => {
       };
 
       let contact = _.cloneDeep(mutedContact);
-      chai.expect(mutingUtils.updateContact(contact, moment())).to.equal(true);
+      const timestamp = moment().valueOf();
+      chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
       chai.expect(contact).to.deep.equal({
-        muted: moment(),
+        muted: timestamp,
         muting_history: {
           server_side: {
             muted: true,
-            date: moment(),
+            date: timestamp,
           },
           client_side: [{
             muted: true,
