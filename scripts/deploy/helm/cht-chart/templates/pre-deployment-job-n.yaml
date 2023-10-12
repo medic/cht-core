@@ -16,10 +16,10 @@ spec:
   template:
     spec:
       tolerations:
-      - key: {{ $root.Values.toleration.key }}
-        operator: {{ $root.Values.toleration.operator }}
-        value: {{ $root.Values.toleration.value | quote }}
-        effect: {{ $root.Values.toleration.effect }}
+      - key: {{ $.Values.toleration.key }}
+        operator: {{ $.Values.toleration.operator }}
+        value: {{ $.Values.toleration.value | quote }}
+        effect: {{ $.Values.toleration.effect }}
       nodeSelector:
         kubernetes.io/hostname: {{ index $.Values.nodes (printf "node-%d" $nodeNumber) }}
       restartPolicy: Never
