@@ -23,7 +23,7 @@ spec:
         value: {{ .Values.toleration.value | quote }}
         effect: {{ .Values.toleration.effect }}
       # Check if .Values.nodes.single_node_deploy has a value
-      {{- if .Values.nodes.single_node_deploy }}
+      {{- if hasKey .Values.nodes "single_node_deploy" }}
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.nodes.single_node_deploy }}
       {{- end }}
