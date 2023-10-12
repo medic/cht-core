@@ -3,7 +3,7 @@ import { DbService } from '@mm-services/db.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, Injector } from '@angular/core';
+import { NgModule, Injector, DoBootstrap } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { AppComponent } from './app.component';
 import { TranslateService } from '@mm-services/translate.service';
@@ -25,7 +25,7 @@ import { TranslateService } from '@mm-services/translate.service';
     }),
   ]
 })
-export class AppModule {
+export class AppModule implements DoBootstrap {
   constructor(
     injector: Injector,
     private dbService: DbService,
@@ -33,14 +33,13 @@ export class AppModule {
   ) {
     const chtForm = createCustomElement(AppComponent, { injector });
     customElements.define('cht-form', chtForm);
-
   }
 
   ngDoBootstrap() {
     window.CHTCore = {
-      // AndroidAppLauncher: { isEnabled: () => false },
+      AndroidAppLauncher: { isEnabled: () => false },
       Language: { get: async () => 'en' },
-      // MRDT: { enabled: () => false },
+      MRDT: { enabled: () => false },
       Select2Search: {
         init: async () => {}
       },

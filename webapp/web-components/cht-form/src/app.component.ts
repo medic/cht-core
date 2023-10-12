@@ -29,7 +29,7 @@ export class AppComponent {
 
   private currentRender: Promise<void> = Promise.resolve();
 
-  @Output() onCancel: EventEmitter<undefined> = new EventEmitter();
+  @Output() onCancel: EventEmitter<void> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
   constructor(
