@@ -394,6 +394,20 @@ const getDisplayedContactsNames = async () => {
   }
   return contacts;
 };
+
+const getPersonInfoEditForm = async (sexValue, roleValue) => {
+  return {
+    name: await personName().getValue(),
+    shortName: await $('[name="/data/person/short_name"]').getValue(),
+    dateOfBirth: await dateOfBirthField().getValue(),
+    sex: await sexField('person', sexValue).parentElement().getAttribute('data-checked'),
+    role: await roleField('person', roleValue).parentElement().getAttribute('data-checked'),
+    phone: await phoneField().getValue(),
+    externalId: await externalIdField('person').getValue(),
+    notes: await notes('person').getValue()
+  };
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -459,4 +473,5 @@ module.exports = {
   phoneField,
   sexField,
   roleField,
+  getPersonInfoEditForm,
 };
