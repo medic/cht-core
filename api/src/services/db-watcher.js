@@ -17,7 +17,7 @@ const watchChanges = ({ dbObject, emitter, name }) => {
     })
     .on('error', (err) => {
       logger.error(`Error watching ${name} changes, restarting: %o`, err);
-      setTimeout(() => watchChanges({ dbObject, emitter, name }));
+      process.exit(1);
     });
 };
 
