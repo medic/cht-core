@@ -817,6 +817,17 @@ describe('Setup utils', () => {
 
       expect(upgradeLogService.get.callCount).to.equal(1);
     });
+
+    it('should not change state if stage is completing', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({
+        _id: 'upgrade_log',
+        state: 'completing',
+      });
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
+    });
   });
 
   describe('getUpgradeServicePayload', () => {
