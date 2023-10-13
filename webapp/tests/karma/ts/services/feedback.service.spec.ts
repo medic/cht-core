@@ -63,7 +63,7 @@ describe('Feedback service', () => {
     mockConsole.log('Trying to save');
     mockConsole.info('Saving in process');
     mockConsole.warn('Saving taking a while');
-    mockConsole.error('Failed to save', new Error('404'));
+    mockConsole.error('Failed to save', new Error('404'), ['another', 'argument']);
 
     flush();
 
@@ -72,6 +72,11 @@ describe('Feedback service', () => {
 
     expect(submittedDoc.type).to.equal('feedback');
     expect(submittedDoc.info.message).to.equal('404');
+    expect(submittedDoc.arguments.length).to.equal(3);
+    expect(submittedDoc.arguments[0]).to.equal('"Failed to save"');
+    expect(submittedDoc.arguments[1]).to.include('Error: 404');
+    expect(submittedDoc.arguments[2]).to.equal('["another","argument"]');
+
     expect(submittedDoc.meta.user.name).to.equal('fred');
     expect(submittedDoc.meta.language).to.equal('es');
     expect(submittedDoc.meta.version).to.equal('0.5.0');
@@ -115,6 +120,7 @@ describe('Feedback service', () => {
     expect(submittedDoc.log[19].arguments).to.equal('["item 5"]');
     expect(submittedDoc.meta.source).to.equal('manual');
     expect(submittedDoc.meta.language).to.equal('en');
+    expect(submittedDoc.arguments).to.deep.equal(undefined);
   });
 
   it('should blank out password in URL', async () => {

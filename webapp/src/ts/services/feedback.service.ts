@@ -104,7 +104,7 @@ export class FeedbackService {
       const message = exceptionMessage || loggedMessage;
       this.lastErrorMessage = message;
       try {
-        await this.createAndSave( { message, stack: exception?.stack });
+        await this.createAndSave( { message, stack: exception?.stack, args });
       } catch (e) {
         // stop infinite loop of exceptions
         console.warn('Error while trying to record error', e);
@@ -120,32 +120,32 @@ export class FeedbackService {
     }
   }
 
-  private registerConsoleInterceptor() {
-    // stolen from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value#Examples
-    const getCircularReplacer = () => {
-      const seen = new WeakSet();
-      return (key, value) => {
-        if (value instanceof Error) {
-          return value.stack;
-        }
+  // stolen from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value#Examples
+  private getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (key, value) => {
+      if (value instanceof Error) {
+        return value.stack;
+      }
 
-        if (typeof value === 'object' && value !== null) {
-          if (seen.has(value)) {
-            return;
-          }
-          seen.add(value);
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) {
+          return;
         }
-        return value;
-      };
+        seen.add(value);
+      }
+      return value;
     };
+  };
 
+  private registerConsoleInterceptor() {
     // intercept console logging
     this.LEVELS.forEach(level => {
       const original = this.options.console[level];
       this.options.console[level] = (...args) => {
         const logEvent = {
           level,
-          arguments: JSON.stringify(args, getCircularReplacer()).substring(0, this.STACK_LENGTH),
+          arguments: JSON.stringify(args, this.getCircularReplacer()).substring(0, this.STACK_LENGTH),
           time: new Date().toISOString(),
         };
 
@@ -188,7 +188,11 @@ export class FeedbackService {
         source: isManual ? 'manual' : 'automatic',
         deviceId: this.telemetryService.getUniqueDeviceId(),
       },
-      info,
+      info: {
+        message: info.message,
+        stack: info.stack
+      },
+      arguments: info.args && info.args.map(arg => JSON.stringify(arg, this.getCircularReplacer())),
       log: this.getLog(),
       type: 'feedback'
     };

@@ -45,7 +45,7 @@ describe('Navigation tests', async () => {
   describe('Navigation view', async () => {
     const places = placeFactory.generateHierarchy();
     const districtHospital = places.get('district_hospital');
-    const user = userFactory.build({ place: districtHospital._id, roles: ['program_officer'] });
+    const user = userFactory.build({ place: districtHospital._id, roles: ['chw'] });
 
     beforeEach(async () => {
       await utils.saveDocs([...places.values()]);
@@ -77,6 +77,16 @@ describe('Navigation tests', async () => {
       await loginPage.login(user);
       const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
       expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Reports', 'People']);
+    });
+
+    it('should not create feedback docs when loading missing reports', async () => {
+      await loginPage.login(user);
+      await commonPage.goToReports('missing');
+    });
+
+    it('should not create feedback docs when loading missing reports', async () => {
+      await loginPage.login(user);
+      await commonPage.goToPeople('missing');
     });
   });
 });

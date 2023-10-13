@@ -193,8 +193,8 @@ const goToBase = async () => {
   await waitForPageLoaded();
 };
 
-const goToReports = async () => {
-  await browser.url('/#/reports');
+const goToReports = async (reportId) => {
+  await browser.url(`/#/reports/${reportId}`);
   await waitForPageLoaded();
 };
 
