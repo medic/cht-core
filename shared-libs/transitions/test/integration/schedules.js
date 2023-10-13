@@ -732,6 +732,132 @@ describe('functional schedules', () => {
       });
   });
 
+  it('schedule can be configured from single element in start_from array.', () => {
+    config.get.returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: ''
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks {{contact.name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: ['reported_date'],
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Mustaches.  Overrated or underrated?',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
+    });
+
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+      testMessage(
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie'
+      );
+    });
+  });
+
+  it('schedule is configured from second field, if first is not available.', () => {
+    config.get.returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: ''
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks {{contact.name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: ['reported_date', 'dob'],
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Mustaches.  Overrated or underrated?',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
+    });
+
+    const doc = {
+      dob: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+      testMessage(
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie'
+      );
+    });
+  });
+
   const testMessage = (message, expectedTo, expectedContent) => {
     assert(/^[a-z0-9-]*$/.test(message.uuid));
     assert.equal(message.to, expectedTo);
