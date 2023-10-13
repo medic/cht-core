@@ -18,20 +18,11 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
-  @ViewChild(FormTypeFilterComponent)
-  formTypeFilter: FormTypeFilterComponent;
-
-  @ViewChild(FacilityFilterComponent)
-  facilityFilter: FacilityFilterComponent;
-
-  @ViewChild('fromDate')
-  fromDateFilter: DateFilterComponent;
-
-  @ViewChild('toDate')
-  toDateFilter: DateFilterComponent;
-
-  @ViewChild(StatusFilterComponent)
-  statusFilter: StatusFilterComponent;
+  @ViewChild(FormTypeFilterComponent) formTypeFilter: FormTypeFilterComponent;
+  @ViewChild(FacilityFilterComponent) facilityFilter: FacilityFilterComponent;
+  @ViewChild('fromDate') fromDateFilter: DateFilterComponent;
+  @ViewChild('toDate') toDateFilter: DateFilterComponent;
+  @ViewChild(StatusFilterComponent) statusFilter: StatusFilterComponent;
 
   private globalActions;
   private filters: FilterComponent[] = [];
