@@ -3,7 +3,7 @@ import { DbService } from '@mm-services/db.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, Injector, DoBootstrap } from '@angular/core';
+import { DoBootstrap, Injector, NgModule } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { AppComponent } from './app.component';
 import { TranslateService } from '@mm-services/translate.service';

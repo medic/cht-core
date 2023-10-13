@@ -10,24 +10,24 @@ import { TranslateService } from '@mm-services/translate.service';
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  editing = false;
-  status = {
-    saving: false,
-    error: null
-  };
+  private readonly DEFAULT_FORM_ID = 'cht-form-id';
+  private readonly DEFAULT_USER = { contact_id: 'default_user', language: 'en' } as const;
+  private readonly DEFAULT_STATUS = {
+    saving: false as boolean,
+    error: null as string | null,
+  } as const;
 
-  private _formId: string = 'cht-form-id';
+  private _formId = this.DEFAULT_FORM_ID;
   private _formXml?: string;
   private _formModel?: string;
   private _formHtml?: string;
   private _contactSummary?: Record<string, any>;
-  private _content: Record<string, any> | null;
-  private _user: Record<string, any> = {
-    contact_id: 'default_user',
-    language: 'en',
-  };
+  private _content: Record<string, any> | null = null;
+  private _user: Record<string, any> = this.DEFAULT_USER;
+  private currentRender = Promise.resolve();
 
-  private currentRender: Promise<void> = Promise.resolve();
+  editing = false;
+  status = { ...this.DEFAULT_STATUS };
 
   @Output() onCancel: EventEmitter<void> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
@@ -46,17 +46,17 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
-  @Input() set formHtml(value: string | undefined) {
+  @Input() set formHtml(value: string) {
     this._formHtml = value;
     this.queueRenderForm();
   }
 
-  @Input() set formModel(value: string | undefined) {
+  @Input() set formModel(value: string) {
     this._formModel = value;
     this.queueRenderForm();
   }
 
-  @Input() set formXml(value: string | undefined) {
+  @Input() set formXml(value: string) {
     this._formXml = value;
     this.queueRenderForm();
   }
@@ -71,28 +71,24 @@ export class AppComponent {
     if (this._content?.contact && !this._content.source) {
       this._content.source = 'contact';
     }
-
     this.queueRenderForm();
   }
 
   @Input() set user(user: Record<string, any>) {
-    if (!user) {
-      throw new Error('User data must be provided.');
-    }
     this._user = { ...user, language: user.language || 'en' };
     this.queueRenderForm();
   }
 
-  get formId() {
+  get formId(): string {
     return this._formId;
   }
 
-  async cancelForm() {
+  cancelForm(): void {
     this.tearDownForm();
     this.onCancel.emit();
   }
 
-  async submitForm() {
+  async submitForm(): Promise<void> {
     this.status.saving = true;
 
     try {
@@ -159,8 +155,14 @@ export class AppComponent {
 
   private tearDownForm() {
     this.unloadForm();
-    this.formXml = undefined;
-    this.formHtml = undefined;
-    this.formModel = undefined;
+    this._formXml = undefined;
+    this._formHtml = undefined;
+    this._formModel = undefined;
+    this._contactSummary = undefined;
+    this._content = null;
+    this._formId = this.DEFAULT_FORM_ID;
+    this._user = this.DEFAULT_USER;
+    this.editing = false;
+    this.status = { ...this.DEFAULT_STATUS };
   }
 }

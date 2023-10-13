@@ -36,15 +36,17 @@ The following inputs are supported by the `cht-form` web component:
 - `formModel` (Required) - String value containing the model xml of the form to render.
 - `formXml` (Required) - String value containing the ODK xform xml of the form to render.
 - `user` - The user's settings document from the CouchDB `_users` database.
-- `contactSummary` - The context data for the contact summary of the form's contact. Must not be set for `contact` forms.
-- `content` - The content data to provide when rendering the form. The `contact` field can be the hydrated contact document for the form's contact.
+- `contactSummary` - The context data for the contact summary of the form's contact. Must not be set for `contact`
+  forms.
+- `content` - The content data to provide when rendering the form. The `contact` field can be the hydrated contact
+  document for the form's contact.
 
 These inputs can be set directly onto the `cht-form` HTML element:
 
 ```js
 const myForm = document.getElementById('myform');
 myForm.user = { contact_id: 'test_user' };
-myForm.contactSummary = { pregnancy_uuid : 'myPregUUID'};
+myForm.contactSummary = { pregnancy_uuid: 'myPregUUID' };
 myForm.content = { contact: { name: "My Test Patient" } };
 
 myForm.formHtml = formData.formHtml;
@@ -54,9 +56,10 @@ myForm.formXml = formData.formXml;
 
 ### Form outputs
 
-Outputs from the web component are emitted as events.  The following events are emitted:
+Outputs from the web component are emitted as events. The following events are emitted:
 
-- `onSubmit` - Emitted when the form is submitted (the submit button is pressed).  The event detail contains an array of docs created by the form.
+- `onSubmit` - Emitted when the form is submitted (the submit button is pressed). The event detail contains an array of
+  docs created by the form.
 - `onCancel` - Emitted when the form is cancelled (the cancel button is pressed).
 
 ```js
@@ -87,6 +90,7 @@ Also, for more complex layouts, you should use bootstrap containers to manage th
   </div>
 </div>
 ```
+
 ## Example Page
 
 The included `index.html` provides an example of a simple web page using the `cht-form` web component to display a basic form. Once you have built the web component (as described above), you can deploy the example page using the following command:
