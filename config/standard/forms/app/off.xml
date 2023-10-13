@@ -97,7 +97,7 @@
             <value>Si</value>
           </text>
           <text id="/off/group_note/send_note:label">
-            <value>¿Quieres escribir un mensaje adicional al promotor?</value>
+            <value>¿Quiéres escribir un mensaje adicional al promotor?</value>
           </text>
           <text id="/off/group_note:label">
             <value>Desactivando notificaciones</value>
@@ -106,7 +106,7 @@
             <value>-</value>
           </text>
           <text id="/off/inputs/contact/_id:label">
-            <value>¿Como se llama el paciente?</value>
+            <value>¿Cómo se llama el paciente?</value>
           </text>
           <text id="/off/inputs/contact/date_of_birth:label">
             <value>Fecha de nacimiento</value>
