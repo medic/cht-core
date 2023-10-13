@@ -10,6 +10,11 @@ describe('cht-form web component - Pregnancy Form', () => {
     const url = await mockConfig.startMockApp('default', 'pregnancy');
     await browser.url(url);
 
+    await browser.execute(() => {
+      const myForm = document.getElementById('myform');
+      myForm.content = { contact: { _id: '12345'} };
+    });
+
     let countRiskFactors = 0;
     let countDangerSigns = 0;
     const edd = moment().add(30, 'days');
@@ -17,7 +22,6 @@ describe('cht-form web component - Pregnancy Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy registration');
 
-    await genericForm.nextPage();
     await pregnancyForm.selectGestationAge();
     await genericForm.nextPage();
     await pregnancyForm.setDeliveryDate(edd.format('YYYY-MM-DD'));

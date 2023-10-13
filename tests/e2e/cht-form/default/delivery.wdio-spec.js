@@ -21,7 +21,6 @@ describe('cht-form web component - Delivery Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Delivery');
 
-    await genericForm.nextPage();
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();
     await deliveryForm.selectDeliveryPostnatalDangerSignsFever('no');

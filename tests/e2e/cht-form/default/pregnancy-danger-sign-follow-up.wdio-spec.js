@@ -8,10 +8,14 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     const url = await mockConfig.startMockApp('default', 'pregnancy_danger_sign_follow_up');
     await browser.url(url);
 
+    await browser.execute(() => {
+      const myForm = document.getElementById('myform');
+      myForm.content = { contact: { _id: '12345'} };
+    });
+
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy danger sign follow-up');
 
-    await genericForm.nextPage();
     await pregDangerSignFollowUpForm.selectVisitedHealthFacility(true);
     await pregDangerSignFollowUpForm.selectDangerSigns(true);
     await genericForm.submitForm();

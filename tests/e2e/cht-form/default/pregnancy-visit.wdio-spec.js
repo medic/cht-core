@@ -9,11 +9,15 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
     const url = await mockConfig.startMockApp('default', 'pregnancy_home_visit');
     await browser.url(url);
 
+    await browser.execute(() => {
+      const myForm = document.getElementById('myform');
+      myForm.content = { contact: { _id: '12345'} };
+    });
+
     let countDangerSigns = 0;
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy home visit');
 
-    await genericForm.nextPage();
     await pregnancyVisitForm.selectVisitOption();
     await pregnancyVisitForm.confirmGestationalAge();
     await genericForm.nextPage();

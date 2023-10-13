@@ -9,12 +9,16 @@ describe('cht-form web component - Death Report Form', () => {
     const url = await mockConfig.startMockApp('default', 'death_report');
     await browser.url(url);
 
+    await browser.execute(() => {
+      const myForm = document.getElementById('myform');
+      myForm.content = { contact: { _id: '12345'} };
+    });
+
     const date = moment().format('YYYY-MM-DD');
     const deathNote = 'Test note';
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Death report');
 
-    await genericForm.nextPage();
     await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);
     await deathReportForm.setDeathInformation(deathNote);
     await deathReportForm.setDeathDate(date);

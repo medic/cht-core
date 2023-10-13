@@ -7,10 +7,14 @@ describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
     const url = await mockConfig.startMockApp('default', 'pnc_danger_sign_follow_up_baby');
     await browser.url(url);
 
+    await browser.execute(() => {
+      const myForm = document.getElementById('myform');
+      myForm.content = { contact: { _id: '12345'} };
+    });
+
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('PNC danger sign follow-up - baby');
 
-    await genericForm.nextPage();
     await genericForm.selectYesNoOption(dangerSignPage.visitConfirmation('pnc_danger_sign_follow_up_baby'));
     await genericForm.selectYesNoOption(dangerSignPage.dangerSignsPresent('pnc_danger_sign_follow_up_baby'));
     await genericForm.selectYesNoOption(dangerSignPage.infectedUmbilicalCord('pnc_danger_sign_follow_up_baby'));
