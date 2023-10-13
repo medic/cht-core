@@ -221,7 +221,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "web-components/cht-form/tests/karma/test.ts",
+            "main": "tests/karma/test.ts",
             "polyfills": "src/ts/polyfills.ts",
             "tsConfig": "web-components/cht-form/tsconfig.spec.json",
             "karmaConfig": "web-components/cht-form/tests/karma/karma-unit.conf.js",

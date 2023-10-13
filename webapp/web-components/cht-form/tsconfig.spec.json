@@ -19,7 +19,7 @@
     ]
   },
   "files": [
-    "tests/karma/test.ts",
+    "../../tests/karma/test.ts",
     "../../src/ts/polyfills.ts"
   ],
   "include": [
