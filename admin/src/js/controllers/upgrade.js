@@ -224,7 +224,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         .post(url, { build })
         .catch(err => {
           // exclude "50x" like statuses that come from nginx
-          const requestFailedStatuses = [1, 502, 503];
+          const requestFailedStatuses = [-1, 502, 503];
           if (err && (!err.status || requestFailedStatuses.includes(err.status)) && action === 'complete') {
             // refresh page after containers are back up
             return waitUntilApiStarts().then(() => reloadPage());
