@@ -26,7 +26,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
-    const UPGRADE_CONTAINER_WAIT_PERIOD = 60 * 1000; // 1 minute
+    const UPGRADE_CONTAINER_WAIT_PERIOD = 3 * 60 * 1000; // 3 minutes
     let containerWaitPeriodTimeout;
 
     const logError = (error, key) => {
@@ -223,9 +223,9 @@ angular.module('controllers').controller('UpgradeCtrl',
       return $http
         .post(url, { build })
         .catch(err => {
-          // todo which status do we get with nginx???
           // exclude "50x" like statuses that come from nginx
-          if (err && (!err.status || err.status === 503 || err.status === -1) && action === 'complete') {
+          const requestFailedStatuses = [-1, 502, 503];
+          if (err && (!err.status || requestFailedStatuses.includes(err.status)) && action === 'complete') {
             // refresh page after containers are back up
             return waitUntilApiStarts().then(() => reloadPage());
           }

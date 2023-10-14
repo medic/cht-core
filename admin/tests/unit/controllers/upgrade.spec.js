@@ -345,7 +345,7 @@ describe('UpgradeCtrl controller', () => {
     expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(5);
   });
 
-  it('should display error after upgrade endpoint has failed for 1 minute', async () => {
+  it('should display error after upgrade endpoint has failed for 3 minutes', async () => {
     const deployInfo = { the: 'deplopy info', version: '4.1.0' };
     const upgradeDoc = {
       from: { version: '4.1.0', build: '4.1.0' },
@@ -371,12 +371,12 @@ describe('UpgradeCtrl controller', () => {
     expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
     expect(scope.indexerProgress).to.deep.equal([]);
 
-    for (let i = 0; i < 31; i++) {
+    for (let i = 0; i < 91; i++) {
       timeout.flush(2000);
       await nextTick();
     }
 
-    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(32);
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(92);
     expect(scope.error).to.equal('instance.upgrade.error.get_upgrade');
   });
 
