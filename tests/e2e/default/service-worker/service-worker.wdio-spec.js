@@ -172,6 +172,8 @@ describe('Service worker cache', () => {
   it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
+    await commonPage.sync(true);
+
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
       'User Name': 'Utilizator',
@@ -181,7 +183,6 @@ describe('Service worker cache', () => {
     await waitForLogs.promise;
 
     await commonPage.sync(true);
-    await commonPage.closeReloadModal();
     await commonPage.logout();
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');

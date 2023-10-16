@@ -106,7 +106,7 @@
             <value>-</value>
           </text>
           <text id="/on/inputs/contact/_id:label">
-            <value>¿Como se llama el paciente?</value>
+            <value>¿Cómo se llama el paciente?</value>
           </text>
           <text id="/on/inputs/contact/date_of_birth:label">
             <value>Fecha de nacimiento</value>

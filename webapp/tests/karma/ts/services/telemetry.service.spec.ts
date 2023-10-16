@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { DOCUMENT } from '@angular/common';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import * as moment from 'moment';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { DbService } from '@mm-services/db.service';
@@ -293,7 +292,7 @@ describe('TelemetryService', () => {
       expect(windowMock.PouchDB.calledOnce).to.be.true;
       expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
 
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
+      clock.tick('01:00'); // 1 min later ...
       await service.record('test', 5);
 
       expect(telemetryDb.post.calledTwice).to.be.true;  // second call
@@ -305,7 +304,7 @@ describe('TelemetryService', () => {
 
       let postCalledAfterQuery = false;
       telemetryDb.post.callsFake(async () => postCalledAfterQuery = telemetryDb.query.called);
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'days').valueOf()); // 1 day later ...
+      clock.tick('24:00:00'); // 1 day later ...
       await service.record('test', 2);
 
       expect(telemetryDb.post.calledThrice).to.be.true; // third call
@@ -339,7 +338,7 @@ describe('TelemetryService', () => {
       expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
       expect(metaDb.put.notCalled).to.be.true;         // NO telemetry has been recorded yet
 
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
+      clock.tick('01:00'); // 1 min later ...
       await service.record('another.datapoint');
 
       expect(telemetryDb.post.calledTwice).to.be.true; // second call
@@ -347,7 +346,7 @@ describe('TelemetryService', () => {
       expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
       expect(metaDb.put.notCalled).to.be.true;         // still NO telemetry has been recorded (same day)
 
-      clock = sinon.useFakeTimers(moment(NOW).add(2, 'days').valueOf()); // 2 days later ...
+      clock.tick('48:00:00'); // 2 days later ...
       windowMock.indexedDB.databases.resolves([ { name: 'telemetry-2018-11-10-greg' } ]);
       await service.record('test', 2);
 
@@ -361,7 +360,7 @@ describe('TelemetryService', () => {
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);  // Today 2018-11-12 but aggregation is
       expect(telemetryDb.destroy.calledOnce).to.be.true;                      // from 2 days ago (not Yesterday)
 
-      clock = sinon.useFakeTimers(moment(NOW).add(7, 'days').valueOf());  // 7 days later from Nov 10
+      clock.tick(5 * 24 * 60 * 60 * 1000); // 5 more days later ...
       windowMock.indexedDB.databases.resolves([ { name: 'telemetry-2018-11-12-greg' } ]);
       await service.record('point.a', 1);
 
@@ -374,7 +373,7 @@ describe('TelemetryService', () => {
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-12-greg-[\w-]+$/); // Now is Nov 17 but agg. is from Nov 12
 
       // A new record is added ...
-      clock = sinon.useFakeTimers(moment(NOW).add(2, 'hours').valueOf()); // ... 2 hours later ...
+      clock.tick('02:00:00'); // 2 hours later ...
       windowMock.indexedDB.databases.resolves([]);
       await service.record('point.b', 0); // 1 record added
       // ...the aggregation count is the same because
