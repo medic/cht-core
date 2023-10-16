@@ -42,21 +42,33 @@ export class AppComponent {
   }
 
   @Input() set formId(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form Id must be populated.');
+    }
     this._formId = value;
     this.queueRenderForm();
   }
 
   @Input() set formHtml(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form HTML must be populated.');
+    }
     this._formHtml = value;
     this.queueRenderForm();
   }
 
   @Input() set formModel(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form Model must be populated.');
+    }
     this._formModel = value;
     this.queueRenderForm();
   }
 
   @Input() set formXml(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form XML must be populated.');
+    }
     this._formXml = value;
     this.queueRenderForm();
   }
@@ -75,7 +87,10 @@ export class AppComponent {
   }
 
   @Input() set user(user: Record<string, any>) {
-    this._user = { ...user, language: user.language || 'en' };
+    if (!user) {
+      throw new Error('The user must be populated.');
+    }
+    this._user = { ...this.DEFAULT_USER, ...user };
     this.queueRenderForm();
   }
 

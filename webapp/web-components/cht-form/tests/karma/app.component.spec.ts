@@ -108,6 +108,7 @@ describe('AppComponent', () => {
     const user = {
       contact_id: 'spanish_user',
       language: 'es',
+      custom: 'user field'
     };
     const contactSummary = { hello: 'world' };
     const content = { my: 'content' };
@@ -146,11 +147,34 @@ describe('AppComponent', () => {
     });
     expect(enketoService.renderForm.args[0][2]).to.deep.equal(user);
     expect(enketoService.unload.called).to.be.false;
+
+    // Null out the optional fields and render again
+    component.contactSummary = undefined;
+    component.content = null;
+    tick();
+
+    // Form is rendered again, but without instanceData or contactSummary
+    expect(enketoService.renderForm.callCount).to.equal(3);
+    const actualContext1 = enketoService.renderForm.args[2][0];
+    expect(actualContext1).to.deep.include({
+      selector: `#${formId}`,
+      type: 'report',
+      formDoc: { _id: formId },
+      instanceData: null,
+      contactSummary: undefined
+    });
+    expect(enketoService.renderForm.args[2][1]).to.deep.equal({
+      html: $(FORM_HTML),
+      model: formModel,
+      hasContactSummary: true
+    });
+    expect(enketoService.renderForm.args[2][2]).to.deep.equal(user);
+    expect(enketoService.unload.called).to.be.false;
   }));
 
-  it('renders form with default language code when provided user has no language', fakeAsync(async () => {
+  it('renders form with default fields missing from the provided user', fakeAsync(async () => {
     const component = await getComponent();
-    component.user = { contact_id: 'user_with_no_language' };
+    component.user = { hello: 'world' };
     tick();
     component.formXml = FORM_XML;
     tick();
@@ -160,8 +184,9 @@ describe('AppComponent', () => {
     tick();
     expect(enketoService.renderForm.callCount).to.equal(1);
     expect(enketoService.renderForm.args[0][2]).to.deep.equal({
-      contact_id: 'user_with_no_language',
-      language: 'en'
+      contact_id: 'default_user',
+      language: 'en',
+      hello: 'world'
     });
   }));
 
@@ -259,6 +284,38 @@ describe('AppComponent', () => {
     expect(enketoService.renderForm.args[7][2]).to.deep.equal(user);
     expect(enketoService.unload.callCount).to.equal(8);
     enketoService.unload.args.forEach((args) => expect(args).to.deep.equal([currentForm]));
+  }));
+
+  [
+    null,
+    undefined,
+    '',
+    ' ',
+  ].forEach((value) => {
+    it(`throws error when setting [${value}] Form Id`, fakeAsync(async () => {
+      const component = await getComponent();
+      expect(() => component.formId = value as unknown as string).to.throw('The Form Id must be populated.');
+    }));
+
+    it(`throws error when setting [${value}] Form HTML`, fakeAsync(async () => {
+      const component = await getComponent();
+      expect(() => component.formHtml = value as unknown as string).to.throw('The Form HTML must be populated.');
+    }));
+
+    it(`throws error when setting [${value}] Form Model`, fakeAsync(async () => {
+      const component = await getComponent();
+      expect(() => component.formModel = value as unknown as string).to.throw('The Form Model must be populated.');
+    }));
+
+    it(`throws error when setting [${value}] Form XML`, fakeAsync(async () => {
+      const component = await getComponent();
+      expect(() => component.formXml = value as unknown as string).to.throw('The Form XML must be populated.');
+    }));
+  });
+
+  it(`throws error when setting null user`, fakeAsync(async () => {
+    const component = await getComponent();
+    expect(() => component.user = null as unknown as Record<string, any>).to.throw('The user must be populated.');
   }));
 
   it('sets the editing value to true when the edited listener is triggered', fakeAsync(async () => {
