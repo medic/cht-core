@@ -113,8 +113,6 @@ describe(`Rules Engine Integration Tests`, () => {
     // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to strange behaviors with Utils.now()
     describe(`rulesAreDeclarative: ${rulesAreDeclarative}`, () => {
       beforeEach(async () => {
-        clock.setSystemTime(TEST_START);
-
         db = await memdownMedic('../..');
         rulesEngine = RulesEngine(db);
 
