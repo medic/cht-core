@@ -4,6 +4,7 @@ const fs = require('fs/promises');
 // This is essentially the same code used by the test-harness to generate the form html and model.
 // If this code changes, the test-harness will need to be updated as well.
 const generateXformService = require('../../../api/src/services/generate-xform');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 let server;
 const mockApp = express();
@@ -43,7 +44,19 @@ const stopMockApp = () => {
   server && server.close();
 };
 
+const getOnSubmitPromise = () => browser.executeAsync((resolve) => {
+  const myForm = document.getElementById('myform');
+  myForm.addEventListener('onSubmit', (e) => resolve(e.detail));
+});
+
+const submitForm = async () => {
+  const onSubmitPromise = getOnSubmitPromise();
+  await genericForm.submitForm();
+  return onSubmitPromise;
+};
+
 module.exports = {
   startMockApp,
   stopMockApp,
+  submitForm
 };

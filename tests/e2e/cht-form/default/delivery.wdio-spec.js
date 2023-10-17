@@ -67,11 +67,9 @@ describe('cht-form web component - Delivery Form', () => {
     expect(summaryInfo.deceasedBabies).to.equal('0');
     expect(summaryInfo.pncVisits).to.equal('None');
 
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObjMother = JSON.parse(data)[0].fields;
-    const jsonObjBaby = JSON.parse(data)[1];
+    const data = await mockConfig.submitForm();
+    const jsonObjMother = data[0].fields;
+    const jsonObjBaby = data[1];
 
     expect(jsonObjMother.patient_uuid).to.equal('12345');
     expect(jsonObjMother.patient_id).to.equal('79376');
@@ -118,10 +116,8 @@ describe('cht-form web component - Delivery Form', () => {
     await genericForm.nextPage();
     await genericForm.nextPage();
 
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[1];
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[1];
 
     expect(jsonObj.form).to.equal('death_report');
     expect(jsonObj.from).to.equal('+50689999999');

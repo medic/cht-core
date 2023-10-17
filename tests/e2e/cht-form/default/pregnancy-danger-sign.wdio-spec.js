@@ -26,10 +26,8 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     await genericForm.selectYesNoOption(dangerSignPage.easilyTired('pregnancy_danger_sign'));
     await genericForm.selectYesNoOption(dangerSignPage.swellingHands('pregnancy_danger_sign'), 'no');
     await genericForm.selectYesNoOption(dangerSignPage.breathlessness('pregnancy_danger_sign'));
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.patient_uuid).to.equal('12345');
     expect(jsonObj.patient_id).to.equal('79376');

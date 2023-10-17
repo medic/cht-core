@@ -8,45 +8,6 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container-fluid">
-      <div id="cancelBanner" style="display: none" class="row">
-        <h1>Form Canceled</h1>
-      </div>
-      <div class="row">
-        <cht-form id="myform"></cht-form>
-      </div>
-      <div id="submitBanner" style="display: none; height: 100%; overflow: scroll" class="row">
-        <h1>Form Submitted</h1>
-        <pre id="submittedData"></pre>
-      </div>
-    </div>
+  <cht-form id="myform"></cht-form>
 </body>
-
-<script>
-
-  const myForm = document.getElementById('myform');
-  // myForm.user = {
-  //   contact_id: 'test_user'
-  // };
-  // myForm.contactSummary = { pregnancy_uuid : 'myPregUUID'};
-  // myForm.content = { contact: { name: "My Test Patient" } };
-
-  // myForm.formHtml = formData.formHtml;
-  // myForm.formModel = formData.formModel;
-  // myForm.formXml = formData.formXml;
-
-  myForm.addEventListener('onSubmit', async (e) => {
-    myForm.style.display = 'none';
-    const submittedData = document.getElementById('submittedData');
-    submittedData.innerText = JSON.stringify(e.detail, null, 2);
-    const submitBanner = document.getElementById('submitBanner');
-    submitBanner.style.display = 'block';
-  });
-  myForm.addEventListener('onCancel', async (e) => {
-    myForm.style.display = 'none';
-    const cancelBanner = document.getElementById('cancelBanner');
-    cancelBanner.style.display = 'block';
-  });
-
-</script>
 </html>

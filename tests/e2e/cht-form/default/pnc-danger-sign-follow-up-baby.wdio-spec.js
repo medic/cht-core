@@ -25,10 +25,8 @@ describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
     await genericForm.selectYesNoOption(dangerSignPage.yellowSkin('pnc_danger_sign_follow_up_baby'));
     await genericForm.selectYesNoOption(dangerSignPage.fever('pnc_danger_sign_follow_up_baby'), 'no');
     await genericForm.selectYesNoOption(dangerSignPage.blueSkin('pnc_danger_sign_follow_up_baby'));
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.t_danger_signs_referral_follow_up).to.equal('yes');
     expect(jsonObj.danger_signs.visit_confirm).to.equal('yes');

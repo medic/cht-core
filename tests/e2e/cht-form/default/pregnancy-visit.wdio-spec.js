@@ -42,10 +42,8 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
     const countSummaryDangerSigns = await pregnancyVisitForm.countSummaryDangerSigns();
     expect(countSummaryDangerSigns).to.equal(countDangerSigns);
 
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.pregnancy_summary.visit_option).to.equal('yes');
     expect(jsonObj.pregnancy_summary.g_age_correct).to.equal('yes');

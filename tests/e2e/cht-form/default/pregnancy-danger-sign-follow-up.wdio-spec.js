@@ -17,10 +17,8 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
     await pregDangerSignFollowUpForm.selectVisitedHealthFacility(true);
     await pregDangerSignFollowUpForm.selectDangerSigns(true);
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.t_danger_signs_referral_follow_up).to.equal('yes');
     expect(jsonObj.danger_signs.vaginal_bleeding).to.equal('yes');

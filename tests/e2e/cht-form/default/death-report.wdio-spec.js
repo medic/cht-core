@@ -27,10 +27,8 @@ describe('cht-form web component - Death Report Form', () => {
     expect(deathDate).to.equal(date);
     expect(deathInformation).to.equal(deathNote);
 
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields.death_details;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields.death_details;
 
     expect(jsonObj.date_of_death).to.equal(date);
     expect(jsonObj.death_information).to.equal(deathNote);

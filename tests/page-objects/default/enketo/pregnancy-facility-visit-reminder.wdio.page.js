@@ -15,14 +15,19 @@ const getAncReminderInfo = async () => {
   };
 };
 
-const submitAncReminder = async (method = 'in_person') => {
+const selectReminderMethod = async (method = 'in_person') => {
   const reminderAnc = await reminderMethod(method);
   await reminderAnc.waitForClickable();
   await reminderAnc.click();
+};
+
+const submitAncReminder = async (method) => {
+  await selectReminderMethod(method);
   await genericForm.submitForm();
 };
 
 module.exports = {
+  selectReminderMethod,
   getAncReminderInfo,
   submitAncReminder,
 };

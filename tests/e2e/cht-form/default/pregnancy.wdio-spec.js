@@ -69,10 +69,8 @@ describe('cht-form web component - Pregnancy Form', () => {
     expect(summaryDetails.riskFactorsSumm).to.equal(countRiskFactors);
     expect(summaryDetails.dangerSignsSumm).to.equal(countDangerSigns);
 
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(Date.parse(jsonObj.gestational_age.g_edd)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(jsonObj.t_pregnancy_follow_up).to.equal('yes');

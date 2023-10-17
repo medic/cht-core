@@ -17,10 +17,8 @@ describe('cht-form web component - Undo Death Report Form', () => {
 
     expect(await undoDeathReportForm.getConfirmationPatientName()).to.equal('John');
     await undoDeathReportForm.setConfirmUndoDeathOption();
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.patient_name).to.equal('John');
     expect(jsonObj.undo.undo_information).to.equal('yes');

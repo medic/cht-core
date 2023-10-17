@@ -17,10 +17,9 @@ describe('cht-form web component - Create Person Form', () => {
     await (await contactPage.roleField('person', 'chw')).click();
     await (await contactPage.externalIdField('person')).setValue('12345');
     await (await contactPage.notes('person')).setValue('Test notes - create new person');
-    await genericForm.submitForm();
+    const data = await mockConfig.submitForm();
 
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.person.name).to.equal('Filippo');
     expect(jsonObj.person.date_of_birth).to.equal('2000-09-20');
