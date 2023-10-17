@@ -4,8 +4,7 @@ const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.pa
 
 describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
   it('should submit a PNC danger sign follow-up - baby form', async () => {
-    const url = await mockConfig.startMockApp('default', 'pnc_danger_sign_follow_up_baby');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'app', 'pnc_danger_sign_follow_up_baby');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

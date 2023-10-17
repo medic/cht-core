@@ -7,8 +7,7 @@ const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.pa
 describe('cht-form web component - Pregnancy Form', () => {
 
   it('should submit a new pregnancy ', async () => {
-    const url = await mockConfig.startMockApp('default', 'pregnancy');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'app', 'pregnancy');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

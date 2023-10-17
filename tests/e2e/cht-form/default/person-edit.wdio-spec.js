@@ -5,8 +5,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 describe('cht-form web component - Edit Person Form', () => {
 
   it('should edit a person', async () => {
-    const url = await mockConfig.startMockApp('default', 'person_edit');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'contact',  'person-edit');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

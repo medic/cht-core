@@ -5,8 +5,7 @@ const pregDangerSignFollowUpForm = require('@page-objects/default/enketo/pregnan
 describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
   it('should submit a pregnancy danger sign form', async () => {
-    const url = await mockConfig.startMockApp('default', 'pregnancy_danger_sign_follow_up');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'app', 'pregnancy_danger_sign_follow_up');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
