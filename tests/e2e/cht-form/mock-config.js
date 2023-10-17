@@ -1,8 +1,6 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs/promises');
-// This is essentially the same code used by the test-harness to generate the form html and model.
-// If this code changes, the test-harness will need to be updated as well.
 const generateXformService = require('../../../api/src/services/generate-xform');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
@@ -20,6 +18,8 @@ const getFormPath = (config, formType, formName) => {
 
 const generateFormData = async (formPath) => {
   const formXml = await fs.readFile(formPath, 'utf-8');
+  // This is essentially the same code used by the test-harness to generate the form html and model.
+  // If this code changes, the test-harness will need to be updated as well.
   const { form: formHtml, model: formModel } = await generateXformService.generate(formXml);
   return { formHtml, formModel, formXml };
 };
