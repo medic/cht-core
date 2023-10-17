@@ -4,8 +4,7 @@ const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.pa
 
 describe('cht-form web component - PNC Danger Sign Follow-up Mother', () => {
   it('should submit PNC danger sign follow-up - mother form', async () => {
-    const url = await mockConfig.startMockApp('default', 'pnc_danger_sign_follow_up_mother');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'app', 'pnc_danger_sign_follow_up_mother');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
@@ -22,10 +21,8 @@ describe('cht-form web component - PNC Danger Sign Follow-up Mother', () => {
     await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pnc_danger_sign_follow_up_mother'));
     await genericForm.selectYesNoOption(dangerSignPage.vaginalDischarge('pnc_danger_sign_follow_up_mother'), 'no');
     await genericForm.selectYesNoOption(dangerSignPage.convulsion('pnc_danger_sign_follow_up_mother'));
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.t_danger_signs_referral_follow_up).to.equal('yes');
     expect(jsonObj.danger_signs.visit_confirm).to.equal('yes');

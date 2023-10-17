@@ -5,8 +5,7 @@ const pregDangerSignFollowUpForm = require('@page-objects/default/enketo/pregnan
 describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
   it('should submit a pregnancy danger sign form', async () => {
-    const url = await mockConfig.startMockApp('default', 'pregnancy_danger_sign_follow_up');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'app', 'pregnancy_danger_sign_follow_up');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
@@ -18,10 +17,8 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
     await pregDangerSignFollowUpForm.selectVisitedHealthFacility(true);
     await pregDangerSignFollowUpForm.selectDangerSigns(true);
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields;
 
     expect(jsonObj.t_danger_signs_referral_follow_up).to.equal('yes');
     expect(jsonObj.danger_signs.vaginal_bleeding).to.equal('yes');

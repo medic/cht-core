@@ -4,8 +4,7 @@ const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.
 
 describe('cht-form web component - Replace User Form', () => {
   it('should submit the replace user form', async () => {
-    const url = await mockConfig.startMockApp('default', 'replace_user');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'app', 'replace_user');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
@@ -28,11 +27,9 @@ describe('cht-form web component - Replace User Form', () => {
     expect(phone).to.equal('+50689999999');
     expect(contactName).to.equal('Replacement User');
 
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObjContact = JSON.parse(data)[0].fields;
-    const jsonObjNewContact = JSON.parse(data)[1];
+    const data = await mockConfig.submitForm();
+    const jsonObjContact = data[0].fields;
+    const jsonObjNewContact = data[1];
 
     expect(jsonObjContact.patient_id).to.equal('12345');
     expect(jsonObjContact.user_phone).to.equal('+50689999999');
