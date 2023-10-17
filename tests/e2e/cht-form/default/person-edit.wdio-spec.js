@@ -5,8 +5,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 describe('cht-form web component - Edit Person Form', () => {
 
   it('should edit a person', async () => {
-    const url = await mockConfig.startMockApp('default', 'person_edit');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'contact',  'person-edit');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
@@ -64,10 +63,9 @@ describe('cht-form web component - Edit Person Form', () => {
     await (await contactPage.personName()).addValue(' Dog');
     await (await contactPage.phoneField()).setValue('+50688888888');
     await (await contactPage.notes('person')).addValue(' - New note');
-    await genericForm.submitForm();
+    const data = await mockConfig.submitForm();
 
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields;
+    const jsonObj = data[0].fields;
     expect(jsonObj.person.name).to.equal('Filippo Dog');
     expect(jsonObj.person.date_of_birth).to.equal('2000-09-20');
     expect(jsonObj.person.sex).to.equal('male');

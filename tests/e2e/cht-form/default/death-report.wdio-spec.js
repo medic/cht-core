@@ -6,8 +6,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 describe('cht-form web component - Death Report Form', () => {
 
   it('should submit a death report', async () => {
-    const url = await mockConfig.startMockApp('default', 'death_report');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'app', 'death_report');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
@@ -28,10 +27,8 @@ describe('cht-form web component - Death Report Form', () => {
     expect(deathDate).to.equal(date);
     expect(deathInformation).to.equal(deathNote);
 
-    await genericForm.submitForm();
-
-    const data = await $('#submittedData').getText();
-    const jsonObj = JSON.parse(data)[0].fields.death_details;
+    const data = await mockConfig.submitForm();
+    const jsonObj = data[0].fields.death_details;
 
     expect(jsonObj.date_of_death).to.equal(date);
     expect(jsonObj.death_information).to.equal(deathNote);
@@ -39,8 +36,7 @@ describe('cht-form web component - Death Report Form', () => {
   });
 
   it('should verify the Spanish translation for the first page of the form', async () => {
-    const url = await mockConfig.startMockApp('default', 'death_report');
-    await browser.url(url);
+    await mockConfig.startMockApp('default', 'test', 'death_report_es');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
