@@ -929,12 +929,10 @@ const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scr
 const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.yml`);
 
 const generateComposeFiles = async () => {
-  const useExistingImages = process.argv.find(arg => arg === '--use-existing');
-  if (useExistingImages) {
-    const oldFilesExist = COMPOSE_FILES.every(file => fs.existsSync(getTestComposeFilePath(file)));
-    if (oldFilesExist) {
-      return;
-    }
+  const useExistingImages = !process.env.VERSION;
+  const composeFilesExist = COMPOSE_FILES.every(file => fs.existsSync(getTestComposeFilePath(file)));
+  if (useExistingImages && composeFilesExist) {
+    return;
   }
 
   const view = {
