@@ -25,8 +25,8 @@ describe('cht-form web component - Child Health Registration Form', () => {
     const defaultSms = 'Good news, Luna! Cleo (98765) has been registered for Child Health messages. Thank you!';
 
     const formInfo = await childHealthRegistrationPage.getFormInformation();
-    expect(formInfo.parentName).to.equal('Luna');
-    expect(formInfo.parentPhone).to.equal('+50689252525');
+    expect(formInfo.chwName).to.equal('Luna');
+    expect(formInfo.chwPhone).to.equal('+50689252525');
     expect(formInfo.defaultSms).to.equal(defaultSms);
 
     await childHealthRegistrationPage.setPersonalNote('Test note - child health registration');
@@ -35,8 +35,8 @@ describe('cht-form web component - Child Health Registration Form', () => {
     const summaryInformation = await childHealthRegistrationPage.getSummaryInformation();
     expect(summaryInformation.childId).to.equal('98765');
     expect(summaryInformation.childName).to.equal('Cleo');
-    expect(summaryInformation.parentContactName).to.equal('Luna');
-    expect(summaryInformation.parentContactPhone).to.equal('+50689252525');
+    expect(summaryInformation.chwName).to.equal('Luna');
+    expect(summaryInformation.chwPhone).to.equal('+50689252525');
     expect(summaryInformation.smsContent).to.equal(`${defaultSms} Test note - child health registration`);
 
     const data = await mockConfig.submitForm();

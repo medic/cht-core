@@ -3,8 +3,8 @@ const REGISTRATION_DETAILS =
   'span[data-itext-id="/child_health_registration/group_summary/r_patient_info:label"].active';
 const FOLLOW_UP_SMS = 'span[data-itext-id="/child_health_registration/group_summary/r_followup_note1:label"].active';
 
-const parentContactName = () => $(`${DEFAULT_NOTE} span[data-value=" /child_health_registration/chw_name "]`);
-const parentContactPhone = () => $(`${DEFAULT_NOTE} span[data-value=" /child_health_registration/chw_phone "]`);
+const chwName = () => $(`${DEFAULT_NOTE} span[data-value=" /child_health_registration/chw_name "]`);
+const chwPhone = () => $(`${DEFAULT_NOTE} span[data-value=" /child_health_registration/chw_phone "]`);
 const defaultChwSmsText = () => $(DEFAULT_NOTE +
     ' span[data-value=" /child_health_registration/group_note/default_chw_sms_text "]');
 const personalNote = () => $('textarea[name="/child_health_registration/group_note/g_chw_sms"]');
@@ -12,9 +12,9 @@ const personalNote = () => $('textarea[name="/child_health_registration/group_no
 const sumChildName = () => $(`${REGISTRATION_DETAILS} span[data-value=" /child_health_registration/patient_name "]`);
 const sumChildId = () => $(REGISTRATION_DETAILS +
   ' span[data-value=" /child_health_registration/group_summary/r_patient_id "]');
-const sumFollowUpMsgParentContactName = () => $(FOLLOW_UP_SMS +
+const sumFollowUpMsgChwName = () => $(FOLLOW_UP_SMS +
   ' span[data-value=" /child_health_registration/chw_name "]');
-const sumFollowUpMsgParentContactPhone = () => $(FOLLOW_UP_SMS +
+const sumFollowUpMsgChwPhone = () => $(FOLLOW_UP_SMS +
   ' span[data-value=" /child_health_registration/chw_phone "]');
 const sumFollowUpSmsContent = () => $(
   'span[data-itext-id="/child_health_registration/group_summary/r_followup_note2:label"].active ' +
@@ -23,8 +23,8 @@ const sumFollowUpSmsContent = () => $(
 
 const getFormInformation = async () => {
   return {
-    parentName: await parentContactName().getText(),
-    parentPhone: await parentContactPhone().getText(),
+    chwName: await chwName().getText(),
+    chwPhone: await chwPhone().getText(),
     defaultSms: await defaultChwSmsText().getText(),
   };
 };
@@ -39,8 +39,8 @@ const getSummaryInformation = async () => {
   return {
     childName: await sumChildName().getText(),
     childId: await sumChildId().getText(),
-    parentContactName: await sumFollowUpMsgParentContactName().getText(),
-    parentContactPhone: await sumFollowUpMsgParentContactPhone().getText(),
+    chwName: await sumFollowUpMsgChwName().getText(),
+    chwPhone: await sumFollowUpMsgChwPhone().getText(),
     smsContent: await sumFollowUpSmsContent().getText(),
   };
 };
