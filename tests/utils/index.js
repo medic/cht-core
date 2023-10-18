@@ -1047,7 +1047,7 @@ const saveLogs = async () => {
 const tearDownServices = async () => {
   await saveLogs();
   if (!DEBUG) {
-    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes', '--rmi');
   }
 };
 
