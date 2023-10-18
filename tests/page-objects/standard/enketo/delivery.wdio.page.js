@@ -2,17 +2,17 @@ const OUTCOME = {liveBirth: 'healthy', stillBirth: 'still_birth', miscarriage: '
 const LOCATION = {facility: 'f', homeAttendant: 's', homeNoAttendant: 'ns'};
 
 const FORM = 'form[data-form-id="delivery"]';
-const pregnancyOutcome = (value) => $(`${FORM} ` +
+const pregnancyOutcome = (value) => $(FORM +
   `input[name="/delivery/group_delivery_summary/g_pregnancy_outcome"][value="${value}"`);
-const pregnancyOutcomeLabel = (value) => $(`${FORM} ` +
+const pregnancyOutcomeLabel = (value) => $(FORM +
   `span[data-itext-id="/delivery/group_delivery_summary/g_pregnancy_outcome/${value}:label"]`);
-const deliveryLocation = (value) => $(`${FORM} ` +
+const deliveryLocation = (value) => $(FORM +
   `input[name="/delivery/group_delivery_summary/g_delivery_code"][value="${value}"`);
-const deliveryLocationLabel = (value) => $(`${FORM} ` +
+const deliveryLocationLabel = (value) => $(FORM +
   `span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]`);
 const deliveryDate = () => $(`${FORM} div.widget.date input`);
 const smsNote = () => $(`${FORM} textarea[name="/delivery/group_note/g_chw_sms"]`);
-const outcomeSummary = () => $(`${FORM} ` + 
+const outcomeSummary = () => $(FORM + 
   `span[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]`);
 const locationSummary = () => $(`${FORM} span[data-value=" /delivery/group_summary/r_delivery_location "]`);
 const followUpSMS = () => $(`${FORM} span[data-value=" /delivery/chw_sms "]`);
