@@ -783,9 +783,9 @@ describe('functional schedules', () => {
     return transition.onMatch({ doc: doc }).then(complete => {
       assert.equal(complete, true);
       assert(doc.tasks);
-      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert.equal(doc.tasks?.length, 1);
       assert(doc.scheduled_tasks);
-      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+      assert.equal(doc.scheduled_tasks?.length, 1);
 
       testMessage(
         getMessage(doc, 0),

@@ -97,7 +97,7 @@ module.exports = {
     if (typeof startFrom === 'undefined') {
       startFrom = 'reported_date';
     }
-    
+
     const docStart = Array.isArray(startFrom)? objectPath.coalesce(doc, startFrom): objectPath.get(doc, startFrom);
 
     // if the document does not have the `start_from` property (or its
