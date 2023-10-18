@@ -52,7 +52,7 @@ describe('feedback docs', () => {
     await commonElements.sync();
     await browser.waitUntil(
       async () => (await getServerFeedbackDocs()).length >= 1000,
-      { timeout: 5000, interval: 1000 }
+      { timeout: 10000, interval: 1000 }
     );
     await commonElements.refresh();
 

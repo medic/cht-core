@@ -282,5 +282,10 @@ describe('Feedback service', () => {
     mockConsole.error(new Error('something really bad happened and we will not record it'));
     flush();
     expect(metaDb.post.called).to.be.false;
+    expect(metaDb.allDocs.args).to.deep.equal([[{
+      start_key: 'feedback',
+      end_key: 'feedback\ufff0',
+      limit: 1000
+    }]]);
   }));
 });
