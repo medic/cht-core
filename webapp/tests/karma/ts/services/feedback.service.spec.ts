@@ -10,7 +10,7 @@ import { LanguageService } from '@mm-services/language.service';
 
 describe('Feedback service', () => {
   let clock;
-  let post;
+  let metaDb;
   let mockConsole;
   let mockWindow;
   let mockDocument;
@@ -19,7 +19,10 @@ describe('Feedback service', () => {
   let languageService;
 
   beforeEach(() => {
-    post = sinon.stub();
+    metaDb = {
+      post: sinon.stub(),
+      allDocs: sinon.stub(),
+    };
     mockDocument = {};
     mockConsole = {
       error: sinon.stub(),
@@ -33,7 +36,7 @@ describe('Feedback service', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: { get: () => ({ post }) } },
+        { provide: DbService, useValue: { get: () => metaDb } },
         { provide: VersionService, useValue: { getLocal } },
         { provide: SessionService, useValue: { userCtx: () => ({ name: 'fred' }) } },
         { provide: LanguageService, useValue: languageService }
@@ -49,7 +52,8 @@ describe('Feedback service', () => {
   });
 
   it('should submit feedback when there is an unhandled error', fakeAsync(() => {
-    post.resolves();
+    metaDb.post.resolves();
+    metaDb.allDocs.resolves({ rows: [] });
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('es');
     service._setOptions({
@@ -67,8 +71,8 @@ describe('Feedback service', () => {
 
     flush();
 
-    expect(post.callCount).to.equal(1);
-    const submittedDoc = post.args[0][0];
+    expect(metaDb.post.callCount).to.equal(1);
+    const submittedDoc = metaDb.post.args[0][0];
 
     expect(submittedDoc.type).to.equal('feedback');
     expect(submittedDoc.info.message).to.equal('404');
@@ -97,7 +101,8 @@ describe('Feedback service', () => {
   }));
 
   it('should log history restricted to 20 lines', async () => {
-    post.resolves();
+    metaDb.post.resolves();
+    metaDb.allDocs.resolves({ rows: [] });
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('en');
     service.init();
@@ -113,8 +118,8 @@ describe('Feedback service', () => {
 
     await service.submit({ message: 'hello world' }, true);
 
-    expect(post.calledOnce).to.be.true;
-    const submittedDoc = post.args[0][0];
+    expect(metaDb.post.calledOnce).to.be.true;
+    const submittedDoc = metaDb.post.args[0][0];
     expect(submittedDoc.log.length).to.equal(20);
     expect(submittedDoc.log[0].arguments).to.equal('["item 24"]');
     expect(submittedDoc.log[19].arguments).to.equal('["item 5"]');
@@ -125,7 +130,8 @@ describe('Feedback service', () => {
 
   it('should blank out password in URL', async () => {
     clock = sinon.useFakeTimers();
-    post.resolves();
+    metaDb.post.resolves();
+    metaDb.allDocs.resolves({ rows: [] });
     getLocal.resolves(({ version: '0.5.0' }));
     mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
     languageService.get.resolves('en');
@@ -138,8 +144,8 @@ describe('Feedback service', () => {
 
     await service.submit({ message: 'hello world' });
 
-    expect(post.calledOnce).to.be.true;
-    const submittedDoc = post.args[0][0];
+    expect(metaDb.post.calledOnce).to.be.true;
+    const submittedDoc = metaDb.post.args[0][0];
     expect(submittedDoc.meta.url).to.equal('http://gareth:********@somewhere.com');
     expect(submittedDoc.meta.language).to.equal('en');
     expect(submittedDoc.meta.version).to.equal('0.5.0');
@@ -147,7 +153,8 @@ describe('Feedback service', () => {
   });
 
   it('should record device id in feedback doc', async () => {
-    post.resolves();
+    metaDb.post.resolves();
+    metaDb.allDocs.resolves({ rows: [] });
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('en');
     service._setOptions({
@@ -158,8 +165,8 @@ describe('Feedback service', () => {
 
     await service.submit({ message: 'hello world' }, true);
 
-    expect(post.calledOnce).to.be.true;
-    const submittedDoc = post.args[0][0];
+    expect(metaDb.post.calledOnce).to.be.true;
+    const submittedDoc = metaDb.post.args[0][0];
     expect(submittedDoc.meta.source).to.equal('manual');
     expect(submittedDoc.meta.language).to.equal('en');
     expect(submittedDoc.meta.deviceId).to.exist;
@@ -176,7 +183,7 @@ describe('Feedback service', () => {
 
     mockConsole.error('Error replicating', new Error('Failed to fetch'));
     flush();
-    expect(post.calledOnce).to.be.false;
+    expect(metaDb.post.called).to.be.false;
   }));
 
   it('should not record network errors', fakeAsync(() => {
@@ -192,7 +199,7 @@ describe('Feedback service', () => {
       new Error('Http failure response for /api/v1/replication/get-ids: 0 Unknown Error')
     );
     flush();
-    expect(post.calledOnce).to.be.false;
+    expect(metaDb.post.called).to.be.false;
   }));
 
   it('should not record missing docs',  fakeAsync(() => {
@@ -205,7 +212,7 @@ describe('Feedback service', () => {
 
     mockConsole.error('Error selecting contact', new Error('missing'));
     flush();
-    expect(post.calledOnce).to.be.false;
+    expect(metaDb.post.called).to.be.false;
   }));
 
   it('should not record missing docs', fakeAsync(() => {
@@ -218,7 +225,7 @@ describe('Feedback service', () => {
 
     mockConsole.error('Error selecting report', new Error('Document not found: 4327849274892'));
     flush();
-    expect(post.calledOnce).to.be.false;
+    expect(metaDb.post.called).to.be.false;
   }));
 
   it('should not record denied replication', fakeAsync(() => {
@@ -234,7 +241,7 @@ describe('Feedback service', () => {
       { id: '123', error: 'forbidden', name: 'forbidden', status: 500, stack: 'something' }
     );
     flush();
-    expect(post.calledOnce).to.be.false;
+    expect(metaDb.post.called).to.be.false;
   }));
 
   it('should not record invalid phone number errors', fakeAsync(() => {
@@ -246,7 +253,7 @@ describe('Feedback service', () => {
 
     mockConsole.error(new Error('invalid phone number: "4r324234"'));
     flush();
-    expect(post.calledOnce).to.be.false;
+    expect(metaDb.post.called).to.be.false;
   }));
 
   it('should not record duplicate phone number errors', fakeAsync(() => {
@@ -259,6 +266,21 @@ describe('Feedback service', () => {
 
     mockConsole.error(new Error('phone number not unique: "4r324234"'));
     flush();
-    expect(post.calledOnce).to.be.false;
+    expect(metaDb.post.called).to.be.false;
+  }));
+
+  it('should not record if there are more than 1000 feedback docs in the meta database', fakeAsync(() => {
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+    metaDb.post.resolves();
+    metaDb.allDocs.resolves({ rows: Array.from({ length: 1000 }) });
+
+    mockConsole.error(new Error('something really bad happened and we will not record it'));
+    flush();
+    expect(metaDb.post.called).to.be.false;
   }));
 });

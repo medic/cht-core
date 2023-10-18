@@ -35,6 +35,7 @@ export class FeedbackService {
   private readonly LEVELS = ['error', 'warn', 'log', 'info'];
   private readonly LOG_LENGTH = 20;
   private readonly STACK_LENGTH = 5000;
+  private readonly MAX_DOCS = 1000;
   private readonly logCircularBuffer = new Array(this.LOG_LENGTH);
   // List of Error messages to not automatically log to feedback
   // Can be a lower-cased partial string or a regular expression
@@ -62,7 +63,17 @@ export class FeedbackService {
       .filter(i => !!i);
   }
 
-  private shouldGenerateFeedback(message:string, exceptionMessage:string, exception?) {
+  private async exceededFeedbackDocDbLimit () {
+    const response = await this.dbService.get({ meta: true }).allDocs({
+      start_key: 'feedback',
+      end_key: 'feedback\ufff0',
+      limit: this.MAX_DOCS
+    });
+
+    return response.rows.length === this.MAX_DOCS;
+  }
+
+  private async shouldGenerateFeedback(message:string, exceptionMessage:string, exception?) {
     // requiring a valid error to be logged to avoid cascades of feedback docs
     if (!message || !exception) {
       return false;
@@ -76,7 +87,15 @@ export class FeedbackService {
     const matchesNoFeedback = this.NO_FEEDBACK_MESSAGES
       .find((item:RegExp) => item.test(message) || item.test(exceptionMessage));
 
-    return !matchesNoFeedback;
+    if (matchesNoFeedback) {
+      return false;
+    }
+
+    if (await this.exceededFeedbackDocDbLimit()) {
+      return false;
+    }
+
+    return true;
   }
 
   private getExceptionMessage(exception) {
@@ -100,7 +119,7 @@ export class FeedbackService {
     const exceptionMessage = this.getExceptionMessage(exception);
     const loggedMessage = String(args[0]);
 
-    if (this.shouldGenerateFeedback(loggedMessage, exceptionMessage, exception)) {
+    if (await this.shouldGenerateFeedback(loggedMessage, exceptionMessage, exception)) {
       const message = exceptionMessage || loggedMessage;
       this.lastErrorMessage = message;
       try {
