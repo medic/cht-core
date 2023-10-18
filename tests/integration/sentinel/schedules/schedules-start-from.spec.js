@@ -211,8 +211,8 @@ describe('schedules alternative start_from', () => {
     const expectedMessage5 = (state) => createExpectedMessage('sch3', 1, state, 'another schedule from array');
 
     const expectedDue1 = expectedDueDate(startDate, '12', 'weeks');
-    const expectedDue2 = expectedDueDate(startDate, '2', 'weeks');
-    const expectedDue3 = expectedDueDate(startDate, '180', 'days');
+    const expectedDue2 = expectedDueDate(moment(), '2', 'weeks');
+    const expectedDue3 = expectedDueDate(moment(), '180', 'days');
     const expectedDue4 = expectedDueDate(startDate, '10', 'days');
     const expectedDue5 = expectedDueDate(startDate, '100', 'days');
 
@@ -239,18 +239,24 @@ describe('schedules alternative start_from', () => {
         chai.expect(schedule5).to.deep.nested.include(expectedMessage5('scheduled'));
 
         // ensuring schedules started with expected field
-        chai.expect(moment(schedule1.due).format('YYYY-MM-DD')).to.equal(expectedDue1);
-        chai.expect(moment(schedule2.due).format('YYYY-MM-DD')).to.equal(expectedDue2);
-        chai.expect(moment(schedule3.due).format('YYYY-MM-DD')).to.equal(expectedDue3);
-        chai.expect(moment(schedule4.due).format('YYYY-MM-DD')).to.equal(expectedDue4);
-        chai.expect(moment(schedule5.due).format('YYYY-MM-DD')).to.equal(expectedDue5);
+        chai.expect(moment(schedule1.due).format('YYYY-MM-DD')).to.equal(expectedDue1, 'schedule1');
+        chai.expect(moment(schedule2.due).format('YYYY-MM-DD')).to.equal(expectedDue2, 'schedule2');
+        chai.expect(moment(schedule3.due).format('YYYY-MM-DD')).to.equal(expectedDue3, 'schedule3');
+        chai.expect(moment(schedule4.due).format('YYYY-MM-DD')).to.equal(expectedDue4, 'schedule4');
+        chai.expect(moment(schedule5.due).format('YYYY-MM-DD')).to.equal(expectedDue5, 'schedule5');
 
         chai.expect(updWithClinic.scheduled_tasks).to.be.ok;
         chai.expect(updWithClinic.scheduled_tasks).to.have.lengthOf(3);
 
-        chai.expect(updWithClinic.scheduled_tasks[0]).to.deep.nested.include(expectedMessage1('scheduled'));
-        chai.expect(updWithClinic.scheduled_tasks[1]).to.deep.nested.include(expectedMessage2('scheduled'));
-        chai.expect(updWithClinic.scheduled_tasks[2]).to.deep.nested.include(expectedMessage3('scheduled'));
+        const [clinicSchedule1, clinicSchedule2, clinicSchedule3 ] = updWithClinic.scheduled_tasks;
+
+        chai.expect(clinicSchedule1).to.deep.nested.include(expectedMessage1('scheduled'));
+        chai.expect(clinicSchedule2).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(clinicSchedule3).to.deep.nested.include(expectedMessage3('scheduled'));
+
+        chai.expect(moment(clinicSchedule1.due).format('YYYY-MM-DD')).to.equal(expectedDue1);
+        chai.expect(moment(clinicSchedule2.due).format('YYYY-MM-DD')).to.equal(expectedDue2);
+        chai.expect(moment(clinicSchedule3.due).format('YYYY-MM-DD')).to.equal(expectedDue3);
       });
   });
 });
