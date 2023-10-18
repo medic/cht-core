@@ -1,6 +1,5 @@
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
-const sentinelUtils = require('@utils/sentinel');
 const chtDbUtils = require('@utils/cht-db');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
