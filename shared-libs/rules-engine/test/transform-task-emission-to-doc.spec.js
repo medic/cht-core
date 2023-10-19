@@ -9,10 +9,16 @@ const transformTaskEmissionToDoc = rewire('../src/transform-task-emission-to-doc
 
 const NOW = moment('2000-01-01');
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
+let clock;
 
 describe('transform-task-emission-to-doc', () => {
-  before(() => sinon.useFakeTimers(NOW.valueOf()));
-  after(() => sinon.restore());
+  before(() => {
+    clock = sinon.useFakeTimers(NOW.valueOf());
+  });
+  after(() => {
+    sinon.restore();
+    clock.restore();
+  });
 
   it('existingDoc in terminal state yields new doc', () => {
     // a new document in state "ready"
