@@ -53,6 +53,8 @@ describe('Immunization Visit', () => {
   });
   
   it('Submit immunization visit - webapp', async () => {
+    const notes = 'Test notes - delivery';
+
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
 
@@ -99,14 +101,15 @@ describe('Immunization Visit', () => {
     await genericForm.nextPage();
     countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.YELLOW_FEVER_VACCINE, 'yes');
     await genericForm.nextPage();
-    await immVisitForm.addNotes();
+    await immVisitForm.addNotes(notes);
     await genericForm.nextPage();
 
-    expect(await immVisitForm.getPatientNameSummaryPage()).to.equal(babyName);
-    expect(countAppliedVaccines).to.equal(await immVisitForm.getAppliedVaccinesSummary());
-    expect(await immVisitForm.getFollowUpSMS()).to.include(babyName);
-    expect(await immVisitForm.getFollowUpSMS()).to.include(babyMedicID);
-    expect(await immVisitForm.getFollowUpSMS()).to.include(await immVisitForm.getNotes());
+    const summaryDetails = await immVisitForm.getSummaryDetails();
+    expect(summaryDetails.patientName).to.equal(babyName);
+    expect(summaryDetails.appliedVaccines).to.equal(countAppliedVaccines);
+    expect(summaryDetails.followUpSmsNote2).to.include(babyName);
+    expect(summaryDetails.followUpSmsNote2).to.include(babyMedicID);
+    expect(summaryDetails.followUpSmsNote2).to.include(notes);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
