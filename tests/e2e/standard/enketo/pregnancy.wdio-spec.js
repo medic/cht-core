@@ -66,12 +66,12 @@ describe('New pregnancy', () => {
     await pregnancyForm.setNote(note);
     await genericForm.nextPage();
 
-    expect((await pregnancyForm.riskFactorsSummary()).length).to.equal(riskFactors.length);
-    expect((await pregnancyForm.dangerSignsSummary()).length).to.equal(dangerSigns.length);
-    const followUpSMS = await pregnancyForm.getFollowUpSMS();
-    expect(followUpSMS).to.include(pregnantWoman1);
-    expect(followUpSMS).to.include(medicIDW1);
-    expect(followUpSMS).to.include(note);
+    const summaryDetails = await pregnancyForm.getSumamryDetails();
+    expect(summaryDetails.countRiskFactors).to.equal(riskFactors.length);
+    expect(summaryDetails.countDangerSigns).to.equal(dangerSigns.length);
+    expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman1);
+    expect(summaryDetails.followUpSmsNote2).to.include(medicIDW1);
+    expect(summaryDetails.followUpSmsNote2).to.include(note);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

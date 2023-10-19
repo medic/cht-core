@@ -3,17 +3,25 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const APROX_LMP = {up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244};
 
-const form = 'form[data-form-id="pregnancy"]';
-const knowLMP = (value) => $(`${form} input[name="/pregnancy/group_lmp/g_lmp_method"][value="${value}"]`);
-const aproxLMP = (value) => $(`${form} input[name="/pregnancy/group_lmp/g_lmp_approx"][value="${value}"]`);
-const getEstDeliveryDate = () => $(`${form} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"].active`);
-const risksFac = () => $$(`${form} [name="/pregnancy/group_risk_factors"] label:not(:first-child) > [type="checkbox"]`);
-const dangerSigns = () => $$(`${form} input[name="/pregnancy/group_danger_signs/g_danger_signs"]`);
-const smsNote = () => $(`${form} textarea[name="/pregnancy/group_note/g_chw_sms"]`);
-const riskFactorsSummary = () => $$(`${form} :not(label.disabled):not(label.or-appearance-yellow)  > ` +
+const FORM = 'form[data-form-id="pregnancy"]';
+const knowLMP = (value) => $(`${FORM} input[name="/pregnancy/group_lmp/g_lmp_method"][value="${value}"]`);
+const aproxLMP = (value) => $(`${FORM} input[name="/pregnancy/group_lmp/g_lmp_approx"][value="${value}"]`);
+const getEstDeliveryDate = () => $(`${FORM} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"].active`);
+const risksFac = () => $$(`${FORM} [name="/pregnancy/group_risk_factors"] label:not(:first-child) > [type="checkbox"]`);
+const dangerSigns = () => $$(`${FORM} input[name="/pregnancy/group_danger_signs/g_danger_signs"]`);
+const smsNote = () => $(`${FORM} textarea[name="/pregnancy/group_note/g_chw_sms"]`);
+const patientNameSummary = () => $(FORM +
+  ' span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"].active' +
+  ' span[data-value=" /pregnancy/patient_name "]');
+const patientIdSummary = () => $(FORM +
+  ' span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"].active' +
+  ' span[data-value=" /pregnancy/group_review/r_patient_id "]');
+const riskFactorsSummary = () => $$(`${FORM} :not(label.disabled):not(label.or-appearance-yellow)  > ` +
   `span[data-itext-id*="/pregnancy/group_review/r_risk_factor"].active`);
-const dangerSignsSummary = () => $$(`${form} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"].active`);
-const followUpSMS = () => $(`${form} [data-value=" /pregnancy/chw_sms "]`);
+const dangerSignsSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"].active`);
+const followUpSmsNote1 = () => $(`${FORM} span[data-itext-id="/pregnancy/group_review/r_followup_note1:label"].active`);
+const followUpSmsNote2 = () => $(`${FORM} span[data-itext-id="/pregnancy/group_review/r_followup_note2:label"].active` +
+ ' [data-value=" /pregnancy/chw_sms "]');
 
 const selectKnowLMP = async (value = 'approx') => {
   const lmpOption = await knowLMP(value);
@@ -50,10 +58,15 @@ const setNote = async (text = 'Test note') => {
   await note.setValue(text);
 };
 
-const getFollowUpSMS = async () => {
-  const sms = await followUpSMS();
-  await sms.waitForDisplayed();
-  return sms.getText();
+const getSumamryDetails = async () => {
+  return {
+    patientName: await patientNameSummary().getText(),
+    patientId: await patientIdSummary().getText(),
+    countRiskFactors: await riskFactorsSummary().length,
+    countDangerSigns: await dangerSignsSummary().length,
+    followUpSmsNote1: await followUpSmsNote1().getText(),
+    followUpSmsNote2: await followUpSmsNote2().getText(),
+  };
 };
 
 const submitPregnancy = async () => {
@@ -80,6 +93,6 @@ module.exports = {
   setNote,
   riskFactorsSummary,
   dangerSignsSummary,
-  getFollowUpSMS,
+  getSumamryDetails,
   submitPregnancy,
 };
