@@ -30,7 +30,7 @@
     "google-libphonenumber": "^3.2.31",
     "gsm": "^0.1.4",
     "later": "^1.2.0",
-    "lodash": "4.17.19",
+    "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mustache": "^4.2.0",
     "object-path": "^0.11.8",
