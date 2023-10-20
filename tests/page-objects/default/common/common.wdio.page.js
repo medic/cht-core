@@ -187,7 +187,9 @@ const getLogoutMessage = async () => {
 const goToUrl = async (url) => {
   const currentUrl = await browser.getUrl();
   const desiredUrl = `${constants.BASE_URL}${url}`;
-  if (currentUrl !== desiredUrl) {
+  if (currentUrl === desiredUrl) {
+    await browser.refresh();
+  } else {
     await browser.url(url);
   }
 };
