@@ -40,13 +40,13 @@ describe('cht-form web component - Pregnancy Registration Form', () => {
     await pregnancyForm.setNote(note);
     await genericForm.nextPage();
 
-    const summaryDetails = await pregnancyForm.getSumamryDetails();
+    const summaryDetails = await pregnancyForm.getSummaryDetails();
     expect(summaryDetails.patientName).to.equal('Cleo');
     expect(summaryDetails.patientId).to.equal('98765');
     expect(summaryDetails.countRiskFactors).to.equal(riskFactors.length);
     expect(summaryDetails.countDangerSigns).to.equal(dangerSigns.length);
-    expect(summaryDetails.followUpSmsNote1).to.include('The following will be sent as a SMS to Luna +50689252525');
-    expect(summaryDetails.followUpSmsNote2).to.include(followUpSms);
+    expect(summaryDetails.followUpSmsNote1).to.equal('The following will be sent as a SMS to Luna +50689252525');
+    expect(summaryDetails.followUpSmsNote2).to.equal(followUpSms);
 
     const data = await mockConfig.submitForm();
     const jsonObj = data[0].fields;

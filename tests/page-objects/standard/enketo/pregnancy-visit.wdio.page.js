@@ -5,7 +5,17 @@ const FORM = 'form[data-form-id="pregnancy_visit"]';
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${FORM} textarea[name="/pregnancy_visit/group_note/g_chw_sms"]`);
 const dangerSignSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"].active`);
-const followUpSMS = () => $(`${FORM} span[data-value=" /pregnancy_visit/chw_sms "]`);
+const patientNameSummary = () => $(FORM +
+  ' span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"].active' +
+  ' span[data-value=" /pregnancy_visit/patient_name "]');
+const patientIdSummary = () => $(FORM +
+  ' span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"].active' +
+  ' span[data-value=" /pregnancy_visit/group_review/r_patient_id "]');
+const followUpSmsNote1 = () => $(FORM +
+  ' span[data-itext-id="/pregnancy_visit/group_review/r_followup_note1:label"].active');
+const followUpSmsNote2 = () => $(FORM +
+  ' span[data-itext-id="/pregnancy_visit/group_review/r_followup_note2:label"].active' +
+  ' span[data-value=" /pregnancy_visit/chw_sms "]');
 
 const selectAllDangerSigns = async () => {
   const dangerSigns = await dangerSig();
@@ -21,10 +31,14 @@ const setNote = async (text = 'Test note') => {
   await note.setValue(text);
 };
 
-const getFollowUpSMS = async () => {
-  const sms = await followUpSMS();
-  await sms.waitForDisplayed();
-  return sms.getText();
+const getSummaryDetails = async () => {
+  return {
+    patientName: await patientNameSummary().getText(),
+    patientId: await patientIdSummary().getText(),
+    countDangerSigns: await dangerSignSummary().length,
+    followUpSmsNote1: await followUpSmsNote1().getText(),
+    followUpSmsNote2: await followUpSmsNote2().getText(),
+  };
 };
 
 const submitPregnancyVisit = async () => {
@@ -40,6 +54,6 @@ module.exports = {
   selectAllDangerSigns,
   setNote,
   dangerSignSummary,
-  getFollowUpSMS,
+  getSummaryDetails,
   submitPregnancyVisit,
 };

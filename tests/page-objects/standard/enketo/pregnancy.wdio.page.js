@@ -58,7 +58,7 @@ const setNote = async (text = 'Test note') => {
   await note.setValue(text);
 };
 
-const getSumamryDetails = async () => {
+const getSummaryDetails = async () => {
   return {
     patientName: await patientNameSummary().getText(),
     patientId: await patientIdSummary().getText(),
@@ -93,6 +93,6 @@ module.exports = {
   setNote,
   riskFactorsSummary,
   dangerSignsSummary,
-  getSumamryDetails,
+  getSummaryDetails,
   submitPregnancy,
 };
