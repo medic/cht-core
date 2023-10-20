@@ -35,6 +35,8 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -89,6 +91,7 @@ describe('Reports Component', () => {
     authService = {
       has: sinon.stub().resolves(false),
       online: sinon.stub().resolves(false),
+      any: sinon.stub().resolves(true)
     };
     sessionService = {
       isAdmin: sinon.stub().returns(false),
@@ -122,6 +125,7 @@ describe('Reports Component', () => {
           ComponentsModule,
           BrowserAnimationsModule,
           BsDropdownModule.forRoot(),
+          MatExpansionModule
         ],
         declarations: [
           ReportsComponent,
@@ -129,6 +133,7 @@ describe('Reports Component', () => {
           ReportsSidebarFilterComponent,
           SearchBarComponent,
           ReportsContentComponent,
+          ReportsMoreMenuComponent,
           NavigationComponent,
         ],
         providers: [

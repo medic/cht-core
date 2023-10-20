@@ -9,6 +9,7 @@ import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
 import { TestingComponent } from '@mm-modules/testing/testing.component';
+import { FormsModule } from '@angular/forms';
 
 describe('Testing Component', () => {
   let component: TestingComponent;
@@ -38,7 +39,8 @@ describe('Testing Component', () => {
     return TestBed
       .configureTestingModule({
         imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } })
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FormsModule
         ],
         declarations: [
           TestingComponent

@@ -12,6 +12,8 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
+import { CommonModule } from '@angular/common';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 describe('Reports More Menu Component', () => {
   let component: ReportsMoreMenuComponent;
@@ -45,6 +47,8 @@ describe('Reports More Menu Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatExpansionModule,
+          CommonModule
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
