@@ -19,6 +19,7 @@ import { ModalService } from '@mm-services/modal.service';
 import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
 import { PipesModule } from '@mm-pipes/pipes.module';
+import { SenderComponent } from '@mm-components/sender/sender.component';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
@@ -69,7 +70,8 @@ describe('MessagesContentComponent', () => {
           PipesModule,
         ],
         declarations: [
-          MessagesContentComponent
+          MessagesContentComponent,
+          SenderComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

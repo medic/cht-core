@@ -17,6 +17,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -70,6 +71,7 @@ describe('Messages Component', () => {
           MessagesComponent,
           RelativeDatePipe,
           NavigationComponent,
+          MessagesMoreMenuComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

@@ -9,6 +9,7 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
+import { FormsModule } from '@angular/forms';
 
 describe('Search Bar Component', () => {
   let component: SearchBarComponent;
@@ -29,6 +30,7 @@ describe('Search Bar Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FormsModule
         ],
         declarations: [
           SearchBarComponent,

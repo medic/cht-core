@@ -15,6 +15,7 @@ import { SessionService } from '@mm-services/session.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 describe('Reports Sidebar Filter Component', () => {
   let component: ReportsSidebarFilterComponent;
@@ -44,6 +45,7 @@ describe('Reports Sidebar Filter Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatExpansionModule,
         ],
         declarations: [
           ReportsSidebarFilterComponent,
