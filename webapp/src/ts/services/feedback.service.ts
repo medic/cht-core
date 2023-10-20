@@ -50,6 +50,7 @@ export class FeedbackService {
     /invalid phone number/i,
     /validation failed/i,
     /form is invalid/i,
+    /unauthorized/i
   ];
 
   private readonly FEEDBACK_LEVEL = 'error';
@@ -119,15 +120,15 @@ export class FeedbackService {
     const exceptionMessage = this.getExceptionMessage(exception);
     const loggedMessage = String(args[0]);
 
-    if (await this.shouldGenerateFeedback(loggedMessage, exceptionMessage, exception)) {
-      const message = exceptionMessage || loggedMessage;
-      this.lastErrorMessage = message;
-      try {
+    try {
+      if (await this.shouldGenerateFeedback(loggedMessage, exceptionMessage, exception)) {
+        const message = exceptionMessage || loggedMessage;
+        this.lastErrorMessage = message;
         await this.createAndSave( { message, stack: exception?.stack, args });
-      } catch (e) {
-        // stop infinite loop of exceptions
-        console.warn('Error while trying to record error', e);
       }
+    } catch (e) {
+      // stop infinite loop of exceptions
+      console.warn('Error while trying to record error', e);
     }
   }
 
