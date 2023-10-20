@@ -348,44 +348,48 @@ describe('utils util', () => {
       },
     ];
 
-    afterEach(() => clock?.restore());
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(() => {
+      clock?.restore();
+    });
 
     it('should return true for the valid time', () => {
       validCases.forEach(({ cron, frame, time, offset}) => {
-        clock = sinon.useFakeTimers(time);
+        clock.setSystemTime(time);
         utils.isWithinTimeFrame(cron).should.be.true;
-  
+
         const currentDateInMsMinusOffset = Date.now() - offset;
         const currentDateInMsPlusOffset = Date.now() + offset;
-  
-        clock = sinon.useFakeTimers(currentDateInMsMinusOffset);
+
+        clock.setSystemTime(currentDateInMsMinusOffset);
         utils.isWithinTimeFrame(cron, frame).should.be.true;
-  
-        clock = sinon.useFakeTimers(currentDateInMsPlusOffset);
+
+        clock.setSystemTime(currentDateInMsPlusOffset);
         utils.isWithinTimeFrame(cron, frame).should.be.true;
       });
     });
 
     it('should return false for invalid time', () => {
-      true.should.be.true;
       invalidCases.forEach(({ cron, time, frame, offset }) => {
-        clock = sinon.useFakeTimers(time);
+        clock.setSystemTime(time);
         utils.isWithinTimeFrame(cron).should.be.false;
-  
+
         const currentDateInMsMinusOffset = Date.now() - offset;
         const currentDateInMsPlusOffset = Date.now() + offset;
-  
-        clock = sinon.useFakeTimers(currentDateInMsMinusOffset);
+
+        clock.setSystemTime(currentDateInMsMinusOffset);
         utils.isWithinTimeFrame(cron, frame).should.be.false;
-  
-        clock = sinon.useFakeTimers(currentDateInMsPlusOffset);
+
+        clock.setSystemTime(currentDateInMsPlusOffset);
         utils.isWithinTimeFrame(cron, frame).should.be.false;
       });
     });
 
     it('should throw an error for bad cron expression', () => {
       const BAD_CRON_EXPRESSION = 'BAD_CRON_EXPRESSION';
-      
+
       expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION)).to.be.false;
       expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, 60000)).to.be.false;
     });
