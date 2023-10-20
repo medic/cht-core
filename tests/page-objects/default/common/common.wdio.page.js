@@ -189,16 +189,19 @@ const refresh = async () => {
 };
 
 const goToBase = async () => {
+  await browser.refresh();
   await browser.url('/');
   await waitForPageLoaded();
 };
 
 const goToReports = async () => {
+  await browser.refresh();
   await browser.url('/#/reports');
   await waitForPageLoaded();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
+  await browser.refresh();
   await browser.url(`/#/contacts/${contactId}`);
   if (shouldLoad) {
     await waitForPageLoaded();
@@ -206,23 +209,27 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
 };
 
 const goToMessages = async () => {
+  await browser.refresh();
   await browser.url(`/#/messages`);
   await (await messagesTab()).waitForDisplayed();
 };
 
 const goToTasks = async () => {
+  await browser.refresh();
   await browser.url(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAnalytics = async () => {
+  await browser.refresh();
   await browser.url(`/#/analytics`);
   await (await analyticsTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAboutPage = async () => {
+  await browser.refresh();
   await browser.url(`/#/about`);
   await waitForLoaders();
 };

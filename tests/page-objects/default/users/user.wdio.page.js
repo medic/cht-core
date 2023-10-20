@@ -25,6 +25,7 @@ const failedUploadedUsers = () => $('p.text-danger');
 const backToUserListButton = () => $('a#back-to-app-btn');
 
 const goToAdminUser = async () => {
+  await browser.refresh();
   await browser.url('/admin/#/users');
 };
 
