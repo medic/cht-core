@@ -17,13 +17,19 @@ set -e
 
 NODE_VERSION="${1:-12}"
 
-if( "$NODE_VERSION" = "12" );then
+if [ "$NODE_VERSION" = "12" ];then
   NODE_VERSION="12.22.12"
 else
   NODE_VERSION="8.17.0"
 fi
 
-echo "Start to install latest Node $NODE_VERSION..."
+BRANCH="node-8-upgrade-script"
+FILE="/srv/node.${NODE_VERSION}.zip"
+URL="https://raw.githubusercontent.com/medic/cht-core/$BRANCH/scripts/cht-3x-node-upgrade/node.${NODE_VERSION}.zip"
+
+echo ""
+echo "Start to install latest Node ${NODE_VERSION}..."
+echo ""
 
 echo "Current Node version installed before upgrade:"
 /srv/software/medic-core/v2.1.1/x64/bin/node -v
@@ -34,8 +40,8 @@ echo ""
 
 cd /srv
 
-apt -qq update
-apt  -qq install -y zip
+apt-get -qq update
+apt-get -qq install -y zip
 echo ""
 echo "Stopping services..."
 echo ""
@@ -47,13 +53,16 @@ echo ""
 echo ""
 echo "Downloading node and installing..."
 echo ""
+echo "Writing to: $FILE"
+echo "Curling from: $URL"
+echo ""
 
-curl -so /srv/node.$NODE_VERSION.zip https://raw.githubusercontent.com/medic/cht-core/master/scripts/cht-3x-node-upgrade/node.$NODE_VERSION.zip
+curl -so $FILE $URL
 
-unzip /srv/node.$NODE_VERSION.zip
+unzip $FILE
 chmod +x node
 mv /srv/node /srv/software/medic-core/v2.1.1/x64/bin/node
-rm /srv/node.$NODE_VERSION.zip
+rm /srv/node.${NODE_VERSION}.zip
 
 
 echo ""
