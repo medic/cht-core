@@ -23,7 +23,8 @@ else
   NODE_VERSION="8.17.0"
 fi
 
-BRANCH="node-8-upgrade-script"
+# change BRANCH to "node-8-upgrade-script" to test before merging PR
+BRANCH="master"
 FILE="/srv/node.${NODE_VERSION}.zip"
 URL="https://raw.githubusercontent.com/medic/cht-core/$BRANCH/scripts/cht-3x-node-upgrade/node.${NODE_VERSION}.zip"
 
