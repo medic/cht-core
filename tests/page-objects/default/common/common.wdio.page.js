@@ -1,4 +1,5 @@
 const modalPage = require('./modal.wdio.page');
+const constants = require('@constants');
 
 const hamburgerMenu = () => $('#header-dropdown-link');
 const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
@@ -183,47 +184,57 @@ const getLogoutMessage = async () => {
   return modal.body;
 };
 
+const goToUrl = async (url) => {
+  const currentUrl = await browser.getUrl();
+  const desiredUrl = `${constants.BASE_URL}${url}`;
+  if (currentUrl === desiredUrl) {
+    await browser.refresh();
+  } else {
+    await browser.url(url);
+  }
+};
+
 const refresh = async () => {
   await browser.refresh();
   await waitForPageLoaded();
 };
 
 const goToBase = async () => {
-  await browser.url('/');
+  await goToUrl('/');
   await waitForPageLoaded();
 };
 
 const goToReports = async (reportId = '') => {
-  await browser.url(`/#/reports/${reportId}`);
+  await goToUrl(`/#/reports/${reportId}`);
   await waitForPageLoaded();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
-  await browser.url(`/#/contacts/${contactId}`);
+  await goToUrl(`/#/contacts/${contactId}`);
   if (shouldLoad) {
     await waitForPageLoaded();
   }
 };
 
 const goToMessages = async () => {
-  await browser.url(`/#/messages`);
+  await goToUrl(`/#/messages`);
   await (await messagesTab()).waitForDisplayed();
 };
 
 const goToTasks = async () => {
-  await browser.url(`/#/tasks`);
+  await goToUrl(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAnalytics = async () => {
-  await browser.url(`/#/analytics`);
+  await goToUrl(`/#/analytics`);
   await (await analyticsTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAboutPage = async () => {
-  await browser.url(`/#/about`);
+  await goToUrl(`/#/about`);
   await waitForLoaders();
 };
 
@@ -456,4 +467,5 @@ module.exports = {
   closeReportBug,
   getAllButtonLabelsNames,
   loadNextInfiniteScrollPage,
+  goToUrl,
 };
