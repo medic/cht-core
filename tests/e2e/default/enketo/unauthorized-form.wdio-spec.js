@@ -38,9 +38,7 @@ describe('Unauthorized form', () => {
   afterEach(async () => await utils.revertSettings(true));
 
   it('should display unauthorized error message in reports tab when form expression does not match', async () => {
-    await commonPage.goToReports();
-
-    await browser.url('#/reports/add/pregnancy');
+    await browser.url('/#/reports/add/pregnancy');
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
@@ -50,7 +48,7 @@ describe('Unauthorized form', () => {
     await commonPage.goToPeople();
     await updateSettings(customPlaceType);
 
-    await browser.url(`#/contacts/add/${customPlaceType.id}`);
+    await commonPage.goToUrl(`#/contacts/add/${customPlaceType.id}`);
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
@@ -60,7 +58,7 @@ describe('Unauthorized form', () => {
     await commonPage.goToPeople();
     await updateSettings(customPlaceType, { can_create_clinic: [ 'chw' ] });
 
-    await browser.url(`#/contacts/add/${customPlaceType.id}`);
+    await commonPage.goToUrl(`#/contacts/add/${customPlaceType.id}`);
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getFormTitle()).to.equal('contact.type.unauthorized-contact-form.new');

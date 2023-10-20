@@ -25,12 +25,11 @@ const failedUploadedUsers = () => $('p.text-danger');
 const backToUserListButton = () => $('a#back-to-app-btn');
 
 const goToAdminUser = async () => {
-  await browser.refresh();
-  await browser.url('/admin/#/users');
+  await commonElements.goToUrl('/admin/#/users');
 };
 
 const goToAdminUpgrade = async () => {
-  await browser.url('/admin/#/upgrade');
+  await commonElements.goToUrl('/admin/#/upgrade');
 };
 
 const openAddUserDialog = async () => {
