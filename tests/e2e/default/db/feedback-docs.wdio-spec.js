@@ -41,20 +41,21 @@ describe('feedback docs', () => {
   });
 
   it('should stop creating feedback docs once the db has over 1000 feedback docs', async () => {
-    for (let i = 0; i < 1000; i++) {
+    const maxFeedbackDocs = 1000;
+    for (let i = 0; i < maxFeedbackDocs; i++) {
       await browser.execute((i) => console.error(`woot ${i}`, new Error(`w00t ${i}`)), i);
     }
     await browser.waitUntil(
-      async () => (await chtDbUtils.getFeedbackDocs()).length >= 1000,
+      async () => (await chtDbUtils.getFeedbackDocs()).length >= maxFeedbackDocs,
       { timeout: 10000, interval: 500 }
     );
     await browser.execute(() => console.error('omg what', new Error('omg what')));
     await browser.pause(1000);
-    expect((await chtDbUtils.getFeedbackDocs()).length).to.equal(1000);
+    expect((await chtDbUtils.getFeedbackDocs()).length).to.equal(maxFeedbackDocs);
 
     await commonElements.sync();
     await browser.waitUntil(
-      async () => (await getServerFeedbackDocs()).length >= 1000,
+      async () => (await getServerFeedbackDocs()).length >= maxFeedbackDocs,
       { timeout: 10000, interval: 1000 }
     );
     await commonElements.refresh();
