@@ -13,7 +13,6 @@ const user = userFactory.build({ contact: contact._id, place: clinic._id });
 
 const getServerFeedbackDocs = async () => {
   const response = await utils.request({ path: `/medic-user-${user.username}-meta/_all_docs` });
-  console.log(response.rows.filter(row => row.id.includes('feedback')).length);
   return response.rows.filter(row => row.id.includes('feedback'));
 };
 
