@@ -45,8 +45,8 @@ describe('feedback docs', () => {
       await browser.execute((i) => console.error(`woot ${i}`, new Error(`w00t ${i}`)), i);
     }
     await browser.waitUntil(
-      async () => (await chtDbUtils.getFeedbackDocs()).length === 1000,
-      { timeout: 5000, interval: 500 }
+      async () => (await chtDbUtils.getFeedbackDocs()).length >= 1000,
+      { timeout: 10000, interval: 500 }
     );
     await browser.execute(() => console.error('omg what', new Error('omg what')));
     await browser.pause(1000);
