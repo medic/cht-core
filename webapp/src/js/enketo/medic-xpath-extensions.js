@@ -85,13 +85,13 @@ const asMoment = (r) => {
     // Create a date at 00:00:00 1st Jan 1970 _in the current timezone_
     const date = new Date(1970, 0, 1);
     date.setDate(1 + days);
-    return moment(date);
+    return moment.utc(date);
   };
   switch (r.t) {
   case 'bool':
-    return moment(NaN);
+    return moment.utc(NaN);
   case 'date':
-    return moment(r.v);
+    return moment.utc(r.v);
   case 'num':
     return dateSinceUnixEpoch(r.v);
   case 'arr':
@@ -100,7 +100,7 @@ const asMoment = (r) => {
     if (RAW_NUMBER.test(r)) {
       return dateSinceUnixEpoch(parseInt(r, 10));
     }
-    const rMoment = moment(r);
+    const rMoment = moment.utc(r);
     if (DATE_STRING.test(r) && rMoment.isValid()) {
       if (r.indexOf('T')) {
         return rMoment;
@@ -108,9 +108,9 @@ const asMoment = (r) => {
 
       const rDate = rMoment.format('YYYY-MM-DD');
       const time = `${rDate}T00:00:00.000${getTimezoneOffsetAsTime(new Date(rDate))}`;
-      return moment(time);
+      return moment.utc(time);
     }
-    return moment(r);
+    return rMoment;
   }
   }
 };

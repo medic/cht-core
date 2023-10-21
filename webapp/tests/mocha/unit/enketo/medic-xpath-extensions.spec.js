@@ -48,14 +48,14 @@ describe('medic-xpath-extensions', function() {
       [ '2015-10-01T11:11:11.111', '2014-10-01T11:11:11.111', -12, ],
       [ '2014-10-01T00:00:00.000', '2015-10-01T00:00:00.000', 12, ],
       [ 'August 19, 1975 00:00:00 GMT', 'August 18, 1976 23:15:30 GMT+07:00', 11 ],
-      [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2300', 0],
+      [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 24 2005 22:00:00 GMT+2300', 0],
       [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2200', 1]
     ].forEach(function(example) {
       const d1 = { t: 'str', v: example[0] };
       const d2 = { t: 'str', v: example[1] };
       const expectedDifference = example[2];
 
-      it('should report difference between ' + d1 + ' and ' + d2 + ' as ' + expectedDifference, function() {
+      it(`should report difference between ${d1.v} and ${d2.v} as ${expectedDifference}`, function() {
         assert.equal(func['difference-in-months'](d1, d2).v, expectedDifference);
       });
     });
@@ -100,13 +100,22 @@ describe('medic-xpath-extensions', function() {
     [
       [ { t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२'],
       [ { t: 'str', v: '1999-12-12' }, '२६ मंसिर २०५६'],
-      [ { t: 'date', v: new Date('2015-10-01T00:00:00.000') }, '१४ असोज २०७२'],
-      [ { t: 'num', v: 11111 }, '२१ जेठ २०५७'],
+      [ { t: 'date', v: new Date('2015-10-01T00:00:00.000+0000') }, '१४ असोज २०७२'],
       [ { t: 'arr', v: [{ textContent: '2014-09-22' }] }, '६ असोज २०७१'],
     ].forEach(([date, expected]) => {
       it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the Bikram Sambat calendar`, () => {
         assert.equal(func['to-bikram-sambat'](date).v, expected);
       });
+    });
+
+    // "num" is a special case because it uses the local timezone. To make this test work in all timezones
+    // we just compare it to the equivalent Date function.
+    it(`should format the num 11111 according to the Bikram Sambat calendar`, () => {
+      const value = 11111; // days since epoch
+      const date = new Date((value - 1) * 24 * 60 * 60 * 1000);
+      const expected = func['to-bikram-sambat']({ t: 'date', v: date }).v;
+      const actual = func['to-bikram-sambat']({ t: 'num', v: value }).v;
+      assert.equal(actual, expected);
     });
 
     [
