@@ -11,8 +11,8 @@ describe('history utility', () => {
 
   beforeEach(() => {
     config.init({ get: sinon.stub() });
-    history = rewire('../../../src/lib/history');
     clock = sinon.useFakeTimers();
+    history = rewire('../../../src/lib/history');
   });
 
   afterEach(() => {

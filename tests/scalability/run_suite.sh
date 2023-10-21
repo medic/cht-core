@@ -4,7 +4,7 @@ set -e
 
 shutdown -P +60
 
-mkdir /cht
+mkdir -p /cht
 chmod 777 /cht;
 cd cht
 
@@ -20,7 +20,6 @@ apt-get install default-jre -y
 
 echo installing node
 apt-get install nodejs npm -y
-
 
 cd cht-core
 npm install patch-package

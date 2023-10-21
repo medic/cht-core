@@ -1,3 +1,6 @@
+const modalPage = require('./modal.wdio.page');
+const constants = require('@constants');
+
 const hamburgerMenu = () => $('#header-dropdown-link');
 const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
@@ -19,12 +22,9 @@ const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
-const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
-const reloadModalUpdate = () => $('#update-available [test-id="Update"]');
-const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
 //languages
@@ -42,9 +42,6 @@ const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
 const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
 const FEEDBACK = '#feedback';
-const feedbackTitle = () => $(`${FEEDBACK} .modal-header > h2`);
-const feedbackCancelButton = () => $(`${FEEDBACK} .btn.cancel`);
-const feedbackSubmitButton = () => $(`${FEEDBACK} .btn-primary`);
 //About menu
 const ABOUT_MENU = '#header-dropdown i.fa-question';
 const RELOAD_BUTTON = '.about.page .btn-primary';
@@ -170,21 +167,31 @@ const closeHamburgerMenu = async () => {
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
+  await (await logoutButton()).waitForClickable();
   await (await logoutButton()).click();
-  await (await modal.body()).waitForDisplayed();
+  await (await modalPage.body()).waitForDisplayed();
 };
 
 const logout = async () => {
   await navigateToLogoutModal();
-  await (await modal.confirm()).click();
+  await modalPage.submit();
   await browser.pause(100); // wait for login page js to execute
 };
 
 const getLogoutMessage = async () => {
   await navigateToLogoutModal();
-  const body = await modal.body();
-  await body.waitForDisplayed();
-  return body.getText();
+  const modal = await modalPage.getModalDetails();
+  return modal.body;
+};
+
+const goToUrl = async (url) => {
+  const currentUrl = await browser.getUrl();
+  const desiredUrl = `${constants.BASE_URL}${url}`;
+  if (currentUrl === desiredUrl) {
+    await browser.refresh();
+  } else {
+    await browser.url(url);
+  }
 };
 
 const refresh = async () => {
@@ -193,41 +200,41 @@ const refresh = async () => {
 };
 
 const goToBase = async () => {
-  await browser.url('/');
+  await goToUrl('/');
   await waitForPageLoaded();
 };
 
 const goToReports = async () => {
-  await browser.url('/#/reports');
+  await goToUrl('/#/reports');
   await waitForPageLoaded();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
-  await browser.url(`/#/contacts/${contactId}`);
+  await goToUrl(`/#/contacts/${contactId}`);
   if (shouldLoad) {
     await waitForPageLoaded();
   }
 };
 
 const goToMessages = async () => {
-  await browser.url(`/#/messages`);
+  await goToUrl(`/#/messages`);
   await (await messagesTab()).waitForDisplayed();
 };
 
 const goToTasks = async () => {
-  await browser.url(`/#/tasks`);
+  await goToUrl(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAnalytics = async () => {
-  await browser.url(`/#/analytics`);
+  await goToUrl(`/#/analytics`);
   await (await analyticsTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAboutPage = async () => {
-  await browser.url(`/#/about`);
+  await goToUrl(`/#/about`);
   await waitForLoaders();
 };
 
@@ -319,12 +326,8 @@ const syncAndWaitForFailure = async () => {
 
 const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
-    const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
-    await browser.waitUntil(async () => await (await button).waitForExist({ timeout }));
-    // wait for the animation to complete
-    await browser.pause(500);
-    await (await button).click();
-    await browser.pause(500);
+    shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
+    await modalPage.checkModalHasClosed();
     return true;
   } catch (err) {
     console.error('Reload modal not showed up');
@@ -335,22 +338,16 @@ const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
 const openReportBugAndFetchProperties = async () => {
   await (await $(FEEDBACK_MENU)).waitForClickable();
   await (await $(FEEDBACK_MENU)).click();
-  await (await $(FEEDBACK)).waitForDisplayed();
-  return {
-    modalHeader: await (await feedbackTitle()).getText(),
-    modelCancelButtonText: await (await feedbackCancelButton()).getText(),
-    modelSubmitButtonText: await (await feedbackSubmitButton()).getText()
-  };
+  return await modalPage.getModalDetails();
 };
 
 const isReportBugOpen = async () => {
-  return await (await feedbackTitle()).isExisting();
+  return await (await $(FEEDBACK)).isExisting();
 };
 
 const closeReportBug = async () => {
   if (await isReportBugOpen()) {
-    await (await feedbackCancelButton()).waitForClickable();
-    await (await feedbackCancelButton()).click();
+    await modalPage.cancel();
   }
 };
 
@@ -463,4 +460,5 @@ module.exports = {
   closeReportBug,
   getAllButtonLabelsNames,
   loadNextInfiniteScrollPage,
+  goToUrl,
 };

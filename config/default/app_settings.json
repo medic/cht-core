@@ -62,6 +62,9 @@
   "synthetic_date": "",
   "contact_display_short": "clinic.name",
   "roles": {
+    "national_admin": {
+      "name": "usertype.national_admin"
+    },
     "data_entry": {
       "name": "usertype.data-entry"
     },

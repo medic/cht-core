@@ -4,15 +4,22 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 
 const { MS_IN_DAY, mockEmission } = require('./mocks');
-const TaskStates = rewire('../src/task-states');
-
-const definedStates = Object.keys(TaskStates).filter(key => typeof TaskStates[key] === 'string');
+let TaskStates;
+let definedStates;
 
 const NOW = 7200000000;
+let clock;
 
 describe('task-states', () => {
-  before(() => sinon.useFakeTimers(NOW));
-  after(() => sinon.restore());
+  before(() => {
+    clock = sinon.useFakeTimers(NOW);
+    TaskStates = rewire('../src/task-states');
+    definedStates = Object.keys(TaskStates).filter(key => typeof TaskStates[key] === 'string');
+  });
+  after(() => {
+    sinon.restore();
+    clock.restore();
+  });
 
   it('definedStates', () => expect(definedStates.length).to.eq(5));
 

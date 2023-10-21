@@ -15,9 +15,7 @@ import {
   MissingTranslationHandlerParams,
   TranslateCompiler,
 } from '@ngx-translate/core';
-import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { EffectsModule } from '@ngrx/effects';
 import * as _ from 'lodash-es';
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
@@ -88,17 +86,14 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
         useClass: TranslateMessageFormatCompilerProvider,
       },
     }),
-    ModalModule.forRoot(),
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
-    AccordionModule.forRoot(),
     EffectsModule.forRoot([ GlobalEffects, ReportsEffects, ContactsEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
     { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
-    BsModalRef,
     AppRouteGuardProvider,
     AnalyticsRouteGuardProvider,
     CookieService,

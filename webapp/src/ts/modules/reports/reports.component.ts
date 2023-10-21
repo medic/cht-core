@@ -21,7 +21,7 @@ import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filte
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { FeedbackService } from '@mm-services/feedback.service';
@@ -125,7 +125,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async checkPermissions() {
     this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
-    const isAdmin = this.sessionService.isDbAdmin();
+    const isAdmin = this.sessionService.isAdmin();
     const isDisabled = !isAdmin && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSidebarFilter = !isDisabled;
     this.canDefaultFilter = !isAdmin && this.isOnlineOnly && await this.authService.has(CAN_DEFAULT_FACILITY_FILTER);
@@ -342,7 +342,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private doInitialSearch() {
     if (this.canDefaultFilter && this.userParentPlace?._id) {
       // The facility filter will trigger the search.
-      this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace._id });
+      this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace });
       return;
     }
 
@@ -463,7 +463,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 
-    } catch(error) {
+    } catch (error) {
       console.error('Error selecting all', error);
     }
   }
@@ -490,9 +490,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     const docs = this.selectedReports
       .map(report => report.doc || report.summary)
       .filter(report => !!report);
-    this.modalService
-      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs, type: 'reports' } } })
-      .catch(() => {});
+    this.modalService.show(BulkDeleteConfirmComponent, { data: { docs, type: 'reports' } });
   }
 
   /**

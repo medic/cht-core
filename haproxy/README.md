@@ -28,8 +28,7 @@ In your docker-compose.yml template, the HAproxy container declaration will requ
 - HAPROXY_IP: This should be the docker service name, `fqdn`, or set to `0.0.0.0`. If not set, our templates will default this to be a service name of `haproxy`. 
 *Note*: For Docker Desktop on Mac users, if you wish to expose HAproxy to your host, you will have to set this as `0.0.0.0`, to expose it as `localhost` outside of the docker network.
 - HAPROXY_PORT: The port you wish HAProxy to run on. Defaults to 5984.
-- COUCHDB1_SERVER: The docker service name or fqdn of the first CouchDB server. Defaults to couchdb-1.local in our templates.
-- COUCHDB2_SERVER: The docker service name or fqdn of the second CouchDB server. Defaults to couchdb-2.local in our templates.
-- COUCHDB3_SERVER: The docker service name or fqdn of the third CouchDB server. Defaults to couchdb-3.local in our templates.
-- COUCHDB_USER: The admininstrator that created the couchdb cluster
+- COUCHDB_SERVERS: Comma separated list of the docker service name or fqdn of the CouchDB servers. Example: `couchdb-1.local,couchdb-2.local,couchdb-3.local`.
+- COUCHDB_USER: The administrator that created the couchdb cluster
 - COUCHDB_PASSWORD: The above admin's password
+- HEALTHCHECK_ADDR: Address to the haproxy healthcheck service

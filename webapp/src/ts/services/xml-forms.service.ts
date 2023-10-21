@@ -163,7 +163,7 @@ export class XmlFormsService {
         user,
         contactSummary
       );
-    } catch(err) {
+    } catch (err) {
       console.error(`Unable to evaluate expression for form: ${form._id}`, err);
       return false;
     }
@@ -242,6 +242,10 @@ export class XmlFormsService {
   async canAccessForm(form, userContact, options?) {
     if (!await this.checkFormPermissions(form)) {
       return false;
+    }
+
+    if (options?.shouldEvaluateExpression === false) {
+      return true;
     }
 
     return await this.checkFormExpression(form, options?.doc, userContact, options?.contactSummary);

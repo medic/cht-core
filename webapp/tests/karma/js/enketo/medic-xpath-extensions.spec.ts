@@ -77,7 +77,7 @@ describe('Medic XPath Extensions', () => {
       chtScriptApi.v1.getExtensionLib.returns(undefined);
       try {
         extensionLib({ v: 'myfunc' }, { t: 'string', v: 'hello' });
-      } catch(e) {
+      } catch (e) {
         expect(e.message).to.equal('Form configuration error: no extension-lib with ID "myfunc" found');
         return;
       }

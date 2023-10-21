@@ -4,10 +4,11 @@
  * Similar to https://github.com/yaru22/ng-html2js except supports multiple templates
  */
 
-const { readdir, readFile, writeFile, appendFile } = require('node:fs/promises');
+const { readdir, readFile, writeFile, appendFile, mkdir } = require('node:fs/promises');
 
 const TEMPLATE_DIR = 'admin/src/templates/';
-const OUTPUT_FILE = 'api/build/static/admin/js/templates.js';
+const OUTPUT_DIR = 'api/build/static/admin/js';
+const OUTPUT_FILE = `${OUTPUT_DIR}/templates.js`;
 
 const FILE_PREFIX = `angular.module('adminApp').run(['$templateCache', function($templateCache) {
   'use strict';
@@ -39,6 +40,7 @@ const getContent = async (file) => {
 
 (async () => {
   console.log(`Build angularjs template cache from "${TEMPLATE_DIR}" to "${OUTPUT_FILE}"`);
+  await mkdir(OUTPUT_DIR, { recursive: true });
   await writePrefix();
   const files = await readdir(TEMPLATE_DIR);
   for (const file of files) {

@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "429 Too Many Requests",
+  "server": "nginx"
+}
