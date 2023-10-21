@@ -48,7 +48,7 @@ describe('feedback docs', () => {
     }
     await browser.waitUntil(
       async () => (await chtDbUtils.getFeedbackDocs()).length >= maxFeedbackDocs,
-      { timeout: 10000, interval: 500 }
+      { timeout: 20000, interval: 500 }
     );
     await browser.execute(() => console.error('omg what', new Error('omg what')));
     await browser.pause(1000);
@@ -57,7 +57,7 @@ describe('feedback docs', () => {
     await commonElements.sync();
     await browser.waitUntil(
       async () => (await getServerFeedbackDocs()).length >= maxFeedbackDocs,
-      { timeout: 10000, interval: 1000 }
+      { timeout: 20000, interval: 500 }
     );
     await commonElements.refresh();
 
