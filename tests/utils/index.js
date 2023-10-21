@@ -9,6 +9,7 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 const semver = require('semver');
+const moment = require('moment');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
@@ -19,7 +20,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
-process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
 let originalSettings;
@@ -141,7 +142,7 @@ const request = (options, { debug } = {}) => {
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
-    console.log('SENDING REQUEST' );
+    console.log('SENDING REQUEST');
     console.log(JSON.stringify(options, null, 2));
   }
 
@@ -569,7 +570,7 @@ const deleteLocalDocs = async () => {
 
 const hasModal = () => $('#update-available').isDisplayed();
 
-const setUserContactDoc = (attempt=0) => {
+const setUserContactDoc = (attempt = 0) => {
   const {
     USER_CONTACT_ID: docId,
     DEFAULT_USER_CONTACT_DOC: defaultDoc
@@ -745,7 +746,7 @@ const dockerComposeCmd = (...params) => {
   const projectParams = ['-p', PROJECT_NAME];
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [ ...projectParams, ...composeFilesParam, ...params ], { env });
+    const cmd = spawn('docker-compose', [...projectParams, ...composeFilesParam, ...params], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1219,6 +1220,18 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
   await updateSettings({ permissions: settings.permissions }, ignoreReload);
 };
 
+const getSentinelDate = () => getContainerDate('sentinel');
+
+const getContainerDate = (container) => {
+  container = getContainerName(container);
+  try {
+    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
+  } catch (error) {
+    console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
+    console.error(error.message);
+  }
+};
+
 module.exports = {
   db,
   sentinelDb,
@@ -1287,4 +1300,5 @@ module.exports = {
   updateContainerNames,
   updatePermissions,
   formDocProcessing,
+  getSentinelDate,
 };

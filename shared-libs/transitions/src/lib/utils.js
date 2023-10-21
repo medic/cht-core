@@ -1,11 +1,13 @@
 const _ = require('lodash');
 const vm = require('vm');
-const db = require('../db');
+const cron = require('cron-validator');
 const moment = require('moment');
-const config = require('../config');
+const later = require('later');
 const taskUtils = require('@medic/task-utils');
 const registrationUtils = require('@medic/registration-utils');
 const messageUtils = require('@medic/message-utils');
+const db = require('../db');
+const config = require('../config');
 const logger = require('./logger');
 
 /*
@@ -127,6 +129,13 @@ const getContact = (shortCodeId, includeDocs) => {
   });
 };
 
+const isWithinTimeBound = (currentTime, dueTime, frame) => {
+  const lowerBoundDueTime = dueTime - frame;
+  const upperBoundDueTime = dueTime + frame;
+
+  return currentTime >= lowerBoundDueTime && currentTime <= upperBoundDueTime;
+};
+
 module.exports = {
   getLocale: getLocale,
   addError: addError,
@@ -228,6 +237,27 @@ module.exports = {
   getSubjectIds: contact => registrationUtils.getSubjectIds(contact),
 
   isXFormReport: doc => doc && doc.type === 'data_record' && doc.content_type === 'xml',
+
+  /**
+   * Validates if a cron expression is valid and is active within an offset timeframe at the current time.
+   * @param {string} exp cron expression without seconds "* * * * *"
+   * @param {number} frame timeframe at which the cron expression should still be valid
+   * @returns true if valid and within timeframe
+   */
+  isWithinTimeFrame: (exp, frame = 0) => {
+    if (!cron.isValidCron(exp)) {
+      logger.error(`Outbound push failed: invalid cron expression "${exp}"`);
+      return false;
+    }
+    
+    const currentTime = Date.now();
+    const parsedCron = later.parse.cron(exp);
+    const nextDueTime = later.schedule(parsedCron).next().getTime();
+    const prevDueTime = later.schedule(parsedCron).prev().getTime();
+
+    return isWithinTimeBound(currentTime, nextDueTime, frame) 
+        || isWithinTimeBound(currentTime, prevDueTime, frame);
+  },
 
   // given a report, returns whether it should be accepted as a valid form submission
   // a report is accepted if
