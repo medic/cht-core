@@ -148,8 +148,8 @@ describe('medic-xpath-extensions', function() {
       ],
       [
         [null, { t: 'num', v: 1 }],
-        { t: 'date', v: new Date('2015-10-01T00:00') },
-        '2015-11-01T00:00'
+        { t: 'date', v: new Date('2015-10-01T00:00+0000') },
+        '2015-11-01T00:00+0000'
       ],
       [
         [null, null, { t: 'num', v: 1 }],
@@ -198,8 +198,8 @@ describe('medic-xpath-extensions', function() {
       ],
       [
         [{ t: 'num', v: 1 }],
-        { t: 'str', v: 'Sept 9 2015 00:00' },
-        '2016-09-09T00:00'
+        { t: 'str', v: 'Sept 9 2015 00:00+0000' },
+        '2016-09-09T00:00+0000'
       ],
       [
         [{ t: 'num', v: 1 }],
@@ -209,7 +209,7 @@ describe('medic-xpath-extensions', function() {
       [
         [{ t: 'num', v: 1 }],
         { t: 'arr', v: [{ textContent: '2014-09-22' }] },
-        '2015-09-22T00:00'
+        '2015-09-22T00:00+0000'
       ],
       [
         [{ t: 'str', v: '111' }, null, { t: 'str', v: '-1' }],
