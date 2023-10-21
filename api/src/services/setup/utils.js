@@ -98,6 +98,11 @@ const interruptPreviousUpgrade = async () => {
       return;
     }
 
+    if (upgradeLog.state === upgradeLogService.states.COMPLETING) {
+      // don't interrupt if we're completing the upgrade
+      return;
+    }
+
     if (
       upgradeLog.action === upgradeLogService.actions.STAGE &&
       upgradeLog.state === upgradeLogService.states.INDEXED
