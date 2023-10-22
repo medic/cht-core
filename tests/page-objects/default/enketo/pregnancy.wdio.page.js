@@ -15,7 +15,7 @@ const FIRST_PREGNANCY_VALUE = {yes: 'primary', no: 'secondary'};
 
 const FORM = 'form[data-form-id="pregnancy"]';
 const SUMMARY_SECTION = `${FORM} section[name="/pregnancy/summary"]`;
-const KNOWN_FUTURE_VISITS = 
+const KNOWN_FUTURE_VISITS =
   'input[data-name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"]';
 const FIRST_PREGNANCY = 'input[data-name="/pregnancy/risk_factors/risk_factors_history/first_pregnancy"]';
 const MISCARRIAGE = 'input[name="/pregnancy/risk_factors/risk_factors_history/previous_miscarriage"]';
@@ -31,7 +31,7 @@ const BREAKING_OF_WATER = 'input[name="/pregnancy/danger_signs/breaking_water"]'
 const EASILY_TIRED = 'input[name="/pregnancy/danger_signs/easily_tired"]';
 const SWELLING_HANDS = 'input[name="/pregnancy/danger_signs/face_hand_swelling"]';
 const BREATHLESSNESS = 'input[name="/pregnancy/danger_signs/breathlessness"]';
-const LLIN = 'input[name="/pregnancy/safe_pregnancy_practices/malaria/uses_llin"]'; 
+const LLIN = 'input[name="/pregnancy/safe_pregnancy_practices/malaria/uses_llin"]';
 const IRON_FOLATE = 'input[name="/pregnancy/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
 const DEWORMING_MEDICATION = 'input[name="/pregnancy/safe_pregnancy_practices/deworming/deworming_med"]';
 const HIV_TESTED = 'input[name="/pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested"]';
@@ -72,8 +72,8 @@ const setDeliveryDate = async (value = moment().add(1, 'month').format('YYYY-MM-
 
 const getConfirmationDetails = async () => {
   return {
-    eddConfirm: await eddConfirmation().getText(),
-    weeksPregnantConfirm: await weeksPregnantConfirmation().getText(),
+    eddConfirm: await (await eddConfirmation()).getText(),
+    weeksPregnantConfirm: await (await weeksPregnantConfirmation()).getText(),
   };
 };
 

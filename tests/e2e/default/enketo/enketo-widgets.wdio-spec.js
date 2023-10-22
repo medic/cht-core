@@ -65,7 +65,7 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
 
     const { senderName, senderPhone, reportName } = await reportsPage.getOpenReportInfo();
-    expect(senderName).to.equal(`Submitted by ${offlineUser.contact.name} `);
+    expect(senderName).to.equal(`Submitted by ${offlineUser.contact.name}`);
     expect(senderPhone).to.equal(offlineUser.contact.phone);
     expect(reportName).to.equal('Enketo Widgets Test');
 
