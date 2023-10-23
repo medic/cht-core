@@ -304,7 +304,7 @@ export class TelemetryService {
   }
 
   /**
-   * ToDo: Remove this function in a future release:
+   * ToDo: Remove this function in a future release: https://github.com/medic/cht-core/issues/8657
    * The way telemetry was stored in the client side changed (https://github.com/medic/cht-core/pull/8555),
    * this function contains all the transition code where it deletes the old Telemetry DB from the DB.
    * It was decided to not aggregate the DB content.
@@ -316,13 +316,13 @@ export class TelemetryService {
     }
 
     databases?.forEach(db => {
-      const dbName = db.name?.replace(this.POUCH_PREFIX, '') || '';
+      const nameNoPrefix = db.name?.replace(this.POUCH_PREFIX, '') || '';
 
       // Skips new Telemetry DB, then matches the old deprecated Telemetry DB.
-      if (!dbName.startsWith(this.TELEMETRY_PREFIX)
-        && dbName.includes(this.TELEMETRY_PREFIX)
-        && dbName.includes(this.sessionService.userCtx().name)) {
-        this.windowRef?.indexedDB.deleteDatabase(dbName);
+      if (!nameNoPrefix.startsWith(this.TELEMETRY_PREFIX)
+        && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
+        && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
+        this.windowRef?.indexedDB.deleteDatabase(db.name);
       }
     });
 
