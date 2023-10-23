@@ -10,7 +10,7 @@ const personFactory = require('@factories/cht/contacts/person');
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');
-  await browser.refresh();
+  await commonPage.sync(true);
 };
 
 const compileTasks = async (tasksFileName) => {
