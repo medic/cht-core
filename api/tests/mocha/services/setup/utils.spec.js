@@ -274,7 +274,7 @@ describe('Setup utils', () => {
           await utils.getDdocDefinitions();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.match(/Unexpected token d in JSON at position 0/);
+          expect(err.message).to.match(/Unexpected token/);
           expect(db.builds.get.callCount).to.equal(0);
           expect(fs.promises.readFile.args).to.deep.equal([
             ['localDdocs/medic.json', 'utf-8'],

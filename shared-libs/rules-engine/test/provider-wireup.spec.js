@@ -17,12 +17,10 @@ const rewire = require('rewire');
 
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
-const wireup = rewire('../src/provider-wireup');
 const { assert, expect } = chai;
 chai.use(chaiExclude);
 
-const rulesStateStore = RestorableRulesStateStore();
-const NOW = moment([1970, 0, 1, 0, 0, 50]).valueOf();
+const NOW = moment([1970, 1, 1, 0, 0, 50]).valueOf();
 const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
@@ -72,6 +70,8 @@ const fixtures = [
 ];
 
 let clock;
+let wireup;
+let rulesStateStore;
 const realSetTimeout = setTimeout;
 
 describe('provider-wireup integration tests', () => {
@@ -79,6 +79,8 @@ describe('provider-wireup integration tests', () => {
   let db;
   beforeEach(async () => {
     clock = sinon.useFakeTimers(NOW);
+    wireup = rewire('../src/provider-wireup');
+    rulesStateStore = RestorableRulesStateStore();
     sinon.stub(rulesStateStore, 'currentUserContact').returns({ _id: 'mock_user_id' });
     sinon.stub(rulesStateStore, 'currentUserSettings').returns({ _id: 'org.couchdb.user:username' });
     wireup.__set__('rulesStateStore', rulesStateStore);
@@ -95,7 +97,7 @@ describe('provider-wireup integration tests', () => {
     rulesStateStore.restore();
     sinon.restore();
     rulesEmitter.shutdown();
-    clock && clock.restore();
+    clock.restore();
   });
 
   describe('stateChangeCallback', () => {
@@ -325,7 +327,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       sinon.spy(db, 'bulkDocs');
-      clock = sinon.useFakeTimers(moment('2000-01-01').valueOf());
+      clock.setSystemTime(moment('2000-01-01').valueOf());
       const emission = mockChtEmission();
       sinon.stub(rulesEmitter, 'getEmissionsFor').resolves({ tasks: [emission], targets: [] });
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
@@ -339,7 +341,7 @@ describe('provider-wireup integration tests', () => {
       expect(firstDoc.state).to.eq('Ready');
 
       // rewind one year
-      clock = sinon.useFakeTimers(moment('1999-01-01').valueOf());
+      clock.setSystemTime(moment('1999-01-01').valueOf());
       db.bulkDocs.restore();
       sinon.spy(db, 'bulkDocs');
       const earlierEmission = mockChtEmission();
@@ -356,14 +358,14 @@ describe('provider-wireup integration tests', () => {
     });
 
     it('cht yields task when targets disabled', async () => {
-      clock = sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
+      clock.setSystemTime(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
       await wireup.initialize(provider, engineSettings({ enableTasks: true, enableTargets: false }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual.length).to.eq(1);
     });
 
     it('cht yields nothing when tasks disabled', async () => {
-      clock = sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
+      clock.setSystemTime(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
       await wireup.initialize(provider, engineSettings({ enableTasks: false, enableTargets: true }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual).to.be.empty;
@@ -630,13 +632,13 @@ describe('provider-wireup integration tests', () => {
         };
         await prepareExistentState(staleState);
 
-        clock = sinon.useFakeTimers(moment('2020-04-23').valueOf()); // 3 days later
+        clock.setSystemTime(moment('2020-04-23').valueOf()); // 3 days later
         await wireup.initialize(provider, settings, {});
         expect(provider.commitTargetDoc.callCount).to.equal(0);
       });
 
       it('should update the targets doc when the state was calculated outside of the interval', async () => {
-        clock = sinon.useFakeTimers(moment('2020-04-28').valueOf());
+        clock.setSystemTime(moment('2020-04-28').valueOf());
         const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
@@ -664,7 +666,7 @@ describe('provider-wireup integration tests', () => {
         await rulesStateStore.storeTargetEmissions([], emissions);
         rulesStateStore.restore();
 
-        clock = sinon.useFakeTimers(moment('2020-05-02').valueOf()); // next interval
+        clock.setSystemTime(moment('2020-05-02').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
@@ -677,7 +679,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       it('should work when the settings have been changed', async () => {
-        clock = sinon.useFakeTimers(moment('2020-04-14').valueOf());
+        clock.setSystemTime(moment('2020-04-14').valueOf());
         const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
@@ -710,7 +712,7 @@ describe('provider-wireup integration tests', () => {
         await rulesStateStore.storeTargetEmissions([], emissions);
         rulesStateStore.restore();
 
-        clock = sinon.useFakeTimers(moment('2020-04-28').valueOf()); // next interval
+        clock.setSystemTime(moment('2020-04-28').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
@@ -723,7 +725,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       it('should use inclusive operator when comparing dates (left)', async () => {
-        clock = sinon.useFakeTimers(moment('2020-05-28').valueOf());
+        clock.setSystemTime(moment('2020-05-28').valueOf());
         const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
@@ -751,7 +753,7 @@ describe('provider-wireup integration tests', () => {
         await rulesStateStore.storeTargetEmissions([], emissions);
         rulesStateStore.restore();
 
-        clock = sinon.useFakeTimers(moment('2020-06-02').valueOf()); // next interval
+        clock.setSystemTime(moment('2020-06-02').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
@@ -764,7 +766,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       it('should use inclusive operator when comparing dates (right)', async () => {
-        clock = sinon.useFakeTimers(moment('2020-05-28').valueOf());
+        clock.setSystemTime(moment('2020-05-28').valueOf());
         const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
@@ -793,7 +795,7 @@ describe('provider-wireup integration tests', () => {
         await rulesStateStore.storeTargetEmissions([], emissions);
         rulesStateStore.restore();
 
-        clock = sinon.useFakeTimers(moment('2020-06-02').valueOf()); // next interval
+        clock.setSystemTime(moment('2020-06-02').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
@@ -818,7 +820,7 @@ describe('provider-wireup integration tests', () => {
           monthStartDate: 1,
         };
 
-        clock = sinon.useFakeTimers(moment('2020-04-23').valueOf());
+        clock.setSystemTime(moment('2020-04-23').valueOf());
         await wireup.initialize(provider, settings, {});
         expect(provider.commitTargetDoc.callCount).to.equal(0);
 
@@ -853,7 +855,7 @@ describe('provider-wireup integration tests', () => {
           monthStartDate: 1,
         };
 
-        clock = clock = sinon.useFakeTimers(moment('2020-04-30 23:00:00').valueOf());
+        clock.setSystemTime(moment('2020-04-30 23:00:00').valueOf());
         await wireup.initialize(provider, settings, {});
 
         const emissions = [
@@ -889,7 +891,7 @@ describe('provider-wireup integration tests', () => {
           monthStartDate: 1,
         };
 
-        clock = clock = sinon.useFakeTimers(moment('2020-04-30 23:00:00').valueOf());
+        clock.setSystemTime(moment('2020-04-30 23:00:00').valueOf());
         await wireup.initialize(provider, settings, {});
 
         const emissionsBefore = [
@@ -1186,6 +1188,7 @@ describe('provider-wireup integration tests', () => {
 
     it('should return a zero sum object if tasks are not enabled', async () => {
       sinon.stub(rulesEmitter, 'isEnabled').returns(false);
+      sinon.stub(rulesEmitter, 'initialize').returns(true);
 
       expect(await wireup.fetchTasksBreakdown()).to.deep.equal({
         Cancelled: 0,
@@ -1196,6 +1199,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       rulesEmitter.isEnabled.returns(true);
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       await wireup.initialize(provider, { enableTasks: false });
 
       expect(await wireup.fetchTasksBreakdown()).to.deep.equal({
