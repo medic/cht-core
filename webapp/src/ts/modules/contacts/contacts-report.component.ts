@@ -6,6 +6,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { FormService } from '@mm-services/form.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -26,7 +27,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   };
 
   subscription: Subscription = new Subscription();
-  enketoEdited
+  enketoEdited;
   enketoStatus;
   enketoSaving;
   enketoError;
@@ -124,25 +125,16 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
     return this
       .getContactAndForm()
-      .then(([ contact, form ]) => {
+      .then(([ contact, formDoc ]) => {
         this.globalActions.setEnketoEditedStatus(false);
-        this.globalActions.setTitle(this.translateFromService.get(form.title));
+        this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
         this.setCancelCallback();
 
-        const instanceData = {
-          source: 'contact',
-          contact,
-        };
-        const markFormEdited = this.markFormEdited.bind(this);
-        const resetFormError = this.resetFormError.bind(this);
+        const formContext = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
+        formContext.editedListener = this.markFormEdited.bind(this);
+        formContext.valuechangeListener = this.resetFormError.bind(this);
 
-        return this.formService.render(
-          '#contact-report',
-          form,
-          instanceData,
-          markFormEdited,
-          resetFormError
-        );
+        return this.formService.render(formContext);
       })
       .then((formInstance) => {
         this.form = formInstance;

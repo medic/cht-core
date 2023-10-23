@@ -7,11 +7,14 @@ const rewire = require('rewire');
 const { chtDocs, simpleNoolsTemplate, engineSettings } = require('./mocks');
 const rulesEmitter = rewire('../src/rules-emitter');
 
+let clock;
+
 const declarativeScenarios = [true, false];
 for (const rulesAreDeclarative of declarativeScenarios) {
   describe(`rules-emitter rulesAreDeclarative:${rulesAreDeclarative}`, () => {
     afterEach(() => {
       rulesEmitter.shutdown();
+      clock && clock.restore();
     });
 
     const settingsWithRules = (rules, contact = {}, user= {}, rulesOptions = {}) => ({
@@ -67,7 +70,7 @@ for (const rulesAreDeclarative of declarativeScenarios) {
       expect(actual.targets[0].data).to.deep.eq(contact);
     });
 
-    
+
     if (!rulesAreDeclarative) {
       it('c.tasks safely undefined when not in schema', async () => {
         const rules = `emit('task', new Task({ data: c.tasks }));`;
@@ -215,7 +218,7 @@ for (const rulesAreDeclarative of declarativeScenarios) {
 
       it('trigger task.anc.pregnancy_home_visit', async () => {
         const time = moment('2000-01-01');
-        sinon.useFakeTimers(time.valueOf());
+        clock = sinon.useFakeTimers(time.valueOf());
 
         const initialized = rulesEmitter.initialize(engineSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;

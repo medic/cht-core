@@ -323,7 +323,7 @@ export class EnketoService {
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  public async renderForm(formContext: EnketoFormContext, doc, userSettings, contactSummary) {
+  public async renderForm(formContext: EnketoFormContext, doc, userSettings) {
     const {
       formDoc,
       instanceData,
@@ -340,7 +340,7 @@ export class EnketoService {
       instanceData,
       titleKey,
       isFormInModal,
-      contactSummary,
+      contactSummary: formContext.contactSummary,
     };
     const form = await this.renderFromXmls(xmlFormContext, userSettings);
     const formContainer = xmlFormContext.wrapper.find('.container').first();
@@ -629,16 +629,38 @@ interface XmlFormContext {
   instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
-  contactSummary: Record<string, any>;
+  contactSummary?: Record<string, any>;
 }
 
-export interface EnketoFormContext {
+export class EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
-  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  type: string; // 'contact'|'report'|'task'|'training-card'
+  editing: boolean;
+  instanceData: null|string|Record<string, any>;
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;
   isFormInModal?: boolean;
   userContact?: Record<string, any>;
+  contactSummary? :Record<string, any>;
+
+  constructor(selector:string, type:string, formDoc:Record<string, any>, instanceData?) {
+    this.selector = selector;
+    this.type = type;
+    this.formDoc = formDoc;
+    this.instanceData = instanceData;
+  }
+
+  shouldEvaluateExpression() {
+    if (this.type === 'report' && this.editing) {
+      return false;
+    }
+    return true;
+  }
+
+  requiresContact() {
+    // Users can access contact forms even when they don't have a contact associated.
+    return this.type !== 'contact';
+  }
 }
