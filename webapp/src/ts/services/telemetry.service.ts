@@ -17,6 +17,7 @@ export class TelemetryService {
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private isAggregationRunning = false;
+  private hasTransitionFinished = false;
   private windowRef;
 
   constructor(
@@ -116,15 +117,9 @@ export class TelemetryService {
     };
   }
 
-  private async getTelemetryDBs(): Promise<undefined|string[]> {
-    const databases = await this.document.defaultView?.indexedDB?.databases();
-
-    if (!databases?.length) {
-      return;
-    }
-
+  private async getTelemetryDBs(databases): Promise<undefined|string[]> {
     return databases
-      .map(db => db.name?.replace(this.POUCH_PREFIX, '') || '')
+      ?.map(db => db.name?.replace(this.POUCH_PREFIX, '') || '')
       .filter(dbName => dbName?.startsWith(this.TELEMETRY_PREFIX));
   }
 
@@ -295,7 +290,9 @@ export class TelemetryService {
 
     try {
       const today = this.getToday();
-      const telemetryDBs = await this.getTelemetryDBs();
+      const databases = await this.windowRef?.indexedDB?.databases();
+      await this.deleteDeprecatedTelemetryDB(databases);
+      const telemetryDBs = await this.getTelemetryDBs(databases);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
       await this
@@ -304,6 +301,40 @@ export class TelemetryService {
     } catch (error) {
       console.error('Error in telemetry service', error);
     }
+  }
+
+  /**
+   * ToDo: Remove this function in a future release:
+   * The way telemetry was stored in the client side changed (https://github.com/medic/cht-core/pull/8555),
+   * this function contains all the transition code where it deletes the old Telemetry DB from the DB.
+   * It was decided to not aggregate the DB content.
+   * @private
+   */
+  private async deleteDeprecatedTelemetryDB(databases) {
+    if (this.hasTransitionFinished) {
+      return;
+    }
+
+    databases?.forEach(db => {
+      const dbName = db.name?.replace(this.POUCH_PREFIX, '') || '';
+
+      // Skips new Telemetry DB, then matches the old deprecated Telemetry DB.
+      if (!dbName.startsWith(this.TELEMETRY_PREFIX)
+        && dbName.includes(this.TELEMETRY_PREFIX)
+        && dbName.includes(this.sessionService.userCtx().name)) {
+        this.windowRef?.indexedDB.deleteDatabase(dbName);
+      }
+    });
+
+    Object
+      .keys(this.windowRef?.localStorage)
+      .forEach(key => {
+        if (key.includes('telemetry-date') || key.includes('telemetry-db')) {
+          this.windowRef?.localStorage.removeItem(key);
+        }
+      });
+
+    this.hasTransitionFinished = true;
   }
 }
 
