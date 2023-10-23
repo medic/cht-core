@@ -71,18 +71,25 @@ describe('AppComponent', () => {
 
   it('renders form when required fields are set', fakeAsync(async () => {
     const component = await getComponent();
+    const onRender = sinon.stub();
+    component.onRender.subscribe(onRender);
+
     expect(enketoService.renderForm.called).to.be.false;
+    expect(onRender.called).to.be.false;
     component.formXml = FORM_XML;
     tick();
     expect(enketoService.renderForm.called).to.be.false;
+    expect(onRender.called).to.be.false;
     component.formModel = FORM_MODEL;
     tick();
     expect(enketoService.renderForm.called).to.be.false;
+    expect(onRender.called).to.be.false;
     component.formHtml = FORM_HTML;
     tick();
 
     expect(enketoService.getCurrentForm.callCount).to.equal(3);
     expect(enketoService.renderForm.callCount).to.equal(1);
+    expect(onRender.callCount).to.equal(1);
     const actualContext = enketoService.renderForm.args[0][0];
     expect(actualContext).to.deep.include({
       selector: `#${FORM_ID}`,
@@ -114,6 +121,8 @@ describe('AppComponent', () => {
     const content = { my: 'content' };
 
     const component = await getComponent();
+    const onRender = sinon.stub();
+    component.onRender.subscribe(onRender);
     component.formId = formId;
     tick();
     component.user = user;
@@ -130,6 +139,7 @@ describe('AppComponent', () => {
     tick();
 
     expect(enketoService.renderForm.callCount).to.equal(1);
+    expect(onRender.callCount).to.equal(1);
     const actualContext = enketoService.renderForm.args[0][0];
     expect(actualContext).to.deep.include({
       selector: `#${formId}`,
@@ -155,6 +165,7 @@ describe('AppComponent', () => {
 
     // Form is rendered again, but without instanceData or contactSummary
     expect(enketoService.renderForm.callCount).to.equal(3);
+    expect(onRender.callCount).to.equal(3);
     const actualContext1 = enketoService.renderForm.args[2][0];
     expect(actualContext1).to.deep.include({
       selector: `#${formId}`,
@@ -253,6 +264,8 @@ describe('AppComponent', () => {
     enketoService.getCurrentForm.returns(currentForm);
 
     const component = await getComponent();
+    const onRender = sinon.stub();
+    component.onRender.subscribe(onRender);
     component.formXml = FORM_XML;
     component.formModel = formModel;
     component.formHtml = FORM_HTML;
@@ -265,6 +278,7 @@ describe('AppComponent', () => {
     tick();
     // The queue of renderForm calls gets processed in the tick
     expect(enketoService.renderForm.callCount).to.equal(8);
+    expect(onRender.callCount).to.equal(8);
     // The last render call contains the latest values
     const actualContext = enketoService.renderForm.args[7][0];
     expect(actualContext).to.deep.include({

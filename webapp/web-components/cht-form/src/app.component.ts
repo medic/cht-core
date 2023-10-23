@@ -29,6 +29,7 @@ export class AppComponent {
   editing = false;
   status = { ...this.DEFAULT_STATUS };
 
+  @Output() onRender: EventEmitter<Object> = new EventEmitter();
   @Output() onCancel: EventEmitter<void> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
@@ -146,6 +147,7 @@ export class AppComponent {
     const formDetails = this.getFormDetails();
 
     await this.enketoService.renderForm(formContext, formDetails, this._user);
+    this.onRender.emit();
   }
 
   private unloadForm() {
