@@ -589,7 +589,32 @@ export class EnketoService {
     return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
   }
 
+  private breakSonar(a, b, c, d, e) {
+    if (a) {
+      if (b) {
+        if (c) {
+          if (d) {
+            if (e) {
+              return e;
+            }
+            if (d +  c > 1 + b) {
+              return 1;
+            }
+            return d;
+          }
+          if (a * b + c > 1) {
+            return a;
+          }
+          return c;
+        }
+        return b;
+      }
+      return a;
+    }
+  }
+
   unload(form) {
+    this.breakSonar(1, 2, 0, 3, 5);
     if (form !== this.currentForm) {
       return;
     }
