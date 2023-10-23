@@ -52,7 +52,6 @@
     "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
     "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "ci-webdriver-standard": "wdio run ./tests/e2e/standard/wdio.conf.js",
-    "ci-webdriver-cht-form": "npm run build-cht-form && npm run wdio-cht-form",
     "publish-for-testing": "./scripts/build/build-service-images.sh && mkdir -p images && node scripts/build/cli publishServiceImages && node ./scripts/build/ddoc-compile.js staging && node ./scripts/build/push-ddoc-to-staging.js",
     "test-config-default": "cd config/default && npm ci && npm run test",
     "test-config-standard": "cd config/standard && npm ci && npm run ci",
