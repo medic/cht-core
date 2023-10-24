@@ -60,7 +60,7 @@ describe('cht-form web component - Edit Person Form', () => {
     expect(personInfo.externalId).to.equal('12345');
     expect(personInfo.notes).to.equal('Test notes');
 
-    await (await contactPage.personName()).addValue(' Dog');
+    await (await contactPage.nameField('person')).addValue(' Dog');
     await (await contactPage.phoneField()).setValue('+50688888888');
     await (await contactPage.notes('person')).addValue(' - New note');
     const data = await mockConfig.submitForm();

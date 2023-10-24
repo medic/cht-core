@@ -10,7 +10,7 @@ describe('cht-form web component - Create Person Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('New Person');
 
-    await (await contactPage.personName()).setValue('Filippo');
+    await (await contactPage.nameField('person')).setValue('Filippo');
     await (await contactPage.sexField('person', 'male')).click();
     await (await contactPage.phoneField()).setValue('+50689999999');
     await (await contactPage.dateOfBirthField()).setValue('2000-09-20');

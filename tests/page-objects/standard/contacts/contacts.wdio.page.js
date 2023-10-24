@@ -29,12 +29,12 @@ const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
   }
   await (await contactPageDefault.newPrimaryContactButton()).waitForDisplayed();
   await (await contactPageDefault.newPrimaryContactButton()).click();
-  await (await contactPageDefault.newPrimaryContactName()).addValue(contactName);
+  await (await contactPageDefault.newPrimaryContactName()).setValue(contactName);
   await contactPageDefault.genericForm.nextPage();
   await (await contactPageDefault.writeNamePlace(type)).click();
-  await (await contactPageDefault.newPlaceName()).addValue(placeName);
-  await (await contactPageDefault.externalIdField(type)).addValue('1234457');
-  await (await contactPageDefault.notes(type)).addValue(`Some ${type} notes`);
+  await (await contactPageDefault.nameField(type)).setValue(placeName);
+  await (await contactPageDefault.externalIdField(type)).setValue('1234457');
+  await (await contactPageDefault.notes(type)).setValue(`Some ${type} notes`);
   await (await contactPageDefault.genericForm.submitButton()).click();
   const dashedType = type.replace('_', '-');
   await (await contactPageDefault.contactCardIcon(dashedType)).waitForDisplayed();
@@ -94,6 +94,12 @@ const getAncVisits = async () => {
   return (await ancVisitsCompleted()).getText();
 };
 
+const getCurrentPlaceEditFormValues = async (type) => ({
+  name: await contactPageDefault.nameField(type).getValue(),
+  externalId: await contactPageDefault.externalIdField(type).getValue(),
+  notes: await contactPageDefault.notes(type).getValue()
+});
+
 module.exports = {
   contactPageDefault,
   addPlace,
@@ -105,4 +111,5 @@ module.exports = {
   pastPregnancyCard,
   getDeliveryCode,
   getAncVisits,
+  getCurrentPlaceEditFormValues,
 };

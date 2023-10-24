@@ -18,9 +18,9 @@ describe('cht-form web component - Create an Health Center', () => {
     await (await contactPageDefault.notes('contact')).setValue('Test notes - new contact');
     await contactPageDefault.genericForm.nextPage();
     await (await contactPageDefault.writeNamePlace('health_center')).click();
-    await (await contactPageDefault.newPlaceName()).addValue('Filippo\'s health center test');
-    await (await contactPageDefault.externalIdField('health_center')).addValue('123 HC');
-    await (await contactPageDefault.notes('health_center')).addValue('Test notes - new health center');
+    await (await contactPageDefault.nameField('health_center')).setValue('Filippo\'s health center test');
+    await (await contactPageDefault.externalIdField('health_center')).setValue('123 HC');
+    await (await contactPageDefault.notes('health_center')).setValue('Test notes - new health center');
 
     const data = await mockConfig.submitForm();
     const jsonObj = data[0].fields;
