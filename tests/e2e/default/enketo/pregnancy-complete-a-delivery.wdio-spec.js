@@ -30,6 +30,7 @@ describe('Contact Delivery Form', () => {
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
+    await commonPage.hideSnackbar();
     await commonPage.goToPeople(pregnantWoman._id);
 
     await pregnancyForm.submitPregnancy();
