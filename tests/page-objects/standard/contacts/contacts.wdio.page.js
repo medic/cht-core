@@ -1,5 +1,5 @@
-const contactPageDefault = require('../../default/contacts/contacts.wdio.page');
-const commonPageDefault = require('../../default/common/common.wdio.page');
+const contactPageDefault = require('@page-objects/default/contacts/contacts.wdio.page');
+const commonPageDefault = require('@page-objects//default/common/common.wdio.page');
 
 const HEALTH_PROGRAMS = { ANC: 'anc', PNC: 'pnc', IMM: 'imm', GPM: 'gpm'};
 const healthProgram = (program) => $(`input[name="/data/health_center/use_cases"][value="${program}"]`);
