@@ -1,4 +1,7 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { DatePipe } from '@angular/common';
@@ -15,9 +18,6 @@ import { SessionService } from '@mm-services/session.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 
 describe('Reports Sidebar Filter Component', () => {
   let component: ReportsSidebarFilterComponent;

@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { By } from '@angular/platform-browser';
@@ -20,8 +22,6 @@ import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { SenderComponent } from '@mm-components/sender/sender.component';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;

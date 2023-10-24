@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -36,7 +37,6 @@ import { FastActionButtonService } from '@mm-services/fast-action-button.service
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
-import { MatExpansionModule } from '@angular/material/expansion';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;

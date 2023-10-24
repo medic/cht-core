@@ -1,4 +1,6 @@
 import { TestBed, ComponentFixture, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -30,8 +32,6 @@ import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 
 describe('Contacts component', () => {

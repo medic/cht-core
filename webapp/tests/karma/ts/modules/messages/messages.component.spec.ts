@@ -1,4 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -20,8 +22,6 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
 import { SessionService } from '@mm-services/session.service';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;

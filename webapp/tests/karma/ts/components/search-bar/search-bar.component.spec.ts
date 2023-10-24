@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -9,7 +10,6 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
-import { FormsModule } from '@angular/forms';
 
 describe('Search Bar Component', () => {
   let component: SearchBarComponent;

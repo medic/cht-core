@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -9,7 +10,6 @@ import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
 import { TestingComponent } from '@mm-modules/testing/testing.component';
-import { FormsModule } from '@angular/forms';
 
 describe('Testing Component', () => {
   let component: TestingComponent;

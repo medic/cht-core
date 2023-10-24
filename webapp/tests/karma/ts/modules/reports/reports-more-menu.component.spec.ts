@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
@@ -10,9 +13,6 @@ import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
 
 describe('Reports More Menu Component', () => {
   let component: ReportsMoreMenuComponent;

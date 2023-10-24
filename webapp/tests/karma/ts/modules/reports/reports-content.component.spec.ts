@@ -1,4 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -28,8 +30,6 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
