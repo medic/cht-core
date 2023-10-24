@@ -4,6 +4,7 @@ import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extens
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
+import { ContactSaveService } from '@mm-services/contact-save.service';
 
 @Component({
   selector: 'cht-form',
@@ -17,11 +18,19 @@ export class AppComponent {
     error: null as string | null,
   } as const;
 
+  private readonly HARDCODED_TYPES = [
+    'district_hospital',
+    'health_center',
+    'clinic',
+    'person'
+  ];
+
   private _formId = this.DEFAULT_FORM_ID;
   private _formXml?: string;
   private _formModel?: string;
   private _formHtml?: string;
   private _contactSummary?: Record<string, any>;
+  private _contactType?: string;
   private _content: Record<string, any> | null = null;
   private _user: Record<string, any> = this.DEFAULT_USER;
   private currentRender = Promise.resolve();
@@ -29,11 +38,12 @@ export class AppComponent {
   editing = false;
   status = { ...this.DEFAULT_STATUS };
 
-  @Output() onRender: EventEmitter<Object> = new EventEmitter();
+  @Output() onRender: EventEmitter<void> = new EventEmitter();
   @Output() onCancel: EventEmitter<void> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
   constructor(
+    private contactSaveService: ContactSaveService,
     private enketoService: EnketoService,
     private translateService: TranslateService,
   ) {
@@ -79,6 +89,11 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
+  @Input() set contactType(value: string | undefined) {
+    this._contactType = value;
+    this.queueRenderForm();
+  }
+
   @Input() set content(value: Record<string, any> | null) {
     this._content = value;
     if (this._content?.contact && !this._content.source) {
@@ -108,13 +123,7 @@ export class AppComponent {
     this.status.saving = true;
 
     try {
-      const currentForm = this.enketoService.getCurrentForm();
-      const formDoc = {
-        xml: this._formXml,
-        doc: {}
-      };
-      const contact = null;  // Only used for setting `from` and `contact` fields on docs
-      const submittedDocs = await this.enketoService.completeNewReport(this._formId, currentForm, formDoc, contact);
+      const submittedDocs = await this.getDocsFromForm();
       this.tearDownForm();
       this.onSubmit.emit(submittedDocs);
     } catch (e) {
@@ -123,6 +132,23 @@ export class AppComponent {
     } finally {
       this.status.saving = false;
     }
+  }
+
+  private async getDocsFromForm() {
+    const currentForm = this.enketoService.getCurrentForm();
+    if (this._contactType) {
+      const typeFields = this.HARDCODED_TYPES.includes(this._contactType)
+        ? { type: this._contactType }
+        : { type: 'contact', contact_type: this._contactType };
+      const { preparedDocs } = await this.contactSaveService.save(currentForm, null, typeFields, null);
+      return preparedDocs;
+    }
+
+    const formDoc = {
+      xml: this._formXml,
+      doc: {}
+    };
+    return this.enketoService.completeNewReport(this._formId, currentForm, formDoc, this._content?.contact);
   }
 
   private queueRenderForm() {
@@ -140,7 +166,8 @@ export class AppComponent {
     const valuechangeListener = () => this.status.error = null;
     const selector = `#${this._formId}`;
     const formDoc = { _id: this._formId };
-    const formContext = new EnketoFormContext(selector, 'report', formDoc, this._content);
+    const type = this._contactType ? 'contact': 'report';
+    const formContext = new EnketoFormContext(selector, type, formDoc, this._content);
     formContext.editedListener = editedListener;
     formContext.valuechangeListener = valuechangeListener;
     formContext.contactSummary = this._contactSummary;
@@ -176,6 +203,7 @@ export class AppComponent {
     this._formHtml = undefined;
     this._formModel = undefined;
     this._contactSummary = undefined;
+    this._contactType = undefined;
     this._content = null;
     this._formId = this.DEFAULT_FORM_ID;
     this._user = this.DEFAULT_USER;

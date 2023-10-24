@@ -328,10 +328,8 @@ export class FormService {
       ? { type }
       : { type: 'contact', contact_type: type };
 
-    let preparedDocs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
-    preparedDocs = await this.applyTransitions(preparedDocs);
-
-
+    const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
+    const preparedDocs = await this.applyTransitions(docs);
 
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);

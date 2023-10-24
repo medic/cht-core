@@ -8,6 +8,7 @@ import { expect } from 'chai';
 import { AppComponent } from '../../src/app.component';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { EnketoService } from '@mm-services/enketo.service';
+import { ContactSaveService } from '@mm-services/contact-save.service';
 
 describe('AppComponent', () => {
   const FORM_ID = 'cht-form-id';
@@ -19,6 +20,7 @@ describe('AppComponent', () => {
     language: 'en',
   } as const;
 
+  let contactSaveService;
   let enketoService;
 
   const getComponent = () => {
@@ -28,6 +30,7 @@ describe('AppComponent', () => {
   };
 
   beforeEach(async () => {
+    contactSaveService = { save: sinon.stub() };
     enketoService = {
       renderForm: sinon
         .stub()
@@ -41,6 +44,7 @@ describe('AppComponent', () => {
         declarations: [AppComponent],
         imports: [TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } })],
         providers: [
+          { provide: ContactSaveService, useValue: contactSaveService },
           { provide: EnketoService, useValue: enketoService },
         ]
       })
@@ -129,6 +133,8 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
+    component.contactType = 'person';
+    tick();
     component.content = content;
     tick();
     component.formXml = FORM_XML;
@@ -143,7 +149,7 @@ describe('AppComponent', () => {
     const actualContext = enketoService.renderForm.args[0][0];
     expect(actualContext).to.deep.include({
       selector: `#${formId}`,
-      type: 'report',
+      type: 'contact',
       formDoc: { _id: formId },
       instanceData: content,
       contactSummary: { context: contactSummary }
@@ -160,13 +166,14 @@ describe('AppComponent', () => {
 
     // Null out the optional fields and render again
     component.contactSummary = undefined;
+    component.contactType = undefined;
     component.content = null;
     tick();
 
     // Form is rendered again, but without instanceData or contactSummary
-    expect(enketoService.renderForm.callCount).to.equal(3);
-    expect(onRender.callCount).to.equal(3);
-    const actualContext1 = enketoService.renderForm.args[2][0];
+    expect(enketoService.renderForm.callCount).to.equal(4);
+    expect(onRender.callCount).to.equal(4);
+    const actualContext1 = enketoService.renderForm.args[3][0];
     expect(actualContext1).to.deep.include({
       selector: `#${formId}`,
       type: 'report',
@@ -174,12 +181,12 @@ describe('AppComponent', () => {
       instanceData: null,
       contactSummary: undefined
     });
-    expect(enketoService.renderForm.args[2][1]).to.deep.equal({
+    expect(enketoService.renderForm.args[3][1]).to.deep.equal({
       html: $(FORM_HTML),
       model: formModel,
       hasContactSummary: true
     });
-    expect(enketoService.renderForm.args[2][2]).to.deep.equal(user);
+    expect(enketoService.renderForm.args[3][2]).to.deep.equal(user);
     expect(enketoService.unload.called).to.be.false;
   }));
 
@@ -272,31 +279,32 @@ describe('AppComponent', () => {
     component.formId = firstFormId;
     component.user = user;
     component.contactSummary = contactSummary;
+    component.contactType = 'person';
     component.content = content;
     // Set the form ID again
     component.formId = formId;
     tick();
     // The queue of renderForm calls gets processed in the tick
-    expect(enketoService.renderForm.callCount).to.equal(8);
-    expect(onRender.callCount).to.equal(8);
+    expect(enketoService.renderForm.callCount).to.equal(9);
+    expect(onRender.callCount).to.equal(9);
     // The last render call contains the latest values
-    const actualContext = enketoService.renderForm.args[7][0];
+    const actualContext = enketoService.renderForm.args[8][0];
     expect(actualContext).to.deep.include({
       selector: `#${formId}`,
-      type: 'report',
+      type: 'contact',
       formDoc: { _id: formId },
       instanceData: content,
       contactSummary: { context: contactSummary }
     });
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
-    expect(enketoService.renderForm.args[7][1]).to.deep.equal({
+    expect(enketoService.renderForm.args[8][1]).to.deep.equal({
       html: $(FORM_HTML),
       model: formModel,
       hasContactSummary: true
     });
-    expect(enketoService.renderForm.args[7][2]).to.deep.equal(user);
-    expect(enketoService.unload.callCount).to.equal(8);
+    expect(enketoService.renderForm.args[8][2]).to.deep.equal(user);
+    expect(enketoService.unload.callCount).to.equal(9);
     enketoService.unload.args.forEach((args) => expect(args).to.deep.equal([currentForm]));
   }));
 
@@ -381,7 +389,8 @@ describe('AppComponent', () => {
       language: 'es',
     };
     const contactSummary = { hello: 'world' };
-    const content = { my: 'content' };
+    const contact = { phone: '12345' };
+    const content = { my: 'content', contact };
 
     const component = getComponent();
     component.formId = formId;
@@ -420,6 +429,7 @@ describe('AppComponent', () => {
     tick();
     expect(component.editing).to.be.false;
     expect(enketoService.getCurrentForm.callCount).to.equal(9);
+    expect(contactSaveService.save.called).to.be.false;
     expect(enketoService.completeNewReport.callCount).to.equal(1);
     const expectedFormDoc = {
       xml: formXml,
@@ -429,7 +439,7 @@ describe('AppComponent', () => {
       formId,
       currentForm,
       expectedFormDoc,
-      null
+      contact
     ]);
     expect(enketoService.unload.callCount).to.equal(1);
     expect(enketoService.unload.args[0]).to.deep.equal([currentForm]);
@@ -464,6 +474,148 @@ describe('AppComponent', () => {
       hasContactSummary: false
     });
     expect(enketoService.renderForm.args[1][2]).to.deep.equal(USER);
+  }));
+
+  it('submits contact form with default type', fakeAsync(async () => {
+    const expectedDocs = [
+      { _id: 'doc1' },
+      { _id: 'doc2' },
+    ];
+    contactSaveService.save.resolves({ preparedDocs: expectedDocs });
+    const currentForm = { _id: 'current-form' };
+    const formId = 'test-form-id';
+    const formXml = '<form>custom</form>';
+    const formModel = '<model><instance id="contact-summary" /></model>';
+    const formHtml = '<div>custom</div>';
+    const user = {
+      contact_id: 'spanish_user',
+      language: 'es',
+    };
+    const contactSummary = { hello: 'world' };
+    const content = { my: 'content' };
+
+    const component = getComponent();
+    component.formId = formId;
+    tick();
+    component.user = user;
+    tick();
+    component.contactSummary = contactSummary;
+    tick();
+    component.contactType = 'person';
+    tick();
+    component.content = content;
+    tick();
+    component.formXml = formXml;
+    tick();
+    component.formModel = formModel;
+    tick();
+    component.formHtml = formHtml;
+    tick();
+    component.editing = true;
+
+    expect(enketoService.getCurrentForm.callCount).to.equal(8);
+    expect(enketoService.renderForm.callCount).to.equal(1);
+    enketoService.getCurrentForm
+      .onCall(8)
+      .returns(currentForm);
+    enketoService.getCurrentForm
+      .onCall(9)
+      .returns(currentForm);
+
+    let actualSubmittedDocs;
+    component.onSubmit.subscribe((submittedDocs) => {
+      actualSubmittedDocs = submittedDocs;
+    });
+
+    const submitPromise = component.submitForm();
+    expect(component.status.saving).to.be.true;
+    await submitPromise;
+    tick();
+    expect(component.editing).to.be.false;
+    expect(enketoService.getCurrentForm.callCount).to.equal(10);
+    expect(enketoService.completeNewReport.called).to.be.false;
+    expect(contactSaveService.save.callCount).to.equal(1);
+    expect(contactSaveService.save.args[0]).to.deep.equal([
+      currentForm,
+      null,
+      { type: 'person' },
+      null
+    ]);
+    expect(enketoService.unload.callCount).to.equal(1);
+    expect(enketoService.unload.args[0]).to.deep.equal([currentForm]);
+    expect(actualSubmittedDocs).to.deep.equal(expectedDocs);
+    expect(component.formId).to.equal(FORM_ID);
+  }));
+
+  it('submits contact form with custom type', fakeAsync(async () => {
+    const expectedDocs = [
+      { _id: 'doc1' },
+      { _id: 'doc2' },
+    ];
+    contactSaveService.save.resolves({ preparedDocs: expectedDocs });
+    const currentForm = { _id: 'current-form' };
+    const formId = 'test-form-id';
+    const formXml = '<form>custom</form>';
+    const formModel = '<model><instance id="contact-summary" /></model>';
+    const formHtml = '<div>custom</div>';
+    const user = {
+      contact_id: 'spanish_user',
+      language: 'es',
+    };
+    const contactSummary = { hello: 'world' };
+    const content = { my: 'content' };
+
+    const component = getComponent();
+    component.formId = formId;
+    tick();
+    component.user = user;
+    tick();
+    component.contactSummary = contactSummary;
+    tick();
+    component.contactType = 'custom_contact';
+    tick();
+    component.content = content;
+    tick();
+    component.formXml = formXml;
+    tick();
+    component.formModel = formModel;
+    tick();
+    component.formHtml = formHtml;
+    tick();
+    component.editing = true;
+
+    expect(enketoService.getCurrentForm.callCount).to.equal(8);
+    expect(enketoService.renderForm.callCount).to.equal(1);
+    enketoService.getCurrentForm
+      .onCall(8)
+      .returns(currentForm);
+    enketoService.getCurrentForm
+      .onCall(9)
+      .returns(currentForm);
+
+    let actualSubmittedDocs;
+    component.onSubmit.subscribe((submittedDocs) => {
+      actualSubmittedDocs = submittedDocs;
+    });
+
+    const submitPromise = component.submitForm();
+    expect(component.status.saving).to.be.true;
+    await submitPromise;
+    tick();
+    expect(component.editing).to.be.false;
+    expect(enketoService.getCurrentForm.callCount).to.equal(10);
+    expect(enketoService.completeNewReport.called).to.be.false;
+    expect(contactSaveService.save.callCount).to.equal(1);
+    expect(contactSaveService.save.args[0]).to.deep.equal([
+      currentForm,
+      null,
+      { type: 'contact', contact_type: 'custom_contact' },
+      null
+    ]);
+    expect(enketoService.unload.callCount).to.equal(1);
+    expect(enketoService.unload.args[0]).to.deep.equal([currentForm]);
+    expect(actualSubmittedDocs).to.deep.equal(expectedDocs);
+    expect(component.formId).to.equal(FORM_ID);
   }));
 
   it('submits form when error thrown completing the report', fakeAsync(async () => {
@@ -505,7 +657,7 @@ describe('AppComponent', () => {
       FORM_ID,
       currentForm,
       expectedFormDoc,
-      null
+      undefined
     ]);
     expect(enketoService.unload.called).to.be.false;
   }));
@@ -535,6 +687,8 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
+    component.contactType = 'person';
+    tick();
     component.content = content;
     tick();
     component.formXml = formXml;
@@ -546,10 +700,10 @@ describe('AppComponent', () => {
     component.editing = true;
     component.status = { saving: true, error: 'some error' };
 
-    expect(enketoService.getCurrentForm.callCount).to.equal(7);
+    expect(enketoService.getCurrentForm.callCount).to.equal(8);
     expect(enketoService.renderForm.callCount).to.equal(1);
     enketoService.getCurrentForm
-      .onCall(7)
+      .onCall(8)
       .returns(currentForm);
 
     let cancelEmitted = false;
@@ -560,7 +714,7 @@ describe('AppComponent', () => {
     component.cancelForm();
     tick();
     expect(cancelEmitted).to.be.true;
-    expect(enketoService.getCurrentForm.callCount).to.equal(8);
+    expect(enketoService.getCurrentForm.callCount).to.equal(9);
 
     expect(enketoService.unload.callCount).to.equal(1);
     expect(enketoService.unload.args[0]).to.deep.equal([currentForm]);
@@ -580,7 +734,7 @@ describe('AppComponent', () => {
     expect(enketoService.renderForm.callCount).to.equal(1);
     component.formHtml = FORM_HTML;
     tick();
-    expect(enketoService.getCurrentForm.callCount).to.equal(11);
+    expect(enketoService.getCurrentForm.callCount).to.equal(12);
     expect(enketoService.renderForm.callCount).to.equal(2);
     // New form has been rendered with default values (internal data was reset)
     const actualContext = enketoService.renderForm.args[1][0];
