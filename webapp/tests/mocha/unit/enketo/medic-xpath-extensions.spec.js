@@ -9,9 +9,14 @@ const func = medicXpathExtensions.func;
 const getTimezoneOffset = Date.prototype.getTimezoneOffset;
 
 describe('medic-xpath-extensions', function() {
-  afterEach(done => {
+
+  beforeEach(() => {
+    // make the result consistent regardless of which timezone the test is run in
+    Date.prototype.getTimezoneOffset = () => -240;
+  });
+
+  afterEach(() => {
     Date.prototype.getTimezoneOffset = getTimezoneOffset;
-    done();
   });
 
   describe('getTimezoneOffsetAsTime()', function() {
@@ -37,6 +42,7 @@ describe('medic-xpath-extensions', function() {
   });
 
   describe('#difference-in-months', function() {
+
     [
       [ '2015-10-01', '2015-10-01', 0, ],
       [ '2015-09-01', '2015-10-01', 1, ],
@@ -97,25 +103,17 @@ describe('medic-xpath-extensions', function() {
   });
 
   describe('#to-bikram-sambat()', () => {
+
     [
       [ { t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२'],
       [ { t: 'str', v: '1999-12-12' }, '२६ मंसिर २०५६'],
-      [ { t: 'date', v: new Date('2015-10-01T00:00:00.000+0000') }, '१४ असोज २०७२'],
+      [ { t: 'date', v: new Date('2015-10-01T00:00:00.000') }, '१४ असोज २०७२'],
+      [ { t: 'num', v: 11111 }, '२१ जेठ २०५७'],
       [ { t: 'arr', v: [{ textContent: '2014-09-22' }] }, '६ असोज २०७१'],
     ].forEach(([date, expected]) => {
       it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the Bikram Sambat calendar`, () => {
         assert.equal(func['to-bikram-sambat'](date).v, expected);
       });
-    });
-
-    // "num" is a special case because it uses the local timezone. To make this test work in all timezones
-    // we just compare it to the equivalent Date function.
-    it(`should format the num 11111 according to the Bikram Sambat calendar`, () => {
-      const value = 11111; // days since epoch
-      const date = new Date((value - 1) * 24 * 60 * 60 * 1000);
-      const expected = func['to-bikram-sambat']({ t: 'date', v: date }).v;
-      const actual = func['to-bikram-sambat']({ t: 'num', v: value }).v;
-      assert.equal(actual, expected);
     });
 
     [
@@ -138,6 +136,7 @@ describe('medic-xpath-extensions', function() {
   });
 
   describe('#add-date()', () => {
+
     const display = value => value ? value.v : '';
 
     [
@@ -148,8 +147,8 @@ describe('medic-xpath-extensions', function() {
       ],
       [
         [null, { t: 'num', v: 1 }],
-        { t: 'date', v: new Date('2015-10-01T00:00+0000') },
-        '2015-11-01T00:00+0000'
+        { t: 'date', v: new Date('2015-10-01T00:00') },
+        '2015-11-01T00:00'
       ],
       [
         [null, null, { t: 'num', v: 1 }],
@@ -198,8 +197,8 @@ describe('medic-xpath-extensions', function() {
       ],
       [
         [{ t: 'num', v: 1 }],
-        { t: 'str', v: 'Sept 9 2015 00:00+0000' },
-        '2016-09-09T00:00+0000'
+        { t: 'str', v: 'Sept 9 2015 00:00' },
+        '2016-09-09T00:00'
       ],
       [
         [{ t: 'num', v: 1 }],
@@ -209,7 +208,7 @@ describe('medic-xpath-extensions', function() {
       [
         [{ t: 'num', v: 1 }],
         { t: 'arr', v: [{ textContent: '2014-09-22' }] },
-        '2015-09-22T00:00+0000'
+        '2015-09-22T00:00'
       ],
       [
         [{ t: 'str', v: '111' }, null, { t: 'str', v: '-1' }],
