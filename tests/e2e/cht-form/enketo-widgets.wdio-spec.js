@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const express = require('express');
 const path = require('path');
-const { getFormTitle } = require('@page-objects/default/enketo/generic-form.wdio.page');
+const { getFormTitle } = require('@page-objects/default/enketo/generic-form.wdio.page'); 
 
 describe('cht-form web component', () => {
   const mockApp = express();
