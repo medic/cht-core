@@ -11,7 +11,6 @@ import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GlobalActions } from '@mm-actions/global';
-import { CommonModule } from '@angular/common';
 
 describe('Contacts More Menu Component', () => {
   let component: ContactsMoreMenuComponent;
@@ -42,8 +41,8 @@ describe('Contacts More Menu Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          CommonModule,
         ],
+        declarations: [ ContactsMoreMenuComponent ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: AuthService, useValue: authService },

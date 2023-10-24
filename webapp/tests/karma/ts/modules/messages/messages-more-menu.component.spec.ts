@@ -7,7 +7,6 @@ import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
-import { CommonModule } from '@angular/common';
 
 describe('Messages More Menu Component', () => {
   let component: MessagesMoreMenuComponent;
@@ -29,8 +28,8 @@ describe('Messages More Menu Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          CommonModule,
         ],
+        declarations: [ MessagesMoreMenuComponent ],
         providers: [
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
