@@ -28,7 +28,7 @@ describe('FastActionButtonComponent', () => {
 
   beforeEach(async () => {
     router = {
-      events: { pipe: sinon.stub().returns(new Subject()) },
+      events: { pipe: sinon.stub().returns({ subscribe: sinon.stub() }) },
     };
     authService = { has: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };

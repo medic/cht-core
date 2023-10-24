@@ -20,6 +20,8 @@ import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { SenderComponent } from '@mm-components/sender/sender.component';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
@@ -68,6 +70,8 @@ describe('MessagesContentComponent', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           PipesModule,
+          FormsModule,
+          CommonModule
         ],
         declarations: [
           MessagesContentComponent,

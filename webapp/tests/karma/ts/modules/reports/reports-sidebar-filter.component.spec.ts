@@ -16,6 +16,8 @@ import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sideb
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 
 describe('Reports Sidebar Filter Component', () => {
   let component: ReportsSidebarFilterComponent;
@@ -46,6 +48,8 @@ describe('Reports Sidebar Filter Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule,
+          BrowserAnimationsModule,
+          BsDropdownModule
         ],
         declarations: [
           ReportsSidebarFilterComponent,

@@ -42,7 +42,7 @@ describe('Contacts More Menu Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          CommonModule
+          CommonModule,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
