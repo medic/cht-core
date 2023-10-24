@@ -9,10 +9,8 @@ import { FormService } from '@mm-services/form.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
-import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { ContactsActions } from '@mm-actions/contacts';
 import { TranslateService } from '@mm-services/translate.service';
 
 
@@ -28,17 +26,14 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private formService:FormService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
-    private contactSaveService:ContactSaveService,
     private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.contactsActions = new ContactsActions(store);
   }
 
   subscription = new Subscription();
   translationsLoadedSubscription;
   private globalActions;
-  private contactsActions;
   private xmlVersion;
 
   enketoStatus;
@@ -283,8 +278,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         // Updating fields before save. Ref: #6670.
         $('form.or').trigger('beforesave');
 
-        return this.contactSaveService
-          .save(form, docId, this.enketoContact.type, this.xmlVersion)
+        return this.formService
+          .saveContact(form, docId, this.enketoContact.type, this.xmlVersion)
           .then((result) => {
             console.debug('saved contact', result);
 
