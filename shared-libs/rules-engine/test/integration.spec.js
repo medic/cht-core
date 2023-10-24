@@ -87,7 +87,6 @@ const declarativeScenarios = [true, false];
 
 describe(`Rules Engine Integration Tests`, () => {
   before(async () => {
-    clock = sinon.useFakeTimers(TEST_START);
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
     await rulesEngine.initialize(engineSettings());
@@ -98,6 +97,10 @@ describe(`Rules Engine Integration Tests`, () => {
   });
 
   let configHashSalt = 0;
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers(TEST_START);
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -110,14 +113,12 @@ describe(`Rules Engine Integration Tests`, () => {
     // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to strange behaviors with Utils.now()
     describe(`rulesAreDeclarative: ${rulesAreDeclarative}`, () => {
       beforeEach(async () => {
-        clock = sinon.useFakeTimers(TEST_START);
-    
         db = await memdownMedic('../..');
         rulesEngine = RulesEngine(db);
-    
+
         configHashSalt++;
         const rulesSettings = engineSettings({ rulesAreDeclarative, configHashSalt });
-        await rulesEngine.rulesConfigChange(rulesSettings);  
+        await rulesEngine.rulesConfigChange(rulesSettings);
       });
 
       if (!rulesAreDeclarative) {
@@ -148,13 +149,13 @@ describe(`Rules Engine Integration Tests`, () => {
 
       it('fail facility_reminder due to time window', async () => {
         // the task is 5 days old when it is discovered
-        const NOW = TEST_START + MS_IN_DAY * 5;
-        sinon.useFakeTimers(NOW);
+        const NOW = moment(TEST_START).add('5', 'days').valueOf();
+        clock.setSystemTime(NOW);
 
         await triggerFacilityReminderInReadyState(['patient']);
 
         // the task expires four days later, but the contact is not dirty. so no recalculation, just decay
-        sinon.useFakeTimers(TEST_START + MS_IN_DAY * 9);
+        clock.setSystemTime(TEST_START + MS_IN_DAY * 9);
         const noTasks = await rulesEngine.fetchTasksFor(['patient']);
         expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
         expect(noTasks).to.have.property('length', 0);
@@ -178,7 +179,7 @@ describe(`Rules Engine Integration Tests`, () => {
         });
 
         // a month later, no new doc will be created
-        sinon.useFakeTimers(TEST_START + MS_IN_DAY * 39);
+        clock.setSystemTime(TEST_START + MS_IN_DAY * 39);
         const monthLater = await rulesEngine.fetchTasksFor(['patient']);
         expect(monthLater).to.have.property('length', 0);
         expect(db.bulkDocs.callCount).to.eq(3);
@@ -196,7 +197,7 @@ describe(`Rules Engine Integration Tests`, () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
         // move forward 9 days, the contact is dirty, the task is recalculated
-        sinon.useFakeTimers(TEST_START + MS_IN_DAY * 9);
+        clock.setSystemTime(TEST_START + MS_IN_DAY * 9);
         const noTasks = await rulesEngine.fetchTasksFor(['patient']);
         expect(db.query.args.map(args => args[0]))
           .to.deep.eq([...expectedQueriesForFreshData, ...expectedQueriesForFreshData]);
@@ -312,7 +313,7 @@ describe(`Rules Engine Integration Tests`, () => {
         expect(secondReadyTasks[0]._id).to.not.eq(taskDoc._id);
       });
 
-      it('config change causes reload with no cancelations or errors', async () => {
+      it('config change causes reload with no cancellations or errors', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
         const settings = { rulesAreDeclarative, rules: 'const nothing = [];' };
@@ -363,7 +364,7 @@ describe(`Rules Engine Integration Tests`, () => {
         const tasks = await rulesEngine.fetchTasksFor();
         expect(tasks).to.have.property('length', 1);
 
-        sinon.useFakeTimers(moment().add(90, 'days').valueOf());
+        clock.setSystemTime(moment().add(90, 'days').valueOf());
         const purgedTask = {
           _id: tasks[0]._id,
           _rev: tasks[0]._rev,
@@ -484,7 +485,8 @@ describe(`Rules Engine Integration Tests`, () => {
           { _id: 'pregReg2', fields: {
             lmp_date_8601: TEST_START, patient_id: patientContact2.patient_id
           }, reported_date: TEST_START+2
-          });
+          }
+        );
         await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
 
         sinon.spy(db, 'bulkDocs');
@@ -517,7 +519,8 @@ describe(`Rules Engine Integration Tests`, () => {
             _id: '2nd-pregReg',
             fields: { lmp_date_8601: TEST_START, patient_id: patientContact._id, },
             reported_date: TEST_START + 2
-          });
+          }
+        );
         const pregnancyRegistrationReport3 = Object.assign(
           {},
           pregnancyRegistrationReport,
@@ -525,7 +528,8 @@ describe(`Rules Engine Integration Tests`, () => {
             _id: '3rd-pregReg',
             fields: { lmp_date_8601: TEST_START - 3, patient_id: patientContact.patient_id, },
             reported_date: TEST_START - 3
-          });
+          }
+        );
 
         await db.bulkDocs([
           patientContact,
@@ -613,7 +617,7 @@ describe(`Rules Engine Integration Tests`, () => {
           return targets;
         };
 
-        clock = sinon.useFakeTimers(TEST_START);
+        clock.setSystemTime(TEST_START);
         const patientContact2 = Object.assign({}, patientContact, { _id: 'patient2', patient_id: 'patient_id2', });
         const pregnancyRegistrationReport2 = Object.assign(
           {},
@@ -644,7 +648,7 @@ describe(`Rules Engine Integration Tests`, () => {
         expect(targetsSaved().length).to.equal(1);
 
         // fast forward one month
-        clock.tick(moment(TEST_START).add(1, 'month').diff(moment(TEST_START)));
+        clock.tick(moment(TEST_START).add(1, 'month').diff(moment(TEST_START)) + 2);
         const newTargets = await fetchTargets(calendarInterval.getCurrent());
         expect(newTargets[['pregnancy-registrations-this-month']].value).to.deep.eq({
           total: 0,
@@ -685,14 +689,14 @@ describe(`Rules Engine Integration Tests`, () => {
       isLatestNoolsSchema: () => true,
       shutdown: () => {},
     };
-    
+
     configHashSalt++;
     const rulesSettings = engineSettings({ customEmitter, configHashSalt });
 
     await db.bulkDocs([patientContact]);
-    
+
     rulesEngine = RulesEngine(db);
-    await rulesEngine.rulesConfigChange(rulesSettings);  
+    await rulesEngine.rulesConfigChange(rulesSettings);
 
     const taskEmissions = await rulesEngine.fetchTasksFor(['patient']);
     expect(taskEmissions).to.have.property('length', 1);

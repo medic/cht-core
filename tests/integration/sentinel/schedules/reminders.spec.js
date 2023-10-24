@@ -335,7 +335,7 @@ describe('reminders', () => {
         });
         Object.keys(messagesByPhone).forEach(phone => {
           const contact = contacts.find(c => c.phone === phone);
-          const place = contacts.find(c => c.contact && c.contact._id === contact._id);
+          const place = contacts.find(c => c.contact?._id === contact._id);
           chai.expect(messagesByPhone[phone]).to.have.lengthOf(3);
           chai.expect(messagesByPhone[phone]).to.have.members([
             `something do should ${place.name}`,

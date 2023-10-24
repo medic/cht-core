@@ -1,3 +1,6 @@
+const modalPage = require('./modal.wdio.page');
+const constants = require('@constants');
+
 const hamburgerMenu = () => $('#header-dropdown-link');
 const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
@@ -18,12 +21,10 @@ const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
-const modal = require('./modal.wdio.page');
+const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
-const reloadModalUpdate = () => $('#update-available [test-id="Update"]');
-const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
 //languages
@@ -32,6 +33,20 @@ const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
+
+//Hamburguer menu
+//User settings
+const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
+const UPDATE_PASSWORD = '.user .configuration.page i.fa-key';
+const EDIT_PROFILE = '.user .configuration.page i.fa-user';
+// Feedback or Report bug
+const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
+const FEEDBACK = '#feedback';
+//About menu
+const ABOUT_MENU = '#header-dropdown i.fa-question';
+const RELOAD_BUTTON = '.about.page .btn-primary';
+//Configuration App
+const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -79,7 +94,7 @@ const clickFastActionFlat = async ({ actionId, waitForList }) => {
   }
 };
 
-const openFastActionReport = async (formId, rightSideAction=true) => {
+const openFastActionReport = async (formId, rightSideAction = true) => {
   await waitForPageLoaded();
   if (rightSideAction) {
     await clickFastActionFAB({ actionId: formId });
@@ -152,21 +167,31 @@ const closeHamburgerMenu = async () => {
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
+  await (await logoutButton()).waitForClickable();
   await (await logoutButton()).click();
-  await (await modal.body()).waitForDisplayed();
+  await (await modalPage.body()).waitForDisplayed();
 };
 
 const logout = async () => {
   await navigateToLogoutModal();
-  await (await modal.confirm()).click();
+  await modalPage.submit();
   await browser.pause(100); // wait for login page js to execute
 };
 
 const getLogoutMessage = async () => {
   await navigateToLogoutModal();
-  const body = await modal.body();
-  await body.waitForDisplayed();
-  return body.getText();
+  const modal = await modalPage.getModalDetails();
+  return modal.body;
+};
+
+const goToUrl = async (url) => {
+  const currentUrl = await browser.getUrl();
+  const desiredUrl = `${constants.BASE_URL}${url}`;
+  if (currentUrl === desiredUrl) {
+    await browser.refresh();
+  } else {
+    await browser.url(url);
+  }
 };
 
 const refresh = async () => {
@@ -175,41 +200,41 @@ const refresh = async () => {
 };
 
 const goToBase = async () => {
-  await browser.url('/');
+  await goToUrl('/');
   await waitForPageLoaded();
 };
 
 const goToReports = async () => {
-  await browser.url('/#/reports');
+  await goToUrl('/#/reports');
   await waitForPageLoaded();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
-  await browser.url(`/#/contacts/${contactId}`);
+  await goToUrl(`/#/contacts/${contactId}`);
   if (shouldLoad) {
     await waitForPageLoaded();
   }
 };
 
 const goToMessages = async () => {
-  await browser.url(`/#/messages`);
+  await goToUrl(`/#/messages`);
   await (await messagesTab()).waitForDisplayed();
 };
 
 const goToTasks = async () => {
-  await browser.url(`/#/tasks`);
+  await goToUrl(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAnalytics = async () => {
-  await browser.url(`/#/analytics`);
+  await goToUrl(`/#/analytics`);
   await (await analyticsTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
 const goToAboutPage = async () => {
-  await browser.url(`/#/about`);
+  await goToUrl(`/#/about`);
   await waitForLoaders();
 };
 
@@ -270,7 +295,7 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async (timeout=20000) => {
+const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
@@ -278,8 +303,14 @@ const syncAndWaitForSuccess = async (timeout=20000) => {
 };
 
 const sync = async (expectReload, timeout) => {
-  await syncAndWaitForSuccess(timeout);
+  let closedModal = false;
   if (expectReload) {
+    // it's possible that sync already happened organically, and we already have the reload modal
+    closedModal = await closeReloadModal(false, 0);
+  }
+
+  await syncAndWaitForSuccess(timeout);
+  if (expectReload && !closedModal) {
     await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
@@ -293,38 +324,37 @@ const syncAndWaitForFailure = async () => {
   await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async (shouldUpdate = false) => {
+const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
-    const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
-    await browser.waitUntil(async () => await (await button).waitForExist({ timeout: 2000 }));
-    // wait for the animation to complete
-    await browser.pause(500);
-    await (await button).click();
-    await browser.pause(500);
+    shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
+    await modalPage.checkModalHasClosed();
+    return true;
   } catch (err) {
     console.error('Reload modal not showed up');
+    return false;
   }
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await (await $('i.fa-bug')).click();
-  await (await $('#feedback')).waitForDisplayed();
-  return {
-    modalHeader: await (await $('#feedback .modal-header > h2')).getText(),
-    modelCancelButtonText: await (await $('#feedback .btn.cancel')).getText(),
-    modelSubmitButtonText: await (await $('#feedback .btn-primary')).getText()
-  };
+  await (await $(FEEDBACK_MENU)).waitForClickable();
+  await (await $(FEEDBACK_MENU)).click();
+  return await modalPage.getModalDetails();
+};
+
+const isReportBugOpen = async () => {
+  return await (await $(FEEDBACK)).isExisting();
+};
+
+const closeReportBug = async () => {
+  if (await isReportBugOpen()) {
+    await modalPage.cancel();
+  }
 };
 
 const openAboutMenu = async () => {
-  await (await $('i.fa-question')).click();
-  await (await $('.btn-primary=Reload')).waitForDisplayed();
-};
-
-const openUserSettingsAndFetchProperties = async () => {
-  await (await $('=User settings')).click();
-  await (await $('=Update password')).waitForDisplayed();
-  await (await $('=Edit user profile')).waitForDisplayed();
+  await (await $(ABOUT_MENU)).waitForClickable();
+  await (await $(ABOUT_MENU)).click();
+  await (await $(RELOAD_BUTTON)).waitForDisplayed();
 };
 
 const openUserSettings = async () => {
@@ -332,13 +362,25 @@ const openUserSettings = async () => {
   await (await userSettingsMenuOption()).click();
 };
 
+const openUserSettingsAndFetchProperties = async () => {
+  await (await $(USER_SETTINGS)).waitForClickable();
+  await (await $(USER_SETTINGS)).click();
+  await (await $(UPDATE_PASSWORD)).waitForDisplayed();
+  await (await $(EDIT_PROFILE)).waitForDisplayed();
+};
+
 const openAppManagement = async () => {
-  await (await $('i.fa-cog')).click();
+  await (await $(CONFIGURATION_APP_MENU)).waitForClickable();
+  await (await $(CONFIGURATION_APP_MENU)).click();
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
 const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
+const getAllButtonLabelsNames = async () => {
+  return await getTextForElements(getAllButtonLabels);
 };
 
 //more options menu
@@ -350,6 +392,13 @@ const isMenuOptionEnabled = async (action, item) => {
 
 const isMenuOptionVisible = async (action, item) => {
   return await (await optionSelector(action, item)).isDisplayed();
+};
+
+const loadNextInfiniteScrollPage = async () => {
+  await browser.execute(() => {
+    $('.items-container .content-row:last-child').get(0).scrollIntoView();
+  });
+  await waitForLoaderToDisappear(await $('.left-pane'));
 };
 
 module.exports = {
@@ -408,4 +457,8 @@ module.exports = {
   refresh,
   syncAndWaitForFailure,
   waitForAngularLoaded,
+  closeReportBug,
+  getAllButtonLabelsNames,
+  loadNextInfiniteScrollPage,
+  goToUrl,
 };

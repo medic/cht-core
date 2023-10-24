@@ -29,30 +29,21 @@ export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() reset;
 
-  @ViewChild(FormTypeFilterComponent)
-  formTypeFilter:FormTypeFilterComponent;
-
-  @ViewChild(FacilityFilterComponent)
-  facilityFilter:FacilityFilterComponent;
-
-  @ViewChild(DateFilterComponent)
-  dateFilter:DateFilterComponent;
-
-  @ViewChild(FreetextFilterComponent)
-  freetextFilter:FreetextFilterComponent;
-
-  @ViewChild(StatusFilterComponent)
-  statusFilter:StatusFilterComponent;
+  @ViewChild(FormTypeFilterComponent) formTypeFilter:FormTypeFilterComponent;
+  @ViewChild(FacilityFilterComponent) facilityFilter:FacilityFilterComponent;
+  @ViewChild(DateFilterComponent) dateFilter:DateFilterComponent;
+  @ViewChild(FreetextFilterComponent) freetextFilter:FreetextFilterComponent;
+  @ViewChild(StatusFilterComponent) statusFilter:StatusFilterComponent;
 
   ngAfterViewInit() {
     this.searchFiltersService.init(this.freetextFilter);
   }
 
-  applyFilters(force?) {
+  applyFilters() {
     if (this.disabled) {
       return;
     }
-    this.search.emit(force);
+    this.search.emit();
   }
 
   resetFilters() {

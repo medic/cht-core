@@ -54,7 +54,7 @@ export class FormatProvider {
   }
 
   sender(options) {
-    const parts = [];
+    const parts: string[] = [];
     if (options.name) {
       parts.push('<span class="name">' + _.escape(options.name) + '</span>');
     }

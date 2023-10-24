@@ -10,6 +10,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
+const sentinelUtils = require('@utils/sentinel');
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();
@@ -40,15 +41,24 @@ describe('Submit a death report', () => {
     expect(summaryDetails.deathInformation).to.equal(deathNote);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await commonPage.sync(true);
+    await commonPage.sync();
+    await sentinelUtils.waitForSentinel();
+    await commonPage.sync();
 
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;
 
     const deathCardInfo = await contactPage.getDeathCardInfo();
-    expect(deathCardInfo.deathDate).to.equal(deathDate.format('D MMM, YYYY'));
+    expect(Date.parse(deathCardInfo.deathDate)).to.equal(Date.parse(deathDate.format('D MMM, YYYY')));
     expect(deathCardInfo.deathPlace).to.equal('Health facility');
+  });
+
+  it('should edit the report', async () => {
+    await commonPage.goToReports();
+    const reportId = await reportsPage.getLastSubmittedReportId();
+    await reportsPage.editReport(reportId);
+    await genericForm.nextPage();
+    await reportsPage.submitForm();
   });
 
   it('Should verify that the report related to the death was created', async () => {

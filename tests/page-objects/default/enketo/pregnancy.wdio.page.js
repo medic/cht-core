@@ -7,8 +7,8 @@
  */
 
 const moment = require('moment');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const GESTATION_AGE = {lmp: 'method_lmp', lmpApprox: 'method_approx', edd: 'method_edd', none: 'none'};
 const FIRST_PREGNANCY_VALUE = {yes: 'primary', no: 'secondary'};

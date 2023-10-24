@@ -1,9 +1,10 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -18,12 +19,12 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 @Component({
   templateUrl: './tasks-content.component.html'
 })
-export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
+export class TasksContentComponent implements OnInit, OnDestroy {
   constructor(
     private translateService:TranslateService,
     private route:ActivatedRoute,
     private store:Store,
-    private enketoService:EnketoService,
+    private formService:FormService,
     private telemetryService:TelemetryService,
     private translateFromService:TranslateFromService,
     private xmlFormsService:XmlFormsService,
@@ -43,7 +44,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoStatus;
   private enketoEdited;
   loadingContent;
-  selectedTask;
+  selectedTask: any = null;
   form;
   loadingForm;
   contentError;
@@ -67,12 +68,13 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.resetFormError();
 
     this.tasksActions.setLastSubmittedTask(null);
+    this.viewInited.next(true);
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.geoHandle?.cancel();
-    this.enketoService.unload(this.form);
+    this.formService.unload(this.form);
     this.globalActions.clearNavigation();
     this.globalActions.clearEnketoStatus();
   }
@@ -125,10 +127,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.subscription.add(setSelectedSubscription);
-  }
-
-  ngAfterViewInit() {
-    this.viewInited.next(true);
   }
 
   private setSelected(id) {
@@ -217,11 +215,13 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private renderForm(action, formDoc) {
     this.globalActions.setEnketoEditedStatus(false);
-    const markFormEdited = this.markFormEdited.bind(this);
-    const resetFormError = this.resetFormError.bind(this);
 
-    return this.enketoService
-      .render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
+    const formContext = new EnketoFormContext('#task-report', 'task', formDoc, action.content);
+    formContext.editedListener = this.markFormEdited.bind(this);
+    formContext.valuechangeListener = this.resetFormError.bind(this);
+
+    return this.formService
+      .render(formContext)
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;
@@ -260,7 +260,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       const cancelCallback = () => {
         this.tasksActions.setSelectedTask(null);
-        this.enketoService.unload(this.form);
+        this.formService.unload(this.form);
         this.form = null;
         this.loadingForm = false;
         this.contentError = false;
@@ -285,7 +285,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
           this.telemetryService.record(
             `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-            this.telemetryData.postRender - this.telemetryData.preRender);
+            this.telemetryData.postRender - this.telemetryData.preRender
+          );
         })
         .catch((err) => {
           this.errorTranslationKey = err?.translationKey || 'error.loading.form';
@@ -315,12 +316,13 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.telemetryService.record(
       `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender);
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
 
-    return this.enketoService
+    return this.formService
       .save(this.formId, this.form, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
@@ -329,7 +331,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         this.tasksActions.setLastSubmittedTask(this.selectedTask);
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setEnketoEditedStatus(false);
-        this.enketoService.unload(this.form);
+        this.formService.unload(this.form);
         this.globalActions.unsetSelected();
         this.globalActions.clearNavigation();
 
@@ -340,7 +342,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
         this.telemetryService.record(
           `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave);
+          this.telemetryData.postSave - this.telemetryData.preSave
+        );
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);

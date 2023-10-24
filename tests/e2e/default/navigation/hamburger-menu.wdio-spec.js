@@ -23,11 +23,8 @@ describe('Hamburger Menu tests', async () => {
   it('should open Report bug', async () => {
     await commonPage.openHamburgerMenu();
     const actualProperties = await commonPage.openReportBugAndFetchProperties();
-    expect(actualProperties).to.deep.equal({
-      modalHeader: 'Report bug',
-      modelCancelButtonText: 'Cancel',
-      modelSubmitButtonText: 'Submit'
-    });
+    expect(actualProperties.header).to.equal('Report bug');
+    await commonPage.closeReportBug();
   });
 
   it('should open Configuration app', async () => {

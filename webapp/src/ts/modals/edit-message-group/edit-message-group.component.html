@@ -1,15 +1,17 @@
-<mm-modal
-  [status]="status"
+<mm-modal-layout
   id="edit-message-group"
-  [titleKey]="'Edit'"
+  [processing]="processing"
+  [error]="error"
+  [titleKey]="'edit_message_group.modal.title'"
   [submitKey]="'save'"
   [submittingKey]="'saving'"
-  (onCancel)="cancel()"
+  [isFlatButton]="true"
+  (onCancel)="close()"
   (onSubmit)="submit()"
 >
   <form action="" method="POST">
 
-    <fieldset *ngFor="let task of model.group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
+    <fieldset *ngFor="let task of group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'"><!-- //NOSONAR -->
       <ng-container *ngIf="!task.deleted">
         <div class="form-group">
           <label>
@@ -34,4 +36,4 @@
     </a>
 
   </form>
-</mm-modal>
+</mm-modal-layout>

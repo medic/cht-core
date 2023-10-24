@@ -1,0 +1,24 @@
+name: Test nginx and haproxy
+
+on: [push, pull_request]
+
+jobs:
+
+  test:
+    name: Run compose tests
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run test
+      run: |
+        sudo apt update
+        sudo apt install -y bats
+        (
+          cd nginx/tests
+          make test
+        )
+        (
+          cd haproxy/tests
+          make test
+        )

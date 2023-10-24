@@ -7,7 +7,7 @@ import sinon from 'sinon';
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { DbService } from '@mm-services/db.service';
@@ -29,7 +29,7 @@ describe('TasksContentComponent', () => {
   let route;
   let store;
   let geolocationService;
-  let enketoService;
+  let formService;
   let router;
   let tasksForContactService;
 
@@ -44,7 +44,7 @@ describe('TasksContentComponent', () => {
     route = { params: new Observable(obs => obs.next({ id: '123' })) };
     setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
     geolocationService = { init: sinon.stub() };
-    enketoService = { render, unload: sinon.stub(), save: sinon.stub() };
+    formService = { render, unload: sinon.stub(), save: sinon.stub() };
     router = { navigate: sinon.stub() };
     tasksForContactService = { getLeafPlaceAncestor: sinon.stub().resolves() };
 
@@ -64,7 +64,7 @@ describe('TasksContentComponent', () => {
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ActivatedRoute, useValue: route },
-        { provide: EnketoService, useValue: enketoService },
+        { provide: FormService, useValue: formService },
         { provide: DbService, useValue: { get: () => ({ get })}},
         { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: TelemetryService, useValue: { record: sinon.stub() }},
@@ -81,7 +81,6 @@ describe('TasksContentComponent', () => {
       return TestBed.compileComponents().then(() => {
         fixture = TestBed.createComponent(TasksContentComponent);
         component = fixture.componentInstance;
-        component.ngAfterViewInit();
         fixture.detectChanges();
         return fixture.whenStable();
       });
@@ -139,10 +138,12 @@ describe('TasksContentComponent', () => {
     expect(component.formId).to.equal('A');
 
     expect(render.callCount).to.equal(1);
-    expect(render.getCall(0).args.length).to.equal(5);
-    expect(render.getCall(0).args[0]).to.equal('#task-report');
-    expect(render.getCall(0).args[1]).to.deep.equal(form);
-    expect(render.getCall(0).args[2]).to.equal('nothing');
+    expect(render.args[0][0]).to.deep.include({
+      selector: '#task-report',
+      type: 'task',
+      formDoc: form,
+      instanceData: 'nothing'
+    });
 
     expect(get.callCount).to.eq(0);
     expect(setEnketoEditedStatus.callCount).to.equal(1);
@@ -171,7 +172,7 @@ describe('TasksContentComponent', () => {
     expect(get.args).to.deep.eq([['contact']]);
     expect(geolocationService.init.callCount).to.equal(1);
     expect(render.callCount).to.eq(1);
-    expect(render.args[0][2]).to.deep.eq({
+    expect(render.args[0][0].instanceData).to.deep.eq({
       contact: { _id: 'contact' },
       something: 'nothing',
       task_id: '123',
@@ -251,7 +252,7 @@ describe('TasksContentComponent', () => {
     expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['dne']]);
     expect(render.callCount).to.eq(1);
-    expect(render.args[0][2]).to.deep.eq({ contact: { _id: 'dne' }, task_id: '123' });
+    expect(render.args[0][0].instanceData).to.deep.eq({ contact: { _id: 'dne' }, task_id: '123' });
   });
 
   it('should work when form not found', async () => {
@@ -363,7 +364,7 @@ describe('TasksContentComponent', () => {
     tick();
 
     expect(render.callCount).to.equal(1);
-    expect(render.args[0][2]).to.deep.eq({
+    expect(render.args[0][0].instanceData).to.deep.eq({
       contact: { _id: 'contact' },
       something: 'other',
       task_id: '123',
@@ -405,7 +406,7 @@ describe('TasksContentComponent', () => {
 
       expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(1);
       expect((<any>TasksActions.prototype.setSelectedTask).args[0]).to.deep.equal([null]);
-      expect(enketoService.unload.callCount).to.equal(1);
+      expect(formService.unload.callCount).to.equal(1);
 
       expect(component.form).to.equal(null);
       expect(component.loadingForm).to.equal(false);
@@ -432,7 +433,7 @@ describe('TasksContentComponent', () => {
 
       expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(1);
       expect((<any>TasksActions.prototype.setSelectedTask).args[0]).to.deep.equal([null]);
-      expect(enketoService.unload.callCount).to.equal(0);
+      expect(formService.unload.callCount).to.equal(0);
 
       expect(component.form).to.equal('someform');
       expect(component.loadingForm).to.equal(true);
@@ -451,7 +452,7 @@ describe('TasksContentComponent', () => {
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
-      expect(enketoService.render.callCount).to.equal(0);
+      expect(formService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'district_hospital_uuid', 'add', 'c_type']]);
     });
@@ -464,7 +465,7 @@ describe('TasksContentComponent', () => {
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
-      expect(enketoService.render.callCount).to.equal(0);
+      expect(formService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', 'c_type']]);
     });
@@ -477,7 +478,7 @@ describe('TasksContentComponent', () => {
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
-      expect(enketoService.render.callCount).to.equal(0);
+      expect(formService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', '']]);
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(0);
@@ -500,12 +501,13 @@ describe('TasksContentComponent', () => {
 
       expect(xmlFormsService.get.callCount).to.equal(1);
       expect(xmlFormsService.get.args[0]).to.deep.equal(['myform']);
-      expect(enketoService.render.callCount).to.equal(1);
-      expect(enketoService.render.args[0]).to.deep.include.members([
-        '#task-report',
-        { ...form },
-        { ...action.content },
-      ]);
+      expect(formService.render.callCount).to.equal(1);
+      expect(formService.render.args[0][0]).to.deep.include({
+        selector: '#task-report',
+        type: 'task',
+        formDoc: form,
+        instanceData: action.content,
+      });
 
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);
       expect(tasksForContactService.getLeafPlaceAncestor.args[0]).to.deep.equal(['my_contact']);
@@ -516,8 +518,8 @@ describe('TasksContentComponent', () => {
       expect((<any>TasksActions.prototype.setTaskGroupContact).args[0]).to.deep.equal([{ any: 'model' }]);
       expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
 
-      const markFormEdited = enketoService.render.args[0][3];
-      const resetFormError = enketoService.render.args[0][4];
+      const markFormEdited = formService.render.args[0][0].editedListener;
+      const resetFormError = formService.render.args[0][0].valuechangeListener;
 
       expect(setEnketoEditedStatus.callCount).to.equal(1);
       expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
@@ -559,12 +561,13 @@ describe('TasksContentComponent', () => {
 
       expect(xmlFormsService.get.callCount).to.equal(1);
       expect(xmlFormsService.get.args[0]).to.deep.equal(['myform']);
-      expect(enketoService.render.callCount).to.equal(1);
-      expect(enketoService.render.args[0]).to.deep.include.members([
-        '#task-report',
-        { ...form },
-        { ...action.content },
-      ]);
+      expect(formService.render.callCount).to.equal(1);
+      expect(formService.render.args[0][0]).to.deep.include({
+        selector: '#task-report',
+        type: 'task',
+        formDoc: { ...form },
+        instanceData: { ...action.content },
+      });
 
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);
       expect(tasksForContactService.getLeafPlaceAncestor.args[0]).to.deep.equal(['the_contact']);
@@ -604,13 +607,13 @@ describe('TasksContentComponent', () => {
       store.refreshState();
       await component.save();
 
-      expect(enketoService.save.callCount).to.equal(0);
+      expect(formService.save.callCount).to.equal(0);
     });
 
     it('should catch save errors', async () => {
       const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
-      enketoService.save.rejects({ some: 'error' });
+      formService.save.rejects({ some: 'error' });
       store.overrideSelector(Selectors.getEnketoError, 'error');
       const geoHandle = { geo: 'handle', cancel: sinon.stub() };
       geolocationService.init.returns(geoHandle);
@@ -628,15 +631,15 @@ describe('TasksContentComponent', () => {
 
       await saving;
 
-      expect(enketoService.save.callCount).to.equal(1);
-      expect(enketoService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
+      expect(formService.save.callCount).to.equal(1);
+      expect(formService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args[1]).to.deep.equal([false]);
       expect(setEnketoError.callCount).to.equal(2);
 
       expect(setEnketoEditedStatus.callCount).to.equal(0);
-      expect(enketoService.unload.callCount).to.equal(0);
+      expect(formService.unload.callCount).to.equal(0);
       expect(clearNavigation.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(0);
@@ -648,7 +651,7 @@ describe('TasksContentComponent', () => {
 
     it('should redirect correctly after save', async () => {
       xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
-      enketoService.save.resolves([]);
+      formService.save.resolves([]);
       const geoHandle = { geo: 'handle', cancel: sinon.stub() };
       geolocationService.init.returns(geoHandle);
 
@@ -666,16 +669,16 @@ describe('TasksContentComponent', () => {
 
       await saving;
 
-      expect(enketoService.save.callCount).to.equal(1);
-      expect(enketoService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
+      expect(formService.save.callCount).to.equal(1);
+      expect(formService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args[1]).to.deep.equal([false]);
       expect(setEnketoEditedStatus.callCount).to.equal(1);
       expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
 
-      expect(enketoService.unload.callCount).to.equal(1);
-      expect(enketoService.unload.args[0]).to.deep.equal([{ the: 'form' }]);
+      expect(formService.unload.callCount).to.equal(1);
+      expect(formService.unload.args[0]).to.deep.equal([{ the: 'form' }]);
       expect(clearNavigation.callCount).to.equal(1);
 
       expect(router.navigate.callCount).to.equal(1);

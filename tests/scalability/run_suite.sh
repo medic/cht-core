@@ -4,14 +4,13 @@ set -e
 
 shutdown -P +60
 
-mkdir /cht
+mkdir -p /cht
 chmod 777 /cht;
 cd cht
 
 echo Cloning cht-core to /cht-core
 git clone --single-branch --branch $TAG https://github.com/medic/cht-core.git;
 
-cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 apt-get update
@@ -22,14 +21,17 @@ apt-get install default-jre -y
 echo installing node
 apt-get install nodejs npm -y
 
+cd cht-core
+npm install patch-package
+cd webapp && npm ci && cd ../
+cd tests/scalability
 echo "Changing config to match url arg"
-node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL/medic'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});"
+node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});"
 echo "npm install for jmeter suite"
-npm install
-
+npm ci
 
 echo "jmeter install"
-wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.4.3.tgz -O ./apache-jmeter.tgz
+wget https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-5.6.tgz -O ./apache-jmeter.tgz
 mkdir -p ./jmeter
 tar -xf apache-jmeter.tgz -C ./jmeter --strip-components=1
 

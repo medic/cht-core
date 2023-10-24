@@ -1,11 +1,11 @@
-const utils = require('../../../utils');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const personFactory = require('../../../factories/cht/contacts/person');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('@utils');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const personFactory = require('@factories/cht/contacts/person');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const sentinelUtils = require('@utils/sentinel');
 const appSettings = require('./test-app_settings');
 
 describe('Reports Subject', () => {
@@ -210,12 +210,12 @@ describe('Reports Subject', () => {
     await verifyListReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
-      lineage:`${healthCenter.name}${districtHospital.name}`
+      lineage: `${healthCenter.name}${districtHospital.name}`
     });
     await verifyOpenReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
-      lineage:`${healthCenter.name}${districtHospital.name}`
+      lineage: `${healthCenter.name}${districtHospital.name}`
     });
   });
 

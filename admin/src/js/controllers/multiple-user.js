@@ -146,5 +146,4 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
       $('#users-upload .uploader').click();
     });
   });
-}
-);
+});

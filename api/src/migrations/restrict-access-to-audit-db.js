@@ -4,8 +4,8 @@ const environment = require('../environment');
 
 const addMemberToDb = () => {
   const securityObject = {
-    admins: { names:[], roles: ['audit-writer'] },
-    members: { names: [], roles:['audit-writer'] }
+    admins: { names: [], roles: ['audit-writer'] },
+    members: { names: [], roles: ['audit-writer'] }
   };
   return request.put({
     url: url.format({

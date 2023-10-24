@@ -567,7 +567,7 @@ describe('Users API', () => {
 
     it('should throw error when requesting for online roles', () => {
       const params = {
-        role: 'national_admin',
+        role: JSON.stringify(['national_admin', 'mm-online']),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -582,7 +582,7 @@ describe('Users API', () => {
 
     it('should throw error for array roles of online user', () => {
       const params = {
-        role: JSON.stringify(['random', 'national_admin', 'random']),
+        role: JSON.stringify(['random', 'national_admin', 'mm-online']),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -1045,8 +1045,6 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
-        await utils.delayPromise(1000);
-
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
           const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
@@ -1156,8 +1154,6 @@ describe('Users API', () => {
           });
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
-
-        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1335,7 +1331,6 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
-          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1414,7 +1409,6 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
-          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1450,7 +1444,6 @@ describe('Users API', () => {
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
-            return utils.delayPromise(1000);
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))

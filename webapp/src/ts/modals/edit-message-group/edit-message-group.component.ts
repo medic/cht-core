@@ -1,31 +1,34 @@
-import { AfterViewChecked, AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import * as moment from 'moment';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 
 @Component({
   selector: 'edit-message-group',
   templateUrl: './edit-message-group.component.html',
 })
-export class EditMessageGroupComponent extends MmModalAbstract
-  implements AfterViewInit, OnInit, AfterViewChecked, OnDestroy {
+export class EditMessageGroupComponent implements AfterViewInit, OnInit, AfterViewChecked, OnDestroy {
 
   constructor(
-    bsModalRef:BsModalRef,
     private editGroupService:EditGroupService,
     private settingsService:SettingsService,
+    private matDialogRef: MatDialogRef<EditMessageGroupComponent>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
-    super(bsModalRef);
+    this.group = this.matDialogData?.group;
+    this.report = this.matDialogData?.report;
   }
 
-  model:any = { group: { rows: [] } };
+  group;
+  report;
+  error;
+  processing = false;
 
   private shouldInitDatePickers = false;
   private settingsPromise;
-  private datePickers = [];
+  private datePickers: any[] = [];
 
   ngOnInit() {
     this.settingsPromise = this.settingsService.get();
@@ -54,7 +57,7 @@ export class EditMessageGroupComponent extends MmModalAbstract
           return;
         }
 
-        const task = this.model.group.rows[index];
+        const task = this.group.rows[index];
         $element.daterangepicker(
           {
             startDate: new Date(task.due),
@@ -100,7 +103,7 @@ export class EditMessageGroupComponent extends MmModalAbstract
   deleteTask(index) {
     // remove datepicker BEFORE removing the html element
     this.removeDatePickers(index);
-    const task = this.model.group.rows[index];
+    const task = this.group.rows[index];
     if (!task) {
       return;
     }
@@ -108,10 +111,10 @@ export class EditMessageGroupComponent extends MmModalAbstract
   }
 
   addTask() {
-    this.model.group.rows.push({
+    this.group.rows.push({
       due: moment().toISOString(),
       added: true,
-      group: this.model.group.number,
+      group: this.group.number,
       state: 'scheduled',
       messages: [{ message: '' }],
     });
@@ -125,17 +128,20 @@ export class EditMessageGroupComponent extends MmModalAbstract
     }
   }
 
+  close() {
+    this.matDialogRef.close();
+  }
+
   submit() {
-    this.setProcessing();
+    this.processing = true;
     return this.editGroupService
-      .edit(this.model?.report?._id, this.model?.group)
-      .then(() => {
-        this.setFinished();
-        this.close();
+      .edit(this.report?._id, this.group)
+      .then(() => this.close())
+      .catch(error => {
+        this.error = 'Error updating group';
+        console.error(this.error, error);
       })
-      .catch((err) => {
-        this.setError(err, 'Error updating group');
-      });
+      .finally(() => this.processing = false);
   }
 
   ngOnDestroy() {

@@ -1,7 +1,7 @@
 const ENTER = '\uE007';
 
-const genericForm = require('../enketo/generic-form.wdio.page');
-const commonPage = require('../common/common.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
@@ -52,7 +52,6 @@ const emptySelection = () => $('contacts-content .empty-selection');
 const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]');
 const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
-const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
@@ -147,8 +146,7 @@ const addPlace = async ({
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {},
-rightSideAction = true,
-) => {
+rightSideAction = true,) => {
   if (rightSideAction) {
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {
@@ -233,8 +231,7 @@ const deletePerson = async () => {
   await commonPage.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
-  await (await deleteConfirmationModalButton()).waitForClickable();
-  await (await deleteConfirmationModalButton()).click();
+  await modalPage.submit();
 };
 
 const getContactSummaryField = async (fieldName) => {
@@ -293,7 +290,6 @@ const editDistrict = async (districtName, editedName) => {
 
 const openFormWithWarning = async (formId) => {
   await commonPage.clickFastActionFAB({ actionId: formId });
-  await (await modalPage.body()).waitForExist();
   return modalPage.getModalDetails();
 };
 
@@ -391,6 +387,13 @@ const getContactListLoadingStatus = async () => {
   return await (await contactListLoadingStatus()).getText();
 };
 
+const getDisplayedContactsNames = async () => {
+  const contacts = [];
+  for (const row of await contentRows()) {
+    contacts.push(await row.getText());
+  }
+  return contacts;
+};
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -450,4 +453,5 @@ module.exports = {
   getPregnancyLabel,
   getVisitLabel,
   getNumberOfReports,
+  getDisplayedContactsNames,
 };

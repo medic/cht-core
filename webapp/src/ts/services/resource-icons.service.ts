@@ -65,7 +65,7 @@ export class ResourceIconsService {
         this.cache[i].htmlContent[name] = content;
       }
       return this.cache[i].htmlContent[name];
-    } catch(e) {
+    } catch (e) {
       return '&nbsp';
     }
   }

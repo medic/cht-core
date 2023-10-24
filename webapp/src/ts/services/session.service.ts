@@ -12,15 +12,15 @@ import { LocationService } from '@mm-services/location.service';
   providedIn: 'root'
 })
 export class SessionService {
-  userCtxCookieValue = null
-  httpOptions = { headers: new HttpHeaders({ Accept:  'application/json' }) };
+  userCtxCookieValue: any = null;
+  httpOptions = { headers: new HttpHeaders({ Accept: 'application/json' }) };
 
   constructor(
     private cookieService: CookieService,
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
-    private location: LocationService) {
-  }
+    private location: LocationService
+  ) {}
 
   navigateToLogin() {
     console.warn('User must reauthenticate');
@@ -58,7 +58,7 @@ export class SessionService {
     if (!this.userCtxCookieValue) {
       try {
         this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
-      } catch(error) {
+      } catch (error) {
         console.error('Cookie parsing error', error);
         this.userCtxCookieValue = null;
       }
@@ -96,8 +96,8 @@ export class SessionService {
           this.logout();
           return;
         }
-        if (_.difference(userCtx.roles, value.userCtx.roles).length ||
-          _.difference(value.userCtx.roles, userCtx.roles).length) {
+        if (_.difference(userCtx.roles, value!.userCtx.roles).length ||
+          _.difference(value!.userCtx.roles, userCtx.roles).length) {
           return this.refreshUserCtx().then(() => true);
         }
       })
@@ -115,11 +115,6 @@ export class SessionService {
   }
 
   isAdmin(userCtx?) {
-    return this.isDbAdmin(userCtx) ||
-      this.hasRole('national_admin', userCtx); // deprecated: kept for backwards compatibility: #4525
-  }
-
-  isDbAdmin(userCtx?) {
     return this.hasRole('_admin', userCtx);
   }
 

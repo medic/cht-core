@@ -55,7 +55,7 @@ export class UHCStatsService {
     }
 
     // Disable UHC for DB admins.
-    this.canViewUHCStats = this.sessionService.isDbAdmin() ? false : await this.authService.has(this.permission);
+    this.canViewUHCStats = this.sessionService.isAdmin() ? false : await this.authService.has(this.permission);
 
     return this.canViewUHCStats;
   }
@@ -87,13 +87,13 @@ export class UHCStatsService {
     }
 
     const lastVisitedDate = await this.getLastVisitedDate(contact._id);
-    const dateRange = this.getUHCInterval(visitCountSettings);
+    const dateRange = this.getUHCInterval(visitCountSettings)!;
     const visits = lastVisitedDate >= dateRange?.start ? await this.getVisitsInDateRange(dateRange, contact._id) : [];
 
     return {
       lastVisitedDate: lastVisitedDate,
       count: visits.length,
-      countGoal: visitCountSettings.visitCountGoal
+      countGoal: visitCountSettings.visitCountGoal!
     };
   }
 }

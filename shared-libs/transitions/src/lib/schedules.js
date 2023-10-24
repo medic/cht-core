@@ -171,7 +171,8 @@ module.exports = {
                 patient: patient,
                 placeRegistrations: placeRegistrations,
                 place: place,
-              });
+              }
+            );
           }
           const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';
           utils.setTaskState(task, state);
@@ -179,7 +180,7 @@ module.exports = {
           doc.scheduled_tasks = doc.scheduled_tasks || [];
           doc.scheduled_tasks.push(task);
 
-        } catch(e) {
+        } catch (e) {
           utils.addError(doc, {
             message: e.message + ': ' + msg.message,
             code: 'parse_error'

@@ -1,25 +1,27 @@
 const commonElements = require('../common/common.wdio.page');
+const modalPage = require('../common/modal.wdio.page');
 const searchElements = require('../search/search.wdio.page');
 const utils = require('@utils');
 
 const REPORTS_LIST_ID = '#reports-list';
 const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox"]`;
-const reportBodyDetailsSelector = '#reports-content .report-body .details';
-const reportBodyDetails = () => $(reportBodyDetailsSelector);
-const reportTasks = () =>  $(`${reportBodyDetailsSelector} .scheduled-tasks`);
+const REPORT_BODY_DETAILS_SELECTOR = '#reports-content .report-body .details';
+const reportBodyDetails = () => $(REPORT_BODY_DETAILS_SELECTOR);
+const reportTasks = () => $(`${REPORT_BODY_DETAILS_SELECTOR} .scheduled-tasks`);
+const reportCaseIdFilter = () => $(`${REPORT_BODY_DETAILS_SELECTOR} span[test-id*=".case_id"]`);
 const REPORT_BODY = '#reports-content .report-body';
 const reportBody = () => $(REPORT_BODY);
 const noReportSelectedLabel = () => $('.empty-selection');
-const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
-const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
+const selectedCaseId = () => $(`${REPORT_BODY_DETAILS_SELECTOR} > ul > li > p > span > a`);
+const selectedCaseIdLabel = () => $(`${REPORT_BODY_DETAILS_SELECTOR} ul > li > label > span`);
 const firstReport = () => $(`${REPORTS_LIST_ID} li:first-child`);
 const reportList = () => $(`${REPORTS_LIST_ID}`);
 const reportListLoadingStatus = () => $(`${REPORTS_LIST_ID} .loading-status`);
 const allReports = () => $$(`${REPORTS_LIST_ID} li.content-row`);
 const reportsByUUID = (uuid) => $$(`${REPORTS_LIST_ID} li.content-row[data-record-id="${uuid}"]`);
-const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
-const reportRow = () => $(reportRowSelector);
-const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
+const REPORT_ROW_SELECTOR = `${REPORTS_LIST_ID} .content-row`;
+const reportRow = () => $(REPORT_ROW_SELECTOR);
+const reportRowsText = () => $$(`${REPORT_ROW_SELECTOR} .heading h4 span`);
 const editReportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-reports"]');
 const deleteButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-reports"]');
 const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-reports"]');
@@ -30,25 +32,27 @@ const reviewReportOptionById = (id) => $(`${REVIEW_REPORT_CONTAINER} button.${id
 const activeReviewOption = () => $(`${REVIEW_REPORT_CONTAINER} button.active-option`);
 const reviewReportCloseButton = () => $(`${REVIEW_REPORT_CONTAINER} .panel-header .panel-header-close`);
 
-const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
-const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion mat-expansion-panel-header');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion mat-panel-description');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
 const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
 const filterResetBtn = () => $('.sidebar-reset');
 
-const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
-const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
-const rawReportContent = () => $(`${reportBodyDetailsSelector} p[test-id='raw-report-content']`);
-const automaticReplySection = `${reportBodyDetailsSelector} ul[test-id='automated-reply']`;
-const automaticReplyMessage = () => $(`${automaticReplySection} p[test-id='message-content']`);
-const automaticReplyState = () => $(`${automaticReplySection} .state`);
-const automaticReplyRecipient = () => $(`${automaticReplySection} .recipient`);
+const REPORT_DETAILS_FIELDS_SELECTOR = `${REPORT_BODY_DETAILS_SELECTOR} > ul > li`;
+const reportDetailsFields = () => $$(REPORT_DETAILS_FIELDS_SELECTOR);
+const rawReportContent = () => $(`${REPORT_BODY_DETAILS_SELECTOR} p[test-id='raw-report-content']`);
+const AUTOMATIC_REPLY_SECTION = `${REPORT_BODY_DETAILS_SELECTOR} ul[test-id='automated-reply']`;
+const automaticReplyMessage = () => $(`${AUTOMATIC_REPLY_SECTION} p[test-id='message-content']`);
+const automaticReplyState = () => $(`${AUTOMATIC_REPLY_SECTION} .state`);
+const automaticReplyRecipient = () => $(`${AUTOMATIC_REPLY_SECTION} .recipient`);
+
+const detailReportRowContent = (row, type) =>
+  $$(`${REPORT_BODY_DETAILS_SELECTOR} li[test-id*='${row}'] span[test-id='${type}']`);
 
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
-const DELETE_CONFIRM_MODAL = 'mm-modal#bulk-delete-confirm';
-const bulkDeleteModal = () => $(DELETE_CONFIRM_MODAL);
+const bulkDeleteModal = () => $('#bulk-delete-confirm');
 const dateFilter = () => $('#date-filter');
 const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]');
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
@@ -136,11 +140,12 @@ const getListReportInfo = async (listElement) => {
     form: await getElementText(listElement.$('.content .summary')),
     lineage: await getElementText(listElement.$('.content .detail')),
     reported_date: await getElementText(listElement.$('.content .heading .date')),
+    dataId: await listElement.getAttribute('data-record-id'),
   };
 };
 
 const reportsListDetails = async () => {
-  const reports = await $$(`${REPORTS_LIST_ID} li`);
+  const reports = await $$(`${REPORTS_LIST_ID} .items-container>ul>li`);
   const reportDetails = [];
   for (const report of reports) {
     reportDetails.push(await getListReportInfo(report));
@@ -166,13 +171,9 @@ const deleteSelectedReports = async () => {
   await (await deleteAllButton()).click();
 
   await (await bulkDeleteModal()).waitForDisplayed();
-  await (await $(`${DELETE_CONFIRM_MODAL} .btn.submit.btn-danger`)).click();
+  await (await modalPage.submit());
+  await (await modalPage.checkModalHasClosed());
 
-  const bulkDeleteConfirmBtn = () => $(`${DELETE_CONFIRM_MODAL} [test-id="bulkdelete.complete.action"]`);
-  await (await bulkDeleteConfirmBtn()).waitForDisplayed();
-  await (await bulkDeleteConfirmBtn()).click();
-
-  await (await bulkDeleteModal()).waitForDisplayed({ reverse: true });
   await commonElements.waitForPageLoaded();
   await (await reportList()).waitForDisplayed();
 };
@@ -313,6 +314,12 @@ const getReportDetailFieldValueByLabel = async (label) => {
   }
 };
 
+const clickOnCaseId = async () => {
+  await reportBodyDetails().waitForDisplayed();
+  await reportCaseIdFilter().waitForClickable();
+  await reportCaseIdFilter().click();
+};
+
 const getRawReportContent = async () => {
   return await (await rawReportContent()).getText();
 };
@@ -322,6 +329,15 @@ const getAutomaticReply = async () => {
     message: await automaticReplyMessage().getText(),
     state: await automaticReplyState().getText(),
     recipient: await automaticReplyRecipient().getText(),
+  };
+};
+
+const getDetailReportRowContent = async (row) => {
+  const labels =  await detailReportRowContent(row, 'label').map(async label => await label.getText());
+  const values =  await detailReportRowContent(row, 'value').map(async label => await label.getText());
+  return {
+    rowLabels: labels,
+    rowValues: values,
   };
 };
 
@@ -366,7 +382,7 @@ const editReport = async (reportId) => {
 };
 
 const fieldByIndex = async (index) => {
-  return await (await $(`${reportBodyDetailsSelector} li:nth-child(${index}) p`)).getText();
+  return await (await $(`${REPORT_BODY_DETAILS_SELECTOR} li:nth-child(${index}) p`)).getText();
 };
 
 const exportReports = async () => {
@@ -458,6 +474,7 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getRawReportContent,
   getAutomaticReply,
+  getDetailReportRowContent,
   getOpenReportInfo,
   getListReportInfo,
   resetFilter,
@@ -471,6 +488,7 @@ module.exports = {
   getSelectedReviewOption,
   fieldByIndex,
   reportBodyDetails,
+  clickOnCaseId,
   getReportListLoadingStatus,
   openSelectedReport,
 };

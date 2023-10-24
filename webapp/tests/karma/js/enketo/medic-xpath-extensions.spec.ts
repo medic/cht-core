@@ -26,22 +26,22 @@ describe('Medic XPath Extensions', () => {
     });
 
     it('should return empty if the parameter or parameter\'s value is undefined', () => {
-      expect(parseTimestampToDate()).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ t: 'str' })).to.deep.equal({ t:'str', v: '' });
+      expect(parseTimestampToDate()).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ t: 'str' })).to.deep.equal({ t: 'str', v: '' });
     });
 
     it('should return empty if value isnt timestamp', () => {
-      expect(parseTimestampToDate({ t: 'arr', v: [true] })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ t: 'arr', v: [undefined] })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ t: 'arr', v: [null] })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ t: 'arr', v: ['some text'] })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ t: 'arr', v: [NaN] })).to.deep.equal({ t:'str', v: '' });
+      expect(parseTimestampToDate({ t: 'arr', v: [true] })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ t: 'arr', v: [undefined] })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ t: 'arr', v: [null] })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ t: 'arr', v: ['some text'] })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ t: 'arr', v: [NaN] })).to.deep.equal({ t: 'str', v: '' });
 
-      expect(parseTimestampToDate({ v: true })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ v: undefined })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ v: null })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ v: 'some text' })).to.deep.equal({ t:'str', v: '' });
-      expect(parseTimestampToDate({ v: NaN })).to.deep.equal({ t:'str', v: '' });
+      expect(parseTimestampToDate({ v: true })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ v: undefined })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ v: null })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ v: 'some text' })).to.deep.equal({ t: 'str', v: '' });
+      expect(parseTimestampToDate({ v: NaN })).to.deep.equal({ t: 'str', v: '' });
     });
 
     it('should return date', () => {
@@ -77,7 +77,7 @@ describe('Medic XPath Extensions', () => {
       chtScriptApi.v1.getExtensionLib.returns(undefined);
       try {
         extensionLib({ v: 'myfunc' }, { t: 'string', v: 'hello' });
-      } catch(e) {
+      } catch (e) {
         expect(e.message).to.equal('Form configuration error: no extension-lib with ID "myfunc" found');
         return;
       }

@@ -4,8 +4,7 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-/* global caches fetch Response navigator */
-
+// global caches fetch Response navigator
 const getCachedRequests = async (raw) => {
   const cacheDetails = await browser.executeAsync(async (callback) => {
     const cacheNames = await caches.keys();
@@ -101,10 +100,14 @@ describe('Service worker cache', () => {
     await loginIfNeeded();
   });
 
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
+
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
-    expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
+    expect(cacheDetails.name.startsWith('cht-precache-v2-')).to.be.true;
     expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
@@ -124,6 +127,8 @@ describe('Service worker cache', () => {
       '/login/lib-bowser.js',
       '/login/script.js',
       '/login/style.css',
+      '/login/images/hide-password.svg',
+      '/login/images/show-password.svg',
       '/main.js',
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
@@ -167,6 +172,8 @@ describe('Service worker cache', () => {
   it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
+    await commonPage.sync(true);
+
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
       'User Name': 'Utilizator',
@@ -188,7 +195,7 @@ describe('Service worker cache', () => {
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync();
+    await commonPage.sync(true);
 
     const cacheDetails = await getCachedRequests(true);
 
@@ -198,7 +205,7 @@ describe('Service worker cache', () => {
       'some': 'thing',
     });
     await waitForLogs.promise;
-    await commonPage.sync(false);
+    await commonPage.sync(true);
 
     const updatedCacheDetails = await getCachedRequests(true);
 

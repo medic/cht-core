@@ -4,14 +4,15 @@ const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 
 describe('Editing contacts ', () => {
-  const district = placeFactory.place().build({type:'district_hospital'});
+  const district = placeFactory.place().build({type: 'district_hospital'});
   const originalContact = personFactory.build(
     {
       parent: {
         _id: district._id,
         parent: district.parent
       }
-    });
+    }
+  );
 
   const secondContact = personFactory.build(
     {
@@ -19,7 +20,8 @@ describe('Editing contacts ', () => {
         _id: district._id,
         parent: district.parent
       }
-    });
+    }
+  );
   district.contact = originalContact;
 
   before(() => utils.saveDocs([district, originalContact, secondContact]));

@@ -6,12 +6,15 @@ import { expect } from 'chai';
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { SessionService } from '@mm-services/session.service';
+import { provideMockStore } from '@ngrx/store/testing';
 
 describe('AnalyticsTargetsComponent', () => {
   let component: AnalyticsTargetsComponent;
   let fixture: ComponentFixture<AnalyticsTargetsComponent>;
   let rulesEngineService;
   let telemetryService;
+  let sessionService;
 
   beforeEach(waitForAsync(() => {
     rulesEngineService = {
@@ -20,6 +23,11 @@ describe('AnalyticsTargetsComponent', () => {
     };
     telemetryService = { record: sinon.stub() };
 
+    sessionService = {
+      isOnlineOnly: sinon.stub().returns(false),
+      userCtx: sinon.stub()
+    };
+
     return TestBed
       .configureTestingModule({
         declarations: [ AnalyticsTargetsComponent ],
@@ -27,8 +35,11 @@ describe('AnalyticsTargetsComponent', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
         providers: [
+          provideMockStore(),
           { provide: RulesEngineService, useValue: rulesEngineService },
-          { provide: TelemetryService, useValue: telemetryService }
+          { provide: TelemetryService, useValue: telemetryService },
+          { provide: SessionService, useValue: sessionService },
+
         ]
       })
       .compileComponents()
@@ -57,6 +68,7 @@ describe('AnalyticsTargetsComponent', () => {
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
     expect(component.targetsDisabled).to.equal(true);
+    expect(!!component.errorStack).to.be.false;
     expect(telemetryService.record.callCount).to.equal(1);
     expect(telemetryService.record.args[0][0]).to.equal('analytics:targets:load');
     expect(component.targets).to.deep.equal([]);
@@ -74,6 +86,7 @@ describe('AnalyticsTargetsComponent', () => {
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
     expect(component.targetsDisabled).to.equal(false);
+    expect(!!component.errorStack).to.be.false;
     expect(telemetryService.record.callCount).to.equal(1);
     expect(telemetryService.record.args[0][0]).to.equal('analytics:targets:load');
     expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
@@ -97,6 +110,7 @@ describe('AnalyticsTargetsComponent', () => {
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
+    expect(!!component.errorStack).to.be.false;
     expect(component.targets).to.deep.equal([
       { id: 'target1' },
       { id: 'target1', visible: true },
@@ -108,7 +122,7 @@ describe('AnalyticsTargetsComponent', () => {
 
   it('should catch rules engine errors', fakeAsync(() => {
     sinon.reset();
-    rulesEngineService.isEnabled.rejects({ some: 'err' });
+    rulesEngineService.isEnabled.rejects('error');
     const consoleErrorMock = sinon.stub(console, 'error');
 
     component.ngOnInit();
@@ -117,6 +131,7 @@ describe('AnalyticsTargetsComponent', () => {
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
     expect(component.targetsDisabled).to.equal(false);
+    expect(!!component.errorStack).to.be.true;
     expect(component.targets).to.deep.equal([]);
     expect(component.loading).to.equal(false);
     expect(consoleErrorMock.callCount).to.equal(1);

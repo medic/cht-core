@@ -1,36 +1,35 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
 
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 
 @Component({
   selector: 'training-cards-modal',
   templateUrl: './training-cards.component.html'
 })
-export class TrainingCardsComponent extends MmModalAbstract implements OnInit, OnDestroy {
+export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   constructor(
-    bsModalRef: BsModalRef,
     private ngZone: NgZone,
     private store: Store,
     private xmlFormsService: XmlFormsService,
-    private enketoService: EnketoService,
+    private formService: FormService,
     private geolocationService: GeolocationService,
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
     private feedbackService: FeedbackService,
+    private matDialogRef: MatDialogRef<TrainingCardsComponent>,
   ) {
-    super(bsModalRef);
     this.globalActions = new GlobalActions(this.store);
   }
 
@@ -69,7 +68,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     // see https://github.com/angular/angular/blob/10.2.x/packages/router/src/operators/activate_routes.ts#L37
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
-    this.enketoService.unload(this.form);
+    this.formService.unload(this.form);
     this.globalActions.clearEnketoStatus();
   }
 
@@ -85,7 +84,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       this.geoHandle = this.geolocationService.init();
       const form = await this.xmlFormsService.get(this.trainingCardFormId);
       await this.ngZone.run(() => this.renderForm(form));
-    } catch(error) {
+    } catch (error) {
       this.setError(error);
       const message = 'Training Cards :: Error fetching form.';
       console.error(message, error);
@@ -93,14 +92,17 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     }
   }
 
-  private async renderForm(form) {
+  private async renderForm(formDoc) {
     try {
-      const selector = `#${this.formWrapperId}`;
-      this.form = await this.enketoService.render(selector, form, null, null, this.resetFormError.bind(this), true);
-      this.formNoTitle = !form?.title;
+      const formContext = new EnketoFormContext(`#${this.formWrapperId}`, 'training-card', formDoc);
+      formContext.isFormInModal = true;
+      formContext.valuechangeListener = this.resetFormError.bind(this);
+
+      this.form = await this.formService.render(formContext);
+      this.formNoTitle = !formDoc?.title;
       this.loadingContent = false;
       this.recordTelemetryPostRender();
-    } catch(error) {
+    } catch (error) {
       this.setError(error);
       const message = 'Training Cards :: Error rendering form.';
       console.error(message, error);
@@ -154,6 +156,10 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     this.contentError = true;
   }
 
+  close() {
+    this.matDialogRef.close();
+  }
+
   async saveForm() {
     if (this.enketoSaving) {
       console.debug('Attempted to call TrainingCardsComponent:saveForm more than once');
@@ -165,16 +171,16 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     this.resetFormError();
 
     try {
-      const docs = await this.enketoService.save(this.trainingCardFormId, this.form, this.geoHandle);
+      const docs = await this.formService.save(this.trainingCardFormId, this.form, this.geoHandle);
       console.debug('Saved form and associated docs', docs);
       const snackText = await this.translateService.get('training_cards.form.saved');
       this.globalActions.setSnackbarContent(snackText);
       this.globalActions.setEnketoSavingStatus(false);
-      this.enketoService.unload(this.form);
+      this.formService.unload(this.form);
       this.recordTelemetryPostSave();
       this.close();
 
-    } catch(error) {
+    } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
       const message = 'Training Cards :: Error submitting form data.';
       console.error(message, error);

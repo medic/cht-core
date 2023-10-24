@@ -5,6 +5,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   templateUrl: './panel-header.component.html',
 })
 export class PanelHeaderComponent {
-  @Input() title;
+  @Input() headerTitle;
+  @Input() hideCloseButton;
   @Output() onClose = new EventEmitter<boolean>();
 }

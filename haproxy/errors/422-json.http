@@ -1,0 +1,10 @@
+HTTP/1.1 422 Unprocessable Content
+Content-length: 133
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "422 Unprocessable Content",
+  "reason": "The server cannot process the contained instructions",
+  "server": "haproxy"
+}

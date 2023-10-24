@@ -28,7 +28,7 @@ const contact = personFactory.build({
 const offlineUser = userFactory.build({
   username: 'offlineuser',
   isOffline: true,
-  roles:['chw'],
+  roles: ['chw'],
   place: health_center._id,
   contact: contact._id,
 });
@@ -37,17 +37,19 @@ const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
-const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
+const xmlReport = reportFactory
+  .report()
+  .build(
+    { form: 'home_visit', content_type: 'xml' },
+    { patient, submitter: contact }
+  );
 
-const smsReport = reportFactory.build(
-  {
-    form: 'P',
-    patient_id: patient._id,
-  },
-  {
-    patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id},
-  },
-);
+const smsReport = reportFactory
+  .report()
+  .build(
+    { form: 'P',  patient_id: patient._id, },
+    { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id}, },
+  );
 
 describe('- EDIT permissions disabled', async () => {
   let xmlReportId;
@@ -68,6 +70,7 @@ describe('- EDIT permissions disabled', async () => {
 
   it(' - Contact Tab - contact selected', async () => {
     await commonPage.goToPeople(patient._id);
+    await commonPage.closeReloadModal();
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
   });
 

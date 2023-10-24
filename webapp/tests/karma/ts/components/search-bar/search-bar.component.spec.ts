@@ -1,24 +1,28 @@
-import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { SearchFiltersService } from '@mm-services/search-filters.service';
 
 describe('Search Bar Component', () => {
   let component: SearchBarComponent;
   let fixture: ComponentFixture<SearchBarComponent>;
+  let store: MockStore;
   let responsiveService;
+  let searchFiltersService;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     const mockedSelectors = [
       { selector: Selectors.getSidebarFilter, value: { filterCount: { total: 5 } } },
+      { selector: Selectors.getFilters, value: undefined },
     ];
-
+    searchFiltersService = { init: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };
 
     return TestBed
@@ -33,20 +37,30 @@ describe('Search Bar Component', () => {
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ResponsiveService, useValue: responsiveService },
+          { provide: SearchFiltersService, useValue: searchFiltersService },
         ]
       })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(SearchBarComponent);
         component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
-  }));
+  });
 
   it('should create component', fakeAsync(() => {
     flush();
     expect(component).to.exist;
     expect(component.activeFilters).to.equal(5);
+  }));
+
+  it('should init search filter service', fakeAsync(() => {
+    sinon.resetHistory();
+
+    component.ngAfterViewInit();
+
+    expect(searchFiltersService.init.calledOnce).to.be.true;
   }));
 
   it('should unsubscribe from observables on component destroy', () => {
@@ -90,4 +104,52 @@ describe('Search Bar Component', () => {
     component.toggleMobileSearch(true);
     expect(component.openSearch).to.be.true;
   });
+
+  it('should show search icon when searchbar is close and no search terms', fakeAsync(() => {
+    store.overrideSelector(Selectors.getFilters, { search: 'some text' });
+    store.refreshState();
+
+    component.openSearch = true;
+    tick();
+    expect(component.showSearchIcon()).to.be.false;
+
+    component.openSearch = false;
+    tick();
+    expect(component.showSearchIcon()).to.be.false;
+
+    store.overrideSelector(Selectors.getFilters, { search: null });
+    store.refreshState();
+
+    component.openSearch = true;
+    tick();
+    expect(component.showSearchIcon()).to.be.false;
+
+    component.openSearch = false;
+    tick();
+    expect(component.showSearchIcon()).to.be.true;
+  }));
+
+  it('should show clear icon when searchbar is open or there are search terms', fakeAsync(() => {
+    store.overrideSelector(Selectors.getFilters, { search: 'some text' });
+    store.refreshState();
+
+    component.openSearch = true;
+    tick();
+    expect(component.showClearIcon()).to.be.true;
+
+    component.openSearch = false;
+    tick();
+    expect(component.showClearIcon()).to.be.true;
+
+    store.overrideSelector(Selectors.getFilters, { search: null });
+    store.refreshState();
+
+    component.openSearch = true;
+    tick();
+    expect(component.showClearIcon()).to.be.true;
+
+    component.openSearch = false;
+    tick();
+    expect(component.showClearIcon()).to.be.false;
+  }));
 });

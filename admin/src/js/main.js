@@ -9,7 +9,6 @@ require('angular-pouchdb');
 require('angular-route');
 require('angular-sanitize');
 require('angular-translate');
-require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('@uirouter/angularjs');
 
@@ -75,7 +74,6 @@ require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
 
-// directives we borrow from webapp
 angular.module('inboxDirectives', []);
 require('./directives/auth');
 
@@ -83,7 +81,6 @@ angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
 require('./filters/build-version');
 
-// filters we borrow from webapp
 angular.module('inboxFilters', []);
 require('./filters/resource-icon');
 
@@ -97,12 +94,10 @@ require('./services/message-queue');
 require('./services/properties');
 require('./services/version');
 
-// services we borrow from webapp
 angular.module('inboxServices', []);
 require('./services/add-attachment');
 require('./services/auth');
 require('./services/cache');
-require('./services/calendar-interval');
 require('./services/changes');
 require('./services/contact-muted');
 require('./services/contact-types');
@@ -110,7 +105,6 @@ require('./services/db');
 require('./services/export');
 require('./services/extract-lineage');
 require('./services/file-reader');
-require('./services/format-date');
 require('./services/get-data-records');
 require('./services/get-subject-summaries');
 require('./services/get-summaries');
@@ -124,13 +118,11 @@ require('./services/location');
 require('./services/modal');
 require('./services/moment-locale-data');
 require('./services/privacy-policies');
-require('./services/privacy-policies');
 require('./services/resource-icons');
 require('./services/search');
 require('./services/select2-search');
 require('./services/settings');
 require('./services/session');
-require('./services/telemetry');
 require('./services/translate');
 require('./services/translate-from');
 require('./services/translation-loader');
@@ -189,7 +181,6 @@ angular.module('adminApp').config(function(
 
   $translateProvider.useLoader('TranslationLoader', {});
   $translateProvider.useSanitizeValueStrategy('escape');
-  $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
   $translateProvider.addInterpolation('TranslationNullInterpolation');
 
   $ngReduxProvider.createStoreWith(RootReducer, []);

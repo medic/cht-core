@@ -11,7 +11,7 @@ describe('Export Data Service', () => {
   });
 
   const mockRequest = (type, filters={}, options={}) => {
-    const chunks = []; 
+    const chunks = [];
     return new Promise((resolve, reject) => {
       service.exportStream(type, filters, options)
         .on('error', err => {
@@ -277,12 +277,29 @@ describe('Export Data Service', () => {
           name: 'gdawg',
           type: 'person',
           parent: contact2
+        },
+        {
+          _id: '33',
+          name: 'memory',
+          type: 'contact',
+          patient_id: '1231',
+          contact_type: 'chw',
+          parent: contact2
+        },
+        {
+          _id: '231',
+          name: 'a place',
+          type: 'district',
+          place_id: '89654',
+          parent: contact2
         }
       ]));
 
-      const expected = 'id,rev,name,patient_id,type\n' +
-                       '"2",,"dunedin",,"district"\n' +
-                       '"1",,"gdawg",,"person"\n';
+      const expected = 'id,rev,name,patient_id,type,contact_type,place_id\n' +
+                       '"2",,"dunedin",,"district",,\n' +
+                       '"1",,"gdawg",,"person",,\n' +
+                       '"33",,"memory","1231","contact","chw",\n'+
+                       '"231",,"a place",,"district",,"89654"\n';
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
       });

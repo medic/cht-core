@@ -30,7 +30,7 @@ const contact = personFactory.build({
 const offlineUser = userFactory.build({
   username: 'offlineuser',
   isOffline: true,
-  roles:['chw'],
+  roles: ['chw'],
   place: health_center._id,
   contact: contact._id,
 });
@@ -39,17 +39,19 @@ const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
-const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
+const xmlReport = reportFactory
+  .report()
+  .build(
+    { form: 'home_visit', content_type: 'xml' },
+    { patient, submitter: contact }
+  );
 
-const smsReport = reportFactory.build(
-  {
-    form: 'P',
-    patient_id: patient._id,
-  },
-  {
-    patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id},
-  },
-);
+const smsReport = reportFactory
+  .report()
+  .build(
+    { form: 'P', patient_id: patient._id, },
+    { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id }, },
+  );
 
 describe('More Options Menu - Offline User', async () => {
   let xmlReportId;
@@ -65,8 +67,6 @@ describe('More Options Menu - Offline User', async () => {
   });
 
   afterEach(async () => await commonPage.goToBase());
-
-  after(async () => await utils.revertSettings(true));
 
   describe('all permissions enabled', async () => {
     it('- Message tab', async () => {
@@ -123,8 +123,8 @@ describe('More Options Menu - Offline User', async () => {
       const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all',
         'can_export_contacts', 'can_export_messages',
         'can_delete_reports', 'can_update_reports'];
-      await utils.updatePermissions(offlineUser.roles, [], allPermissions);
-      await commonPage.closeReloadModal();
+      await utils.updatePermissions(offlineUser.roles, [], allPermissions, true);
+      await commonPage.sync(true);
     });
 
     after(async () => await utils.revertSettings(true));

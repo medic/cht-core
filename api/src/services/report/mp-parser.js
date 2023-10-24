@@ -30,7 +30,7 @@ exports.parse = (def, doc) => {
 
   vals.unshift(header[2]);
 
-  if(!def || !def.fields) {
+  if (!def || !def.fields) {
     return {};
   }
 

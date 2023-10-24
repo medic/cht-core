@@ -1,5 +1,5 @@
 const utils = require('@utils');
-const {expect} = require('chai');
+const uuid = require('uuid').v4;
 
 const getRows = (result) => {
   const rows = result.split('\n');
@@ -127,17 +127,20 @@ describe('Export Data V2.0', () => {
     it('GET Filters by date', () => {
       const from = Date.UTC(2018, 1, 2, 12);
       const to = Date.UTC(2018, 1, 3, 12);
-      return utils.request(`/api/v2/export/reports?` +
-        `filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`,
-      {notJson: true}
-      ).then(result => {
-        const rows = getRows(result);
-        const expected = [
-          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
-          '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,'
-        ];
-        expectRows(expected, rows);
-      });
+      return utils
+        .request(
+          `/api/v2/export/reports?` +
+          `filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`,
+          { notJson: true }
+        )
+        .then(result => {
+          const rows = getRows(result);
+          const expected = [
+            '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
+            '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,'
+          ];
+          expectRows(expected, rows);
+        });
     });
 
     describe('POST filters by verified', () => {
@@ -259,6 +262,135 @@ describe('Export Data V2.0', () => {
         ];
         expectRows(expected, rows);
       });
+    });
+  });
+
+  describe('GET|POST /api/v2/export/contacts', () => {
+    const contacts = [
+      { _id: 'john_id', name: 'john', patient_id: '12345', type: 'person', field: 'value' },
+      { _id: 'mary_id', name: 'mary', type: 'person', other_field: 'b' },
+      { _id: 'jen_id', name: 'jen', type: 'contact', contact_type: 'chw', patient_id: '123', other_field: 'value' },
+      { _id: 'leslie_id', name: 'leslie', type: 'district_hospital', reported_date: 100 },
+      { _id: 'my_district_id', name: 'my_district', type: 'district_hospital', place_id: '4568', phone: '0054852' },
+      { _id: 'ny_id', name: 'new york', type: 'contact', contact_type: 'city', place_id: '231', phone: '0054852' },
+      {
+        _id: 'michael_id',
+        name: 'michael',
+        type: 'contact',
+        contact_type: 'chw',
+        patient_id: '8894',
+        birthdate: '01-01-2023',
+      },
+    ];
+
+    const otherDocs = [
+      { _id: uuid(), type: 'data_record', form: 'a-form', fields: {} },
+      { _id: uuid(), type: 'task' },
+      { _id: uuid(), type: 'target' },
+    ];
+
+    before(async () => {
+      await utils.saveDocsRevs(contacts);
+      await utils.saveDocs(otherDocs);
+    });
+
+    it('Returns all contacts that exist in the system', async () => {
+      const result = await utils.request({ path: '/api/v2/export/contacts' });
+      const rows = getRows(result);
+      const hardCodedPerson = await utils.getDoc('e2e_contact_test_id');
+      const expected = [
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"john_id","${contacts[0]._rev}","john","12345","person",,`,
+        `"mary_id","${contacts[1]._rev}","mary",,"person",,`,
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"leslie_id","${contacts[3]._rev}","leslie",,"district_hospital",,`,
+        `"my_district_id","${contacts[4]._rev}","my_district",,"district_hospital",,"4568"`,
+        `"ny_id","${contacts[5]._rev}","new york",,"contact","city","231"`,
+        `"michael_id","${contacts[6]._rev}","michael","8894","contact","chw",`,
+        `"${hardCodedPerson._id}","${hardCodedPerson._rev}",,,"person",,`
+      ];
+      expectRows(expected, rows);
+    });
+
+    it('POST Filters by one contact type', async () => {
+      const result = await utils.request({
+        method: 'POST',
+        path: '/api/v2/export/contacts',
+        body: {
+          filters: {
+            types: {
+              selected: ['district_hospital']
+            }
+          }
+        }
+      });
+      const rows = getRows(result);
+      const expected = [
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"leslie_id","${contacts[3]._rev}","leslie",,"district_hospital",,`,
+        `"my_district_id","${contacts[4]._rev}","my_district",,"district_hospital",,"4568"`,
+      ];
+      expectRows(expected, rows);
+    });
+
+    it('POST Filters by custom contact types', async () => {
+      const result = await utils.request({
+        method: 'POST',
+        path: '/api/v2/export/contacts',
+        body: {
+          filters: {
+            types: {
+              selected: ['chw', 'city']
+            }
+          }
+        }
+      });
+      const rows = getRows(result);
+      const expected = [
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"ny_id","${contacts[5]._rev}","new york",,"contact","city","231"`,
+        `"michael_id","${contacts[6]._rev}","michael","8894","contact","chw",`,
+      ];
+      expectRows(expected, rows);
+    });
+
+    it('POST filters by freetext', async () => {
+      const result = await utils.request({
+        method: 'POST',
+        path: '/api/v2/export/contacts',
+        body: {
+          filters: {
+            search: 'value'
+          }
+        }
+      });
+      const rows = getRows(result);
+      const expected = [
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"john_id","${contacts[0]._rev}","john","12345","person",,`,
+      ];
+      expectRows(expected, rows);
+    });
+
+    it('POST filters by freetext and type', async () => {
+      const result = await utils.request({
+        method: 'POST',
+        path: '/api/v2/export/contacts',
+        body: {
+          filters: {
+            search: 'value',
+            types: { selected: ['chw', 'city', 'district_hospital'] }
+          }
+        }
+      });
+      const rows = getRows(result);
+      const expected = [
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+      ];
+      expectRows(expected, rows);
     });
   });
 

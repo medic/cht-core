@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router, ActivationEnd } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -15,7 +16,7 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -48,6 +49,7 @@ describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let store;
   let clock;
+  let router;
 
   // Services
   let dbSyncService;
@@ -100,7 +102,7 @@ describe('AppComponent', () => {
     locationService = { path: 'localhost' };
     checkDateService = { check: sinon.stub() };
     countMessageService = { init: sinon.stub() };
-    feedbackService = { init: sinon.stub() };
+    feedbackService = { init: sinon.stub(), submit: sinon.stub().returns({}) };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
@@ -128,8 +130,7 @@ describe('AppComponent', () => {
     };
     sessionService = {
       init: sinon.stub().resolves(),
-      isAdmin: sinon.stub().returns(true),
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
     };
@@ -142,6 +143,8 @@ describe('AppComponent', () => {
     };
     translateLocaleService = { reloadLang: sinon.stub() };
     transitionsService = { init: sinon.stub() };
+
+    router = { navigate: sinon.stub(), events: of(ActivationEnd) };
 
     globalActions = {
       updateReplicationStatus: sinon.stub(GlobalActions.prototype, 'updateReplicationStatus'),
@@ -208,6 +211,7 @@ describe('AppComponent', () => {
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
+          { provide: Router, useValue: router  },
         ]
       })
       .compileComponents();
@@ -393,6 +397,15 @@ describe('AppComponent', () => {
     expect(modalService.show.callCount).to.equal(1);
     expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
   }));
+
+  it('handles rulesEngine failure to initialize', async () => {
+    rulesEngineService.isEnabled.rejects({ msg: 'explosion' });
+
+    await getComponent();
+    await component.setupPromise;
+
+    expect(feedbackService.submit.calledOnce).to.be.true;
+  });
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {
@@ -622,6 +635,21 @@ describe('AppComponent', () => {
       ]);
       expect(analyticsModulesService.get.callCount).to.equal(1);
       expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
+    }));
+
+    it('should redirect to the error page when there is an exception', fakeAsync(async () => {
+      chtScriptApiService.isInitialized.throws({ error: 'some error'});
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(1);
+      expect(consoleErrorStub.args[0]).to.deep.equal([
+        'Error during initialisation',
+        { error: 'some error' }
+      ]);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/error', '503' ]]);
     }));
   });
 });

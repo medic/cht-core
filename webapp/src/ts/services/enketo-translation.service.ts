@@ -63,7 +63,7 @@ export class EnketoTranslationService {
 
   private repeatsToJs(data) {
     const repeatNode:any = this.findChildNode(data, 'repeat');
-    if(!repeatNode) {
+    if (!repeatNode) {
       return;
     }
 
@@ -71,7 +71,7 @@ export class EnketoTranslationService {
 
     this.withElements(repeatNode.childNodes).forEach((repeated:any) => {
       const key = repeated.nodeName + '_data';
-      if(!repeats[key]) {
+      if (!repeats[key]) {
         repeats[key] = [];
       }
       repeats[key].push(this.nodesToJs(repeated.childNodes));
@@ -149,7 +149,7 @@ export class EnketoTranslationService {
   }
 
   reportRecordToJs(record, formXml?) {
-    const root = $.parseXML(record).firstChild;
+    const root = $.parseXML(record).firstChild!;
     if (!formXml) {
       return this.nodesToJs(root.childNodes);
     }
@@ -169,7 +169,7 @@ export class EnketoTranslationService {
    *   see: contacts-edit.component.ts:saveRepeated
    */
   contactRecordToJs(record) {
-    const root = $.parseXML(record).firstChild;
+    const root = $.parseXML(record).firstChild!;
     const result:any = {
       doc: null,
       siblings: {},

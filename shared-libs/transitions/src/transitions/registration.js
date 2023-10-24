@@ -10,6 +10,7 @@ const acceptPatientReports = require('./accept_patient_reports');
 const moment = require('moment');
 const config = require('../config');
 const date = require('../date');
+const phoneNumberParser = require('@medic/phone-number');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
 
@@ -38,6 +39,17 @@ const getNameField = (params, prefix) => {
 
   const defaultNameField = `${prefix}_name`;
   return defaultNameField;
+};
+
+const getPatientPhoneField = (currentForm) => {
+  const formDef = utils.getForm(currentForm);
+  if (!formDef?.fields) {
+    return;
+  }
+  
+  return Object
+    .keys(formDef.fields)
+    .find(key => formDef.fields[key].type === 'phone_number'); 
 };
 
 const parseParams = params => {
@@ -309,7 +321,7 @@ const addMessages = (config, doc) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([ patientRegistrations, placeRegistrations ]) => {
+    .then(([patientRegistrations, placeRegistrations]) => {
       const context = {
         patient: doc.patient,
         place: doc.place,
@@ -337,7 +349,7 @@ const assignSchedule = (options) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([ patientRegistrations, placeRegistrations ]) => {
+    .then(([patientRegistrations, placeRegistrations]) => {
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
         const context = {
@@ -461,6 +473,7 @@ const addPatient = (options) => {
   const doc = options.doc;
   const patientShortcode = options.doc.patient_id;
   const patientNameField = getPatientNameField(options.params);
+  const patientPhoneField = getPatientPhoneField(doc.form);
 
   // create a new patient with this patient_id
   const patient = {
@@ -476,6 +489,8 @@ const addPatient = (options) => {
   } else {
     patient.type = 'person';
   }
+
+
 
   return utils
     .getContactUuid(patientShortcode)
@@ -503,6 +518,15 @@ const addPatient = (options) => {
         // include the DOB if it was generated on report
         if (doc.birth_date) {
           patient.date_of_birth = doc.birth_date;
+        }
+
+        if (patientPhoneField && doc.fields[patientPhoneField]) {
+          const patientPhone = doc.fields[patientPhoneField];
+          if (!phoneNumberParser.validate(config.getAll(), patientPhone)) {
+            transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_valid');
+            return;
+          }
+          patient.phone = patientPhone;
         }
 
         // assign patient in doc with full parent doc - to be used in messages
@@ -635,7 +659,8 @@ module.exports = {
               throw new Error(
                 `Configuration error. Expecting params to be a string, comma separated list, ` +
                 `or an array for ${registration.form}.${event.trigger}: '${event.params}'
-              `);
+              `
+              );
             }
           }
 

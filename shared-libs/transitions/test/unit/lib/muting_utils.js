@@ -17,7 +17,10 @@ describe('mutingUtils', () => {
     sinon.stub(db.medic, 'query');
     sinon.stub(db.medic, 'allDocs');
   });
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clock && clock.restore();
+  });
 
   describe('updateRegistrations', () => {
     it('should do nothing if no patientIds are supplied', () => {
@@ -146,23 +149,23 @@ describe('mutingUtils', () => {
   describe('updateContacts', () => {
     it('should update all contacts with muted state', () => {
       const timestamp = moment(2500);
-      const contacts = [ { _id:  'a' }, { _id:  'b' }, { _id:  'c' } ];
+      const contacts = [ { _id: 'a' }, { _id: 'b' }, { _id: 'c' } ];
       db.medic.bulkDocs.resolves();
       return mutingUtils._updateContacts(contacts, timestamp).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'a', muted: timestamp }, { _id:  'b', muted: timestamp }, { _id:  'c', muted: timestamp }
+          { _id: 'a', muted: timestamp }, { _id: 'b', muted: timestamp }, { _id: 'c', muted: timestamp }
         ]]);
       });
     });
 
     it('should delete muted property when unmuting', () => {
-      const contacts = [ { _id:  'a', muted: true }, { _id:  'b', muted: 123 }, { _id:  'c', muted: 'something' } ];
+      const contacts = [ { _id: 'a', muted: true }, { _id: 'b', muted: 123 }, { _id: 'c', muted: 'something' } ];
       db.medic.bulkDocs.resolves();
       return mutingUtils._updateContacts(contacts, false).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'a' }, { _id:  'b' }, { _id:  'c' }
+          { _id: 'a' }, { _id: 'b' }, { _id: 'c' }
         ]]);
       });
     });
@@ -681,7 +684,6 @@ describe('mutingUtils', () => {
     });
 
     it('should return next reports, sorted by date, when requested', () => {
-      clock = sinon.useFakeTimers();
       const reportId = 'reportid';
       const hydratedPlace = {
         _id: 'my-place',
@@ -1771,8 +1773,7 @@ describe('mutingUtils', () => {
     });
 
     it('should set muting history when available', () => {
-      const timestamp = 4567;
-      clock = sinon.useFakeTimers(timestamp);
+      clock = sinon.useFakeTimers(4567);
       const mutedContact = {
         muted: 2000,
         muting_history: {
@@ -1803,13 +1804,14 @@ describe('mutingUtils', () => {
       };
 
       let contact = _.cloneDeep(mutedContact);
-      chai.expect(mutingUtils.updateContact(contact, moment())).to.equal(true);
+      const timestamp = moment().valueOf();
+      chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
       chai.expect(contact).to.deep.equal({
-        muted: moment(),
+        muted: timestamp,
         muting_history: {
           server_side: {
             muted: true,
-            date: moment(),
+            date: timestamp,
           },
           client_side: [{
             muted: true,

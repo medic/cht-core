@@ -60,7 +60,7 @@ export class MessageContactService {
       .then((rows) => this.hydrateMessagesService.hydrate(rows));
   }
 
-  getList() {
+  getList(): Promise<Record<string, any>[]> {
     return this.getMessages(this.listParams())
       .then(response => this.addReadStatusService.updateMessages(response));
   }

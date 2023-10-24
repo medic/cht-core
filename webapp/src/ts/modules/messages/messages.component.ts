@@ -10,7 +10,7 @@ import { MessagesActions } from '@mm-actions/messages';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
 import { ExportService } from '@mm-services/export.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -29,8 +29,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   fastActionList: FastAction[];
   loading = true;
   loadingContent = false;
-  conversations = [];
-  selectedConversationId = null;
+  conversations: Record<string, any>[] = [];
   error = false;
   currentLevel;
 
@@ -69,29 +68,34 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getConversations),
-      this.store.select(Selectors.getSelectedConversation),
+    const assignments$ = combineLatest([
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getMessagesError),
-    ).subscribe(([
-      conversations = [],
-      selectedConversation,
+    ]).subscribe(([
       loadingContent,
       error,
     ]) => {
-      // Create new reference of conversation's items
-      // because the ones from store can't be modified as they are read only.
-      this.conversations = conversations.map(conversation => {
-        return { ...conversation, selected: conversation.key === selectedConversation?.id };
-      });
       this.loadingContent = loadingContent;
       this.error = error;
     });
-    this.subscriptions.add(subscription);
+    this.subscriptions.add(assignments$);
+
+    const conversations$ = combineLatest([
+      this.store.select(Selectors.getConversations),
+      this.store.select(Selectors.getSelectedConversation),
+    ]).subscribe(([
+      conversations = [],
+      selectedConversation,
+    ]) => {
+      // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
+      this.conversations = conversations.map(conversation => {
+        return { ...conversation, selected: conversation.key === selectedConversation?.id };
+      });
+    });
+    this.subscriptions.add(conversations$);
   }
 
-  private displayFirstConversation(conversations = []) {
+  private displayFirstConversation(conversations: Record<string, any>[] = []) {
     if (this.responsiveService.isMobile()) {
       return;
     }
@@ -137,7 +141,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     this.fastActionList = await this.fastActionButtonService.getMessageActions({
-      callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent).catch(() => {})
+      callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent),
     });
   }
 
@@ -153,12 +157,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
-    modalService
-      .show(SendMessageComponent)
-      .catch(() => {});
+    modalService.show(SendMessageComponent);
   }
 
-  private setConversations(conversations = [], {merge = false} = {}) {
+  private setConversations(conversations: Record<string, any>[] = [], {merge = false} = {}) {
     if (merge) {
       this.removeDeleted(this.conversations, conversations);
       this.mergeUpdated(this.conversations, conversations);
@@ -190,7 +192,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
       });
   }
 
-  private removeDeleted(currentConversations = [], updatedConversations = []) {
+  private removeDeleted(
+    currentConversations: Record<string, any>[] = [],
+    updatedConversations: Record<string, any>[] = []
+  ) {
     for (let i = currentConversations.length - 1; i >= 0; i--) {
       if (!updatedConversations.some(changed => currentConversations[i].key === changed.key)) {
         currentConversations.splice(i, 1);
@@ -198,7 +203,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private mergeUpdated(currentConversations = [], updatedConversations = []) {
+  private mergeUpdated(
+    currentConversations: Record<string, any>[] = [],
+    updatedConversations: Record<string, any>[] = []
+  ) {
     updatedConversations.forEach(updated => {
       const match = _find(currentConversations, existing => existing.key === updated.key);
 

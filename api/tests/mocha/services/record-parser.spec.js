@@ -24,7 +24,7 @@ describe('record parser', () => {
     const body = {
       from: '',
       message: 'foo',
-      sent_timestamp:'1352499725000'
+      sent_timestamp: '1352499725000'
     };
     const doc = records.createByForm(body);
     chai.expect(new Date(doc.reported_date).toUTCString())
@@ -36,7 +36,7 @@ describe('record parser', () => {
     const body = {
       from: '+13125551212',
       message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4',
-      sent_timestamp:'1352399720000'
+      sent_timestamp: '1352399720000'
     };
     const days_stocked_out = {
       cotrimoxazole: 7,
@@ -73,8 +73,8 @@ describe('record parser', () => {
   it('parsed form success does not have errors', () => {
     sinon.stub(config, 'get').returns(definitions.forms);
     const body = {
-      from:'+888',
-      message:'1!YYYZ!foo#bar'
+      from: '+888',
+      message: '1!YYYZ!foo#bar'
     };
     const doc = records.createByForm(body);
     chai.expect(doc.errors.length).to.equal(0);
@@ -82,8 +82,8 @@ describe('record parser', () => {
 
   it('form not found error not set by default', () => {
     const body = {
-      from:'+888',
-      message:'foo bar baz'
+      from: '+888',
+      message: 'foo bar baz'
     };
     const doc = records.createByForm(body);
     chai.expect(doc.errors.length).to.equal(0);
@@ -94,8 +94,8 @@ describe('record parser', () => {
       .withArgs('forms').returns(definitions.forms)
       .withArgs('forms_only_mode').returns(true);
     const body = {
-      from:'+888',
-      message:'foo bar baz'
+      from: '+888',
+      message: 'foo bar baz'
     };
     const doc = records.createByForm(body);
     chai.expect(doc.errors[0].code).to.equal('sys.form_not_found');
@@ -105,7 +105,7 @@ describe('record parser', () => {
   it('no errors on muvuku add', () => {
     sinon.stub(config, 'get').withArgs('forms').returns(definitions.forms);
     const body = {
-      from:'+888',
+      from: '+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
     const doc = records.createByForm(body);
@@ -118,7 +118,7 @@ describe('record parser', () => {
       .withArgs('forms_only_mode').returns(true);
     const translate = sinon.stub(config, 'translate').returns('translated');
     const body = {
-      from:'+888',
+      from: '+888',
       message: '1!0000!2012#2#20#foo#bar'
     };
     const doc = records.createByForm(body, { locale: 'fr' });
@@ -192,7 +192,7 @@ describe('record parser', () => {
     sinon.stub(config, 'get')
       .withArgs('forms').returns(definitions.forms);
     const body = {
-      from:'+888',
+      from: '+888',
       message: 'foo'
     };
     const doc = records.createByForm(body);
@@ -203,9 +203,9 @@ describe('record parser', () => {
     sinon.stub(config, 'get')
       .withArgs('forms').returns(definitions.forms);
     const body = {
-      from:'+888',
+      from: '+888',
       message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4#123',
-      sent_timestamp:'1352399720000'
+      sent_timestamp: '1352399720000'
     };
     const doc = records.createByForm(body);
     chai.expect(doc.errors.length).to.equal(1);
@@ -216,7 +216,7 @@ describe('record parser', () => {
     sinon.stub(config, 'get')
       .withArgs('forms').returns(definitions.forms);
     const body = {
-      from:'+888',
+      from: '+888',
       message: '1!YYYY!foo'
     };
     const doc = records.createByForm(body);
@@ -253,7 +253,7 @@ describe('record parser', () => {
     };
     try {
       records.createRecordByJSON(body);
-    } catch(e) {
+    } catch (e) {
       chai.expect(e.publicMessage).to.equal('Form not found: FOO');
       done();
     }
