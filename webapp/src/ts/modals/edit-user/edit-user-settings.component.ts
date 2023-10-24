@@ -18,9 +18,7 @@ export class EditUserSettingsComponent implements OnInit {
     email?;
     phone?;
     language: { code? };
-  } = {
-    language: {}
-  };
+  } = { language: {} };
 
   static id = 'edit-user-settings-modal';
   processing = false;

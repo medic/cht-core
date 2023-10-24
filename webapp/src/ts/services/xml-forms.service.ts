@@ -244,6 +244,10 @@ export class XmlFormsService {
       return false;
     }
 
+    if (options?.shouldEvaluateExpression === false) {
+      return true;
+    }
+
     return await this.checkFormExpression(form, options?.doc, userContact, options?.contactSummary);
   }
 

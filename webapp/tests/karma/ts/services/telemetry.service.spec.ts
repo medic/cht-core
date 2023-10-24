@@ -264,7 +264,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.query.called).to.be.false;       // NO telemetry aggregation has
       expect(metaDb.put.callCount).to.equal(0);           // been recorded yet
 
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
+      clock.tick('01:00'); // 1 min later ...
       await service.record('test', 5);
 
       expect(telemetryDb.post.callCount).to.equal(2);     // second call
@@ -274,7 +274,7 @@ describe('TelemetryService', () => {
 
       let postCalledAfterQuery = false;
       telemetryDb.post.callsFake(async () => postCalledAfterQuery = telemetryDb.query.called);
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'days').valueOf()); // 1 day later ...
+      clock.tick('24:00:00'); // 1 day later ...
       await service.record('test', 2);
 
       expect(telemetryDb.post.callCount).to.equal(3);     // third call
@@ -302,14 +302,14 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.callCount).to.equal(1);
       expect(metaDb.put.callCount).to.equal(0);             // NO telemetry has been recorded yet
 
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
+      clock.tick('01:00'); // 1 min later ...
       await service.record('another.datapoint');
 
       expect(telemetryDb.post.callCount).to.equal(2);       // second call
       expect(metaDb.put.callCount).to.equal(0);             // still NO telemetry has been recorded (same day)
 
       storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());
-      clock = sinon.useFakeTimers(moment(NOW).add(2, 'days').valueOf()); // 2 days later ...
+      clock.tick('48:00:00'); // 2 days later ...
       await service.record('test', 2);
 
       expect(telemetryDb.post.callCount).to.equal(3);       // third call
@@ -319,18 +319,19 @@ describe('TelemetryService', () => {
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);  // Today 2018-11-12 but aggregation is
       expect(telemetryDb.destroy.callCount).to.equal(1);                         // from from 2 days ago (not Yesterday)
 
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());    // same day now is 2 days ahead
+      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay()); // same day now is 2 days ahead
 
-      clock = sinon.useFakeTimers(moment(NOW).add(7, 'days').valueOf());  // 7 days later ...
+      clock.tick(5 * 24 * 60 * 60 * 1000); // 5 more days later ...
       await service.record('point.a', 1);
 
       expect(telemetryDb.post.callCount).to.equal(4);       // 4th call
       expect(metaDb.put.callCount).to.equal(2);             // Telemetry IS recorded again
       aggregatedDoc = metaDb.put.args[1][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-12-greg-[\w-]+$/); // Now is Nov 19 but agg. is from Nov 12
+      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay()); // same day now is 7 days ahead
 
       // A new record is added ...
-      clock = sinon.useFakeTimers(moment(NOW).add(2, 'hours').valueOf()); // ... 2 hours later ...
+      clock.tick('02:00:00'); // 2 hours later ...
       await service.record('point.b', 0); // 1 record added
       // ...the aggregation count is the same because
       // the aggregation was already performed 2 hours ago within the same day

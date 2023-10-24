@@ -536,6 +536,7 @@ describe('outbound schedule', () => {
     let removeInvalidTasks;
     let attachInfoDocs;
     let restores;
+    let clock;
 
     beforeEach(() => {
       restores = [];
@@ -552,9 +553,14 @@ describe('outbound schedule', () => {
 
       attachInfoDocs = sinon.stub();
       restores.push(outbound.__set__('attachInfoDocs', attachInfoDocs));
+
+      config.initTransitionLib();
     });
 
-    afterEach(() => restores.forEach(restore => restore()));
+    afterEach(() => {
+      restores.forEach(restore => restore());
+      clock?.restore();
+    });
 
     it('should coordinate finding all queues to process and working through them one by one', () => {
       const config = {
@@ -741,6 +747,41 @@ describe('outbound schedule', () => {
         assert.deepEqual(singlePush.args[1], [task2, doc2, doc2Info, {other: 'config'}, 'test-push-2']);
         assert.deepEqual(singlePush.args[2], [task5, doc5, doc5Info, {other: 'config'}, 'test-push-2']);
         assert.deepEqual(singlePush.args[3], [task6, doc6, doc6Info, {some: 'config'}, 'test-push-1']);
+      });
+    });
+
+    it('should only process queued tasks with due "cron" or non-existent "cron" field', () => {
+      const batch = sinon.stub();
+      restores.push(outbound.__set__('batch', batch));
+
+      const VALID_CRON = 'outbound-with-due-cron';
+      const INVALID_CRON = 'outbound-with-undue-cron';
+      const WITHOUT_CRON = 'outbound-without-cron';
+
+      const configs = {
+        [VALID_CRON]: {
+          cron: '5 * * * *'
+        },
+        [INVALID_CRON]: {
+          cron: '15 * * * *'
+        },
+        [WITHOUT_CRON]: {
+          /* test values */
+        }
+      };
+
+      configGet.returns(configs);
+      batch.resolvesArg(0);
+
+      clock = sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
+
+      return outbound.execute().then((dueConfigs) => {
+        assert.equal(configGet.callCount, 1);
+        assert.equal(batch.callCount, 1);
+        assert.equal(Object.keys(dueConfigs).length, 2);
+        assert.deepEqual(dueConfigs[VALID_CRON], configs[VALID_CRON]);
+        assert.deepEqual(dueConfigs[WITHOUT_CRON], configs[WITHOUT_CRON]);
+        assert.isUndefined(dueConfigs[INVALID_CRON]);
       });
     });
   });

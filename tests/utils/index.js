@@ -9,6 +9,7 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 const semver = require('semver');
+const moment = require('moment');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
@@ -19,10 +20,10 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
-process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
+const DEBUG = process.env.DEBUG;
 
 let originalSettings;
-let e2eDebug;
 let dockerVersion;
 let browserLogStream;
 
@@ -141,7 +142,7 @@ const request = (options, { debug } = {}) => {
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
-    console.log('SENDING REQUEST' );
+    console.log('SENDING REQUEST');
     console.log(JSON.stringify(options, null, 2));
   }
 
@@ -172,7 +173,7 @@ const requestOnTestDb = (options, debug) => {
   if (pathAndReqType !== '/GET') {
     options.path = '/' + constants.DB_NAME + (options.path || '');
   }
-  return request(options, { debug });
+  return request(options, debug);
 };
 
 const requestOnTestMetaDb = (options, debug) => {
@@ -182,7 +183,7 @@ const requestOnTestMetaDb = (options, debug) => {
     };
   }
   options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const requestOnMedicDb = (options, debug) => {
@@ -190,7 +191,7 @@ const requestOnMedicDb = (options, debug) => {
     options = { path: options };
   }
   options.path = `/medic${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const formDocProcessing = async (docs) => {
@@ -390,7 +391,7 @@ const deleteAllDocs = (except) => {
         }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
-      if (e2eDebug) {
+      if (DEBUG) {
         console.log(`Deleting docs and infodocs: ${ids}`);
       }
       const infoIds = ids.map(id => `${id}-info`);
@@ -402,7 +403,7 @@ const deleteAllDocs = (except) => {
             body: { docs: toDelete },
           })
           .then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted docs: ${JSON.stringify(response)}`);
             }
           }),
@@ -420,7 +421,7 @@ const deleteAllDocs = (except) => {
             // it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
             return module.exports.sentinelDb.bulkDocs(deletes);
           }).then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
             }
           })
@@ -461,7 +462,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForDockerLogs('sentinel', /Reminder messages allowed between/);
+    return waitForSentinelLogs( /Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };
@@ -569,7 +570,7 @@ const deleteLocalDocs = async () => {
 
 const hasModal = () => $('#update-available').isDisplayed();
 
-const setUserContactDoc = (attempt=0) => {
+const setUserContactDoc = (attempt = 0) => {
   const {
     USER_CONTACT_ID: docId,
     DEFAULT_USER_CONTACT_DOC: defaultDoc
@@ -745,7 +746,7 @@ const dockerComposeCmd = (...params) => {
   const projectParams = ['-p', PROJECT_NAME];
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [ ...projectParams, ...composeFilesParam, ...params ], { env });
+    const cmd = spawn('docker-compose', [...projectParams, ...composeFilesParam, ...params], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -983,7 +984,7 @@ const prepServices = async (defaultSettings) => {
 
   updateContainerNames();
 
-  await tearDownServices(true);
+  await tearDownServices();
   await startServices();
   await listenForApi();
   if (defaultSettings) {
@@ -1038,11 +1039,11 @@ const saveLogs = async () => {
   }
 };
 
-const tearDownServices = async (removeOrphans) => {
-  if (removeOrphans) {
-    return dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
-  }
+const tearDownServices = async () => {
   await saveLogs();
+  if (!DEBUG) {
+    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+  }
 };
 
 const killSpawnedProcess = (proc) => {
@@ -1067,7 +1068,7 @@ const waitForDockerLogs = (container, ...regex) => {
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterwards.
+  // steps of testing afterward.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
@@ -1078,7 +1079,7 @@ const waitForDockerLogs = (container, ...regex) => {
       console.log('Found logs', logs, 'watched for', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       killSpawnedProcess(proc);
-    }, 10000);
+    }, 20000);
 
     const checkOutput = (data) => {
       if (!firstLine) {
@@ -1111,6 +1112,7 @@ const waitForDockerLogs = (container, ...regex) => {
 };
 
 const waitForApiLogs = (...regex) => waitForDockerLogs('api', ...regex);
+const waitForSentinelLogs = (...regex) => waitForDockerLogs('sentinel', ...regex);
 
 /**
  * Collector that listens to the given container logs and collects lines that match at least one of the
@@ -1133,7 +1135,7 @@ const collectLogs = (container, ...regex) => {
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterwards.
+  // steps of testing afterward.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
@@ -1165,6 +1167,8 @@ const collectLogs = (container, ...regex) => {
 const collectSentinelLogs = (...regex) => collectLogs('sentinel', ...regex);
 
 const collectApiLogs = (...regex) => collectLogs('api', ...regex);
+
+const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
@@ -1214,6 +1218,18 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 
   (removePermissions || []).forEach(permission => settings.permissions[permission] = []);
   await updateSettings({ permissions: settings.permissions }, ignoreReload);
+};
+
+const getSentinelDate = () => getContainerDate('sentinel');
+
+const getContainerDate = (container) => {
+  container = getContainerName(container);
+  try {
+    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
+  } catch (error) {
+    console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
+    console.error(error.message);
+  }
 };
 
 module.exports = {
@@ -1275,11 +1291,14 @@ module.exports = {
   saveBrowserLogs,
   tearDownServices,
   waitForApiLogs,
+  waitForSentinelLogs,
   collectSentinelLogs,
   collectApiLogs,
+  collectHaproxyLogs,
   apiLogTestStart,
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
   formDocProcessing,
+  getSentinelDate,
 };
