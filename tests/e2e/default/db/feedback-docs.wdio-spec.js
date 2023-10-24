@@ -58,16 +58,25 @@ describe('feedback docs', () => {
       async () => (await getServerFeedbackDocs()).length >= maxFeedbackDocs,
       { timeout: 20000, interval: 500 }
     );
+    await browser.pause(500);
     await commonElements.refresh();
 
     expect((await chtDbUtils.getFeedbackDocs()).length).to.equal(1);
     await browser.execute(() => console.error('omg what', new Error('omg what')));
     await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === 2);
-    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    let feedbackDocs = await chtDbUtils.getFeedbackDocs();
     expect(feedbackDocs.length).to.equal(2);
 
     expect(feedbackDocs[0]).to.deep.nested.include({ 'info.message': 'w00t 999' });
     expect(feedbackDocs[1]).to.deep.nested.include({ 'info.message': 'omg what' });
+
+    await chtDbUtils.addReadDocs();
+    await browser.execute(() => console.error('omg again', new Error('omg again')));
+
+    await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === 3);
+    feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(3);
+    expect(feedbackDocs[2]).to.deep.nested.include({ 'info.message': 'omg again' });
 
     await chtDbUtils.clearFeedbackDocs();
   });

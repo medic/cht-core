@@ -31,6 +31,16 @@ const feedbackDocDeleteScript = async (feedbackDocs, done) => {
   done(results);
 };
 
+const addReadDocsScript = async () => {
+  const metaDb = window.CHTCore.DB.get({ meta: true });
+  const docs = Array.from({ length: 1000 }).map((_, i) => ({ _id: `read:report:${i}` }));
+  await metaDb.bulkDocs(docs);
+};
+
+const addReadDocs = async () => {
+  return await executeAsync(addReadDocsScript);
+};
+
 const feedbackDocsReadScript = async (done) => {
   // sometimes tests end when the user is _not_ on an angular page
   // eslint-disable-next-line no-undef
@@ -159,4 +169,5 @@ module.exports = {
   deleteDoc,
   info,
   createDocs,
+  addReadDocs,
 };
