@@ -34,7 +34,7 @@ describe('Immunization Visit', () => {
     await commonPage.waitForPageLoaded();
 
     const messageValue = `CW 60 ${babyName}`;
-    
+
     await gatewayApiUtils.api.postMessage({
       id: 'CW-id',
       from: user.phone,
@@ -51,7 +51,7 @@ describe('Immunization Visit', () => {
     expect(firstReport.heading).to.equal(babyName);
     expect(firstReport.form).to.equal('New Child Registration (SMS)');
   });
-  
+
   it('Submit immunization visit - webapp', async () => {
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
@@ -136,7 +136,7 @@ describe('Immunization Visit', () => {
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(babyName);
     expect(openReportInfo.reportName).to.equal('Immunization Visit');
-    expect(openReportInfo.senderName).to.equal(`Submitted by ${user.contact.name} `);
+    expect(openReportInfo.senderName.trimEnd()).to.equal(`Submitted by ${user.contact.name}`);
     expect(openReportInfo.senderPhone).to.equal(user.contact.phone);
 
     expect((await reportsPage.getDetailReportRowContent('chw_sms')).rowValues[0]).to.equal('Nice work, ! ' +
@@ -159,7 +159,7 @@ describe('Immunization Visit', () => {
       from: user.phone,
       content: messageValue
     });
-  
+
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal(babyName);
@@ -173,26 +173,26 @@ describe('Immunization Visit', () => {
 
     await commonPage.goToAnalytics();
     const targets = await analyticsPage.getTargets();
-    
+
     expect(targets).to.have.deep.members([
-      { title: 'Active pregnancies', count: '0' }, 
-      { title: 'New pregnancies', count: '0' }, 
-      { title: 'Births', count: '0' }, 
-      { title: 'Deliveries with 1+ visit', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Deliveries with 4+ visits', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Deliveries at facility', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Children under 5', count: '1' }, 
-      { title: 'Children registered', count: '1' }, 
+      { title: 'Active pregnancies', count: '0' },
+      { title: 'New pregnancies', count: '0' },
+      { title: 'Births', count: '0' },
+      { title: 'Deliveries with 1+ visit', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Deliveries with 4+ visits', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Deliveries at facility', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Children under 5', count: '1' },
+      { title: 'Children registered', count: '1' },
       { title: 'Vaccines given', count: '2' },
-      { title: 'Children vaccinated', count: '1' }, 
-      { title: 'Children with no vaccines reported', count: '0' }, 
-      { title: 'Children with BCG reported', percent: '100%', percentCount: '(1 of 1)' }, 
-      { title: '<5 children screened for growth monitoring', percent: '0%', percentCount: '(0 of 1)' }, 
-      { title: '<5 Underweight Growth Monitoring', count: '0' }, 
-      { title: 'Active MAM cases', count: '0' }, 
-      { title: 'Active SAM cases', count: '0' }, 
-      { title: 'Active OTP cases', count: '0' }, 
-      { title: 'Active SFP cases', count: '0' } 
+      { title: 'Children vaccinated', count: '1' },
+      { title: 'Children with no vaccines reported', count: '0' },
+      { title: 'Children with BCG reported', percent: '100%', percentCount: '(1 of 1)' },
+      { title: '<5 children screened for growth monitoring', percent: '0%', percentCount: '(0 of 1)' },
+      { title: '<5 Underweight Growth Monitoring', count: '0' },
+      { title: 'Active MAM cases', count: '0' },
+      { title: 'Active SAM cases', count: '0' },
+      { title: 'Active OTP cases', count: '0' },
+      { title: 'Active SFP cases', count: '0' }
     ]);
   });
 

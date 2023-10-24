@@ -16,6 +16,7 @@ const getErrorMessage = async () => {
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+  await browser.url('/');
   await setPasswordValue(password);
   await (await userField()).setValue(username);
   await changeLocale(locale);
@@ -51,6 +52,7 @@ const cookieLogin = async (options = {}) => {
   const resp = await utils.request(opts);
   const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
 
+  await browser.url('/');
   await browser.setCookies(cookieArray);
   if (createUser) {
     await utils.setupUserDoc(username);

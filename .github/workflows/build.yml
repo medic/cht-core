@@ -96,7 +96,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile', 'ci-webdriver-standard-minimum-chrome']
         suite: [all]
         include:
           - cmd: ci-webdriver-default
@@ -150,7 +150,7 @@ jobs:
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
     - name: Set ENV
-      run: |        
+      run: |
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
@@ -169,9 +169,14 @@ jobs:
       run: |
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
+    - name: Install Chrome 90
+      if: ${{matrix.cmd=='ci-webdriver-standard-minimum-chrome'}}
+      run: |
+          wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i "google-chrome-stable_current_amd64.deb"
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
-    
+
     - name: Fetch allure history
       if: always()
       uses: actions/checkout@v3
