@@ -21,6 +21,7 @@ describe('change-retry-history', () => {
       changeRetryHistory.add(23);
       changeRetryHistory.add({});
       changeRetryHistory.add({ id: 'test', changes: false });
+      expect(changeRetryHistory.__get__('historyKeys').length).to.equal(2);
     });
 
     it('should add key to history', () => {
@@ -75,7 +76,7 @@ describe('change-retry-history', () => {
 
   describe('shouldProcess', () => {
     it('should not throw errors on bad changes', () => {
-      changeRetryHistory.shouldProcess();
+      expect(changeRetryHistory.shouldProcess()).to.equal(false);
       changeRetryHistory.shouldProcess(false);
       changeRetryHistory.shouldProcess('string');
       changeRetryHistory.shouldProcess(23);
