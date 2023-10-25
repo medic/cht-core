@@ -91,7 +91,7 @@ describe('schedules alternative start_from', () => {
         events: [{
           name: 'on_create',
           trigger: 'assign_schedule',
-          params: ['sch1', 'sch2', 'sch3'],
+          params: ['sch1', 'sch2', 'sch3', 'sch4', 'sch5'],
           bool_expr: ''
         }],
         messages: [],
@@ -166,6 +166,32 @@ describe('schedules alternative start_from', () => {
                 content: 'another schedule from array'
               }],
             }]
+          },
+          {
+            name: 'sch4',
+            start_from: ['date1', 'fields.lmp_date1', 'date2'],
+            messages: [{
+              group: 1,
+              offset: '10 days',
+              recipient: 'clinic',
+              message: [{
+                locale: 'en',
+                content: 'This schedule will not be created since none of the start_from fields exist'
+              }],
+            }]
+          },
+          {
+            name: 'sch5',
+            start_from: ['reported_date', 'fields.lmp_date', 'lmp_date'],
+            messages: [{
+              group: 1,
+              offset: '9 days',
+              recipient: 'clinic',
+              message: [{
+                locale: 'en',
+                content: 'from multiple date fields'
+              }],
+            }]
           }
         ]
     };
@@ -204,17 +230,21 @@ describe('schedules alternative start_from', () => {
       },
     };
 
-    const expectedMessage1 = (state) => createExpectedMessage('sch1', 2, state, 'schedule from field in array');
-    const expectedMessage2 = (state) => createExpectedMessage('sch2', 1, state, 'schedule from reported_date');
-    const expectedMessage3 = (state) => createExpectedMessage('sch2', 1, state, 'schedule from reported_date');
-    const expectedMessage4 = (state) => createExpectedMessage('sch3', 1, state, 'schedule from first existing field');
-    const expectedMessage5 = (state) => createExpectedMessage('sch3', 1, state, 'another schedule from array');
+    const expectedMessage1_2 = (state) => createExpectedMessage('sch1', 2, state, 'schedule from field in array');
+    const expectedMessage2_1 = (state) => createExpectedMessage('sch2', 1, state, 'schedule from reported_date');
+    const expectedMessage2_2 = (state) => createExpectedMessage('sch2', 1, state, 'schedule from reported_date');
+    const expectedMessage3_1 = (state) => createExpectedMessage('sch3', 1, state, 'schedule from first existing field');
+    const expectedMessage3_2 = (state) => createExpectedMessage('sch3', 1, state, 'another schedule from array');
+    // schedule of type sch4 won't be created because none of the fields in start_from array exists
+    const expectedMessage5_1 = (state) => createExpectedMessage('sch5', 1, state, 'from multiple date fields');
 
-    const expectedDue1 = expectedDueDate(startDate, '12', 'weeks');
-    const expectedDue2 = expectedDueDate(moment(), '2', 'weeks');
-    const expectedDue3 = expectedDueDate(moment(), '180', 'days');
-    const expectedDue4 = expectedDueDate(startDate, '10', 'days');
-    const expectedDue5 = expectedDueDate(startDate, '100', 'days');
+
+    const expectedDue1_2 = expectedDueDate(startDate, '12', 'weeks');
+    const expectedDue2_1 = expectedDueDate(moment(), '2', 'weeks');
+    const expectedDue2_2 = expectedDueDate(moment(), '180', 'days');
+    const expectedDue3_1 = expectedDueDate(startDate, '10', 'days');
+    const expectedDue3_2 = expectedDueDate(startDate, '100', 'days');
+    const expectedDue5_1 = expectedDueDate(moment(), '9', 'days');
 
     return utils
       .updateSettings(settings, 'sentinel')
@@ -228,35 +258,42 @@ describe('schedules alternative start_from', () => {
       .then(() => utils.getDocs([patient._id, clinic._id]))
       .then(([updWithPatient, updWithClinic]) => {
         chai.expect(updWithPatient.scheduled_tasks).to.be.ok;
-        chai.expect(updWithPatient.scheduled_tasks).to.have.lengthOf(5);
+        chai.expect(updWithPatient.scheduled_tasks).to.have.lengthOf(6);
 
-        const [schedule1, schedule2, schedule3, schedule4, schedule5] = updWithPatient.scheduled_tasks;
+        const [sch1_2, sch2_1, sch2_2, sch3_1, sch3_2, sch5_1] = updWithPatient.scheduled_tasks;
 
-        chai.expect(schedule1).to.deep.nested.include(expectedMessage1('scheduled'));
-        chai.expect(schedule2).to.deep.nested.include(expectedMessage2('scheduled'));
-        chai.expect(schedule3).to.deep.nested.include(expectedMessage3('scheduled'));
-        chai.expect(schedule4).to.deep.nested.include(expectedMessage4('scheduled'));
-        chai.expect(schedule5).to.deep.nested.include(expectedMessage5('scheduled'));
+        chai.expect(sch1_2).to.deep.nested.include(expectedMessage1_2('scheduled'));
+        chai.expect(sch2_1).to.deep.nested.include(expectedMessage2_1('scheduled'));
+        chai.expect(sch2_2).to.deep.nested.include(expectedMessage2_2('scheduled'));
+        chai.expect(sch3_1).to.deep.nested.include(expectedMessage3_1('scheduled'));
+        chai.expect(sch3_2).to.deep.nested.include(expectedMessage3_2('scheduled'));
+        chai.expect(sch5_1).to.deep.nested.include(expectedMessage5_1('scheduled'));
 
         // ensuring schedules started with expected field
-        chai.expect(moment(schedule1.due).format('YYYY-MM-DD')).to.equal(expectedDue1, 'schedule1');
-        chai.expect(moment(schedule2.due).format('YYYY-MM-DD')).to.equal(expectedDue2, 'schedule2');
-        chai.expect(moment(schedule3.due).format('YYYY-MM-DD')).to.equal(expectedDue3, 'schedule3');
-        chai.expect(moment(schedule4.due).format('YYYY-MM-DD')).to.equal(expectedDue4, 'schedule4');
-        chai.expect(moment(schedule5.due).format('YYYY-MM-DD')).to.equal(expectedDue5, 'schedule5');
-
+        chai.expect(moment(sch1_2.due).format('YYYY-MM-DD')).to.equal(expectedDue1_2, 'schedule 2 of sch1');
+        chai.expect(moment(sch2_1.due).format('YYYY-MM-DD')).to.equal(expectedDue2_1, 'schedule 1 of sch2');
+        chai.expect(moment(sch2_2.due).format('YYYY-MM-DD')).to.equal(expectedDue2_2, 'schedule 2 of sch2');
+        chai.expect(moment(sch3_1.due).format('YYYY-MM-DD')).to.equal(expectedDue3_1, 'schedule 1 of sch3');
+        chai.expect(moment(sch3_2.due).format('YYYY-MM-DD')).to.equal(expectedDue3_2, 'schedule 2 of sch3');
+        // schedules from sch4; Not expected this to be created
+        chai.expect(moment(sch5_1.due).format('YYYY-MM-DD')).to.equal(expectedDue5_1, 'schedule 1 of sch5');
+        
         chai.expect(updWithClinic.scheduled_tasks).to.be.ok;
-        chai.expect(updWithClinic.scheduled_tasks).to.have.lengthOf(3);
+        chai.expect(updWithClinic.scheduled_tasks).to.have.lengthOf(4);
 
-        const [clinicSchedule1, clinicSchedule2, clinicSchedule3 ] = updWithClinic.scheduled_tasks;
+        const [csch1_2, csch2_1, csch2_2, csch5_1 ] = updWithClinic.scheduled_tasks;
 
-        chai.expect(clinicSchedule1).to.deep.nested.include(expectedMessage1('scheduled'));
-        chai.expect(clinicSchedule2).to.deep.nested.include(expectedMessage2('scheduled'));
-        chai.expect(clinicSchedule3).to.deep.nested.include(expectedMessage3('scheduled'));
+        // schedule 3 and 4 will not be created for clinic because fields don't exist.
 
-        chai.expect(moment(clinicSchedule1.due).format('YYYY-MM-DD')).to.equal(expectedDue1);
-        chai.expect(moment(clinicSchedule2.due).format('YYYY-MM-DD')).to.equal(expectedDue2);
-        chai.expect(moment(clinicSchedule3.due).format('YYYY-MM-DD')).to.equal(expectedDue3);
+        chai.expect(csch1_2).to.deep.nested.include(expectedMessage1_2('scheduled'));
+        chai.expect(csch2_1).to.deep.nested.include(expectedMessage2_1('scheduled'));
+        chai.expect(csch2_2).to.deep.nested.include(expectedMessage2_2('scheduled'));
+        chai.expect(csch5_1).to.deep.nested.include(expectedMessage5_1('scheduled'));
+
+        chai.expect(moment(csch1_2.due).format('YYYY-MM-DD')).to.equal(expectedDue1_2);
+        chai.expect(moment(csch2_1.due).format('YYYY-MM-DD')).to.equal(expectedDue2_1);
+        chai.expect(moment(csch2_2.due).format('YYYY-MM-DD')).to.equal(expectedDue2_2);
+        chai.expect(moment(csch5_1.due).format('YYYY-MM-DD')).to.equal(expectedDue5_1);
       });
   });
 });
