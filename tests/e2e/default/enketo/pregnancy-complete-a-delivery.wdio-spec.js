@@ -32,12 +32,11 @@ describe('Contact Delivery Form', () => {
     await commonPage.waitForPageLoaded();
     await commonPage.hideSnackbar();
     await commonPage.goToPeople(pregnantWoman._id);
-
-    await pregnancyForm.submitPregnancy();
-    await commonPage.waitForPageLoaded();
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth.', async () => {
+    await pregnancyForm.submitPregnancy();
+
     await commonPage.openFastActionReport('delivery');
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();

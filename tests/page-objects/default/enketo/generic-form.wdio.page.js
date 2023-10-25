@@ -10,10 +10,13 @@ const errorContainer = () => $('.empty-selection');
 const formTitle = () => $('.enketo form #form-title');
 
 const nextPage = async (numberOfPages = 1) => {
+  await browser.waitUntil(async () => (await $$('.invalid-required')).length === 0);
   for (let i = 0; i < numberOfPages; i++) {
+    const currentSection = await $('section.current');
     await (await nextButton()).waitForDisplayed();
     await (await nextButton()).waitForClickable();
     await (await nextButton()).click();
+    await browser.waitUntil(async () => (await $('section.current')).elementId !== currentSection.elementId);
   }
 };
 
@@ -65,6 +68,7 @@ const verifyReport = async () => {
 };
 
 const submitForm = async () => {
+  await browser.waitUntil(async () => (await $$('.invalid-required')).length === 0);
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
 };
