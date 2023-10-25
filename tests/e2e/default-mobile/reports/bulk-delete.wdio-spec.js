@@ -10,13 +10,8 @@ const personFactory = require('@factories/cht/contacts/person');
 describe('Bulk delete reports', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
-  const contact = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
-  const offlineUser = userFactory.build({
-    username: 'offline_chw_bulk_delete',
-    place: healthCenter._id,
-    contact: contact._id,
-  });
-  const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+  const offlineUser = userFactory.build({ username: 'offline_chw_bulk_delete', place: healthCenter._id });
+  const patient = personFactory.build({ parent: { _id: healthCenter._id } });
   const reports = [
     reportFactory
       .report()
@@ -40,10 +35,10 @@ describe('Bulk delete reports', () => {
 
   const savedUuids = [];
   before(async () => {
-    await utils.saveDocs([ ...places.values(), contact, patient ]);
+    await utils.saveDocs([ ...places.values(), patient ]);
     await utils.createUsers([ offlineUser ]);
-    (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
     await loginPage.login(offlineUser);
+    (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
   });
 
   it('should select, deselect and delete only selected reports', async () => {
