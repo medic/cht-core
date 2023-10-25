@@ -27,17 +27,14 @@ const generateFormData = async (formPath) => {
 const startMockApp = async (config, formType, formName) => {
   const formPath = getFormPath(config, formType, formName);
   const formData = await generateFormData(formPath);
-  return new Promise(resolve => {
-    server = mockApp.listen(resolve);
-  }).then(async () => {
-    await browser.url(`http://localhost:${server.address().port}`);
-    await browser.execute((formData) => {
-      const myForm = document.getElementById('myform');
-      myForm.formHtml = formData.formHtml;
-      myForm.formModel = formData.formModel;
-      myForm.formXml = formData.formXml;
-    }, formData);
-  });
+  server = mockApp.listen();
+  await browser.url(`http://localhost:${server.address().port}`);
+  await browser.execute((formData) => {
+    const myForm = document.getElementById('myform');
+    myForm.formHtml = formData.formHtml;
+    myForm.formModel = formData.formModel;
+    myForm.formXml = formData.formXml;
+  }, formData);
 };
 
 const stopMockApp = () => {
