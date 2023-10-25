@@ -269,18 +269,16 @@ const selectDeliveryPncVisits = async (value) => {
   await pncVisits.click();
 };
 
-const getSummaryInfo = async () => {
-  return {
-    patientName: await sumPatientName().getText(),
-    patientAge: await sumPatientAge().getText(),
-    womanCondition: await sumWomanCondition().getText(),
-    deliveryDate: await sumDeliveryDate().getText(),
-    deliveryPlace: await sumDeliveryPlace().getText(),
-    deliveredBabies: await sumDeliveredBabies().getText(),
-    deceasedBabies: await sumDeceasedBabies().getText(),
-    pncVisits: await sumPncVisits().getText(),
-  };
-};
+const getSummaryInfo = async () => ({
+  patientName: await sumPatientName().getText(),
+  patientAge: await sumPatientAge().getText(),
+  womanCondition: await sumWomanCondition().getText(),
+  deliveryDate: await sumDeliveryDate().getText(),
+  deliveryPlace: await sumDeliveryPlace().getText(),
+  deliveredBabies: await sumDeliveredBabies().getText(),
+  deceasedBabies: await sumDeceasedBabies().getText(),
+  pncVisits: await sumPncVisits().getText(),
+});
 
 const fillWomanDeathInformation = async ({
   date: dateValue = moment().format('YYYY-MM-DD'),

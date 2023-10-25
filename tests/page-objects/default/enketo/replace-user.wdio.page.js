@@ -36,12 +36,10 @@ const selectContactSex = async (sex) => {
   await (await sexField(sex)).click();
 };
 
-const getWarningMsgDetails = async () => {
-  return {
-    phone: await warningMsgPhone().getText(),
-    contactName: await warningMsgContactName().getText(),
-  };
-};
+const getWarningMsgDetails = async () => ({
+  phone: await warningMsgPhone().getText(),
+  contactName: await warningMsgContactName().getText(),
+});
 
 module.exports = {
   SEX,

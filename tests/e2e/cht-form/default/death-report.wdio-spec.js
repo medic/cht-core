@@ -27,8 +27,10 @@ describe('cht-form web component - Death Report Form', () => {
     expect(deathDate).to.equal(date);
     expect(deathInformation).to.equal(deathNote);
 
-    const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields.death_details;
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields.death_details;
+
+    expect(additionalDocs).to.be.empty;
 
     expect(jsonObj.date_of_death).to.equal(date);
     expect(jsonObj.death_information).to.equal(deathNote);
@@ -53,7 +55,6 @@ describe('cht-form web component - Death Report Form', () => {
     expect(labelsValues.other).to.equal('Otro');
     expect(labelsValues.notes)
       .to.equal('Provea cualquier información relevante relacionada con el fallecimiento de John.');
-
   });
 
 });

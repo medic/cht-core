@@ -42,8 +42,10 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
     const countSummaryDangerSigns = await pregnancyVisitForm.countSummaryDangerSigns();
     expect(countSummaryDangerSigns).to.equal(countDangerSigns);
 
-    const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
+
+    expect(additionalDocs).to.be.empty;
 
     expect(jsonObj.pregnancy_summary.visit_option).to.equal('yes');
     expect(jsonObj.pregnancy_summary.g_age_correct).to.equal('yes');
@@ -65,4 +67,5 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
     expect(jsonObj.safe_pregnancy_practices.iron_folate.iron_folate_daily).to.equal('yes');
     expect(jsonObj.safe_pregnancy_practices.hiv_status.hiv_tested).to.equal('yes');
   });
+
 });

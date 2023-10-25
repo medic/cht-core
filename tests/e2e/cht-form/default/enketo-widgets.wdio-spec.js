@@ -65,9 +65,11 @@ describe('cht-form web component - Enketo Widgets', () => {
 
     expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.false;
 
-    const data = await mockConfig.submitForm();
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
 
-    const jsonObj = data[0].fields;
+    expect(additionalDocs).to.be.empty;
+
     expect(jsonObj.patient_uuid).to.equal('123 456 789');
     expect(jsonObj.patient_id).to.equal('12345');
     expect(jsonObj.patient_name).to.equal('Elias');
@@ -93,4 +95,5 @@ describe('cht-form web component - Enketo Widgets', () => {
     await genericForm.cancelForm();
     expect(await onCancelPromise).to.equal('Form Canceled');
   });
+
 });

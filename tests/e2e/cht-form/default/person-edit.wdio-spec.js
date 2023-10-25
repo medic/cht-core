@@ -50,7 +50,7 @@ describe('cht-form web component - Edit Person Form', () => {
 
     await genericForm.nextPage();
 
-    const personInfo = await contactPage.getPersonInfoEditForm('male', 'chw');
+    const personInfo = await contactPage.getCurrentPersonEditFormValues('male', 'chw');
     expect(personInfo.name).to.equal('Filippo');
     expect(personInfo.shortName).to.equal('Fili');
     expect(personInfo.dateOfBirth).to.equal('2000-09-20');
@@ -63,9 +63,12 @@ describe('cht-form web component - Edit Person Form', () => {
     await (await contactPage.personName()).addValue(' Dog');
     await (await contactPage.phoneField()).setValue('+50688888888');
     await (await contactPage.notes('person')).addValue(' - New note');
-    const data = await mockConfig.submitForm();
 
-    const jsonObj = data[0].fields;
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
+
+    expect(additionalDocs).to.be.empty;
+
     expect(jsonObj.person.name).to.equal('Filippo Dog');
     expect(jsonObj.person.date_of_birth).to.equal('2000-09-20');
     expect(jsonObj.person.sex).to.equal('male');
@@ -74,4 +77,5 @@ describe('cht-form web component - Edit Person Form', () => {
     expect(jsonObj.person.external_id).to.equal('12345');
     expect(jsonObj.person.notes).to.equal('Test notes - New note');
   });
+
 });

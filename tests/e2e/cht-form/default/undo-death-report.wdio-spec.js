@@ -17,10 +17,14 @@ describe('cht-form web component - Undo Death Report Form', () => {
 
     expect(await undoDeathReportForm.getConfirmationPatientName()).to.equal('John');
     await undoDeathReportForm.setConfirmUndoDeathOption();
-    const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
+
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
+
+    expect(additionalDocs).to.be.empty;
 
     expect(jsonObj.patient_name).to.equal('John');
     expect(jsonObj.undo.undo_information).to.equal('yes');
   });
+
 });

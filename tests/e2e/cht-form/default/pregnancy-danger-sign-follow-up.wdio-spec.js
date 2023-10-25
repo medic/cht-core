@@ -17,8 +17,11 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
     await pregDangerSignFollowUpForm.selectVisitedHealthFacility(true);
     await pregDangerSignFollowUpForm.selectDangerSigns(true);
-    const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
+
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
+
+    expect(additionalDocs).to.be.empty;
 
     expect(jsonObj.t_danger_signs_referral_follow_up).to.equal('yes');
     expect(jsonObj.danger_signs.vaginal_bleeding).to.equal('yes');
@@ -33,4 +36,5 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     expect(jsonObj.danger_signs.face_hand_swelling).to.equal('yes');
     expect(jsonObj.danger_signs.breathlessness).to.equal('yes');
   });
+
 });

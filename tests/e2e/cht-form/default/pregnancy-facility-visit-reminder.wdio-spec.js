@@ -25,9 +25,11 @@ describe('cht-form web component - Pregnancy Facility Visit Reminder Form', () =
     expect(Date.parse(visitDate)).to.equal(Date.parse('25 Jul, 2023'));
     await pregnancyFacilityVisitReminderPage.selectReminderMethod();
 
-    const data = await mockConfig.submitForm();
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
 
-    const jsonObj = data[0].fields;
+    expect(additionalDocs).to.be.empty;
+
     expect(jsonObj.patient_uuid).to.equal('12345');
     expect(jsonObj.patient_id).to.equal('79376');
     expect(jsonObj.patient_name).to.equal('Pregnant Woman');

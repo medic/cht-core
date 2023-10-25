@@ -98,7 +98,6 @@ describe('cht-form web component - Delivery Form', () => {
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
-      myForm.contactSummary = { pregnancy_uuid: 'test UUID' };
       myForm.content = { contact: { _id: '12345' } };
       myForm.user = { phone: '+50689999999' };
     });
@@ -117,13 +116,24 @@ describe('cht-form web component - Delivery Form', () => {
     await genericForm.nextPage();
 
     const data = await mockConfig.submitForm();
-    const jsonObj = data[1];
+    const jsonObjDeliveryReport = data[0].fields;
+    const jsonObjDeathReport = data[1];
 
-    expect(jsonObj.form).to.equal('death_report');
-    expect(jsonObj.from).to.equal('+50689999999');
-    expect(jsonObj.fields.death_details.date_of_death).to.equal(DATE);
-    expect(jsonObj.fields.death_details.place_of_death).to.equal('health_facility');
-    expect(jsonObj.fields.death_details.death_information).to.equal('Test notes - Mother\'s death');
+    expect(jsonObjDeliveryReport.inputs.user.phone).to.equal('+50689999999');
+    expect(jsonObjDeliveryReport.patient_uuid).to.equal('12345');
+    expect(jsonObjDeliveryReport.condition.woman_outcome).to.equal('deceased');
+    expect(jsonObjDeliveryReport.death_info_woman.woman_death_date).to.equal(DATE);
+    expect(jsonObjDeliveryReport.death_info_woman.woman_death_place).to.equal('health_facility');
+    expect(jsonObjDeliveryReport.death_info_woman.woman_death_birth).to.equal('no');
+    expect(jsonObjDeliveryReport.death_info_woman.woman_death_add_notes).to.equal('Test notes - Mother\'s death');
+    expect(jsonObjDeliveryReport.death_info_woman.death_report.form).to.equal('death_report');
+    expect(jsonObjDeliveryReport.death_info_woman.death_report.from).to.equal('+50689999999');
+
+    expect(jsonObjDeathReport.form).to.equal('death_report');
+    expect(jsonObjDeathReport.from).to.equal('+50689999999');
+    expect(jsonObjDeathReport.fields.death_details.date_of_death).to.equal(DATE);
+    expect(jsonObjDeathReport.fields.death_details.place_of_death).to.equal('health_facility');
+    expect(jsonObjDeathReport.fields.death_details.death_information).to.equal('Test notes - Mother\'s death');
   });
 
 });
