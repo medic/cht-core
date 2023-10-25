@@ -51,14 +51,14 @@ describe('Submit an undo death report', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0' },
-      { title: 'New pregnancies', goal: '20', count: '0' },
-      { title: 'Live births', count: '0' },
-      { title: 'Active pregnancies', count: '0' },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'Deaths', goal: '0', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'New pregnancies', goal: '20', count: '0', countNumberColor: '#000000' },
+      { title: 'Live births', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'Active pregnancies', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: '#76b0b0' },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0' }
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: '#76b0b0' },
     ]);
   });
 });
