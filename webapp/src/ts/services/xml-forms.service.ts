@@ -9,7 +9,6 @@ import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
-import { FeedbackService } from '@mm-services/feedback.service';
 
 export const TRAINING_FORM_ID_PREFIX: string = 'form:training:';
 export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
@@ -20,6 +19,8 @@ export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
 export class XmlFormsService {
   private init;
   private observable = new Subject();
+  readonly HTML_ATTACHMENT_NAME = 'form.html';
+  readonly MODEL_ATTACHMENT_NAME = 'model.xml';
 
   constructor(
     private authService:AuthService,
@@ -29,7 +30,6 @@ export class XmlFormsService {
     private fileReaderService: FileReaderService,
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
-    private feedbackService:FeedbackService,
     private parseProvider:ParseProvider,
     private ngZone:NgZone,
   ) {
@@ -266,6 +266,14 @@ export class XmlFormsService {
       Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
   }
 
+  private hasRequiredAttachments(doc) {
+    return doc &&
+      doc._attachments &&
+      Object.keys(doc._attachments).find(name => name === this.MODEL_ATTACHMENT_NAME) &&
+      Object.keys(doc._attachments).find(name => name === this.HTML_ATTACHMENT_NAME) &&
+      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
+  }
+
   /**
    * Invokes the given callback with an array of docs containing xforms
    * which the user is allowed to complete. Listens for changes and invokes
@@ -335,18 +343,14 @@ export class XmlFormsService {
         throw err;
       })
       .then(doc => {
-        if (!this.findXFormAttachmentName(doc)) {
-          const errorTitle = 'Error in XMLFormService : findXFormAttachmentName : ';
-          const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
+        if (!this.hasRequiredAttachments(doc)) {
+          const errorTitle = 'Error in XMLFormService : hasRequiredAttachments : ';
+          const errorMessage = `The form "${internalId}" doesn't have required attachments`;
           console.error(errorTitle, errorMessage);
           return Promise.reject(new Error(errorTitle + errorMessage));
         }
         return doc;
-      }).catch(err => {
-        this.feedbackService.submit(err.message, false);
-        throw err;
       });
-
   }
 
   getDocAndFormAttachment(internalId) {
@@ -363,7 +367,6 @@ export class XmlFormsService {
               errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
             }
             console.error(errorTitle, errorMessage);
-            this.feedbackService.submit(errorTitle + errorMessage, false);
             return Promise.reject(new Error(errorTitle + errorMessage));
           });
       });

@@ -203,8 +203,8 @@ const goToBase = async () => {
   await waitForPageLoaded();
 };
 
-const goToReports = async () => {
-  await goToUrl('/#/reports');
+const goToReports = async (reportId = '') => {
+  await goToUrl(`/#/reports/${reportId}`);
   await waitForPageLoaded();
 };
 
@@ -263,14 +263,21 @@ const toggleActionbar = (hide) => {
   }, hide);
 };
 
+const getVisibleLoaders = async () => {
+  const visible = [];
+  for (const loader of await loaders()) {
+    if (await loader.isDisplayedInViewport()) {
+      visible.push(loader);
+    }
+  }
+
+  return visible;
+};
+
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
-    for (const loader of await loaders()) {
-      if (await loader.isDisplayed()) {
-        return false;
-      }
-    }
-    return true;
+    const visibleLoaders = await getVisibleLoaders();
+    return !visibleLoaders.length;
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
@@ -286,7 +293,7 @@ const waitForPageLoaded = async () => {
   // get all loaders.
   do {
     await waitForLoaders();
-  } while ((await loaders()).length > 0);
+  } while ((await getVisibleLoaders()).length > 0);
 };
 
 const syncAndNotWaitForSuccess = async () => {

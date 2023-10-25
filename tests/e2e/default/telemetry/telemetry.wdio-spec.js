@@ -32,15 +32,9 @@ const setupUser = () => {
   };
 };
 
-const setOldTelemetryDate = async (user, date) => {
-  const telemetryDateStorageKey = `medic-${user.username}-telemetry-date`;
-  await browser.execute((telemetryDateStorageKey, yesterday) => {
-    // eslint-disable-next-line no-undef
-    window.localStorage.setItem(telemetryDateStorageKey, yesterday);
-  }, telemetryDateStorageKey, date.valueOf());
-};
-
 describe('Telemetry', () => {
+  const DATE_FORMAT = 'YYYY-MM-DD';
+  const TELEMETRY_PREFIX = 'telemetry';
   let user;
   let docs;
 
@@ -49,16 +43,25 @@ describe('Telemetry', () => {
     await utils.saveDocs(docs);
     await utils.createUsers([user]);
     await loginPage.login(user);
+    await commonPage.waitForPageLoaded();
   });
 
   it('should record telemetry', async () => {
     const yesterday = moment().subtract(1, 'day');
+    const yesterdayDBName = `${TELEMETRY_PREFIX}-${yesterday.format(DATE_FORMAT)}-${user.username}`;
+    const telemetryRecord = {
+      key: 'a-telemetry-record',
+      value: 3,
+      date_recorded: yesterday.toDate(),
+    };
+    await browser.execute(async (dbName, record) => {
+      // eslint-disable-next-line no-undef
+      await window.PouchDB(dbName).post(record);
+    }, yesterdayDBName, telemetryRecord);
 
+    // Some user activities to generate telemetry records
     await commonPage.goToReports();
     await commonPage.goToPeople();
-    await setOldTelemetryDate(user, yesterday);
-
-    // generate telemetry aggregate
     await commonPage.goToReports();
     await commonPage.sync();
 
@@ -67,7 +70,7 @@ describe('Telemetry', () => {
     const options = { auth: { username: user.username, password: user.password }, userName: user.username };
     const metaDocs = await utils.requestOnTestMetaDb({ ...options, path: '/_all_docs?include_docs=true' });
 
-    const telemetryEntry = metaDocs.rows.find(row => row.id.startsWith('telemetry'));
+    const telemetryEntry = metaDocs.rows.find(row => row.id.startsWith(TELEMETRY_PREFIX));
     expect(telemetryEntry.doc).to.deep.nested.include({
       'metadata.year': yesterday.year(),
       'metadata.month': yesterday.month() + 1,

@@ -9,9 +9,14 @@ const func = medicXpathExtensions.func;
 const getTimezoneOffset = Date.prototype.getTimezoneOffset;
 
 describe('medic-xpath-extensions', function() {
-  afterEach(done => {
+
+  beforeEach(() => {
+    // make the result consistent regardless of which timezone the test is run in
+    Date.prototype.getTimezoneOffset = () => -240;
+  });
+
+  afterEach(() => {
     Date.prototype.getTimezoneOffset = getTimezoneOffset;
-    done();
   });
 
   describe('getTimezoneOffsetAsTime()', function() {
@@ -37,6 +42,7 @@ describe('medic-xpath-extensions', function() {
   });
 
   describe('#difference-in-months', function() {
+
     [
       [ '2015-10-01', '2015-10-01', 0, ],
       [ '2015-09-01', '2015-10-01', 1, ],
@@ -48,14 +54,14 @@ describe('medic-xpath-extensions', function() {
       [ '2015-10-01T11:11:11.111', '2014-10-01T11:11:11.111', -12, ],
       [ '2014-10-01T00:00:00.000', '2015-10-01T00:00:00.000', 12, ],
       [ 'August 19, 1975 00:00:00 GMT', 'August 18, 1976 23:15:30 GMT+07:00', 11 ],
-      [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2300', 0],
+      [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 24 2005 22:00:00 GMT+2300', 0],
       [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2200', 1]
     ].forEach(function(example) {
       const d1 = { t: 'str', v: example[0] };
       const d2 = { t: 'str', v: example[1] };
       const expectedDifference = example[2];
 
-      it('should report difference between ' + d1 + ' and ' + d2 + ' as ' + expectedDifference, function() {
+      it(`should report difference between ${d1.v} and ${d2.v} as ${expectedDifference}`, function() {
         assert.equal(func['difference-in-months'](d1, d2).v, expectedDifference);
       });
     });
@@ -97,6 +103,7 @@ describe('medic-xpath-extensions', function() {
   });
 
   describe('#to-bikram-sambat()', () => {
+
     [
       [ { t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२'],
       [ { t: 'str', v: '1999-12-12' }, '२६ मंसिर २०५६'],
@@ -129,6 +136,7 @@ describe('medic-xpath-extensions', function() {
   });
 
   describe('#add-date()', () => {
+
     const display = value => value ? value.v : '';
 
     [

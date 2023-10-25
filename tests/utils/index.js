@@ -14,6 +14,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
+const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
@@ -51,17 +52,12 @@ const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
+const existingFeedbackDocIds = [];
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
-const db1Data = makeTempDir('ci-dbdata');
-const db2Data = makeTempDir('ci-dbdata');
-const db3Data = makeTempDir('ci-dbdata');
 const env = {
   ...process.env,
   CHT_NETWORK: NETWORK,
-  DB1_DATA: db1Data,
-  DB2_DATA: db2Data,
-  DB3_DATA: db3Data,
   COUCHDB_SECRET: 'monkey',
 };
 
@@ -589,6 +585,14 @@ const setUserContactDoc = (attempt = 0) => {
     });
 };
 
+const deleteMetaDbs = async () => {
+  const allDbs = await request({ path: '/_all_dbs' });
+  const metaDbs = allDbs.filter(db => db.endsWith('-meta') && !db.endsWith('-users-meta'));
+  for (const metaDb of metaDbs) {
+    await request({ method: 'DELETE', path: `/${metaDb}` });
+  }
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -611,6 +615,8 @@ const revertDb = async (except, ignoreRefresh) => {
   } else {
     watcher && watcher.cancel();
   }
+
+  await deleteMetaDbs();
 
   await setUserContactDoc();
 };
@@ -654,14 +660,6 @@ const deleteUsers = async (users, meta = false) => {
   const errors = results.flat().filter(result => !result.ok);
   if (errors.length) {
     return deleteUsers(users, meta);
-  }
-
-  if (!meta) {
-    return;
-  }
-
-  for (const user of users) {
-    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'DELETE' });
   }
 };
 
@@ -971,6 +969,10 @@ const createLogDir = async () => {
 };
 
 const startServices = async () => {
+  env.DB1_DATA = makeTempDir('ci-dbdata');
+  env.DB2_DATA = makeTempDir('ci-dbdata');
+  env.DB3_DATA = makeTempDir('ci-dbdata');
+
   await dockerComposeCmd('up', '-d');
   const services = await dockerComposeCmd('ps', '-q');
   if (!services.length) {
@@ -1232,6 +1234,22 @@ const getContainerDate = (container) => {
   }
 };
 
+const logFeedbackDocs = async (test) => {
+
+  const feedBackDocs = await chtDbUtils.getFeedbackDocs();
+  const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
+  if (!newFeedbackDocs.length) {
+    return false;
+  }
+
+  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/\s/g, '-');
+  const filePath = path.resolve(__dirname, '..', 'logs', filename);
+  fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
+  existingFeedbackDocIds.push(...newFeedbackDocs.map(doc => doc._id));
+
+  return true;
+};
+
 module.exports = {
   db,
   sentinelDb,
@@ -1301,4 +1319,5 @@ module.exports = {
   updatePermissions,
   formDocProcessing,
   getSentinelDate,
+  logFeedbackDocs,
 };

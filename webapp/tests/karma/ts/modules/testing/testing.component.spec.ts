@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -38,7 +39,8 @@ describe('Testing Component', () => {
     return TestBed
       .configureTestingModule({
         imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } })
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FormsModule
         ],
         declarations: [
           TestingComponent

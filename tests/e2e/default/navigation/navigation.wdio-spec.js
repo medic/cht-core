@@ -7,7 +7,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 
 describe('Navigation tests', async () => {
   describe('Navigation functionality', async () => {
-    beforeEach(async () => {
+    before(async () => {
       await loginPage.cookieLogin();
     });
 
@@ -45,38 +45,47 @@ describe('Navigation tests', async () => {
   describe('Navigation view', async () => {
     const places = placeFactory.generateHierarchy();
     const districtHospital = places.get('district_hospital');
-    const user = userFactory.build({ place: districtHospital._id, roles: ['program_officer'] });
+    const user = userFactory.build({ place: districtHospital._id, roles: ['chw'] });
 
-    beforeEach(async () => {
-      await utils.saveDocs([...places.values()]);
-      await utils.createUsers([user]);
+    describe('as admin', () => {
+      before(async () => {
+        await loginPage.cookieLogin();
+      });
+      after(async () => {
+        await commonPage.logout();
+      });
+
+      it('should display tab labels, when all tabs are enabled', async () => {
+        const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+        expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Tasks', 'Reports', 'People', 'Targets']);
+      });
     });
 
-    afterEach(async () => {
-      await commonPage.logout();
-      await utils.deleteUsers([user]);
-      await utils.revertDb([/^form:/], true);
-      await utils.revertSettings(true);
-    });
+    describe('as chw', () => {
+      before(async () => {
+        await utils.saveDocs([...places.values()]);
+        await utils.createUsers([user]);
+        const permissionsToRemove = [
+          'can_view_analytics',
+          'can_view_analytics_tab',
+          'can_view_tasks',
+          'can_view_tasks_tab'
+        ];
 
-    it('should display tab labels, when all tabs are enabled', async () => {
-      await loginPage.cookieLogin();
-      const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
-      expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Tasks', 'Reports', 'People', 'Targets']);
-    });
+        await utils.updatePermissions(user.roles, [], permissionsToRemove);
+        await loginPage.login(user);
+      });
 
-    it('should display tab labels, when some tabs are enabled', async () => {
-      const permissionsToRemove = [
-        'can_view_analytics',
-        'can_view_analytics_tab',
-        'can_view_tasks',
-        'can_view_tasks_tab'
-      ];
-      await utils.updatePermissions(user.roles, [], permissionsToRemove);
+      it('should display tab labels, when some tabs are enabled', async () => {
+        const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+        expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Reports', 'People']);
+      });
 
-      await loginPage.login(user);
-      const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
-      expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Reports', 'People']);
+      it('should not create feedback docs when loading missing reports or people', async () => {
+        await commonPage.goToPeople('missing');
+        await commonPage.goToReports('missing');
+        console.log('after loading missing person');
+      });
     });
   });
 });

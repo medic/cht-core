@@ -948,6 +948,16 @@ describe('DBSync service', () => {
         });
       });
 
+      it('should not update the current seq in the purge log when sync fails', () => {
+        localMetaDb.info.resolves({ update_seq: 100 });
+        localMetaDb.replicate.to.rejects('some error');
+        return service.sync().then(() => {
+          expect(localMetaDb.info.calledOnce).to.be.true;
+          expect(localMetaDb.get.notCalled).to.be.true;
+          expect(localMetaDb.put.notCalled).to.be.true;
+        });
+      });
+
       it('should record telemetry when successful', async () => {
         let metaToResolve;
         let metaFromResolve;
