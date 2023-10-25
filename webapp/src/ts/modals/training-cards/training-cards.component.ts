@@ -10,7 +10,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 
 @Component({
@@ -27,7 +26,6 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     private geolocationService: GeolocationService,
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
-    private feedbackService: FeedbackService,
     private matDialogRef: MatDialogRef<TrainingCardsComponent>,
   ) {
     this.globalActions = new GlobalActions(this.store);
@@ -86,9 +84,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       await this.ngZone.run(() => this.renderForm(form));
     } catch (error) {
       this.setError(error);
-      const message = 'Training Cards :: Error fetching form.';
-      console.error(message, error);
-      this.feedbackService.submit(message);
+      console.error('Training Cards :: Error fetching form.', error);
     }
   }
 
@@ -104,9 +100,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.recordTelemetryPostRender();
     } catch (error) {
       this.setError(error);
-      const message = 'Training Cards :: Error rendering form.';
-      console.error(message, error);
-      this.feedbackService.submit(message);
+      console.error('Training Cards :: Error rendering form.', error);
     }
   }
 
@@ -182,9 +176,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
     } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
-      const message = 'Training Cards :: Error submitting form data.';
-      console.error(message, error);
-      this.feedbackService.submit(message);
+      console.error('Training Cards :: Error submitting form data.', error);
       const friendlyMessage = await this.translateService.get('training_cards.error.save');
       this.globalActions.setEnketoError(friendlyMessage);
     }

@@ -11,6 +11,8 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { FormatProvider } from '@mm-providers/format.provider';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('SendMessageComponent', () => {
   let component: SendMessageComponent;
@@ -36,7 +38,11 @@ describe('SendMessageComponent', () => {
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ SendMessageComponent ],
+        declarations: [
+          SendMessageComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
         providers: [
           { provide: SendMessageService, useValue: sendMessageService },
           { provide: Select2SearchService, useValue: select2SearchService },

@@ -589,9 +589,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       .isEnabled()
       .then(isEnabled => console.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
       .catch(err => {
-        const errorMessage = 'RuleEngine failed to initialize';
-        console.error(errorMessage, err);
-        this.feedbackService.submit(errorMessage);
+        console.error('RuleEngine failed to initialize', err);
       });
   }
 
@@ -638,8 +636,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
     if (window.startupTimes.purgingMetaFailed) {
-      const message = `Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`;
-      this.feedbackService.submit(message);
+      console.error(`Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`);
       this.telemetryService.record('boot_time:purging_meta_failed');
     } else {
       // When: 1- Purging ran and successfully completed. 2- Purging didn't run.

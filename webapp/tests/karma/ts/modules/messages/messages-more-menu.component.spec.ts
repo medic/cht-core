@@ -29,6 +29,7 @@ describe('Messages More Menu Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
+        declarations: [ MessagesMoreMenuComponent ],
         providers: [
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
