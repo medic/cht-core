@@ -19,6 +19,7 @@ let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
 const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
+const CHROME_VERSION = process.env.CHROME_VERSION;
 
 const baseConfig = {
   //
@@ -83,10 +84,12 @@ const baseConfig = {
     maxInstances: 1,
     //
     browserName: 'chrome',
+    browserVersion: CHROME_VERSION,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
       args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
+        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
+      binary: CHROME_VERSION === '90' ? '/Applications/Google Chrome 90.app/Contents/MacOS/Google Chrome' : undefined
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -141,7 +144,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: ['devtools'],
+  services: CHROME_VERSION === '90' ? ['chromedriver'] : ['devtools'],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
