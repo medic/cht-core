@@ -37,7 +37,7 @@ describe('cht-form web component - Death Report Form', () => {
     expect(jsonObj.place_of_death).to.equal(deathReportForm.PLACE_OF_DEATH.healthFacility);
   });
 
-  it('should verify the Spanish translation for the first page of the form', async () => {
+  it('should render form in the language set for the user', async () => {
     await mockConfig.startMockApp('default', 'test', 'death_report_es');
 
     await browser.execute(() => {
