@@ -66,7 +66,7 @@ describe('New pregnancy', () => {
     await pregnancyForm.setNote(note);
     await genericForm.nextPage();
 
-    const summaryDetails = await pregnancyForm.getSumamryDetails();
+    const summaryDetails = await pregnancyForm.getSummaryDetails();
     expect(summaryDetails.countRiskFactors).to.equal(riskFactors.length);
     expect(summaryDetails.countDangerSigns).to.equal(dangerSigns.length);
     expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman1);

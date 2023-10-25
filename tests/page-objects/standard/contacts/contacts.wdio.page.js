@@ -32,7 +32,7 @@ const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
   await (await contactPageDefault.newPrimaryContactName()).setValue(contactName);
   await contactPageDefault.genericForm.nextPage();
   await (await contactPageDefault.writeNamePlace(type)).click();
-  await (await contactPageDefault.nameField(type)).setValue(placeName);
+  await (await contactPageDefault.customPlaceNameField()).setValue(placeName);
   await (await contactPageDefault.externalIdField(type)).setValue('1234457');
   await (await contactPageDefault.notes(type)).setValue(`Some ${type} notes`);
   await (await contactPageDefault.genericForm.submitButton()).click();

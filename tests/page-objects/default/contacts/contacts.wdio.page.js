@@ -26,6 +26,7 @@ const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${va
 const roleField = (type, role) => $(`span[data-itext-id="/data/${type}/role/${role}:label"].active`);
 const phoneField = () => $('input.ignore[type="tel"]');
 const nameField = (type) => $(`[name="/data/${type}/name"]`);
+const customPlaceNameField = () => $('input[name="/data/init/custom_place_name"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
@@ -152,16 +153,16 @@ rightSideAction = true,) => {
   }
   await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
-  await (await newPrimaryContactName()).addValue(contactNameValue);
-  await (await phoneField()).addValue(phoneValue);
-  await (await dateOfBirthField()).addValue(dobValue);
+  await (await newPrimaryContactName()).setValue(contactNameValue);
+  await (await phoneField()).setValue(phoneValue);
+  await (await dateOfBirthField()).setValue(dobValue);
   await (await sexField('contact', sexValue)).click();
   await (await roleField('contact', roleValue)).click();
   await genericForm.nextPage();
   await (await writeNamePlace(typeValue)).click();
-  await (await nameField(typeValue)).addValue(placeNameValue);
-  await (await externalIdField(typeValue)).addValue(externalIDValue);
-  await (await notes(typeValue)).addValue(notesValue);
+  await (await customPlaceNameField()).setValue(placeNameValue);
+  await (await externalIdField(typeValue)).setValue(externalIDValue);
+  await (await notes(typeValue)).setValue(notesValue);
   await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
   const dashedType = typeValue.replace('_', '-');
@@ -463,6 +464,7 @@ module.exports = {
   getNumberOfReports,
   getDisplayedContactsNames,
   nameField,
+  customPlaceNameField,
   dateOfBirthField,
   phoneField,
   sexField,
