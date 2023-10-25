@@ -179,7 +179,7 @@ jobs:
     - name: Set CHROME_VERSION ENV
       if: ${{matrix.chrome-version=='90'}}
       run: |
-          echo "90" >> $CHROME_VERSION
+          export CHROME_VERSION=90
     - name: Install Chrome 90
       if: ${{matrix.chrome-version=='90'}}
       run: |
