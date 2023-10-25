@@ -45,7 +45,7 @@ const baseConfig = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  
+
   suites: {
     all: ['**/*.wdio-spec.js']
   },
@@ -85,7 +85,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']: 
+      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']:
         ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
     }
 
@@ -176,7 +176,7 @@ const baseConfig = {
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
-    retries: DEBUG ? 0 : 5,
+    retries: DEBUG ? 0 : 0,
   },
   //
   // =====

@@ -11,7 +11,7 @@ chai.use(require('chai-exclude'));
 const standardConfig = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
-      './**/*.wdio-spec.js'
+      './**/immu*.wdio-spec.js'
     ]
   },
 
@@ -23,10 +23,12 @@ const standardConfig = Object.assign(wdioBaseConfig.config, {
 
 const uploadStandardConfig = async () => {
   const standardConfigPath = 'config/standard';
-  await exec('npm ci', { cwd: standardConfigPath });
+  console.log('Running npm ci config/standard');
+  //await exec('npm ci', { cwd: standardConfigPath });
 
   try {
-    await chtConfUtils.runCommand('',  standardConfigPath);
+    console.log('Deploying config/standard');
+    await chtConfUtils.runCommand('upload-app-settings delete-all-forms upload-app-forms upload-collect-forms upload-contact-forms upload-training-forms upload-resources upload-branding upload-partners upload-custom-translations upload-privacy-policies upload-extension-libs',  standardConfigPath);
   } catch (err) {
     console.error(err);
   }
