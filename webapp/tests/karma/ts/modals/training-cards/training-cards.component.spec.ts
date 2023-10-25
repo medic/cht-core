@@ -14,6 +14,9 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 
 describe('TrainingCardsComponent', () => {
   let fixture: ComponentFixture<TrainingCardsComponent>;
@@ -65,7 +68,12 @@ describe('TrainingCardsComponent', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ TrainingCardsComponent ],
+        declarations: [
+          TrainingCardsComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+          EnketoComponent,
+        ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: GeolocationService, useValue: geolocationService },

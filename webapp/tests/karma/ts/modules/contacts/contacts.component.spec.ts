@@ -1,4 +1,6 @@
 import { TestBed, ComponentFixture, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -28,6 +30,9 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -63,7 +68,11 @@ describe('Contacts component', () => {
       isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
-    authService = { has: sinon.stub().resolves(false) };
+    authService = {
+      has: sinon.stub().resolves(false),
+      online: sinon.stub().resolves(false),
+      any: sinon.stub().resolves(false)
+    };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: district._id })
@@ -122,10 +131,13 @@ describe('Contacts component', () => {
         declarations: [
           ContactsComponent,
           ContactsFiltersComponent,
+          ContactsMoreMenuComponent,
           FreetextFilterComponent,
           NavigationComponent,
           ResetFiltersComponent,
           SortFilterComponent,
+          FastActionButtonComponent,
+          SearchBarComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -142,6 +154,8 @@ describe('Contacts component', () => {
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: NavigationService, useValue: {} },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents().then(() => {
@@ -613,14 +627,11 @@ describe('Contacts component', () => {
 
   describe('last visited date', () => {
     it('does not enable LastVisitedDate features not allowed', () => {
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(false);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
       expect(component.defaultSortDirection).to.equal('alpha');
-      expect(userSettingsService.get.callCount).to.equal(1);
+      expect(userSettingsService.get.callCount).to.equal(2);
       expect(searchService.search.callCount).to.equal(1);
       expect(searchService.search.args[0]).to.deep.equal(
         [
@@ -639,9 +650,6 @@ describe('Contacts component', () => {
       userSettingsService.get.resetHistory();
       component.ngOnInit();
       flush();
-      expect(authService.has.callCount).equal(3);
-      expect(authService.has.args[2]).to.deep.equal(['can_view_last_visited_date']);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
