@@ -9,14 +9,21 @@ const nameField = () => $('#report-form form [name="/data/name"]');
 const errorContainer = () => $('.empty-selection');
 const formTitle = () => $('.enketo form #form-title');
 
-const nextPage = async (numberOfPages = 1) => {
-  await browser.waitUntil(async () => (await $$('.invalid-required')).length === 0);
+const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
+  if (waitForLoad) {
+    const validationErrors = await $$('.invalid-required');
+    if (validationErrors.length) {
+      await (await formTitle()).click(); // focus out to trigger re-validation
+      await browser.waitUntil(async () => (await $$('.invalid-required')).length === 0);
+    }
+  }
+
   for (let i = 0; i < numberOfPages; i++) {
-    const currentSection = await $('section.current');
+    const currentSectionId = (await $('section.current')).elementId;
     await (await nextButton()).waitForDisplayed();
     await (await nextButton()).waitForClickable();
     await (await nextButton()).click();
-    await browser.waitUntil(async () => (await $('section.current')).elementId !== currentSection.elementId);
+    waitForLoad && await browser.waitUntil(async () => (await $('section.current')).elementId !== currentSectionId);
   }
 };
 
