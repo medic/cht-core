@@ -27,11 +27,9 @@
     }
 
     .question:not(.or-appearance-likert):not(.or-appearance-columns) .option-wrapper {
-      padding: 5px;
       .option-label.active {
         white-space: normal;
-        word-break: break-all;
-        margin: 0;
+        word-break: break-word;
         display: contents;
       }
     }
@@ -445,7 +443,6 @@
     .option-wrapper > label:not(.filler) {
       padding-top: 9px;
       padding-bottom: 9px;
-      margin: 0;
 
       &:hover {
         background-color: inherit;
