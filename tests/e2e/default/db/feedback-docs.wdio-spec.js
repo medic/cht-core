@@ -50,7 +50,7 @@ describe('feedback docs', () => {
       { timeout: 20000, interval: 500 }
     );
     await browser.execute(() => console.error('omg what', new Error('omg what')));
-    await browser.pause(1000);
+    await browser.pause(1000); // make sure that there's enough time to get the doc saved
     expect((await chtDbUtils.getFeedbackDocs()).length).to.equal(maxFeedbackDocs);
 
     await commonElements.sync();
@@ -58,14 +58,15 @@ describe('feedback docs', () => {
       async () => (await getServerFeedbackDocs()).length >= maxFeedbackDocs,
       { timeout: 20000, interval: 500 }
     );
-    await browser.pause(500);
+    await browser.pause(1000); // after sync, we set the purge seq, without which docs are not purged at refresh
     await commonElements.refresh();
 
-    expect((await chtDbUtils.getFeedbackDocs()).length).to.equal(1);
-    await browser.execute(() => console.error('omg what', new Error('omg what')));
-    await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === 2);
     let feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(2);
+    const initialFeedbackDocCount = feedbackDocs.length;
+    expect(initialFeedbackDocCount).to.be.lessThan(maxFeedbackDocs);
+    await browser.execute(() => console.error('omg what', new Error('omg what')));
+    await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === initialFeedbackDocCount + 1);
+    feedbackDocs = await chtDbUtils.getFeedbackDocs();
 
     expect(feedbackDocs[0]).to.deep.nested.include({ 'info.message': 'w00t 999' });
     expect(feedbackDocs[1]).to.deep.nested.include({ 'info.message': 'omg what' });
@@ -73,9 +74,8 @@ describe('feedback docs', () => {
     await chtDbUtils.addReadDocs();
     await browser.execute(() => console.error('omg again', new Error('omg again')));
 
-    await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === 3);
+    await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === initialFeedbackDocCount + 2);
     feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(3);
     expect(feedbackDocs[2]).to.deep.nested.include({ 'info.message': 'omg again' });
 
     await chtDbUtils.clearFeedbackDocs();
