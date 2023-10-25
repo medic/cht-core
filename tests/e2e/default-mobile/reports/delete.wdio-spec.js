@@ -43,11 +43,10 @@ describe('Delete Reports', () => {
     (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
     await utils.createUsers([ onlineUser ]);
     await loginPage.login(onlineUser);
-    await commonElements.waitForPageLoaded();
-    await commonElements.goToReports();
   });
 
   it('Should delete report', async () => {
+    await commonElements.goToReports();
     await (await reportsPage.firstReport()).waitForDisplayed();
 
     expect(await (await reportsPage.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
