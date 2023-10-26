@@ -88,7 +88,8 @@ const baseConfig = {
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
       args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
+        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'no-sandbox',
+          'window-size=1200,900'],
       binary: CHROME_VERSION === '90' ? '/usr/bin/google-chrome-stable' : undefined
     }
 
