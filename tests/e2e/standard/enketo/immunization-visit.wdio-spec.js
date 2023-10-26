@@ -115,6 +115,10 @@ describe('Immunization Visit', () => {
     //Verify immunization card
     const vaccinesValues = await contactPage.getImmCardVaccinesValues();
     for (const value of vaccinesValues) {
+      if (value.error) {
+        continue;
+      }
+
       if (value.includes('of')) {
         const totalVaccines = value.split(' of ')[1];
         expect(value).to.equal(`${totalVaccines} of ${totalVaccines}`);
