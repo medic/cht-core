@@ -3,6 +3,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('cht-form web component - Pregnancy Danger Sign Form', () => {
+
   it('should ', async () => {
     await mockConfig.startMockApp('default', 'app', 'pregnancy_danger_sign');
 
@@ -26,8 +27,11 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     await genericForm.selectYesNoOption(dangerSignPage.easilyTired('pregnancy_danger_sign'));
     await genericForm.selectYesNoOption(dangerSignPage.swellingHands('pregnancy_danger_sign'), 'no');
     await genericForm.selectYesNoOption(dangerSignPage.breathlessness('pregnancy_danger_sign'));
-    const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
+
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
+
+    expect(additionalDocs).to.be.empty;
 
     expect(jsonObj.patient_uuid).to.equal('12345');
     expect(jsonObj.patient_id).to.equal('79376');
@@ -44,6 +48,6 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     expect(jsonObj.danger_signs.easily_tired).to.equal('yes');
     expect(jsonObj.danger_signs.face_hand_swelling).to.equal('no');
     expect(jsonObj.danger_signs.breathlessness).to.equal('yes');
-
   });
+
 });

@@ -3,6 +3,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
+
   it('should submit a PNC danger sign follow-up - baby form', async () => {
     await mockConfig.startMockApp('default', 'app', 'pnc_danger_sign_follow_up_baby');
 
@@ -25,8 +26,11 @@ describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
     await genericForm.selectYesNoOption(dangerSignPage.yellowSkin('pnc_danger_sign_follow_up_baby'));
     await genericForm.selectYesNoOption(dangerSignPage.fever('pnc_danger_sign_follow_up_baby'), 'no');
     await genericForm.selectYesNoOption(dangerSignPage.blueSkin('pnc_danger_sign_follow_up_baby'));
-    const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
+
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
+
+    expect(additionalDocs).to.be.empty;
 
     expect(jsonObj.t_danger_signs_referral_follow_up).to.equal('yes');
     expect(jsonObj.danger_signs.visit_confirm).to.equal('yes');
@@ -42,4 +46,5 @@ describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
     expect(jsonObj.danger_signs.blue_skin).to.equal('yes');
     expect(jsonObj.danger_signs.r_danger_sign_present).to.equal('yes');
   });
+
 });

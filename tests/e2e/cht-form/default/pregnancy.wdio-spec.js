@@ -69,8 +69,10 @@ describe('cht-form web component - Pregnancy Form', () => {
     expect(summaryDetails.riskFactorsSumm).to.equal(countRiskFactors);
     expect(summaryDetails.dangerSignsSumm).to.equal(countDangerSigns);
 
-    const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
+    const [doc, ...additionalDocs] = await mockConfig.submitForm();
+    const jsonObj = doc.fields;
+
+    expect(additionalDocs).to.be.empty;
 
     expect(Date.parse(jsonObj.gestational_age.g_edd)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(jsonObj.t_pregnancy_follow_up).to.equal('yes');
@@ -78,4 +80,5 @@ describe('cht-form web component - Pregnancy Form', () => {
     expect(jsonObj.danger_signs.r_danger_sign_present).to.equal('yes');
     expect(jsonObj.risk_factors.r_risk_factor_present).to.equal('yes');
   });
+
 });

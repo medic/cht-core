@@ -60,12 +60,10 @@ const setDeliveryDate = async (value = moment().add(1, 'month').format('YYYY-MM-
   await date.setValue(value);
 };
 
-const getConfirmationDetails = async () => {
-  return {
-    eddConfirm: await eddConfirmation().getText(),
-    weeksPregnantConfirm: await weeksPregnantConfirmation().getText(),
-  };
-};
+const getConfirmationDetails = async () => ({
+  eddConfirm: await eddConfirmation().getText(),
+  weeksPregnantConfirm: await weeksPregnantConfirmation().getText(),
+});
 
 const setANCVisitsPast = async (value = 0) => {
   const visits = await ancVisitsPast();
@@ -90,15 +88,13 @@ const selectAllRiskFactors = async (value = FIRST_PREGNANCY_VALUE.no) => {
   return cbRisks.length - 1; // Subtract 1 due to the 'none' option
 };
 
-const getSummaryDetails = async () => {
-  return {
-    patientNameSumm: await patientNameSummary().getText(),
-    weeksPregnantSumm: await weeksPregnantSummary().getText(),
-    eddSumm: await eddSummary().getText(),
-    riskFactorsSumm: await riskFactorsSummary().length,
-    dangerSignsSumm: await dangerSignsSummary().length,
-  };
-};
+const getSummaryDetails = async () => ({
+  patientNameSumm: await patientNameSummary().getText(),
+  weeksPregnantSumm: await weeksPregnantSummary().getText(),
+  eddSumm: await eddSummary().getText(),
+  riskFactorsSumm: await riskFactorsSummary().length,
+  dangerSignsSumm: await dangerSignsSummary().length,
+});
 
 const submitPregnancy = async ({
   gestationalAge: gestationalAgeValue = GESTATION_AGE.edd,
