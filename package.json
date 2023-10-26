@@ -167,7 +167,6 @@
     }
   },
   "dependencies": {
-    "chromedriver": "^90.0.1",
     "google-libphonenumber": "^3.2.31"
   }
 }

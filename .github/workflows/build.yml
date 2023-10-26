@@ -92,6 +92,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
+      CHROME_VERSION: ${{ matrix.chrome-version }}
 
     strategy:
       fail-fast: false
@@ -176,9 +177,6 @@ jobs:
       run: |
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
-    - name: Set CHROME_VERSION ENV
-      if: ${{matrix.chrome-version=='90'}}
-      run: export CHROME_VERSION='90'
     - name: Install Chrome 90
       if: ${{matrix.chrome-version=='90'}}
       run: |
