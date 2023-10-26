@@ -188,7 +188,7 @@ jobs:
     - name: Install Chromedriver 90
       if: ${{matrix.chrome-version=='90'}}
       run: |
-          npm install chromedriver@90 --save-dev
+          npm install chromedriver@^90.0.1
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
