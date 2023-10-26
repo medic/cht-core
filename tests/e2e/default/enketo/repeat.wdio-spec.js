@@ -26,9 +26,7 @@ const assertLabels = async ({ selector, count, labelText }) => {
   const labels = await $$(selector);
   expect(labels.length).to.equal(count);
   for (const label of labels) {
-    // because of https://github.com/medic/cht-core/commit/a2d0ccab1f794ca31bfb7b9e223f783d49094469,
-    // some elements are not interactable, so we cannot get their text
-    expect(await label.getHTML()).to.include(`>${labelText}<`);
+    expect(await label.getText()).to.equal(labelText);
   }
 };
 
@@ -172,17 +170,17 @@ describe('RepeatForm', () => {
       await openRepeatForm(selectFormDocument.internalId);
 
       const { input: washingtonInput, label: washingtonLabel } = await getField('selected_state', 'washington');
-      expect(await washingtonLabel.getHTML()).to.include('>Washington<');
+      expect(await washingtonLabel.getText()).to.equal('Washington');
 
       await washingtonInput.click();
       const { input: kingInput, label: kingLabel } = await getField('selected_county', 'king');
-      expect(await kingLabel.getHTML()).to.include('>King<');
+      expect(await kingLabel.getText()).to.equal('King');
 
       await kingInput.click();
       const { label: seattleLabel } = await getField('selected_city', 'seattle');
       const { label: redmondLabel } = await getField('selected_city', 'redmond');
-      expect(await seattleLabel.getHTML()).to.include('>Seattle<');
-      expect(await redmondLabel.getHTML()).to.include('>Redmond<');
+      expect(await seattleLabel.getText()).to.equal('Seattle');
+      expect(await redmondLabel.getText()).to.equal('Redmond');
     });
   });
 });
