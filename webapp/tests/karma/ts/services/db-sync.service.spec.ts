@@ -898,18 +898,6 @@ describe('DBSync service', () => {
   });
 
   describe('on change', () => {
-    // todo!!!
-    xit('"changes" from handle calls RulesEngine.monitorExternalChanges', () => {
-      isOnlineOnly.returns(false);
-      hasAuth.resolves(true);
-      const replicationResult = { this: 'is', a: 'replication result' };
-      return service.sync().then(() => {
-        expect(rulesEngine.monitorExternalChanges.callCount).to.equal(1);
-        expect(rulesEngine.monitorExternalChanges.args[0]).to.deep.equal([replicationResult]);
-        expectSyncCall(1);
-      });
-    });
-
     describe('replicate meta', () => {
       beforeEach(() => {
         hasAuth.resolves(true);
@@ -957,6 +945,16 @@ describe('DBSync service', () => {
           expect(localMetaDb.get.callCount).to.equal(1);
           expect(localMetaDb.put.callCount).to.equal(1);
           expect(localMetaDb.put.args[0]).to.deep.equal([{ _id: '_local/purgelog', synced_seq: 100, purged_seq: 10 }]);
+        });
+      });
+
+      it('should not update the current seq in the purge log when sync fails', () => {
+        localMetaDb.info.resolves({ update_seq: 100 });
+        localMetaDb.replicate.to.rejects('some error');
+        return service.sync().then(() => {
+          expect(localMetaDb.info.calledOnce).to.be.true;
+          expect(localMetaDb.get.notCalled).to.be.true;
+          expect(localMetaDb.put.notCalled).to.be.true;
         });
       });
 

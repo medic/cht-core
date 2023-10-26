@@ -6,7 +6,7 @@ import { assert, expect } from 'chai';
 import { GlobalActions } from '@mm-actions/global';
 import { DbService } from '@mm-services/db.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
@@ -30,7 +30,7 @@ describe('TrainingCardsService', () => {
     dbService = { get: () => localDb };
     globalActions = { setTrainingCardFormId: sinon.stub(GlobalActions.prototype, 'setTrainingCardFormId') };
     xmlFormsService = { subscribe: sinon.stub() };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
     sessionService = {
       userCtx: sinon.stub(),
       hasRole: sinon.spy(SessionService.prototype, 'hasRole'),
@@ -528,18 +528,11 @@ describe('TrainingCardsService', () => {
     expect(modalService.show.notCalled).to.be.true;
 
     expect(consoleErrorMock.calledThrice).to.be.true;
-    expect(consoleErrorMock.args[0][0])
+    expect(consoleErrorMock.args[0][0].message)
       .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-1');
-    expect(consoleErrorMock.args[1][0])
+    expect(consoleErrorMock.args[1][0].message)
       .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-2');
-    expect(consoleErrorMock.args[2][0])
-      .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-3');
-    expect(feedbackService.submit.calledThrice).to.be.true;
-    expect(feedbackService.submit.args[0][0])
-      .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-1');
-    expect(feedbackService.submit.args[1][0])
-      .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-2');
-    expect(feedbackService.submit.args[2][0])
+    expect(consoleErrorMock.args[2][0].message)
       .to.equal('Training Cards :: Incorrect internalId format. Doc ID: form:training:cards-3');
   });
 
@@ -582,8 +575,6 @@ describe('TrainingCardsService', () => {
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Training Cards :: Error fetching forms.');
     expect(consoleErrorMock.args[0][1].message).to.equal('some error');
-    expect(feedbackService.submit.calledOnce).to.be.true;
-    expect(feedbackService.submit.args[0][0]).to.equal('Training Cards :: Error fetching forms.');
   });
 
   it('should catch exception', async () => {
@@ -616,8 +607,6 @@ describe('TrainingCardsService', () => {
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Training Cards :: Error showing modal.');
     expect(consoleErrorMock.args[0][1].message).to.equal('some error');
-    expect(feedbackService.submit.calledOnce).to.be.true;
-    expect(feedbackService.submit.args[0][0]).to.equal('Training Cards :: Error showing modal.');
   });
 
   it('should do nothing if route has hideTraining flag', async () => {

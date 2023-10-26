@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
+const dbWatcher = require('../../../src/services/db-watcher');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
 const extensionLibsService = require('../../../src/services/extension-libs');
@@ -14,20 +15,10 @@ const bootstrap = require('../../../src/services/config-watcher');
 const manifest = require('../../../src/services/manifest');
 const environment = require('../../../src/environment');
 
-let on;
-const emitChange = (change) => {
-  const changeCallback = on.args[0][1];
-  return changeCallback(change);
-};
-
 describe('Configuration', () => {
   beforeEach(() => {
-    on = sinon.stub();
-    on.returns({ on });
-
     sinon.stub(db, 'createVault');
     sinon.stub(db.medic, 'get');
-    sinon.stub(db.medic, 'changes').returns({ on });
     sinon.stub(viewMapUtils, 'loadViewMaps');
     sinon.stub(translations, 'run');
     sinon.stub(settingsService, 'get');
@@ -40,6 +31,7 @@ describe('Configuration', () => {
     sinon.spy(config, 'setTransitionsLib');
     sinon.stub(fs, 'watch');
     sinon.stub(translations, 'getTranslationDocs');
+    sinon.stub(dbWatcher, 'listen');
   });
 
   afterEach(() => {
@@ -117,19 +109,15 @@ describe('Configuration', () => {
 
   describe('listen', () => {
     beforeEach(() => {
+      sinon.stub(dbWatcher, 'medic');
       bootstrap.listen();
     });
-
-    it('initializes the Continuous changes feed', () => {
-      chai.expect(db.medic.changes.callCount).to.equal(1);
-      chai
-        .expect(db.medic.changes.args[0])
-        .to.deep.equal([{ live: true, since: 'now', return_docs: false }]);
+    it('subscribes to db-watcher medic changes', () => {
+      chai.expect(dbWatcher.medic.callCount).to.equal(1);
     });
 
     it('does nothing for irrelevant change', () => {
-      emitChange({ id: 'someDoc' });
-      on.callCount.should.equal(2);
+      dbWatcher.medic.args[0][0]({ id: 'someDoc' });
 
       chai.expect(translations.getTranslationDocs.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
@@ -141,7 +129,7 @@ describe('Configuration', () => {
         translations.run.resolves();
         db.medic.get.resolves();
 
-        return emitChange({ id: '_design/medic' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
@@ -155,7 +143,7 @@ describe('Configuration', () => {
         settingsService.update.resolves();
         db.medic.get.resolves();
 
-        return emitChange({ id: '_design/medic' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
         });
@@ -168,7 +156,7 @@ describe('Configuration', () => {
         generateServiceWorker.run.resolves();
         translations.getTranslationDocs.resolves([]);
 
-        return emitChange({ id: 'messages-test' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(0);
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(0);
@@ -182,7 +170,7 @@ describe('Configuration', () => {
         generateServiceWorker.run.resolves();
         translations.getTranslationDocs.resolves([]);
 
-        return emitChange({ id: 'messages-test' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(0);
         });
@@ -194,7 +182,7 @@ describe('Configuration', () => {
         translations.getTranslationDocs.resolves([]);
         sinon.stub(process, 'exit');
 
-        return emitChange({ id: 'messages-test' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -205,7 +193,7 @@ describe('Configuration', () => {
         manifest.generate.resolves();
         generateServiceWorker.run.resolves();
 
-        return emitChange({ id: 'branding' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'branding' }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
 
           chai.expect(translations.run.callCount).to.equal(0);
@@ -218,7 +206,7 @@ describe('Configuration', () => {
 
         sinon.stub(process, 'exit');
 
-        return emitChange({ id: 'branding' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'branding' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -228,15 +216,18 @@ describe('Configuration', () => {
       it('reloads settings settings doc is updated', () => {
         settingsService.update.resolves();
         settingsService.get.resolves({ settings: 'yes' });
+        const listener = sinon.stub();
+        bootstrap.watch(listener);
         sinon.stub(db, 'addRoleAsMember');
         sinon.stub(config, 'get').withArgs('roles').returns({ chw: {} });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
-        return emitChange({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
           chai.expect(config.set.args[0]).to.deep.equal([{ settings: 'yes' }]);
+          chai.expect(listener.callCount).to.equal(1);
           chai.expect(config.get.withArgs('roles').callCount).to.equal(1);
           chai.expect(db.addRoleAsMember.args).to.deep.equal([['medicdb', 'chw']]);
         });
@@ -256,7 +247,7 @@ describe('Configuration', () => {
           });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
-        return emitChange({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
@@ -276,7 +267,7 @@ describe('Configuration', () => {
         settingsService.get.rejects();
         sinon.stub(process, 'exit');
 
-        return emitChange({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -286,7 +277,7 @@ describe('Configuration', () => {
       it('handles xform changes', () => {
         sinon.stub(generateXform, 'update').resolves();
 
-        return emitChange({ id: 'form:something:something' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'form:something:something' }).then(() => {
           chai.expect(generateXform.update.callCount).to.equal(1);
           chai.expect(generateXform.update.args[0]).to.deep.equal(['form:something:something']);
         });
@@ -295,7 +286,7 @@ describe('Configuration', () => {
       it('should not terminate the process on form gen errors', () => {
         sinon.stub(generateXform, 'update').rejects();
 
-        return emitChange({ id: 'form:id' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'form:id' }).then(() => {
           chai.expect(generateXform.update.callCount).to.equal(1);
           chai.expect(generateXform.update.args[0]).to.deep.equal(['form:id']);
         });
@@ -303,7 +294,7 @@ describe('Configuration', () => {
 
       it('should handle deletions gracefully - #7608', () => {
         sinon.stub(generateXform, 'update');
-        return emitChange({ id: 'form:id', deleted: true }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'form:id', deleted: true }).then(() => {
           chai.expect(generateXform.update.callCount).to.equal(0);
         });
       });
@@ -311,7 +302,7 @@ describe('Configuration', () => {
       it('should ignore tombstones - #7608', () => {
         sinon.stub(generateXform, 'update');
         const tombstoneId = 'form:pnc_danger_sign_follow_up_mother____3-336f91959e14966f9baec1c3dd1c7fa2____tombstone';
-        return emitChange({ id: tombstoneId }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: tombstoneId }).then(() => {
           chai.expect(generateXform.update.callCount).to.equal(0);
         });
       });
@@ -322,7 +313,7 @@ describe('Configuration', () => {
       it('generates service worker when extension libs doc is updated', () => {
         extensionLibsService.isLibChange.returns(true);
         generateServiceWorker.run.resolves();
-        return emitChange({ id: 'my-secret-id' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: 'my-secret-id' }).then(() => {
           extensionLibsService.isLibChange.returns(true);
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
         });

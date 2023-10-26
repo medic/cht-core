@@ -470,7 +470,7 @@ describe('Users Controller', () => {
           { role: 'aaaa', name: 'string single role' },
           { role: JSON.stringify('aaaa'), name: 'json single role' },
           { role: JSON.stringify(['1', '2', '3']), name: 'array of string roles works'},
-          { role: JSON.stringify(['1', '2']).slice(0, -2), name:  'malformed json = param treated as string'},
+          { role: JSON.stringify(['1', '2']).slice(0, -2), name: 'malformed json = param treated as string'},
           { role: JSON.stringify({ not: 'an array' }), fail: true, name: 'JSON object' },
           { role: JSON.stringify(['1', { not: 'a string' }]), fail: true, name: 'JSON array with objects' },
           { role: JSON.stringify(['1', 32, '2']), fail: true, name: 'JSON array with numbers' },

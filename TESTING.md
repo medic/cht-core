@@ -1,18 +1,18 @@
 # Testing
 
-An overview of testing within CHT-CORE. Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
+An overview of testing within CHT-CORE. Check out the [package.json](package.json) for all the tests you can run.
 
 ## Unit tests
 
-They live in the `tests` directories of each app. Run them with grunt: `grunt unit`.
+They live in the `tests` directories of each app. Run them with: `npm run unit`.
 
 ## Integration tests
 
-They are located in `tests/integration`. Run them with grunt: `grunt e2e-integration`
+They are located in `tests/integration`. Run them with: `npm run e2e-integration-local`
 
 ## Continuous integration
 
-We use [Github Actions](https://github.com/medic/cht-core/actions) which runs `grunt ci` every time some new code is pushed to GitHub.
+We use [Github Actions](https://github.com/medic/cht-core/actions) which runs `npm run compile` every time some new code is pushed to GitHub.
 
 # End to End Testing 
 ## Stack overview
@@ -28,7 +28,7 @@ We use [Github Actions](https://github.com/medic/cht-core/actions) which runs `g
 #### Run locally
 
 1. Run `npm ci`
-2. Run `grunt`
+2. Run `npm run build-dev-watch`
 3. Run `npm run wdio-local`
 4. Run `npx allure open` to view the test reports
 
@@ -40,7 +40,7 @@ We use [Github Actions](https://github.com/medic/cht-core/actions) which runs `g
 
 ### WebdriverIO GitHub Actions Run
 
-`grunt ci-webdriver` is executed to run the Webdriver IO tests.
+`npm run ci-webdriver-default` is executed to run the Webdriver IO tests.
 
 ## Tips to write automated tests
 
@@ -60,7 +60,7 @@ To run just a single test file in WebdriverIO, update the `specs` config in the 
 
 #### IntelliJ Based
 
-1. In a terminal, run `grunt`
+1. In a terminal, run `npm run build-dev-watch`
 1. In Intellij, open the [package.json](package.json) file
 1. Scroll to the scripts section and click the ▶ button next to `wdio-local`
 1. Select `Debug 'wdio-local'`

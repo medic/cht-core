@@ -6,6 +6,7 @@ import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Transition, Doc } from '@mm-services/transitions/transition';
 import { ValidationService } from '@mm-services/validation.service';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class MutingTransition extends Transition {
     private contactMutedService:ContactMutedService,
     private contactTypesService:ContactTypesService,
     private validationService:ValidationService,
+    private placeHierarchyService:PlaceHierarchyService,
   ) {
     super();
   }
@@ -241,14 +243,6 @@ export class MutingTransition extends Transition {
     return this.dbService.get().get(docId);
   }
 
-  private async getDescendents(rootContactId) {
-    const results = await this.dbService
-      .get()
-      .query('medic-client/contacts_by_place', { key: [rootContactId], include_docs: true });
-
-    return results.rows.map(row => row.doc);
-  }
-
   /**
    * @param {Doc} contact - the current contact being processed
    * @param {string} rootContactId - the topmost contact to be updated
@@ -257,7 +251,8 @@ export class MutingTransition extends Transition {
    * @private
    */
   private async getContactsToProcess(contact, rootContactId, context) {
-    const contactsToProcess = await this.getDescendents(rootContactId);
+    const descendants = await this.placeHierarchyService.getDescendants(rootContactId);
+    const contactsToProcess = descendants.map(row => row.doc);
 
     const rootContact = await this.getDoc(rootContactId, context);
     contactsToProcess.push(rootContact);

@@ -69,7 +69,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
     const modalDetails = await contactPage.openFormWithWarning('death_report');
     expect(modalDetails.header).to.contain('Muted contact');
 
-    await (await modalPage.cancel()).click();
+    await modalPage.cancel();
   });
 
 });

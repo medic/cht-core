@@ -3,13 +3,9 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
-import { LanguageService } from '@mm-services/language.service';
 
 describe('EnketoPrepopulationData service', () => {
   let service;
-  let UserSettings;
-  let languageSettings;
 
   const generatedForm =
   '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
@@ -142,14 +138,6 @@ describe('EnketoPrepopulationData service', () => {
   '</h:head></h:html>';
 
   beforeEach(() => {
-    UserSettings = sinon.stub();
-    languageSettings = sinon.stub();
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: UserSettingsService, useValue: { get: UserSettings } },
-        { provide: LanguageService, useValue: { get: languageSettings } },
-      ]
-    });
     service = TestBed.inject(EnketoPrepopulationDataService);
   });
 
@@ -164,91 +152,50 @@ describe('EnketoPrepopulationData service', () => {
   it('returns the given string', () => {
     const model = '';
     const data = '<some_data/>';
-    return service.get(model, data).then((actual) => {
-      expect(actual).to.equal(data);
-    });
-  });
-
-  it('rejects when user settings fails', () => {
-    const model = '';
-    const data = {};
-    UserSettings.rejects('phail');
-    return service
-      .get(model, data)
-      .then(() => assert.fail('Expected fail'))
-      .catch((err) => {
-        expect(err.name).to.equal('phail');
-        expect(UserSettings.callCount).to.equal(1);
-      });
+    const actual = service.get({ }, model, data);
+    expect(actual).to.equal(data);
   });
 
   it('binds user details into model', () => {
     const data = {};
     const user = { name: 'geoff' };
-    UserSettings.resolves(user);
-    return service
-      .get(editPersonForm, data)
-      .then((actual) => {
-        const xml = $($.parseXML(actual));
-        expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
-        expect(UserSettings.callCount).to.equal(1);
-      });
+    const actual = service.get(user, editPersonForm, data);
+    const xml = $($.parseXML(actual));
+    expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
   });
 
   it('binds form content into model', () => {
     const data = { person: { last_name: 'salmon' } };
     const user = { name: 'geoff' };
-    UserSettings.resolves(user);
-    return service
-      .get(editPersonFormWithoutInputs, data)
-      .then((actual) => {
-        const xml = $($.parseXML(actual));
-        expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
-        expect(UserSettings.callCount).to.equal(1);
-      });
+    const actual = service.get(user, editPersonFormWithoutInputs, data);
+    const xml = $($.parseXML(actual));
+    expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
   });
 
   it('binds form content into generated form model', () => {
     const data = { person: { name: 'sally' } };
     const user = { name: 'geoff' };
-    UserSettings.resolves(user);
-    return service
-      .get(generatedForm, data)
-      .then((actual) => {
-        const xml = $($.parseXML(actual));
-        expect(xml.find('data > person > name')[0].innerHTML).to.equal(data.person.name);
-        expect(UserSettings.callCount).to.equal(1);
-      });
+    const actual = service.get(user, generatedForm, data);
+    const xml = $($.parseXML(actual));
+    expect(xml.find('data > person > name')[0].innerHTML).to.equal(data.person.name);
   });
 
   it('binds user details, user language and form content into model', () => {
     const data = { person: { last_name: 'salmon' } };
-    const user = { name: 'geoff' };
-    UserSettings.resolves(user);
-    languageSettings.resolves('en');
-    return service
-      .get(editPersonForm, data)
-      .then((actual) => {
-        const xml = $($.parseXML(actual));
-        expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
-        expect(xml.find('inputs > user > language')[0].innerHTML).to.equal('en');
-        expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
-        expect(UserSettings.callCount).to.equal(1);
-        expect(languageSettings.callCount).to.equal(1);
-      });
+    const user = { name: 'geoff', language: 'en' };
+    const actual = service.get(user, editPersonForm, data);
+    const xml = $($.parseXML(actual));
+    expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+    expect(xml.find('inputs > user > language')[0].innerHTML).to.equal('en');
+    expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
   });
 
   it('binds form content into model with custom root node', () => {
     const data = { person: { last_name: 'salmon' } };
     const user = { name: 'geoff' };
-    UserSettings.resolves(user);
-    return service
-      .get(pregnancyForm, data)
-      .then((actual) => {
-        const xml = $($.parseXML(actual));
-        expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
-        expect(xml.find('pregnancy > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
-        expect(UserSettings.callCount).to.equal(1);
-      });
+    const actual = service.get(user, pregnancyForm, data);
+    const xml = $($.parseXML(actual));
+    expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+    expect(xml.find('pregnancy > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
   });
 });

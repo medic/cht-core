@@ -1,10 +1,9 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { FormsModule } from '@angular/forms';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
 
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { SendMessageService } from '@mm-services/send-message.service';
@@ -12,7 +11,8 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { FormatProvider } from '@mm-providers/format.provider';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { MmModal } from '@mm-modals/mm-modal/mm-modal';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('SendMessageComponent', () => {
   let component: SendMessageComponent;
@@ -20,12 +20,12 @@ describe('SendMessageComponent', () => {
   let formatProvider;
   let settingsService;
   let contactTypesService;
-  let bdModalRef;
+  let matDialogRef;
   let sendMessageService;
   let select2SearchService;
 
-  beforeEach(waitForAsync(() => {
-    bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
+  beforeEach(() => {
+    matDialogRef = { close: sinon.stub() };
     sendMessageService = { send: sinon.stub() };
     select2SearchService = { init: sinon.stub().resolves() };
     formatProvider = {};
@@ -40,15 +40,17 @@ describe('SendMessageComponent', () => {
         ],
         declarations: [
           SendMessageComponent,
-          MmModal,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
         ],
         providers: [
-          { provide: BsModalRef, useValue: bdModalRef },
           { provide: SendMessageService, useValue: sendMessageService },
           { provide: Select2SearchService, useValue: select2SearchService },
           { provide: FormatProvider, useValue: formatProvider },
           { provide: SettingsService, useValue: settingsService },
           { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
         ]
       })
       .compileComponents()
@@ -57,7 +59,7 @@ describe('SendMessageComponent', () => {
         component = fixture.componentInstance;
         fixture.detectChanges();
       });
-  }));
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -67,9 +69,9 @@ describe('SendMessageComponent', () => {
     expect(component).to.exist;
   });
 
-  it('close() should call hide from BsModalRef', () => {
+  it('should close modal', () => {
     component.close();
 
-    expect(bdModalRef.hide.callCount).to.equal(1);
+    expect(matDialogRef.close.calledOnce).to.be.true;
   });
 });

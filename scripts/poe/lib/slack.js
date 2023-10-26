@@ -5,7 +5,7 @@ module.exports = (url) => {
   opts.url = url;
   return {
     send: async (msg) => {
-      if(url && url.length) {
+      if (url && url.length) {
         opts.json.text = msg;
         return await post(opts);
       } else {

@@ -17,19 +17,20 @@ const SUITES = {
     './tasks/**/*.wdio-spec.js',
     './sms/**/*.wdio-spec.js',
   ],
-  data:[
+  data: [
     './db/**/*.wdio-spec.js',
     './purge/**/*.wdio-spec.js',
     './telemetry/**/*.wdio-spec.js'
   ],
-  lowLevel:[
+  lowLevel: [
     './pwa/**/*.wdio-spec.js',
     './service-worker/**/*.wdio-spec.js',
-    './transitions/**/*.wdio-spec.js'
-  ],  
+    './transitions/**/*.wdio-spec.js',
+    './logging/**/*.wdio-spec.js'
+  ],
   enketo: [
     './enketo/**/*.wdio-spec.js',
   ]};
-  
+
 exports.suites = SUITES;
-  
+

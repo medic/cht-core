@@ -19,9 +19,7 @@ assignees: ''
 When development is ready to begin one of the engineers should be nominated as a Release Engineer. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
-- [ ] Raise a new issue called `Update dependencies for <version>` with a description that links to [the documentation](https://docs.communityhealthtoolkit.org/core/guides/update-dependencies/). This should be done early in the release cycle so find a volunteer to take this on and assign it to them.
 - [ ] Ensure that issues from merged commits are closed and mapped to a milestone.
-- [ ] Write an update in the #product-team Slack channel summarising development and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The Release Engineer is to update this every week until the version is released.
 
 # Releasing - Release Engineer
 
@@ -38,21 +36,18 @@ Once all issues have been merged into `master` then the release process can star
 Please let me know if there’s any final update we need to make. 
 If all is good, then in 24h, I will start the release. Thanks!
 ```
+- [ ] The beta tag will automatically trigger the scalability build. Once it passes, download the scalability results on S3 at medic-e2e/scalability/$TAG_NAME. Add the release `.json` file to `cht-core/tests/scalability/previous_results`. More info in the  [scalability documentation](https://github.com/medic/cht-core/blob/master/tests/scalability/README.md).
 - [ ] Add release notes to the [Core Framework Releases](https://docs.communityhealthtoolkit.org/core/releases/) page:
   - [ ] Create a new document for the release in the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/core/releases).
-  - [ ] Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions.
-  - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format.
-  - [ ] Manually document any known migration steps and known issues.
-  - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes.
+  - [ ] Ensure all issues are in the GH Milestone, they have human readable descriptions, and that they're correctly labelled. In particular: they have one "Type" label, "UI/UX" if they change the UI, and "Breaking change" if appropriate.
+  - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes/index.js) to export the issues into our release note format.
+  - [ ] Collect known migration steps, descriptions, screenshots, videos, data, and anything else to help communicate particularly important changes. This information should already be on the issue, but if not, prompt the change author to provide it.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
-  - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
-  - [ ] Assign the PR to:
-    - The Director of Technology or a developer
-    - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
-- [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Ensure the release notes PR above is merged. Link to the release notes in the description of the release.
-- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds_4/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
-- [ ] Execute the scalability testing suite on the final build and download the scalability results on S3 at medic-e2e/scalability/$TAG_NAME. Add the release `.json` file to `cht-core/tests/scalability/previous_results`. More info in the  [scalability documentation](https://github.com/medic/cht-core/blob/master/tests/scalability/README.md).
-- [ ] Upgrade the `demo-cht.dev` instance to this version.
+  - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date of the previous release. Update the status of any releases that are past their End Of Life date. Also add a link in the `Release Notes` section to the new release page.
+- [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`, and change the Target dropdown to the release branch (eg: `4.4.x`). This will create the git tag automatically. Ensure the release notes PR above is merged. Link to the release notes in the description of the release.
+- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to this version.
+- [ ] Use cht-conf to upload the configuration from the `/config/demo` folder to the `demo-cht.dev` server.
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/c/product/releases/26), under the "Product - Releases" category using this template:
 ```
 *We're excited to announce the release of {{version}} of {{product}}*

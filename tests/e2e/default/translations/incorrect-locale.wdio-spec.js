@@ -12,11 +12,11 @@ describe('Testing Incorrect locale', () => {
       'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
       'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
       'reports.none.n.months':
-          '{MONTHS, plural, =1{No reports in the last month.} other{No reports in the last # months.}}',
+        '{MONTHS, plural, =1{No reports in the last month.} other{No reports in the last # months.}}',
       'task.days.left': '{DAYS, plural, =1{1 day left} other{# days left}',
       'tasks.none.n.weeks': '{WEEKS, plural, =1{No tasks in the next week.} other{No tasks in the next # weeks.}}',
       'Reports': 'HilReports',
-      'view.all':'View all'
+      'view.all': 'View all'
     });
     await utils.enableLanguage(languageCode);
   };
@@ -37,7 +37,9 @@ describe('Testing Incorrect locale', () => {
   before(async () => {
     await loginPage.cookieLogin();
     await utils.saveDoc(contact);
+    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await createLanguage();
+    await waitForServiceWorker.promise;
     await commonElements.closeReloadModal(true);
   });
 

@@ -9,7 +9,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@medic/message-utils": "file:../message-utils",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "moment": "^2.26.0"
   }
 }

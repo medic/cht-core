@@ -1,13 +1,12 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, Inject } from '@angular/core';
 import * as phoneNumber from '@medic/phone-number';
 import { filter as _filter, map as _map, partial as _partial } from 'lodash-es';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormatProvider } from '@mm-providers/format.provider';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SendMessageService } from '@mm-services/send-message.service';
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -15,37 +14,34 @@ import { TranslateService } from '@mm-services/translate.service';
   selector: 'send-message',
   templateUrl: './send-message.component.html',
 })
-export class SendMessageComponent extends MmModalAbstract implements AfterViewInit {
+export class SendMessageComponent implements AfterViewInit {
   static id = 'send-message-modal';
 
-  errors = {
+  messageInput;
+  processing = false;
+  errors: Record<string, any> = {
     message: false,
-    phone: false
-  };
-
-  fields = { // Field values are automatically assigned by BsModal, if initialState defined.
-    to: '',
-    message: '',
-    phone: ''
+    phone: false,
+    submit: false,
   };
 
   constructor(
     private formatProvider: FormatProvider,
     private settingsService: SettingsService,
     private contactTypesService: ContactTypesService,
-    bsModalRef: BsModalRef,
     private sendMessageService: SendMessageService,
     private select2SearchService: Select2SearchService,
     private translateService:TranslateService,
+    private matDialogRef: MatDialogRef<SendMessageComponent>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Message,
   ) {
-    super(bsModalRef);
+    this.messageInput = this.matDialogData?.message;
   }
 
   ngAfterViewInit(): void {
-    const to = this.fields.to;
     const phoneField = $('.message-form #send-message-phone');
     $('.message-form .count').text('');
-    this.initPhoneField(phoneField, to);
+    this.initPhoneField(phoneField, this.matDialogData?.to);
   }
 
   private validateMessage(message) {
@@ -192,13 +188,17 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
       });
   }
 
+  close() {
+    this.matDialogRef.close();
+  }
+
   submit() {
-    this.setProcessing();
+    this.processing = true;
 
     this.settingsService
       .get()
       .then((settings) => {
-        const message = this.fields.message && this.fields.message.trim();
+        const message = this.messageInput?.trim();
         const recipients = (<any>$('.message-form #send-message-phone')).select2('data');
         return Promise
           .all([
@@ -213,7 +213,16 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
             }
           });
       })
-      .then(() => this.setFinished())
-      .catch((err) => this.setError(err, 'Error sending message'));
+      .catch(error => {
+        this.errors.submit = 'Error sending message';
+        console.error(this.errors.submit, error);
+      })
+      .finally(() => this.processing = false);
   }
+}
+
+interface Message {
+  to: string;
+  message: string;
+  phone: string;
 }

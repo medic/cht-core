@@ -75,7 +75,7 @@ describe('DeleteDocs service', () => {
     bulkDocs.resolves(
       // person is not deleted, but clinic is edited just fine. Oops.
       [
-        { id: person._id, error:'conflict' },
+        { id: person._id, error: 'conflict' },
         { id: clinic._id }
       ]
     );

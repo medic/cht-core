@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { By } from '@angular/platform-browser';
@@ -15,10 +17,11 @@ import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { SendMessageService } from '@mm-services/send-message.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
 import { PipesModule } from '@mm-pipes/pipes.module';
+import { SenderComponent } from '@mm-components/sender/sender.component';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
@@ -67,9 +70,12 @@ describe('MessagesContentComponent', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           PipesModule,
+          FormsModule,
+          CommonModule
         ],
         declarations: [
-          MessagesContentComponent
+          MessagesContentComponent,
+          SenderComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

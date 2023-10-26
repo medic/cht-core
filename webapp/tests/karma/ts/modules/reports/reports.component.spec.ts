@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -29,12 +30,13 @@ import { SearchBarComponent } from '@mm-components/search-bar/search-bar.compone
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { GlobalActions } from '@mm-actions/global';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -89,14 +91,15 @@ describe('Reports Component', () => {
     authService = {
       has: sinon.stub().resolves(false),
       online: sinon.stub().resolves(false),
+      any: sinon.stub().resolves(true)
     };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false)
     };
     datePipe = { transform: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
@@ -106,7 +109,7 @@ describe('Reports Component', () => {
     };
     xmlFormsService = { subscribe: sinon.stub() };
     feedbackService = { submit: sinon.stub() };
-    route = { snapshot: { queryParams: { query:'' } } };
+    route = { snapshot: { queryParams: { query: '' } } };
     router = {
       navigate: sinon.stub(),
       events: {
@@ -122,6 +125,7 @@ describe('Reports Component', () => {
           ComponentsModule,
           BrowserAnimationsModule,
           BsDropdownModule.forRoot(),
+          MatExpansionModule
         ],
         declarations: [
           ReportsComponent,
@@ -129,6 +133,7 @@ describe('Reports Component', () => {
           ReportsSidebarFilterComponent,
           SearchBarComponent,
           ReportsContentComponent,
+          ReportsMoreMenuComponent,
           NavigationComponent,
         ],
         providers: [
@@ -204,8 +209,6 @@ describe('Reports Component', () => {
 
     await component.ngAfterViewInit();
 
-    expect(feedbackService.submit.calledOnce).to.be.true;
-    expect(feedbackService.submit.args[0]).to.have.members([ 'some error' ]);
     expect(userContactService.get.calledOnce).to.be.true;
   });
 
@@ -281,7 +284,9 @@ describe('Reports Component', () => {
       await component.ngAfterViewInit();
 
       expect(setDefaultFacilityFilter.calledOnce).to.be.true;
-      expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({ facility: 'parent' });
+      expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({
+        facility: { _id: 'parent', name: 'parent', parent: { _id: 'grandparent' } }
+      });
       expect(authService.has.calledThrice).to.be.true;
       expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
       expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
@@ -309,7 +314,7 @@ describe('Reports Component', () => {
     it('should not set default facility report when it is admin user', async () => {
       searchService.search.resetHistory();
       authService.has.resetHistory();
-      sessionService.isDbAdmin.returns(true);
+      sessionService.isAdmin.returns(true);
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(true);
       const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
@@ -380,7 +385,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           unread: true,
-          summary:  { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
+          summary: { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
           expanded: false,
           lineage: [],
           contact: { _id: 'contact', name: 'person' }
@@ -595,14 +600,15 @@ describe('Reports Component', () => {
       component.bulkDeleteReports();
 
       expect(modalService.show.calledOnce).to.be.true;
-      expect(modalService.show.args[0]).to.have.deep.members([ BulkDeleteConfirmComponent, {
-        initialState: {
-          model: {
+      expect(modalService.show.args[0]).to.have.deep.members([
+        BulkDeleteConfirmComponent,
+        {
+          data: {
             docs: [ { _id: 'selected1' }, { _id: 'selected2' } ],
             type: 'reports',
           },
         },
-      }]);
+      ]);
     });
   });
 
@@ -731,7 +737,7 @@ describe('Reports Component', () => {
         lineage: [ 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
       },
       {
-        _id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null],
+        _id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null],
       },
       {
         _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [ 'Chattanooga Village' ],
@@ -778,7 +784,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
+          lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -847,7 +853,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
+          lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -915,7 +921,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village' ],
+          lineage: [ 'Chattanooga Village' ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,

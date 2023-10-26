@@ -29,7 +29,7 @@ export class GeolocationService {
       }
       return !!window.medicmobile_android.getLocationPermissions();
     } catch (err) {
-      console.error(err);
+      console.error('Error when getting location permissions', err);
       return true;
     }
   }
@@ -81,8 +81,8 @@ export class GeolocationService {
     console.debug('Initiating new geolocation watcher');
     if (!window.navigator.geolocation) {
       return this.failure({
-        code: -1,
-        message: 'Geolocation API unavailable.',
+        code: -3,
+        message: 'Geolocation API unavailable',
       });
     }
 
@@ -92,7 +92,7 @@ export class GeolocationService {
       this.GEO_OPTIONS
     );
     this.timeout = setTimeout(() => {
-      this.failure({ code: -1, message: 'Geolocation timeout exceeded' });
+      this.failure({ code: -2, message: 'Geolocation timeout exceeded' });
     }, this.GEO_OPTIONS.timeout + 1);
   }
 

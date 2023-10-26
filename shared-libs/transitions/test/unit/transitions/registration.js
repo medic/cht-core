@@ -7,6 +7,7 @@ const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const validation = require('@medic/validation');
 const contactTypeUtils = require('@medic/contact-types-utils');
+const phoneNumberParser = require('@medic/phone-number');
 
 let schedules;
 let transitionUtils;
@@ -64,6 +65,74 @@ describe('registration', () => {
     });
   });
 
+  describe('getPatientPhoneField', () => {
+    beforeEach(() => {
+      transition.getPatientPhoneField = transition.__get__('getPatientPhoneField');
+    });
+
+    it('should return field name if form has field', () => {
+      const form = 'ph';
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          },
+          phone_number: {
+            type: 'phone_number'
+          }
+        }
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      transition.getPatientPhoneField(form).should.equal('phone_number');
+    });
+
+    it('should return undefined if form does not have phone_number field', () => {
+      const form = 'ph';
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          }
+        }
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      (typeof transition.getPatientPhoneField(form)).should.equal('undefined');
+    });
+
+    it('should return undefined if form is not found', () => {
+      const form = 'ph';
+      sinon.stub(utils, 'getForm').returns(undefined);
+      (typeof transition.getPatientPhoneField(form)).should.equal('undefined');
+    });
+
+    it('should return undefined if form has no fields', () => {
+      const form = 'ph';
+      const formDef = {
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      (typeof transition.getPatientPhoneField(form)).should.equal('undefined');
+    });
+
+    it('should return field by type not by name', () => {
+      const form = 'ph';
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          },
+          phone_number: {
+            type: 'not_phone_number_type'
+          },
+          custom_name: {
+            type: 'phone_number'
+          }
+        }
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      transition.getPatientPhoneField(form).should.equal('custom_name');
+    });
+  });
+
   describe('addPatient', () => {
     it('trigger creates a new patient', () => {
       const patientName = 'jack';
@@ -116,6 +185,223 @@ describe('registration', () => {
         view.args[0][1].include_docs.should.equal(true);
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].name.should.equal(patientName);
+        saveDoc.args[0][0].parent._id.should.equal(parentId);
+        saveDoc.args[0][0].reported_date.should.equal(53);
+        saveDoc.args[0][0].type.should.equal('person');
+        saveDoc.args[0][0].patient_id.should.equal(patientId);
+        saveDoc.args[0][0].date_of_birth.should.equal(dob);
+        saveDoc.args[0][0].source_id.should.equal(reportId);
+        saveDoc.args[0][0].created_by.should.equal(submitterId);
+      });
+    });
+
+    it('should only create a new patient with phone if form has phone field and phone is valid', () => {
+      // Form with phone field
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          },
+          phone_number: {
+            type: 'phone_number'
+          }
+        }
+      };
+      // Stubbing that the phone is valid
+      sinon.stub(phoneNumberParser, 'validate').returns(true);
+      const patientName = 'jack';
+      const submitterId = 'abc';
+      const parentId = 'papa';
+      const patientId = '05649';
+      const reportId = 'def';
+      const senderPhoneNumber = '9841202020';
+      const patientPhoneNumber = '9841000000';
+      const dob = '2017-03-31T01:15:09.000Z';
+      const change = {
+        doc: {
+          _id: reportId,
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: senderPhoneNumber,
+          fields: { patient_name: patientName, phone_number: patientPhoneNumber },
+          birth_date: dob,
+        },
+      };
+      const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
+      // return expected view results when searching for contacts_by_phone
+      const view = sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+
+      const eventConfig = {
+        form: 'R',
+        events: [{ name: 'on_create', trigger: 'add_patient' }],
+      };
+      config.get.returns([eventConfig]);
+      sinon.stub(validation, 'validate').resolves(null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(utils, 'getForm').returns(formDef);
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      config.getAll.returns(settings);
+
+      return transition.onMatch(change).then(() => {
+        getContactUuid.callCount.should.equal(1);
+        view.callCount.should.equal(1);
+        view.args[0][0].should.equal('medic-client/contacts_by_phone');
+        view.args[0][1].key.should.equal(senderPhoneNumber);
+        view.args[0][1].include_docs.should.equal(true);
+        saveDoc.callCount.should.equal(1);
+        saveDoc.args[0][0].name.should.equal(patientName);
+        saveDoc.args[0][0].phone.should.equal(patientPhoneNumber);
+        saveDoc.args[0][0].parent._id.should.equal(parentId);
+        saveDoc.args[0][0].reported_date.should.equal(53);
+        saveDoc.args[0][0].type.should.equal('person');
+        saveDoc.args[0][0].patient_id.should.equal(patientId);
+        saveDoc.args[0][0].date_of_birth.should.equal(dob);
+        saveDoc.args[0][0].source_id.should.equal(reportId);
+        saveDoc.args[0][0].created_by.should.equal(submitterId);
+      });
+    });
+
+    it('should not create patient if form has phone field and phone is invalid', () => {
+      // Form with phone field
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          },
+          phone_number: {
+            type: 'phone_number'
+          }
+        }
+      };
+      // Stubbing that phone is invalid
+      sinon.stub(phoneNumberParser, 'validate').returns(false);
+
+      const patientName = 'jack';
+      const submitterId = 'abc';
+      const parentId = 'papa';
+      const patientId = '05649';
+      const reportId = 'def';
+      const senderPhoneNumber = '9841202020';
+      // We are stubbing that phone number validator returns false this is just a placeholder
+      const patientPhoneNumber = '98410';
+      const dob = '2017-03-31T01:15:09.000Z';
+      const change = {
+        doc: {
+          _id: reportId,
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: senderPhoneNumber,
+          fields: { patient_name: patientName, phone_number: patientPhoneNumber },
+          birth_date: dob,
+        },
+      };
+      sinon.stub(utils, 'getContactUuid').resolves();
+      sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+
+      const eventConfig = {
+        form: 'R',
+        events: [{ name: 'on_create', trigger: 'add_patient' }],
+      };
+
+      config.get.returns([eventConfig]);
+      sinon.stub(validation, 'validate').resolves(null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(utils, 'getForm').returns(formDef);
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      config.getAll.returns(settings);
+
+      return transition.onMatch(change).then(() => {
+        saveDoc.callCount.should.equal(0);
+      });
+    });
+
+    it('should not add patient phone if form does not have phone field', () => {
+      // Form without phone field
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          }
+        }
+      };
+      const patientName = 'jack';
+      const submitterId = 'abc';
+      const parentId = 'papa';
+      const patientId = '05649';
+      const reportId = 'def';
+      const senderPhoneNumber = '9841202020';
+      const patientPhoneNumber = '9841000000';
+      const dob = '2017-03-31T01:15:09.000Z';
+      const change = {
+        doc: {
+          _id: reportId,
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: senderPhoneNumber,
+          fields: { patient_name: patientName, phone_number: patientPhoneNumber },
+          birth_date: dob,
+        },
+      };
+      const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
+      // return expected view results when searching for contacts_by_phone
+      const view = sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
+      sinon.stub(db.medic, 'get').withArgs('papa').resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
+      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+
+      const eventConfig = {
+        form: 'R',
+        events: [{ name: 'on_create', trigger: 'add_patient' }],
+      };
+      config.get.returns([eventConfig]);
+      sinon.stub(validation, 'validate').resolves(null);
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      sinon.stub(utils, 'getForm').returns(formDef);
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
+      config.getAll.returns(settings);
+
+      return transition.onMatch(change).then(() => {
+        getContactUuid.callCount.should.equal(1);
+        view.callCount.should.equal(1);
+        view.args[0][0].should.equal('medic-client/contacts_by_phone');
+        view.args[0][1].key.should.equal(senderPhoneNumber);
+        view.args[0][1].include_docs.should.equal(true);
+        saveDoc.callCount.should.equal(1);
+        saveDoc.args[0][0].name.should.equal(patientName);
+        (typeof saveDoc.args[0][0].phone).should.be.equal('undefined');
         saveDoc.args[0][0].parent._id.should.equal(parentId);
         saveDoc.args[0][0].reported_date.should.equal(53);
         saveDoc.args[0][0].type.should.equal('person');
@@ -535,7 +821,7 @@ describe('registration', () => {
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient' } }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
           bool_expr: 'doc.patient',
@@ -631,7 +917,7 @@ describe('registration', () => {
           name: 'on_create', trigger: 'add_patient',
           params: { contact_type: 'buddy', patient_name_field: 'buddy_name', parent_id: 'parent' }
         }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
           bool_expr: 'doc.patient',
@@ -723,7 +1009,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient', parent_id: 'parent' }
         }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_field_not_provided',
           message: [
@@ -991,7 +1277,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'parent_id' }
         }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
           bool_expr: 'doc.place',
@@ -1071,8 +1357,8 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1' }}],
-        messages: [ {
+        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1' } }],
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
           bool_expr: 'doc.place',
@@ -1140,8 +1426,8 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1' }}],
-        messages: [ {
+        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1' } }],
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
           bool_expr: 'doc.place',
@@ -1156,18 +1442,20 @@ describe('registration', () => {
       };
       sinon.stub(db.medic, 'query')
         .withArgs('medic-client/contacts_by_phone')
-        .resolves({ rows: [
-          {
-            doc: {
-              _id: 'supervisor',
-              name: 'Frank',
-              contact_type: 'supervisor',
-              type: 'contact',
-              phone: '+111222',
-              parent: { _id: 'west_hc' }
+        .resolves({
+          rows: [
+            {
+              doc: {
+                _id: 'supervisor',
+                name: 'Frank',
+                contact_type: 'supervisor',
+                type: 'contact',
+                phone: '+111222',
+                parent: { _id: 'west_hc' }
+              }
             }
-          }
-        ]});
+          ]
+        });
       sinon.stub(db.medic, 'get').withArgs('west_hc').resolves({
         _id: 'west_hc',
         name: 'west hc',
@@ -1265,7 +1553,7 @@ describe('registration', () => {
           name: 'on_create', trigger: 'add_place',
           params: { contact_type: 'clinic_1', parent_id: 'parent_id', place_name_field: 'doodle' }
         }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
           bool_expr: 'doc.place',
@@ -1363,7 +1651,7 @@ describe('registration', () => {
           name: 'on_create', trigger: 'add_place',
           params: { contact_type: 'clinic', parent_id: 'fiddle', place_name_field: 'doodle' }
         }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'report_accepted',
           bool_expr: 'doc.place',
@@ -1431,7 +1719,7 @@ describe('registration', () => {
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic' } }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_not_found',
           message: [
@@ -1492,7 +1780,7 @@ describe('registration', () => {
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'some_id' } }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_field_not_provided',
           message: [
@@ -1547,7 +1835,7 @@ describe('registration', () => {
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'some_id' } }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_field_not_provided',
           message: [
@@ -1616,7 +1904,7 @@ describe('registration', () => {
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'area', parent_id: 'parent_id' } }],
-        messages: [ {
+        messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_invalid',
           message: [
@@ -2085,8 +2373,7 @@ describe('registration', () => {
       ];
 
       config.get.returns(eventConfig);
-      transition.init.should.throw(Error, 'Configuration error. Unable to parse params for R.testparamparsing: ' +
-        '\'{"foo": "bar"\'. Error: SyntaxError: Unexpected end of JSON input');
+      transition.init.should.throw(Error, 'Configuration error. Unable to parse params for R.testparamparsing: ');
     });
 
     it('add_patient fails if the configured contact type is not known', () => {
@@ -2469,7 +2756,7 @@ describe('registration', () => {
         patient: testPatient,
       };
 
-      return transition.addMessages(testConfig, testDoc).then( () => {
+      return transition.addMessages(testConfig, testDoc).then(() => {
         addMessage.callCount.should.equal(1);
         const expectedContext = {
           patient: testPatient,
@@ -2518,10 +2805,10 @@ describe('registration', () => {
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
         utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
         utils.getReportsBySubject.callCount.should.equal(1);
-        utils.getReportsBySubject.args[0].should.deep.equal([ {
+        utils.getReportsBySubject.args[0].should.deep.equal([{
           ids: ['uuid', 'patient_id'],
           registrations: true
-        } ]);
+        }]);
       });
     });
 
@@ -2538,10 +2825,10 @@ describe('registration', () => {
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
         utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
         utils.getReportsBySubject.callCount.should.equal(1);
-        utils.getReportsBySubject.args[0].should.deep.equal([ {
+        utils.getReportsBySubject.args[0].should.deep.equal([{
           ids: ['uuid', 'place_id'],
           registrations: true
-        } ]);
+        }]);
       });
     });
 
@@ -2561,10 +2848,10 @@ describe('registration', () => {
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
         utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
         utils.getReportsBySubject.callCount.should.equal(1);
-        utils.getReportsBySubject.args[0].should.deep.equal([ {
+        utils.getReportsBySubject.args[0].should.deep.equal([{
           ids: ['uuid', 'patient_id', 'place_uuid', 'place_id'],
           registrations: true
-        } ]);
+        }]);
       });
     });
 
@@ -2653,7 +2940,7 @@ describe('registration', () => {
         result.should.equal(true);
         fireConfiguredTriggers.callCount.should.equal(0);
         validation.validate.callCount.should.equal(1);
-        validation.validate.args[0].slice(0, 2).should.deep.equal([ doc, ['validation!!'] ]);
+        validation.validate.args[0].slice(0, 2).should.deep.equal([doc, ['validation!!']]);
         messages.addErrors.callCount.should.equal(1);
         messages.addErrors.args[0].should.deep.equal([
           registrationConfig,
@@ -2798,7 +3085,9 @@ describe('registration', () => {
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
         contactTypeUtils.isPlace.callCount.should.equal(1);
-        contactTypeUtils.isPlace.args[0].should.deep.equal([{}, {_id: 'person', patient_id: '56987', type: 'person' }]);
+        contactTypeUtils.isPlace.args[0].should.deep.equal(
+          [{}, { _id: 'person', patient_id: '56987', type: 'person' }]
+        );
       });
     });
 

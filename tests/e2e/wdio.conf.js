@@ -9,12 +9,10 @@ chai.use(require('chai-as-promised'));
 const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
-const chtDbUtils = require('@utils/cht-db');
 const browserLogsUtils = require('@utils/browser-logs');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
-const existingFeedBackDocIds = [];
 let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
@@ -45,7 +43,7 @@ const baseConfig = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  
+
   suites: {
     all: ['**/*.wdio-spec.js']
   },
@@ -85,7 +83,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']: 
+      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']:
         ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
     }
 
@@ -278,18 +276,15 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-    const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
-    existingFeedBackDocIds.push(feedBackDocs);
-    if (feedBackDocs) {
-      if (passed) {
-        context.test.callback(new Error('Feedback docs were generated during the test.'));
-      }
-      passed = false;
-    }
+    await utils.apiLogTestEnd(test.title);
     if (passed === false) {
       await browser.takeScreenshot();
     }
-    await utils.apiLogTestEnd(test.title);
+
+    const savedFeedbackDocs = await utils.logFeedbackDocs(test);
+    if (savedFeedbackDocs) {
+      context.test.callback(new Error('Feedback docs were generated during the test.'));
+    }
   },
 
   /**

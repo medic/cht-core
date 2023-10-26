@@ -1,4 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -14,7 +16,7 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { MessageStateService } from '@mm-services/message-state.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
@@ -24,6 +26,10 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { DbService } from '@mm-services/db.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '@mm-services/auth.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
@@ -39,6 +45,8 @@ describe('Reports Content Component', () => {
   let medicDb;
   let dbService;
   let modalService;
+  let authService;
+  let sessionService;
 
   beforeEach(waitForAsync(() => {
     const mockedSelectors = [
@@ -51,19 +59,28 @@ describe('Reports Content Component', () => {
     searchFiltersService = { freetextSearch: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
-    router = { navigate: sinon.stub() };
+    router = {
+      navigate: sinon.stub(),
+      events: { pipe: sinon.stub().returns({ subscribe: sinon.stub() }) },
+    };
     messageStateService = { any: sinon.stub(), set: sinon.stub().resolves() };
     responsiveService = { isMobile: sinon.stub() };
     fastActionButtonService = { getReportRightSideActions: sinon.stub() };
     medicDb = { get: sinon.stub().resolves() };
     dbService = { get: sinon.stub().returns(medicDb) };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
+    authService = {
+      isAdmin: sinon.stub(),
+      has: sinon.stub()
+    };
+    sessionService = { isAdmin: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
+          CommonModule
         ],
         declarations: [
           ReportsContentComponent,
@@ -71,6 +88,7 @@ describe('Reports Content Component', () => {
           FormIconPipe,
           TitlePipe,
           RelativeDatePipe,
+          FastActionButtonComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -85,6 +103,10 @@ describe('Reports Content Component', () => {
           { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: DbService, useValue: dbService },
+          { provide: AuthService, useValue: authService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents()
@@ -315,9 +337,9 @@ describe('Reports Content Component', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         EditMessageGroupComponent,
-        { initialState: { model: { report, group } } },
+        { data: { report, group } },
       ]);
-      expect(modalService.show.args[0][1].initialState.model.group).to.not.equal(group);
+      expect(modalService.show.args[0][1].data.group).to.not.equal(group);
     });
   });
 
@@ -417,7 +439,7 @@ describe('Reports Content Component', () => {
       expect(modalService.show.calledOnce).to.be.true;
       expect(modalService.show.args[0]).to.have.deep.members([
         SendMessageComponent,
-        { initialState: { fields: { to: contactWithPhone } } },
+        { data: { to: contactWithPhone } },
       ]);
     }));
 

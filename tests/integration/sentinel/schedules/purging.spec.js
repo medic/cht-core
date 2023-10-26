@@ -392,6 +392,16 @@ const getPurgeLog = () => {
 const getDocIds = docs => docs.map(doc => doc.id);
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
+const updateUser = async user => {
+  const opts = {
+    path: `/api/v1/users/${user.username}`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: user,
+  };
+  await utils.request(opts);
+};
+
 describe('Server side purge', () => {
   before(async () => {
     await utils.revertDb([], true);
@@ -425,32 +435,30 @@ describe('Server side purge', () => {
     chai.expect(purgeLog.error).to.equal(undefined);
     chai.expect(purgeLog.duration).to.be.a('number');
 
-    let responseDocsUser1 = await requestDocs('user1');
-    let responseDocsUser2 = await requestDocs('user2');
+    const responseDocsUser1 = await requestDocs('user1');
+    const responseDocsUser2 = await requestDocs('user2');
 
-    let user1Docs = getDocIds(responseDocsUser1);
-    let user2Docs = getDocIds(responseDocsUser2);
+    const user1Docs = getDocIds(responseDocsUser1);
+    const user2Docs = getDocIds(responseDocsUser2);
 
-    chai.expect(user1Docs)
-      .to.include.members([
-        'clinic1', 'contact1',
-        'report2', 'report5', 'report6', 'report11',
-        'message2', 'message4',
-        'task1~user1', 'task2~user1', 'task3~user1',
-      ]);
+    chai.expect(user1Docs).to.include.members([
+      'clinic1', 'contact1',
+      'report2', 'report5', 'report6', 'report11',
+      'message2', 'message4',
+      'task1~user1', 'task2~user1', 'task3~user1',
+    ]);
     const purgedDocsUser1 = [
       'report1', 'report3', 'report4', 'report9', 'report10', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
     ];
     purgedDocsUser1.forEach(id => chai.expect(user1Docs).to.not.include(id));
 
-    chai.expect(user2Docs)
-      .to.include.members([
-        'clinic1', 'contact1',
-        'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
-        'message1', 'message3',
-        'task1~user2', 'task2~user2', 'task3~user2',
-        ...targetIdsToKeep
-      ]);
+    chai.expect(user2Docs).to.include.members([
+      'clinic1', 'contact1',
+      'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
+      'message1', 'message3',
+      'task1~user2', 'task2~user2', 'task3~user2',
+      ...targetIdsToKeep
+    ]);
     const purgedDocsUser2 = [
       'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
     ];
@@ -461,15 +469,16 @@ describe('Server side purge', () => {
 
     chai.expect(purgedIdsUser1).to.have.members(purgedDocsUser1);
     chai.expect(purgedIdsUser2).to.have.members(purgedDocsUser2);
+  });
 
-    await utils.revertSettings(true);
+  it('should clear purged cache when settings are updated', async () => {
     await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
 
-    responseDocsUser1 = await requestDocs('user1');
-    responseDocsUser2 = await requestDocs('user2');
+    const responseDocsUser1 = await requestDocs('user1');
+    const responseDocsUser2 = await requestDocs('user2');
 
-    user1Docs = getDocIds(responseDocsUser1);
-    user2Docs = getDocIds(responseDocsUser2);
+    const user1Docs = getDocIds(responseDocsUser1);
+    const user2Docs = getDocIds(responseDocsUser2);
 
     chai.expect(user1Docs).to.include.members(['report8']);
     chai.expect(user1Docs).to.not.include('report7');
@@ -477,7 +486,7 @@ describe('Server side purge', () => {
     chai.expect(user2Docs).to.not.include('report8');
   });
 
-  it('should clear purged cache', () => {
+  it('should clear purged cache when purging runs again', () => {
     const purgedIdsUser1 = ['report2', 'report5', 'report6', 'message2', 'message4'];
     const purgedIdsUser2 = [
       'report1',
@@ -511,23 +520,92 @@ describe('Server side purge', () => {
         const user1DocIds = getDocIds(user1Docs);
         const user2ChangeIds = getDocIds(user2Docs);
 
-        chai.expect(user1DocIds)
-          .to.include.members([
-            'clinic1', 'contact1',
-            'report1', 'report3', 'report4',
-            'message1', 'message3',
-            'task1~user1', 'task2~user1', 'task3~user1',
-          ]);
+        chai.expect(user1DocIds).to.include.members([
+          'clinic1', 'contact1',
+          'report1', 'report3', 'report4',
+          'message1', 'message3',
+          'task1~user1', 'task2~user1', 'task3~user1',
+        ]);
         user1DocIds.forEach(id => chai.expect(purgedIdsUser1).to.not.include(id));
 
-        chai.expect(user2ChangeIds)
-          .to.include.members([
-            'clinic1', 'contact1',
-            'report2', 'report5', 'report6',
-            'message2', 'message4',
-            'task1~user2', 'task2~user2', 'task3~user2',
-          ]);
+        chai.expect(user2ChangeIds).to.include.members([
+          'clinic1', 'contact1',
+          'report2', 'report5', 'report6',
+          'message2', 'message4',
+          'task1~user2', 'task2~user2', 'task3~user2',
+        ]);
         user2ChangeIds.forEach(id => chai.expect(purgedIdsUser2).to.not.include(id));
       });
+  });
+
+  it('should clear purged cache when users are updated', async () => {
+    const seq = await sentinelUtils.getCurrentSeq();
+    purgeSettings.fn = purgeFn.toString();
+    await utils.updateSettings({ purge: purgeSettings }, true);
+    await restartSentinel();
+    await sentinelUtils.waitForPurgeCompletion(seq);
+
+    let responseDocsUser1 = await requestDocs('user1');
+    let responseDocsUser2 = await requestDocs('user2');
+
+    let user1Docs = getDocIds(responseDocsUser1);
+    let user2Docs = getDocIds(responseDocsUser2);
+
+    expect(user1Docs).to.include.members([
+      'clinic1', 'contact1',
+      'report2', 'report5', 'report6', 'report11',
+      'message2', 'message4',
+      'task1~user1', 'task2~user1', 'task3~user1',
+    ]);
+    const purgedDocsUser1 = [
+      'report1', 'report3', 'report4', 'report9', 'report10', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
+    ];
+    purgedDocsUser1.forEach(id => chai.expect(user1Docs).to.not.include(id));
+
+    expect(user2Docs).to.include.members([
+      'clinic1', 'contact1',
+      'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
+      'message1', 'message3',
+      'task1~user2', 'task2~user2', 'task3~user2',
+      ...targetIdsToKeep
+    ]);
+    const purgedDocsUser2 = [
+      'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
+    ];
+    purgedDocsUser2.forEach(id => chai.expect(user2Docs).to.not.include(id));
+
+    const purgedIdsUser1 = await requestDeletes('user1', purgedDocsUser1);
+    const purgedIdsUser2 = await requestDeletes('user2', purgedDocsUser2);
+
+    expect(purgedIdsUser1).to.have.members(purgedDocsUser1);
+    expect(purgedIdsUser2).to.have.members(purgedDocsUser2);
+
+    const updatedUser2 = {
+      ...users[1],
+      roles: ['district_admin', 'purge_regular'],
+    };
+    await updateUser(updatedUser2);
+
+    responseDocsUser1 = await requestDocs('user1');
+    responseDocsUser2 = await requestDocs('user2');
+
+    user1Docs = getDocIds(responseDocsUser1);
+    user2Docs = getDocIds(responseDocsUser2);
+
+    expect(user1Docs).to.include.members([
+      'clinic1', 'contact1',
+      'report2', 'report5', 'report6', 'report11',
+      'message2', 'message4',
+      'task1~user1', 'task2~user1', 'task3~user1',
+    ]);
+    purgedDocsUser1.forEach(id => chai.expect(user1Docs).to.not.include(id));
+
+    expect(user2Docs).to.include.members([
+      'clinic1', 'contact1',
+      'report2', 'report5', 'report6', 'report11',
+      'message2', 'message4',
+      'task1~user2', 'task2~user2', 'task3~user2',
+    ]);
+    purgedDocsUser1.forEach(id => chai.expect(user2Docs).to.not.include(id));
   });
 });

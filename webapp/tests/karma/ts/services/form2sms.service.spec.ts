@@ -9,6 +9,7 @@ import { ParseProvider } from '@mm-providers/parse.provider';
 import { PipesService } from '@mm-services/pipes.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguageService } from '@mm-services/language.service';
+import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 
 describe('Form2Sms service', () => {
   'use strict';
@@ -21,6 +22,7 @@ describe('Form2Sms service', () => {
   let dbGet;
   let dbGetAttachment;
   let GetReportContent;
+  let getUserSettings;
 
   const testFormExists = () => {
     testFormExistsWithAttachedCode(undefined);
@@ -39,6 +41,7 @@ describe('Form2Sms service', () => {
     dbGet = sinon.stub();
     dbGetAttachment = sinon.stub();
     GetReportContent = sinon.stub();
+    getUserSettings = sinon.stub();
     const pipesService = {
       getPipeNameVsIsPureMap: sinon.stub().returns(new Map),
       meta: sinon.stub(),
@@ -50,7 +53,7 @@ describe('Form2Sms service', () => {
         { provide: GetReportContentService, useValue: { getReportContent: GetReportContent } },
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
-        { provide: UserSettingsService, useValue: { get: sinon.stub(), } },
+        { provide: UserSettingsService, useValue: { getWithLanguage: getUserSettings, } },
         { provide: LanguageService, useValue: { get: sinon.stub(), } }
       ]
     });
@@ -94,7 +97,7 @@ describe('Form2Sms service', () => {
     it('should parse attached code for a form', () => {
       // given
       const doc:any = aFormSubmission();
-      doc.fields = { a:1, b:2, c:3 };
+      doc.fields = { a: 1, b: 2, c: 3 };
       // and
       testFormExistsWithAttachedCode('spaced("T", doc.a, doc.b, doc.c)');
 
@@ -121,11 +124,46 @@ describe('Form2Sms service', () => {
           <field_two tag="f2"></field_two>
           <ignored_field></ignored_field>
         </test>` ]));
+      const getEnketoPrepopDataService = sinon.spy(EnketoPrepopulationDataService.prototype, 'get');
+      const userSettings = { language: 'en' };
+      getUserSettings.resolves(userSettings);
+
 
       // when
       return service
         .transform(doc)
-        .then(smsContent => assert.equal(smsContent, 'T#f1#une#f2#deux'));
+        .then(smsContent => {
+          assert.equal(smsContent, 'T#f1#une#f2#deux');
+          assert.equal(getUserSettings.callCount, 1);
+          assert.equal((getEnketoPrepopDataService.callCount), 1);
+          assert.equal((getEnketoPrepopDataService.args[0][0]), userSettings);
+        });
+    });
+
+    it('should throw when failing to get user settings', () => {
+      const doc = aFormSubmission(`
+        <test prefix="T" delimiter="#">
+          <field_one tag="f1">une</field_one>
+          <field_two tag="f2">deux</field_two>
+          <ignored_field>rien</ignored_field>
+        </test>
+      `);
+      testFormExistsWithAttachedCode(true);
+      dbGetAttachment.resolves(new Blob([`
+        <test prefix="T" delimiter="#">
+          <field_one tag="f1"></field_one>
+          <field_two tag="f2"></field_two>
+          <ignored_field></ignored_field>
+        </test>` ]));
+      getUserSettings.rejects(new Error('invalid user'));
+
+      return service
+        .transform(doc)
+        .then(smsContent => assert.fail(`Should have thrown, but instead returned ${smsContent}`))
+        .catch(err => {
+          assert.equal(err.message, 'invalid user');
+          assert.equal(getUserSettings.callCount, 1);
+        });
     });
 
     it('should work with report with no content attachment', () => {

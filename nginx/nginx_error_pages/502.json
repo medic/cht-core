@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "502 Bad Gateway",
+  "server": "nginx"
+}

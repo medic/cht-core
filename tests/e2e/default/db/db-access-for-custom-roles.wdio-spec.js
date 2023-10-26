@@ -10,15 +10,13 @@ const placeFactory = require('@factories/cht/contacts/place');
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 
-const contact = personFactory.build(
-  {
-    parent: {
-      _id: clinic._id,
-      parent: clinic.parent
-    },
-    phone: '+254712345670'
-  }
-);
+const contact = personFactory.build({
+  parent: {
+    _id: clinic._id,
+    parent: clinic.parent
+  },
+  phone: '+254712345670'
+});
 
 const docs = [...places.values(), contact];
 const newRole = 'new_chw';

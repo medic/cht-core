@@ -16,7 +16,7 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -130,8 +130,7 @@ describe('AppComponent', () => {
     };
     sessionService = {
       init: sinon.stub().resolves(),
-      isAdmin: sinon.stub().returns(true),
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
     };
@@ -398,15 +397,6 @@ describe('AppComponent', () => {
     expect(modalService.show.callCount).to.equal(1);
     expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
   }));
-
-  it('handles rulesEngine failure to initialize', async () => {
-    rulesEngineService.isEnabled.rejects({ msg: 'explosion' });
-
-    await getComponent();
-    await component.setupPromise;
-
-    expect(feedbackService.submit.calledOnce).to.be.true;
-  });
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {

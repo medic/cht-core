@@ -55,7 +55,7 @@ export class UHCStatsService {
     }
 
     // Disable UHC for DB admins.
-    this.canViewUHCStats = this.sessionService.isDbAdmin() ? false : await this.authService.has(this.permission);
+    this.canViewUHCStats = this.sessionService.isAdmin() ? false : await this.authService.has(this.permission);
 
     return this.canViewUHCStats;
   }

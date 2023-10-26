@@ -1,0 +1,10 @@
+HTTP/1.1 504 Gateway Time-out
+Content-length: 109
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "504 Gateway Time-out",
+  "reason": "The server didn't respond in time",
+  "server": "haproxy"
+}

@@ -1,4 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -10,13 +12,16 @@ import { ChangesService } from '@mm-services/changes.service';
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
+import { SessionService } from '@mm-services/session.service';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -28,6 +33,7 @@ describe('Messages Component', () => {
   let userContactService;
   let fastActionButtonService;
   let authService;
+  let sessionService;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -53,7 +59,12 @@ describe('Messages Component', () => {
       getMessageActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
     };
-    authService = { online: sinon.stub().returns(false) };
+    authService = {
+      online: sinon.stub().returns(false),
+      any: sinon.stub(),
+      has: sinon.stub()
+    };
+    sessionService = { isAdmin: sinon.stub() };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
       { selector: 'getLoadingContent', value: false },
@@ -70,6 +81,8 @@ describe('Messages Component', () => {
           MessagesComponent,
           RelativeDatePipe,
           NavigationComponent,
+          MessagesMoreMenuComponent,
+          FastActionButtonComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -77,11 +90,14 @@ describe('Messages Component', () => {
           { provide: MessageContactService, useValue: messageContactService },
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: exportService, useValue: {} },
+          { provide: SessionService, useValue: sessionService },
           { provide: ModalService, useValue: modalService },
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents()
@@ -133,7 +149,6 @@ describe('Messages Component', () => {
 
   it('should update fast actions', async () => {
     sinon.resetHistory();
-    modalService.show.resolves();
     messageContactService.getList.resolves([
       { key: 'a', message: { inAllMessages: true } },
       { key: 'c', message: { inAllMessages: true } },
@@ -231,19 +246,19 @@ describe('Messages Component', () => {
     const conversations =  [
       { key: 'a',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
       },
       { key: 'b',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
       },
       { key: 'c',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
       },
       { key: 'd',
         message: { inAllMessages: true },
-        lineage : []
+        lineage: []
       },
       { key: 'e',
         message: { inAllMessages: true },
@@ -291,19 +306,19 @@ describe('Messages Component', () => {
         const updatedConversations = [
           { key: 'a',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
           },
           { key: 'b',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
           },
           { key: 'c',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
           },
           { key: 'd',
             message: { inAllMessages: true },
-            lineage : []
+            lineage: []
           },
           { key: 'e',
             message: { inAllMessages: true },

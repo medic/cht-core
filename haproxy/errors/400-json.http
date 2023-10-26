@@ -1,0 +1,11 @@
+HTTP/1.1 400 Bad request
+Content-length: 107
+Connection: Close
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "400 Bad request",
+  "reason": "Your browser sent an invalid request",
+  "server": "haproxy"
+}

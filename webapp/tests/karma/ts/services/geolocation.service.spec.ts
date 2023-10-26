@@ -36,8 +36,8 @@ describe('Geolocation service', () => {
     sinon.replaceGetter(window, 'navigator', () => ({}));
     return service.init()().then(returned => {
       expect(returned).to.deep.equal({
-        code: -1,
-        message: 'Geolocation API unavailable.',
+        code: -3,
+        message: 'Geolocation API unavailable',
       });
     });
   });
@@ -197,7 +197,7 @@ describe('Geolocation service', () => {
 
       return deferred().then(error => {
         expect(error).to.deep.equal({
-          code: -1,
+          code: -2,
           message: 'Geolocation timeout exceeded'
         });
       });
@@ -281,7 +281,7 @@ describe('Geolocation service', () => {
           expect(returned).to.deep.equal(position);
           expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
           expect(consoleErrorMock.callCount).to.equal(1);
-          expect(consoleErrorMock.args[0][0].message).to.equal('error');
+          expect(consoleErrorMock.args[0][1].message).to.equal('error');
         });
       });
 

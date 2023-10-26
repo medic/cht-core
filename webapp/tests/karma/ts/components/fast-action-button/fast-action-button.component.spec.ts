@@ -3,7 +3,6 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -23,22 +22,20 @@ describe('FastActionButtonComponent', () => {
   let sessionService;
   let matBottomSheet;
   let matDialog;
+  let matBottomSheetRef;
+  let matDialogRef;
 
   beforeEach(async () => {
     router = {
-      events: { pipe: sinon.stub().returns(new Subject()) },
+      events: { pipe: sinon.stub().returns({ subscribe: sinon.stub() }) },
     };
     authService = { has: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };
-    sessionService = { isDbAdmin: sinon.stub() };
-    matBottomSheet = {
-      open: sinon.stub(),
-      dismiss: sinon.stub(),
-    };
-    matDialog = {
-      open: sinon.stub(),
-      closeAll: sinon.stub(),
-    };
+    sessionService = { isAdmin: sinon.stub() };
+    matBottomSheetRef = { dismiss: sinon.stub() };
+    matBottomSheet = { open: sinon.stub().returns(matBottomSheetRef) };
+    matDialogRef = { close: sinon.stub() };
+    matDialog = { open: sinon.stub().returns(matDialogRef) };
 
     await TestBed
       .configureTestingModule({
@@ -92,11 +89,40 @@ describe('FastActionButtonComponent', () => {
     expect(component.getFastExecutableAction()).to.be.undefined;
   });
 
-  it('should close all display panel', () => {
+  it('should close display panels', () => {
+    const actionOne = {
+      id: 'action-1',
+      label: 'action number one',
+      icon: { name: 'an-icon', type: IconType.FONT_AWESOME },
+      canDisplay: sinon.stub(),
+      execute: sinon.stub(),
+    };
+    const actionTwo = {
+      id: 'action-2',
+      label: 'action number two',
+      icon: { name: 'an-icon', type: IconType.FONT_AWESOME },
+      canDisplay: sinon.stub(),
+      execute: sinon.stub(),
+    };
+    component.fastActions = [ actionOne, actionTwo ];
+
+    responsiveService.isMobile.returns(false);
+    component.open();
+    sinon.resetHistory();
+
     component.closeAll();
 
-    expect(matDialog.closeAll.calledOnce).to.be.true;
-    expect(matBottomSheet.dismiss.calledOnce).to.be.true;
+    expect(matDialogRef.close.calledOnce).to.be.true;
+    expect(matBottomSheetRef.dismiss.notCalled).to.be.true;
+
+    responsiveService.isMobile.returns(true);
+    component.open();
+    sinon.resetHistory();
+
+    component.closeAll();
+
+    expect(matDialogRef.close.notCalled).to.be.true;
+    expect(matBottomSheetRef.dismiss.calledOnce).to.be.true;
   });
 
   it('should execute action', () => {
@@ -110,8 +136,8 @@ describe('FastActionButtonComponent', () => {
 
     component.executeAction(actionOne);
 
-    expect(matDialog.closeAll.calledOnce).to.be.true;
-    expect(matBottomSheet.dismiss.calledOnce).to.be.true;
+    expect(matDialogRef.close.notCalled).to.be.true;
+    expect(matBottomSheetRef.dismiss.notCalled).to.be.true;
     expect(actionOne.execute.calledOnce).to.be.true;
   });
 
@@ -210,8 +236,8 @@ describe('FastActionButtonComponent', () => {
 
       component.open();
 
-      expect(matDialog.closeAll.calledOnce).to.be.true;
-      expect(matBottomSheet.dismiss.calledOnce).to.be.true;
+      expect(matDialogRef.close.notCalled).to.be.true;
+      expect(matBottomSheetRef.dismiss.notCalled).to.be.true;
       expect(actionOne.execute.notCalled).to.be.true;
       expect(actionTwo.execute.notCalled).to.be.true;
       expect(responsiveService.isMobile.calledOnce).to.be.true;
@@ -241,8 +267,8 @@ describe('FastActionButtonComponent', () => {
 
       component.open();
 
-      expect(matDialog.closeAll.calledOnce).to.be.true;
-      expect(matBottomSheet.dismiss.calledOnce).to.be.true;
+      expect(matDialogRef.close.notCalled).to.be.true;
+      expect(matBottomSheetRef.dismiss.notCalled).to.be.true;
       expect(actionOne.execute.notCalled).to.be.true;
       expect(responsiveService.isMobile.calledOnce).to.be.true;
       expect(matBottomSheet.open.notCalled).to.be.true;
@@ -277,8 +303,8 @@ describe('FastActionButtonComponent', () => {
 
       component.open();
 
-      expect(matDialog.closeAll.calledOnce).to.be.true;
-      expect(matBottomSheet.dismiss.calledOnce).to.be.true;
+      expect(matDialogRef.close.notCalled).to.be.true;
+      expect(matBottomSheetRef.dismiss.notCalled).to.be.true;
       expect(actionOne.execute.notCalled).to.be.true;
       expect(actionTwo.execute.notCalled).to.be.true;
       expect(responsiveService.isMobile.calledOnce).to.be.true;
@@ -300,8 +326,8 @@ describe('FastActionButtonComponent', () => {
       component.open();
 
       expect(actionOne.execute.calledOnce).to.be.true;
-      expect(matDialog.closeAll.calledTwice).to.be.true;
-      expect(matBottomSheet.dismiss.calledTwice).to.be.true;
+      expect(matDialogRef.close.notCalled).to.be.true;
+      expect(matBottomSheetRef.dismiss.notCalled).to.be.true;
       expect(responsiveService.isMobile.notCalled).to.be.true;
       expect(matBottomSheet.open.notCalled).to.be.true;
       expect(matDialog.open.notCalled).to.be.true;

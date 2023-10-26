@@ -1,12 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as LineageFactory from '@medic/lineage';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
 import { DbService } from '@mm-services/db.service';
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
@@ -15,25 +14,28 @@ import { TranslateService } from '@mm-services/translate.service';
   selector: 'delete-doc-confirm',
   templateUrl: './delete-doc-confirm.component.html'
 })
-export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit, OnDestroy {
+export class DeleteDocConfirmComponent implements OnInit, OnDestroy {
+  static id = 'delete-doc-confirm-modal';
   private globalActions: GlobalActions;
   private selectMode;
-  static id = 'delete-doc-confirm-modal';
 
+  processing = false;
+  doc = null as any;
   subscriptions: Subscription = new Subscription();
   lineageLib;
-  model = { doc: null as any }; // Automatically assigned by BsModalRef
+  error;
 
   constructor(
     private store: Store,
     private translateService: TranslateService,
-    bsModalRef: BsModalRef,
     private dbService: DbService,
-    private router: Router
+    private router: Router,
+    private matDialogRef: MatDialogRef<DeleteDocConfirmComponent>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
-    super(bsModalRef);
     this.globalActions = new GlobalActions(this.store);
     this.lineageLib = LineageFactory(Promise, this.dbService.get());
+    this.doc = this.matDialogData?.doc;
   }
 
   ngOnInit(): void {
@@ -60,10 +62,14 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
     }
   }
 
-  submit() {
-    const doc = { ...this.model.doc };
-    doc._deleted = true;
+  close() {
+    this.matDialogRef.close();
+  }
 
+  submit() {
+    this.processing = true;
+    const doc = { ...this.doc };
+    doc._deleted = true;
     this.lineageLib.minify(doc);
 
     this.dbService
@@ -79,7 +85,11 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
           this.router.navigate([route.name, route.parameter || '']);
         }
       })
-      .catch((err) => this.setError(err, 'Error deleting document'));
+      .catch(error => {
+        this.error = 'Error deleting document';
+        console.error(this.error, error);
+      })
+      .finally(() => this.processing = false);
   }
 
 }

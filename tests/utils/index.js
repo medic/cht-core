@@ -9,20 +9,22 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 const semver = require('semver');
+const moment = require('moment');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
+const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
-process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
+const DEBUG = process.env.DEBUG;
 
 let originalSettings;
-let e2eDebug;
 let dockerVersion;
 let browserLogStream;
 
@@ -48,18 +50,14 @@ const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
+const existingFeedbackDocIds = [];
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
-const db1Data = makeTempDir('ci-dbdata');
-const db2Data = makeTempDir('ci-dbdata');
-const db3Data = makeTempDir('ci-dbdata');
 const env = {
   ...process.env,
   CHT_NETWORK: NETWORK,
-  DB1_DATA: db1Data,
-  DB2_DATA: db2Data,
-  DB3_DATA: db3Data,
   COUCHDB_SECRET: 'monkey',
 };
 
@@ -140,7 +138,7 @@ const request = (options, { debug } = {}) => {
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
-    console.log('SENDING REQUEST' );
+    console.log('SENDING REQUEST');
     console.log(JSON.stringify(options, null, 2));
   }
 
@@ -171,7 +169,7 @@ const requestOnTestDb = (options, debug) => {
   if (pathAndReqType !== '/GET') {
     options.path = '/' + constants.DB_NAME + (options.path || '');
   }
-  return request(options, { debug });
+  return request(options, debug);
 };
 
 const requestOnTestMetaDb = (options, debug) => {
@@ -181,7 +179,7 @@ const requestOnTestMetaDb = (options, debug) => {
     };
   }
   options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const requestOnMedicDb = (options, debug) => {
@@ -189,7 +187,7 @@ const requestOnMedicDb = (options, debug) => {
     options = { path: options };
   }
   options.path = `/medic${options.path || ''}`;
-  return request(options, { debug: debug });
+  return request(options, debug);
 };
 
 const formDocProcessing = async (docs) => {
@@ -205,7 +203,7 @@ const formDocProcessing = async (docs) => {
   const waitForForms = await Promise.all(formsWatchers);
 
   return {
-    promise:() => Promise.all(waitForForms.map(wait => wait.promise)),
+    promise: () => Promise.all(waitForForms.map(wait => wait.promise)),
     cancel: () => waitForForms.forEach(wait => wait.cancel),
   };
 };
@@ -226,7 +224,7 @@ const saveDoc = async doc => {
   }
 };
 
-const saveDocs = async docs => {
+const saveDocs = async (docs) => {
   const waitForForms = await formDocProcessing(docs);
   const results = await requestOnTestDb({
     path: '/_bulk_docs',
@@ -239,6 +237,12 @@ const saveDocs = async docs => {
   }
 
   await waitForForms.promise();
+  return results;
+};
+
+const saveDocsRevs = async (docs) => {
+  const results = await saveDocs(docs);
+  results.forEach(({ rev }, idx) => docs[idx]._rev = rev);
   return results;
 };
 
@@ -383,7 +387,7 @@ const deleteAllDocs = (except) => {
         }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
-      if (e2eDebug) {
+      if (DEBUG) {
         console.log(`Deleting docs and infodocs: ${ids}`);
       }
       const infoIds = ids.map(id => `${id}-info`);
@@ -395,7 +399,7 @@ const deleteAllDocs = (except) => {
             body: { docs: toDelete },
           })
           .then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted docs: ${JSON.stringify(response)}`);
             }
           }),
@@ -413,7 +417,7 @@ const deleteAllDocs = (except) => {
             // it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
             return module.exports.sentinelDb.bulkDocs(deletes);
           }).then(response => {
-            if (e2eDebug) {
+            if (DEBUG) {
               console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
             }
           })
@@ -454,7 +458,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForDockerLogs('sentinel', /Reminder messages allowed between/);
+    return waitForSentinelLogs( /Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };
@@ -562,7 +566,7 @@ const deleteLocalDocs = async () => {
 
 const hasModal = () => $('#update-available').isDisplayed();
 
-const setUserContactDoc = (attempt=0) => {
+const setUserContactDoc = (attempt = 0) => {
   const {
     USER_CONTACT_ID: docId,
     DEFAULT_USER_CONTACT_DOC: defaultDoc
@@ -579,6 +583,14 @@ const setUserContactDoc = (attempt=0) => {
       }
       return setUserContactDoc(attempt + 1);
     });
+};
+
+const deleteMetaDbs = async () => {
+  const allDbs = await request({ path: '/_all_dbs' });
+  const metaDbs = allDbs.filter(db => db.endsWith('-meta') && !db.endsWith('-users-meta'));
+  for (const metaDb of metaDbs) {
+    await request({ method: 'DELETE', path: `/${metaDb}` });
+  }
 };
 
 /**
@@ -599,10 +611,12 @@ const revertDb = async (except, ignoreRefresh) => {
     watcher && watcher.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise;
+    await watcher && watcher.promise; // NOSONAR
   } else {
     watcher && watcher.cancel();
   }
+
+  await deleteMetaDbs();
 
   await setUserContactDoc();
 };
@@ -646,14 +660,6 @@ const deleteUsers = async (users, meta = false) => {
   const errors = results.flat().filter(result => !result.ok);
   if (errors.length) {
     return deleteUsers(users, meta);
-  }
-
-  if (!meta) {
-    return;
-  }
-
-  for (const user of users) {
-    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'DELETE' });
   }
 };
 
@@ -738,7 +744,7 @@ const dockerComposeCmd = (...params) => {
   const projectParams = ['-p', PROJECT_NAME];
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [ ...projectParams, ...composeFilesParam, ...params ], { env });
+    const cmd = spawn('docker-compose', [...projectParams, ...composeFilesParam, ...params], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -963,6 +969,10 @@ const createLogDir = async () => {
 };
 
 const startServices = async () => {
+  env.DB1_DATA = makeTempDir('ci-dbdata');
+  env.DB2_DATA = makeTempDir('ci-dbdata');
+  env.DB3_DATA = makeTempDir('ci-dbdata');
+
   await dockerComposeCmd('up', '-d');
   const services = await dockerComposeCmd('ps', '-q');
   if (!services.length) {
@@ -976,7 +986,7 @@ const prepServices = async (defaultSettings) => {
 
   updateContainerNames();
 
-  await tearDownServices(true);
+  await tearDownServices();
   await startServices();
   await listenForApi();
   if (defaultSettings) {
@@ -1031,11 +1041,11 @@ const saveLogs = async () => {
   }
 };
 
-const tearDownServices = async (removeOrphans) => {
-  if (removeOrphans) {
-    return dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
-  }
+const tearDownServices = async () => {
   await saveLogs();
+  if (!DEBUG) {
+    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+  }
 };
 
 const killSpawnedProcess = (proc) => {
@@ -1060,7 +1070,7 @@ const waitForDockerLogs = (container, ...regex) => {
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterwards.
+  // steps of testing afterward.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
@@ -1071,7 +1081,7 @@ const waitForDockerLogs = (container, ...regex) => {
       console.log('Found logs', logs, 'watched for', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       killSpawnedProcess(proc);
-    }, 10000);
+    }, 20000);
 
     const checkOutput = (data) => {
       if (!firstLine) {
@@ -1104,6 +1114,7 @@ const waitForDockerLogs = (container, ...regex) => {
 };
 
 const waitForApiLogs = (...regex) => waitForDockerLogs('api', ...regex);
+const waitForSentinelLogs = (...regex) => waitForDockerLogs('sentinel', ...regex);
 
 /**
  * Collector that listens to the given container logs and collects lines that match at least one of the
@@ -1126,7 +1137,7 @@ const collectLogs = (container, ...regex) => {
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterwards.
+  // steps of testing afterward.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
@@ -1158,6 +1169,8 @@ const collectLogs = (container, ...regex) => {
 const collectSentinelLogs = (...regex) => collectLogs('sentinel', ...regex);
 
 const collectApiLogs = (...regex) => collectLogs('api', ...regex);
+
+const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
@@ -1196,7 +1209,7 @@ const getContainerName = (service, project = PROJECT_NAME) => {
   return `${project}${separator}${service}${separator}1`;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {
@@ -1205,16 +1218,43 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
     settings.permissions[permission].push(...roles);
   });
 
-  removePermissions.forEach(permission => {
-    settings.permissions[permission] = [];
-  });
-  await updateSettings({ permissions: settings.permissions }, true);
+  (removePermissions || []).forEach(permission => settings.permissions[permission] = []);
+  await updateSettings({ permissions: settings.permissions }, ignoreReload);
+};
+
+const getSentinelDate = () => getContainerDate('sentinel');
+
+const getContainerDate = (container) => {
+  container = getContainerName(container);
+  try {
+    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
+  } catch (error) {
+    console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
+    console.error(error.message);
+  }
+};
+
+const logFeedbackDocs = async (test) => {
+
+  const feedBackDocs = await chtDbUtils.getFeedbackDocs();
+  const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
+  if (!newFeedbackDocs.length) {
+    return false;
+  }
+
+  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/\s/g, '-');
+  const filePath = path.resolve(__dirname, '..', 'logs', filename);
+  fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
+  existingFeedbackDocIds.push(...newFeedbackDocs.map(doc => doc._id));
+
+  return true;
 };
 
 module.exports = {
   db,
   sentinelDb,
   logsDb,
+  usersDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
@@ -1228,6 +1268,7 @@ module.exports = {
   requestOnMedicDb,
   saveDoc,
   saveDocs,
+  saveDocsRevs,
   saveDocIfNotExists,
   saveMetaDocs,
   getDoc,
@@ -1268,11 +1309,15 @@ module.exports = {
   saveBrowserLogs,
   tearDownServices,
   waitForApiLogs,
+  waitForSentinelLogs,
   collectSentinelLogs,
   collectApiLogs,
+  collectHaproxyLogs,
   apiLogTestStart,
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
   formDocProcessing,
+  getSentinelDate,
+  logFeedbackDocs,
 };
