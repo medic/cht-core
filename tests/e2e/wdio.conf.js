@@ -89,7 +89,7 @@ const baseConfig = {
     'goog:chromeOptions': {
       args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
         ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
-      binary: CHROME_VERSION === '90' ? '/Applications/Google Chrome 90.app/Contents/MacOS/Google Chrome' : undefined
+      binary: CHROME_VERSION === '90' ? '/usr/bin/google-chrome-stable' : undefined
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
