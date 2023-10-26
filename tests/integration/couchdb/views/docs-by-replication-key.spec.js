@@ -297,7 +297,7 @@ describe('docs_by_replication_key', () => {
     console.log(`Pushing ${alldocs.length} documents for testing`);
     return await utils
       .saveDocs(alldocs)
-      .then(() => utils.delayPromise(100))
+      .then(() => utils.delayPromise(100)) // todo
       .then(() => {
         const keys = [ '_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username' ];
         return getChanges(keys);

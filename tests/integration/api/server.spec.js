@@ -211,8 +211,6 @@ describe('server', () => {
       await utils.startApi();
       await utils.delayPromise(1000);
 
-      await utils.delayPromise(1000);
-
       await utils.request('/');
 
       await utils.stopHaproxy();
