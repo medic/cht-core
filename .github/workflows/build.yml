@@ -88,7 +88,7 @@ jobs:
 
   tests:
     needs: build
-    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}
+    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}-${{ matrix.chrome-version || '' }}
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
@@ -110,7 +110,7 @@ jobs:
             suite: lowLevel
           - cmd: ci-webdriver-default
             suite: workflows
-        exclude: # temporal until all suites run on Chrome 90
+        exclude: # temporary until all suites run on Chrome 90
           - cmd: ci-e2e-integration
             chrome-version: 90
           - cmd: ci-webdriver-default-mobile
@@ -179,16 +179,12 @@ jobs:
     - name: Set CHROME_VERSION ENV
       if: ${{matrix.chrome-version=='90'}}
       run: |
-          export CHROME_VERSION=90
+          export CHROME_VERSION='90'
     - name: Install Chrome 90
       if: ${{matrix.chrome-version=='90'}}
       run: |
           wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
           sudo dpkg -i "google-chrome-stable_current_amd64.deb"
-    - name: Install Chromedriver 90
-      if: ${{matrix.chrome-version=='90'}}
-      run: |
-          npm install chromedriver@^90.0.1
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 

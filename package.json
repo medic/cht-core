@@ -96,6 +96,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.1.0",
     "chai-shallow-deep-equal": "^1.4.6",
+    "chromedriver": "^90.0.1",
     "cht-conf": "^3.18.3",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",
@@ -167,6 +168,7 @@
     }
   },
   "dependencies": {
+    "chromedriver": "^90.0.1",
     "google-libphonenumber": "^3.2.31"
   }
 }
