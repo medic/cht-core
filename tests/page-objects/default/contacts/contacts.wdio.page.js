@@ -183,7 +183,7 @@ const addPerson = async ({
 } = {}, waitForSentinel = true) => {
   const type = 'person';
   await commonPage.clickFastActionFAB({ actionId: type });
-  await (await genericForm.currentFormView()).waitForDisplayed();
+  await (await genericForm.formTitle()).waitForDisplayed();
   await (await personName()).addValue(nameValue);
   await (await dateOfBirthField()).addValue(dobValue);
   await (await genericForm.formTitle()).click(); // blur the datepicker field so the sex field is visible
