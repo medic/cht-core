@@ -30,6 +30,7 @@ describe('Reports Subject', () => {
     subject = person.name,
     lineage = `${clinic.name}${healthCenter.name}${districtHospital.name}`
   }) => {
+    await commonPage.goToPeople();
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     await reportsPage.openSelectedReport(firstReport);
