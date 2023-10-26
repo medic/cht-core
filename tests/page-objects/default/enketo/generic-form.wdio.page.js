@@ -112,4 +112,6 @@ module.exports = {
   editForm,
   cancelForm,
   submitForm,
+  currentFormView,
+  formTitle,
 };

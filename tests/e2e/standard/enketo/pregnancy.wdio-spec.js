@@ -23,6 +23,7 @@ describe('New pregnancy', () => {
     await utils.saveDocs([...places.values()]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
+    await commonPage.waitForPageLoaded();
   });
 
   it('should create required persons', async () => {

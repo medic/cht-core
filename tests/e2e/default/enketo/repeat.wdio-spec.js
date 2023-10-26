@@ -1,9 +1,9 @@
 const fs = require('fs');
 
-const constants = require('@constants');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const hierarchyFactory = require('@factories/cht/generate');
 
 const readFormDocument = (formId) => {
   const form = fs.readFileSync(`${__dirname}/forms/${formId}.xml`, 'utf8');
@@ -25,18 +25,11 @@ const readFormDocument = (formId) => {
 const assertLabels = async ({ selector, count, labelText }) => {
   const labels = await $$(selector);
   expect(labels.length).to.equal(count);
-  await Promise.all(labels.map(
-    async label => expect(await label.getText()).to.equal(labelText),
-  ));
-};
-
-const login = async () => {
-  await loginPage.login({
-    username: constants.USERNAME,
-    password: constants.PASSWORD,
-    createUser: true,
-  });
-  await commonPage.goToBase();
+  for (const label of labels) {
+    // because of https://github.com/medic/cht-core/commit/a2d0ccab1f794ca31bfb7b9e223f783d49094469,
+    // some elements are not interactable, so we cannot get their text
+    expect(await label.getHTML()).to.include(`>${labelText}<`);
+  }
 };
 
 const openRepeatForm = async (formId) => {
@@ -57,23 +50,14 @@ const getField = async (fieldName, fieldValue) => {
 const countFormDocument = readFormDocument('repeat-translation-count');
 const buttonFormDocument = readFormDocument('repeat-translation-button');
 const selectFormDocument = readFormDocument('repeat-translation-select');
-const userContactDoc = {
-  _id: constants.USER_CONTACT_ID,
-  name: 'Jack',
-  date_of_birth: '',
-  phone: '+64274444444',
-  alternate_phone: '',
-  notes: '',
-  type: 'person',
-  reported_date: 1478469976421,
-  parent: {
-    _id: 'some_parent'
-  }
-};
+
+const hierarchy = hierarchyFactory.createHierarchy({ name: 'test', user: true, nbrClinics: 1, nbrPersons: 1 });
 
 describe('RepeatForm', () => {
   before(async () => {
-    await utils.seedTestData(userContactDoc, [countFormDocument, buttonFormDocument, selectFormDocument]);
+    await utils.saveDocs(hierarchy.places);
+    await utils.createUsers([hierarchy.user]);
+    await utils.saveDocs([countFormDocument, buttonFormDocument, selectFormDocument]);
   });
 
   afterEach(async () => {
@@ -99,7 +83,7 @@ describe('RepeatForm', () => {
     it('should display the initial form and its repeated content in Nepali', async () => {
       const neUserName = 'प्रयोगकर्ताको नाम';
       await loginPage.changeLanguage('ne', neUserName);
-      await login();
+      await loginPage.login(hierarchy.user);
       await openRepeatForm(countFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
@@ -118,7 +102,7 @@ describe('RepeatForm', () => {
     it('should display the initial form and its repeated content in English', async () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
-      await login();
+      await loginPage.login(hierarchy.user);
       await openRepeatForm(countFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
@@ -144,7 +128,7 @@ describe('RepeatForm', () => {
     it('should display the initial form and its repeated content in Swahili', async () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
-      await login();
+      await loginPage.login(hierarchy.user);
       await openRepeatForm(buttonFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
@@ -163,7 +147,7 @@ describe('RepeatForm', () => {
     it('should display the initial form and its repeated content in English', async () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
-      await login();
+      await loginPage.login(hierarchy.user);
       await openRepeatForm(buttonFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
@@ -184,21 +168,21 @@ describe('RepeatForm', () => {
     it('should display the initial form and its repeated content in the default language', async () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
-      await login();
+      await loginPage.login(hierarchy.user);
       await openRepeatForm(selectFormDocument.internalId);
 
       const { input: washingtonInput, label: washingtonLabel } = await getField('selected_state', 'washington');
-      expect(await washingtonLabel.getText()).to.equal('Washington');
+      expect(await washingtonLabel.getHTML()).to.include('>Washington<');
 
       await washingtonInput.click();
       const { input: kingInput, label: kingLabel } = await getField('selected_county', 'king');
-      expect(await kingLabel.getText()).to.equal('King');
+      expect(await kingLabel.getHTML()).to.include('>King<');
 
       await kingInput.click();
       const { label: seattleLabel } = await getField('selected_city', 'seattle');
       const { label: redmondLabel } = await getField('selected_city', 'redmond');
-      expect(await seattleLabel.getText()).to.equal('Seattle');
-      expect(await redmondLabel.getText()).to.equal('Redmond');
+      expect(await seattleLabel.getHTML()).to.include('>Seattle<');
+      expect(await redmondLabel.getHTML()).to.include('>Redmond<');
     });
   });
 });
