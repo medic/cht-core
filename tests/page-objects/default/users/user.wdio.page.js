@@ -1,12 +1,13 @@
 const _ = require('lodash');
 const commonElements = require('../common/common.wdio.page');
 const addUserButton = () => $('a#add-user');
+const cancelButton = () => $('a[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
 const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
 const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
-const saveUserButton = () => $('//a[@test-id="modal-submit-btn"]');
+const saveUserButton = () => $('a[test-id="modal-submit-btn"]');
 const logoutButton = () => $('i.fa-power-off');
 const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
@@ -48,8 +49,8 @@ const scrollToBottomOfModal = async () => {
 };
 
 const inputAddUserFields = async (username, fullname, role, place, contact, password, confirmPassword = password) => {
-  await (await userName()).addValue(username);
-  await (await userFullName()).addValue(fullname);
+  await (await userName()).setValue(username);
+  await (await userFullName()).setValue(fullname);
   await (await $(`#role-select input[value="${role}"]`)).click();
 
   // we need to scroll to the bottom to bring the select2 elements into view
@@ -64,8 +65,8 @@ const inputAddUserFields = async (username, fullname, role, place, contact, pass
     await selectContact(contact);
   }
 
-  await (await userPassword()).addValue(password);
-  await (await userConfirmPassword()).addValue(confirmPassword);
+  await (await userPassword()).setValue(password);
+  await (await userConfirmPassword()).setValue(confirmPassword);
 };
 
 const inputUploadUsersFields = async (filePath) => {
@@ -96,7 +97,7 @@ const selectContact = async (associatedContact) => {
 };
 
 const saveUser = async (isSuccessExpected = true)  => {
-  await (await saveUserButton()).waitForDisplayed();
+  await (await saveUserButton()).waitForClickable();
   await (await saveUserButton()).click();
   if (isSuccessExpected) {
     await (await addUserDialog()).waitForDisplayed({ reverse: true });
@@ -123,6 +124,7 @@ const getUsernameErrorText = async () => {
 };
 
 const getPasswordErrorText = async () => {
+  await (await passwordErrorMessage()).waitForDisplayed();
   return await (await passwordErrorMessage()).getText();
 };
 
@@ -163,7 +165,15 @@ const waitForUploadSummary = async () => {
   await (await uploadSummaryDialog()).waitForDisplayed();
 };
 
+const closeAddUserDialog = async () => {
+  await (await cancelButton()).waitForClickable();
+  await (await cancelButton()).click();
+  await (await addUserDialog()).waitForDisplayed({ reverse: true });
+};
+
+
 module.exports = {
+  addUserDialog,
   goToAdminUser,
   goToAdminUpgrade,
   openAddUserDialog,
@@ -182,5 +192,6 @@ module.exports = {
   getSuccessfulyUploadedUsers,
   getPreviouslyUploadedUsers,
   getFailedUploadedUsers,
-  backToUserList
+  backToUserList,
+  closeAddUserDialog,
 };

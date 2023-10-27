@@ -47,7 +47,6 @@ describe('Training Cards', () => {
   });
 
   it('should cancel training and not save it as completed', async () => {
-    await commonPage.goToMessages();
     await trainingCardsPage.waitForTrainingCards();
 
     const confirmMessage = await trainingCardsPage.quitTraining();

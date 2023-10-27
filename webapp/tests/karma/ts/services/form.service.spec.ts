@@ -37,7 +37,11 @@ describe('Form service', () => {
     return {
       _id: `form:${formInternalId}`,
       internalId: formInternalId,
-      _attachments: { xml: { something: true } },
+      _attachments: {
+        xml: { something: true },
+        'form.html': { something: true },
+        'model.xml': { something: true },
+      },
     };
   };
 
@@ -122,6 +126,8 @@ describe('Form service', () => {
       get: xmlFormGet,
       getDocAndFormAttachment: xmlFormGetWithAttachment,
       canAccessForm: sinon.stub(),
+      HTML_ATTACHMENT_NAME: 'form.html',
+      MODEL_ATTACHMENT_NAME: 'model.xml',
     };
     window.EnketoForm = EnketoForm;
     window.URL.createObjectURL = createObjectURL;
@@ -264,7 +270,11 @@ describe('Form service', () => {
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
           {
-            _attachments: { xml: { something: true } },
+            _attachments: {
+              xml: { something: true },
+              'model.xml': { something: true },
+              'form.html': { something: true },
+            },
             _id: 'form:myform',
             internalId: 'myform',
           },
@@ -273,10 +283,7 @@ describe('Form service', () => {
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorMessage);
+        expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
@@ -559,16 +566,7 @@ describe('Form service', () => {
         expect(UserContact.calledOnce).to.be.true;
         expect(renderForm.notCalled).to.be.true;
         expect(enketoInit.notCalled).to.be.true;
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0]).to.deep.equal([
-          'Failed during the form "myform" rendering : ',
-          'invalid user'
-        ]);
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0]).to.deep.equal([
-          'Failed during the form "myform" rendering : invalid user',
-          false
-        ]);
+        expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
@@ -590,7 +588,11 @@ describe('Form service', () => {
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
           {
-            _attachments: { xml: { something: true } },
+            _attachments: {
+              xml: { something: true },
+              'form.html': { something: true },
+              'model.xml': { something: true },
+            },
             _id: 'form:myform',
             internalId: 'myform',
           },

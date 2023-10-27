@@ -89,7 +89,7 @@ export class Form2smsService {
         }
       })
       .catch((err) => {
-        console.error('Form2Sms failed: ' + err);
+        console.error('Form2Sms failed: ', err);
         throw err;
       });
   }

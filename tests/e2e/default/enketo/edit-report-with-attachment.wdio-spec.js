@@ -6,7 +6,6 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const fs = require('fs');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
 const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
 const instanceID = uuid();
@@ -65,14 +64,11 @@ describe('Edit report with attachmnet', () => {
     await utils.seedTestData(userContactDoc, [...docs, formDoc]);
     await loginPage.cookieLogin();
     await common.hideSnackbar();
+    reportDoc._id = uuid();
+    await utils.saveDoc(reportDoc);
   });
 
   it('should remove attachment when saving', async () => {
-    reportDoc._id = uuid();
-    await utils.saveDoc(reportDoc);
-
-    await commonElements.goToReports();
-
     await reportsPage.editReport(reportDoc._id);
     await reportsPage.submitForm();
 
@@ -89,10 +85,6 @@ describe('Edit report with attachmnet', () => {
   });
 
   it('should save edits', async () => {
-    reportDoc._id = uuid();
-    await utils.saveDoc(reportDoc);
-
-    await commonElements.goToReports();
     await reportsPage.editReport(reportDoc._id);
     await (await genericForm.fieldByName(formDoc.internalId, 'intro')).setValue('updated text');
     await reportsPage.submitForm();

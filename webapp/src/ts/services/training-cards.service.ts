@@ -10,7 +10,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 
 export const TRAINING_PREFIX: string = 'training:';
 
@@ -27,7 +26,6 @@ export class TrainingCardsService {
     private modalService: ModalService,
     private sessionService: SessionService,
     private routeSnapshotService: RouteSnapshotService,
-    private feedbackService: FeedbackService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -45,9 +43,7 @@ export class TrainingCardsService {
       }))
       .filter(form => {
         if (!this.isTrainingCardForm(form.code)) {
-          const error = `Training Cards :: Incorrect internalId format. Doc ID: ${form.id}`;
-          console.error(error);
-          this.feedbackService.submit(error);
+          console.error(new Error(`Training Cards :: Incorrect internalId format. Doc ID: ${form.id}`));
           return false;
         }
 
@@ -84,9 +80,7 @@ export class TrainingCardsService {
 
   private async handleTrainingCards(error, xForms) {
     if (error) {
-      const message = 'Training Cards :: Error fetching forms.';
-      console.error(message, error);
-      this.feedbackService.submit(message);
+      console.error('Training Cards :: Error fetching forms.', error);
       return;
     }
 
@@ -105,9 +99,7 @@ export class TrainingCardsService {
       this.modalService.show(TrainingCardsComponent);
 
     } catch (error) {
-      const message = 'Training Cards :: Error showing modal.';
-      console.error(message, error);
-      this.feedbackService.submit(message);
+      console.error('Training Cards :: Error showing modal.', error);
       return;
     }
   }

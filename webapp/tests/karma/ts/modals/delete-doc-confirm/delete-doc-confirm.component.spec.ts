@@ -10,6 +10,8 @@ import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-
 import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('DeleteDocConfirmComponent', () => {
   let component: DeleteDocConfirmComponent;
@@ -43,7 +45,11 @@ describe('DeleteDocConfirmComponent', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ DeleteDocConfirmComponent ],
+        declarations: [
+          DeleteDocConfirmComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: DbService, useValue: dbService },

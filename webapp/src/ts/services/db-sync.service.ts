@@ -116,12 +116,12 @@ export class DBSyncService {
       .replicate
       .to(remote, options)
       .on('denied', (err) => {
-        console.error(`Denied replicating to remote server`, err);
+        console.error('Denied replicating to remote server', err);
         this.dbSyncRetryService.retryForbiddenFailure(err);
         telemetryEntry.recordDenied();
       })
       .on('error', (err) => {
-        console.error(`Error replicating to remote server`, err);
+        console.error('Error replicating to remote server', err);
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(info => {
@@ -135,7 +135,7 @@ export class DBSyncService {
             `Trying again with batch size of ${batchSize}`);
           return this.replicateToRetry({ batchSize });
         }
-        console.error(`Error replicating to remote server`, err);
+        console.error('Error replicating to remote server', err);
         throw err;
       });
   }
@@ -236,7 +236,11 @@ export class DBSyncService {
     }
   }
 
-  private syncMeta() {
+  syncMeta() {
+    if (!this.isEnabled()) {
+      return Promise.resolve();
+    }
+
     const telemetryEntry = new DbSyncTelemetry(this.telemetryService, 'meta', 'sync');
     const remote = this.dbService.get({ meta: true, remote: true });
     const local = this.dbService.get({ meta: true });
