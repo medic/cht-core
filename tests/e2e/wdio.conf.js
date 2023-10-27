@@ -20,6 +20,9 @@ const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
 const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
 const CHROME_VERSION = process.env.CHROME_VERSION;
+const CHROME_OPTIONS_ARGS_DEBUG = ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'no-sandbox', 'window-size=1200,900'];
+const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
+const MINIMUM_BROWSER_VERSION = '90';
 
 const baseConfig = {
   //
@@ -87,10 +90,8 @@ const baseConfig = {
     browserVersion: CHROME_VERSION,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'no-sandbox',
-          'window-size=1200,900'],
-      binary: CHROME_VERSION === '90' ? '/usr/bin/google-chrome-stable' : undefined
+      args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
+      binary: CHROME_VERSION === MINIMUM_BROWSER_VERSION ? '/usr/bin/google-chrome-stable' : undefined
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -145,7 +146,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: CHROME_VERSION === '90' ? ['chromedriver'] : ['devtools'],
+  services: CHROME_VERSION === MINIMUM_BROWSER_VERSION ? ['chromedriver'] : ['devtools'],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -244,7 +245,7 @@ const baseConfig = {
     global.expect = chai.expect;
     // eslint-disable-next-line no-undef
     const browserVersion = driver.capabilities.browserVersion;
-    if (browserVersion.split('.').shift() !== '90') {
+    if (browserVersion.split('.').shift() !== MINIMUM_BROWSER_VERSION) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
     }
   },

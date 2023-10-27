@@ -88,7 +88,9 @@ jobs:
 
   tests:
     needs: build
-    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}
+    name: !e >-
+      ${{matrix.chrome-version == '90'}} ? ${{ matrix.cmd }}-${{ matrix.suite || '' }}'-minimum-browser' : ${{ matrix.cmd }}-${{ matrix.suite || '' }}
+
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
