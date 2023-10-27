@@ -94,13 +94,8 @@ const baseConfig = {
     browserVersion: CHROME_VERSION,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-<<<<<<< HEAD
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
       binary: CHROME_VERSION === MINIMUM_BROWSER_VERSION ? '/usr/bin/google-chrome-stable' : undefined
-=======
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']:
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
->>>>>>> 0cc78cc7f7746abbaef7388d6534e8bab6ddec8c
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
