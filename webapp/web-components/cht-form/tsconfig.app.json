@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "resolveJsonModule": true,
     "types": ["node", "jquery"],
     "paths": {
       "@mm-actions/*": ["src/ts/actions/*"],

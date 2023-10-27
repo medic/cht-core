@@ -86,6 +86,23 @@ jobs:
     - name: Run Tests
       run: npm run ${{ matrix.cmd }}
 
+  test-cht-form:
+    needs: build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - run: sudo apt-get install -y xsltproc
+      - run: npm ci
+      - name: Build cht-form Web Component
+        run: npm run build-cht-form
+      - name: Run Tests
+        run: npm run wdio-cht-form
+
   tests:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}
@@ -96,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        cmd: [ 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile' ]
         suite: [all]
         include:
           - cmd: ci-webdriver-default

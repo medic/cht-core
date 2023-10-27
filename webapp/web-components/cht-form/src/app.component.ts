@@ -4,35 +4,48 @@ import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extens
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
+import { ContactSaveService } from '@mm-services/contact-save.service';
 
 @Component({
   selector: 'cht-form',
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  editing = false;
-  status = {
-    saving: false,
-    error: null
-  };
+  private readonly DEFAULT_FORM_ID = 'cht-form-id';
+  private readonly DEFAULT_USER = { contact_id: 'default_user', language: 'en' } as const;
+  private readonly DEFAULT_STATUS = {
+    saving: false as boolean,
+    error: null as string | null,
+  } as const;
 
-  private _formId: string = 'cht-form-id';
+  private readonly HARDCODED_TYPES = [
+    'district_hospital',
+    'health_center',
+    'clinic',
+    'person'
+  ];
+
+  private _formId = this.DEFAULT_FORM_ID;
   private _formXml?: string;
   private _formModel?: string;
   private _formHtml?: string;
   private _contactSummary?: Record<string, any>;
-  private _content: Record<string, any> | null;
-  private _user: Record<string, any> = {
-    contact_id: 'default_user',
-    language: 'en',
-  };
+  private _contactType?: string;
+  private _content: Record<string, any> | null = null;
+  private _user: Record<string, any> = this.DEFAULT_USER;
 
-  private currentRender: Promise<void> = Promise.resolve();
+  private currentRender?: Promise<void>;
+  private reRenderForm = false;
 
-  @Output() onCancel: EventEmitter<undefined> = new EventEmitter();
+  @Input() editing = false;
+  @Input() status = { ...this.DEFAULT_STATUS };
+
+  @Output() onRender: EventEmitter<void> = new EventEmitter();
+  @Output() onCancel: EventEmitter<void> = new EventEmitter();
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
   constructor(
+    private contactSaveService: ContactSaveService,
     private enketoService: EnketoService,
     private translateService: TranslateService,
   ) {
@@ -42,21 +55,33 @@ export class AppComponent {
   }
 
   @Input() set formId(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form Id must be populated.');
+    }
     this._formId = value;
     this.queueRenderForm();
   }
 
-  @Input() set formHtml(value: string | undefined) {
+  @Input() set formHtml(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form HTML must be populated.');
+    }
     this._formHtml = value;
     this.queueRenderForm();
   }
 
-  @Input() set formModel(value: string | undefined) {
+  @Input() set formModel(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form Model must be populated.');
+    }
     this._formModel = value;
     this.queueRenderForm();
   }
 
-  @Input() set formXml(value: string | undefined) {
+  @Input() set formXml(value: string) {
+    if (!value || !value.trim().length) {
+      throw new Error('The Form XML must be populated.');
+    }
     this._formXml = value;
     this.queueRenderForm();
   }
@@ -66,44 +91,41 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
+  @Input() set contactType(value: string | undefined) {
+    this._contactType = value;
+    this.queueRenderForm();
+  }
+
   @Input() set content(value: Record<string, any> | null) {
     this._content = value;
     if (this._content?.contact && !this._content.source) {
       this._content.source = 'contact';
     }
-
     this.queueRenderForm();
   }
 
   @Input() set user(user: Record<string, any>) {
     if (!user) {
-      throw new Error('User data must be provided.');
+      throw new Error('The user must be populated.');
     }
-    this._user = { ...user, language: user.language || 'en' };
+    this._user = { ...this.DEFAULT_USER, ...user };
     this.queueRenderForm();
   }
 
-  get formId() {
+  get formId(): string {
     return this._formId;
   }
 
-  async cancelForm() {
+  cancelForm(): void {
     this.tearDownForm();
     this.onCancel.emit();
   }
 
-  async submitForm() {
+  async submitForm(): Promise<void> {
     this.status.saving = true;
 
     try {
-      const currentForm = this.enketoService.getCurrentForm();
-      const formDoc = {
-        xml: this._formXml,
-        doc: {}
-      };
-      const contact = null;  // Only used for setting `from` and `contact` fields on docs
-      const submittedDocs = await this.enketoService.completeNewReport(this._formId, currentForm, formDoc, contact);
-      this.tearDownForm();
+      const submittedDocs = await this.getDocsFromForm();
       this.onSubmit.emit(submittedDocs);
     } catch (e) {
       console.error('Error submitting form data: ', e);
@@ -113,9 +135,38 @@ export class AppComponent {
     }
   }
 
+  private async getDocsFromForm() {
+    const currentForm = this.enketoService.getCurrentForm();
+    if (this._contactType) {
+      const typeFields = this.HARDCODED_TYPES.includes(this._contactType)
+        ? { type: this._contactType }
+        : { type: 'contact', contact_type: this._contactType };
+      const { preparedDocs } = await this.contactSaveService.save(currentForm, null, typeFields, null);
+      return preparedDocs;
+    }
+
+    const formDoc = {
+      xml: this._formXml,
+      doc: {}
+    };
+    return this.enketoService.completeNewReport(this._formId, currentForm, formDoc, this._content?.contact);
+  }
+
   private queueRenderForm() {
-    // Ensure that only one render is happening at a time
-    this.currentRender = this.currentRender.then(() => this.renderForm());
+    if (this.currentRender) {
+      this.reRenderForm = true;
+      return;
+    }
+    this.currentRender = this
+      .renderForm()
+      .catch(e => console.error('Error rendering form: ', e))
+      .finally(() => {
+        this.currentRender = undefined;
+        if (this.reRenderForm) {
+          this.reRenderForm = false;
+          this.queueRenderForm();
+        }
+      });
   }
 
   private async renderForm() {
@@ -124,17 +175,25 @@ export class AppComponent {
       return;
     }
 
+    const selector = `#${this._formId}`;
+    // Can have a race condition where the formId is set here but the Angular attribute data binding has not updated
+    // the DOM yet (the formId is used as the id of the .enketo element)
+    if (!$(selector).length) {
+      return this.waitForSelector(selector)
+        .then(() => this.renderForm());
+    }
+
     const editedListener = () => this.editing = true;
     const valuechangeListener = () => this.status.error = null;
-    const selector = `#${this._formId}`;
     const formDoc = { _id: this._formId };
-    const formContext = new EnketoFormContext(selector, 'report', formDoc, this._content);
+    const type = this._contactType ? 'contact': 'report';
+    const formContext = new EnketoFormContext(selector, type, formDoc, this._content);
     formContext.editedListener = editedListener;
     formContext.valuechangeListener = valuechangeListener;
     formContext.contactSummary = this._contactSummary;
     const formDetails = this.getFormDetails();
-
     await this.enketoService.renderForm(formContext, formDetails, this._user);
+    this.onRender.emit();
   }
 
   private unloadForm() {
@@ -142,6 +201,21 @@ export class AppComponent {
     if (currentForm) {
       this.enketoService.unload(currentForm);
     }
+  }
+
+  private async waitForSelector(selector: string) {
+    return new Promise(resolve => {
+      const observer = new MutationObserver(() => {
+        if ($(selector).length) {
+          observer.disconnect();
+          return resolve(true);
+        }
+      });
+      observer.observe($('.body').get(0)!, {
+        subtree: true,
+        attributeFilter: ['id'],
+      });
+    });
   }
 
   private getFormDetails() {
@@ -159,8 +233,15 @@ export class AppComponent {
 
   private tearDownForm() {
     this.unloadForm();
-    this.formXml = undefined;
-    this.formHtml = undefined;
-    this.formModel = undefined;
+    this._formXml = undefined;
+    this._formHtml = undefined;
+    this._formModel = undefined;
+    this._contactSummary = undefined;
+    this._contactType = undefined;
+    this._content = null;
+    this._formId = this.DEFAULT_FORM_ID;
+    this._user = this.DEFAULT_USER;
+    this.editing = false;
+    this.status = { ...this.DEFAULT_STATUS };
   }
 }
