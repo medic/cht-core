@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, Inject } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
 import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -37,6 +38,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private listContains;
   private destroyed: boolean;
   private isOnlineOnly: boolean;
+  private windowRef;
+  private file;
 
   fastActionList: FastAction[];
   contactsList;
@@ -79,7 +82,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private exportService: ExportService,
     private xmlFormsService: XmlFormsService,
+    @Inject(DOCUMENT) private document:Document,
   ) {
+    this.windowRef = this.document.defaultView;
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
     this.servicesActions = new ServicesActions(store);
@@ -158,6 +163,12 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   async ngAfterViewInit() {
     const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSearchNewDesign = !isDisabled;
+/*
+    const input = this.windowRef.document.getElementById('avatar');
+    console.warn('input', input);
+    input.addEventListener('change', () => this.updateImageDisplay(input));
+
+ */
   }
 
   ngOnDestroy() {
@@ -485,6 +496,74 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return childTypes
       .filter(contactType => forms?.find(form => form._id === contactType.create_form))
       .sort((a, b) => a.id?.localeCompare(b.id));
+  }
+
+  /**
+  updateImageDisplay(input) {
+    const curFiles = input.files;
+    if (curFiles.length === 0) {
+      console.warn('No files currently selected for upload');
+      return;
+    }
+
+    const file = curFiles[0];
+    console.warn('file', file);
+    const reader = new FileReader();
+    reader.addEventListener('load', event => this.readFile(event));
+    reader.readAsText(file);
+  }
+
+  readFile(event) {
+    this.file = event.target.result;
+    console.warn('readFile', this.file);
+  }
+   */
+
+  async scanBarcode() {
+    if (!('BarcodeDetector' in window)) {
+      console.warn('Barcode Detector is not supported by this browser.');
+      return;
+    }
+
+    console.warn('Barcode Detector supported!');
+
+    const stream = await this.windowRef.navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: 'user', // Works for mobile browser
+        height: {ideal:1920},
+        width: {ideal: 1920},
+      },
+    });
+      /*{ // Works for Desktop
+      video: {
+        facingMode: {
+          ideal: 'environment'
+        }
+
+      },
+      audio: false
+    });*/
+    const videoEl = this.windowRef.document.querySelector('#stream');
+    videoEl.srcObject = stream;
+    await videoEl.play();
+
+    // get supported barcodes
+    const barcodeTypes = await this.windowRef.BarcodeDetector.getSupportedFormats();
+    // create new detector
+    const barcodeDetector = new this.windowRef.BarcodeDetector({ formats: barcodeTypes });
+
+    barcodeDetector
+      .detect(videoEl) // ToDo: get it work with image Blob or ImageData from external (Android camera)
+      .then(barcodes => {
+        barcodes?.forEach(barcode => {
+          this.globalActions.setFilter({ search: barcode.rawValue });
+          console.warn('each barcode', barcode.rawValue);
+        });
+      })
+      .catch(error => {
+        console.warn('barcode error', error);
+      });
   }
 
 }

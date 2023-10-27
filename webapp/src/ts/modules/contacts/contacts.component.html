@@ -1,5 +1,7 @@
 <div class="filters tab-bar">
   <div class="inner">
+    <button (click)="scanBarcode()">scan barcode</button>
+    <video id="stream" style="width: 60px; height: 60px;"></video>
     <contacts-filters
       *ngIf="!useSearchNewDesign"
       (search)="search()"
