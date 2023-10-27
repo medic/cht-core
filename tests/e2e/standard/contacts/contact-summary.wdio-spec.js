@@ -166,7 +166,7 @@ describe('Contact summary info', () => {
       },
     );
 
-  const docs = [ patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit ];
+  const docs = [patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit];
 
   const settings = {
     uhc: {
@@ -190,7 +190,7 @@ describe('Contact summary info', () => {
 
   before(async () => {
     await utils.saveDocs(docs);
-    await utils.createUsers([ districtAdminUser ]);
+    await utils.createUsers([districtAdminUser]);
   });
 
   afterEach(async () => {
@@ -200,7 +200,7 @@ describe('Contact summary info', () => {
   });
 
   after(async () => {
-    await utils.deleteUsers([ districtAdminUser ]);
+    await utils.deleteUsers([districtAdminUser]);
     await utils.revertDb([/^form:/], true);
   });
 
@@ -234,6 +234,7 @@ describe('Contact summary info', () => {
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
+    await browser.url('/');
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
     const originalSettings = await utils.getSettings();
@@ -256,6 +257,7 @@ describe('Contact summary info', () => {
   });
 
   it('should have access to the "cht" global api variable', async () => {
+    await browser.url('/');
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
     const originalSettings = await utils.getSettings();

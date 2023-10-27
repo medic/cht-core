@@ -126,6 +126,7 @@ describe('New pregnancy', () => {
 
   it('Verify the targets page', async () => {
     await commonPage.logout();
+    await browser.url('/');
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
     await commonPage.goToAnalytics();
