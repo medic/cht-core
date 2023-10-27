@@ -365,12 +365,10 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
-const getCardFieldInfo = async (label) => {
-  return {
-    label: await (await $(`.cell.${label} label`)).getText(),
-    value: await (await $(`.cell.${label} p`)).getText(),
-  };
-};
+const getCardFieldInfo = async (label) => ({
+  label: await (await $(`.cell.${label} label`)).getText(),
+  value: await (await $(`.cell.${label} p`)).getText(),
+});
 
 const getCurrentContactId = async () => {
   const currentUrl = await browser.getUrl();
@@ -394,6 +392,18 @@ const getDisplayedContactsNames = async () => {
   }
   return contacts;
 };
+
+const getCurrentPersonEditFormValues = async (sexValue, roleValue) => ({
+  name: await personName().getValue(),
+  shortName: await $('[name="/data/person/short_name"]').getValue(),
+  dateOfBirth: await dateOfBirthField().getValue(),
+  sex: await sexField('person', sexValue).parentElement().getAttribute('data-checked'),
+  role: await roleField('person', roleValue).parentElement().getAttribute('data-checked'),
+  phone: await phoneField().getValue(),
+  externalId: await externalIdField('person').getValue(),
+  notes: await notes('person').getValue(),
+});
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -454,4 +464,10 @@ module.exports = {
   getVisitLabel,
   getNumberOfReports,
   getDisplayedContactsNames,
+  personName,
+  dateOfBirthField,
+  phoneField,
+  sexField,
+  roleField,
+  getCurrentPersonEditFormValues,
 };

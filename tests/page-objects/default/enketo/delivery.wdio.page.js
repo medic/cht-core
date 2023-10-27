@@ -1,3 +1,5 @@
+const moment = require('moment/moment');
+
 const deliveryConditionWomanOutcomeField = (value) =>
   $(`input[type="radio"][name="/delivery/condition/woman_outcome"][value="${value}"]`);
 const deliveryPostnatalDangerFeverField = (value) =>
@@ -85,6 +87,13 @@ const sumDeliveredBabies = () => $(SUMMARY_SECTION +
 const sumDeceasedBabies = () => $(SUMMARY_SECTION +
   ' span[data-value=" /delivery/delivery_outcome/babies_deceased_num "]');
 const sumPncVisits = () => $(`${SUMMARY_SECTION} span[data-itext-id="/delivery/summary/r_pnc_visit_none:label"]`);
+
+const womanDeathDate = () => $('section[name="/delivery/death_info_woman"] .widget.date .input-small');
+const womanDeathPlace = (value) =>
+  $(`input[data-name="/delivery/death_info_woman/woman_death_place"][value="${value}"]`);
+const womanDeliveredBabies = (value) =>
+  $(`input[data-name="/delivery/death_info_woman/woman_death_birth"][value="${value}"]`);
+const womanDeathNote = () => $('input[name="/delivery/death_info_woman/woman_death_add_notes"]');
 
 const selectDeliveryConditionWomanOutcome = async (value) => {
   const womanOutcome = await deliveryConditionWomanOutcomeField(value);
@@ -260,17 +269,27 @@ const selectDeliveryPncVisits = async (value) => {
   await pncVisits.click();
 };
 
-const getSummaryInfo = async () => {
-  return {
-    patientName: await sumPatientName().getText(),
-    patientAge: await sumPatientAge().getText(),
-    womanCondition: await sumWomanCondition().getText(),
-    deliveryDate: await sumDeliveryDate().getText(),
-    deliveryPlace: await sumDeliveryPlace().getText(),
-    deliveredBabies: await sumDeliveredBabies().getText(),
-    deceasedBabies: await sumDeceasedBabies().getText(),
-    pncVisits: await sumPncVisits().getText(),
-  };
+const getSummaryInfo = async () => ({
+  patientName: await sumPatientName().getText(),
+  patientAge: await sumPatientAge().getText(),
+  womanCondition: await sumWomanCondition().getText(),
+  deliveryDate: await sumDeliveryDate().getText(),
+  deliveryPlace: await sumDeliveryPlace().getText(),
+  deliveredBabies: await sumDeliveredBabies().getText(),
+  deceasedBabies: await sumDeceasedBabies().getText(),
+  pncVisits: await sumPncVisits().getText(),
+});
+
+const fillWomanDeathInformation = async ({
+  date: dateValue = moment().format('YYYY-MM-DD'),
+  place: placeValue = 'health_facility',
+  deliveredBabies: deliveredBabiesValue = 'no',
+  notes: notesValue = 'Test notes - Mother\'s death '
+} = {}) => {
+  await womanDeathPlace(placeValue).click();
+  await womanDeliveredBabies(deliveredBabiesValue).click();
+  await womanDeathNote().setValue(notesValue);
+  await womanDeathDate().setValue(dateValue);
 };
 
 module.exports = {
@@ -304,4 +323,5 @@ module.exports = {
   selectDeliveryBabyBlueSkin,
   selectDeliveryPncVisits,
   getSummaryInfo,
+  fillWomanDeathInformation,
 };

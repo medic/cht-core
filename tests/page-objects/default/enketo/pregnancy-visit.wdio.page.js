@@ -14,6 +14,17 @@ const formDocument = {
     }
   }
 };
+
+const FORM = 'form[data-form-id="pregnancy_home_visit"]';
+const LLIN = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use"]';
+const IRON_FOLATE = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
+const HIV_TESTED = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested"]';
+
+const visitOption = (value) => $(FORM +
+  ` input[name="/pregnancy_home_visit/pregnancy_summary/visit_option"][value="${value}"]`);
+const gestationalAgeCorrect = (value) => $(FORM +
+  ` input[name="/pregnancy_home_visit/pregnancy_summary/g_age_correct"][value="${value}"]`);
+
 const dangerSignLabel = () =>
   $('label.question.readonly.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
 const dangerSignSummary = () =>
@@ -43,7 +54,29 @@ const uploadPregnancyVisitForm = async () => {
   await utils.saveDoc(formDocument);
 };
 
+const selectVisitOption = async (value = 'yes') => {
+  const option = await visitOption(value);
+  await option.waitForClickable();
+  await option.click();
+};
+
+const confirmGestationalAge = async (value = 'yes') => {
+  const gestationalAge = await gestationalAgeCorrect(value);
+  await gestationalAge.waitForClickable();
+  await gestationalAge.click();
+};
+
+const countSummaryDangerSigns = async () => {
+  return await $$(
+    'section[name="/pregnancy_home_visit/summary"] ' +
+    ':not(label.disabled) span[data-itext-id*="/pregnancy_home_visit/summary/r_danger_sign_"]'
+  ).length;
+};
+
 module.exports = {
+  LLIN,
+  IRON_FOLATE,
+  HIV_TESTED,
   selectPatient,
   selectDangerSign,
   selectAllDangerSigns,
@@ -51,5 +84,8 @@ module.exports = {
   dangerSignLabel,
   dangerSignSummary,
   followUpMessage,
-  uploadPregnancyVisitForm
+  uploadPregnancyVisitForm,
+  selectVisitOption,
+  confirmGestationalAge,
+  countSummaryDangerSigns,
 };

@@ -91,8 +91,9 @@ const setPatientName = async (value = 'Emilio') => {
 };
 
 const setPhoneNumber = async (value) => {
-  await phoneField().waitForDisplayed();
-  await (await phoneField()).setValue(value);
+  const phone = await phoneField();
+  await phone.waitForDisplayed();
+  await (phone).setValue(value);
 };
 
 module.exports = {

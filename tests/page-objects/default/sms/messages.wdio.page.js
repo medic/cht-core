@@ -37,13 +37,11 @@ const getMessageInListDetails = async (identifier) => {
   };
 };
 
-const getMessageHeader = async () => {
-  return {
-    name: await $(`${MESSAGE_HEADER} .name`).getText(),
-    phone: await $(`${MESSAGE_HEADER} .phone`).getText(),
-    lineage: await $(`${MESSAGE_HEADER} .horizontal.lineage`).getText()
-  };
-};
+const getMessageHeader = async () => ({
+  name: await $(`${MESSAGE_HEADER} .name`).getText(),
+  phone: await $(`${MESSAGE_HEADER} .phone`).getText(),
+  lineage: await $(`${MESSAGE_HEADER} .horizontal.lineage`).getText(),
+});
 
 const getMessageContent = async  (index = 1) => {
   const sms = await $(`${MESSAGE_CONTENT} li:nth-child(${index})`);

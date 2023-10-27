@@ -34,13 +34,11 @@ const setDeathInformation = async (text = 'Test note') => {
   await note.setValue(text);
 };
 
-const getSummaryDetails = async () => {
-  return {
-    patientName: await patientNameSummary().getText(),
-    deathDate: await deathDateSummary().getText(),
-    deathInformation: await deathInformationSummary().getText(),
-  };
-};
+const getSummaryDetails = async () => ({
+  patientName: await patientNameSummary().getText(),
+  deathDate: await deathDateSummary().getText(),
+  deathInformation: await deathInformationSummary().getText(),
+});
 
 const submitDeathReport = async ({
   deathDate: deathDateValue,
@@ -52,8 +50,17 @@ const submitDeathReport = async ({
   await setDeathDate(deathDateValue);
   await genericForm.nextPage();
   await genericForm.submitForm();
-
 };
+
+const getLabelsValues = async () => ({
+  details: await $('span[data-itext-id="/death_report/death_details:label"].active').getText(),
+  date: await $('span[data-itext-id="/death_report/death_details/date_of_death:label"].active').getText(),
+  place: await $('span[data-itext-id="/death_report/death_details/place_of_death:label"].active').getText(),
+  healthFacility: await deathPlace(PLACE_OF_DEATH.healthFacility).nextElement().getText(),
+  home: await deathPlace(PLACE_OF_DEATH.home).nextElement().getText(),
+  other: await deathPlace(PLACE_OF_DEATH.other).nextElement().getText(),
+  notes: await $('span[data-itext-id="/death_report/death_details/death_information:label"].active').getText(),
+});
 
 module.exports = {
   PLACE_OF_DEATH,
@@ -62,4 +69,5 @@ module.exports = {
   setDeathInformation,
   getSummaryDetails,
   submitDeathReport,
+  getLabelsValues,
 };
