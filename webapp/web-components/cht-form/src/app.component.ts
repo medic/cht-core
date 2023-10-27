@@ -33,10 +33,12 @@ export class AppComponent {
   private _contactType?: string;
   private _content: Record<string, any> | null = null;
   private _user: Record<string, any> = this.DEFAULT_USER;
-  private currentRender = Promise.resolve();
 
-  editing = false;
-  status = { ...this.DEFAULT_STATUS };
+  private currentRender?: Promise<void>;
+  private reRenderForm = false;
+
+  @Input() editing = false;
+  @Input() status = { ...this.DEFAULT_STATUS };
 
   @Output() onRender: EventEmitter<void> = new EventEmitter();
   @Output() onCancel: EventEmitter<void> = new EventEmitter();
@@ -124,7 +126,6 @@ export class AppComponent {
 
     try {
       const submittedDocs = await this.getDocsFromForm();
-      this.tearDownForm();
       this.onSubmit.emit(submittedDocs);
     } catch (e) {
       console.error('Error submitting form data: ', e);
@@ -152,8 +153,20 @@ export class AppComponent {
   }
 
   private queueRenderForm() {
-    // Ensure that only one render is happening at a time
-    this.currentRender = this.currentRender.then(() => this.renderForm());
+    if (this.currentRender) {
+      this.reRenderForm = true;
+      return;
+    }
+    this.currentRender = this
+      .renderForm()
+      .catch(e => console.error('Error rendering form: ', e))
+      .finally(() => {
+        this.currentRender = undefined;
+        if (this.reRenderForm) {
+          this.reRenderForm = false;
+          this.queueRenderForm();
+        }
+      });
   }
 
   private async renderForm() {
@@ -162,9 +175,16 @@ export class AppComponent {
       return;
     }
 
+    const selector = `#${this._formId}`;
+    // Can have a race condition where the formId is set here but the Angular attribute data binding has not updated
+    // the DOM yet (the formId is used as the id of the .enketo element)
+    if (!$(selector).length) {
+      return this.waitForSelector(selector)
+        .then(() => this.renderForm());
+    }
+
     const editedListener = () => this.editing = true;
     const valuechangeListener = () => this.status.error = null;
-    const selector = `#${this._formId}`;
     const formDoc = { _id: this._formId };
     const type = this._contactType ? 'contact': 'report';
     const formContext = new EnketoFormContext(selector, type, formDoc, this._content);
@@ -172,7 +192,6 @@ export class AppComponent {
     formContext.valuechangeListener = valuechangeListener;
     formContext.contactSummary = this._contactSummary;
     const formDetails = this.getFormDetails();
-
     await this.enketoService.renderForm(formContext, formDetails, this._user);
     this.onRender.emit();
   }
@@ -182,6 +201,21 @@ export class AppComponent {
     if (currentForm) {
       this.enketoService.unload(currentForm);
     }
+  }
+
+  private async waitForSelector(selector: string) {
+    return new Promise(resolve => {
+      const observer = new MutationObserver(() => {
+        if ($(selector).length) {
+          observer.disconnect();
+          return resolve(true);
+        }
+      });
+      observer.observe($('.body').get(0)!, {
+        subtree: true,
+        attributeFilter: ['id'],
+      });
+    });
   }
 
   private getFormDetails() {
