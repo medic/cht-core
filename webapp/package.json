@@ -19,6 +19,7 @@
   "scripts": {
     "postinstall": "patch-package",
     "unit": "UNIT_TEST_ENV=1 ng test webapp",
+    "unit:cht-form": "ng test cht-form",
     "build": "ng build",
     "build:cht-form": "ng build cht-form",
     "compile": "ngc"
