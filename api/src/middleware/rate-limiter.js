@@ -1,6 +1,5 @@
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 
-
 const rateLimiter = new RateLimiterMemory({
   keyPrefix: 'middleware',
   points: 10, // 10 requests
@@ -8,25 +7,14 @@ const rateLimiter = new RateLimiterMemory({
 });
 
 const rateLimiterMiddleware = (req, res, next) => {
-  rateLimiter.get(req.ip)
-    .then((limit) => {
-      if (limit?.remainingPoints === 0) {
-        console.log('blocked!!')
-        return res.status(429).send('Too Many Requests');
-      }
-      console.log('limit', limit);
-      next();
-    });
+  // TODO: also consume given username
+  rateLimiter.consume(req.ip)
+    .then(() => next())
+    .catch(() => res.status(429).send('Too Many Requests'));
 
-  res.on("finish", function() {
-    if (res.statusCode === 401) {
-      // TODO: also consume given username
-      console.log('consuming', req.ip);
-
-      rateLimiter.consume(req.ip)
-        .catch(() => {
-          // ignore - cannot set headers as they're already set
-        });
+  res.on('finish', () => {
+    if (res.statusCode !== 401 && res.statusCode !== 429 && !res.unauthorized) {
+      rateLimiter.reward(req.ip);
     }
   });
 
