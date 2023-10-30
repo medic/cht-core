@@ -11,12 +11,14 @@ const formTitle = () => $('.enketo form #form-title');
 
 const currentFormView = () => $('.enketo form .current');
 
+const validationErrors = () => $$('.invalid-required');
+const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
+
 const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   if (waitForLoad) {
-    const validationErrors = await $$('.invalid-required');
-    if (validationErrors.length) {
+    if ((await validationErrors()).length) {
       await (await formTitle()).click(); // focus out to trigger re-validation
-      await browser.waitUntil(async () => !(await $$('.invalid-required')).length);
+      await waitForValidationErrorsToDisappear();
     }
   }
 
@@ -77,7 +79,7 @@ const verifyReport = async () => {
 };
 
 const submitForm = async () => {
-  await browser.waitUntil(async () => (await $$('.invalid-required')).length === 0);
+  await waitForValidationErrorsToDisappear();
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
 };
