@@ -25,6 +25,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { SearchFiltersService } from '@mm-services/search-filters.service';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -40,6 +41,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private isOnlineOnly: boolean;
   private windowRef;
   private file;
+  private fileInput;
+  private input;
+  private img;
 
   fastActionList: FastAction[];
   contactsList;
@@ -70,6 +74,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private fastActionButtonService: FastActionButtonService,
     private translateService: TranslateService,
     private searchService: SearchService,
+    private searchFiltersService: SearchFiltersService,
     private contactTypesService: ContactTypesService,
     private userSettingsService: UserSettingsService,
     private getDataRecordsService: GetDataRecordsService,
@@ -163,12 +168,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   async ngAfterViewInit() {
     const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSearchNewDesign = !isDisabled;
-/*
-    const input = this.windowRef.document.getElementById('avatar');
-    console.warn('input', input);
-    input.addEventListener('change', () => this.updateImageDisplay(input));
 
- */
+    this.input = this.windowRef.document.getElementById('barcode');
+    console.warn('input', this.input);
+    this.input.addEventListener('change', () => this.updateImageDisplay(this.input));
   }
 
   ngOnDestroy() {
@@ -498,7 +501,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .sort((a, b) => a.id?.localeCompare(b.id));
   }
 
-  /**
+
   updateImageDisplay(input) {
     const curFiles = input.files;
     if (curFiles.length === 0) {
@@ -507,17 +510,21 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const file = curFiles[0];
+    this.fileInput = curFiles[0];
     console.warn('file', file);
     const reader = new FileReader();
     reader.addEventListener('load', event => this.readFile(event));
-    reader.readAsText(file);
+    reader.readAsDataURL(file);
   }
 
   readFile(event) {
-    this.file = event.target.result;
-    console.warn('readFile', this.file);
+    this.img = this.windowRef.document.createElement('img');
+    this.img.src = event.target.result;
+    this.scanBarcode();
+    // this.file = new Blob([ event.target.result ], { type: 'image/png' });
+    // console.warn('readFile', this.file);
   }
-   */
+
 
   async scanBarcode() {
     if (!('BarcodeDetector' in window)) {
@@ -526,8 +533,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     console.warn('Barcode Detector supported!');
-
-    const stream = await this.windowRef.navigator.mediaDevices.getUserMedia({
+/*
+    const stream = !this.file && await this.windowRef.navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
         facingMode: 'user', // Works for mobile browser
@@ -535,7 +542,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         width: {ideal: 1920},
       },
     });
-      /*{ // Works for Desktop
+      { // Works for Desktop
       video: {
         facingMode: {
           ideal: 'environment'
@@ -543,21 +550,23 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
       },
       audio: false
-    });*/
+    });
     const videoEl = this.windowRef.document.querySelector('#stream');
-    videoEl.srcObject = stream;
-    await videoEl.play();
-
+    if (!this.file) {
+      videoEl.srcObject = stream;
+      await videoEl.play();
+    }
+  */
     // get supported barcodes
     const barcodeTypes = await this.windowRef.BarcodeDetector.getSupportedFormats();
     // create new detector
     const barcodeDetector = new this.windowRef.BarcodeDetector({ formats: barcodeTypes });
 
     barcodeDetector
-      .detect(videoEl) // ToDo: get it work with image Blob or ImageData from external (Android camera)
+      .detect(this.img)
       .then(barcodes => {
         barcodes?.forEach(barcode => {
-          this.globalActions.setFilter({ search: barcode.rawValue });
+          this.searchFiltersService.freetextSearch(barcode.rawValue);
           console.warn('each barcode', barcode.rawValue);
         });
       })

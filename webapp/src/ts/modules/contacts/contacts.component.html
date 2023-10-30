@@ -1,7 +1,10 @@
 <div class="filters tab-bar">
   <div class="inner">
-    <button (click)="scanBarcode()">scan barcode</button>
-    <video id="stream" style="width: 60px; height: 60px;"></video>
+    <label for="barcode" style="background: lightgrey; display: inline-block; padding: 5px; cursor: pointer;">
+      Scan
+    </label>
+    <!--<video id="stream" style="width: 60px; height: 60px;"></video>-->
+    <input type="file" id="barcode" name="barcode-image" data-type-xml="binary" accept="image/*" style="visibility: hidden;position: absolute;left: -500px;" />
     <contacts-filters
       *ngIf="!useSearchNewDesign"
       (search)="search()"
