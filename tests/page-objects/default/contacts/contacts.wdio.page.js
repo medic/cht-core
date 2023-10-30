@@ -24,7 +24,7 @@ const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
-const roleField = (type, role) => $(`span[data-itext-id="/data/${type}/role/${role}:label"].active`);
+const roleField = (type, role) => $(`[data-name="/data/${type}/role"][value="${role}"]`)
 const phoneField = () => $('input.ignore[type="tel"]');
 const personName = () => $('[name="/data/person/name"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
@@ -130,7 +130,7 @@ const waitForContactUnloaded = async () => {
 };
 
 const submitForm = async (waitForLoad = true) => {
-  await (await genericForm.submitButton()).waitForDisplayed();
+  await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
   waitForLoad && await waitForContactLoaded();
 };
@@ -146,7 +146,7 @@ const addPlace = async ({
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {},
-rightSideAction = true,) => {
+  rightSideAction = true,) => {
   if (rightSideAction) {
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {
@@ -181,13 +181,21 @@ const addPerson = async ({
 } = {}, waitForSentinel = true) => {
   const type = 'person';
   await commonPage.clickFastActionFAB({ actionId: type });
+  await (await personName()).waitForDisplayed();
   await (await personName()).addValue(nameValue);
+  await (await dateOfBirthField()).waitForDisplayed();
   await (await dateOfBirthField()).addValue(dobValue);
+  await (await personName()).waitForClickable();
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  await (await phoneField()).waitForDisplayed();
   await (await phoneField()).addValue(phoneValue);
+  await (await sexField(type, sexValue)).waitForClickable();
   await (await sexField(type, sexValue)).click();
+  await (await roleField(type, roleValue)).waitForClickable();
   await (await roleField(type, roleValue)).click();
+  await (await externalIdField(type)).waitForDisplayed();
   await (await externalIdField(type)).addValue(externalIDValue);
+  await (await notes(type)).waitForDisplayed();
   await (await notes(type)).addValue(notesValue);
   await submitForm();
   if (waitForSentinel) {
