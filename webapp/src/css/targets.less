@@ -6,63 +6,78 @@
   padding: 35px 0;
 
   .target {
-    padding: 10px;
-    width: 350px;
-    min-height: 180px;
-    background-color: #FFFFFF;
-    border: 1px solid @separator-color;
-    border-radius: @radius-size-small;
+    width: 296px;
+    min-height: 151px;
+    background-color: @gray-ultra-light;
+    border: 1px solid @gray-light;
+    border-radius: @radius-size;
     margin: 15px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
     .heading {
+      display: flex;
+      padding: 10px;
+      background-color: @white;
+      border-bottom-left-radius: @radius-size;
+      border-bottom-right-radius: @radius-size;
       .title {
-        margin-left: 65px;
+        margin-left: 10px;
         h2 {
           margin: 0;
+          color: @gray-ultra-dark;
+          font-size: @font-medium;
+          font-weight: 700;
+          line-height: 20px;
         }
         p {
-          color: @label-color;
+          color: @gray-dark;
+          font-size: @font-small;
+          font-weight: 400px;
         }
       }
       .icon {
         float: left;
+        align-self: center;
         img,
         svg {
-          width: @icon-large;
-          height: @icon-large;
+          width: 35px;
+          height: 35px;
         }
       }
     }
     .body {
       clear: both;
+      padding: 10px 10px 0;
       position: relative;
       margin: 0 5px;
+      min-height: 74px;
       .percent {
         position: relative;
       }
       .count {
         text-align: center;
         .number {
-          font-size: 56px;
+          text-align: center;
+          font-size: 48px;
           line-height: 1;
           font-weight: bold;
-          margin-bottom: 15px;
         }
         .goal {
           position: absolute;
           right: 0;
-          bottom: 20px;
+          margin-right: 10px;
           color: @label-color;
           p {
-            font-size: @font-extra-extra-large;
-            line-height: 1;
+            font-size: @font-small;
+            font-weight: 400;
+            line-height: 24px;
             margin-bottom: 0;
+            color: @gray-dark;
           }
           label {
-            font-size: @font-small;
+            font-size: @font-extra-extra-large;
             line-height: 1;
             margin-bottom: 0;
           }
@@ -74,7 +89,8 @@
 
 .target {
   &.has-goal,
-  &.has-goal:not(.goal-met), .percent {
+  &.has-goal:not(.goal-met),
+  .percent {
     .number {
       color: @targets-below-color;
     }
@@ -82,7 +98,8 @@
       background-color: @targets-below-color;
     }
   }
-  &.goal-met, .percent {
+  &.goal-met,
+  .percent {
     .number {
       color: @targets-above-goal;
     }
@@ -118,13 +135,13 @@
         width: 8px;
         margin-left: -4px; /* center */
         background-color: @label-color;
-        border: 2px solid #FFFFFF;
+        border: 2px solid @target-progress-bar-border-color;
         border-radius: @radius-size;
       }
     }
 
     .value {
-      font-size: @font-extra-extra-large;
+      font-size: @font-medium;
       line-height: 1;
       font-weight: bold;
     }
