@@ -111,7 +111,6 @@ app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, cal
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
-app.use(rateLimiterMiddleware);
 app.use(prometheusMiddleware({
   metricsPath: '/api/v1/express-metrics',
   metricsPrefix: 'cht_api',
@@ -163,6 +162,7 @@ app.use(
     ':res[content-length] :response-time ms'
   )
 );
+app.use(rateLimiterMiddleware);
 
 app.use(
   helmet({
