@@ -1,7 +1,6 @@
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const uuid = require('uuid').v4;
-const common = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
@@ -64,8 +63,8 @@ describe('Edit report with attachment', () => {
   before(async () => {
     await utils.seedTestData(userContactDoc, [...docs, formDoc]);
     await loginPage.cookieLogin();
-    await common.waitForPageLoaded();
-    await common.hideSnackbar();
+    await commonElements.waitForPageLoaded();
+    await commonElements.hideSnackbar();
   });
 
   it('should remove attachment when saving', async () => {
