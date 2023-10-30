@@ -64,7 +64,7 @@ describe('Edit report with attachment', () => {
   before(async () => {
     await utils.seedTestData(userContactDoc, [...docs, formDoc]);
     await loginPage.cookieLogin();
-    await commonElements.waitForPageLoaded();
+    await common.waitForPageLoaded();
     await common.hideSnackbar();
   });
 
