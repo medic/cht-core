@@ -10,8 +10,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
-const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');

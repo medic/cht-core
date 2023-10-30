@@ -11,8 +11,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
-const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();

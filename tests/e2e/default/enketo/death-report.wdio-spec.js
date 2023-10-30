@@ -11,8 +11,7 @@ const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.pa
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const sentinelUtils = require('@utils/sentinel');
-const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();

@@ -10,8 +10,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const undoDeathReportForm = require('@page-objects/default/enketo/undo-death-report.page');
-const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Submit an undo death report', () => {
   const places = placeFactory.generateHierarchy();

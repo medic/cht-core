@@ -11,8 +11,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
-const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Contact Delivery Form', () => {
   const BABY_NAME = 'Benja';
