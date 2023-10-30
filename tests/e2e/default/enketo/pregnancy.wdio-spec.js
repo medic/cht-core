@@ -11,6 +11,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
+const { TARGET_MET_COLOR } = analyticsPage;
+const { TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();
@@ -125,14 +127,14 @@ describe('Pregnancy registration', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'New pregnancies', goal: '20', count: '1', countNumberColor: '#000000' },
-      { title: 'Live births', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active pregnancies', count: '1', countNumberColor: '#76b0b0' },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR },
+      { title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: '#76b0b0'  }
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR  }
     ]);
   });
 });

@@ -1,3 +1,7 @@
+const TARGET_MET_COLOR = '#76b0b0';
+
+const TARGET_UNMET_COLOR = '#000000';
+
 const goToTargets = () => browser.url('/#/analytics/targets');
 
 const noSelectedTarget = () => $('.empty-selection');
@@ -87,5 +91,7 @@ module.exports = {
   getErrorLog,
   emptySelectionError,
   emptySelectionNoError,
+  TARGET_MET_COLOR,
+  TARGET_UNMET_COLOR
 };
 

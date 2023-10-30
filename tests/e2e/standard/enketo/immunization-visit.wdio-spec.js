@@ -9,6 +9,8 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const gatewayApiUtils = require('@utils/gateway-api');
 const immVisitForm = require('@page-objects/standard/enketo/immunization-visit.wdio.page');
+const { TARGET_MET_COLOR } = analyticsPage;
+const { TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Immunization Visit', () => {
   const places = placeFactory.generateHierarchy();
@@ -175,24 +177,24 @@ describe('Immunization Visit', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Active pregnancies', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'New pregnancies', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Births', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Births', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'Deliveries with 1+ visit', percent: '0%', percentCount: '(0 of 0)' },
       { title: 'Deliveries with 4+ visits', percent: '0%', percentCount: '(0 of 0)' },
       { title: 'Deliveries at facility', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Children under 5', count: '1', countNumberColor: '#76b0b0' },
-      { title: 'Children registered', count: '1', countNumberColor: '#76b0b0' },
-      { title: 'Vaccines given', count: '2', countNumberColor: '#76b0b0' },
-      { title: 'Children vaccinated', count: '1', countNumberColor: '#76b0b0' },
-      { title: 'Children with no vaccines reported', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'Children under 5', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Children registered', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Vaccines given', count: '2', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Children vaccinated', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Children with no vaccines reported', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'Children with BCG reported', percent: '100%', percentCount: '(1 of 1)' },
       { title: '<5 children screened for growth monitoring', percent: '0%', percentCount: '(0 of 1)' },
-      { title: '<5 Underweight Growth Monitoring', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active MAM cases', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active SAM cases', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active OTP cases', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active SFP cases', count: '0', countNumberColor: '#76b0b0' },
+      { title: '<5 Underweight Growth Monitoring', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active MAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active OTP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SFP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
     ]);
   });
 

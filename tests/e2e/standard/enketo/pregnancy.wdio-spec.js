@@ -11,6 +11,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
+const { TARGET_MET_COLOR } = analyticsPage;
+const { TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('New pregnancy', () => {
   const places = placeFactory.generateHierarchy();
@@ -132,18 +134,18 @@ describe('New pregnancy', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Active pregnancies', count: '2', countNumberColor: '#76b0b0' },
-      { title: 'New pregnancies', count: '2', countNumberColor: '#76b0b0' },
-      { title: 'Births', count: '0', countNumberColor: '#76b0b0' },
+      { title: 'Active pregnancies', count: '2', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', count: '2', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Births', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'Deliveries with 1+ visit', percent: '0%', percentCount: '(0 of 0)' },
       { title: 'Deliveries with 4+ visits', percent: '0%', percentCount: '(0 of 0)' },
       { title: 'Deliveries at facility', percent: '0%', percentCount: '(0 of 0)' },
       { title: '<5 children screened for growth monitoring', percent: '0%', percentCount: '(0 of 0)' },
-      { title: '<5 Underweight Growth Monitoring', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active MAM cases', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active SAM cases', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active OTP cases', count: '0', countNumberColor: '#76b0b0' },
-      { title: 'Active SFP cases', count: '0', countNumberColor: '#76b0b0' },
+      { title: '<5 Underweight Growth Monitoring', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active MAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active OTP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SFP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
     ]);
   });
 
