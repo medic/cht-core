@@ -31,6 +31,9 @@ describe('User Test Cases ->', () => {
   });
 
   beforeEach(async () => {
+    if (await usersAdminPage.addUserDialog().isDisplayed()) {
+      await usersAdminPage.closeAddUserDialog();
+    }
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();
   });
