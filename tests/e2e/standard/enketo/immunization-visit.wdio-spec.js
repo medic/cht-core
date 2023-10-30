@@ -10,7 +10,6 @@ const userFactory = require('@factories/cht/users/users');
 const gatewayApiUtils = require('@utils/gateway-api');
 const immVisitForm = require('@page-objects/standard/enketo/immunization-visit.wdio.page');
 const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Immunization Visit', () => {
   const places = placeFactory.generateHierarchy();

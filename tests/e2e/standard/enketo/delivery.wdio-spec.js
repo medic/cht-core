@@ -13,7 +13,6 @@ const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page
 const pregnancyVisitForm = require('@page-objects/standard/enketo/pregnancy-visit.wdio.page');
 const deliveryForm = require('@page-objects/standard/enketo/delivery.wdio.page');
 const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Delivery', () => {
   const places = placeFactory.generateHierarchy();

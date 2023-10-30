@@ -12,7 +12,6 @@ const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.pa
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
 const { TARGET_MET_COLOR } = analyticsPage;
-const { TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('New pregnancy', () => {
   const places = placeFactory.generateHierarchy();
