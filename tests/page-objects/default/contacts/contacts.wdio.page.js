@@ -24,7 +24,7 @@ const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
-const roleField = (type, role) => $(`[data-name="/data/${type}/role"][value="${role}"]`)
+const roleField = (type, role) => $(`[data-name="/data/${type}/role"][value="${role}"]`);
 const phoneField = () => $('input.ignore[type="tel"]');
 const personName = () => $('[name="/data/person/name"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
@@ -146,7 +146,7 @@ const addPlace = async ({
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {},
-  rightSideAction = true,) => {
+rightSideAction = true,) => {
   if (rightSideAction) {
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {
