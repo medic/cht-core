@@ -18,9 +18,11 @@
       [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
       attr.test-target-id="{{ target.id }}">
       <div class="body">
-        <mm-analytics-targets-progress *ngIf="target.type === 'percent'"
+        <mm-analytics-targets-progress
+          *ngIf="target.type === 'percent'"
           [target]="target" [value]="target.value"
-          [aggregate]="false"></mm-analytics-targets-progress>
+          [aggregate]="false">
+        </mm-analytics-targets-progress>
         <div class="count" *ngIf="target.type !== 'percent'">
           <div class="goal" *ngIf="target.goal >= 0">
             <p>{{ 'analytics.target.monthly_goal' | translate }} {{ target.goal | localizeNumber }}</p>

@@ -79,11 +79,15 @@ describe('Submit a death report', () => {
       { title: 'New pregnancies', goal: '20', count: '0', countNumberColor: TARGET_UNMET_COLOR },
       { title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0',
-        countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 1+ routine facility visits',
+        count: '0',
+        countNumberColor: TARGET_MET_COLOR
+      },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0',
-        countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 4+ routine facility visits',
+        count: '0',
+        countNumberColor: TARGET_MET_COLOR
+      },
       { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR }
     ]);
   });
