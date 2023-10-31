@@ -256,18 +256,17 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     formContext.valuechangeListener = this.resetFormError.bind(this);
     formContext.titleKey = titleKey;
 
-    return this.formService.render(formContext)
-      .then((formInstance) => {
-        this.telemetryData.postRender = Date.now();
-        this.telemetryData.form = formId;
+    const formInstance = await this.formService.render(formContext);
+    this.telemetryData.postRender = Date.now();
+    this.telemetryData.form = formId;
+    this.telemetryData.action = 'edit';
 
-        this.telemetryService.record(
-          `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender
-        );
+    await this.telemetryService.record(
+      `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+      this.telemetryData.postRender - this.telemetryData.preRender
+    );
 
-        return formInstance;
-      });
+    return formInstance;
   }
 
   private setEnketoContact(formInstance) {
