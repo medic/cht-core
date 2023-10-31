@@ -78,20 +78,12 @@ module.exports = {
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       return false;
     }
-
-    let username;
-    let password;
-
     try {
-      [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+      const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+      return { username, password };
     } catch (err) {
       throw Error('Corrupted Auth header');
     }
-
-    return {
-      username: username,
-      password: password
-    };
   },
 
   /**

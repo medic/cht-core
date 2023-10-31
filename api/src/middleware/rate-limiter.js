@@ -1,38 +1,31 @@
-const { RateLimiterMemory } = require('rate-limiter-flexible');
+const auth = require('../auth');
+const rateLimitService = require('../services/rate-limit');
+const serverUtils = require('../server-utils');
 
-const failedLoginLimit = new RateLimiterMemory({
-  keyPrefix: 'failed-login',
-  points: 10, // 10 requests
-  duration: 10, // per 10 seconds
-});
-
-const requestLimit = new RateLimiterMemory({
-  keyPrefix: 'request',
-  points: 10, // 10 requests
-  duration: 1, // per 1 second
-});
+const getBasicAuthUsername = (req) => auth.basicAuthCredentials(req);
 
 const rateLimiterMiddleware = (req, res, next) => {
+  const basicAuth = getBasicAuthUsername(req);
 
-  requestLimit.consume(req.ip)
-    .then(() => failedLoginLimit.get(req.ip))
-    .then(limit => {
-      if (limit && limit.remainingPoints <= 0) {
-        throw new Error('Too many failed login attempts');
+  const keys = [ req.ip ];
+  if (basicAuth) {
+    keys.push(basicAuth.username);
+    keys.push(basicAuth.password);
+  }
+
+  rateLimitService.isLimited(keys)
+    .then(isLimited => {
+      if (isLimited) {
+        return serverUtils.rateLimited(req, res);
       }
       next();
-    })
-    .catch(() => {
-      return res.status(429).send('Too Many Requests');
     });
 
   res.on('finish', () => {
-    if (res.statusCode === 401 || res.statusCode === 429 || res.unauthorized) {
-      // TODO: also consume given username
-      failedLoginLimit.consume(req.ip)
-        .catch(() => {
-          // ignore - cannot set headers as they're already set
-        });
+    if (res.statusCode === 401 || res.statusCode === 429) {
+      keys.push(req.body?.user);
+      keys.push(req.body?.password);
+      rateLimitService.consume(keys);
     }
   });
 

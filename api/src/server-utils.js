@@ -77,7 +77,6 @@ module.exports = {
    * an authentication error.
    */
   notLoggedIn: (req, res, showPrompt) => {
-    res.unauthorized = true;
     if (!res.headersSent) {
       res.setHeader('logout-authorization', 'CHT-Core API');
     }
@@ -102,6 +101,10 @@ module.exports = {
     } else {
       promptForBasicAuth(res);
     }
+  },
+
+  rateLimited: (req, res) => {
+    respond(req, res, 429, 'Too Many Requests');
   },
 
   /**

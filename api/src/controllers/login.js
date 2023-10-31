@@ -14,6 +14,8 @@ const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
 const translations = require('../translations');
 const template = require('../services/template');
+const rateLimitService = require('../services/rate-limit');
+const serverUtils = require('../server-utils');
 
 const templates = {
   login: {
@@ -269,6 +271,10 @@ const renderLogin = (req) => {
   return render('login', req);
 };
 
+const isRateLimited = async req => {
+  return rateLimitService.isLimited([ req.body.user, req.body.password ]);
+};
+
 module.exports = {
   renderLogin,
 
@@ -285,7 +291,11 @@ module.exports = {
       })
       .catch(next);
   },
-  post: (req, res) => {
+  post: async (req, res) => {
+    const limited = await isRateLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
     return createSession(req)
       .then(sessionRes => {
         if (sessionRes.statusCode !== 200) {
