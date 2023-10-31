@@ -12,6 +12,7 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { ComponentsModule } from '@mm-components/components.module';
 import { TranslateService } from '@mm-services/translate.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -33,6 +34,7 @@ describe('ContactsEdit component', () => {
   let lineageModelGeneratorService;
   let contactSaveService;
   let routeSnapshot;
+  let telemetryService;
 
   beforeEach(() => {
     contactTypesService = {
@@ -54,6 +56,7 @@ describe('ContactsEdit component', () => {
       render: sinon.stub(),
       unload: sinon.stub(),
     };
+    telemetryService = { record: sinon.stub() };
     lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: { } }) };
     contactSaveService =  { save: sinon.stub() };
 
@@ -84,6 +87,7 @@ describe('ContactsEdit component', () => {
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: ContactSaveService, useValue: contactSaveService },
+        { provide: TelemetryService, useValue: telemetryService },
       ],
       declarations: [
         EnketoComponent,
@@ -326,6 +330,8 @@ describe('ContactsEdit component', () => {
           titleKey: 'clinic_create_key',
         });
         expect(component.contentError).to.equal(false);
+        expect(telemetryService.record.calledOnce).to.be.true;
+        expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:clinic_create_form_id:edit:render');
       });
 
       it('should render form without parent', async () => {
@@ -357,6 +363,8 @@ describe('ContactsEdit component', () => {
           titleKey: 'district_create_key',
         });
         expect(component.contentError).to.equal(false);
+        expect(telemetryService.record.calledOnce).to.be.true;
+        expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:district_create_form_id:edit:render');
       });
     });
 
@@ -462,6 +470,8 @@ describe('ContactsEdit component', () => {
           type: 'patient',
         });
         expect(component.contentError).to.equal(false);
+        expect(telemetryService.record.calledOnce).to.be.true;
+        expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:patient_edit_form:edit:render');
       });
 
       it('should render form with create form', async () => {
@@ -498,6 +508,8 @@ describe('ContactsEdit component', () => {
           type: 'a_clinic_type',
         });
         expect(component.contentError).to.equal(false);
+        expect(telemetryService.record.calledOnce).to.be.true;
+        expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:a_clinic_type_create_form:edit:render');
       });
 
       it('should select correct form for correct type', async () => {
@@ -537,6 +549,8 @@ describe('ContactsEdit component', () => {
           type: 'the correct type',
         });
         expect(component.contentError).to.equal(false);
+        expect(telemetryService.record.calledOnce).to.be.true;
+        expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:the correct_edit_form:edit:render');
       });
     });
   });
@@ -618,7 +632,10 @@ describe('ContactsEdit component', () => {
       contactSaveService.save.resolves({ docId: 'new_clinic_id' });
 
       await component.save();
-
+      expect(telemetryService.record.callCount).to.equal(3);
+      expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:clinic_create_form_id:edit:render');
+      expect(telemetryService.record.args[1][0]).to.equal('enketo:contacts:clinic_create_form_id:edit:user_edit_time');
+      expect(telemetryService.record.args[2][0]).to.equal('enketo:contacts:clinic_create_form_id:edit:save');
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
@@ -661,6 +678,9 @@ describe('ContactsEdit component', () => {
       expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_person', 'person', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
+      expect(telemetryService.record.callCount).to.equal(3);
+      expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:person_edit_form_id:edit:render');
+      expect(telemetryService.record.args[1][0]).to.equal('enketo:contacts:person_edit_form_id:edit:user_edit_time');
     });
 
     it('when editing existent contact of configurable type', async () => {
@@ -696,6 +716,9 @@ describe('ContactsEdit component', () => {
       expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_patient', 'patient', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
+      expect(telemetryService.record.callCount).to.equal(3);
+      expect(telemetryService.record.args[0][0]).to.equal('enketo:contacts:patient_create_form_id:edit:render');
+      expect(telemetryService.record.args[1][0]).to.equal('enketo:contacts:patient_create_form_id:edit:user_edit_time');
     });
   });
 });
