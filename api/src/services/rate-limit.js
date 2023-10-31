@@ -25,14 +25,14 @@ module.exports = {
     if (!keys || !keys.length) {
       return;
     }
-    try {
-      for (const key of keys) {
-        if (key) {
+    for (const key of keys) {
+      if (key) {
+        try {
           await failedLoginLimit.consume(key);
+        } catch (e) {
+          // ignore - cannot set headers as they're already set
         }
       }
-    } catch (e) {
-      // ignore - cannot set headers as they're already set
     }
   }
 };
