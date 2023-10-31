@@ -4,21 +4,15 @@ const path = require('path');
 const baseConfig = require('./karma-unit.base.conf');
 
 module.exports = function (config) {
-  config.set(
-    Object.assign(
-      {},
-      baseConfig,
-      {
-        basePath: '../../',
-        logLevel: config.LOG_INFO,
-        coverageReporter: Object.assign(
-          {},
-          baseConfig.coverageReporter,
-          { dir: path.join(__dirname, 'coverage') }
-        )
-      }
-    ),
-  );
+  config.set({
+    ...baseConfig,
+    basePath: '../../',
+    logLevel: config.LOG_INFO,
+    coverageReporter: {
+      ...baseConfig.coverageReporter,
+      dir: path.join(__dirname, 'coverage')
+    }
+  });
 
   // allow to require xml files as strings
   config.buildWebpack.webpackConfig.module.rules.push({

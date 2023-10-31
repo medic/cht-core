@@ -9,6 +9,6 @@
     "angular/timeout-service": "off"
   },
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 2018
   }
 }

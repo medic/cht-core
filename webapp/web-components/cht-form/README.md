@@ -74,7 +74,7 @@ Currently, the position of the form on a page needs to be absolute (for all the 
 
 ```css
 .content .page {
-    top: ???px
+  top: ???px !important;
 }
 ```
 

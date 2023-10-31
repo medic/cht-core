@@ -23,7 +23,7 @@ require(`../../../src/js/enketo/main`);
 // https://jquery.com/upgrade-guide/3.5/
 const rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi;
 // eslint-disable-next-line no-import-assign
-Object.defineProperties($, {
+Object.defineProperties($, { // NOSONAR
   htmlPrefilter: { value: (html) => html.replace(rxhtmlTag, '<$1></$2>') }
 });
 
