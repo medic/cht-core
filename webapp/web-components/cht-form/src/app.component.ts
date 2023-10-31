@@ -32,7 +32,7 @@ export class AppComponent {
   private _contactSummary?: Record<string, any>;
   private _contactType?: string;
   private _content: Record<string, any> | null = null;
-  private _user: Record<string, any> = this.DEFAULT_USER;
+  private _user: typeof this.DEFAULT_USER & Record<string, any> = this.DEFAULT_USER;
 
   private currentRender?: Promise<void>;
   private reRenderForm = false;
@@ -104,7 +104,7 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
-  @Input() set user(user: Record<string, any>) {
+  @Input() set user(user: typeof this.DEFAULT_USER & Record<string, any>) {
     if (!user) {
       throw new Error('The user must be populated.');
     }
