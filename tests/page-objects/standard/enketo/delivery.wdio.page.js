@@ -29,7 +29,9 @@ const selectDeliveryLocation = async (value = LOCATION.facility) => {
   const location = await deliveryLocation(value);
   await location.waitForDisplayed();
   await location.click();
-  const locationLabel = driver.capabilities.browserVersion.split('.').shift() === MINIMUM_BROWSER_VERSION ? await (await deliveryLocationLabel(value)).getAttribute("innerHTML")
+  // eslint-disable-next-line no-undef
+  const locationLabel = driver.capabilities.browserVersion.split('.').shift() === MINIMUM_BROWSER_VERSION
+    ? await (await deliveryLocationLabel(value)).getAttribute('innerHTML')
     : await (await deliveryLocationLabel(value)).getText();
   return locationLabel;
 };
