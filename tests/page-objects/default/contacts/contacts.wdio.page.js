@@ -146,7 +146,7 @@ const addPlace = async ({
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {},
-  rightSideAction = true,) => {
+rightSideAction = true,) => {
   if (rightSideAction) {
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {

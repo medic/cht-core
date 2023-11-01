@@ -1251,7 +1251,7 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
-const getMinimumChromeVersion = async () => {
+const getMinimumChromeVersion = () => {
   return MINIMUM_BROWSER_VERSION;
 };
 
