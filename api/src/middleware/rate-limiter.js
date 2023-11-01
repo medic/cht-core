@@ -34,7 +34,7 @@ const rateLimiterMiddleware = (req, res, next) => {
       if (isLimited) {
         return serverUtils.rateLimited(req, res);
       }
-      consume();
+      consume(req, res);
       next();
     });
 };
