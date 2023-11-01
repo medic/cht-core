@@ -298,20 +298,16 @@ module.exports = {
     }
     return createSession(req)
       .then(sessionRes => {
-        if (sessionRes.statusCode !== 200) {
-          res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-          return;
+        if (sessionRes.statusCode === 200) {
+          return setCookies(req, res, sessionRes)
+            .then(redirectUrl => res.status(302).send(redirectUrl));
         }
-        return setCookies(req, res, sessionRes)
-          .then(redirectUrl => res.status(302).send(redirectUrl))
-          .catch(err => {
-            if (err.status === 401) {
-              return res.status(err.status).json({ error: err.error });
-            }
-            throw err;
-          });
+        res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
       })
       .catch(err => {
+        if (err.status === 401) {
+          return res.status(401).json({ error: err.error });
+        }
         logger.error('Error logging in: %o', err);
         res.status(500).json({ error: 'Unexpected error logging in' });
       });

@@ -4,31 +4,39 @@ const serverUtils = require('../server-utils');
 
 const getBasicAuthUsername = (req) => auth.basicAuthCredentials(req);
 
-const rateLimiterMiddleware = (req, res, next) => {
-  const basicAuth = getBasicAuthUsername(req);
+const consume = (req, res) => {
+  res.on('finish', () => {
+    if (res.statusCode === 401 || res.statusCode === 429) {
+      rateLimitService.consume(getKeys(req));
+    }
+  });
+};
 
-  const keys = [ req.ip ];
+const getKeys = (req) => {
+  const keys = [
+    req.ip,
+    req.body?.user,
+    req.body?.password
+  ];
+
+  const basicAuth = getBasicAuthUsername(req);
   if (basicAuth) {
     keys.push(basicAuth.username);
     keys.push(basicAuth.password);
   }
 
-  rateLimitService.isLimited(keys)
+  return keys;
+};
+
+const rateLimiterMiddleware = (req, res, next) => {
+  rateLimitService.isLimited(getKeys(req))
     .then(isLimited => {
       if (isLimited) {
         return serverUtils.rateLimited(req, res);
       }
+      consume();
       next();
     });
-
-  res.on('finish', () => {
-    if (res.statusCode === 401 || res.statusCode === 429) {
-      keys.push(req.body?.user);
-      keys.push(req.body?.password);
-      rateLimitService.consume(keys);
-    }
-  });
-
 };
 
 module.exports = rateLimiterMiddleware;

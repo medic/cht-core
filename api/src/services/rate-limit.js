@@ -6,33 +6,43 @@ const failedLoginLimit = new RateLimiterMemory({
   duration: 10, // per 10 seconds
 });
 
+const isLimitedKey = async (key) => {
+  if (!key) {
+    return false;
+  }
+  const limit = await failedLoginLimit.get(key);
+  return limit && limit.remainingPoints <= 0;
+};
+
+const consumeKey = async (key) => {
+  if (!key) {
+    return;
+  }
+  try {
+    await failedLoginLimit.consume(key);
+  } catch (e) {
+    // ignore - cannot set headers as they're already set
+  }
+};
+
 module.exports = {
   isLimited: async keys => {
-    if (!keys || !keys.length) {
+    if (!keys?.length) {
       return false;
     }
     for (const key of keys) {
-      if (key) {
-        const limit = await failedLoginLimit.get(key);
-        if (limit && limit.remainingPoints <= 0) {
-          return true;
-        }
+      if (await isLimitedKey(key)) {
+        return true;
       }
     }
     return false;
   },
   consume: async keys => {
-    if (!keys || !keys.length) {
+    if (!keys?.length) {
       return;
     }
     for (const key of keys) {
-      if (key) {
-        try {
-          await failedLoginLimit.consume(key);
-        } catch (e) {
-          // ignore - cannot set headers as they're already set
-        }
-      }
+      await consumeKey(key);
     }
   }
 };
