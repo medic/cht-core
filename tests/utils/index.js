@@ -53,6 +53,7 @@ const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-senti
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const existingFeedbackDocIds = [];
+const MINIMUM_BROWSER_VERSION = '90';
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -458,7 +459,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForSentinelLogs( /Reminder messages allowed between/);
+    return waitForSentinelLogs(/Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };
@@ -1250,6 +1251,18 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
+const getMinimumChromeVersion = async () => {
+  return MINIMUM_BROWSER_VERSION;
+};
+
+const isMinimumChromeVersion = () => {
+  // eslint-disable-next-line no-undef
+  if (driver.capabilities.browserVersion.split('.').shift() === MINIMUM_BROWSER_VERSION) {
+    return true;
+  }
+  return false;
+};
+
 module.exports = {
   db,
   sentinelDb,
@@ -1320,4 +1333,6 @@ module.exports = {
   formDocProcessing,
   getSentinelDate,
   logFeedbackDocs,
+  getMinimumChromeVersion,
+  isMinimumChromeVersion,
 };

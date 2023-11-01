@@ -25,7 +25,6 @@ const CHROME_OPTIONS_ARGS_DEBUG = [
   'window-size=1200,900'
 ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
-const MINIMUM_BROWSER_VERSION = '90';
 
 const baseConfig = {
   //
@@ -94,7 +93,7 @@ const baseConfig = {
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
-      binary: CHROME_VERSION === MINIMUM_BROWSER_VERSION ? '/usr/bin/google-chrome-stable' : undefined
+      binary: CHROME_VERSION === utils.getMinimumChromeVersion() ? '/usr/bin/google-chrome-stable' : undefined
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -149,7 +148,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: CHROME_VERSION === MINIMUM_BROWSER_VERSION ? ['chromedriver'] : ['devtools'],
+  services: CHROME_VERSION === utils.getMinimumChromeVersion() ? ['chromedriver'] : ['devtools'],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -246,9 +245,7 @@ const baseConfig = {
    */
   before: async function () {
     global.expect = chai.expect;
-    // eslint-disable-next-line no-undef
-    const browserVersion = driver.capabilities.browserVersion;
-    if (browserVersion.split('.').shift() !== MINIMUM_BROWSER_VERSION) {
+    if (!utils.isMinimumChromeVersion()) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
     }
   },
