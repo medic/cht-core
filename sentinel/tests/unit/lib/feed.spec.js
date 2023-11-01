@@ -9,6 +9,7 @@ const feed = require('../../../src/lib/feed');
 const metadata = require('../../../src/lib/metadata');
 const logger = require('../../../src/lib/logger');
 const tombstoneUtils = require('@medic/tombstone-utils');
+const changeRetryHistory = require('../../../src/lib/change-retry-history');
 
 describe('feed', () => {
 
@@ -180,6 +181,28 @@ describe('feed', () => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(doc);
           chai.expect(tombstoneUtils.isTombstoneId.callCount).to.equal(2);
+        });
+    });
+
+    it('should skip docs that should not be retried', () => {
+      const doc1 = { id: 'some-uuid' };
+      const doc2 = { id: 'other-uuid' };
+      sinon.stub(metadata, 'getTransitionSeq').resolves('123');
+      sinon.stub(changeRetryHistory, 'shouldProcess')
+        .withArgs(doc1).returns(false)
+        .withArgs(doc2).returns(true);
+
+      const push = sinon.stub(feed._changeQueue, 'push');
+      return feed
+        .listen()
+        .then(() => {
+          const callbackFn = handler.on.args[0][1];
+          callbackFn(doc1);
+          callbackFn(doc2);
+        })
+        .then(() => {
+          chai.expect(push.callCount).to.equal(1);
+          chai.expect(push.args[0][0]).to.deep.equal(doc2);
         });
     });
 

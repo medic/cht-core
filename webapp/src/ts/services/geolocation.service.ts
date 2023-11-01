@@ -29,7 +29,7 @@ export class GeolocationService {
       }
       return !!window.medicmobile_android.getLocationPermissions();
     } catch (err) {
-      console.error(err);
+      console.error('Error when getting location permissions', err);
       return true;
     }
   }

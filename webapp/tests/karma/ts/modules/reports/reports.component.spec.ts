@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -35,6 +36,7 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -89,6 +91,7 @@ describe('Reports Component', () => {
     authService = {
       has: sinon.stub().resolves(false),
       online: sinon.stub().resolves(false),
+      any: sinon.stub().resolves(true)
     };
     sessionService = {
       isAdmin: sinon.stub().returns(false),
@@ -122,6 +125,7 @@ describe('Reports Component', () => {
           ComponentsModule,
           BrowserAnimationsModule,
           BsDropdownModule.forRoot(),
+          MatExpansionModule
         ],
         declarations: [
           ReportsComponent,
@@ -129,6 +133,7 @@ describe('Reports Component', () => {
           ReportsSidebarFilterComponent,
           SearchBarComponent,
           ReportsContentComponent,
+          ReportsMoreMenuComponent,
           NavigationComponent,
         ],
         providers: [
@@ -204,8 +209,6 @@ describe('Reports Component', () => {
 
     await component.ngAfterViewInit();
 
-    expect(feedbackService.submit.calledOnce).to.be.true;
-    expect(feedbackService.submit.args[0]).to.have.members([ 'some error' ]);
     expect(userContactService.get.calledOnce).to.be.true;
   });
 

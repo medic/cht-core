@@ -98,7 +98,7 @@ module.exports = {
       startFrom = 'reported_date';
     }
 
-    const docStart = objectPath.get(doc, startFrom);
+    const docStart = Array.isArray(startFrom)? objectPath.coalesce(doc, startFrom): objectPath.get(doc, startFrom);
 
     // if the document does not have the `start_from` property (or its
     // falsey) do nothing; this will be rerun on next document change

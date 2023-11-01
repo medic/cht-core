@@ -17,7 +17,6 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
@@ -54,7 +53,6 @@ export class FormService {
     private trainingCardsService: TrainingCardsService,
     private transitionsService: TransitionsService,
     private translateService: TranslateService,
-    private feedbackService:FeedbackService,
     private ngZone: NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private enketoService: EnketoService
@@ -66,8 +64,7 @@ export class FormService {
 
   private globalActions: GlobalActions;
   private servicesActions: ServicesActions;
-  private readonly HTML_ATTACHMENT_NAME = 'form.html';
-  private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
+
   private inited;
 
   private init() {
@@ -96,8 +93,8 @@ export class FormService {
   private transformXml(form) {
     return Promise
       .all([
-        this.getAttachment(form._id, this.HTML_ATTACHMENT_NAME),
-        this.getAttachment(form._id, this.MODEL_ATTACHMENT_NAME)
+        this.getAttachment(form._id, this.xmlFormsService.HTML_ATTACHMENT_NAME),
+        this.getAttachment(form._id, this.xmlFormsService.MODEL_ATTACHMENT_NAME)
       ])
       .then(([html, model]) => {
         const $html = $(html);
@@ -179,8 +176,6 @@ export class FormService {
         throw error;
       }
       const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
-      console.error(errorMessage, error.message);
-      this.feedbackService.submit(errorMessage + error.message, false);
       throw new Error(errorMessage + error.message);
     }
   }
@@ -202,8 +197,7 @@ export class FormService {
       .then((results) => {
         results.forEach((result) => {
           if (result.error) {
-            console.error('Error saving report', result);
-            throw new Error('Error saving report');
+            throw new Error('Error saving report: ' + result.error);
           }
           const idx = docs.findIndex(doc => doc._id === result.id);
           docs[idx] = { ...docs[idx], _rev: result.rev };

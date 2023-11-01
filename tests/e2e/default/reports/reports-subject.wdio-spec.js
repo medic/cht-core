@@ -67,7 +67,7 @@ describe('Reports Subject', () => {
   after(async () => await utils.revertSettings(true));
 
   afterEach(async () => await utils.deleteAllDocs([/^form:/].concat(...places.values()).concat(person._id)));
-  
+
   it('should create a report using patient_id', async () => {
     const report = {
       _id: 'REF_REF_V1',
