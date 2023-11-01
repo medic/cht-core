@@ -4,11 +4,17 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
+let brandingDoc;
+
 describe('Login page funcionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
   };
+
+  before(async () => {
+    brandingDoc = await utils.getDoc('branding');
+  });
 
   afterEach(async () => {
     await browser.reloadSession();
@@ -129,8 +135,7 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should have a title', async () => {
-      const branding = await utils.getDoc('branding');
-      expect(await browser.getTitle()).to.equal(branding.title);
+      expect(await browser.getTitle()).to.equal(brandingDoc.title);
     });
 
     it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
