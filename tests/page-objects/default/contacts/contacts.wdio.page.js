@@ -146,7 +146,7 @@ const addPlace = async ({
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {},
-rightSideAction = true,) => {
+  rightSideAction = true,) => {
   if (rightSideAction) {
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {
@@ -181,21 +181,13 @@ const addPerson = async ({
 } = {}, waitForSentinel = true) => {
   const type = 'person';
   await commonPage.clickFastActionFAB({ actionId: type });
-  await (await personName()).waitForDisplayed();
   await (await personName()).addValue(nameValue);
-  await (await dateOfBirthField()).waitForDisplayed();
   await (await dateOfBirthField()).addValue(dobValue);
-  await (await personName()).waitForClickable();
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
-  await (await phoneField()).waitForDisplayed();
   await (await phoneField()).addValue(phoneValue);
-  await (await sexField(type, sexValue)).waitForClickable();
   await (await sexField(type, sexValue)).click();
-  await (await roleField(type, roleValue)).waitForClickable();
   await (await roleField(type, roleValue)).click();
-  await (await externalIdField(type)).waitForDisplayed();
   await (await externalIdField(type)).addValue(externalIDValue);
-  await (await notes(type)).waitForDisplayed();
   await (await notes(type)).addValue(notesValue);
   await submitForm();
   if (waitForSentinel) {
