@@ -243,7 +243,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests, config-tests]
+    needs: [tests, config-tests, test-cht-form]
     name: Publish branch build
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'pull_request' }}
