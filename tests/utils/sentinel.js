@@ -59,14 +59,14 @@ const requestOnSentinelTestDb = (options) => {
 };
 
 const getInfoDoc = docId => {
-  return requestOnSentinelTestDb('/' + docId + '-info');
+  return requestOnSentinelTestDb('/' + docId + '-info?r=3');
 };
 
 const getInfoDocs = (docIds = []) => {
   docIds = _.castArray(docIds);
 
   const opts = {
-    path: '/_all_docs?include_docs=true',
+    path: '/_all_docs?include_docs=true&r=3',
     body: { keys: docIds.map(id => `${id}-info`) },
     method: 'POST',
     headers: {

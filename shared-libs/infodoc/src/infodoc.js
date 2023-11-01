@@ -220,7 +220,8 @@ const bulkUpdate = infoDocs => {
 };
 
 const recordDocumentWrite = (id, date) => {
-  return db.sentinel.get(getInfoDocId(id))
+  return db.sentinel
+    .get(getInfoDocId(id))
     .catch(err => {
       if (err.status !== 404) {
         throw err;
@@ -230,7 +231,8 @@ const recordDocumentWrite = (id, date) => {
     })
     .then(infoDoc => {
       infoDoc.latest_replication_date = date;
-      return db.sentinel.put(infoDoc)
+      return db.sentinel
+        .put(infoDoc)
         .catch(err => {
           if (err.status === 409) {
             return recordDocumentWrite(id, date);

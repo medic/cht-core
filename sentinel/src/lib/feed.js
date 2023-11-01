@@ -31,7 +31,6 @@ const getTransitionSeq = () => {
     .getTransitionSeq()
     .catch(err => {
       logger.error('transitions: error fetching processed seq: %o', err);
-      return;
     });
 };
 
@@ -67,10 +66,22 @@ const registerFeed = (seq) => {
   return request;
 };
 
-const changeQueue = async.queue((change, callback) => {
+const waitForShardSync = async (change) => {
+  do {
+    try {
+      return await db.shardSynced(change);
+    } catch (err) {
+      logger.debug(`Error when reading doc with full read: %o`, err);
+    }
+    // eslint-disable-next-line no-constant-condition
+  } while (true);
+};
+
+const changeQueue = async.queue( (change, callback) => {
   if (!change) {
     return callback();
   }
+
   logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
   if (processed > 0 && processed % PROGRESS_REPORT_INTERVAL === 0) {
     logger.info(
@@ -81,14 +92,16 @@ const changeQueue = async.queue((change, callback) => {
     return updateMetadata(change, callback);
   }
 
-  transitionsLib.processChange(change, err => {
-    if (err) {
-      changeRetryHistory.add(change);
-      return callback(err);
-    }
+  return waitForShardSync(change).then(() => {
+    transitionsLib.processChange(change, err => {
+      if (err) {
+        changeRetryHistory.add(change);
+        return callback(err);
+      }
 
-    updateMetadata(change, callback);
-  });
+      updateMetadata(change, callback);
+    });
+  })
 });
 
 const resumeProcessing = () => {

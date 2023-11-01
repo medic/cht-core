@@ -1174,14 +1174,22 @@ const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
-const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
-    .catch(() => console.warn('Error logging test start - ignoring'));
+const apiLogTestStart = async (name) => {
+  const doc = { _id: `test_${normalizeTestName(name)}` };
+  try {
+    await requestOnTestDb({ path: `/${doc._id}`, method: 'PUT', body: doc });
+  } catch (err) {
+    console.warn('Error logging test start - ignoring', err);
+  }
 };
 
-const apiLogTestEnd = (name) => {
-  return requestOnTestDb(`/?end=${normalizeTestName(name)}`)
-    .catch(() => console.warn('Error logging test end - ignoring'));
+const apiLogTestEnd = async (name) => {
+  const id = `test_${normalizeTestName(name)}`;
+  try {
+    await requestOnTestDb(`/?end=${id}`);
+  } catch (err) {
+    // we're expecting this doc to be deleted
+  }
 };
 
 const getDockerVersion = () => {

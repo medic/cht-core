@@ -9,17 +9,12 @@ BACKEND="/usr/local/etc/haproxy/backend.cfg"
 cp /usr/local/etc/haproxy/backend.cfg.template $BACKEND
 for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
 do
-  echo "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr $HEALTHCHECK_ADDR agent-port 5555" >> $BACKEND
+  echo "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check inter 5s" >> $BACKEND
 done
 
 # Place environment variables into config
 envsubst < $DEFAULT
 envsubst < $BACKEND
-
-#Write pw for healthcheck subshell to work
-mkdir -p /srv/storage/haproxy/passwd
-echo "$COUCHDB_USER" > /srv/storage/haproxy/passwd/username
-echo "$COUCHDB_PASSWORD" > /srv/storage/haproxy/passwd/admin
 
 # Start haproxy
 exec /usr/local/bin/docker-entrypoint.sh -f $DEFAULT -f $BACKEND

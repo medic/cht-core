@@ -3,4 +3,6 @@ backend couchdb-servers
   retry-on all-retryable-errors
   log global
   retries 5
+  option httpchk GET /_up
+  http-check expect status 401
   # servers are added at runtime, in entrypoint.sh, based on $COUCHDB_SERVERS
