@@ -8,9 +8,8 @@ angular.module('filters').filter('buildVersion',
       if (buildInfo) {
         if (buildInfo.version === buildInfo.base_version || !buildInfo.base_version) {
           return buildInfo.version;
-        } else {
-          return buildInfo.version + ' (~' + buildInfo.base_version + ')';
         }
+        return buildInfo.version + ' (~' + buildInfo.base_version + ')';
       }
     };
   });

@@ -427,7 +427,7 @@ export class ParseProvider {
       return fn;
     }
 
-    const parser = new Parser(new Lexer);
+    const parser = new Parser(new Lexer());
     const ast = parser.parseBinding(expr, '', 0);
     let boundFn;
 

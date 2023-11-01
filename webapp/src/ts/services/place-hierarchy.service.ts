@@ -53,9 +53,9 @@ export class PlaceHierarchyService {
     // children, in which case we want to expose that in the UI.
     if (children.length === 1 && children[0].doc.stub) {
       return this.firstNonStubNode(children[0].children);
-    } else {
-      return children;
     }
+
+    return children;
   }
 
   private buildHierarchy(places) {
