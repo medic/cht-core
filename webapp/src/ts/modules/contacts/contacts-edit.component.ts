@@ -30,7 +30,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
     private contactSaveService:ContactSaveService,
-    private telemetryService: TelemetryService,
+    private telemetryService:TelemetryService,
     private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
