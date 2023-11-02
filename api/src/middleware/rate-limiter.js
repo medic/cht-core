@@ -29,7 +29,7 @@ const getKeys = (req) => {
 };
 
 const rateLimiterMiddleware = (req, res, next) => {
-  rateLimitService.isLimited(getKeys(req))
+  return rateLimitService.isLimited(getKeys(req))
     .then(isLimited => {
       if (isLimited) {
         return serverUtils.rateLimited(req, res);
