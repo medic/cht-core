@@ -135,6 +135,7 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should have a title', async () => {
+      await browser.url('/');
       expect(await browser.getTitle()).to.equal(brandingDoc.title);
     });
 
