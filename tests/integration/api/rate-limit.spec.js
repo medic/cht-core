@@ -2,7 +2,10 @@ const utils = require('@utils');
 
 describe('rate limit', () => {
 
-  const requestThat401s = () => utils.request({ path: '/medic/123', noAuth: true });
+  const requestThat401s = () => utils.request({
+    path: '/medic/123',
+    auth: { username: 'user', password: 'absolutely-positively-not-the-password' }
+  });
 
   it('limits the 11th failed login request from the same IP', async () => {
 
