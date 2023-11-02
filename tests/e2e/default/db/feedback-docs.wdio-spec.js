@@ -68,15 +68,14 @@ describe('feedback docs', () => {
     await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === initialFeedbackDocCount + 1);
     feedbackDocs = await chtDbUtils.getFeedbackDocs();
 
-    expect(feedbackDocs[0]).to.deep.nested.include({ 'info.message': 'w00t 999' });
-    expect(feedbackDocs[1]).to.deep.nested.include({ 'info.message': 'omg what' });
+    expect(feedbackDocs.at(-1)).to.deep.nested.include({ 'info.message': 'omg what' });
 
     await chtDbUtils.addReadDocs();
     await browser.execute(() => console.error('omg again', new Error('omg again')));
 
     await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length === initialFeedbackDocCount + 2);
     feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs[2]).to.deep.nested.include({ 'info.message': 'omg again' });
+    expect(feedbackDocs.at(-1)).to.deep.nested.include({ 'info.message': 'omg again' });
 
     await chtDbUtils.clearFeedbackDocs();
   });

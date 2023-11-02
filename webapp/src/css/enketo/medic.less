@@ -21,12 +21,16 @@
 
     .dropdown-menu .option-wrapper {
       padding: 3px;
+      .option-label {
+        width: calc(100% - 34px);
+      }
     }
 
     .question:not(.or-appearance-likert):not(.or-appearance-columns) .option-wrapper {
       .option-label.active {
         white-space: normal;
         word-break: break-word;
+        margin: 0;
         display: inline;
       }
     }
