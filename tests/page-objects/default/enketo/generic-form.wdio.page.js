@@ -9,11 +9,25 @@ const nameField = () => $('#report-form form [name="/data/name"]');
 const errorContainer = () => $('.empty-selection');
 const formTitle = () => $('.enketo form #form-title');
 
-const nextPage = async (numberOfPages = 1) => {
+const currentFormView = () => $('.enketo form .current');
+
+const validationErrors = () => $$('.invalid-required');
+const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
+
+const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
+  if (waitForLoad) {
+    if ((await validationErrors()).length) {
+      await (await formTitle()).click(); // focus out to trigger re-validation
+      await waitForValidationErrorsToDisappear();
+    }
+  }
+
   for (let i = 0; i < numberOfPages; i++) {
+    const currentPageId = (await currentFormView()).elementId;
     await (await nextButton()).waitForDisplayed();
     await (await nextButton()).waitForClickable();
     await (await nextButton()).click();
+    waitForLoad && await browser.waitUntil(async () => (await currentFormView()).elementId !== currentPageId);
   }
 };
 
@@ -65,6 +79,7 @@ const verifyReport = async () => {
 };
 
 const submitForm = async () => {
+  await waitForValidationErrorsToDisappear();
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
 };
@@ -99,4 +114,6 @@ module.exports = {
   editForm,
   cancelForm,
   submitForm,
+  currentFormView,
+  formTitle,
 };

@@ -19,17 +19,15 @@ const TYPHOID_VACCINE = 'input[name="/immunization_visit/group_typhoid/g_typhoid
 const VITAMIN_A_VACCINE = 'input[name="/immunization_visit/group_vitamin_a/g_vitamin_a"]';
 const YELLOW_FEVER_VACCINE = 'input[name="/immunization_visit/group_yellow_fever/g_yellow_fever"]';
 
-const SUMMARY_SECTION = 'section[name="/immunization_visit/group_review"]';
 const notes = () => $(`${enketoCommonPage.SMS_NOTE('immunization_visit')}`);
 const vaccines = () => $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
-const patientNameSummary = () => $(`${SUMMARY_SECTION} ${enketoCommonPage.ACTIVE_SPAN} ` +
-  `span[data-value=" /immunization_visit/patient_name "]`);
+const patientNameSummary = () => $('.current span[data-value=" /immunization_visit/patient_name "]');
 // Excluding the 'last-child' because it represents the follow-up message from the summary page form
-const vaccinesAvalibleSummary = () =>
+const vaccinesAvailableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
 const vaccinesDisableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
-const followUpSMS = () => $(`${enketoCommonPage.FOLLOW_UP_SMS('immunization_visit')}`);
+const followUpSMS = () => $('.current span[data-value=" /immunization_visit/chw_sms "]');
 
 const selectAppliedVaccines = async (selector, option = 'no') => {
   const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);
@@ -46,21 +44,19 @@ const selectAllVaccines = async () => {
   }
 };
 
-const addNotes = (note = 'Test notes') => notes().setValue(note);
+const addNotes = async (note = 'Test notes') => await (await notes()).setValue(note);
 
-const getNotes = () => notes().getText();
+const getNotes = async () => await (await notes()).getText();
 
-const getPatientNameSummaryPage = async () => {
-  return await (await patientNameSummary()).getText();
-};
+const getPatientNameSummaryPage = async () => await (await patientNameSummary()).getText();
 
 const getAppliedVaccinesSummary = async () => {
-  const vaccinesAvaible = await vaccinesAvalibleSummary();
+  const vaccinesAvaible = await vaccinesAvailableSummary();
   const vaccinesDisabled = await vaccinesDisableSummary();
   return vaccinesAvaible.length - vaccinesDisabled.length;
 };
 
-const getFollowUpSMS = () => followUpSMS().getText();
+const getFollowUpSMS = async () => await (await followUpSMS()).getText();
 
 module.exports = {
   BCG_VACCINE,
