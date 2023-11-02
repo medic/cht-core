@@ -12,7 +12,8 @@ const pregnancyOutcomeLabel = (value) => $(`${FORM} ` +
 const deliveryLocation = (value) => $(`${FORM} ` +
   `input[name="/delivery/group_delivery_summary/g_delivery_code"][value="${value}"`);
 const deliveryLocationLabel = (value) => $(`${FORM} ` +
-  `span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]${enketoCommonPage.ACTIVE_OPTION_LABEL}`);
+  `span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]` +
+  `${enketoCommonPage.ACTIVE_OPTION_LABEL}`);
 const deliveryDate = () => $(`${FORM} div.widget.date input`);
 const smsNote = () => $(`${FORM} ${enketoCommonPage.SMS_NOTE('delivery')}`);
 const outcomeSummary = () => $(`${FORM} ` +

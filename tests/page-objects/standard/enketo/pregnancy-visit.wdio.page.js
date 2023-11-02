@@ -5,7 +5,8 @@ const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page
 const FORM = enketoCommonPage.FORM('pregnancy_visit');
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${FORM} ${enketoCommonPage.SMS_NOTE('pregnancy_visit')}`);
-const dangerSignSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${enketoCommonPage.ACTIVE}`);
+const dangerSignSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]` +
+  `${enketoCommonPage.ACTIVE}`);
 const followUpSMS = () => $(`${FORM} ${enketoCommonPage.FOLLOW_UP_SMS('pregnancy_visit')}`);
 
 const selectAllDangerSigns = async () => {

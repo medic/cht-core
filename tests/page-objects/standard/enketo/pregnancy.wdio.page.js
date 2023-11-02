@@ -7,13 +7,15 @@ const APROX_LMP = { up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 1
 const form = enketoCommonPage.FORM('pregnancy');
 const knowLMP = (value) => $(`${form} input[name="/pregnancy/group_lmp/g_lmp_method"][value="${value}"]`);
 const aproxLMP = (value) => $(`${form} input[name="/pregnancy/group_lmp/g_lmp_approx"][value="${value}"]`);
-const getEstDeliveryDate = () => $(`${form} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"]${enketoCommonPage.ACTIVE}`);
+const getEstDeliveryDate = () => $(`${form} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"]` +
+  `${enketoCommonPage.ACTIVE}`);
 const risksFac = () => $$(`${form} [name="/pregnancy/group_risk_factors"] label:not(:first-child) > [type="checkbox"]`);
 const dangerSigns = () => $$(`${form} input[name="/pregnancy/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${form} ${enketoCommonPage.SMS_NOTE('pregnancy')}`);
 const riskFactorsSummary = () => $$(`${form} :not(label.disabled):not(label.or-appearance-yellow)  > ` +
   `span[data-itext-id*="/pregnancy/group_review/r_risk_factor"]${enketoCommonPage.ACTIVE}`);
-const dangerSignsSummary = () => $$(`${form} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"]${enketoCommonPage.ACTIVE}`);
+const dangerSignsSummary = () => $$(`${form} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"]` +
+  `${enketoCommonPage.ACTIVE}`);
 const followUpSMS = () => $(`${form} ${enketoCommonPage.FOLLOW_UP_SMS('pregnancy')}`);
 
 const selectKnowLMP = async (value = 'approx') => {
