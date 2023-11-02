@@ -89,6 +89,7 @@ const baseConfig = {
     maxInstances: 1,
     //
     browserName: 'chrome',
+    browserVersion: CHROME_VERSION === 90 ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
