@@ -296,21 +296,21 @@ module.exports = {
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }
-    return createSession(req)
-      .then(sessionRes => {
-        if (sessionRes.statusCode === 200) {
-          return setCookies(req, res, sessionRes)
-            .then(redirectUrl => res.status(302).send(redirectUrl));
-        }
+    try {
+      const sessionRes = await createSession(req);
+      if (sessionRes.statusCode !== 200) {
         res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-      })
-      .catch(err => {
-        if (err.status === 401) {
-          return res.status(401).json({ error: err.error });
-        }
-        logger.error('Error logging in: %o', err);
-        res.status(500).json({ error: 'Unexpected error logging in' });
-      });
+      } else {
+        const redirectUrl = await setCookies(req, res, sessionRes);
+        res.status(302).send(redirectUrl);
+      }
+    } catch (e) {
+      if (e.status === 401) {
+        return res.status(401).json({ error: e.error });
+      }
+      logger.error('Error logging in: %o', e);
+      res.status(500).json({ error: 'Unexpected error logging in' });
+    }
   },
   getIdentity: (req, res) => {
     res.type('application/json');
