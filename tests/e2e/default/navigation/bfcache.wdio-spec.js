@@ -20,6 +20,7 @@ describe('bfcache', () => {
 
   describe('login page', () => {
     it('should redirect to the app page when session is valid', async () => {
+      await login();
       await commonPage.goToBase();
       expect(await browser.getUrl()).to.contain('/messages');
       await browser.back();
@@ -29,6 +30,7 @@ describe('bfcache', () => {
 
   describe('webapp', () => {
     it('should redirect to login page when session is expired', async () => {
+      await login();
       await commonPage.goToPeople();
       await browser.deleteCookies('AuthSession');
       await commonPage.goToMessages();
@@ -46,6 +48,7 @@ describe('bfcache', () => {
 
   describe('admin app', () => {
     it('should redirect to login page when session is expired', async () => {
+      await login();
       await usersAdminPage.goToAdminUser();
       await browser.deleteCookies('AuthSession');
       await usersAdminPage.goToAdminUpgrade();
