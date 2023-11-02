@@ -1,10 +1,10 @@
 const utils = require('@utils');
+const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
 
 const OUTCOME = { liveBirth: 'healthy', stillBirth: 'still_birth', miscarriage: 'miscarriage' };
 const LOCATION = { facility: 'f', homeAttendant: 's', homeNoAttendant: 'ns' };
 
-const ACTIVE_SPAN = '.option-label.active';
-const FORM = 'form[data-form-id="delivery"]';
+const FORM = enketoCommonPage.FORM('delivery');
 const pregnancyOutcome = (value) => $(`${FORM} ` +
   `input[name="/delivery/group_delivery_summary/g_pregnancy_outcome"][value="${value}"`);
 const pregnancyOutcomeLabel = (value) => $(`${FORM} ` +
@@ -12,13 +12,13 @@ const pregnancyOutcomeLabel = (value) => $(`${FORM} ` +
 const deliveryLocation = (value) => $(`${FORM} ` +
   `input[name="/delivery/group_delivery_summary/g_delivery_code"][value="${value}"`);
 const deliveryLocationLabel = (value) => $(`${FORM} ` +
-  `span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]` + ACTIVE_SPAN);
+  `span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]${enketoCommonPage.ACTIVE_OPTION_LABEL}`);
 const deliveryDate = () => $(`${FORM} div.widget.date input`);
-const smsNote = () => $(`${FORM} textarea[name="/delivery/group_note/g_chw_sms"]`);
+const smsNote = () => $(`${FORM} ${enketoCommonPage.SMS_NOTE('delivery')}`);
 const outcomeSummary = () => $(`${FORM} ` +
   `span[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]`);
 const locationSummary = () => $(`${FORM} span[data-value=" /delivery/group_summary/r_delivery_location "]`);
-const followUpSMS = () => $(`${FORM} span[data-value=" /delivery/chw_sms "]`);
+const followUpSMS = () => $(`${FORM} ${enketoCommonPage.FOLLOW_UP_SMS('delivery')}`);
 
 const selectPregnancyOutcome = async (value = OUTCOME.liveBirth) => {
   const outcome = await pregnancyOutcome(value);

@@ -1,3 +1,5 @@
+const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
+
 const BCG_VACCINE = 'input[name="/immunization_visit/group_bcg/g_bcg"]';
 const CHOLERA_VACCINE = 'input[name="/immunization_visit/group_cholera/g_cholera"]';
 const HEPATITIS_A_VACCINE = 'input[name="/immunization_visit/group_hep_a/g_hep_a"]';
@@ -18,17 +20,16 @@ const VITAMIN_A_VACCINE = 'input[name="/immunization_visit/group_vitamin_a/g_vit
 const YELLOW_FEVER_VACCINE = 'input[name="/immunization_visit/group_yellow_fever/g_yellow_fever"]';
 
 const SUMMARY_SECTION = 'section[name="/immunization_visit/group_review"]';
-const ACTIVE_SPAN = 'span.active';
-const notes = () => $('textarea[name="/immunization_visit/group_note/g_chw_sms"]');
+const notes = () => $(`${enketoCommonPage.SMS_NOTE('immunization_visit')}`);
 const vaccines = () => $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
-const patientNameSummary = () => $(`${SUMMARY_SECTION} ${ACTIVE_SPAN} ` +
+const patientNameSummary = () => $(`${SUMMARY_SECTION} ${enketoCommonPage.ACTIVE_SPAN} ` +
   `span[data-value=" /immunization_visit/patient_name "]`);
 // Excluding the 'last-child' because it represents the follow-up message from the summary page form
 const vaccinesAvalibleSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
 const vaccinesDisableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
-const followUpSMS = () => $('span[data-value=" /immunization_visit/chw_sms "]');
+const followUpSMS = () => $(`${enketoCommonPage.FOLLOW_UP_SMS('immunization_visit')}`);
 
 const selectAppliedVaccines = async (selector, option = 'no') => {
   const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);
