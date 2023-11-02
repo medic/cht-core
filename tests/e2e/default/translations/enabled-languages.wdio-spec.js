@@ -46,8 +46,8 @@ describe('Enabling/disabling languages', () => {
     // assert:
     //   - Spanish has been disabled in the app_settings
     //   - Swahili has been enabled in the app_settings
-    const settings = await utils.getSettings();
-    expect(settings.languages).to.deep.equal([
+    const updatedSettings = await utils.getSettings();
+    expect(updatedSettings.languages).to.deep.equal([
       {
         locale: 'en',
         enabled: true,
