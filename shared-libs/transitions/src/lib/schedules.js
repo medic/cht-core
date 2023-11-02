@@ -47,9 +47,8 @@ module.exports = {
 
     if (/\d+/.test(value) && /(second|minute|hour|day|week|month|year)s?/.test(unit)) {
       return moment.duration(Number(value), unit);
-    } else {
-      return false;
     }
+    return false;
   },
   getNextTimes: function(doc, now) {
     const first = _.first(doc.scheduled_tasks) || {};

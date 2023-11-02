@@ -12,6 +12,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
 const pregnancyVisitForm = require('@page-objects/standard/enketo/pregnancy-visit.wdio.page');
 const deliveryForm = require('@page-objects/standard/enketo/delivery.wdio.page');
+const { TARGET_MET_COLOR } = analyticsPage;
 
 describe('Delivery', () => {
   const places = placeFactory.generateHierarchy();
@@ -147,18 +148,18 @@ describe('Delivery', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Active pregnancies', count: '0' },
-      { title: 'New pregnancies', count: '2' },
-      { title: 'Births', count: '2' },
+      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', count: '2', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Births', count: '2', countNumberColor: TARGET_MET_COLOR },
       { title: 'Deliveries with 1+ visit', percent: '100%', percentCount: '(2 of 2)' },
       { title: 'Deliveries with 4+ visits', percent: '50%', percentCount: '(1 of 2)' },
       { title: 'Deliveries at facility', percent: '100%', percentCount: '(2 of 2)' },
       { title: '<5 children screened for growth monitoring', percent: '0%', percentCount: '(0 of 0)' },
-      { title: '<5 Underweight Growth Monitoring', count: '0' },
-      { title: 'Active MAM cases', count: '0' },
-      { title: 'Active SAM cases', count: '0' },
-      { title: 'Active OTP cases', count: '0' },
-      { title: 'Active SFP cases', count: '0' }
+      { title: '<5 Underweight Growth Monitoring', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active MAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active OTP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SFP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
     ]);
   });
 });
