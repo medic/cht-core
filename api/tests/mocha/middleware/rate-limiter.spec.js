@@ -41,6 +41,14 @@ describe('Rate limiter middleware', () => {
     listenerCallback();
   };
 
+  it('does not check limit if not using basic auth', async () => {
+    auth.basicAuthCredentials.returns();
+    await middleware({ ip: 'reqip' }, res, next);
+    expect(next.callCount).to.equal(1);
+    expect(rateLimitService.consume.callCount).to.equal(0);
+    expect(rateLimitService.isLimited.callCount).to.equal(0);
+  });
+
   it('does nothing if not limited', async () => {
     rateLimitService.isLimited.resolves(false);
     res.statusCode = 200;
