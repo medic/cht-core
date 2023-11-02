@@ -50,8 +50,10 @@ function isFormArraySubmittedInWindowExcludingThisReport(reports, formArray, sta
       }
     }
   });
-  if (count) { return reportCount >= count; }
-  else { return found; }
+  if (count) {
+    return reportCount >= count;
+  }
+  return found;
 }
 
 

@@ -46,10 +46,10 @@ const getPatientPhoneField = (currentForm) => {
   if (!formDef?.fields) {
     return;
   }
-  
+
   return Object
     .keys(formDef.fields)
-    .find(key => formDef.fields[key].type === 'phone_number'); 
+    .find(key => formDef.fields[key].type === 'phone_number');
 };
 
 const parseParams = params => {
@@ -303,9 +303,8 @@ const messageRelevant = (msg, doc) => {
     const expr = msg.bool_expr;
     if (utils.isNonEmptyString(expr)) {
       return utils.evalExpression(expr, { doc: doc });
-    } else {
-      return true;
     }
+    return true;
   }
 };
 
@@ -408,9 +407,8 @@ const setPatientId = (options) => {
 
         transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
       });
-  } else {
-    return generateId(doc, 'patient_id');
   }
+  return generateId(doc, 'patient_id');
 };
 
 const getParentByPhone = options => {

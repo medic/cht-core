@@ -84,10 +84,9 @@ const resolveConflictLoop = (docId, conflictRev) => DB
         .then(results => {
           console.log('Merged', results);
         });
-    } else {
-      console.log(`${verbose ? '' : docId} managed to resolve ${resolvedCount} conflicts, ` +
-        `${unresolvedConflicts.length} remain, skipping...`);
     }
+    console.log(`${verbose ? '' : docId} managed to resolve ${resolvedCount} conflicts, ` +
+                `${unresolvedConflicts.length} remain, skipping...`);
   });
 
 // Work through all differences and attempt to resolve them.

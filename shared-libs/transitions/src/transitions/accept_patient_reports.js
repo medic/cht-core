@@ -60,25 +60,24 @@ const findToClear = (registration, reported_date, config) => {
   if (!config.silence_for) {
     // No range, all clearable tasks should be cleared
     return tasksUnderReview.filter(task => statesToClear.includes(task.state));
-  } else {
-    // Clear all tasks that are members of a group that "exists" before the
-    // silenceUntil date. e.g., they have at least one task in their group
-    // whose due date is before silenceUntil.
-    const silenceUntil = reportedDateMoment.clone();
-    silenceUntil.add(date.getDuration(config.silence_for));
-
-    const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
-      task => moment(task.due) <= silenceUntil
-    );
-    const groupTypeCombosToClear = uniqueGroupTypeCombos(
-      allTasksBeforeSilenceUntil
-    );
-
-    return tasksUnderReview.filter(({ group, type, state }) =>
-      hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
-      // only clear tasks that are in a clearable state!
-      statesToClear.includes(state));
   }
+  // Clear all tasks that are members of a group that "exists" before the
+  // silenceUntil date. e.g., they have at least one task in their group
+  // whose due date is before silenceUntil.
+  const silenceUntil = reportedDateMoment.clone();
+  silenceUntil.add(date.getDuration(config.silence_for));
+
+  const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
+    task => moment(task.due) <= silenceUntil
+  );
+  const groupTypeCombosToClear = uniqueGroupTypeCombos(
+    allTasksBeforeSilenceUntil
+  );
+
+  return tasksUnderReview.filter(({ group, type, state }) =>
+    hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
+    // only clear tasks that are in a clearable state!
+    statesToClear.includes(state));
 };
 
 const getConfig = function(form) {
@@ -201,9 +200,8 @@ const messageRelevant = (msg, doc) => {
     const expr = msg.bool_expr;
     if (utils.isNonEmptyString(expr)) {
       return utils.evalExpression(expr, { doc: doc });
-    } else {
-      return true;
     }
+    return true;
   }
 };
 

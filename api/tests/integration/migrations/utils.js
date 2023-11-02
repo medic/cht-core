@@ -13,11 +13,11 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const byId = (a, b) => {
   if (a._id === b._id) {
     return 0;
-  } else if (a._id < b._id) {
-    return -1;
-  } else {
-    return 1;
   }
+  if (a._id < b._id) {
+    return -1;
+  }
+  return 1;
 };
 
 const matches = (expected, actual) => {
@@ -49,19 +49,18 @@ const matches = (expected, actual) => {
       }
     }
     return true;
-  } else {
-    if (!matches(Object.keys(expected).sort(), Object.keys(actual).sort())) {
-      return false;
-    }
-    for (k in expected) {
-      if (Object.prototype.hasOwnProperty.call(expected, k)) {
-        if (!matches(expected[k], actual[k])) {
-          return false;
-        }
+  }
+  if (!matches(Object.keys(expected).sort(), Object.keys(actual).sort())) {
+    return false;
+  }
+  for (k in expected) {
+    if (Object.prototype.hasOwnProperty.call(expected, k)) {
+      if (!matches(expected[k], actual[k])) {
+        return false;
       }
     }
-    return true;
   }
+  return true;
 };
 
 const assertDb = expected => {

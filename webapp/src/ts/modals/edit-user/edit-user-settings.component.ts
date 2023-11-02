@@ -56,9 +56,8 @@ export class EditUserSettingsComponent implements OnInit {
         phone: user.phone,
         language: { code: language }
       };
-    } else {
-      return {};
     }
+    return {};
   }
 
   async editUserSettings(): Promise<void> {
