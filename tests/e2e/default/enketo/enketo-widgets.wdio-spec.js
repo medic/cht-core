@@ -66,7 +66,7 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
 
     const { senderName, senderPhone, reportName } = await reportsPage.getOpenReportInfo();
-    expect(senderName).to.equal(`Submitted by ${offlineUser.contact.name} `);
+    expect(senderName).to.equal(`Submitted by ${offlineUser.contact.name}`);
     expect(senderPhone).to.equal(offlineUser.contact.phone);
     expect(reportName).to.equal('Enketo Widgets Test');
 
@@ -110,13 +110,13 @@ describe('Enketo Widgets', () => {
       .to.equal('option d');
 
     // try to move to next page without filling the mandatory phone number field
-    await genericForm.nextPage();
+    await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldRequiredMessage().getAttribute('data-i18n'))
       .to.equal('constraint.required');
 
     // try to move to next page with an invalid phone number
     await enketoWidgetsPage.setPhoneNumber('+4076');
-    await genericForm.nextPage();
+    await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
       .to.equal('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg');
 

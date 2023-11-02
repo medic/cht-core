@@ -70,7 +70,7 @@ const inputAddUserFields = async (username, fullname, role, place, contact, pass
 };
 
 const inputUploadUsersFields = async (filePath) => {
-  await (await $('input[type="file"]')).setValue(filePath);
+  await (await $('input[type="file"]')).addValue(filePath);
 };
 
 const setSelect2 = async (id, value) => {
