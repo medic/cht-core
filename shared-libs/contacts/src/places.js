@@ -17,7 +17,7 @@ const getPlace = id => {
     })
     .catch(err => {
       if (err.status === 404) {
-        err.message  = 'Failed to find place.';
+        err.message = 'Failed to find place.';
       }
       throw err;
     });
@@ -85,6 +85,8 @@ const validatePlace = place => {
 
 const createPlace = place => {
   const self = module.exports;
+  const contact = place.contact;
+  delete place.contact;
   return self._validatePlace(place)
     .then(() => {
       const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
@@ -92,14 +94,28 @@ const createPlace = place => {
       if (place.parent) {
         place.parent = lineage.minifyLineage(place.parent);
       }
-      if (place.contact) {
-        // also validates contact if creating
-        return people.getOrCreatePerson(place.contact).then(person => {
-          place.contact = lineage.minifyLineage(person);
-        });
-      }
+      return db.medic.post(place);
     })
-    .then(() => db.medic.post(place));
+    .then((resp) => {
+      if (contact) {
+        contact.place = resp.id;
+        // also validates contact if creating
+        return people.getOrCreatePerson(contact)
+          .then((person) => {
+            return updatePlace(resp.id, { contact: person._id })
+              .then((resp) => {
+                return Promise.resolve({
+                  ...resp,
+                  contact: {
+                    id: person._id,
+                    rev: person._rev
+                  }
+                });
+              });
+          });
+      }
+      return Promise.resolve(resp);
+    });
 };
 
 /*
