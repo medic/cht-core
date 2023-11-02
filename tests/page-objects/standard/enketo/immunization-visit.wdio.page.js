@@ -27,7 +27,7 @@ const vaccinesAvailableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
 const vaccinesDisableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
-const followUpSMS = () => $('.current span[data-value=" /immunization_visit/chw_sms "]');
+const followUpSMS = () => $(`.current ${enketoCommonPage.FOLLOW_UP_SMS('immunization_visit')}`);
 
 const selectAppliedVaccines = async (selector, option = 'no') => {
   const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);

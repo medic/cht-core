@@ -89,11 +89,14 @@ const baseConfig = {
     maxInstances: 1,
     //
     browserName: 'chrome',
-    browserVersion: CHROME_VERSION === 90 ? CHROME_VERSION : undefined,
+    browserVersion: CHROME_VERSION === utils.getMinimumChromeVersion() ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
       binary: CHROME_VERSION === utils.getMinimumChromeVersion() ? '/usr/bin/google-chrome-stable' : undefined
+    },
+    'wdio:chromedriverOptions': {
+      binary: CHROME_VERSION === utils.getMinimumChromeVersion() ? '/usr/local/bin' : undefined
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
