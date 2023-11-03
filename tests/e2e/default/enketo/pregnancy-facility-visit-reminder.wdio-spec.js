@@ -29,16 +29,16 @@ describe('Health Facility ANC Reminder task', () => {
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople(pregnantWoman._id);
+  });
 
+  it('should submit the health facility ANC reminder task', async () => {
     await pregnancyForm.submitPregnancy({futureVisitDate: ancDate.format('YYYY-MM-DD')});
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.firstReport());
     pregnancyId = await reportsPage.getCurrentReportId();
-  });
 
-  it('should submit the health facility ANC reminder task', async () => {
     await commonPage.goToTasks();
     await taskPage.openTaskById(pregnancyId, '~pregnancy-facility-visit-reminder~anc.facility_reminder');
 

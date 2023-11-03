@@ -44,7 +44,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
-    await commonPage.sync(true);
+    await commonPage.sync();
 
     expect(await (await contactPage.contactMuted()).isDisplayed()).to.be.true;
 
@@ -56,7 +56,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
     await undoDeathReportForm.setConfirmUndoDeathOption();
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
-    await commonPage.sync(true);
+    await commonPage.sync();
 
     expect(await (await contactPage.contactMuted()).isDisplayed()).to.be.false;
 
@@ -64,6 +64,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
 
   it('Should show a popup when trying to submit a non-unmuting form against a muted contact', async () => {
     await utils.revertSettings(true);
+    await commonPage.sync(true);
     await commonPage.goToPeople(mutePerson._id);
 
     const modalDetails = await contactPage.openFormWithWarning('death_report');

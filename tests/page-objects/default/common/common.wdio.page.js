@@ -84,7 +84,6 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
 };
 
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
-  await waitForSnackbarToClose();
   await (await fastActionFlat()).waitForDisplayed();
   await (await fastActionFlat()).waitForClickable();
   waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
@@ -186,7 +185,7 @@ const getLogoutMessage = async () => {
 
 const goToUrl = async (url) => {
   const currentUrl = await browser.getUrl();
-  const desiredUrl = `${constants.BASE_URL}${url}`;
+  const desiredUrl = `${constants.BASE_URL}${url}`.replace(/\/$/, '');
   if (currentUrl === desiredUrl) {
     await browser.refresh();
   } else {

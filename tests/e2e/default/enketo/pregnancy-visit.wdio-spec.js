@@ -37,7 +37,7 @@ describe('Pregnancy Visit', () => {
 
     //report details
     const openReportInfo = await reportsPage.getOpenReportInfo();
-    expect(openReportInfo.senderName).to.equal(`Submitted by ${userData.userContactDoc.name} `);
+    expect(openReportInfo.senderName).to.equal(`Submitted by ${userData.userContactDoc.name}`);
     expect(openReportInfo.senderPhone).to.equal(userData.userContactDoc.phone);
     expect(openReportInfo.lineage).to.equal(userData.docs[0].name);
     expect(await (await reportsPage.selectedCaseId()).getText()).to.match(/^\d{5}$/);

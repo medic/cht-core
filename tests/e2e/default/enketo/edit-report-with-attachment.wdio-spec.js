@@ -1,11 +1,11 @@
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const uuid = require('uuid').v4;
-const common = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const fs = require('fs');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
 const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
 const instanceID = uuid();
@@ -59,16 +59,20 @@ const reportDoc ={
 };
 
 
-describe('Edit report with attachmnet', () => {
+describe('Edit report with attachment', () => {
   before(async () => {
     await utils.seedTestData(userContactDoc, [...docs, formDoc]);
     await loginPage.cookieLogin();
-    await common.hideSnackbar();
-    reportDoc._id = uuid();
-    await utils.saveDoc(reportDoc);
+    await commonElements.waitForPageLoaded();
+    await commonElements.hideSnackbar();
   });
 
   it('should remove attachment when saving', async () => {
+    reportDoc._id = uuid();
+    await utils.saveDoc(reportDoc);
+
+    await commonElements.goToReports();
+
     await reportsPage.editReport(reportDoc._id);
     await reportsPage.submitForm();
 
@@ -85,20 +89,24 @@ describe('Edit report with attachmnet', () => {
   });
 
   it('should save edits', async () => {
+    reportDoc._id = uuid();
+    await utils.saveDoc(reportDoc);
+
+    await commonElements.goToReports();
     await reportsPage.editReport(reportDoc._id);
-    await (await genericForm.fieldByName(formDoc.internalId, 'intro')).setValue('updated text');
+    await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' updated');
     await reportsPage.submitForm();
 
     const editedReport = await utils.getDoc(reportDoc._id);
     expect(editedReport._attachments).to.be.undefined;
-    expect(editedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'updated text' });
+    expect(editedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'initial text updated' });
 
     await reportsPage.editReport(reportDoc._id);
-    await (await genericForm.fieldByName(formDoc.internalId, 'intro')).setValue('twice updated text');
+    await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' twice');
     await reportsPage.submitForm();
 
     const twiceEditedReport = await utils.getDoc(reportDoc._id);
     expect(twiceEditedReport._attachments).to.be.undefined;
-    expect(twiceEditedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'twice updated text' });
+    expect(twiceEditedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'initial text updated twice' });
   });
 });

@@ -86,17 +86,15 @@ describe('Login page funcionality tests', () => {
       const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
       expect(authSessionCookie).to.include({
         httpOnly: true,
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         secure: false,
         path: '/'
       });
-      expect(authSessionCookie.expires).to.be.greaterThan(0);
+      expect(authSessionCookie.expiry).to.be.greaterThan(0);
 
       const userCtxCookie = cookies.find(cookie => cookie.name === 'userCtx');
       expect(userCtxCookie).to.include({
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         path: '/',
@@ -108,7 +106,6 @@ describe('Login page funcionality tests', () => {
 
       const localeCookie = cookies.find(cookie => cookie.name === 'locale');
       expect(localeCookie).to.include({
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         path: '/',

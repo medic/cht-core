@@ -162,6 +162,7 @@ const getGroupTasksNamesAndTitles = async () => {
 };
 
 const expectTasksGroupLeaveModal = async () => {
+  await (await modalPage.body()).waitForClickable();
   expect(await (await modalPage.body()).getText()).to.equal(
     'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
   );
