@@ -22,7 +22,7 @@ const CHROME_OPTIONS_ARGS_DEBUG = [
   'disable-gpu',
   'deny-permission-prompts',
   'ignore-certificate-errors',
-  '--disable-dev-shm-usage',
+  'disable-dev-shm-usage',
   'window-size=1200,900'
 ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
