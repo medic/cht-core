@@ -83,39 +83,28 @@ const validatePlace = place => {
   return Promise.resolve();
 };
 
-const createPlace = place => {
-  const self = module.exports;
+const createPlace = async (place) => {
   const contact = place.contact;
   delete place.contact;
-  return self._validatePlace(place)
-    .then(() => {
-      const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
-      place.reported_date = date.valueOf();
-      if (place.parent) {
-        place.parent = lineage.minifyLineage(place.parent);
-      }
-      return db.medic.post(place);
-    })
-    .then((resp) => {
-      if (contact) {
-        contact.place = resp.id;
-        // also validates contact if creating
-        return people.getOrCreatePerson(contact)
-          .then((person) => {
-            return updatePlace(resp.id, { contact: person._id })
-              .then((resp) => {
-                return Promise.resolve({
-                  ...resp,
-                  contact: {
-                    id: person._id,
-                    rev: person._rev
-                  }
-                });
-              });
-          });
-      }
-      return Promise.resolve(resp);
-    });
+
+  await module.exports._validatePlace(place);
+
+  const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
+  place.reported_date = date.valueOf();
+  if (place.parent) {
+    place.parent = lineage.minifyLineage(place.parent);
+  }
+
+  const response = await db.medic.post(place);
+  if (!contact) {
+    return response;
+  }
+  const placeUUID = response.id;
+
+  contact.place = placeUUID;
+  const person = await people.getOrCreatePerson(contact);
+  const result = await updatePlace(placeUUID, { contact: person._id });
+  return { ...result, contact: { id: person._id, rev: person._rev } };
 };
 
 /*
