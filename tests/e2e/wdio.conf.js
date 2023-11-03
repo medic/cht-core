@@ -18,13 +18,20 @@ const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
 const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
 const CHROME_VERSION = process.env.CHROME_VERSION;
-const CHROME_OPTIONS_ARGS_DEBUG = [
-  'disable-gpu',
-  'deny-permission-prompts',
-  'ignore-certificate-errors',
-  'no-sandbox',
-  'window-size=1200,900'
-];
+const CHROME_OPTIONS_ARGS_DEBUG = CHROME_VERSION === utils.getMinimumChromeVersion()
+  ? [
+    'disable-gpu',
+    'deny-permission-prompts',
+    'ignore-certificate-errors',
+    'no-sandbox',
+    'window-size=1200,900'
+  ]
+  : [
+    'disable-gpu',
+    'deny-permission-prompts',
+    'ignore-certificate-errors',
+    'window-size=1200,900'
+  ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
 
 const baseConfig = {
@@ -255,12 +262,6 @@ const baseConfig = {
     global.expect = chai.expect;
     if (!utils.isMinimumChromeVersion()) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
-    } else {
-      // eslint-disable-next-line no-undef
-      const browserVersion = driver.capabilities.browserVersion;
-      // eslint-disable-next-line no-undef
-      const chromedriverVersion = driver.capabilities.chrome.chromedriverVersion;
-      console.log('Browser: ' + browserVersion + ' Driver: ' + chromedriverVersion);
     }
   },
   /**
