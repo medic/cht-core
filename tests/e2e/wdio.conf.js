@@ -256,9 +256,11 @@ const baseConfig = {
     if (!utils.isMinimumChromeVersion()) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
     } else {
-      browserVersion = driver.capabilities.browserVersion;
-      chromedriverVersion = driver.capabilities.chrome.chromedriverVersion;
-      console.log("Browser: " + browserVersion + " Driver: " + chromedriverVersion);
+      // eslint-disable-next-line no-undef
+      const browserVersion = driver.capabilities.browserVersion;
+      // eslint-disable-next-line no-undef
+      const chromedriverVersion = driver.capabilities.chrome.chromedriverVersion;
+      console.log('Browser: ' + browserVersion + ' Driver: ' + chromedriverVersion);
     }
   },
   /**
