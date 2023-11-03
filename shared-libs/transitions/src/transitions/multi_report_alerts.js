@@ -242,9 +242,9 @@ const getCountedReportsAndPhones = (alert, latestReport) => {
     });
   }
 
-  const promiseLoop = (skip, allCountedReports, allOldReportIds) =>
-    getCountedReportsBatch(script, latestReport, alert, skip).then(
-      ({ countedReports, oldReportIds, numFetched }) => {
+  const promiseLoop = (skip, allCountedReports, allOldReportIds) => {
+    return getCountedReportsBatch(script, latestReport, alert, skip)
+      .then(({ countedReports, oldReportIds, numFetched }) => {
         allCountedReports = allCountedReports.concat(countedReports);
         allOldReportIds = allOldReportIds.concat(oldReportIds);
 
@@ -259,8 +259,8 @@ const getCountedReportsAndPhones = (alert, latestReport) => {
           countedReports: allCountedReports,
           oldReportIds: allOldReportIds,
         };
-      }
-    );
+      });
+  };
 
   return promiseLoop(0, [latestReport], []).then(
     ({ countedReports, oldReportIds }) => {

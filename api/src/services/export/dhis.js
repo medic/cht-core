@@ -93,12 +93,11 @@ const getDhisTargetDefinitions = (dataSet, settings) => {
   const dhisTargets = settings.tasks &&
     settings.tasks.targets &&
     settings.tasks.targets.items &&
-    settings.tasks.targets.items.filter(
-      target =>
-        target.dhis &&
-        target.dhis.dataElement &&
-        (!target.dhis.dataSet || target.dhis.dataSet === dataSet) // optional
-    ) || [];
+    settings.tasks.targets.items.filter(target => {
+      return target.dhis &&
+             target.dhis.dataElement &&
+             (!target.dhis.dataSet || target.dhis.dataSet === dataSet);
+    }) || [];
 
   return dhisTargets;
 };

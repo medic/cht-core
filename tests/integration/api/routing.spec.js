@@ -61,8 +61,7 @@ const unauthenticatedRequestOptions = {
   noAuth: true
 };
 
-const getUnauthenticatedRequestOptions = (method) =>
-  Object.assign({}, unauthenticatedRequestOptions, { method });
+const getUnauthenticatedRequestOptions = (method) => Object.assign({}, unauthenticatedRequestOptions, { method });
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',

@@ -14,10 +14,10 @@ const formDocument = {
     }
   }
 };
-const dangerSignLabel = () =>
-  $('label.question.readonly.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
-const dangerSignSummary = () =>
-  $$('label.question.readonly.or-branch.non-select.or-appearance-li');
+const dangerSignLabel = () => {
+  return $('label.question.readonly.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
+};
+const dangerSignSummary = () => $$('label.question.readonly.or-branch.non-select.or-appearance-li');
 const followUpMessage = () => $('[data-value=" /pregnancy_visit/chw_sms "]');
 
 const selectPatient = async (patientName) => {

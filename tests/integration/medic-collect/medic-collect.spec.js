@@ -18,20 +18,19 @@ const db = utils.db;
  *   - can submit form responses
  */
 describe('medic-collect', () => {
-  before(() =>
-    Promise.all([
-      saveFormToDb({
-        type: 'form',
-        _id: 'form:my_app_form',
-        internalId: 'MY-APP-FORM',
-      }),
-      saveFormToDb({
-        type: 'form',
-        _id: 'form:my_collect_form',
-        internalId: 'MY-COLLECT-FORM',
-        context: { collect: true },
-      }),
-    ]));
+  before(() => Promise.all([
+    saveFormToDb({
+      type: 'form',
+      _id: 'form:my_app_form',
+      internalId: 'MY-APP-FORM',
+    }),
+    saveFormToDb({
+      type: 'form',
+      _id: 'form:my_collect_form',
+      internalId: 'MY-COLLECT-FORM',
+      context: { collect: true },
+    }),
+  ]));
 
   after(() => utils.revertDb([], true));
 

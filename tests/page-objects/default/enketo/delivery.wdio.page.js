@@ -1,76 +1,41 @@
-const deliveryConditionWomanOutcomeField = (value) =>
-  $(`input[type="radio"][name="/delivery/condition/woman_outcome"][value="${value}"]`);
-const deliveryPostnatalDangerFeverField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/fever"][value="${value}"]`);
-const deliveryPostnatalDangerSevereHeadacheField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/severe_headache"][value="${value}"]`);
-const deliveryPostnatalDangerVaginalBleedingField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/vaginal_bleeding"][value="${value}"]`);
-const deliveryPostnatalDangerVaginalDischargeField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/vaginal_discharge"][value="${value}"]`);
-const deliveryPostnatalDangerConvulsionField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/convulsion"][value="${value}"]`);
-const deliveryOutcomeBabiesDeliveredField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/babies_delivered"][value="${value}"]`);
-const deliveryOutcomeBabiesAliveField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/babies_alive"][value="${value}"]`);
-const dateOfDeliveryField = () =>
-  $('form > section.or-group.or-branch.or-appearance-field-list.current > label:nth-child(6) > div > input');
-const deliveryPlaceField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/delivery_place"][value="${value}"]`);
-const deliveryModeField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/delivery_mode"][value="${value}"]`);
-const babyConditionField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/baby_condition"][value="${value}"]`);
-const babyNameField = () =>
-  $(`input[type="text"][name="/delivery/babys_condition/baby_repeat/baby_details/baby_name"]`);
-const babySexField = (value) =>
-  $(`input[type="radio"][data-name="/delivery/babys_condition/baby_repeat/baby_details/baby_sex"][value="${value}"]`);
-const babyBirthWeightKnowField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/birth_weight_know"][value="${value}"]`);
-const babyBirthLengthKnowField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/birth_length_know"][value="${value}"]`);
-const babyVaccinesReveivedField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/vaccines_received"][value="${value}"]`);
-const babyBreastfeedingField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding"][value="${value}"]`);
-const babyBreastfeedingWithin1HourField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour"][value="${value}"]`);
-const babyInfectedUmbilicalCordField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/infected_umbilical_cord"][value="${value}"]`);
-const babyConvulsionField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/convulsion"][value="${value}"]`);
-const babyDifficultyFeedingField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/difficulty_feeding"][value="${value}"]`);
-const babyVomitField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/vomit"][value="${value}"]`);
-const babyDrowsyField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/drowsy"][value="${value}"]`);
-const babyStiffField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/stiff"][value="${value}"]`);
-const babyYellowSkinField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/yellow_skin"][value="${value}"]`);
-const babyFeverField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/fever"][value="${value}"]`);
-const babyBlueSkinField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/blue_skin"][value="${value}"]`);
-const deliveryPncVisitsField = (value) =>
-  $(`input[type="checkbox"]` +
+const getRadio = (name, value) => $(`input[type="radio"][name="${name}"][value="${value}"]`);
+const dangerSign = '/delivery/pnc_danger_sign_check';
+const deliveryPostnatalDangerFeverField = (value) => getRadio(`${dangerSign}/fever`, value);
+const deliveryPostnatalDangerSevereHeadacheField = (value) => getRadio(`${dangerSign}/severe_headache`, value);
+const deliveryPostnatalDangerVaginalBleedingField = (value) => getRadio(`${dangerSign}/vaginal_bleeding`, value);
+const deliveryPostnatalDangerVaginalDischargeField = (value) => getRadio(`${dangerSign}/vaginal_discharge`, value);
+const deliveryPostnatalDangerConvulsionField = (value) => getRadio(`${dangerSign}/convulsion`, value);
+const outcome = '/delivery/delivery_outcome';
+const deliveryConditionWomanOutcomeField = (value) => getRadio('/delivery/condition/woman_outcome', value);
+const deliveryOutcomeBabiesDeliveredField = (value) => getRadio(`${outcome}/babies_delivered`, value);
+const deliveryOutcomeBabiesAliveField = (value) => getRadio(`${outcome}/babies_alive`, value);
+const dateOfDeliveryField = () => {
+  return $('form > section.or-group.or-branch.or-appearance-field-list.current > label:nth-child(6) > div > input');
+};
+const deliveryPlaceField = (value) => getRadio(`${outcome}/delivery_place`, value);
+const deliveryModeField = (value) => getRadio(`${outcome}/delivery_mode`, value);
+const repeatDetails = '/delivery/babys_condition/baby_repeat/baby_details';
+const getRepeatDetailsRadioByValue = (name, value) => {
+  return $(`input[type="radio"][data-name="${repeatDetails}/${name}"][value="${value}"]`);
+};
+const babyConditionField = (value) => getRepeatDetailsRadioByValue('baby_condition', value);
+const babyNameField = () => $(`input[type="text"][name="${repeatDetails}/baby_name"]`);
+const babySexField = (value) => getRepeatDetailsRadioByValue('baby_sex', value);
+const babyBirthWeightKnowField = (value) => getRepeatDetailsRadioByValue('birth_weight_know', value);
+const babyBirthLengthKnowField = (value) => getRepeatDetailsRadioByValue('birth_length_know', value);
+const babyVaccinesReveivedField = (value) => getRepeatDetailsRadioByValue('vaccines_received', value);
+const babyBreastfeedingField = (value) => getRepeatDetailsRadioByValue('breastfeeding', value);
+const babyBreastfeedingWithin1HourField = (value) => getRepeatDetailsRadioByValue('breastfed_within_1_hour', value);
+const babyInfectedUmbilicalCordField = (value) => getRepeatDetailsRadioByValue('infected_umbilical_cord', value);
+const babyConvulsionField = (value) => getRepeatDetailsRadioByValue('convulsion', value);
+const babyDifficultyFeedingField = (value) => getRepeatDetailsRadioByValue('difficulty_feeding', value);
+const babyVomitField = (value) => getRepeatDetailsRadioByValue('vomit', value);
+const babyDrowsyField = (value) => getRepeatDetailsRadioByValue('drowsy', value);
+const babyStiffField = (value) => getRepeatDetailsRadioByValue('stiff', value);
+const babyYellowSkinField = (value) => getRepeatDetailsRadioByValue('yellow_skin', value);
+const babyFeverField = (value) => getRepeatDetailsRadioByValue('fever', value);
+const babyBlueSkinField = (value) => getRepeatDetailsRadioByValue('blue_skin', value);
+const deliveryPncVisitsField = (value) => $(`input[type="checkbox"]` +
     `[name="/delivery/pnc_visits/pnc_visits_attended"][value="${value}"]`);
 
 const SUMMARY_SECTION = 'section[name="/delivery/summary"]';

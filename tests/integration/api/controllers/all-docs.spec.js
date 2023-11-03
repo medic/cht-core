@@ -110,10 +110,9 @@ describe('all_docs handler', () => {
       .then(() => utils.createUsers(users));
   });
 
-  after(() =>
-    utils
-      .revertDb([], true)
-      .then(() => utils.deleteUsers(users)));
+  after(() => utils
+    .revertDb([], true)
+    .then(() => utils.deleteUsers(users)));
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
@@ -323,8 +322,10 @@ describe('all_docs handler', () => {
         });
         return utils.saveDocsRevs(docs);
       })
-      .then(() =>
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
+      .then(() => {
+        const opts = _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions);
+        return utils.requestOnTestDb(opts);
+      })
       .then(result => {
         expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });

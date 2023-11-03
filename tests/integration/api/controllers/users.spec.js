@@ -158,83 +158,87 @@ describe('Users API', () => {
       await utils.revertDb([], true);
     });
 
-    it('Allows for admin users to modify someone', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        body: {
-          place: newPlaceId
-        }
-      })
+    it('Allows for admin users to modify someone', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          body: {
+            place: newPlaceId
+          }
+        })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
           chai.expect(doc.facility_id).to.equal(newPlaceId);
-        }));
+        });
+    });
 
-    it('401s if a user without the right permissions attempts to modify someone else', () =>
-      utils.request({
-        path: '/api/v1/users/admin',
-        method: 'POST',
-        body: {
-          place: newPlaceId
-        },
-        auth: { username, password },
-      })
+    it('401s if a user without the right permissions attempts to modify someone else', () => {
+      return utils
+        .request({
+          path: '/api/v1/users/admin',
+          method: 'POST',
+          body: {
+            place: newPlaceId
+          },
+          auth: { username, password },
+        })
         .then(() => fail('You should get a 401 in this situation'))
         .catch(err => {
           chai.expect(err.responseBody.error).to.equal('You do not have permissions to modify this person');
-        }));
+        });
+    });
 
-    it('Errors if a user edits themselves but attempts to change their roles', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        body: {
-          type: 'national-manager'
-        },
-        auth: { username, password },
-      })
-        .then(() => fail('You should get an error in this situation'))
-        .catch(err => {
-          chai.expect(err.responseBody.error).to.equal('unauthorized');
-        }));
+    it('Errors if a user edits themselves but attempts to change their roles', () => utils.request({
+      path: `/api/v1/users/${username}`,
+      method: 'POST',
+      body: {
+        type: 'national-manager'
+      },
+      auth: { username, password },
+    })
+      .then(() => fail('You should get an error in this situation'))
+      .catch(err => {
+        chai.expect(err.responseBody.error).to.equal('unauthorized');
+      }));
 
-    it('Allows for users to modify themselves with a cookie', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        headers: {
-          'Cookie': cookie
-        },
-        body: {
-          fullname: 'Awesome Guy'
-        },
-        auth: { username, password},
-      })
-        .then(() => utils.getDoc(getUserId(username)))
-        .then(doc => {
-          chai.expect(doc.fullname).to.equal('Awesome Guy');
-        }));
+    it('Allows for users to modify themselves with a cookie', () => utils.request({
+      path: `/api/v1/users/${username}`,
+      method: 'POST',
+      headers: {
+        'Cookie': cookie
+      },
+      body: {
+        fullname: 'Awesome Guy'
+      },
+      auth: { username, password},
+    })
+      .then(() => utils.getDoc(getUserId(username)))
+      .then(doc => {
+        chai.expect(doc.fullname).to.equal('Awesome Guy');
+      }));
 
-    it('Does not allow users to update their password with only a cookie', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        headers: {
-          'Cookie': cookie
-        },
-        body: {
-          password: 'swizzlesticks'
-        },
-        noAuth: true
-      })
+    it('Does not allow users to update their password with only a cookie', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          headers: {
+            'Cookie': cookie
+          },
+          body: {
+            password: 'swizzlesticks'
+          },
+          noAuth: true
+        })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
           chai.expect(err.responseBody.error).to.equal('You must authenticate with Basic Auth to modify your password');
-        }));
+        });
+    });
 
-    it('Does allow users to update their password with a cookie and also basic auth', () =>
-      utils.request({
+    it('Does allow users to update their password with a cookie and also basic auth', () => {
+      return utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
@@ -245,11 +249,11 @@ describe('Users API', () => {
           // our code can't know it's the same!
         },
         auth: { username, password }
-      })
-        .catch(() => fail('This should not result in an error')));
+      });
+    });
 
-    it('Does allow users to update their password with just basic auth', () =>
-      utils.request({
+    it('Does allow users to update their password with just basic auth', () => {
+      return utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         body: {
@@ -257,8 +261,8 @@ describe('Users API', () => {
           // our code can't know it's the same!
         },
         auth: { username, password }
-      })
-        .catch(() => fail('This should not result in an error')));
+      });
+    });
 
     it('should work with enabled transitions', () => {
       const parentPlace = {

@@ -78,10 +78,9 @@ describe('bulk-get handler', () => {
       .then(() => utils.createUsers(users));
   });
 
-  after(() =>
-    utils
-      .revertDb([], true)
-      .then(() => utils.deleteUsers(users)));
+  after(() => utils
+    .revertDb([], true)
+    .then(() => utils.deleteUsers(users)));
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {

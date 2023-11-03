@@ -21,10 +21,12 @@ const notes = () => $('textarea[name="/immunization_visit/group_note/g_chw_sms"]
 const vaccines = () => $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
 const patientNameSummary = () => $('.current span[data-value=" /immunization_visit/patient_name "]');
 // Excluding the 'last-child' because it represents the follow-up message from the summary page form
-const vaccinesAvailableSummary = () =>
-  $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
-const vaccinesDisableSummary = () =>
-  $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
+const vaccinesAvailableSummary = () => {
+  return $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
+};
+const vaccinesDisableSummary = () => {
+  return $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
+};
 const followUpSMS = () => $('.current span[data-value=" /immunization_visit/chw_sms "]');
 
 const selectAppliedVaccines = async (selector, option = 'no') => {

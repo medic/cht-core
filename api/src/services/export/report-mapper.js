@@ -65,38 +65,23 @@ module.exports = {
       ...allFields.map(f => Object.keys(flatten(f)))
     ).sort();
 
-    return getForms().then(forms =>
-      Promise.all(forms.map(form =>
-        db.medic
+    return getForms()
+      .then(forms => {
+        const getFieldsPromises = form => db.medic
           .query('medic-client/reports_by_form', {
             key: [form],
             limit: 1,
             include_docs: true,
             reduce: false
           })
-          .then(results =>
-            results.rows[0] &&
-          results.rows[0].doc &&
-          results.rows[0].doc.fields))).then(allFields => {
-        // Filter on identity as you can select forms that have no reports
-        const fieldColumns = uniqueColumns(allFields.filter(field => field));
-
-        const allColumns = [
-          '_id',
-          'form',
-          'patient_id',
-          'reported_date',
-          'from',
-          'contact.name',
-          'contact.parent.name',
-          'contact.parent.parent.name',
-          'contact.parent.parent.parent.name'
-        ].concat(fieldColumns);
-
-        return {
-          header: allColumns,
-          getRows: record => {
-            return [[
+          .then(results => {
+            return results.rows[0] &&
+                   results.rows[0].doc &&
+                   results.rows[0].doc.fields;
+          });
+        const getRecordColumns = (fieldColumns, record) => {
+          return [
+            [
               record._id,
               record.form,
               record.patient_id,
@@ -106,10 +91,33 @@ module.exports = {
               objectPath.get(record, ['contact', 'parent', 'name']),
               objectPath.get(record, ['contact', 'parent', 'parent', 'name']),
               objectPath.get(record, ['contact', 'parent', 'parent', 'parent', 'name'])
-            ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)))];
-          }
+            ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)))
+          ];
         };
-      }));
+        return Promise
+          .all(forms.map(form => getFieldsPromises(form)))
+          .then(allFields => {
+            // Filter on identity as you can select forms that have no reports
+            const fieldColumns = uniqueColumns(allFields.filter(field => field));
+
+            const allColumns = [
+              '_id',
+              'form',
+              'patient_id',
+              'reported_date',
+              'from',
+              'contact.name',
+              'contact.parent.name',
+              'contact.parent.parent.name',
+              'contact.parent.parent.parent.name'
+            ].concat(fieldColumns);
+
+            return {
+              header: allColumns,
+              getRows: (record) => getRecordColumns(fieldColumns, record),
+            };
+          });
+      });
   },
   _flatten: flatten,
 };

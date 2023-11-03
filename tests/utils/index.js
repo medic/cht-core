@@ -375,8 +375,8 @@ const deleteAllDocs = (except) => {
       path: '/_all_docs?include_docs=true',
       method: 'GET',
     })
-    .then(({ rows }) =>
-      rows
+    .then(({ rows }) => {
+      return rows
         .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
           return {
@@ -384,7 +384,8 @@ const deleteAllDocs = (except) => {
             _rev: doc._rev,
             _deleted: true,
           };
-        }))
+        });
+    })
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       if (DEBUG) {
