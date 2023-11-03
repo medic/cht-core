@@ -336,44 +336,48 @@ describe('places controller', () => {
           type: 'person'
         }
       };
+      
       sinon.stub(people, 'getOrCreatePerson').resolves({
         _id: 'qwe',
         _rev: '1',
         name: 'Jim',
         type: 'person'
       });
-      db.medic.post.callsFake(doc => {
-        if (doc.name === 'CHP Family') {
-          return Promise.resolve({ id: 'hc', rev: '1' });
-        }
-        if (doc.name === 'CHP Branch One') {
-          return Promise.resolve({ id: 'ad06d137' });
+
+      db.medic.post.onCall(0).callsFake(doc => {
+        chai.expect(doc.name).to.equal('CHP Family');
+        chai.expect(doc.parent._id).to.equal('ad06d137');
+        return Promise.resolve({ id: 'hc', rev: '1' });
+      });
+      db.medic.post.onCall(1).callsFake(doc => {
+        chai.expect(doc.name).to.equal('CHP Family');
+        chai.expect(doc.parent._id).to.equal('ad06d137');
+        chai.expect(doc.contact._id).to.equal('qwe');
+        chai.expect(doc.contact.name).to.equal(undefined); // minified
+        chai.expect(doc.contact.type).to.equal(undefined); //
+        return Promise.resolve({ id: 'hc', rev: '2' });
+      });
+
+      fetchHydratedDoc.withArgs('hc').resolves({
+        name: 'CHP Family',
+        type: 'health_center',
+        parent: {
+          _id: 'ad06d137',
+          name: 'CHP Branch One',
+          type: 'district_hospital'
         }
       });
-      fetchHydratedDoc.callsFake(id => {
-        if (id === 'hc') {
-          return Promise.resolve({
-            name: 'CHP Family',
-            type: 'health_center',
-            parent: {
-              _id: 'ad06d137',
-              name: 'CHP Branch One',
-              type: 'district_hospital'
-            },
-          });
-        }
-        if (id === 'ad06d137') {
-          return Promise.resolve({
-            _id: 'ad06d137',
-            name: 'CHP Branch One',
-            type: 'district_hospital'
-          });
-        }
+      fetchHydratedDoc.withArgs('ad06d137').resolves({
+        _id: 'ad06d137',
+        name: 'CHP Branch One',
+        type: 'district_hospital'
       });
+
       return controller._createPlaces(place).then(actual => {
+        chai.expect(db.medic.post.callCount).to.equal(2);
         chai.expect(actual).to.deep.equal({
           id: 'hc',
-          rev: '1',
+          rev: '2',
           contact: {
             id: 'qwe',
             rev: '1'
