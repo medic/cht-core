@@ -20,8 +20,8 @@ const MEDIC_DDOC_ID = '_design/medic';
 
 const loadTranslations = () => {
   const translationCache = {};
-  return translations
-    .getTranslationDocs()
+  return translationUtils
+    .getTranslationDocs(db, logger)
     .catch(err => {
       logger.error('Error loading translations - starting up anyway: %o', err);
     })
@@ -67,10 +67,10 @@ const loadViewMaps = () => {
     });
 };
 
-const loadSettings = () => {
+const loadSettings = (rev) => {
   return settingsService
-    .update({})
-    .then(() => settingsService.get())
+    .update({}, false, false, rev)
+    .then((newRev) => settingsService.get(newRev || rev))
     .then(settings => config.set(settings));
 };
 

@@ -18,17 +18,12 @@ let config = DEFAULT_CONFIG;
 let transitionsLib;
 
 const loadTranslations = () => {
-  const options = {
-    startkey: ['translations', false],
-    endkey: ['translations', true],
-    include_docs: true,
-  };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
-    .then(result => {
-      result.rows.forEach(row => {
-        const values = Object.assign(row.doc.generic, row.doc.custom || {});
-        translations[row.doc.code] = translationUtils.loadTranslations(values);
+  return translationUtils
+    .getTranslationDocs(db, logger)
+    .then(docs => {
+      docs.forEach(doc => {
+        const values = Object.assign(doc.generic, doc.custom || {});
+        translations[doc.code] = translationUtils.loadTranslations(values);
       });
     })
     .catch(err => {
@@ -39,11 +34,13 @@ const loadTranslations = () => {
 const initFeed = () => {
   db.medic
     .changes({ live: true, since: 'now' })
-    .on('change', change => {
+    .on('change', async (change) => {
       if (change.id === 'settings') {
         logger.info('Reloading configuration');
-        initConfig();
-      } else if (change.id.startsWith('messages-')) {
+        return initConfig(change?.changes?.[0]?.rev);
+      }
+
+      if (change.id.startsWith('messages-')) {
         logger.info('Detected translations change - reloading');
         loadTranslations().then(() => initTransitionLib());
       }
@@ -54,9 +51,9 @@ const initFeed = () => {
     });
 };
 
-const initConfig = () => {
+const initConfig = (rev) => {
   return db.medic
-    .get('settings')
+    .get('settings', { rev })
     .then(doc => {
       _.defaults(doc.settings, DEFAULT_CONFIG);
       config = doc.settings;
@@ -71,6 +68,9 @@ const initConfig = () => {
       );
     })
     .catch(err => {
+      if (err.status === 404) {
+        return initConfig(rev);
+      }
       logger.error('%o', err);
       throw new Error('Error loading configuration');
     });

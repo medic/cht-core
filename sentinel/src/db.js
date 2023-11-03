@@ -93,8 +93,6 @@ if (UNIT_TEST_ENV) {
   module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch: fetchFn });
   module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
 
-  let medicDbShards;
-
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
@@ -105,18 +103,6 @@ if (UNIT_TEST_ENV) {
       json: true,
       body,
     });
-  };
-
-  module.exports.shardSynced = async (change) => {
-    if (!medicDbShards) {
-      const url = `${module.exports.couchUrl}/_shards`;
-      const response = await request.get({ url, json: true });
-      medicDbShards = response.shards;
-    }
-    const nbrNodes = medicDbShards[Object.keys(medicDbShards)[0]].length;
-
-    const url = `${module.exports.couchUrl}/${change.id}?rev=${change.changes[0].rev}&r=${nbrNodes}`;
-    await request.get({ url, json: true });
   };
 } else {
   logger.warn(

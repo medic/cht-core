@@ -172,6 +172,16 @@ const requestOnTestDb = (options, debug) => {
   return request(options, debug);
 };
 
+const requestOnSentinelTestDb = (options) => {
+  if (typeof options === 'string') {
+    options = {
+      path: options,
+    };
+  }
+  options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
+  return request(options);
+};
+
 const requestOnTestMetaDb = (options, debug) => {
   if (typeof options === 'string') {
     options = {
@@ -270,7 +280,8 @@ const saveMetaDocs = (user, docs) => {
     });
 };
 
-const getDoc = (id, rev, parameters = '') => {
+const getDoc = async (id, rev, parameters = '') => {
+
   const params = {};
   if (rev) {
     params.rev = rev;
@@ -283,15 +294,14 @@ const getDoc = (id, rev, parameters = '') => {
   });
 };
 
-const getDocs = (ids, fullResponse = false) => {
-  return requestOnTestDb({
+const getDocs = async (ids, fullResponse = false) => {
+
+  const response = await requestOnTestDb({
     path: `/_all_docs?include_docs=true`,
     method: 'POST',
     body: { keys: ids || [] },
-  })
-    .then(response => {
-      return fullResponse ? response : response.rows.map(row => row.doc);
-    });
+  });
+  return fullResponse ? response : response.rows.map(row => row.doc);
 };
 
 const getMetaDocs = (user, ids, fullResponse = false) => {
@@ -1172,7 +1182,7 @@ const collectApiLogs = (...regex) => collectLogs('api', ...regex);
 
 const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
-const normalizeTestName = name => name.replace(/\s/g, '_');
+const normalizeTestName = name => name.replace(/[\s|/]/g, '_');
 
 const apiLogTestStart = async (name) => {
   const doc = { _id: `test_${normalizeTestName(name)}` };
@@ -1258,6 +1268,11 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
+const syncShards = async () => {
+  await requestOnTestDb({ path: `/_sync_shards`, method: 'POST' });
+  await requestOnSentinelTestDb({ path: `/_sync_shards`, method: 'POST' });
+};
+
 module.exports = {
   db,
   sentinelDb,
@@ -1273,6 +1288,7 @@ module.exports = {
   request,
   requestOnTestDb,
   requestOnTestMetaDb,
+  requestOnSentinelTestDb,
   requestOnMedicDb,
   saveDoc,
   saveDocs,
@@ -1328,4 +1344,5 @@ module.exports = {
   formDocProcessing,
   getSentinelDate,
   logFeedbackDocs,
+  syncShards,
 };

@@ -9,7 +9,14 @@ const config = require('../config');
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
 const SETTINGS_DOC_ID = 'settings';
-const getDoc = () => db.medic.get(SETTINGS_DOC_ID);
+const getDoc = (rev) => db.medic
+  .get(SETTINGS_DOC_ID, { rev })
+  .catch(err => {
+    if (err.status === 404 && rev) {
+      return getDoc(rev);
+    }
+    throw err;
+  });
 
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
@@ -50,8 +57,8 @@ const getDeprecatedTransitions = () => {
 };
 
 module.exports = {
-  get: () => {
-    return getDoc()
+  get: (rev) => {
+    return getDoc(rev)
       .then(doc => doc.settings)
       .catch(err => {
         if (err.status === 404) {
@@ -73,11 +80,11 @@ module.exports = {
    * @param overwrite If true, replace the settings document with input document.
    * @returns Boolean whether or not settings doc has been updated
    */
-  update: (body, replace, overwrite) => {
+  update: (body, replace, overwrite, rev) => {
     const pathToDefaultConfig = path.join(environment.defaultDocsPath, 'settings.doc.json');
     const defaultConfig = require(pathToDefaultConfig);
 
-    return getDoc()
+    return getDoc(rev)
       .catch(err => {
         if (err.status === 404) {
           return { _id: SETTINGS_DOC_ID };
@@ -107,7 +114,7 @@ module.exports = {
 
         if (JSON.stringify(doc.settings) !== original) {
           info('Updating settings with new defaults');
-          return db.medic.put(doc).then(() => true);
+          return db.medic.put(doc).then((result) => result.rev);
         }
 
         info('Not updating settings - the existing settings are already up to date');

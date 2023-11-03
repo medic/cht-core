@@ -48,32 +48,24 @@ const waitForSeq = (metadataId, docIds) => {
     });
 };
 
-const requestOnSentinelTestDb = (options) => {
-  if (typeof options === 'string') {
-    options = {
-      path: options,
-    };
-  }
-  options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
-  return utils.request(options);
+const getInfoDoc = async (docId) => {
+  return await utils.requestOnSentinelTestDb('/' + docId + '-info');
 };
 
-const getInfoDoc = docId => {
-  return requestOnSentinelTestDb('/' + docId + '-info?r=3');
-};
-
-const getInfoDocs = (docIds = []) => {
+const getInfoDocs = async (docIds = []) => {
   docIds = _.castArray(docIds);
 
   const opts = {
-    path: '/_all_docs?include_docs=true&r=3',
+    path: '/_all_docs?include_docs=true',
     body: { keys: docIds.map(id => `${id}-info`) },
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
   };
-  return requestOnSentinelTestDb(opts).then(response => response.rows.map(row => row.doc));
+
+  const response = await utils.requestOnSentinelTestDb(opts);
+  return response.rows.map(row => row.doc);
 };
 
 const deletePurgeDbs = () => {
@@ -102,7 +94,7 @@ const waitForPurgeLog = seq => {
     since: seq,
     feed: 'longpoll',
   };
-  return requestOnSentinelTestDb('/_changes?' + querystring.stringify(params))
+  return utils.requestOnSentinelTestDb('/_changes?' + querystring.stringify(params))
     .then(result => {
       if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
         return;
@@ -132,7 +124,7 @@ const skipToSeq = async (seq) => {
 module.exports = {
   waitForSentinel: docIds => waitForSeq(TRANSITION_SEQ, docIds),
   waitForBackgroundCleanup: docIds => waitForSeq(BACKGROUND_SEQ, docIds),
-  requestOnSentinelTestDb: requestOnSentinelTestDb,
+  requestOnSentinelTestDb: utils.requestOnSentinelTestDb,
   getInfoDoc: getInfoDoc,
   getInfoDocs: getInfoDocs,
   deletePurgeDbs: deletePurgeDbs,

@@ -66,17 +66,6 @@ const registerFeed = (seq) => {
   return request;
 };
 
-const waitForShardSync = async (change) => {
-  do {
-    try {
-      return await db.shardSynced(change);
-    } catch (err) {
-      logger.debug(`Error when reading doc with full read: %o`, err);
-    }
-    // eslint-disable-next-line no-constant-condition
-  } while (true);
-};
-
 const changeQueue = async.queue( (change, callback) => {
   if (!change) {
     return callback();
@@ -92,16 +81,14 @@ const changeQueue = async.queue( (change, callback) => {
     return updateMetadata(change, callback);
   }
 
-  return waitForShardSync(change).then(() => {
-    transitionsLib.processChange(change, err => {
-      if (err) {
-        changeRetryHistory.add(change);
-        return callback(err);
-      }
+  transitionsLib.processChange(change, err => {
+    if (err) {
+      changeRetryHistory.add(change);
+      return callback(err);
+    }
 
-      updateMetadata(change, callback);
-    });
-  })
+    updateMetadata(change, callback);
+  });
 });
 
 const resumeProcessing = () => {
