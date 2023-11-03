@@ -22,6 +22,7 @@ const CHROME_OPTIONS_ARGS_DEBUG = [
   'disable-gpu',
   'deny-permission-prompts',
   'ignore-certificate-errors',
+  'no-sandbox',
   'window-size=1200,900'
 ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
@@ -254,6 +255,10 @@ const baseConfig = {
     global.expect = chai.expect;
     if (!utils.isMinimumChromeVersion()) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
+    } else {
+      browserVersion = driver.capabilities.browserVersion;
+      chromedriverVersion = driver.capabilities.chrome.chromedriverVersion;
+      console.log("Browser: " + browserVersion + " Driver: " + chromedriverVersion);
     }
   },
   /**
