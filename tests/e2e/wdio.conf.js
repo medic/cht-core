@@ -22,7 +22,6 @@ const CHROME_OPTIONS_ARGS_DEBUG = [
   'disable-gpu',
   'deny-permission-prompts',
   'ignore-certificate-errors',
-  'disable-dev-shm-usage',
   'window-size=1200,900'
 ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
@@ -97,9 +96,10 @@ const baseConfig = {
       binary: CHROME_VERSION === utils.getMinimumChromeVersion() ? '/usr/bin/google-chrome-stable' : undefined
     },
     'wdio:chromedriverOptions': {
-      binary: CHROME_VERSION === utils.getMinimumChromeVersion() ? '/usr/local/bin' : undefined
+      binary: CHROME_VERSION === utils.getMinimumChromeVersion()
+        ? '/node_modules/chromedriver/bin/chromedriver'
+        : undefined
     }
-
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
     // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
@@ -152,7 +152,10 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: CHROME_VERSION === utils.getMinimumChromeVersion() ? ['chromedriver'] : ['devtools'],
+  services: CHROME_VERSION === utils.getMinimumChromeVersion()
+    ? ['chromedriver']
+    : ['devtools'],
+
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -251,13 +254,6 @@ const baseConfig = {
     global.expect = chai.expect;
     if (!utils.isMinimumChromeVersion()) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
-    } else {
-      // eslint-disable-next-line no-undef
-      const str1 = driver.capabilities.browserVersion;
-      // eslint-disable-next-line no-undef
-      const str2 = driver.capabilities.chrome.chromedriverVersion;
-      console.log('Browser version: ' + str1);
-      console.log('Chromedriver version: ' + str2);
     }
   },
   /**
