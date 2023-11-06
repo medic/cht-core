@@ -1251,13 +1251,8 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
-const getMinimumChromeVersion = () => {
-  return MINIMUM_BROWSER_VERSION;
-};
-
 const isMinimumChromeVersion = () => {
-  // eslint-disable-next-line no-undef
-  if (driver.capabilities.browserVersion.split('.').shift() === MINIMUM_BROWSER_VERSION) {
+  if (process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION) {
     return true;
   }
   return false;
@@ -1333,6 +1328,5 @@ module.exports = {
   formDocProcessing,
   getSentinelDate,
   logFeedbackDocs,
-  getMinimumChromeVersion,
   isMinimumChromeVersion,
 };

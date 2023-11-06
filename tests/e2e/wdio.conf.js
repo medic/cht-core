@@ -18,7 +18,7 @@ const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
 const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
 const CHROME_VERSION = process.env.CHROME_VERSION;
-const CHROME_OPTIONS_ARGS_DEBUG = CHROME_VERSION === utils.getMinimumChromeVersion()
+const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion()
   ? [
     'disable-gpu',
     'deny-permission-prompts',
@@ -97,14 +97,14 @@ const baseConfig = {
     maxInstances: 1,
     //
     browserName: 'chrome',
-    browserVersion: CHROME_VERSION === utils.getMinimumChromeVersion() ? CHROME_VERSION : undefined,
+    browserVersion: utils.isMinimumChromeVersion() ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
-      binary: CHROME_VERSION === utils.getMinimumChromeVersion() ? '/usr/bin/google-chrome-stable' : undefined
+      binary: utils.isMinimumChromeVersion() ? '/usr/bin/google-chrome-stable' : undefined
     },
     'wdio:chromedriverOptions': {
-      binary: CHROME_VERSION === utils.getMinimumChromeVersion()
+      binary: utils.isMinimumChromeVersion()
         ? '/node_modules/chromedriver/bin/chromedriver'
         : undefined
     }
@@ -160,7 +160,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: CHROME_VERSION === utils.getMinimumChromeVersion()
+  services: utils.isMinimumChromeVersion()
     ? ['chromedriver']
     : ['devtools'],
 

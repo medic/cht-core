@@ -19,7 +19,7 @@ const TYPHOID_VACCINE = 'input[name="/immunization_visit/group_typhoid/g_typhoid
 const VITAMIN_A_VACCINE = 'input[name="/immunization_visit/group_vitamin_a/g_vitamin_a"]';
 const YELLOW_FEVER_VACCINE = 'input[name="/immunization_visit/group_yellow_fever/g_yellow_fever"]';
 
-const notes = () => $(`${enketoCommonPage.SMS_NOTE('immunization_visit')}`);
+const notes = () => $(`${enketoCommonPage.smsNote('immunization_visit')}`);
 const vaccines = () => $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
 const patientNameSummary = () => $('.current span[data-value=" /immunization_visit/patient_name "]');
 // Excluding the 'last-child' because it represents the follow-up message from the summary page form
@@ -27,7 +27,7 @@ const vaccinesAvailableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
 const vaccinesDisableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
-const followUpSMS = () => $(`.current ${enketoCommonPage.FOLLOW_UP_SMS('immunization_visit')}`);
+const followUpSMS = () => $(`.current ${enketoCommonPage.followUpSms('immunization_visit')}`);
 
 const selectAppliedVaccines = async (selector, option = 'no') => {
   const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);
