@@ -20,6 +20,8 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { GlobalActions } from '@mm-actions/global';
+import { TranslateService } from '@mm-services/translate.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 export const CAN_USE_BARCODE_SCANNER = 'can_use_barcode_scanner';
 
@@ -55,6 +57,8 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     private searchFiltersService: SearchFiltersService,
     private authService: AuthService,
     private sessionService: SessionService,
+    private translateService: TranslateService,
+    private telemetryService: TelemetryService,
     @Inject(DOCUMENT) private document:Document,
   ) {
     this.windowRef = this.document.defaultView;
@@ -154,7 +158,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     }
 
     if (!('BarcodeDetector' in window)) {
-      const message = 'Barcode scanner is not supported by this browser.';
+      const message = this.translateService.instant('barcode_scanner.warning.not_supported');
       this.globalAction.setSnackbarContent(message);
       console.warn(message);
       return false;
@@ -165,10 +169,11 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
 
   private async scanBarcode(imageHolder) {
     try {
+      this.telemetryService.record('search_by_barcode');
       const barcodes = await this.barcodeDetector.detect(imageHolder);
       barcodes.length && this.searchFiltersService.freetextSearch(barcodes[0].rawValue);
     } catch (error) {
-      const message = 'Cannot read barcode';
+      const message = this.translateService.instant('barcode_scanner.error.cannot_read_barcode');
       this.globalAction.setSnackbarContent(message);
       console.error(message, error);
     }
