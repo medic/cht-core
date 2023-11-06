@@ -86,9 +86,8 @@ const handleJsonRequest = (method, path, callback) => {
         req,
         res
       );
-    } else {
-      callback(req, res, next);
     }
+    callback(req, res, next);
   });
 };
 

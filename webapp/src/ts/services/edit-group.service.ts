@@ -87,9 +87,8 @@ export class EditGroupService {
             .get()
             .put(dataRecord)
             .then(() => dataRecord);
-        } else {
-          return dataRecord;
         }
+        return dataRecord;
       });
   }
 }

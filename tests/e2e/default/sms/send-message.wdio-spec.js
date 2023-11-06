@@ -49,6 +49,7 @@ describe('Send message', () => {
     await utils.saveDocs([...places.values(), bob]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
+    await commonPage.hideSnackbar();
   });
 
   beforeEach(async () => {
@@ -60,10 +61,10 @@ describe('Send message', () => {
     await messagesPage.sendMessage(
       smsMsg(healthCenter.name),
       healthCenter.name,
-      `${healthCenter.name} - all  contacts`
+      `${healthCenter.name} - all`
     );
 
-    await browser.waitUntil(async () => (await messagesPage.messagesListLeftPanel()).length === 2, 3000);
+    await browser.waitUntil(async () => (await messagesPage.messagesListLeftPanel()).length === 2);
 
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);

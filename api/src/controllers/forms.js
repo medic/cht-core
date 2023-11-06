@@ -66,10 +66,9 @@ module.exports = {
             res.writeHead(200, XML_RESPONSE_HEADERS);
             res.end(xml);
           });
-        } else {
-          res.writeHead(200, JSON_RESPONSE_HEADERS);
-          res.end(listFormsJSON(forms));
         }
+        res.writeHead(200, JSON_RESPONSE_HEADERS);
+        res.end(listFormsJSON(forms));
       })
       .catch(err => serverUtils.error(err, req, res));
   },

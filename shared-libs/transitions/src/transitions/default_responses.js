@@ -43,9 +43,8 @@ module.exports = {
       start_date = moment(config.start_date, 'YYYY-MM-DD');
       if (start_date.isValid() && doc.reported_date) {
         return moment(doc.reported_date).isAfter(start_date);
-      } else {
-        logger.error(`Invalid default_responses start date: ${start_date}`);
       }
+      logger.error(`Invalid default_responses start date: ${start_date}`);
     }
 
     return false;

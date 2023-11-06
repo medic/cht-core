@@ -257,9 +257,8 @@ export class RelativeDatePipe implements PipeTransform {
     if (raw) {
       options.raw = true;
       return getRelativeDate(date, options);
-    } else {
-      return this.sanitizer.bypassSecurityTrustHtml(getRelativeDate(date, options));
     }
+    return this.sanitizer.bypassSecurityTrustHtml(getRelativeDate(date, options));
   }
 }
 
@@ -287,9 +286,8 @@ export class RelativeDayPipe implements PipeTransform {
     if (raw) {
       options.raw = true;
       return getRelativeDate(date, options);
-    } else {
-      return this.sanitizer.bypassSecurityTrustHtml(getRelativeDate(date, options));
     }
+    return this.sanitizer.bypassSecurityTrustHtml(getRelativeDate(date, options));
   }
 }
 

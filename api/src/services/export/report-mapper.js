@@ -52,10 +52,11 @@ module.exports = {
 
       if (forms) {
         return Promise.resolve(forms);
-      } else {
-        return db.medic.query('medic-client/reports_by_form', {group: true})
-          .then(results => results.rows.map(r => r.key[0]));
       }
+
+      return db.medic
+        .query('medic-client/reports_by_form', { group: true })
+        .then(results => results.rows.map(r => r.key[0]));
     };
 
     // Take an array of the fields property of reports and generate a unique
@@ -66,12 +67,13 @@ module.exports = {
 
     return getForms().then(forms =>
       Promise.all(forms.map(form =>
-        db.medic.query('medic-client/reports_by_form', {
-          key: [form],
-          limit: 1,
-          include_docs: true,
-          reduce: false
-        })
+        db.medic
+          .query('medic-client/reports_by_form', {
+            key: [form],
+            limit: 1,
+            include_docs: true,
+            reduce: false
+          })
           .then(results =>
             results.rows[0] &&
           results.rows[0].doc &&

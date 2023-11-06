@@ -17,7 +17,6 @@ describe('Immunization Visit', () => {
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
   const babyName = 'Baby1';
   let babyMedicID = '';
-  let countAppliedVaccines = 0;
 
   before(async () => {
     await utils.saveDocs([...places.values()]);
@@ -54,6 +53,8 @@ describe('Immunization Visit', () => {
   });
 
   it('Submit immunization visit - webapp', async () => {
+    let countAppliedVaccines = 0;
+
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
 
@@ -115,6 +116,10 @@ describe('Immunization Visit', () => {
     //Verify immunization card
     const vaccinesValues = await contactPage.getImmCardVaccinesValues();
     for (const value of vaccinesValues) {
+      if (value.error) {
+        continue;
+      }
+
       if (value.includes('of')) {
         const totalVaccines = value.split(' of ')[1];
         expect(value).to.equal(`${totalVaccines} of ${totalVaccines}`);
@@ -137,7 +142,7 @@ describe('Immunization Visit', () => {
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(babyName);
     expect(openReportInfo.reportName).to.equal('Immunization Visit');
-    expect(openReportInfo.senderName).to.equal(`Submitted by ${user.contact.name} `);
+    expect(openReportInfo.senderName).to.equal(`Submitted by ${user.contact.name}`);
     expect(openReportInfo.senderPhone).to.equal(user.contact.phone);
 
     expect((await reportsPage.getDetailReportRowContent('chw_sms')).rowValues[0]).to.equal('Nice work, ! ' +

@@ -42,7 +42,7 @@ const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
 };
 
 const addAllVaccines = async () => {
-  const allVaccines = await vaccines();  
+  const allVaccines = await vaccines();
   for (const vaccine of allVaccines) {
     await vaccine.waitForClickable();
     await vaccine.click();
@@ -51,7 +51,7 @@ const addAllVaccines = async () => {
 
 /**
  * Add health programs to a health facility, standard config
- * 
+ *
  * @param {string} program - Refers to the different Health Programs
  *                            "anc" for Antenatal care
  *                            "pnc" for Postnatal care
@@ -71,7 +71,7 @@ const addHealthPrograms = async (program = HEALTH_PROGRAMS.ANC) => {
 
 const getImmCardVaccinesValues = async () => {
   await (await immCardVaccineValue()).waitForDisplayed();
-  return Promise.all((await immCardVaccinesValues()).map(value => value.getText()));
+  return await immCardVaccinesValues().map(value => value.getText());
 };
 
 const getPregnancyCardRisk = async () => {
