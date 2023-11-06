@@ -1,5 +1,8 @@
 <section class="mm-search-bar-container" [class.open-search]="openSearch" [class.disabled]="disabled">
   <div class="search-bar-left-icon">
+    <label for="barcode-scanner-input" class="fa fa-qrcode" *ngIf="isBarcodeScannerAvailable() && showSearchIcon()">
+      <input type="file" id="barcode-scanner-input" data-type-xml="binary" accept="image/*"/>
+    </label>
     <span class="fa fa-search" *ngIf="showSearchIcon()" (click)="toggleMobileSearch()"></span>
     <a class="fa fa-chevron-left search-bar-clear" *ngIf="showClearIcon()" (click)="clear()"></a>
   </div>
