@@ -41,9 +41,9 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
 
   private canUseBarcodeScanner = false;
   private globalAction: GlobalActions;
-  private windowRef;
   private barcodeDetector;
   private filters;
+  windowRef;
   subscription: Subscription = new Subscription();
   activeFilters: number = 0;
   openSearch = false;
@@ -59,7 +59,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     private sessionService: SessionService,
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
-    @Inject(DOCUMENT) private document:Document,
+    @Inject(DOCUMENT) private document: Document,
   ) {
     this.windowRef = this.document.defaultView;
     this.globalAction = new GlobalActions(store);
@@ -100,14 +100,14 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     }
 
     const barcodeTypes = await this.windowRef.BarcodeDetector.getSupportedFormats();
-    console.info(`Supported barcode formats: ${barcodeTypes.join(', ')}`);
+    console.info(`Supported barcode formats: ${barcodeTypes?.join(', ')}`);
     this.barcodeDetector = new this.windowRef.BarcodeDetector({ formats: barcodeTypes });
 
     const imageHolder = this.windowRef.document.createElement('img');
-    imageHolder.addEventListener('load', () => this.scanBarcode(imageHolder));
+    imageHolder?.addEventListener('load', () => this.scanBarcode(imageHolder));
 
     const input = this.windowRef.document.getElementById('barcode-scanner-input');
-    input.addEventListener('change', () => {
+    input?.addEventListener('change', () => {
       if (!input.files) {
         return;
       }
@@ -157,7 +157,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
       return false;
     }
 
-    if (!('BarcodeDetector' in window)) {
+    if (!('BarcodeDetector' in this.windowRef)) {
       const message = this.translateService.instant('barcode_scanner.warning.not_supported');
       this.globalAction.setSnackbarContent(message);
       console.warn(message);
