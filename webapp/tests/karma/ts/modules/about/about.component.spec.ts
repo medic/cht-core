@@ -6,6 +6,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { expect } from 'chai';
 import sinon from 'sinon';
 
+import { MatCardModule } from '@angular/material/card';
 import { AboutComponent } from '@mm-modules/about/about.component';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { SessionService } from '@mm-services/session.service';
@@ -51,7 +52,8 @@ describe('About Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
+          RouterTestingModule,
+          MatCardModule,
         ],
         declarations: [
           AboutComponent,
