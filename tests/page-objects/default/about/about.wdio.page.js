@@ -11,7 +11,7 @@ const getPartnerImage = async (name) => {
 };
 
 const getVersion = async () => {
-  await browser.waitUntil(async () => await (await version()).getText());
+  await (await version()).waitForDisplayed();
   return await (await version()).getText();
 };
 
