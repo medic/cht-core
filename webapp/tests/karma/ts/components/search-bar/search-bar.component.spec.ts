@@ -15,6 +15,7 @@ import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 
 class BarcodeDetector {
   constructor() {}
@@ -35,6 +36,7 @@ describe('Search Bar Component', () => {
   let documentRef;
   let getSupportedFormatsStub;
   let detectStub;
+  let browserDetectorService;
 
   beforeEach(async () => {
     const mockedSelectors = [
@@ -50,6 +52,7 @@ describe('Search Bar Component', () => {
     sessionService = { isAdmin: sinon.stub() };
     translateService = { instant: sinon.stub() };
     telemetryService = { record: sinon.stub() };
+    browserDetectorService = { isDesktopUserAgent: sinon.stub() };
 
     await TestBed
       .configureTestingModule({
@@ -68,6 +71,7 @@ describe('Search Bar Component', () => {
           { provide: SessionService, useValue: sessionService },
           { provide: TranslateService, useValue: translateService },
           { provide: TelemetryService, useValue: telemetryService },
+          { provide: BrowserDetectorService, useValue: browserDetectorService },
         ]
       })
       .compileComponents();
@@ -197,6 +201,7 @@ describe('Search Bar Component', () => {
     it('should return true if BarcodeDetector is supported, user has permission and is not admin', async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
+      browserDetectorService.isDesktopUserAgent.returns(false);
       sinon.resetHistory();
       await component.ngAfterViewInit();
 
@@ -204,6 +209,23 @@ describe('Search Bar Component', () => {
 
       expect(result).to.be.true;
       expect(sessionService.isAdmin.calledOnce).to.be.true;
+      expect(browserDetectorService.isDesktopUserAgent.called).to.be.true;
+      expect(authService.has.calledOnce).to.be.true;
+      expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
+    });
+
+    it('should return false if browser is desktop', async () => {
+      sessionService.isAdmin.returns(false);
+      authService.has.resolves(true);
+      browserDetectorService.isDesktopUserAgent.returns(true);
+      sinon.resetHistory();
+      await component.ngAfterViewInit();
+
+      const result = component.isBarcodeScannerAvailable();
+
+      expect(result).to.be.false;
+      expect(sessionService.isAdmin.calledOnce).to.be.true;
+      expect(browserDetectorService.isDesktopUserAgent.called).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
     });
@@ -283,9 +305,37 @@ describe('Search Bar Component', () => {
       eventCallback();
       flush();
 
-      expect(telemetryService.record.calledWith('search_by_barcode')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:scan')).to.be.true;
       expect(detectStub.calledWith(imageHolder)).to.be.true;
       expect(searchFiltersService.freetextSearch.calledWith('1234')).to.be.true;
+    }));
+
+    it('should advice to retry if barcode was not detected', fakeAsync(async () => {
+      sessionService.isAdmin.returns(false);
+      authService.has.resolves(true);
+      translateService.instant.returns('please retry');
+      const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
+      const imageHolder = { addEventListener: sinon.stub() };
+      const createElementStub = sinon.stub(documentRef.defaultView.document, 'createElement');
+      createElementStub.returns(imageHolder);
+      detectStub.resolves([]);
+      sinon.resetHistory();
+
+      await component.ngAfterViewInit();
+
+      expect(getSupportedFormatsStub.calledOnce).to.be.true;
+      expect(imageHolder.addEventListener.calledOnce).to.be.true;
+      expect(imageHolder.addEventListener.args[0][0]).to.equal('load');
+
+      const eventCallback = imageHolder.addEventListener.args[0][1];
+      eventCallback();
+      flush();
+
+      expect(telemetryService.record.calledWith('search_by_barcode:scan')).to.be.true;
+      expect(detectStub.calledWith(imageHolder)).to.be.true;
+      expect(translateService.instant.calledWith('barcode_scanner.warning.no_barcode_detected')).to.be.true;
+      expect(setSnackbarContentSpy.calledWith('please retry')).to.be.true;
+      expect(searchFiltersService.freetextSearch.notCalled).to.be.true;
     }));
 
     it('should catch exceptions', fakeAsync(async () => {
@@ -309,7 +359,7 @@ describe('Search Bar Component', () => {
       eventCallback();
       flush();
 
-      expect(telemetryService.record.calledWith('search_by_barcode')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:scan')).to.be.true;
       expect(detectStub.calledWith(imageHolder)).to.be.true;
       expect(translateService.instant.calledWith('barcode_scanner.error.cannot_read_barcode')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('some nice text')).to.be.true;
