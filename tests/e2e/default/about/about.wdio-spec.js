@@ -10,7 +10,7 @@ describe('About page', async () => {
   });
 
   afterEach(async () => {
-    await utils.deleteDoc('partners');
+    await utils.deleteDocs(['partners']);
   });
 
   it('should open the about page', async () => {
