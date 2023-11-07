@@ -22,6 +22,7 @@ import { SessionService } from '@mm-services/session.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 
 export const CAN_USE_BARCODE_SCANNER = 'can_use_barcode_scanner';
 
@@ -59,6 +60,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     private sessionService: SessionService,
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
+    private browserDetectorService: BrowserDetectorService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.windowRef = this.document.defaultView;
@@ -104,9 +106,10 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     this.barcodeDetector = new this.windowRef.BarcodeDetector({ formats: barcodeTypes });
 
     const imageHolder = this.windowRef.document.createElement('img');
-    imageHolder?.addEventListener('load', () => this.scanBarcode(imageHolder));
+    imageHolder?.addEventListener('load', async () => await this.scanBarcode(imageHolder));
 
     const input = this.windowRef.document.getElementById('barcode-scanner-input');
+    input?.addEventListener('click', async () => await this.telemetryService.record('search_by_barcode:open'));
     input?.addEventListener('change', () => {
       if (!input.files) {
         return;
@@ -157,7 +160,8 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
       return false;
     }
 
-    if (!('BarcodeDetector' in this.windowRef)) {
+    // It's okay to show the barcode scanner on mobile's browser, PWA and CHT Android.
+    if (!('BarcodeDetector' in this.windowRef) || this.browserDetectorService.isDesktopUserAgent()) {
       const message = this.translateService.instant('barcode_scanner.warning.not_supported');
       this.globalAction.setSnackbarContent(message);
       console.warn(message);
@@ -169,9 +173,14 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
 
   private async scanBarcode(imageHolder) {
     try {
-      this.telemetryService.record('search_by_barcode');
+      this.telemetryService.record('search_by_barcode:scan');
       const barcodes = await this.barcodeDetector.detect(imageHolder);
-      barcodes.length && this.searchFiltersService.freetextSearch(barcodes[0].rawValue);
+      if (barcodes.length) {
+        this.searchFiltersService.freetextSearch(barcodes[0].rawValue);
+        return;
+      }
+      const message = this.translateService.instant('barcode_scanner.warning.no_barcode_detected');
+      this.globalAction.setSnackbarContent(message);
     } catch (error) {
       const message = this.translateService.instant('barcode_scanner.error.cannot_read_barcode');
       this.globalAction.setSnackbarContent(message);
