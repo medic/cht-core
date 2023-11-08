@@ -1,21 +1,21 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Example Website with Embedded cht-form Web Component</title>
+  <meta charset="utf-8">
+  <title>Example Website with Embedded cht-form Web Component</title>
 </head>
 <body>
 <div class="container-fluid">
-    <div id="cancelBanner" style="display: none" class="row">
-        <h1>Form Canceled</h1>
-    </div>
-    <div class="row">
-        <cht-form id="myform"></cht-form>
-    </div>
-    <div id="submitBanner" style="display: none; height: 100%; overflow: scroll" class="row">
-        <h1>Form Submitted</h1>
-        <pre id="submittedData"></pre>
-    </div>
+  <div id="cancelBanner" style="display: none" class="row">
+    <h1>Form Canceled</h1>
+  </div>
+  <div class="row">
+    <cht-form id="myform"></cht-form>
+  </div>
+  <div id="submitBanner" style="display: none; height: 100%; overflow: scroll" class="row">
+    <h1>Form Submitted</h1>
+    <pre id="submittedData"></pre>
+  </div>
 </div>
 </body>
 
@@ -23,75 +23,75 @@
   const myForm = document.getElementById('myform');
   myForm.formHtml = `
 <form autocomplete="off" novalidate="novalidate" class="or clearfix pages" dir="ltr" data-form-id="enketo_widgets">
-    <section class="form-logo"></section>
-    <h3 dir="auto" id="form-title">Enketo Widgets</h3>
-    <select id="form-languages" style="display:none;" data-default-lang=""><option value="en">en</option> </select>
-    <label class="question non-select ">
-        <span lang="en" class="question-label active" data-itext-id="/enketo_widgets/text:label">This form provides a basic example of the cht-form functionality. Enter a message and press "Submit"!</span>
-        <input type="text" name="/enketo_widgets/text" data-type-xml="string">
+  <section class="form-logo"></section>
+  <h3 dir="auto" id="form-title">Enketo Widgets</h3>
+  <select id="form-languages" style="display:none;" data-default-lang=""><option value="en">en</option> </select>
+  <label class="question non-select ">
+    <span lang="en" class="question-label active" data-itext-id="/enketo_widgets/text:label">This form provides a basic example of the cht-form functionality. Enter a message and press "Submit"!</span>
+    <input type="text" name="/enketo_widgets/text" data-type-xml="string">
+  </label>
+  <fieldset id="or-calculated-items" style="display:none;">
+    <label class="calculation non-select ">
+      <input type="hidden" name="/enketo_widgets/meta/instanceID" data-calculate="concat('uuid:', uuid())" data-type-xml="string">
     </label>
-    <fieldset id="or-calculated-items" style="display:none;">
-        <label class="calculation non-select ">
-            <input type="hidden" name="/enketo_widgets/meta/instanceID" data-calculate="concat('uuid:', uuid())" data-type-xml="string">
-        </label>
-    </fieldset>
+  </fieldset>
 </form>`;
   myForm.formModel = `
   <model>
-    <instance>
-        <enketo_widgets xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-09-26 00:00:00">
-          <text/>
-          <meta tag="hidden">
-            <instanceID/>
-          </meta>
-        </enketo_widgets>
-      </instance>
-    <instance id="contact-summary"/>
+  <instance>
+    <enketo_widgets xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-09-26 00:00:00">
+      <text/>
+      <meta tag="hidden">
+      <instanceID/>
+      </meta>
+    </enketo_widgets>
+    </instance>
+  <instance id="contact-summary"/>
   </model>`;
   myForm.formXml = `
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>Enketo Widgets</h:title>
-    <model>
-      <itext>
-        <translation lang="en">
-          <text id="/enketo_widgets/text:label">
-            <value>This form provides a basic example of the cht-form functionality. Enter a message and press "Submit"!</value>
-          </text>
-        </translation>
-      </itext>
-      <instance>
-        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-09-26 00:00:00">
-          <text/>
-          <meta tag="hidden">
-            <instanceID/>
-          </meta>
-        </enketo_widgets>
-      </instance>
-      <instance id="contact-summary"/>
-      <bind nodeset="/enketo_widgets/text" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/enketo_widgets/meta/instanceID" readonly="true()" type="string"/>
-    </model>
+  <h:title>Enketo Widgets</h:title>
+  <model>
+    <itext>
+    <translation lang="en">
+      <text id="/enketo_widgets/text:label">
+      <value>This form provides a basic example of the cht-form functionality. Enter a message and press "Submit"!</value>
+      </text>
+    </translation>
+    </itext>
+    <instance>
+    <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-09-26 00:00:00">
+      <text/>
+      <meta tag="hidden">
+      <instanceID/>
+      </meta>
+    </enketo_widgets>
+    </instance>
+    <instance id="contact-summary"/>
+    <bind nodeset="/enketo_widgets/text" type="string"/>
+    <bind calculate="concat('uuid:', uuid())" nodeset="/enketo_widgets/meta/instanceID" readonly="true()" type="string"/>
+  </model>
   </h:head>
   <h:body class="pages">
-    <input ref="/enketo_widgets/text">
-      <label ref="jr:itext('/enketo_widgets/text:label')"/>
-    </input>
+  <input ref="/enketo_widgets/text">
+    <label ref="jr:itext('/enketo_widgets/text:label')"/>
+  </input>
   </h:body>
 </h:html>`;
 
   myForm.addEventListener('onSubmit', async (e) => {
-    myForm.style.display = 'none';
-    const submittedData = document.getElementById('submittedData');
-    submittedData.innerText = JSON.stringify(e.detail, null, 2);
-    const submitBanner = document.getElementById('submitBanner');
-    submitBanner.style.display = 'block';
+  myForm.style.display = 'none';
+  const submittedData = document.getElementById('submittedData');
+  submittedData.innerText = JSON.stringify(e.detail, null, 2);
+  const submitBanner = document.getElementById('submitBanner');
+  submitBanner.style.display = 'block';
   });
   myForm.addEventListener('onCancel', async (e) => {
-    myForm.style.display = 'none';
-    const cancelBanner = document.getElementById('cancelBanner');
-    cancelBanner.style.display = 'block';
+  myForm.style.display = 'none';
+  const cancelBanner = document.getElementById('cancelBanner');
+  cancelBanner.style.display = 'block';
   });
 
 </script>

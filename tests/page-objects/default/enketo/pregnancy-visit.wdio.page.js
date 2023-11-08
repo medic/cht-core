@@ -20,10 +20,10 @@ const LLIN = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/malaria
 const IRON_FOLATE = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
 const HIV_TESTED = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested"]';
 
-const visitOption = (value) => $(FORM +
-  ` input[name="/pregnancy_home_visit/pregnancy_summary/visit_option"][value="${value}"]`);
-const gestationalAgeCorrect = (value) => $(FORM +
-  ` input[name="/pregnancy_home_visit/pregnancy_summary/g_age_correct"][value="${value}"]`);
+const visitOption = (value) =>
+  $(`${FORM} input[name="/pregnancy_home_visit/pregnancy_summary/visit_option"][value="${value}"]`);
+const gestationalAgeCorrect = (value) =>
+  $(`${FORM} input[name="/pregnancy_home_visit/pregnancy_summary/g_age_correct"][value="${value}"]`);
 
 const dangerSignLabel = () =>
   $('label.question.readonly.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
