@@ -58,7 +58,7 @@ const selectAllVaccines = async () => {
 const addNotes = async (note = 'Test notes') => await (await notes()).setValue(note);
 
 const getSummaryDetails = async () => {
-  const vaccinesAvaible = await vaccinesAvalibleSummary();
+  const vaccinesAvaible = await vaccinesAvailableSummary();
   const vaccinesDisabled = await vaccinesDisableSummary();
   return {
     patientName: await patientNameSummary().getText(),
