@@ -17,6 +17,22 @@ let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
 const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
+const CHROME_VERSION = process.env.CHROME_VERSION;
+const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion()
+  ? [
+    'disable-gpu',
+    'deny-permission-prompts',
+    'ignore-certificate-errors',
+    'no-sandbox',
+    'window-size=1200,900'
+  ]
+  : [
+    'disable-gpu',
+    'deny-permission-prompts',
+    'ignore-certificate-errors',
+    'window-size=1200,900'
+  ];
+const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
 
 const baseConfig = {
   //
@@ -81,12 +97,17 @@ const baseConfig = {
     maxInstances: 1,
     //
     browserName: 'chrome',
+    browserVersion: utils.isMinimumChromeVersion() ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']:
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
+      args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
+      binary: utils.isMinimumChromeVersion() ? '/usr/bin/google-chrome-stable' : undefined
+    },
+    'wdio:chromedriverOptions': {
+      binary: utils.isMinimumChromeVersion()
+        ? '/node_modules/chromedriver/bin/chromedriver'
+        : undefined
     }
-
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
     // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
@@ -139,7 +160,10 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: ['devtools'],
+  services: utils.isMinimumChromeVersion()
+    ? ['chromedriver']
+    : ['devtools'],
+
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -236,7 +260,9 @@ const baseConfig = {
    */
   before: async function () {
     global.expect = chai.expect;
-    await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
+    if (!utils.isMinimumChromeVersion()) {
+      await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
+    }
   },
   /**
    * Runs before a WebdriverIO command gets executed.

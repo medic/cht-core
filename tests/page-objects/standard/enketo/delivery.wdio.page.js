@@ -1,7 +1,10 @@
-const OUTCOME = {liveBirth: 'healthy', stillBirth: 'still_birth', miscarriage: 'miscarriage'};
-const LOCATION = {facility: 'f', homeAttendant: 's', homeNoAttendant: 'ns'};
+const utils = require('@utils');
+const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
 
-const FORM = 'form[data-form-id="delivery"]';
+const OUTCOME = { liveBirth: 'healthy', stillBirth: 'still_birth', miscarriage: 'miscarriage' };
+const LOCATION = { facility: 'f', homeAttendant: 's', homeNoAttendant: 'ns' };
+
+const FORM = enketoCommonPage.form('delivery');
 const pregnancyOutcome = (value) => $(`${FORM} ` +
   `input[name="/delivery/group_delivery_summary/g_pregnancy_outcome"][value="${value}"`);
 const pregnancyOutcomeLabel = (value) => $(`${FORM} ` +
@@ -9,13 +12,14 @@ const pregnancyOutcomeLabel = (value) => $(`${FORM} ` +
 const deliveryLocation = (value) => $(`${FORM} ` +
   `input[name="/delivery/group_delivery_summary/g_delivery_code"][value="${value}"`);
 const deliveryLocationLabel = (value) => $(`${FORM} ` +
-  `span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]`);
+  `span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]` +
+  `${enketoCommonPage.ACTIVE_OPTION_LABEL}`);
 const deliveryDate = () => $(`${FORM} div.widget.date input`);
-const smsNote = () => $(`${FORM} textarea[name="/delivery/group_note/g_chw_sms"]`);
-const outcomeSummary = () => $(`${FORM} ` + 
+const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('delivery')}`);
+const outcomeSummary = () => $(`${FORM} ` +
   `span[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]`);
 const locationSummary = () => $(`${FORM} span[data-value=" /delivery/group_summary/r_delivery_location "]`);
-const followUpSMS = () => $(`${FORM} span[data-value=" /delivery/chw_sms "]`);
+const followUpSMS = () => $(`${FORM} ${enketoCommonPage.followUpSms('delivery')}`);
 
 const selectPregnancyOutcome = async (value = OUTCOME.liveBirth) => {
   const outcome = await pregnancyOutcome(value);
@@ -28,10 +32,13 @@ const selectDeliveryLocation = async (value = LOCATION.facility) => {
   const location = await deliveryLocation(value);
   await location.waitForDisplayed();
   await location.click();
-  return await deliveryLocationLabel(value).getText();
+  const locationLabel = utils.isMinimumChromeVersion()
+    ? await (await deliveryLocationLabel(value)).getAttribute('innerHTML')
+    : await (await deliveryLocationLabel(value)).getText();
+  return locationLabel;
 };
 
-const setDeliveryDate =  async (value) => {
+const setDeliveryDate = async (value) => {
   const date = await deliveryDate();
   await date.waitForDisplayed();
   await date.setValue(value);
