@@ -201,17 +201,16 @@ describe('Search Bar Component', () => {
     expect(component.showClearIcon()).to.be.false;
   }));
 
-  describe('isBarcodeScannerAvailable()', () => {
+  describe('Barcode scanner support', () => {
     it('should return true if BarcodeDetector is supported, user has permission and is not admin', async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       browserDetectorService.isDesktopUserAgent.returns(false);
       sinon.resetHistory();
+
       await component.ngAfterViewInit();
 
-      const result = component.isBarcodeScannerAvailable();
-
-      expect(result).to.be.true;
+      expect(component.isBarcodeScannerAvailable).to.be.true;
       expect(sessionService.isAdmin.calledOnce).to.be.true;
       expect(browserDetectorService.isDesktopUserAgent.called).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
@@ -225,11 +224,10 @@ describe('Search Bar Component', () => {
       translateService.instant.returns('some text');
       const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       sinon.resetHistory();
+
       await component.ngAfterViewInit();
 
-      const result = component.isBarcodeScannerAvailable();
-
-      expect(result).to.be.false;
+      expect(component.isBarcodeScannerAvailable).to.be.false;
       expect(sessionService.isAdmin.calledOnce).to.be.true;
       expect(browserDetectorService.isDesktopUserAgent.called).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
@@ -244,11 +242,10 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(false);
       sinon.resetHistory();
+
       await component.ngAfterViewInit();
 
-      const result = component.isBarcodeScannerAvailable();
-
-      expect(result).to.be.false;
+      expect(component.isBarcodeScannerAvailable).to.be.false;
       expect(sessionService.isAdmin.calledOnce).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
@@ -258,11 +255,10 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(true);
       authService.has.resolves(true);
       sinon.resetHistory();
+
       await component.ngAfterViewInit();
 
-      const result = component.isBarcodeScannerAvailable();
-
-      expect(result).to.be.false;
+      expect(component.isBarcodeScannerAvailable).to.be.false;
       expect(sessionService.isAdmin.calledOnce).to.be.true;
     });
 
@@ -272,12 +268,11 @@ describe('Search Bar Component', () => {
       translateService.instant.returns('some text');
       const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       sinon.resetHistory();
-      await component.ngAfterViewInit();
       component.windowRef = {};
 
-      const result = component.isBarcodeScannerAvailable();
+      await component.ngAfterViewInit();
 
-      expect(result).to.be.false;
+      expect(component.isBarcodeScannerAvailable).to.be.false;
       expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
       expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;

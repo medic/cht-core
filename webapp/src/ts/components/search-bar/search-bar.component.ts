@@ -42,7 +42,6 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   private TELEMETRY_PREFIX = 'search_by_barcode';
-  private canUseBarcodeScanner = false;
   private globalAction: GlobalActions;
   private barcodeDetector;
   private filters;
@@ -50,6 +49,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   subscription: Subscription = new Subscription();
   activeFilters: number = 0;
   openSearch = false;
+  isBarcodeScannerAvailable = false;
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter: FreetextFilterComponent;
@@ -75,13 +75,9 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   }
 
   async ngAfterViewInit() {
-    await this.checkPermissions();
+    this.isBarcodeScannerAvailable = await this.checkBarcodeScanner();
     this.searchFiltersService.init(this.freetextFilter);
     await this.initBarcodeScanner();
-  }
-
-  private async checkPermissions() {
-    this.canUseBarcodeScanner = !this.sessionService.isAdmin() && await this.authService.has(CAN_USE_BARCODE_SCANNER);
   }
 
   private subscribeToStore() {
@@ -100,7 +96,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   }
 
   private async initBarcodeScanner() {
-    if (!this.isBarcodeScannerAvailable()) {
+    if (!this.isBarcodeScannerAvailable) {
       return;
     }
 
@@ -158,8 +154,10 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     return this.openSearch || !!this.filters?.search;
   }
 
-  isBarcodeScannerAvailable() {
-    if (!this.canUseBarcodeScanner) {
+  private async checkBarcodeScanner() {
+    const canUseBarcodeScanner = !this.sessionService.isAdmin() && await this.authService.has(CAN_USE_BARCODE_SCANNER);
+
+    if (!canUseBarcodeScanner) {
       return false;
     }
 
