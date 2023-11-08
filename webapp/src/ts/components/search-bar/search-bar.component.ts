@@ -41,6 +41,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
   @Output() search: EventEmitter<any> = new EventEmitter();
 
+  private TELEMETRY_PREFIX = 'search_by_barcode';
   private canUseBarcodeScanner = false;
   private globalAction: GlobalActions;
   private barcodeDetector;
@@ -49,7 +50,6 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   subscription: Subscription = new Subscription();
   activeFilters: number = 0;
   openSearch = false;
-  TELEMETRY_PREFIX = 'search_by_barcode';
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter: FreetextFilterComponent;
@@ -164,11 +164,13 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     }
 
     // It's okay to show the barcode scanner on mobile's browser, PWA and CHT Android.
+    // But we won't support it in desktop's browser.
     if (!('BarcodeDetector' in this.windowRef) || this.browserDetectorService.isDesktopUserAgent()) {
       const message = this.translateService.instant('barcode_scanner.warning.not_supported');
       this.globalAction.setSnackbarContent(message);
       console.error(message);
       this.feedbackService.submit(message);
+      this.telemetryService.record(`${this.TELEMETRY_PREFIX}:not_supported`);
       return false;
     }
 
@@ -195,6 +197,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
       this.globalAction.setSnackbarContent(message);
       console.error(message, error);
       this.feedbackService.submit(message);
+      this.telemetryService.record(`${this.TELEMETRY_PREFIX}:failure`);
     }
   }
 

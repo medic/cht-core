@@ -237,6 +237,7 @@ describe('Search Bar Component', () => {
       expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
       expect(feedbackService.submit.calledWith('some text')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:not_supported'));
     });
 
     it('should return false if user does not have permission', async () => {
@@ -282,6 +283,7 @@ describe('Search Bar Component', () => {
       expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
       expect(feedbackService.submit.calledWith('some text')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:not_supported'));
     });
   });
 
@@ -367,6 +369,7 @@ describe('Search Bar Component', () => {
       expect(setSnackbarContentSpy.calledWith('some nice text')).to.be.true;
       expect(searchFiltersService.freetextSearch.notCalled).to.be.true;
       expect(feedbackService.submit.calledWith('some nice text')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:failure'));
     }));
   });
 });
