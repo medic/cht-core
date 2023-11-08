@@ -16,6 +16,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 class BarcodeDetector {
   constructor() {}
@@ -37,6 +38,7 @@ describe('Search Bar Component', () => {
   let getSupportedFormatsStub;
   let detectStub;
   let browserDetectorService;
+  let feedbackService;
 
   beforeEach(async () => {
     const mockedSelectors = [
@@ -53,6 +55,7 @@ describe('Search Bar Component', () => {
     translateService = { instant: sinon.stub() };
     telemetryService = { record: sinon.stub() };
     browserDetectorService = { isDesktopUserAgent: sinon.stub() };
+    feedbackService = { submit: sinon.stub() };
 
     await TestBed
       .configureTestingModule({
@@ -72,6 +75,7 @@ describe('Search Bar Component', () => {
           { provide: TranslateService, useValue: translateService },
           { provide: TelemetryService, useValue: telemetryService },
           { provide: BrowserDetectorService, useValue: browserDetectorService },
+          { provide: FeedbackService, useValue: feedbackService },
         ]
       })
       .compileComponents();
@@ -218,6 +222,8 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       browserDetectorService.isDesktopUserAgent.returns(true);
+      translateService.instant.returns('some text');
+      const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       sinon.resetHistory();
       await component.ngAfterViewInit();
 
@@ -228,6 +234,9 @@ describe('Search Bar Component', () => {
       expect(browserDetectorService.isDesktopUserAgent.called).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
+      expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
+      expect(feedbackService.submit.calledWith('some text')).to.be.true;
+      expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
     });
 
     it('should return false if user does not have permission', async () => {
@@ -259,18 +268,6 @@ describe('Search Bar Component', () => {
     it('should return false if BarcodeDetector is not supported', async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
-      sinon.resetHistory();
-      await component.ngAfterViewInit();
-      component.windowRef = {};
-
-      const result = component.isBarcodeScannerAvailable();
-
-      expect(result).to.be.false;
-    });
-
-    it('should return false if BarcodeDetector is not supported', async () => {
-      sessionService.isAdmin.returns(false);
-      authService.has.resolves(true);
       translateService.instant.returns('some text');
       const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       sinon.resetHistory();
@@ -281,6 +278,9 @@ describe('Search Bar Component', () => {
 
       expect(result).to.be.false;
       expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
+      expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
+      expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
+      expect(feedbackService.submit.calledWith('some text')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
     });
   });
@@ -306,6 +306,7 @@ describe('Search Bar Component', () => {
       flush();
 
       expect(telemetryService.record.calledWith('search_by_barcode:scan')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:trigger_search')).to.be.true;
       expect(detectStub.calledWith(imageHolder)).to.be.true;
       expect(searchFiltersService.freetextSearch.calledWith('1234')).to.be.true;
     }));
@@ -332,6 +333,7 @@ describe('Search Bar Component', () => {
       flush();
 
       expect(telemetryService.record.calledWith('search_by_barcode:scan')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:code_no_detected')).to.be.true;
       expect(detectStub.calledWith(imageHolder)).to.be.true;
       expect(translateService.instant.calledWith('barcode_scanner.warning.no_barcode_detected')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('please retry')).to.be.true;
@@ -364,6 +366,7 @@ describe('Search Bar Component', () => {
       expect(translateService.instant.calledWith('barcode_scanner.error.cannot_read_barcode')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('some nice text')).to.be.true;
       expect(searchFiltersService.freetextSearch.notCalled).to.be.true;
+      expect(feedbackService.submit.calledWith('some nice text')).to.be.true;
     }));
   });
 });
