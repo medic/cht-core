@@ -11,7 +11,7 @@
     background-color: @gray-ultra-lighter;
     border: 1px solid @gray-light;
     border-radius: @radius-size-medium;
-    margin: 15px;
+    margin: 10px 12px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -209,6 +209,16 @@
           right: 0;
         }
       }
+    }
+  }
+}
+
+@media (max-width: @media-mobile) {
+  .targets {
+    padding: 0;
+    .target {
+      width: 100%;
+      margin: 10px 12px;
     }
   }
 }
