@@ -26,11 +26,11 @@ const failedUploadedUsers = () => $('p.text-danger');
 const backToUserListButton = () => $('a#back-to-app-btn');
 
 const goToAdminUser = async () => {
-  await browser.url('/admin/#/users');
+  await commonElements.goToUrl('/admin/#/users');
 };
 
 const goToAdminUpgrade = async () => {
-  await browser.url('/admin/#/upgrade');
+  await commonElements.goToUrl('/admin/#/upgrade');
 };
 
 const openAddUserDialog = async () => {
@@ -70,7 +70,7 @@ const inputAddUserFields = async (username, fullname, role, place, contact, pass
 };
 
 const inputUploadUsersFields = async (filePath) => {
-  await (await $('input[type="file"]')).setValue(filePath);
+  await (await $('input[type="file"]')).addValue(filePath);
 };
 
 const setSelect2 = async (id, value) => {

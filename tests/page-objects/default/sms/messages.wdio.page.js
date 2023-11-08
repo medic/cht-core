@@ -55,9 +55,10 @@ const getMessageContent = async  (index = 1) => {
 
 const searchSelect = async (recipient, option) => {
   await (await recipientField()).setValue(recipient);
-  const recipientOption = await (await $('.select2-results__options')).$(`//*[text()='${option}']`);
-  await recipientOption.waitForClickable();
-  await (await recipientOption).click();
+  await (await $('.loading-results')).waitForDisplayed({ reverse: true });
+  const selection = await (await $('.select2-results__options')).$(`.*=${option}`);
+  await selection.click();
+  await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
 };
 
 const sendMessage = async (message, recipient, entryText) => {
@@ -66,16 +67,19 @@ const sendMessage = async (message, recipient, entryText) => {
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
   await modalPage.submit();
+  await modalPage.checkModalHasClosed();
 };
 
 const sendReplyNewRecipient = async (recipient, entryText) => {
   await searchSelect(recipient, entryText);
   await modalPage.submit();
+  await modalPage.checkModalHasClosed();
 };
 
 const sendMessageToContact = async (message) => {
   await (await messageText()).setValue(message);
   await modalPage.submit();
+  await modalPage.checkModalHasClosed();
 };
 
 const exportMessages = async () => {
@@ -90,10 +94,12 @@ const getMessageLoadingStatus = async () => {
 };
 
 const sendReply = async (message) => {
+  const numberOfMessages = await getAmountOfMessagesByPhone();
   await (await replyMessage()).setValue(message);
   await (await replyMessageActions()).waitForExist();
   await (await submitReplyBtn()).waitForClickable();
   await (await submitReplyBtn()).click();
+  await browser.waitUntil(async () => await getAmountOfMessagesByPhone() > numberOfMessages);
 };
 
 const replyAddRecipients = async (message) => {

@@ -16,7 +16,7 @@ const FIRST_PREGNANCY_VALUE = {yes: 'primary', no: 'secondary'};
 
 const FORM = 'form[data-form-id="pregnancy"]';
 const SUMMARY_SECTION = `${FORM} section[name="/pregnancy/summary"]`;
-const KNOWN_FUTURE_VISITS = 
+const KNOWN_FUTURE_VISITS =
   'input[data-name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"]';
 const FIRST_PREGNANCY = 'input[data-name="/pregnancy/risk_factors/risk_factors_history/first_pregnancy"]';
 const MISCARRIAGE = 'input[name="/pregnancy/risk_factors/risk_factors_history/previous_miscarriage"]';
@@ -58,11 +58,12 @@ const setDeliveryDate = async (value = moment().add(1, 'month').format('YYYY-MM-
   const date = await deliveryDate();
   await date.waitForDisplayed();
   await date.setValue(value);
+  await (await $('#form-title')).click(); // defocus from date
 };
 
 const getConfirmationDetails = async () => ({
-  eddConfirm: await eddConfirmation().getText(),
-  weeksPregnantConfirm: await weeksPregnantConfirmation().getText(),
+  eddConfirm: await (await eddConfirmation()).getText(),
+  weeksPregnantConfirm: await (await weeksPregnantConfirmation()).getText(),
 });
 
 const setANCVisitsPast = async (value = 0) => {

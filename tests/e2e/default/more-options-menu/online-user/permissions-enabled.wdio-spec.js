@@ -106,12 +106,12 @@ describe('Online User', async () => {
       await sms.sendSms('testing', contact.phone);
     });
 
-    it('- Reports tab - Edit/export invisible when NON XML report selected', async () => {
+    it('- Reports tab - Edit invisible when NON XML report selected', async () => {
       await commonPage.goToReports();
       await reportPage.goToReportById(smsReportId);
-      await reportPage.reportBodyDetails().waitForDisplayed();
+      await (await reportPage.reportBodyDetails()).waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.true;
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
     });

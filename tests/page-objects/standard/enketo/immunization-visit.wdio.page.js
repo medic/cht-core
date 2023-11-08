@@ -28,9 +28,9 @@ const patientIdSummary = () => $(
   'span[data-value=" /immunization_visit/group_review/r_patient_id "]'
 );
 // Excluding the 'last-child' because it represents the follow-up message from the summary page form
-const vaccinesAvalibleSummary = () => 
+const vaccinesAvailableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
-const vaccinesDisableSummary = () => 
+const vaccinesDisableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
 const followUpSmsNote1 = () => $(
   'span[data-itext-id="/immunization_visit/group_review/r_followup_note1:label"].active'
@@ -55,7 +55,7 @@ const selectAllVaccines = async () => {
   }
 };
 
-const addNotes = (note = 'Test notes') => notes().setValue(note);
+const addNotes = async (note = 'Test notes') => await (await notes()).setValue(note);
 
 const getSummaryDetails = async () => {
   const vaccinesAvaible = await vaccinesAvalibleSummary();

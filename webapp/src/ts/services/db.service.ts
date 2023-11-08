@@ -69,6 +69,10 @@ export class DbService {
         });
       });
 
+      // when an error event is emitted, but there is no listener, the vanilla event emitter code will log
+      // "Uncaught (in promise) Error: Unhandled error. (undefined)" because the thrown event has no `message` property.
+      promiseEmitter.on('error', error => console.error(error));
+
       return promiseEmitter;
     };
   }

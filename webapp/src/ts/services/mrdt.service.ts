@@ -15,7 +15,7 @@ export class MRDTService {
         window.medicmobile_android.mrdt_available()
       );
     } catch (err) {
-      console.error(err);
+      console.error('Error when testing if mrdt is available', err);
       return false;
     }
   }

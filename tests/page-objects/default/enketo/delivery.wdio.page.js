@@ -1,4 +1,4 @@
-const moment = require('moment/moment');
+const moment = require('moment');
 
 const deliveryConditionWomanOutcomeField = (value) =>
   $(`input[type="radio"][name="/delivery/condition/woman_outcome"][value="${value}"]`);

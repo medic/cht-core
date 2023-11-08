@@ -11,6 +11,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Contact Delivery Form', () => {
   const BABY_NAME = 'Benja';
@@ -30,13 +31,13 @@ describe('Contact Delivery Form', () => {
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
+    await commonPage.hideSnackbar();
     await commonPage.goToPeople(pregnantWoman._id);
-
-    await pregnancyForm.submitPregnancy();
-    await commonPage.waitForPageLoaded();
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth.', async () => {
+    await pregnancyForm.submitPregnancy();
+
     await commonPage.openFastActionReport('delivery');
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();
@@ -113,14 +114,14 @@ describe('Contact Delivery Form', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0' },
-      { title: 'New pregnancies', goal: '20', count: '1' },
-      { title: 'Live births', count: '1' },
-      { title: 'Active pregnancies', count: '0' },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR },
+      { title: 'Live births', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'In-facility deliveries', percent: '100%', percentCount: '(1 of 1)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0' },
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR },
     ]);
   });
 });

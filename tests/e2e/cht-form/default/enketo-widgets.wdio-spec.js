@@ -28,7 +28,7 @@ describe('cht-form web component - Enketo Widgets', () => {
 
     // try to move to next page with an invalid phone number
     await enketoWidgetsPage.setPhoneNumber('+4076');
-    await genericForm.nextPage();
+    await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
       .to.equal('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg');
 

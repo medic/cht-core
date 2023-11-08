@@ -1,10 +1,10 @@
-const ENTER = '\uE007';
-
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const searchPage = require('@page-objects/default/search/search.wdio.page');
+const mobileSearchPage = require('@page-objects/default-mobile/search/search.wdio.page');
 
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
@@ -73,9 +73,11 @@ const deathDate = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.d
 const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.place"] p.card-field-value`);
 
 const search = async (query) => {
-  await (await searchBox()).setValue(query);
-  await browser.keys(ENTER);
-  await commonPage.waitForLoaderToDisappear(await $('.left-pane'));
+  if (!await (await searchBox()).isDisplayed()) {
+    await mobileSearchPage.performSearch(query);
+  } else {
+    await searchPage.performSearch(query);
+  }
 };
 
 const findRowByText = async (text) => {

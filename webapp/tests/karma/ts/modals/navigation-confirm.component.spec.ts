@@ -6,6 +6,8 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('NavigationConfirmModal', () => {
   let fixture:ComponentFixture<NavigationConfirmComponent>;
@@ -22,7 +24,11 @@ describe('NavigationConfirmModal', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ NavigationConfirmComponent ],
+        declarations: [
+          NavigationConfirmComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
         providers: [
           { provide: TelemetryService, useValue: telemetryService },
           { provide: MatDialogRef, useValue: matDialogRef },

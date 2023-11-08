@@ -32,7 +32,7 @@ export class AppComponent {
   private _contactSummary?: Record<string, any>;
   private _contactType?: string;
   private _content: Record<string, any> | null = null;
-  private _user: Record<string, any> = this.DEFAULT_USER;
+  private _user: typeof this.DEFAULT_USER & Record<string, any> = this.DEFAULT_USER;
 
   private currentRender?: Promise<void>;
   private reRenderForm = false;
@@ -55,7 +55,7 @@ export class AppComponent {
   }
 
   @Input() set formId(value: string) {
-    if (!value || !value.trim().length) {
+    if (!value?.trim().length) {
       throw new Error('The Form Id must be populated.');
     }
     this._formId = value;
@@ -63,7 +63,7 @@ export class AppComponent {
   }
 
   @Input() set formHtml(value: string) {
-    if (!value || !value.trim().length) {
+    if (!value?.trim().length) {
       throw new Error('The Form HTML must be populated.');
     }
     this._formHtml = value;
@@ -71,7 +71,7 @@ export class AppComponent {
   }
 
   @Input() set formModel(value: string) {
-    if (!value || !value.trim().length) {
+    if (!value?.trim().length) {
       throw new Error('The Form Model must be populated.');
     }
     this._formModel = value;
@@ -79,7 +79,7 @@ export class AppComponent {
   }
 
   @Input() set formXml(value: string) {
-    if (!value || !value.trim().length) {
+    if (!value?.trim().length) {
       throw new Error('The Form XML must be populated.');
     }
     this._formXml = value;
@@ -104,7 +104,7 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
-  @Input() set user(user: Record<string, any>) {
+  @Input() set user(user: typeof this.DEFAULT_USER & Record<string, any>) {
     if (!user) {
       throw new Error('The user must be populated.');
     }
@@ -226,7 +226,6 @@ export class AppComponent {
     return {
       html: $html,
       model: this._formModel,
-      // title: form.title,
       hasContactSummary: hasContactSummary
     };
   }

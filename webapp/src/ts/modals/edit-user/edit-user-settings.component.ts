@@ -18,9 +18,7 @@ export class EditUserSettingsComponent implements OnInit {
     email?;
     phone?;
     language: { code? };
-  } = {
-    language: {}
-  };
+  } = { language: {} };
 
   static id = 'edit-user-settings-modal';
   processing = false;
@@ -58,9 +56,8 @@ export class EditUserSettingsComponent implements OnInit {
         phone: user.phone,
         language: { code: language }
       };
-    } else {
-      return {};
     }
+    return {};
   }
 
   async editUserSettings(): Promise<void> {

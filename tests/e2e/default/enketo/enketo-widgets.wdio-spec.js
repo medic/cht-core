@@ -2,6 +2,7 @@ const fs = require('fs');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.wdio.page');
@@ -65,7 +66,7 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
 
     const { senderName, senderPhone, reportName } = await reportsPage.getOpenReportInfo();
-    expect(senderName).to.equal(`Submitted by ${offlineUser.contact.name} `);
+    expect(senderName).to.equal(`Submitted by ${offlineUser.contact.name}`);
     expect(senderPhone).to.equal(offlineUser.contact.phone);
     expect(reportName).to.equal('Enketo Widgets Test');
 
@@ -86,14 +87,14 @@ describe('Enketo Widgets', () => {
   before(async () => {
     await utils.saveDocs([formDoc, districtHospital]);
     await utils.createUsers([offlineUser]);
+    await sentinelUtils.waitForSentinel(); // we expect a shortcode to be generated for the user's contact
     await loginPage.login(offlineUser);
-    await commonPage.waitForPageLoaded();
   });
 
   it('should submit Enketo Widgets form - People\'s tab', async () => {
     await commonPage.goToPeople(offlineUser.contact._id);
     medicId = await contactPage.getContactMedicID();
-    await commonPage.openFastActionReport('enketo_widgets_test');
+    await commonPage.openFastActionReport(formDoc.internalId);
     await commonPage.waitForPageLoaded();
     expect(await enketoWidgetsPage.getFormTitle()).to.equal('Enketo Widgets Test');
 
@@ -109,13 +110,13 @@ describe('Enketo Widgets', () => {
       .to.equal('option d');
 
     // try to move to next page without filling the mandatory phone number field
-    await genericForm.nextPage();
+    await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldRequiredMessage().getAttribute('data-i18n'))
       .to.equal('constraint.required');
 
     // try to move to next page with an invalid phone number
     await enketoWidgetsPage.setPhoneNumber('+4076');
-    await genericForm.nextPage();
+    await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
       .to.equal('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg');
 
@@ -125,7 +126,7 @@ describe('Enketo Widgets', () => {
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('usa', 'nyc', 'bronx', 3, 2);
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
+    await commonPage.waitForLoaders();
 
     await commonPage.goToReports();
     await verifyReport(
@@ -144,7 +145,6 @@ describe('Enketo Widgets', () => {
   it('should submit Enketo Widgets form - Report\'s tab', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('enketo_widgets_test', false);
-    await commonPage.waitForPageLoaded();
     expect(await enketoWidgetsPage.getFormTitle()).to.equal('Enketo Widgets Test');
 
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.selectMultipleDropdown());
@@ -174,7 +174,7 @@ describe('Enketo Widgets', () => {
     expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.false;
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
+    await commonPage.waitForLoaders();
 
     await commonPage.goToReports();
     await verifyReport(

@@ -166,7 +166,7 @@ describe('AndroidAppLauncherService', () => {
           expect(error).to.equal('AndroidAppLauncherService :: Error when launching Android app. ChtAndroidApp=' +
             '{"action":"com.my-app.action.LOCATE","extras":{"id":"1","location":{"city":"Tokyo"}}}, Enabled=true');
           expect(consoleErrorMock.callCount).to.equal(1);
-          expect(consoleErrorMock.args[0][0].message).to.equal('some error');
+          expect(consoleErrorMock.args[0][1].message).to.equal('some error');
           expect(medicMobileAndroid.launchExternalApp.callCount).to.equal(1);
           expect(medicMobileAndroid.launchExternalApp.args[0]).to.have.members([
             'com.my-app.action.LOCATE',

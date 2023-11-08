@@ -254,12 +254,11 @@ const getCountedReportsAndPhones = (alert, latestReport) => {
             allCountedReports,
             allOldReportIds
           );
-        } else {
-          return {
-            countedReports: allCountedReports,
-            oldReportIds: allOldReportIds,
-          };
         }
+        return {
+          countedReports: allCountedReports,
+          oldReportIds: allOldReportIds,
+        };
       }
     );
 

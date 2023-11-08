@@ -66,10 +66,9 @@ export class ContactsDeceasedComponent implements OnInit, OnDestroy {
         if (change.deleted) {
           const parentId = this.selectedContact?.doc?.parent?._id;
           return this.router.navigate(['/contacts', { id: parentId || null }]);
-        } else {
-          // refresh the updated contact
-          this.selectContact(change.id, true);
         }
+        // refresh the updated contact
+        this.selectContact(change.id, true);
       }
     });
     this.subscription.add(changesSubscription);

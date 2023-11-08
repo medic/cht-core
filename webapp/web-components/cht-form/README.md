@@ -19,6 +19,7 @@ The `cht-form` web component can be included on any page by pulling in the follo
 
 - `runtime.js`
 - `polyfills.js`
+- `scripts.js`
 - `main.js`
 - `styles.css`
 
@@ -35,6 +36,7 @@ The following inputs are supported by the `cht-form` web component:
 - `formHtml` (Required) - String value containing the HTML content of the form to render.
 - `formModel` (Required) - String value containing the model xml of the form to render.
 - `formXml` (Required) - String value containing the ODK xform xml of the form to render.
+- `contactType` (Required for contact forms) - String value containing the contact type of the form to render (e.g. `person`, `district_hospital`, etc).
 - `user` - The user's settings document from the CouchDB `_users` database.
 - `contactSummary` - The context data for the contact summary of the form's contact. Must not be set for `contact`
   forms.
@@ -58,6 +60,7 @@ myForm.formXml = formData.formXml;
 
 Outputs from the web component are emitted as events. The following events are emitted:
 
+- `onRender` - Emitted when the form is finished rendering.
 - `onSubmit` - Emitted when the form is submitted (the submit button is pressed). The event detail contains an array of
   docs created by the form.
 - `onCancel` - Emitted when the form is cancelled (the cancel button is pressed).
@@ -74,7 +77,7 @@ Currently, the position of the form on a page needs to be absolute (for all the 
 
 ```css
 .content .page {
-    top: ???px
+  top: ???px !important;
 }
 ```
 

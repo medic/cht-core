@@ -30,7 +30,7 @@ export class AndroidAppLauncherService {
       try {
         this.executeLaunch(chtAndroidApp);
       } catch (error) {
-        console.error(error);
+        console.error('Error when launching Android app', error);
         this.resolve = null;
         const details = `ChtAndroidApp=${JSON.stringify(chtAndroidApp)}, Enabled=${this.isEnabled()}`;
         const message = `AndroidAppLauncherService :: Error when launching Android app. ${details}`;
