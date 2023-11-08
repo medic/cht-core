@@ -3,10 +3,10 @@ import { Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { MatCardModule } from '@angular/material/card';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { MatCardModule } from '@angular/material/card';
 import { AboutComponent } from '@mm-modules/about/about.component';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { SessionService } from '@mm-services/session.service';
