@@ -7,14 +7,14 @@ const chai = require('chai');
 chai.use(require('chai-exclude'));
 chai.use(require('chai-as-promised'));
 const ALLURE_OUTPUT = 'allure-results';
-const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
+const logPath = path.join('tests', 'logs');
+const browserLogPath = path.join(logPath, 'browser.console.log');
 const mockConfig = require('./mock-config');
 
 // Override specific properties from wdio base config
 const defaultConfig = Object.assign({
   ...wdioBaseConfig.config,
   specs: ['**/*.wdio-spec.js'],
-  baseUrl: '',
 
   onPrepare: () => {
     // delete all previous test
@@ -33,8 +33,12 @@ const defaultConfig = Object.assign({
     }
   },
 
-  before: () => {
-    global.expect = chai.expect;
+  before: async () => {
+    // Create tests/logs if it does not exist.
+    if (!fs.existsSync(logPath)) {
+      fs.mkdirSync(logPath);
+    }
+    await wdioBaseConfig.config.before();
   },
 
   beforeTest: (test) => {
