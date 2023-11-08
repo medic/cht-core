@@ -105,15 +105,17 @@ jobs:
 
   tests:
     needs: build
-    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}
+    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
+      CHROME_VERSION: ${{ matrix.chrome-version }}
 
     strategy:
       fail-fast: false
       matrix:
-        cmd: [ 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile' ]
+        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        chrome-version: ['90', 'latest']
         suite: [all]
         include:
           - cmd: ci-webdriver-default
@@ -126,7 +128,13 @@ jobs:
             suite: lowLevel
           - cmd: ci-webdriver-default
             suite: workflows
-
+        exclude: # temporary until all suites run on Chrome 90
+          - cmd: ci-e2e-integration
+            chrome-version: 90
+          - cmd: ci-webdriver-default-mobile
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            chrome-version: 90
     steps:
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -167,7 +175,7 @@ jobs:
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
     - name: Set ENV
-      run: |        
+      run: |
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
@@ -186,9 +194,15 @@ jobs:
       run: |
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
-    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }}
+    - name: Install Chrome 90
+      if: ${{matrix.chrome-version=='90'}}
+      run: |
+        wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i "google-chrome-stable_current_amd64.deb"
+        npm install chromedriver@^90.0.1
+    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
-    
+
     - name: Fetch allure history
       if: always()
       uses: actions/checkout@v3
