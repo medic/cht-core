@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs/promises');
 const generateXformService = require('../../../api/src/services/generate-xform');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 let server;
 const mockApp = express();
