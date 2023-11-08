@@ -8,7 +8,7 @@
   .target {
     width: 296px;
     min-height: 151px;
-    background-color: @gray-ultra-lighter;
+    background-color: @target-card-background-color;
     border: 1px solid @gray-light;
     border-radius: @radius-size-medium;
     margin: 10px 12px;
@@ -23,8 +23,8 @@
       border-bottom-left-radius: @radius-size-medium;
       border-bottom-right-radius: @radius-size-medium;
       border-top: 1px solid @gray-light;
+      min-height: 75px;
       .title {
-        margin: 10px 0 10px 10px;
         h2 {
           margin: 0;
           color: @gray-ultra-dark;
@@ -40,8 +40,7 @@
         }
       }
       .icon {
-        float: left;
-        align-self: center;
+        margin-right: 10px;
         img,
         svg {
           width: 33px;
@@ -51,9 +50,8 @@
     }
     .body {
       clear: both;
-      padding: 10px 10px 0;
+      padding: 20px 10px 0;
       position: relative;
-      margin: 0 5px;
       min-height: 74px;
       .percent {
         position: relative;
@@ -95,15 +93,17 @@
   .percent {
     .number {
       color: @targets-below-color;
+      padding-bottom: 10px;
     }
     .progress-bar {
-      background-color: @targets-below-color;
+      background-color: @gray-medium-dark;
     }
   }
   &.goal-met,
   .percent {
     .number {
       color: @targets-above-goal;
+      padding-bottom: 10px;
     }
     .progress-bar {
       background-color: @targets-above-goal;
@@ -114,18 +114,18 @@
   }
 
   .target-progress {
+    position: relative;
     .goal {
       position: absolute;
-      top: -10px;
+      top: -40px;
+      margin-top: 10px;
       label {
-        margin-left: -50%; /* center aligned */
+        margin-left: -40%; /* center aligned */
         white-space: nowrap;
         font-size: @font-small;
+        font-weight: normal;
         color: @label-color;
         padding-top: 5px;
-        &.pin-left {
-          margin-left: 0; /* left aligned */
-        }
         &.pin-right {
           margin-left: -100%; /* right aligned */
         }
@@ -220,7 +220,7 @@
     padding: 0;
     .target {
       width: 100%;
-      margin: 10px 12px;
+      margin: 10px 12px 0 12px;
     }
   }
 }
@@ -230,10 +230,10 @@
     padding: 0;
     .target {
       width: 100%;
-      margin: 0 0 8px 0;
-      border-radius: 0;
-      border-left-width: 0;
-      border-right-width: 0;
+      margin: 10px 12px 0 12px;
+    }
+    .target:last-child {
+      margin-bottom: 10px;
     }
   }
 }
