@@ -113,7 +113,6 @@ describe('cht-form web component - Delivery Form', () => {
       notes: 'Test notes - Mother\'s death'
     });
     await genericForm.nextPage();
-    await genericForm.nextPage();
 
     const data = await mockConfig.submitForm();
     const jsonObjDeliveryReport = data[0].fields;
