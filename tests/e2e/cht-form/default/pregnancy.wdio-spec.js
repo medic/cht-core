@@ -1,5 +1,5 @@
 const mockConfig = require('../mock-config');
-const moment = require('moment/moment');
+const moment = require('moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
