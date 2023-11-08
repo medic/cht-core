@@ -23,6 +23,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 export const CAN_USE_BARCODE_SCANNER = 'can_use_barcode_scanner';
 
@@ -48,6 +49,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   subscription: Subscription = new Subscription();
   activeFilters: number = 0;
   openSearch = false;
+  TELEMETRY_PREFIX = 'search_by_barcode';
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter: FreetextFilterComponent;
@@ -61,6 +63,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
     private browserDetectorService: BrowserDetectorService,
+    private feedbackService: FeedbackService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.windowRef = this.document.defaultView;
@@ -109,7 +112,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     imageHolder?.addEventListener('load', async () => await this.scanBarcode(imageHolder));
 
     const input = this.windowRef.document.getElementById('barcode-scanner-input');
-    input?.addEventListener('click', async () => await this.telemetryService.record('search_by_barcode:open'));
+    input?.addEventListener('click', async () => await this.telemetryService.record(`${this.TELEMETRY_PREFIX}:open`));
     input?.addEventListener('change', () => {
       if (!input.files) {
         return;
@@ -164,7 +167,8 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     if (!('BarcodeDetector' in this.windowRef) || this.browserDetectorService.isDesktopUserAgent()) {
       const message = this.translateService.instant('barcode_scanner.warning.not_supported');
       this.globalAction.setSnackbarContent(message);
-      console.warn(message);
+      console.error(message);
+      this.feedbackService.submit(message);
       return false;
     }
 
@@ -173,18 +177,24 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
 
   private async scanBarcode(imageHolder) {
     try {
-      this.telemetryService.record('search_by_barcode:scan');
+      this.telemetryService.record(`${this.TELEMETRY_PREFIX}:scan`);
       const barcodes = await this.barcodeDetector.detect(imageHolder);
+
       if (barcodes.length) {
         this.searchFiltersService.freetextSearch(barcodes[0].rawValue);
+        this.telemetryService.record(`${this.TELEMETRY_PREFIX}:trigger_search`);
         return;
       }
+
       const message = this.translateService.instant('barcode_scanner.warning.no_barcode_detected');
       this.globalAction.setSnackbarContent(message);
+      this.telemetryService.record(`${this.TELEMETRY_PREFIX}:code_no_detected`);
+
     } catch (error) {
       const message = this.translateService.instant('barcode_scanner.error.cannot_read_barcode');
       this.globalAction.setSnackbarContent(message);
       console.error(message, error);
+      this.feedbackService.submit(message);
     }
   }
 
