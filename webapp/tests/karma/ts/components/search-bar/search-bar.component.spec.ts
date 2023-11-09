@@ -237,11 +237,13 @@ describe('Search Bar Component', () => {
     it('should return false if user does not have permission', async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(false);
+      browserDetectorService.isDesktopUserAgent.returns(false);
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
 
       expect(component.isBarcodeScannerAvailable).to.be.false;
+      expect(browserDetectorService.isDesktopUserAgent.called).to.be.false;
       expect(sessionService.isAdmin.calledOnce).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
@@ -250,10 +252,12 @@ describe('Search Bar Component', () => {
     it('should return false if user is admin', async () => {
       sessionService.isAdmin.returns(true);
       authService.has.resolves(true);
+      browserDetectorService.isDesktopUserAgent.returns(false);
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
 
+      expect(browserDetectorService.isDesktopUserAgent.called).to.be.false;
       expect(component.isBarcodeScannerAvailable).to.be.false;
       expect(sessionService.isAdmin.calledOnce).to.be.true;
     });
@@ -261,11 +265,13 @@ describe('Search Bar Component', () => {
     it('should return false if BarcodeDetector is not supported', async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
+      browserDetectorService.isDesktopUserAgent.returns(false);
       sinon.resetHistory();
       component.windowRef = {};
 
       await component.ngAfterViewInit();
 
+      expect(browserDetectorService.isDesktopUserAgent.called).to.be.false;
       expect(component.isBarcodeScannerAvailable).to.be.false;
       expect(feedbackService.submit.calledWith('Barcode Detector API is not supported in this browser.')).to.be.true;
       expect(telemetryService.record.calledWith('search_by_barcode:not_supported'));
