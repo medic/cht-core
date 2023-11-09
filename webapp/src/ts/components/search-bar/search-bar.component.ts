@@ -105,10 +105,10 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     this.barcodeDetector = new this.windowRef.BarcodeDetector({ formats: barcodeTypes });
 
     const imageHolder = this.windowRef.document.createElement('img');
-    imageHolder?.addEventListener('load', async () => await this.scanBarcode(imageHolder));
+    imageHolder?.addEventListener('load', () => this.scanBarcode(imageHolder)); // NOSONAR
 
     const input = this.windowRef.document.getElementById('barcode-scanner-input');
-    input?.addEventListener('click', async () => await this.telemetryService.record(`${this.TELEMETRY_PREFIX}:open`));
+    input?.addEventListener('click', () => this.telemetryService.record(`${this.TELEMETRY_PREFIX}:open`)); // NOSONAR
     input?.addEventListener('change', () => {
       if (!input.files) {
         return;
