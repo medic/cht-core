@@ -18,7 +18,7 @@
 
     .heading {
       display: flex;
-      padding: 20px;
+      padding:  20px 10px;
       background-color: @white;
       border-bottom-left-radius: @radius-size-medium;
       border-bottom-right-radius: @radius-size-medium;
@@ -35,7 +35,7 @@
         p {
           color: @gray-dark;
           font-size: @font-small;
-          font-weight: 400px;
+          font-weight: normal;
           margin: 0;
         }
       }
@@ -61,8 +61,9 @@
         .number {
           text-align: center;
           font-size: 48px;
-          line-height: 1;
+          line-height: 54px;
           font-weight: bold;
+          padding-bottom: 10px;
         }
         .goal {
           position: absolute;
@@ -137,7 +138,7 @@
         top: 25px;
         height: 30px;
         width: 8px;
-        margin-left: -4px; /* center */
+        margin-left: -8px; /* center */
         background-color: @label-color;
         border: 2px solid @target-progress-bar-border-color;
         border-radius: @radius-size;
@@ -148,6 +149,7 @@
       font-size: @font-medium;
       line-height: 1;
       font-weight: bold;
+      padding-left: 6px;
     }
   }
 }
@@ -223,6 +225,9 @@
     .target {
       width: 100%;
       margin: 10px 12px 0 12px;
+    }
+    .target:last-child {
+      margin-bottom: 10px;
     }
   }
 }
