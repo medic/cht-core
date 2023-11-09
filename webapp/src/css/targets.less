@@ -95,7 +95,7 @@
   .percent {
     .number {
       color: @targets-below-color;
-      padding-bottom: 10px;
+      padding-bottom: 5px;
     }
     .progress-bar {
       background-color: @targets-progress-bar-unmet-goal;
@@ -118,6 +118,7 @@
   .target-progress {
     position: relative;
     .goal {
+      padding-top: 5px;
       position: absolute;
       top: -40px;
       margin-top: 10px;
@@ -131,7 +132,7 @@
           margin-left: 0; /* left aligned */
         }
         &.pin-right {
-          margin-left: -100%; /* right aligned */
+          margin-left: -105%; /* right aligned */
         }
       }
       .bar {
@@ -139,7 +140,7 @@
         top: 25px;
         height: 30px;
         width: 8px;
-        margin-left: -8px; /* center */
+        margin-left: -4px; /* center */
         background-color: @label-color;
         border: 2px solid @target-progress-bar-border-color;
         border-radius: @radius-size;

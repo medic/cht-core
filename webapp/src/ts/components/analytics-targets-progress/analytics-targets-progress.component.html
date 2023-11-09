@@ -12,7 +12,7 @@
       <span>{{'analytics.target.monthly_goal' | translate}}</span>
       {{ target.goal | localizeNumber }}<span *ngIf="target?.type === 'percent'">%</span>
     </label>
-    <div class="bar" *ngIf="target?.type === 'percent'"></div>
+    <div class="bar" *ngIf="target?.type === 'percent'" [ngStyle]="{ 'margin-left': (aggregate || target?.goal > 95) ? '-10px' : '-4px' }"></div>
   </div>
 
   <div class="number" *ngIf="!aggregate">
