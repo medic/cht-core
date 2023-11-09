@@ -362,5 +362,26 @@ describe('Search Bar Component', () => {
       expect(feedbackService.submit.calledWith('some nice text')).to.be.true;
       expect(telemetryService.record.calledWith('search_by_barcode:failure'));
     }));
+
+    it('should record telemetry when barcode is clicked.', fakeAsync(async () => {
+      sessionService.isAdmin.returns(false);
+      authService.has.resolves(true);
+      const inputElement = { addEventListener: sinon.stub() };
+      const getElementByIdStub = sinon.stub(documentRef.defaultView.document, 'getElementById');
+      getElementByIdStub.returns(inputElement);
+      sinon.resetHistory();
+
+      await component.ngAfterViewInit();
+      flush();
+
+      expect(inputElement.addEventListener.called).to.be.true;
+      expect(inputElement.addEventListener.args[0][0]).to.equal('click');
+
+      const eventCallback = inputElement.addEventListener.args[0][1];
+      eventCallback();
+      flush();
+
+      expect(telemetryService.record.calledWith('search_by_barcode:open')).to.be.true;
+    }));
   });
 });
