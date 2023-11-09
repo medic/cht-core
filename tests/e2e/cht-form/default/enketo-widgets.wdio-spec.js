@@ -22,7 +22,7 @@ describe('cht-form web component - Enketo Widgets', () => {
       .to.equal('option d');
 
     // try to move to next page without filling the mandatory phone number field
-    await genericForm.nextPage();
+    await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldRequiredMessage().getAttribute('data-i18n'))
       .to.equal('constraint.required');
 
@@ -88,12 +88,12 @@ describe('cht-form web component - Enketo Widgets', () => {
     await mockConfig.startMockApp('default', 'test', 'enketo_widgets');
     expect(await genericForm.getFormTitle()).to.equal('Enketo Widgets');
 
-    const onCancelPromise = browser.executeAsync((resolve) => {
+    const cancelResult = await browser.executeAsync((resolve) => {
       const myForm = document.getElementById('myform');
       myForm.addEventListener('onCancel', () => resolve('Form Canceled'));
+      $('.enketo .cancel').click();
     });
-    await genericForm.cancelForm();
-    expect(await onCancelPromise).to.equal('Form Canceled');
+    expect(cancelResult).to.equal('Form Canceled');
   });
 
 });

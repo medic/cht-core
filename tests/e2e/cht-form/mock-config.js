@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs/promises');
 const generateXformService = require('../../../api/src/services/generate-xform');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 let server;
 const mockApp = express();
@@ -41,15 +40,14 @@ const stopMockApp = () => {
   server && server.close();
 };
 
-const getOnSubmitPromise = () => browser.executeAsync((resolve) => {
-  const myForm = document.getElementById('myform');
-  myForm.addEventListener('onSubmit', (e) => resolve(e.detail));
-});
-
 const submitForm = async () => {
-  const onSubmitPromise = getOnSubmitPromise();
-  await genericForm.submitForm();
-  return onSubmitPromise;
+  await $('.form-footer').click();
+  return await browser.executeAsync((resolve) => {
+    const myForm = document.getElementById('myform');
+    myForm.addEventListener('onSubmit', (e) => resolve(e.detail));
+    $('.enketo .submit')
+      .click();
+  });
 };
 
 module.exports = {

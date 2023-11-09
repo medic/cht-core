@@ -1,5 +1,8 @@
-const OUTCOME = {liveBirth: 'healthy', stillBirth: 'still_birth', miscarriage: 'miscarriage'};
-const LOCATION = {facility: 'f', homeAttendant: 's', homeNoAttendant: 'ns'};
+const utils = require('@utils');
+const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
+
+const OUTCOME = { liveBirth: 'healthy', stillBirth: 'still_birth', miscarriage: 'miscarriage' };
+const LOCATION = { facility: 'f', homeAttendant: 's', homeNoAttendant: 'ns' };
 
 const FORM = 'form[data-form-id="delivery"]';
 const pregnancyOutcome = (value) => $(FORM +
@@ -41,10 +44,13 @@ const selectDeliveryLocation = async (value = LOCATION.facility) => {
   const location = await deliveryLocation(value);
   await location.waitForDisplayed();
   await location.click();
-  return await deliveryLocationLabel(value).getText();
+  const locationLabel = utils.isMinimumChromeVersion()
+    ? await (await deliveryLocationLabel(value)).getAttribute('innerHTML')
+    : await (await deliveryLocationLabel(value)).getText();
+  return locationLabel;
 };
 
-const setDeliveryDate =  async (value) => {
+const setDeliveryDate = async (value) => {
   const date = await deliveryDate();
   await date.waitForDisplayed();
   await date.setValue(value);

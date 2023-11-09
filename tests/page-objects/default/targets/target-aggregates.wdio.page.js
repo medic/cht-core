@@ -100,13 +100,15 @@ const getAggregateTargetGoal = async (element) => {
   };
 };
 
-const getAggregateDetailElementInfo = async (element) => ({
-  recordId: await element.getAttribute('data-record-id'),
-  title: await (await targetAggregateDetailTitle(element)).getText(),
-  detail: await (await targetAggregateDetailDetail(element)).getText(),
-  progressBar: await getAggregateTargetProgressBar(element),
-  goal: await getAggregateTargetGoal(element),
-});
+const getAggregateDetailElementInfo = async (element) => {
+  return {
+    recordId: await element.getAttribute('data-record-id'),
+    title: await (await targetAggregateDetailTitle(element)).getText(),
+    detail: await (await targetAggregateDetailDetail(element)).getText(),
+    progressBar: await getAggregateTargetProgressBar(element),
+    goal: await getAggregateTargetGoal(element),
+  };
+};
 
 const clickOnTargetAggregateListItem = async (contactId) => {
   await (await targetAggregateListItem(contactId)).waitForClickable();

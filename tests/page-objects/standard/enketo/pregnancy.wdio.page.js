@@ -1,7 +1,8 @@
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
 
-const APROX_LMP = {up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244};
+const APROX_LMP = { up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244 };
 
 const FORM = 'form[data-form-id="pregnancy"]';
 const knowLMP = (value) => $(`${FORM} input[name="/pregnancy/group_lmp/g_lmp_method"][value="${value}"]`);

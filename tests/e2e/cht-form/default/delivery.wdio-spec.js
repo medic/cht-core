@@ -112,7 +112,7 @@ describe('cht-form web component - Delivery Form', () => {
       place: 'health_facility',
       notes: 'Test notes - Mother\'s death'
     });
-    await genericForm.nextPage();
+    await $('.form-footer').click();
     await genericForm.nextPage();
 
     const data = await mockConfig.submitForm();

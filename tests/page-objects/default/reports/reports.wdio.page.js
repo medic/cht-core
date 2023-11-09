@@ -134,13 +134,15 @@ const getElementText = async (element) => {
   }
 };
 
-const getListReportInfo = async (listElement) => ({
-  heading: await getElementText(listElement.$('.content .heading h4 span')),
-  form: await getElementText(listElement.$('.content .summary')),
-  lineage: await getElementText(listElement.$('.content .detail')),
-  reported_date: await getElementText(listElement.$('.content .heading .date')),
-  dataId: await listElement.getAttribute('data-record-id'),
-});
+const getListReportInfo = async (listElement) => {
+  return {
+    heading: await getElementText(listElement.$('.content .heading h4 span')),
+    form: await getElementText(listElement.$('.content .summary')),
+    lineage: await getElementText(listElement.$('.content .detail')),
+    reported_date: await getElementText(listElement.$('.content .heading .date')),
+    dataId: await listElement.getAttribute('data-record-id'),
+  };
+};
 
 const reportsListDetails = async () => {
   const reports = await $$(`${REPORTS_LIST_ID} .items-container>ul>li`);
@@ -322,11 +324,13 @@ const getRawReportContent = async () => {
   return await (await rawReportContent()).getText();
 };
 
-const getAutomaticReply = async () => ({
-  message: await automaticReplyMessage().getText(),
-  state: await automaticReplyState().getText(),
-  recipient: await automaticReplyRecipient().getText(),
-});
+const getAutomaticReply = async () => {
+  return {
+    message: await automaticReplyMessage().getText(),
+    state: await automaticReplyState().getText(),
+    recipient: await automaticReplyRecipient().getText(),
+  };
+};
 
 const getDetailReportRowContent = async (row) => {
   const labels =  await detailReportRowContent(row, 'label').map(async label => await label.getText());
@@ -337,14 +341,16 @@ const getDetailReportRowContent = async (row) => {
   };
 };
 
-const getOpenReportInfo = async () => ({
-  patientName: await getElementText(patientName()),
-  reportName: await getElementText(reportName()),
-  senderName: await getElementText(senderName()),
-  senderPhone: await getElementText(senderPhone()),
-  lineage: await getElementText(lineage()),
-  relativeDate: await getElementText(relativeDate()),
-});
+const getOpenReportInfo = async () => {
+  return {
+    patientName: await getElementText(patientName()),
+    reportName: await getElementText(reportName()),
+    senderName: await getElementText(senderName()),
+    senderPhone: await getElementText(senderPhone()),
+    lineage: await getElementText(lineage()),
+    relativeDate: await getElementText(relativeDate()),
+  };
+};
 
 const openSelectedReport = async (listElement) => {
   await listElement.click();
