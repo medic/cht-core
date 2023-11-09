@@ -1,12 +1,12 @@
 const common = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const peoplePage = require('@page-objects/default/contacts/contacts.wdio.page');
+const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const utils = require('@utils');
 
 const { BRANCH, TAG } = process.env;
 
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const constants = require('@constants');
 
 const docs = [
@@ -57,6 +57,6 @@ describe('Webapp after upgrade', () => {
 
   it('should display correct version on the about page', async () => {
     await common.goToAboutPage();
-    expect(await upgradePage.getCurrentVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
+    expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
   });
 });

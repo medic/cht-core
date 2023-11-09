@@ -44,7 +44,7 @@ const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
 const FEEDBACK = '#feedback';
 //About menu
 const ABOUT_MENU = '#header-dropdown i.fa-question';
-const RELOAD_BUTTON = '.about.page .btn-primary';
+const RELOAD_BUTTON = '.about.page .mat-primary';
 //Configuration App
 const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 

@@ -1,4 +1,28 @@
 .about {
+  mat-card {
+    margin: 15px 0;
+  }
+
+  mat-card-content {
+    word-break: break-all;
+    label {
+      word-break: break-word;
+      margin-top: 1em;
+    }
+  }
+
+  .mat-mdc-card {
+    border-radius: @radius-size
+  }
+
+  .mat-mdc-card-header {
+    padding: 16px;
+  }
+
+  .browser-support-message {
+    word-break: break-word;
+  }
+
   .browser-support-icon-red {
     color: @error-color;
   }
@@ -7,7 +31,4 @@
     color: @ok-color;
   }
 
-  .browser-support-message {
-    word-break: break-word;
-  }
 }
