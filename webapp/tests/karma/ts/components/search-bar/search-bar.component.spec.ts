@@ -231,7 +231,7 @@ describe('Search Bar Component', () => {
       expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
       expect(feedbackService.submit.calledWith('Barcode Detector API is not supported in this browser.')).to.be.true;
-      expect(telemetryService.record.calledWith('search_by_barcode:not_supported'));
+      expect(telemetryService.record.calledWith('search_by_barcode:not_supported')).to.be.true;
     });
 
     it('should return false if user does not have permission', async () => {
@@ -274,7 +274,7 @@ describe('Search Bar Component', () => {
       expect(browserDetectorService.isDesktopUserAgent.called).to.be.false;
       expect(component.isBarcodeScannerAvailable).to.be.false;
       expect(feedbackService.submit.calledWith('Barcode Detector API is not supported in this browser.')).to.be.true;
-      expect(telemetryService.record.calledWith('search_by_barcode:not_supported'));
+      expect(telemetryService.record.calledWith('search_by_barcode:not_supported')).to.be.true;
     });
   });
 
@@ -360,7 +360,7 @@ describe('Search Bar Component', () => {
       expect(setSnackbarContentSpy.calledWith('some nice text')).to.be.true;
       expect(searchFiltersService.freetextSearch.notCalled).to.be.true;
       expect(feedbackService.submit.calledWith('some nice text')).to.be.true;
-      expect(telemetryService.record.calledWith('search_by_barcode:failure'));
+      expect(telemetryService.record.calledWith('search_by_barcode:failure')).to.be.true;
     }));
 
     it('should record telemetry when barcode is clicked.', fakeAsync(async () => {
