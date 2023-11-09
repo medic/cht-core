@@ -275,6 +275,24 @@ const isRateLimited = async req => {
   return rateLimitService.isLimited([ req.body.user, req.body.password ]);
 };
 
+const login = async (req, res) => {
+  try {
+    const sessionRes = await createSession(req);
+    if (sessionRes.statusCode !== 200) {
+      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+    } else {
+      const redirectUrl = await setCookies(req, res, sessionRes);
+      res.status(302).send(redirectUrl);
+    }
+  } catch (e) {
+    if (e.status === 401) {
+      return res.status(401).json({ error: e.error });
+    }
+    logger.error('Error logging in: %o', e);
+    res.status(500).json({ error: 'Unexpected error logging in' });
+  }
+};
+
 module.exports = {
   renderLogin,
 
@@ -296,21 +314,7 @@ module.exports = {
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }
-    try {
-      const sessionRes = await createSession(req);
-      if (sessionRes.statusCode !== 200) {
-        res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-      } else {
-        const redirectUrl = await setCookies(req, res, sessionRes);
-        res.status(302).send(redirectUrl);
-      }
-    } catch (e) {
-      if (e.status === 401) {
-        return res.status(401).json({ error: e.error });
-      }
-      logger.error('Error logging in: %o', e);
-      res.status(500).json({ error: 'Unexpected error logging in' });
-    }
+    await login(req, res);
   },
   getIdentity: (req, res) => {
     res.type('application/json');
