@@ -221,8 +221,6 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       browserDetectorService.isDesktopUserAgent.returns(true);
-      translateService.instant.returns('some text');
-      const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -232,9 +230,7 @@ describe('Search Bar Component', () => {
       expect(browserDetectorService.isDesktopUserAgent.called).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
-      expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
-      expect(feedbackService.submit.calledWith('some text')).to.be.true;
-      expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
+      expect(feedbackService.submit.calledWith('Barcode Detector API is not supported in this browser.')).to.be.true;
       expect(telemetryService.record.calledWith('search_by_barcode:not_supported'));
     });
 
@@ -265,19 +261,13 @@ describe('Search Bar Component', () => {
     it('should return false if BarcodeDetector is not supported', async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
-      translateService.instant.returns('some text');
-      const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       sinon.resetHistory();
       component.windowRef = {};
 
       await component.ngAfterViewInit();
 
       expect(component.isBarcodeScannerAvailable).to.be.false;
-      expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
-      expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
-      expect(translateService.instant.calledWith('barcode_scanner.warning.not_supported')).to.be.true;
-      expect(feedbackService.submit.calledWith('some text')).to.be.true;
-      expect(setSnackbarContentSpy.calledWith('some text')).to.be.true;
+      expect(feedbackService.submit.calledWith('Barcode Detector API is not supported in this browser.')).to.be.true;
       expect(telemetryService.record.calledWith('search_by_barcode:not_supported'));
     });
   });
@@ -330,9 +320,9 @@ describe('Search Bar Component', () => {
       flush();
 
       expect(telemetryService.record.calledWith('search_by_barcode:scan')).to.be.true;
-      expect(telemetryService.record.calledWith('search_by_barcode:code_no_detected')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:barcode_not_detected')).to.be.true;
       expect(detectStub.calledWith(imageHolder)).to.be.true;
-      expect(translateService.instant.calledWith('barcode_scanner.warning.no_barcode_detected')).to.be.true;
+      expect(translateService.instant.calledWith('barcode_scanner.error.cannot_read_barcode')).to.be.true;
       expect(setSnackbarContentSpy.calledWith('please retry')).to.be.true;
       expect(searchFiltersService.freetextSearch.notCalled).to.be.true;
     }));

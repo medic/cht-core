@@ -164,8 +164,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     // It's okay to show the barcode scanner on mobile's browser, PWA and CHT Android.
     // But we won't support it in desktop's browser.
     if (!('BarcodeDetector' in this.windowRef) || this.browserDetectorService.isDesktopUserAgent()) {
-      const message = this.translateService.instant('barcode_scanner.warning.not_supported');
-      this.globalAction.setSnackbarContent(message);
+      const message = 'Barcode Detector API is not supported in this browser.';
       console.error(message);
       this.feedbackService.submit(message);
       this.telemetryService.record(`${this.TELEMETRY_PREFIX}:not_supported`);
@@ -176,22 +175,23 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   }
 
   private async scanBarcode(imageHolder) {
-    try {
-      this.telemetryService.record(`${this.TELEMETRY_PREFIX}:scan`);
-      const barcodes = await this.barcodeDetector.detect(imageHolder);
+    const errorMessageKey = 'barcode_scanner.error.cannot_read_barcode';
+    this.telemetryService.record(`${this.TELEMETRY_PREFIX}:scan`);
 
+    try {
+      const barcodes = await this.barcodeDetector.detect(imageHolder);
       if (barcodes.length) {
         this.searchFiltersService.freetextSearch(barcodes[0].rawValue);
         this.telemetryService.record(`${this.TELEMETRY_PREFIX}:trigger_search`);
         return;
       }
 
-      const message = this.translateService.instant('barcode_scanner.warning.no_barcode_detected');
+      const message = this.translateService.instant(errorMessageKey);
       this.globalAction.setSnackbarContent(message);
-      this.telemetryService.record(`${this.TELEMETRY_PREFIX}:code_no_detected`);
+      this.telemetryService.record(`${this.TELEMETRY_PREFIX}:barcode_not_detected`);
 
     } catch (error) {
-      const message = this.translateService.instant('barcode_scanner.error.cannot_read_barcode');
+      const message = this.translateService.instant(errorMessageKey);
       this.globalAction.setSnackbarContent(message);
       console.error(message, error);
       this.feedbackService.submit(message);
