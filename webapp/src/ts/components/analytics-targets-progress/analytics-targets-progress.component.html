@@ -8,7 +8,7 @@
   </div>
 
   <div class="goal" *ngIf="target?.goal > 0" [ngStyle]="{ 'padding-left': (target?.goal || 0) + '%' }">
-    <label [ngClass]="{ 'pin-left': !aggregate && target?.goal < 15, 'pin-right': aggregate || target?.goal > 85 }">
+    <label [ngClass]="{ 'pin-left': !aggregate && target?.goal < 2, 'pin-right': aggregate || target?.goal > 85 }">
       <span>{{'analytics.target.monthly_goal' | translate}}</span>
       {{ target.goal | localizeNumber }}<span *ngIf="target?.type === 'percent'">%</span>
     </label>
