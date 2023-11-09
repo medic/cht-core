@@ -9,7 +9,7 @@
     width: 296px;
     min-height: 151px;
     background-color: @target-card-background-color;
-    border: 1px solid @gray-light;
+    border: 1px solid @target-card-border-color;
     border-radius: @radius-size-medium;
     margin: 10px 12px;
     display: flex;
@@ -22,7 +22,7 @@
       background-color: @white;
       border-bottom-left-radius: @radius-size-medium;
       border-bottom-right-radius: @radius-size-medium;
-      border-top: 1px solid @gray-light;
+      border-top: 1px solid @target-card-border-color;
       min-height: 75px;
       .title {
         h2 {
@@ -96,7 +96,7 @@
       padding-bottom: 10px;
     }
     .progress-bar {
-      background-color: @gray-medium-dark;
+      background-color: @targets-progress-bar-unmet-goal;
     }
   }
   &.goal-met,
