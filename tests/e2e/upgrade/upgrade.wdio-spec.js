@@ -109,7 +109,7 @@ describe('Performing an upgrade', () => {
 
     await adminPage.logout();
     await loginPage.login(docs.user);
-    await commonPage.closeReloadModal();
+    await commonPage.closeReloadModal(true);
 
     await commonPage.goToAboutPage();
     expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
