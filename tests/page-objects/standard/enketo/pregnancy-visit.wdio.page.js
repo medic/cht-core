@@ -6,7 +6,7 @@ const FORM = enketoCommonPage.form('pregnancy_visit');
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('pregnancy_visit')}`);
 const dangerSignSummary = () => $$(FORM +
-  `span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${enketoCommonPage.ACTIVE}`);
+  ` span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${enketoCommonPage.ACTIVE}`);
 const patientNameSummary = () => $(FORM +
   ` span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
   enketoCommonPage.patientNameSummary('pregnancy_visit'));

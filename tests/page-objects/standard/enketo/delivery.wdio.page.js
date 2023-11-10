@@ -8,7 +8,7 @@ const FORM = enketoCommonPage.form('delivery');
 const pregnancyOutcome = (value) => $(FORM +
   ` input[name="/delivery/group_delivery_summary/g_pregnancy_outcome"][value="${value}"]`);
 const pregnancyOutcomeLabel = (value) => $(FORM +
-  ` span[data-itext-id="/delivery/group_delivery_summary/g_pregnancy_outcome/${value}:label"] ` +
+  ` span[data-itext-id="/delivery/group_delivery_summary/g_pregnancy_outcome/${value}:label"]` +
   enketoCommonPage.ACTIVE);
 const deliveryLocation = (value) => $(FORM +
   ` input[name="/delivery/group_delivery_summary/g_delivery_code"][value="${value}"]`);
