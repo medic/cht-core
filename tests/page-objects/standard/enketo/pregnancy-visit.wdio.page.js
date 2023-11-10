@@ -4,19 +4,17 @@ const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page
 
 const FORM = enketoCommonPage.form('pregnancy_visit');
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
-const smsNote = () => $(`${FORM} textarea[name="/pregnancy_visit/group_note/g_chw_sms"]`);
-const dangerSignSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"].active`);
+const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('pregnancy_visit')}`);
+const dangerSignSummary = () => $$(FORM +
+  `span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${enketoCommonPage.ACTIVE}`);
 const patientNameSummary = () => $(FORM +
-  ' span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"].active' +
-  ' span[data-value=" /pregnancy_visit/patient_name "]');
+  ` span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
+  enketoCommonPage.patientNameSummary('pregnancy_visit'));
 const patientIdSummary = () => $(FORM +
-  ' span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"].active' +
-  ' span[data-value=" /pregnancy_visit/group_review/r_patient_id "]');
-const followUpSmsNote1 = () => $(FORM +
-  ' span[data-itext-id="/pregnancy_visit/group_review/r_followup_note1:label"].active');
-const followUpSmsNote2 = () => $(FORM +
-  ' span[data-itext-id="/pregnancy_visit/group_review/r_followup_note2:label"].active' +
-  ' span[data-value=" /pregnancy_visit/chw_sms "]');
+  ` span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
+  enketoCommonPage.patientIdSummary('pregnancy_visit'));
+const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('pregnancy_visit')}`);
+const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('pregnancy_visit')}`);
 
 const selectAllDangerSigns = async () => {
   const dangerSigns = await dangerSig();

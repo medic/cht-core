@@ -22,25 +22,20 @@ const YELLOW_FEVER_VACCINE = 'input[name="/immunization_visit/group_yellow_fever
 const notes = () => $(`${enketoCommonPage.smsNote('immunization_visit')}`);
 const vaccines = () => $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
 const patientNameSummary = () => $(
-  'span[data-itext-id="/immunization_visit/group_review/r_pregnancy_details:label"].active ' +
-  'span[data-value=" /immunization_visit/patient_name "]'
+  `span[data-itext-id="/immunization_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
+  enketoCommonPage.patientNameSummary('immunization_visit')
 );
 const patientIdSummary = () => $(
-  'span[data-itext-id="/immunization_visit/group_review/r_pregnancy_details:label"].active ' +
-  'span[data-value=" /immunization_visit/group_review/r_patient_id "]'
+  `span[data-itext-id="/immunization_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
+  enketoCommonPage.patientIdSummary('immunization_visit')
 );
 // Excluding the 'last-child' because it represents the follow-up message from the summary page form
 const vaccinesAvailableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
 const vaccinesDisableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
-const followUpSmsNote1 = () => $(
-  'span[data-itext-id="/immunization_visit/group_review/r_followup_note1:label"].active'
-);
-const followUpSmsNote2 = () => $(
-  'span[data-itext-id="/immunization_visit/group_review/r_followup_note2:label"].active ' +
-  'span[data-value=" /immunization_visit/chw_sms "]'
-);
+const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('immunization_visit')}`);
+const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('immunization_visit')}`);
 
 const selectAppliedVaccines = async (selector, option = 'no') => {
   const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);
