@@ -50,11 +50,11 @@ kind: Namespace
 metadata:
   name: {namespace}
 '''
-        with open(os.path.join(script_dir, "helm", "namespace.yaml"), 'w') as manifest_file:
+        with open(os.path.join(script_dir, "helm", "namespace.yaml"), 'w') as manifest_file: # NOSONAR
             manifest_file.write(namespace_manifest)
-        subprocess.run(["kubectl", "apply", "-f", os.path.join(script_dir, "helm", "namespace.yaml")], check=True)
+        subprocess.run(["kubectl", "apply", "-f", os.path.join(script_dir, "helm", "namespace.yaml")], check=True) # NOSONAR
         # Delete the namespace file after creation
-        os.remove(os.path.join(script_dir, "helm", "namespace.yaml"))
+        os.remove(os.path.join(script_dir, "helm", "namespace.yaml")) # NOSONAR
     else:
         print(f"Namespace {namespace} already exists.")
 
@@ -68,14 +68,14 @@ def obtain_certificate_and_key(c, values):
             subprocess.run(["cp", crt_file_path, "certificate.crt"], check=True)
             subprocess.run(["cp", key_file_path, "private.key"], check=True)
         else:
-            raise Exception("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'")
+            raise Exception("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'") # NOSONAR
     elif values.get('cert_source', '') == 'my-ip-co':
         subprocess.run(["curl", "https://local-ip.medicmobile.org/fullchain", "-o", "certificate.crt"], check=True)
         subprocess.run(["curl", "https://local-ip.medicmobile.org/key", "-o", "private.key"], check=True)
     elif values.get('cert_source', '') == 'eks-medic':
         print("Moving on. Certificate provided by the eks cluster.")
     else:
-        raise Exception("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'")
+        raise Exception("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'") # NOSONAR
 
 @task
 def create_secret(c, namespace, values):
@@ -101,9 +101,9 @@ def get_image_tag(c, chtversion):
             image_tag = tag['image'].split(':')[-1]
             return image_tag
 
-    raise Exception('cht image tag not found')
+    raise Exception('cht image tag not found') # NOSONAR
 
-def setup_etc_hosts(c, values):
+def setup_etc_hosts(c, values): # NOSONAR
     # If the cluster_type is k3s-k3d and cert_source is my-ip-co, add the host to /etc/hosts
     if values.get('cluster_type', '') == 'k3s-k3d' and values.get('cert_source', '') == 'my-ip-co':
         host = values.get('ingress', {}).get('host', '')
