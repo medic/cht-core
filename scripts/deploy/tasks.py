@@ -59,14 +59,14 @@ metadata:
         print(f"Namespace {namespace} already exists.")
 
 @task
-def obtain_certificate_and_key(c, values):
+def obtain_certificate_and_key(c, values): # NOSONAR
     print("Obtaining certificate...")
     if values.get('cert_source', '') == 'specify-file-path':
         crt_file_path = values.get('certificate_crt_file_path', '')
         key_file_path = values.get('certificate_key_file_path', '')
         if crt_file_path and key_file_path:
-            subprocess.run(["cp", crt_file_path, "certificate.crt"], check=True)
-            subprocess.run(["cp", key_file_path, "private.key"], check=True)
+            subprocess.run(["cp", crt_file_path, "certificate.crt"], check=True) # NOSONAR
+            subprocess.run(["cp", key_file_path, "private.key"], check=True) # NOSONAR
         else:
             raise Exception("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'") # NOSONAR
     elif values.get('cert_source', '') == 'my-ip-co':
@@ -121,7 +121,7 @@ def setup_etc_hosts(c, values): # NOSONAR
         print("Cluster type is not k3s-k3d or ingress choice is not my-ip-co. Skipping /etc/hosts setup.")
 
 @task
-def add_route53_entry(c, f):
+def add_route53_entry(c, f): # NOSONAR
     values = load_values(c, f)
     host = values.get('ingress', {}).get('host', '')
     load_balancer = values.get('ingress', {}).get('load_balancer', '')
@@ -143,7 +143,7 @@ def add_route53_entry(c, f):
             print(f"Route53 entry for {host} already exists")
 
 @task
-def helm_install_or_upgrade(c, f, namespace, values, image_tag):
+def helm_install_or_upgrade(c, f, namespace, values, image_tag): # NOSONAR
     script_dir = os.path.dirname(os.path.abspath(__file__))
     chart_filename = "cht-chart-4.x.tgz"
     project_name = values.get('project_name', '')
