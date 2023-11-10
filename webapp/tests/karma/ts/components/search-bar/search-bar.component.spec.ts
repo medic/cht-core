@@ -206,6 +206,8 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       browserDetectorService.isDesktopUserAgent.returns(false);
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -217,10 +219,28 @@ describe('Search Bar Component', () => {
       expect(authService.has.args[0]).to.have.members([ CAN_USE_BARCODE_SCANNER ]);
     });
 
+    it('should return false if barcode scanner is configured to not show', async () => {
+      sessionService.isAdmin.returns(false);
+      authService.has.resolves(true);
+      browserDetectorService.isDesktopUserAgent.returns(false);
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
+      component.showBarcodeScanner = false;
+      sinon.resetHistory();
+
+      await component.ngAfterViewInit();
+
+      expect(component.isBarcodeScannerAvailable).to.be.false;
+      expect(browserDetectorService.isDesktopUserAgent.notCalled).to.be.true;
+      expect(sessionService.isAdmin.notCalled).to.be.true;
+      expect(authService.has.notCalled).to.be.true;
+    });
+
     it('should return false if browser is desktop', async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       browserDetectorService.isDesktopUserAgent.returns(true);
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -238,6 +258,8 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(false);
       browserDetectorService.isDesktopUserAgent.returns(false);
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -253,6 +275,8 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(true);
       authService.has.resolves(true);
       browserDetectorService.isDesktopUserAgent.returns(false);
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -266,8 +290,26 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       browserDetectorService.isDesktopUserAgent.returns(false);
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
       sinon.resetHistory();
+      component.showBarcodeScanner = true;
       component.windowRef = {};
+
+      await component.ngAfterViewInit();
+
+      expect(browserDetectorService.isDesktopUserAgent.called).to.be.false;
+      expect(component.isBarcodeScannerAvailable).to.be.false;
+      expect(feedbackService.submit.calledWith('Barcode Detector API is not supported in this browser.')).to.be.true;
+      expect(telemetryService.record.calledWith('search_by_barcode:not_supported')).to.be.true;
+    });
+
+    it('should return false if browser does not support any type of barcode', async () => {
+      sessionService.isAdmin.returns(false);
+      authService.has.resolves(true);
+      browserDetectorService.isDesktopUserAgent.returns(false);
+      getSupportedFormatsStub.resolves([]);
+      component.showBarcodeScanner = true;
+      sinon.resetHistory();
 
       await component.ngAfterViewInit();
 
@@ -283,9 +325,11 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       const imageHolder = { addEventListener: sinon.stub() };
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
       const createElementStub = sinon.stub(documentRef.defaultView.document, 'createElement');
       createElementStub.returns(imageHolder);
       detectStub.resolves([{ rawValue: '1234' }]);
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -308,11 +352,13 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       translateService.instant.returns('please retry');
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
       const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       const imageHolder = { addEventListener: sinon.stub() };
       const createElementStub = sinon.stub(documentRef.defaultView.document, 'createElement');
       createElementStub.returns(imageHolder);
       detectStub.resolves([]);
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -337,11 +383,13 @@ describe('Search Bar Component', () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
       translateService.instant.returns('some nice text');
+      getSupportedFormatsStub.resolves([ 'code_39', 'aztec' ]);
       const setSnackbarContentSpy = sinon.spy(GlobalActions.prototype, 'setSnackbarContent');
       const imageHolder = { addEventListener: sinon.stub() };
       const createElementStub = sinon.stub(documentRef.defaultView.document, 'createElement');
       createElementStub.returns(imageHolder);
       detectStub.rejects('some error');
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
       await component.ngAfterViewInit();
@@ -366,19 +414,11 @@ describe('Search Bar Component', () => {
     it('should record telemetry when barcode is clicked.', fakeAsync(async () => {
       sessionService.isAdmin.returns(false);
       authService.has.resolves(true);
-      const inputElement = { addEventListener: sinon.stub() };
-      const getElementByIdStub = sinon.stub(documentRef.defaultView.document, 'getElementById');
-      getElementByIdStub.returns(inputElement);
+      getSupportedFormatsStub.resolves([ 'code_39' ]);
+      component.showBarcodeScanner = true;
       sinon.resetHistory();
 
-      await component.ngAfterViewInit();
-      flush();
-
-      expect(inputElement.addEventListener.called).to.be.true;
-      expect(inputElement.addEventListener.args[0][0]).to.equal('click');
-
-      const eventCallback = inputElement.addEventListener.args[0][1];
-      eventCallback();
+      component.onBarcodeOpen();
       flush();
 
       expect(telemetryService.record.calledWith('search_by_barcode:open')).to.be.true;

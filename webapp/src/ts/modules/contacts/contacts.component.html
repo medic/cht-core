@@ -12,6 +12,7 @@
     <mm-search-bar
       *ngIf="useSearchNewDesign"
       [showSort]="true"
+      [showBarcodeScanner]="true"
       [sortDirection]="sortDirection"
       [lastVisitedDateExtras]="lastVisitedDateExtras"
       (sort)="sort($event)"

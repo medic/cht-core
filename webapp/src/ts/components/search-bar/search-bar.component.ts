@@ -35,6 +35,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   @Input() disabled;
   @Input() showFilter;
   @Input() showSort;
+  @Input() showBarcodeScanner;
   @Input() sortDirection;
   @Input() lastVisitedDateExtras;
   @Output() sort: EventEmitter<any> = new EventEmitter();
@@ -45,6 +46,8 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   private globalAction: GlobalActions;
   private barcodeDetector;
   private filters;
+  private barcodeTypes;
+  private barcodeImageElement;
   windowRef;
   subscription: Subscription = new Subscription();
   activeFilters: number = 0;
@@ -75,7 +78,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   }
 
   async ngAfterViewInit() {
-    this.isBarcodeScannerAvailable = await this.checkBarcodeScanner();
+    this.isBarcodeScannerAvailable = await this.canShowBarcodeScanner();
     this.searchFiltersService.init(this.freetextFilter);
     await this.initBarcodeScanner();
   }
@@ -100,24 +103,26 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
       return;
     }
 
-    const barcodeTypes = await this.windowRef.BarcodeDetector.getSupportedFormats();
-    console.info(`Supported barcode formats: ${barcodeTypes?.join(', ')}`);
-    this.barcodeDetector = new this.windowRef.BarcodeDetector({ formats: barcodeTypes });
+    console.info(`Supported barcode formats: ${this.barcodeTypes?.join(', ')}`);
+    this.barcodeDetector = new this.windowRef.BarcodeDetector({ formats: this.barcodeTypes });
 
-    const imageHolder = this.windowRef.document.createElement('img');
-    imageHolder?.addEventListener('load', () => this.scanBarcode(imageHolder)); // NOSONAR
+    this.barcodeImageElement = this.windowRef.document.createElement('img');
+    this.barcodeImageElement?.addEventListener('load', () => this.scanBarcode(this.barcodeImageElement)); // NOSONAR
+  }
 
-    const input = this.windowRef.document.getElementById('barcode-scanner-input');
-    input?.addEventListener('click', () => this.telemetryService.record(`${this.TELEMETRY_PREFIX}:open`)); // NOSONAR
-    input?.addEventListener('change', () => {
-      if (!input.files) {
-        return;
-      }
-      const reader = new FileReader();
-      reader.addEventListener('load', event => imageHolder.src = event?.target?.result);
-      reader.readAsDataURL(input.files[0]);
-      input.value = '';
-    });
+  onBarcodeOpen() {
+    this.telemetryService.record(`${this.TELEMETRY_PREFIX}:open`);
+  }
+
+  processBarcodeFile($event) {
+    const input = $event.target;
+    if (!input.files) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener('load', event => this.barcodeImageElement.src = event?.target?.result);
+    reader.readAsDataURL(input.files[0]);
+    input.value = '';
   }
 
   clear() {
@@ -154,16 +159,23 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     return this.openSearch || !!this.filters?.search;
   }
 
-  private async checkBarcodeScanner() {
-    const canUseBarcodeScanner = !this.sessionService.isAdmin() && await this.authService.has(CAN_USE_BARCODE_SCANNER);
+  private async canShowBarcodeScanner() {
+    if (!this.showBarcodeScanner) {
+      return false;
+    }
 
+    const canUseBarcodeScanner = !this.sessionService.isAdmin() && await this.authService.has(CAN_USE_BARCODE_SCANNER);
     if (!canUseBarcodeScanner) {
       return false;
     }
 
-    // It's okay to show the barcode scanner on mobile's browser, PWA and CHT Android.
-    // But we won't support it in desktop's browser.
-    if (!('BarcodeDetector' in this.windowRef) || this.browserDetectorService.isDesktopUserAgent()) {
+    this.barcodeTypes = await this.windowRef.BarcodeDetector?.getSupportedFormats();
+
+    if (
+      !('BarcodeDetector' in this.windowRef)
+      || !this.barcodeTypes?.length
+      || this.browserDetectorService.isDesktopUserAgent() // But we won't support it in desktop's browser.
+    ) {
       const message = 'Barcode Detector API is not supported in this browser.';
       console.error(message);
       this.feedbackService.submit(message);
