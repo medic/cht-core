@@ -12,9 +12,9 @@ const patientNameSummary = () => $(FORM +
   enketoCommonPage.patientNameSummary('pregnancy_visit'));
 const patientIdSummary = () => $(FORM +
   ` span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('pregnancy_visit'));
-const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('pregnancy_visit')}`);
-const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('pregnancy_visit')}`);
+  enketoCommonPage.patientIdSummary('pregnancy_visit', 'review'));
+const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('pregnancy_visit', 'review')}`);
+const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('pregnancy_visit', 'review')}`);
 
 const selectAllDangerSigns = async () => {
   const dangerSigns = await dangerSig();

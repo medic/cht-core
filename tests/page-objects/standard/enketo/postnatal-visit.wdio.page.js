@@ -14,7 +14,7 @@ const patientNameSummary = () => $(
 );
 const patientIdSummary = () => $(
   `span[data-itext-id="/postnatal_visit/group_review/r_postnatal_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('postnatal_visit')
+  enketoCommonPage.patientIdSummary('postnatal_visit', 'review')
 );
 const visitInformation = () => $(
   `label:not(.disabled) span[data-itext-id*="/postnatal_visit/group_review/r_visit_"]${enketoCommonPage.ACTIVE}`
@@ -22,8 +22,8 @@ const visitInformation = () => $(
 const dangerSignsSummary = (person) => $$(
   `span[data-itext-id*="/postnatal_visit/group_review/r_${person}_danger_sign"]${enketoCommonPage.ACTIVE}`
 );
-const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('postnatal_visit')}`);
-const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('postnatal_visit')}`);
+const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('postnatal_visit', 'review')}`);
+const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('postnatal_visit', 'review')}`);
 
 const selectAssessingTo = async (value = 'both') => {
   const whom = await assessingTo(value);

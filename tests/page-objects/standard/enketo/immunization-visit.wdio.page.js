@@ -27,15 +27,15 @@ const patientNameSummary = () => $(
 );
 const patientIdSummary = () => $(
   `span[data-itext-id="/immunization_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('immunization_visit')
+  enketoCommonPage.patientIdSummary('immunization_visit', 'review')
 );
 // Excluding the 'last-child' because it represents the follow-up message from the summary page form
 const vaccinesAvailableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li:not(:last-child)');
 const vaccinesDisableSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li.disabled');
-const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('immunization_visit')}`);
-const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('immunization_visit')}`);
+const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('immunization_visit', 'review')}`);
+const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('immunization_visit', 'review')}`);
 
 const selectAppliedVaccines = async (selector, option = 'no') => {
   const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);

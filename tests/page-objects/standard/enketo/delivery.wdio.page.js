@@ -21,16 +21,16 @@ const patientNameSummary = () => $(FORM +
   ` span[data-itext-id="/delivery/group_summary/r_patient_info:label"]${enketoCommonPage.ACTIVE} ` +
   enketoCommonPage.patientNameSummary('delivery'));
 const patientIdSummary = () => $(FORM +
-  ` span[data-itext-id="/delivery/group_summary/r_patient_info:label"]${enketoCommonPage.ACTIVE}` +
-  ' span[data-value=" /delivery/group_summary/r_patient_id "]');
+  ` span[data-itext-id="/delivery/group_summary/r_patient_info:label"]${enketoCommonPage.ACTIVE} ` +
+  enketoCommonPage.patientIdSummary('delivery', 'summary'));
 const outcomeSummary = () => $(FORM +
   ` span[data-itext-id="/delivery/group_summary/r_pregnancy_outcome:label"]${enketoCommonPage.ACTIVE}` +
   ' span[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]');
 const locationSummary = () => $(FORM +
   ` span[data-itext-id="/delivery/group_summary/r_birth_date:label"]${enketoCommonPage.ACTIVE}` +
   ' span[data-value=" /delivery/group_summary/r_delivery_location "]');
-const followUpSmsNote1 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote1('pregnancy')}`);
-const followUpSmsNote2 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote2('pregnancy')}`);
+const followUpSmsNote1 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote1('delivery', 'summary')}`);
+const followUpSmsNote2 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote2('delivery', 'summary')}`);
 
 const selectPregnancyOutcome = async (value = OUTCOME.liveBirth) => {
   const outcome = await pregnancyOutcome(value);

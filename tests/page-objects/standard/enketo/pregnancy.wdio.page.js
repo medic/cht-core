@@ -17,13 +17,13 @@ const patientNameSummary = () => $(FORM +
   enketoCommonPage.patientNameSummary('pregnancy'));
 const patientIdSummary = () => $(FORM +
   ` span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('pregnancy'));
+  enketoCommonPage.patientIdSummary('pregnancy', 'review'));
 const riskFactorsSummary = () => $$(`${FORM} :not(label.disabled):not(label.or-appearance-yellow)  > ` +
   `span[data-itext-id*="/pregnancy/group_review/r_risk_factor"]${enketoCommonPage.ACTIVE}`);
 const dangerSignsSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"]` +
   enketoCommonPage.ACTIVE);
-const followUpSmsNote1 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote1('pregnancy')}`);
-const followUpSmsNote2 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote2('pregnancy')}`);
+const followUpSmsNote1 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote1('pregnancy', 'review')}`);
+const followUpSmsNote2 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote2('pregnancy', 'review')}`);
 
 const selectKnowLMP = async (value = 'approx') => {
   const lmpOption = await knowLMP(value);
