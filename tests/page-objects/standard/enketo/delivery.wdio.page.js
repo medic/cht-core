@@ -43,10 +43,9 @@ const selectDeliveryLocation = async (value = LOCATION.facility) => {
   const location = await deliveryLocation(value);
   await location.waitForDisplayed();
   await location.click();
-  const locationLabel = utils.isMinimumChromeVersion()
+  return utils.isMinimumChromeVersion()
     ? await (await deliveryLocationLabel(value)).getAttribute('innerHTML')
     : await (await deliveryLocationLabel(value)).getText();
-  return locationLabel;
 };
 
 const setDeliveryDate = async (value) => {
