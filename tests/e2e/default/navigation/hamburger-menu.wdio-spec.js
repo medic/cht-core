@@ -2,15 +2,16 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('Hamburger Menu tests', async () => {
-  before(async () => {
+  /*before(async () => {
     await loginPage.cookieLogin();
-  });
+  });*/
 
   beforeEach(async () => {
     await commonPage.goToReports();
   });
 
   it('should open About', async () => {
+    await loginPage.cookieLogin();
     await commonPage.openHamburgerMenu();
     await commonPage.openAboutMenu();
   });
