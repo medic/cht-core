@@ -11,7 +11,6 @@ describe('Hamburger Menu tests', async () => {
   });
 
   it('should open About', async () => {
-    await loginPage.cookieLogin();
     await commonPage.openHamburgerMenu();
     await commonPage.openAboutMenu();
   });
