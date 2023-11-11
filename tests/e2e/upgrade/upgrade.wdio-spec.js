@@ -59,6 +59,7 @@ describe('Performing an upgrade', () => {
       password: constants.PASSWORD,
       createUser: false
     });
+    await commonPage.waitForPageLoaded();
   });
 
   it('should have an upgrade_log after installing', async () => {
