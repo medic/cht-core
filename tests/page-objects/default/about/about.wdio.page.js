@@ -1,6 +1,7 @@
 const userName = () => $('label=User name');
 const partners = () => $('.partners');
-const version = () => $('.material .cell p');
+//const version = () => $('.material .cell p');
+const version = () => $('[test-id="about-version"]');
 
 const getPartnerImage = async (name) => {
   await (await partners()).waitForDisplayed();
