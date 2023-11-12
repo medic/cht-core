@@ -20,7 +20,7 @@
 
           <div>
             <label translate>version</label>
-            <p test-id="about-version">{{version}}</p>
+            <p>{{version}}</p>
           </div>
 
           <div>
@@ -29,17 +29,14 @@
               <span class="fa fa-check-square browser-support-icon-green"></span>
               <ng-template #unsupportedBrowser>
                 <span class="fa fa-times browser-support-icon-red"></span>
-                <a target="_blank" rel="noopener noreferrer"
-                  href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">
+                <a target="_blank" rel="noopener noreferrer" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">
                   {{'debug.supported_browser.see_requirements' | translate}}
                 </a>
                 <p class="browser-support-message">
                   <span>{{'login.unsupported_browser' | translate}}</span>
                   <ng-container [ngSwitch]="browserSupport.outdatedComponent">
-                    <span *ngSwitchCase="'chtAndroid'">{{'login.unsupported_browser.outdated_cht_android' |
-                      translate}}</span>
-                    <span *ngSwitchCase="'webviewApk'">{{'login.unsupported_browser.outdated_webview_apk' |
-                      translate}}</span>
+                    <span *ngSwitchCase="'chtAndroid'">{{'login.unsupported_browser.outdated_cht_android' | translate}}</span>
+                    <span *ngSwitchCase="'webviewApk'">{{'login.unsupported_browser.outdated_webview_apk' | translate}}</span>
                     <span *ngSwitchCase="'browser'">{{'login.unsupported_browser.outdated_browser' | translate}}</span>
                   </ng-container>
                 </p>
@@ -66,8 +63,7 @@
             <label translate>android_app.os_android_version.title</label>
             <p>
               {{androidDeviceInfo.software.androidVersion}}
-              <span *ngIf="androidDeviceInfo?.software?.osApiLevel">(SDK
-                {{androidDeviceInfo.software.osApiLevel}})</span>
+              <span *ngIf="androidDeviceInfo?.software?.osApiLevel">(SDK {{androidDeviceInfo.software.osApiLevel}})</span>
             </p>
           </div>
 
@@ -117,19 +113,15 @@
 
           <div>
             <label translate>replication.last.success.to</label>
-            <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">{{replicationStatus.lastSuccessTo
-              | simpleDateTime}}</p>
-            <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessTo" translate>
-              replication.last.success.unknown</p>
+            <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">{{replicationStatus.lastSuccessTo | simpleDateTime}}</p>
+            <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessTo" translate>replication.last.success.unknown</p>
             <p *ngIf="replicationStatus.disabled" translate>replication.disabled</p>
           </div>
 
           <div>
             <label translate>replication.last.success.from</label>
-            <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessFrom">
-              {{replicationStatus.lastSuccessFrom | simpleDateTime}}</p>
-            <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessFrom" translate>
-              replication.last.success.unknown</p>
+            <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessFrom">{{replicationStatus.lastSuccessFrom | simpleDateTime}}</p>
+            <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessFrom" translate>replication.last.success.unknown</p>
             <p *ngIf="replicationStatus.disabled" translate>replication.disabled</p>
           </div>
 
