@@ -15,6 +15,7 @@ const mockConfig = require('./mock-config');
 const defaultConfig = Object.assign({
   ...wdioBaseConfig.config,
   specs: ['**/*.wdio-spec.js'],
+  baseUrl: mockConfig.startMockApp(),
 
   onPrepare: () => {
     // delete all previous test
@@ -31,14 +32,10 @@ const defaultConfig = Object.assign({
     if (fs.existsSync(browserLogPath)) {
       fs.unlinkSync(browserLogPath);
     }
-  },
-
-  before: async () => {
     // Create tests/logs if it does not exist.
     if (!fs.existsSync(logPath)) {
       fs.mkdirSync(logPath);
     }
-    await wdioBaseConfig.config.before();
   },
 
   beforeTest: (test) => {
@@ -47,11 +44,11 @@ const defaultConfig = Object.assign({
     fs.appendFileSync(browserLogPath, title);
   },
 
-  after: () => {},
-
-  afterTest: () => {
+  after: () => {
     mockConfig.stopMockApp();
   },
+
+  afterTest: () => {},
 
   onComplete: () => {},
 });

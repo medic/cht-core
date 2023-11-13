@@ -5,7 +5,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 describe('cht-form web component - Create Person Form', () => {
 
   it('should create a new person', async () => {
-    await mockConfig.startMockApp('default', 'contact', 'person-create');
+    await mockConfig.loadForm('default', 'contact', 'person-create');
 
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('New Person');

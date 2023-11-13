@@ -8,6 +8,8 @@ const mockApp = express();
 mockApp.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 mockApp.use(express.static(path.join(__dirname, '../../../build/cht-form')));
 
+const getBaseURL = () => `http://localhost:${server.address().port}`;
+
 const getFormPath = (config, formType, formName) => {
   if (formType === 'test') {
     return path.join(__dirname, config, 'forms', `${formName}.xml`);
@@ -23,17 +25,21 @@ const generateFormData = async (formPath) => {
   return { formHtml, formModel, formXml };
 };
 
-const startMockApp = async (config, formType, formName) => {
+const loadForm = async (config, formType, formName) => {
   const formPath = getFormPath(config, formType, formName);
   const formData = await generateFormData(formPath);
-  server = mockApp.listen();
-  await browser.url(`http://localhost:${server.address().port}`);
+  await browser.url(getBaseURL());
   await browser.execute((formData) => {
     const myForm = document.getElementById('myform');
     myForm.formHtml = formData.formHtml;
     myForm.formModel = formData.formModel;
     myForm.formXml = formData.formXml;
   }, formData);
+};
+
+const startMockApp = () => {
+  server = mockApp.listen();
+  return getBaseURL();
 };
 
 const stopMockApp = () => {
@@ -51,6 +57,7 @@ const submitForm = async () => {
 };
 
 module.exports = {
+  loadForm,
   startMockApp,
   stopMockApp,
   submitForm
