@@ -1,6 +1,7 @@
 const userName = () => $('label=User name');
 const partners = () => $('.partners');
 const version = () => $('[test-id="about-version"]');
+const RELOAD_BUTTON = '.about.page .mat-primary';
 
 const getPartnerImage = async (name) => {
   await (await partners()).waitForDisplayed();
@@ -15,9 +16,17 @@ const getVersion = async () => {
   return await (await version()).getText();
 };
 
+const reload = async () => {
+  await (await $(RELOAD_BUTTON)).waitForClickable();
+  await (await $(RELOAD_BUTTON)).click();
+  await (await $(RELOAD_BUTTON)).waitForDisplayed();
+};
+
 module.exports = {
   userName,
   partners,
   getPartnerImage,
   getVersion,
+  RELOAD_BUTTON,
+  reload,
 };
