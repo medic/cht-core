@@ -124,6 +124,7 @@ describe('Performing an upgrade', () => {
     });
 
     await adminPage.logout();
+    await browser.url('/');
     await loginPage.login(docs.user);
     await oldCloseReloadModal();
 
