@@ -271,10 +271,6 @@ const renderLogin = (req) => {
   return render('login', req);
 };
 
-const isRateLimited = async req => {
-  return rateLimitService.isLimited([ req.ip, req.body?.user, req.body?.password ]);
-};
-
 const login = async (req, res) => {
   try {
     const sessionRes = await createSession(req);
@@ -310,7 +306,7 @@ module.exports = {
       .catch(next);
   },
   post: async (req, res) => {
-    const limited = await isRateLimited(req);
+    const limited = await rateLimitService.isLimited(req);
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }
@@ -332,7 +328,7 @@ module.exports = {
 
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
   tokenPost: async (req, res, next) => {
-    const limited = await isRateLimited(req);
+    const limited = await rateLimitService.isLimited(req);
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }

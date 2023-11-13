@@ -9,8 +9,6 @@ let next;
 let req;
 let res;
 
-const expectedKeys = [ 'reqip', 'requser', 'reqpass', 'basicuser', 'basicpass' ];
-
 describe('Rate limiter middleware', () => {
   beforeEach(() => {
     sinon.stub(rateLimitService, 'isLimited');
@@ -56,7 +54,7 @@ describe('Rate limiter middleware', () => {
     expect(next.callCount).to.equal(1);
     expect(rateLimitService.consume.callCount).to.equal(0);
     expect(rateLimitService.isLimited.callCount).to.equal(1);
-    expect(rateLimitService.isLimited.args[0][0]).to.deep.equal(expectedKeys);
+    expect(rateLimitService.isLimited.args[0][0]).to.equal(req);
     expect(rateLimitService.consume.callCount).to.equal(0);
     finish();
     expect(rateLimitService.consume.callCount).to.equal(0);
@@ -79,7 +77,7 @@ describe('Rate limiter middleware', () => {
     expect(rateLimitService.consume.callCount).to.equal(0);
     finish();
     expect(rateLimitService.consume.callCount).to.equal(1);
-    expect(rateLimitService.consume.args[0][0]).to.deep.equal(expectedKeys);
+    expect(rateLimitService.consume.args[0][0]).to.equal(req);
   });
 
   it('consumes on 429', async () => {
@@ -90,7 +88,7 @@ describe('Rate limiter middleware', () => {
     expect(rateLimitService.consume.callCount).to.equal(0);
     finish();
     expect(rateLimitService.consume.callCount).to.equal(1);
-    expect(rateLimitService.consume.args[0][0]).to.deep.equal(expectedKeys);
+    expect(rateLimitService.consume.args[0][0]).to.equal(req);
   });
 
 });

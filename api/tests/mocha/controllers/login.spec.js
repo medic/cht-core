@@ -345,13 +345,11 @@ describe('login controller', () => {
     });
 
     it('should send 429 when rate limited', () => {
-      req.ip = 'myip';
-      req.params = { token: 'my_token' };
       rateLimit.isLimited.returns(true);
       sinon.stub(auth, 'getUserCtx');
       return controller.tokenPost(req, res).then(() => {
         chai.expect(rateLimit.isLimited.callCount).to.equal(1);
-        chai.expect(rateLimit.isLimited.args[0][0]).to.deep.equal([ 'myip', undefined, undefined ]);
+        chai.expect(rateLimit.isLimited.args[0][0]).to.equal(req);
         chai.expect(serverUtils.rateLimited.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.callCount).to.equal(0);
       });
@@ -504,15 +502,11 @@ describe('login controller', () => {
     });
 
     it('returns 429 when rate limited', () => {
-      req.ip = 'myip';
-      req.body = { user: 'sharon', password: 'p4ss' };
-
       const post = sinon.stub(request, 'post');
-
       rateLimit.isLimited.returns(true);
       return controller.post(req, res).then(() => {
         chai.expect(rateLimit.isLimited.callCount).to.equal(1);
-        chai.expect(rateLimit.isLimited.args[0][0]).to.deep.equal([ 'myip', 'sharon', 'p4ss' ]);
+        chai.expect(rateLimit.isLimited.args[0][0]).to.equal(req);
         chai.expect(serverUtils.rateLimited.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(0);
       });
