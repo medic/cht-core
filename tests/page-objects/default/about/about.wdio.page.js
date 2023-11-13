@@ -1,6 +1,6 @@
 const userName = () => $('label=User name');
 const partners = () => $('.partners');
-const version = () => $('.material .cell p');
+const version = async () => await $$('.page.about .mat-mdc-card-content div p');
 
 const getPartnerImage = async (name) => {
   await (await partners()).waitForDisplayed();
@@ -11,7 +11,7 @@ const getPartnerImage = async (name) => {
 };
 
 const getVersion = async () => {
-  await (await version()).waitForDisplayed();
+  await (await version())[0].waitForDisplayed();
   return await (await version()).getText();
 };
 
