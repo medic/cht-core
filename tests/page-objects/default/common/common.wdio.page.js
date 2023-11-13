@@ -67,7 +67,6 @@ const clickFastActionById = async (id) => {
   // Wait for the Angular Material's animation to complete.
   await browser.pause(500);
   await (await fastActionListContainer()).waitForDisplayed();
-  await (await fastActionById(id)).scrollIntoView();
   await (await fastActionById(id)).waitForClickable();
   await (await fastActionById(id)).click();
 };
