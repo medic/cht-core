@@ -272,7 +272,7 @@ const renderLogin = (req) => {
 };
 
 const isRateLimited = async req => {
-  return rateLimitService.isLimited([ req.body.user, req.body.password ]);
+  return rateLimitService.isLimited([ req.ip, req.body?.user, req.body?.password ]);
 };
 
 const login = async (req, res) => {
@@ -331,17 +331,19 @@ module.exports = {
   },
 
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
-  tokenPost: (req, res, next) => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        return res.status(302).send(getRedirectUrl(userCtx));
-      })
-      .catch(err => {
-        if (err.code === 401) {
-          return loginByToken(req, res);
-        }
-        next(err);
-      });
+  tokenPost: async (req, res, next) => {
+    const limited = await isRateLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+    try {
+      const userCtx = await auth.getUserCtx(req);
+      return res.status(302).send(getRedirectUrl(userCtx));
+    } catch (e) {
+      if (e.code === 401) {
+        return loginByToken(req, res);
+      }
+      next(e);
+    }
   },
 };
