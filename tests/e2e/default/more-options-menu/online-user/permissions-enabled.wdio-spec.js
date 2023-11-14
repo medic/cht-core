@@ -96,7 +96,7 @@ describe('Online User', () => {
     let xmlReportId;
     let smsReportId;
 
-    before(async () => {
+    it('- Reports tab - Edit invisible when NON XML report selected', async () => {
       await utils.createUsers([onlineUser]);
       await loginPage.cookieLogin({ ...onlineUser, createUser: false });
       let result = await utils.saveDoc(xmlReport);
@@ -104,9 +104,8 @@ describe('Online User', () => {
       result = await utils.saveDoc(smsReport);
       smsReportId = result.id;
       await sms.sendSms('testing', contact.phone);
-    });
 
-    it('- Reports tab - Edit invisible when NON XML report selected', async () => {
+
       await commonPage.goToReports();
       await reportPage.goToReportById(smsReportId);
       await (await reportPage.reportBodyDetails()).waitForDisplayed();
