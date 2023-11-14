@@ -42,7 +42,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
   @Output() search: EventEmitter<any> = new EventEmitter();
 
-  private TELEMETRY_PREFIX = 'search_by_barcode';
+  private readonly TELEMETRY_PREFIX = 'search_by_barcode';
   private globalAction: GlobalActions;
   private barcodeDetector;
   private filters;
