@@ -12,6 +12,6 @@ module.exports = {
   'swipePage': false,
   'textMaxChars': 2000,
   'experimentalOptimizations': {
-    'computeAsync': false,
+    'computeAsync': true,
   },
 };
