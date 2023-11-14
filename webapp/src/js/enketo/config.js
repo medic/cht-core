@@ -14,4 +14,5 @@ module.exports = {
   'experimentalOptimizations': {
     'computeAsync': true,
   },
+  excludeNonRelevant: true
 };
