@@ -12,7 +12,7 @@ module.exports = {
   'swipePage': false,
   'textMaxChars': 2000,
   'experimentalOptimizations': {
-    'computeAsync': true,
+    'computeAsync': false,
   },
   excludeNonRelevant: true
 };
