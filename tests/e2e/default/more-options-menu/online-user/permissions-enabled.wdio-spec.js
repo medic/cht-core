@@ -27,14 +27,14 @@ const contact = personFactory.build({
 
 const onlineUser = userFactory.build({
   username: 'onlineuser',
-  roles: ['program_officer'],
+  roles: [ 'program_officer' ],
   place: district_hospital._id,
   contact: contact._id,
 });
 
 const patient = personFactory.build({
   _id: uuid(),
-  parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id } } }
+  parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
 
 const xmlReport = reportFactory
@@ -47,14 +47,15 @@ const smsReport = reportFactory
   .report()
   .build(
     { form: 'P', patient_id: patient._id, },
-    { patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id }, },
+    { patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id}, },
   );
 
 describe('Online User', () => {
 
+  afterEach(async () => await commonPage.goToBase());
+
   describe('Options disabled when no items - messages, contacts, people', () => {
     before(async () => await loginPage.cookieLogin());
-    after(async () => await commonPage.goToBase());
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
@@ -80,8 +81,8 @@ describe('Online User', () => {
   });
 
   describe(' - Contact tab - user has no contact ', () => {
-    before(async () => await utils.saveDocs([...places.values(), contact, patient]));
-    after(async () => await commonPage.goToBase());
+    before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
+
     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
@@ -94,7 +95,8 @@ describe('Online User', () => {
   describe(' - Options enabled when there are items', () => {
     let xmlReportId;
     let smsReportId;
-    it('- Reports tab - Edit invisible when NON XML report selected', async () => {
+
+    before(async () => {
       await utils.createUsers([onlineUser]);
       await loginPage.cookieLogin({ ...onlineUser, createUser: false });
       let result = await utils.saveDoc(xmlReport);
@@ -102,8 +104,9 @@ describe('Online User', () => {
       result = await utils.saveDoc(smsReport);
       smsReportId = result.id;
       await sms.sendSms('testing', contact.phone);
+    });
 
-
+    it('- Reports tab - Edit invisible when NON XML report selected', async () => {
       await commonPage.goToReports();
       await reportPage.goToReportById(smsReportId);
       await (await reportPage.reportBodyDetails()).waitForDisplayed();
