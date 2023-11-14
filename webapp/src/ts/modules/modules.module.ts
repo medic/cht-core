@@ -10,6 +10,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
 
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { HomeComponent } from '@mm-modules/home/home.component';
@@ -92,6 +93,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     MatIconModule,
     MatButtonModule,
     MatBottomSheetModule,
+    MatCardModule,
     MatDialogModule,
     MatExpansionModule,
     MatMenuModule,

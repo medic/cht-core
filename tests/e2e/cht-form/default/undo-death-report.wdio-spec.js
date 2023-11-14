@@ -5,7 +5,7 @@ const undoDeathReportForm = require('@page-objects/default/enketo/undo-death-rep
 describe('cht-form web component - Undo Death Report Form', () => {
 
   it('should submit an undo death report', async () => {
-    await mockConfig.startMockApp('default', 'app', 'undo_death_report');
+    await mockConfig.loadForm('default', 'app', 'undo_death_report');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

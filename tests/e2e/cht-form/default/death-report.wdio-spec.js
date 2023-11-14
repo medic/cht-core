@@ -6,7 +6,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 describe('cht-form web component - Death Report Form', () => {
 
   it('should submit a death report', async () => {
-    await mockConfig.startMockApp('default', 'app', 'death_report');
+    await mockConfig.loadForm('default', 'app', 'death_report');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
@@ -38,7 +38,7 @@ describe('cht-form web component - Death Report Form', () => {
   });
 
   it('should render form in the language set for the user', async () => {
-    await mockConfig.startMockApp('default', 'test', 'death_report_es');
+    await mockConfig.loadForm('default', 'test', 'death_report_es');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

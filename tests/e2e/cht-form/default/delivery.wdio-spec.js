@@ -7,7 +7,7 @@ describe('cht-form web component - Delivery Form', () => {
   const DATE = moment().format('YYYY-MM-DD');
 
   it('should submit a delivery - Alive mother and baby', async () => {
-    await mockConfig.startMockApp('default', 'app', 'delivery');
+    await mockConfig.loadForm('default', 'app', 'delivery');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
@@ -94,7 +94,7 @@ describe('cht-form web component - Delivery Form', () => {
   });
 
   it('should submit a delivery - Death mother and baby', async () => {
-    await mockConfig.startMockApp('default', 'app', 'delivery');
+    await mockConfig.loadForm('default', 'app', 'delivery');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

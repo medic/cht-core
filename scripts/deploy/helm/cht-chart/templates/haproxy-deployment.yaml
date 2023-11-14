@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: haproxy
+  name: cht-haproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: haproxy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        cht.service: haproxy
+    spec:
+      containers:
+        - env:
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_PASSWORD
+            - name: COUCHDB_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: couchdb-servers-configmap
+                  key: COUCHDB_SERVERS
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_USER
+            - name: HAPROXY_IP
+              value: 0.0.0.0
+            - name: HAPROXY_PORT
+              value: "5984"
+            - name: HEALTHCHECK_ADDR
+              value: healthcheck.{{ .Values.namespace }}.svc.cluster.local
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-haproxy:{{ .Values.cht_image_tag }}
+          name: cht-haproxy
+          ports:
+            - containerPort: 5984
+          resources: {}
+      hostname: haproxy
+      restartPolicy: Always
+status: {}

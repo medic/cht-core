@@ -5,6 +5,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
+const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
@@ -139,7 +140,7 @@ describe('Performing an upgrade', () => {
     await oldCloseReloadModal();
 
     await commonPage.goToAboutPage();
-    expect(await upgradePage.getCurrentVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
+    expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
     await commonPage.logout();
   });
 

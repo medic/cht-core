@@ -5,7 +5,7 @@ const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.w
 describe('cht-form web component - Enketo Widgets', () => {
 
   it('should submit the Enketo Widgets form', async () => {
-    await mockConfig.startMockApp('default', 'test', 'enketo_widgets');
+    await mockConfig.loadForm('default', 'test', 'enketo_widgets');
 
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Enketo Widgets');
@@ -85,7 +85,7 @@ describe('cht-form web component - Enketo Widgets', () => {
   });
 
   it('should verify the cancel button', async () => {
-    await mockConfig.startMockApp('default', 'test', 'enketo_widgets');
+    await mockConfig.loadForm('default', 'test', 'enketo_widgets');
     expect(await genericForm.getFormTitle()).to.equal('Enketo Widgets');
 
     const cancelResult = await browser.executeAsync((resolve) => {

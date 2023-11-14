@@ -5,7 +5,7 @@ const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.
 describe('cht-form web component - Replace User Form', () => {
 
   it('should submit the replace user form', async () => {
-    await mockConfig.startMockApp('default', 'app', 'replace_user');
+    await mockConfig.loadForm('default', 'app', 'replace_user');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

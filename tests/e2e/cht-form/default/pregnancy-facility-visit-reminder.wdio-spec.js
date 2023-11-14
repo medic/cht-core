@@ -7,7 +7,7 @@ const pregnancyFacilityVisitReminderPage = require(
 describe('cht-form web component - Pregnancy Facility Visit Reminder Form', () => {
 
   it('should submit a pregnancy facility visit reminder form', async () => {
-    await mockConfig.startMockApp('default', 'app', 'pregnancy_facility_visit_reminder');
+    await mockConfig.loadForm('default', 'app', 'pregnancy_facility_visit_reminder');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

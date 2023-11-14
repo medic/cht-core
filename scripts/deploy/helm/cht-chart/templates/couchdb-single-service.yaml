@@ -1,0 +1,26 @@
+{{- if not .Values.couchdb.clusteredCouch_enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cht.service: couchdb
+  name: couchdb
+spec:
+  ports:
+    - name: couchdb-service
+      port: 5984
+      protocol: TCP
+      targetPort: 5984
+    - name: epmd
+      port: 4369
+      protocol: TCP
+      targetPort: 4369
+    - name: erlang
+      port: 9100
+      protocol: TCP
+      targetPort: 9100
+  selector:
+    cht.service: couchdb
+status:
+  loadBalancer: {}
+{{- end }}
