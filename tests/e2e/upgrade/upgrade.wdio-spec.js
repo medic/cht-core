@@ -80,6 +80,8 @@ describe('Performing an upgrade', () => {
     const confirm = await upgradePage.upgradeModalConfirm();
     await confirm.click();
 
+    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
+
     await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
     await (await upgradePage.deploymentInProgress()).waitForDisplayed();
     await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
@@ -107,9 +109,11 @@ describe('Performing an upgrade', () => {
       state: 'finalized',
     });
 
+    // wait for service worker to finish generating
+    await waitForServiceWorker.promise;
     await adminPage.logout();
     await loginPage.login(docs.user);
-    await browser.refresh();
+    await browser.refresh(); // TODO I don't think we need this - the sync refreshes when done
     await commonPage.sync(true);
     await commonPage.waitForPageLoaded();
     await commonPage.goToAboutPage();
