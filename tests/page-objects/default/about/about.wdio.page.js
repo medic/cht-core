@@ -1,6 +1,6 @@
 const userName = () => $('label=User name');
 const partners = () => $('.partners');
-const version = () => $('[test-id="about-version"]');
+const version = () => $('.*=Version');
 const RELOAD_BUTTON = '.about.page .mat-primary';
 
 const getPartnerImage = async (name) => {
