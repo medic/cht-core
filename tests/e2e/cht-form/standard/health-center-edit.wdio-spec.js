@@ -5,7 +5,7 @@ const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page'
 describe('cht-form web component - Edit an Health Center', () => {
 
   it('should edit an health center', async () => {
-    await mockConfig.startMockApp('standard', 'contact', 'health_center-edit');
+    await mockConfig.loadForm('standard', 'contact', 'health_center-edit');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

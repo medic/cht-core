@@ -5,7 +5,7 @@ const pregnancyVisitForm = require('@page-objects/standard/enketo/pregnancy-visi
 describe('cht-form web component - Pregnancy Visit Report', () => {
 
   it('should submit a pregnancy visit', async () => {
-    await mockConfig.startMockApp('standard', 'app', 'pregnancy_visit');
+    await mockConfig.loadForm('standard', 'app', 'pregnancy_visit');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

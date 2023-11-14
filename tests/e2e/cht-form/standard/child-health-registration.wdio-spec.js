@@ -5,7 +5,7 @@ const childHealthRegistrationPage = require('@page-objects/standard/enketo/child
 describe('cht-form web component - Child Health Registration Form', () => {
 
   it('should submit a child health registration', async () => {
-    await mockConfig.startMockApp('standard', 'app', 'child_health_registration');
+    await mockConfig.loadForm('standard', 'app', 'child_health_registration');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

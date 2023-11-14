@@ -5,7 +5,7 @@ const postnatalVisitForm = require('@page-objects/standard/enketo/postnatal-visi
 describe('cht-form web component - Postnatal Visit Report', () => {
 
   it('should submit a postnatal visit report', async () => {
-    await mockConfig.startMockApp('standard', 'app', 'postnatal_visit');
+    await mockConfig.loadForm('standard', 'app', 'postnatal_visit');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

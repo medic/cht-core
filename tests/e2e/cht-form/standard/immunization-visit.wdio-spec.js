@@ -5,7 +5,7 @@ const immVisitForm = require('@page-objects/standard/enketo/immunization-visit.w
 describe('cht-form web component - Immunization Visit Form', () => {
 
   it('should submit an immunization visit', async () => {
-    await mockConfig.startMockApp('standard', 'app', 'immunization_visit');
+    await mockConfig.loadForm('standard', 'app', 'immunization_visit');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

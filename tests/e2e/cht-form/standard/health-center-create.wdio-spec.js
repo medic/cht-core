@@ -5,7 +5,7 @@ const contactPageDefault = require('@page-objects/default/contacts/contacts.wdio
 describe('cht-form web component - Create an Health Center', () => {
 
   it('should create an health center', async () => {
-    await mockConfig.startMockApp('standard', 'contact', 'health_center-create');
+    await mockConfig.loadForm('standard', 'contact', 'health_center-create');
 
     const title = await genericForm.getFormTitle();
     expect(title).to.equal('New Health Center');

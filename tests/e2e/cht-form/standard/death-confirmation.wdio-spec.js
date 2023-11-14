@@ -5,7 +5,7 @@ const moment = require('moment');
 
 describe('cht-form web component - Death Confirmation Form', () => {
   it('should submit a death confirmation', async () => {
-    await mockConfig.startMockApp('standard', 'app', 'death_confirmation');
+    await mockConfig.loadForm('standard', 'app', 'death_confirmation');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

@@ -6,7 +6,7 @@ const moment = require('moment/moment');
 describe('cht-form web component - Delivery Form', () => {
 
   it('should submit a delivery report', async () => {
-    await mockConfig.startMockApp('standard', 'app', 'delivery');
+    await mockConfig.loadForm('standard', 'app', 'delivery');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');

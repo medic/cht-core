@@ -5,7 +5,7 @@ const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page
 describe('cht-form web component - Pregnancy Registration Form', () => {
 
   it('should register a new pregnancy', async () => {
-    await mockConfig.startMockApp('standard', 'app', 'pregnancy');
+    await mockConfig.loadForm('standard', 'app', 'pregnancy');
 
     await browser.execute(() => {
       const myForm = document.getElementById('myform');
