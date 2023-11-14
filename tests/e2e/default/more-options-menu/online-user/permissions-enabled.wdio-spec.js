@@ -81,7 +81,7 @@ describe('Online User', () => {
 
   describe(' - Contact tab - user has no contact ', () => {
     before(async () => await utils.saveDocs([...places.values(), contact, patient]));
-
+    after(async () => await commonPage.goToBase());
     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
@@ -94,7 +94,6 @@ describe('Online User', () => {
   describe(' - Options enabled when there are items', () => {
     let xmlReportId;
     let smsReportId;
-
     it('- Reports tab - Edit invisible when NON XML report selected', async () => {
       await utils.createUsers([onlineUser]);
       await loginPage.cookieLogin({ ...onlineUser, createUser: false });
