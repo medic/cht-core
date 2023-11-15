@@ -53,7 +53,7 @@ describe('Immunization Visit', () => {
   });
 
   it('Submit immunization visit - webapp', async () => {
-    const notes = 'Test notes - delivery';
+    const notes = 'Test notes - immunization visit';
 
     let countAppliedVaccines = 0;
 
@@ -150,7 +150,7 @@ describe('Immunization Visit', () => {
 
     expect((await reportsPage.getDetailReportRowContent('chw_sms')).rowValues[0]).to.equal('Nice work, ! ' +
       `${babyName} (${babyMedicID}) attended their immunizations visit at the health facility. ` +
-      'Keep up the good work. Thank you! Test notes');
+      `Keep up the good work. Thank you! ${notes}`);
 
     const { rowValues } = await reportsPage.getDetailReportRowContent('vaccines_received.');
     rowValues.forEach(value => expect(value).to.equal('yes'));
