@@ -67,180 +67,180 @@ jobs:
         path: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-  # config-tests:
-  #   needs: build
-  #   name: ${{ matrix.cmd }}
-  #   runs-on: ubuntu-22.04
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       cmd: ['test-config-standard', 'test-config-default']
+  config-tests:
+    needs: build
+    name: ${{ matrix.cmd }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['test-config-standard', 'test-config-default']
 
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Use Node.js 16.x
-  #     uses: actions/setup-node@v3
-  #     with:
-  #       node-version: 16.x
-  #   - run: npm ci
-  #   - name: Run Tests
-  #     run: npm run ${{ matrix.cmd }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+    - run: npm ci
+    - name: Run Tests
+      run: npm run ${{ matrix.cmd }}
 
-  # tests:
-  #   needs: build
-  #   name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
-  #   runs-on: ubuntu-22.04
-  #   env:
-  #     NODE: 16.x
-  #     CHROME_VERSION: ${{ matrix.chrome-version }}
+  tests:
+    needs: build
+    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
+    runs-on: ubuntu-22.04
+    env:
+      NODE: 16.x
+      CHROME_VERSION: ${{ matrix.chrome-version }}
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
-  #       chrome-version: ['90', 'latest']
-  #       suite: [all]
-  #       include:
-  #         - cmd: ci-webdriver-default
-  #           suite: core
-  #         - cmd: ci-webdriver-default
-  #           suite: data
-  #         - cmd: ci-webdriver-default
-  #           suite: enketo
-  #         - cmd: ci-webdriver-default
-  #           suite: lowLevel
-  #         - cmd: ci-webdriver-default
-  #           suite: workflows
-  #       exclude: # temporary until all suites run on Chrome 90
-  #         - cmd: ci-e2e-integration
-  #           chrome-version: 90
-  #         - cmd: ci-webdriver-default-mobile
-  #           chrome-version: 90
-  #         - cmd: ci-webdriver-default
-  #           chrome-version: 90
-  #   steps:
-  #   - name: Login to Docker Hub
-  #     uses: docker/login-action@v2
-  #     with:
-  #       username: ${{ env.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        chrome-version: ['90', 'latest']
+        suite: [all]
+        include:
+          - cmd: ci-webdriver-default
+            suite: core
+          - cmd: ci-webdriver-default
+            suite: data
+          - cmd: ci-webdriver-default
+            suite: enketo
+          - cmd: ci-webdriver-default
+            suite: lowLevel
+          - cmd: ci-webdriver-default
+            suite: workflows
+        exclude: # temporary until all suites run on Chrome 90
+          - cmd: ci-e2e-integration
+            chrome-version: 90
+          - cmd: ci-webdriver-default-mobile
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            chrome-version: 90
+    steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ env.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Configure AWS credentials
-  #     uses: aws-actions/configure-aws-credentials@v1-node16
-  #     with:
-  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #       aws-region: eu-west-2
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Login to Amazon ECR
-  #     id: login-ecr
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: aws-actions/amazon-ecr-login@v1
-  #     with:
-  #       mask-password: 'true'
+    - name: Login to Amazon ECR
+      id: login-ecr
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: 'true'
 
-  #   - name: Use Node.js 16.x
-  #     uses: actions/setup-node@v3
-  #     with:
-  #       node-version: 16.x
-  #   - uses: actions/checkout@v3
-  #   - name: Download docker images artifacts
-  #     uses: actions/download-artifact@v3
-  #     with:
-  #       name: cht-images
-  #       path: images/
-  #     if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-  #   - name: Load docker images
-  #     run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
-  #     working-directory: images/
-  #     if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+    - uses: actions/checkout@v3
+    - name: Download docker images artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: cht-images
+        path: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Load docker images
+      run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+      working-directory: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Set ENV
-  #     run: |
-  #       echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
-  #   - name: Create logs directory
-  #     run: mkdir tests/logs
-  #   - name: Install pyxform
-  #     run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-  #   - name: Install cht-conf
-  #     run:  npm install -g cht-conf
-  #   - run: npm ci
-  #   - name: Fetch allure history
-  #     uses: actions/checkout@v3
-  #     with:
-  #       repository: 'medic/build-history-data'
-  #       path: 'build-history-data'
-  #       persist-credentials: false
-  #   - name: Copy allure history
-  #     run: |
-  #       mkdir -p allure-results/history
-  #       cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
-  #   - name: Install Chrome 90
-  #     if: ${{matrix.chrome-version=='90'}}
-  #     run: |
-  #       wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
-  #       sudo dpkg -i "google-chrome-stable_current_amd64.deb"
-  #       npm install chromedriver@^90.0.1
-  #   - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
-  #     run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
+    - name: Set ENV
+      run: |
+        echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
+    - name: Create logs directory
+      run: mkdir tests/logs
+    - name: Install pyxform
+      run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+    - name: Install cht-conf
+      run:  npm install -g cht-conf
+    - run: npm ci
+    - name: Fetch allure history
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data'
+        persist-credentials: false
+    - name: Copy allure history
+      run: |
+        mkdir -p allure-results/history
+        cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
+    - name: Install Chrome 90
+      if: ${{matrix.chrome-version=='90'}}
+      run: |
+        wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i "google-chrome-stable_current_amd64.deb"
+        npm install chromedriver@^90.0.1
+    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
+      run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
-  #   - name: Fetch allure history
-  #     if: always()
-  #     uses: actions/checkout@v3
-  #     with:
-  #       repository: 'medic/build-history-data'
-  #       path: 'build-history-data-new'
-  #       persist-credentials: false
-  #   - name: Copy new allure history
-  #     if: always()
-  #     run: |
-  #       mkdir -p build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/history
-  #       cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report | true
-  #   - name: Upload allure report history
-  #     if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-  #     continue-on-error: true # don't fail the build if git push fails
-  #     uses: actions-js/push@master
-  #     with:
-  #       github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-  #       directory: 'build-history-data-new'
-  #       repository: 'medic/build-history-data'
-  #       force: true
-  #   - name: Fetch report repo
-  #     if: always()
-  #     uses: actions/checkout@v3
-  #     with:
-  #       repository: 'medic/build-history'
-  #       path: 'build-history'
-  #       persist-credentials: false
-  #   - name: Copy new report
-  #     if: always()
-  #     run: |
-  #       mkdir -p build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}
-  #       cp -r allure-report build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }} | true
-  #   - name: Upload allure report
-  #     if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-  #     continue-on-error: true # don't fail the build if git push fails
-  #     uses: actions-js/push@master
-  #     with:
-  #       github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-  #       directory: 'build-history'
-  #       repository: 'medic/build-history'
-  #       force: true
-  #   - name: Archive Results
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
-  #       path: |
-  #         allure-results
-  #         allure-report
-  #         tests/logs
-  #         tests/results/
-  #     if: ${{ failure() }}
+    - name: Fetch allure history
+      if: always()
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data-new'
+        persist-credentials: false
+    - name: Copy new allure history
+      if: always()
+      run: |
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report | true
+    - name: Upload allure report history
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+      continue-on-error: true # don't fail the build if git push fails
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history-data-new'
+        repository: 'medic/build-history-data'
+        force: true
+    - name: Fetch report repo
+      if: always()
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history'
+        path: 'build-history'
+        persist-credentials: false
+    - name: Copy new report
+      if: always()
+      run: |
+        mkdir -p build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}
+        cp -r allure-report build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }} | true
+    - name: Upload allure report
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+      continue-on-error: true # don't fail the build if git push fails
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history'
+        repository: 'medic/build-history'
+        force: true
+    - name: Archive Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
+        path: |
+          allure-results
+          allure-report
+          tests/logs
+          tests/results/
+      if: ${{ failure() }}
 
   publish:
-    needs: build # [tests, config-tests]
+    needs: [tests, config-tests]
     name: Publish branch build
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'pull_request' }}
