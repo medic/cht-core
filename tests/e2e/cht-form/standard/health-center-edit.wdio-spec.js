@@ -41,12 +41,11 @@ describe('cht-form web component - Edit an Health Center', () => {
     await (await contactPage.contactPageDefault.notes('health_center')).addValue(' - Edited');
 
     const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
 
-    expect(jsonObj.health_center.name).to.equal('Filippo\'s health center test - Edited');
-    expect(jsonObj.health_center.external_id).to.equal('123 HC - Edited');
-    expect(jsonObj.health_center.notes).to.equal('Test notes - new health center - Edited');
-
+    expect(data[0].name).to.equal('Filippo\'s health center test - Edited');
+    expect(data[0].external_id).to.equal('123 HC - Edited');
+    expect(data[0].notes).to.equal('Test notes - new health center - Edited');
+    expect(data[0].type).to.equal('health_center');
   });
 
 });

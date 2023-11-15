@@ -23,19 +23,20 @@ describe('cht-form web component - Create an Health Center', () => {
     await (await contactPageDefault.notes('health_center')).setValue('Test notes - new health center');
 
     const data = await mockConfig.submitForm();
-    const jsonObj = data[0].fields;
 
-    expect(jsonObj.health_center.is_name_generated).to.equal('false');
-    expect(jsonObj.health_center.name).to.equal('Filippo\'s health center test');
-    expect(jsonObj.health_center.external_id).to.equal('123 HC');
-    expect(jsonObj.health_center.notes).to.equal('Test notes - new health center');
-    expect(jsonObj.health_center.contact).to.equal('NEW');
+    expect(data[0].is_name_generated).to.equal('false');
+    expect(data[0].name).to.equal('Filippo\'s health center test');
+    expect(data[0].external_id).to.equal('123 HC');
+    expect(data[0].notes).to.equal('Test notes - new health center');
+    expect(data[0].contact._id).to.equal(data[1]._id);
+    expect(data[0].type).to.equal('health_center');
 
-    expect(jsonObj.contact.name).to.equal('Filippo');
-    expect(jsonObj.contact.phone).to.equal('+50689888888');
-    expect(jsonObj.contact.role).to.equal('chw');
-    expect(jsonObj.contact.external_id).to.equal('123 contact');
-    expect(jsonObj.contact.notes).to.equal('Test notes - new contact');
+    expect(data[1].name).to.equal('Filippo');
+    expect(data[1].phone).to.equal('+50689888888');
+    expect(data[1].role).to.equal('chw');
+    expect(data[1].external_id).to.equal('123 contact');
+    expect(data[1].notes).to.equal('Test notes - new contact');
+    expect(data[1].type).to.equal('person');
 
   });
 
