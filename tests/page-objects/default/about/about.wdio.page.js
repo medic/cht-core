@@ -16,17 +16,10 @@ const getVersion = async () => {
   return await (await version()).getText();
 };
 
-const reload = async () => {
-  await (await $(RELOAD_BUTTON)).waitForClickable();
-  await (await $(RELOAD_BUTTON)).click();
-  await (await $(RELOAD_BUTTON)).waitForDisplayed();
-};
-
 module.exports = {
   userName,
   partners,
   getPartnerImage,
   getVersion,
   RELOAD_BUTTON,
-  reload,
 };
