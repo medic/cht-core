@@ -110,7 +110,7 @@ describe('Performing an upgrade', () => {
     await adminPage.logout();
     await loginPage.login(docs.user);
     await commonPage.sync(true);
-    await browser.pause(10_000); // maybe don't need this, just allowing time for service worker to update
+    await browser.pause(10000); // maybe don't need this, just allowing time for service worker to update
 
     await browser.refresh();
     await commonPage.waitForPageLoaded();
