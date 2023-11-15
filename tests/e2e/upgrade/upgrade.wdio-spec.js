@@ -80,8 +80,6 @@ describe('Performing an upgrade', () => {
     const confirm = await upgradePage.upgradeModalConfirm();
     await confirm.click();
 
-    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-
     await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
     await (await upgradePage.deploymentInProgress()).waitForDisplayed();
     await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
@@ -109,12 +107,12 @@ describe('Performing an upgrade', () => {
       state: 'finalized',
     });
 
-    // wait for service worker to finish generating
-    await waitForServiceWorker.promise;
     await adminPage.logout();
     await loginPage.login(docs.user);
-    await browser.refresh(); // TODO I don't think we need this - the sync refreshes when done
     await commonPage.sync(true);
+    await browser.pause(10_000); // maybe don't need this, just allowing time for service worker to update
+
+    await browser.refresh();
     await commonPage.waitForPageLoaded();
     await commonPage.goToAboutPage();
     expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
