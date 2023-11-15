@@ -29,12 +29,15 @@ const loadForm = async (config, formType, formName) => {
   const formPath = getFormPath(config, formType, formName);
   const formData = await generateFormData(formPath);
   await browser.url(getBaseURL());
-  await browser.execute((formData) => {
+  await browser.execute((formData, formType, formName) => {
     const myForm = document.getElementById('myform');
     myForm.formHtml = formData.formHtml;
     myForm.formModel = formData.formModel;
     myForm.formXml = formData.formXml;
-  }, formData);
+    if (formType === 'contact') {
+      myForm.contactType = formName.split('-')[0];
+    }
+  }, formData, formType, formName);
 };
 
 const startMockApp = () => {
