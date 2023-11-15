@@ -1078,7 +1078,7 @@ const waitForDockerLogs = (container, ...regex) => {
 
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
-      console.log('Found logs', logs, 'watched for', ...regex);
+      console.log('Found logs', logs, 'did not match expected regex:', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       killSpawnedProcess(proc);
     }, 20000);

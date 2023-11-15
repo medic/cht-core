@@ -11,7 +11,7 @@
       <h3 (click)="secretDoor()">{{'about' | translate}}</h3>
       <dl class="horizontal">
         <dt>{{'version' | translate}}</dt>
-        <dd>{{version}}</dd>
+        <dd test-id="about-version">{{version}}</dd>
         <span>
           <dt>{{'debug.supported_browser' | translate}}</dt>
           <dd *ngIf="browserSupport.isUsingSupportedEnvironment; else unsupportedBrowser">

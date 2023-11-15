@@ -1,6 +1,6 @@
 const utils = require('@utils');
 
-describe('Sentinel transition error log', async function() {
+describe('Sentinel transition error log', function() {
 
   after(async () => await utils.revertSettings(true));
 
