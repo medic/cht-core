@@ -71,7 +71,7 @@ describe('Add Read Status Service', () => {
     });
   });
 
-  describe('updateMessages()', async () => {
+  describe('updateMessages()', () => {
     it('should return given when no models', async () => {
       const result = await service.updateMessages([]);
 

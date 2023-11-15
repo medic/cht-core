@@ -1,6 +1,7 @@
 const userName = () => $('label=User name');
 const partners = () => $('.partners');
-const version = () => $('.material .cell p');
+const version = () => $('[test-id="about-version"]');
+const RELOAD_BUTTON = '.about.page .mat-primary';
 
 const getPartnerImage = async (name) => {
   await (await partners()).waitForDisplayed();
@@ -20,4 +21,5 @@ module.exports = {
   partners,
   getPartnerImage,
   getVersion,
+  RELOAD_BUTTON,
 };

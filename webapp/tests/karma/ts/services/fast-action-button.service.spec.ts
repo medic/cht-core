@@ -446,7 +446,7 @@ describe('Session service', () => {
     });
   });
 
-  describe('getContactLeftSideActions()', async () => {
+  describe('getContactLeftSideActions()', () => {
     it('should return all Contact tab\'s left side actions for desktop', async () => {
       const context = {
         parentFacilityId: 'parent-facility-1',
@@ -570,7 +570,7 @@ describe('Session service', () => {
     });
   });
 
-  describe('getReportLeftSideActions()', async () => {
+  describe('getReportLeftSideActions()', () => {
     it('should return all Report tab\'s left side actions for desktop', async () => {
       const context = {
         xmlReportForms: [
@@ -673,7 +673,7 @@ describe('Session service', () => {
     });
   });
 
-  describe('getReportRightSideActions()', async () => {
+  describe('getReportRightSideActions()', () => {
     it('should return all Report tab\'s right side actions for desktop', async () => {
       const context = {
         reportContentType: 'other',
