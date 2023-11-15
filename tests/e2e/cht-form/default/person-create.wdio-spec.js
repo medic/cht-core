@@ -19,17 +19,17 @@ describe('cht-form web component - Create Person Form', () => {
     await (await contactPage.notes('person')).setValue('Test notes - create new person');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
-    const jsonObj = doc.fields;
 
     expect(additionalDocs).to.be.empty;
 
-    expect(jsonObj.person.name).to.equal('Filippo');
-    expect(jsonObj.person.date_of_birth).to.equal('2000-09-20');
-    expect(jsonObj.person.sex).to.equal('male');
-    expect(jsonObj.person.phone).to.equal('+50689999999');
-    expect(jsonObj.person.role).to.equal('chw');
-    expect(jsonObj.person.external_id).to.equal('12345');
-    expect(jsonObj.person.notes).to.equal('Test notes - create new person');
+    expect(doc.name).to.equal('Filippo');
+    expect(doc.date_of_birth).to.equal('2000-09-20');
+    expect(doc.sex).to.equal('male');
+    expect(doc.phone).to.equal('+50689999999');
+    expect(doc.role).to.equal('chw');
+    expect(doc.external_id).to.equal('12345');
+    expect(doc.notes).to.equal('Test notes - create new person');
+    expect(doc.type).to.equal('person');
   });
 
 });
