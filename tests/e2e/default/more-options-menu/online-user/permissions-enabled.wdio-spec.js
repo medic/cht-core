@@ -50,11 +50,11 @@ const smsReport = reportFactory
     { patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id}, },
   );
 
-describe('Online User', async () => {
+describe('Online User', () => {
 
   afterEach(async () => await commonPage.goToBase());
 
-  describe('Options disabled when no items - messages, contacts, people', async () => {
+  describe('Options disabled when no items - messages, contacts, people', () => {
     before(async () => await loginPage.cookieLogin());
 
     it('- Message tab', async () => {
@@ -80,7 +80,7 @@ describe('Online User', async () => {
     });
   });
 
-  describe(' - Contact tab - user has no contact ', async () => {
+  describe(' - Contact tab - user has no contact ', () => {
     before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
 
     it(' - no contact selected', async () => {
@@ -92,7 +92,7 @@ describe('Online User', async () => {
     });
   });
 
-  describe(' - Options enabled when there are items', async () => {
+  describe(' - Options enabled when there are items', () => {
     let xmlReportId;
     let smsReportId;
 
