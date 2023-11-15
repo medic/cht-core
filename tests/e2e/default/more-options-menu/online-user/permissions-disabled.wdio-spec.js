@@ -41,7 +41,7 @@ const reports = [
   reportFactory.report().build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
 ];
 
-describe('- permissions disabled', async () => {
+describe('- permissions disabled', () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
     await sms.sendSms('testing', contact.phone);
@@ -53,7 +53,7 @@ describe('- permissions disabled', async () => {
 
   after(async () => await utils.revertSettings(true));
 
-  describe('- export permissions disabled', async () => {
+  describe('- export permissions disabled', () => {
     before(async () => {
       const exportPermissions = ['can_export_all', 'can_export_contacts', 'can_export_messages'];
       await utils.updatePermissions(onlineUser.roles, [], exportPermissions);
@@ -87,7 +87,7 @@ describe('- permissions disabled', async () => {
     });
   });
 
-  describe('- DELETE permissions disabled', async () => {
+  describe('- DELETE permissions disabled', () => {
     before(async () => {
       await utils.updatePermissions(onlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
       await commonPage.closeReloadModal();
@@ -109,7 +109,7 @@ describe('- permissions disabled', async () => {
     });
   });
 
-  describe('- EDIT permissions disabled', async () => {
+  describe('- EDIT permissions disabled', () => {
     before(async () => {
       await utils.updatePermissions(onlineUser.roles, [], ['can_edit']);
       await commonPage.closeReloadModal();

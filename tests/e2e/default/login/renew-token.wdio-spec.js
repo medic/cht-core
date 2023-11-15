@@ -4,7 +4,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const moment = require('moment');
 const utils = require('@utils');
 
-describe('should renew token', async () => {
+describe('should renew token', () => {
 
   beforeEach(async () => {
     await loginPage.cookieLogin();

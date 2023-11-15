@@ -10,7 +10,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
 
-describe('Reports Search', async () => {
+describe('Reports Search', () => {
   const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: 'district_hospital' });
   const potuHospital = placeFactory.place().build({ name: 'Potu Hospital', type: 'district_hospital' });
 
