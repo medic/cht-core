@@ -28,3 +28,33 @@ index 463af2c..f7dbe4d 100644
                          node.textContent = '';
                      }
  
+diff --git a/node_modules/enketo-core/src/widget/date/datepicker-extended.js b/node_modules/enketo-core/src/widget/date/datepicker-extended.js
+index 6febee3..afbf8df 100644
+--- a/node_modules/enketo-core/src/widget/date/datepicker-extended.js
++++ b/node_modules/enketo-core/src/widget/date/datepicker-extended.js
+@@ -149,6 +149,10 @@ class DatepickerExtended extends Widget {
+         // Handle focus on original input (goTo functionality)
+         $(this.element).on('applyfocus', () => {
+             $fakeDateI[0].focus();
++            // CHT - https://github.com/enketo/enketo-core/issues/1002
++            // Do not automatically pop open the datepicker when just focusing on outer element
++            $fakeDateI.datepicker('hide');
++            $fakeDateI.blur();
+         });
+     }
+ 
+diff --git a/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js b/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
+index 4a71bfa..7c72f94 100644
+--- a/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
++++ b/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
+@@ -127,6 +127,10 @@ class DatetimepickerExtended extends Widget {
+         // Handle focus on original input (goTo functionality)
+         this.element.addEventListener(events.ApplyFocus().type, () => {
+             $els.eq(0).focus();
++            // CHT - https://github.com/enketo/enketo-core/issues/1002
++            // Do not automatically pop open the datepicker when just focusing on outer element
++            $els.eq(0).datepicker('hide');
++            $els.eq(0).blur();
+         });
+     }
+ 
