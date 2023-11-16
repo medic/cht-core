@@ -243,8 +243,8 @@ describe('Users API', () => {
         });
     });
 
-    it('Does allow users to update their password with a cookie and also basic auth', () => {
-      return utils.request({
+    it('allows users to update their password with a cookie and also basic auth', async () => {
+      const response = await utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
@@ -256,10 +256,11 @@ describe('Users API', () => {
         },
         auth: { username, password }
       });
+      expect(response).to.deep.include({ 'user.id': getUserId(username) });
     });
 
-    it('Does allow users to update their password with just basic auth', () => {
-      return utils.request({
+    it('allows users to update their password with just basic auth', async () => {
+      const response = await utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         body: {
@@ -268,6 +269,7 @@ describe('Users API', () => {
         },
         auth: { username, password }
       });
+      expect(response).to.deep.include({ 'user.id': getUserId(username) });
     });
 
     it('should work with enabled transitions', () => {
