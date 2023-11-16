@@ -256,7 +256,7 @@ describe('Users API', () => {
         },
         auth: { username, password }
       });
-      expect(response).to.deep.include({ 'user.id': getUserId(username) });
+      expect(response).to.deep.nested.include({ 'user.id': getUserId(username) });
     });
 
     it('allows users to update their password with just basic auth', async () => {
@@ -269,7 +269,7 @@ describe('Users API', () => {
         },
         auth: { username, password }
       });
-      expect(response).to.deep.include({ 'user.id': getUserId(username) });
+      expect(response).to.deep.nested.include({ 'user.id': getUserId(username) });
     });
 
     it('should work with enabled transitions', () => {
