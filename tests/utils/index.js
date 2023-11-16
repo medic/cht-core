@@ -280,7 +280,7 @@ const saveMetaDocs = (user, docs) => {
     });
 };
 
-const getDoc = async (id, rev, parameters = '') => {
+const getDoc = (id, rev, parameters = '') => {
 
   const params = {};
   if (rev) {

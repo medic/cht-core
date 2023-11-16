@@ -29,7 +29,7 @@ describe('settings service', () => {
 
   describe('update', () => {
     it('does replace if replace is set and overwrite is not set', () => {
-      const update = sinon.stub(db.medic, 'put').resolves();
+      const update = sinon.stub(db.medic, 'put').resolves({ rev: '3' });
       const newSettings = Object.assign({}, settings);
       delete newSettings.a;
       replace = 1;
@@ -39,12 +39,12 @@ describe('settings service', () => {
         .then(result => {
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(settings);
-          result.should.equal(true);
+          result.should.equal('3');
         });
     });
 
     it('does overwrite if replace is set and overwrite is set', () => {
-      const update = sinon.stub(db.medic, 'put').resolves();
+      const update = sinon.stub(db.medic, 'put').resolves({ rev: '22' });
       const newSettings = Object.assign({}, settings);
       delete newSettings.a;
       replace = 1;
@@ -55,7 +55,7 @@ describe('settings service', () => {
         .then(result => {
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(newSettings);
-          result.should.equal(true);
+          result.should.equal('22');
         });
     });
 
@@ -87,7 +87,7 @@ describe('settings service', () => {
 
     it('does update if the settings doc has been modified when replacing', () => {
       defaults.permissions = {};
-      const update = sinon.stub(db.medic, 'put').resolves();
+      const update = sinon.stub(db.medic, 'put').resolves({ rev: '33' });
       const newSettings = Object.assign({}, settings);
       newSettings.a = 'b';
       replace = 1;
@@ -97,13 +97,13 @@ describe('settings service', () => {
         .then(result => {
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(newSettings);
-          result.should.equal(true);
+          result.should.equal('33');
         });
     });
 
     it('does update if the settings doc has been modified when extending', () => {
       defaults.permissions = {};
-      const update = sinon.stub(db.medic, 'put').resolves();
+      const update = sinon.stub(db.medic, 'put').resolves({ rev: '2' });
       const newSettings = Object.assign({}, settings);
       newSettings.a = 'b';
       replace = 1;
@@ -113,13 +113,13 @@ describe('settings service', () => {
         .then(result => {
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(newSettings);
-          result.should.equal(true);
+          result.should.equal('2');
         });
     });
 
     it('does update if the default settings has an extra permission when replacing', () => {
       defaults.permissions = { c: 'd' };
-      const update = sinon.stub(db.medic, 'put').resolves();
+      const update = sinon.stub(db.medic, 'put').resolves({ rev: '3' });
       replace = 1;
 
       return service
@@ -129,13 +129,13 @@ describe('settings service', () => {
 
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(settings);
-          result.should.equal(true);
+          result.should.equal('3');
         });
     });
 
     it('does update if the default settings has an extra permission when extending', () => {
       defaults.permissions = { c: 'd' };
-      const update = sinon.stub(db.medic, 'put').resolves();
+      const update = sinon.stub(db.medic, 'put').resolves({ rev: '2' });
       replace = 1;
 
       return service
@@ -145,7 +145,7 @@ describe('settings service', () => {
 
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(settings);
-          result.should.equal(true);
+          result.should.equal('2');
         });
     });
 
