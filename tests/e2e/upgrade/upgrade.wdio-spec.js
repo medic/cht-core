@@ -5,6 +5,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
+const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
@@ -45,41 +46,13 @@ const deleteUpgradeLogs = async () => {
   await utils.logsDb.bulkDocs(logs);
 };
 
-// ToDo: Remove once 4.4 is released. Because it needs selectors targeting the previous cht version.
-const oldLogout = async () => {
-  await commonPage.openHamburgerMenu();
-  await (await commonPage.logoutButton()).waitForClickable();
-  await (await commonPage.logoutButton()).click();
-  $('.modal-dialog .modal-body').waitForDisplayed();
-  const submitBtn = $('.modal-dialog a.btn.submit');
-  await (await submitBtn).waitForClickable();
-  await (await submitBtn).click();
-  await browser.pause(100); // Wait for login page js to execute
-};
-
-// ToDo: Remove once 4.4 is released. Because it needs selectors targeting the previous cht version.
-const oldCloseReloadModal = async () => {
-  try {
-    const reloadModalUpdate = $('#update-available [test-id="Update"]');
-    await browser.waitUntil(async () => await (await reloadModalUpdate).waitForExist({ timeout: 5000 }));
-    // Wait for the animation to complete
-    await browser.pause(500);
-    await (await reloadModalUpdate).click();
-    await browser.pause(500);
-    return true;
-  } catch (err) {
-    console.error('Reload modal not showed up');
-    return false;
-  }
-};
-
 describe('Performing an upgrade', () => {
   before(async () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
 
     await loginPage.login(docs.user);
-    await oldLogout;
+    await commonPage.logout();
 
     await loginPage.cookieLogin({
       username: constants.USERNAME,
@@ -136,10 +109,12 @@ describe('Performing an upgrade', () => {
 
     await adminPage.logout();
     await loginPage.login(docs.user);
-    await oldCloseReloadModal();
+    await commonPage.sync(true);
 
+    await browser.refresh();
+    await commonPage.waitForPageLoaded();
     await commonPage.goToAboutPage();
-    expect(await upgradePage.getCurrentVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
+    expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
     await commonPage.logout();
   });
 

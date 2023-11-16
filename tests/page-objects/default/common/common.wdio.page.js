@@ -1,5 +1,6 @@
 const modalPage = require('./modal.wdio.page');
 const constants = require('@constants');
+const aboutPage = require('@page-objects/default/about/about.wdio.page');
 
 const hamburgerMenu = () => $('#header-dropdown-link');
 const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
@@ -44,7 +45,6 @@ const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
 const FEEDBACK = '#feedback';
 //About menu
 const ABOUT_MENU = '#header-dropdown i.fa-question';
-const RELOAD_BUTTON = '.about.page .btn-primary';
 //Configuration App
 const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 
@@ -360,7 +360,7 @@ const closeReportBug = async () => {
 const openAboutMenu = async () => {
   await (await $(ABOUT_MENU)).waitForClickable();
   await (await $(ABOUT_MENU)).click();
-  await (await $(RELOAD_BUTTON)).waitForDisplayed();
+  await (await $(aboutPage.RELOAD_BUTTON)).waitForDisplayed();
 };
 
 const openUserSettings = async () => {

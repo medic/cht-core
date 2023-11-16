@@ -5,8 +5,8 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 
 
-describe('Navigation tests', async () => {
-  describe('Navigation functionality', async () => {
+describe('Navigation tests', () => {
+  describe('Navigation functionality', () => {
     before(async () => {
       await loginPage.cookieLogin();
     });
@@ -42,7 +42,7 @@ describe('Navigation tests', async () => {
     });
   });
 
-  describe('Navigation view', async () => {
+  describe('Navigation view', () => {
     const places = placeFactory.generateHierarchy();
     const districtHospital = places.get('district_hospital');
     const user = userFactory.build({ place: districtHospital._id, roles: ['chw'] });

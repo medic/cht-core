@@ -24,7 +24,7 @@ const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
-const roleField = (type, role) => $(`span[data-itext-id="/data/${type}/role/${role}:label"].active`);
+const roleField = (type, role) => $(`[data-name="/data/${type}/role"][value="${role}"]`);
 const phoneField = () => $('input.ignore[type="tel"]');
 const personName = () => $('[name="/data/person/name"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
@@ -132,7 +132,7 @@ const waitForContactUnloaded = async () => {
 };
 
 const submitForm = async (waitForLoad = true) => {
-  await (await genericForm.submitButton()).waitForDisplayed();
+  await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
   waitForLoad && await waitForContactLoaded();
 };

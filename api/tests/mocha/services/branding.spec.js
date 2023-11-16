@@ -15,7 +15,7 @@ describe('branding service', () => {
     sinon.restore();
   });
 
-  describe('get', async() => {
+  describe('get', () => {
 
     it('returns default when missing doc', async () => {
       const get = sinon.stub(db, 'get').rejects({});
@@ -84,7 +84,7 @@ describe('branding service', () => {
 
   });
 
-  describe('getFavicon', async() => {
+  describe('getFavicon', () => {
 
     it('returns default when missing doc', async () => {
       const get = sinon.stub(db, 'get').rejects({});
