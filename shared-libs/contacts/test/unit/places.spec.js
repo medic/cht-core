@@ -343,13 +343,26 @@ describe('places controller', () => {
         name: 'Jim',
         type: 'person'
       });
-
-      db.medic.post.onCall(0).callsFake(doc => {
+      db.medic.post.withArgs(
+        sinon.match(
+          (obj) => {
+            // place is saved first, then updated with contact later
+            return obj.name === 'CHP Family' && !obj.contact;
+          }
+        )
+      ).callsFake(doc => {
         chai.expect(doc.name).to.equal('CHP Family');
         chai.expect(doc.parent._id).to.equal('ad06d137');
         return Promise.resolve({ id: 'hc', rev: '1' });
       });
-      db.medic.post.onCall(1).callsFake(doc => {
+      db.medic.post.withArgs(
+        sinon.match(
+          (obj) => {
+            // place updated with contact
+            return obj.name === 'CHP Family' && obj.contact;
+          }
+        )
+      ).callsFake(doc => {
         chai.expect(doc.name).to.equal('CHP Family');
         chai.expect(doc.parent._id).to.equal('ad06d137');
         chai.expect(doc.contact._id).to.equal('qwe');
