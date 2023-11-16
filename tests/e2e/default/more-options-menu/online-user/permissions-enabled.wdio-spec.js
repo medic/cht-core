@@ -63,7 +63,7 @@ describe('Menu options display - Online user', () => {
 
   afterEach(async () => await commonPage.goToBase());
 
-  it('should disabled the export option in Message tab when there are no messages, contacts or people created',
+  it('should disabled the export option in Message tab when there are no messages, contacts or people created.',
     async () => {
       await commonPage.goToMessages();
       await commonPage.openMoreOptionsMenu();
@@ -71,7 +71,7 @@ describe('Menu options display - Online user', () => {
     });
 
   it('should disabled the export option and hide the edit and delete options in Contact tab ' +
-    'when there are no messages, contacts or people created', async () => {
+    'when there are no messages, contacts or people created.', async () => {
     await commonPage.goToPeople();
     await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.false;
@@ -80,7 +80,7 @@ describe('Menu options display - Online user', () => {
   });
 
   it('should disabled the export option and hide the edit and delete options in Report tab ' +
-    'when there are no messages, contacts or people created', async () => {
+    'when there are no messages, contacts or people created.', async () => {
     await commonPage.goToReports();
     await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.false;
@@ -89,7 +89,7 @@ describe('Menu options display - Online user', () => {
   });
 
   it('should show the export option and hide the edit and delete options in Contact tab ' +
-    'when none of the contacts was opened', async () => {
+    'when none of the contacts was opened.', async () => {
     await utils.saveDocs([...places.values(), contact, patient]);
     await sentinelUtils.waitForSentinel();
     await commonPage.goToPeople();
@@ -119,7 +119,7 @@ describe('Options enabled when there are items - Online user', () => {
 
   afterEach(async () => await commonPage.goToBase());
 
-  it('should show the export option in Message tab', async () => {
+  it('should show the export option in Message tab.', async () => {
     await commonPage.goToMessages();
     await commonPage.waitForLoaderToDisappear();
     await commonPage.openMoreOptionsMenu();
@@ -127,7 +127,7 @@ describe('Options enabled when there are items - Online user', () => {
   });
 
   it('should show the export and delete options and hide the edit option in Report tab ' +
-    'when a NON XML report is selected', async () => {
+    'when a NON XML report is selected.', async () => {
     await commonPage.goToReports();
     await reportPage.goToReportById(smsReportId);
     await (await reportPage.reportBodyDetails()).waitForDisplayed();
@@ -138,7 +138,7 @@ describe('Options enabled when there are items - Online user', () => {
   });
 
   it('should show the export, edit and delete options in Report tab ' +
-    'when a XML report is selected', async () => {
+    'when a XML report is selected.', async () => {
     await reportPage.goToReportById(xmlReportId);
     await reportPage.reportBodyDetails().waitForDisplayed();
     await commonPage.openMoreOptionsMenu();
@@ -148,7 +148,7 @@ describe('Options enabled when there are items - Online user', () => {
   });
 
   it('should show the export, edit and delete options in Contact tab ' +
-    'when a contact was opened', async () => {
+    'when a contact was opened.', async () => {
     await commonPage.goToPeople(contact._id);
     await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.true;
