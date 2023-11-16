@@ -1,24 +1,9 @@
-require('../aliases');
-const chaiExclude = require('chai-exclude');
-const chaiAsPromised = require('chai-as-promised');
-const chai = require('chai');
-chai.use(chaiExclude);
-chai.use(chaiAsPromised);
-global.expect = chai.expect;
+const baseConfig = require('./.mocharc-base');
 
 module.exports = {
-  allowUncaught: false,
-  color: true,
-  checkLeaks: true,
-  fullTrace: true,
-  asyncOnly: false,
+  ...baseConfig,
   spec: [
     'tests/integration/!(cht-conf|sentinel)/**/*.spec.js', // run everything except the sentinel tests - those are tested in .mocharc-sentinel.js
     'tests/integration/cht-conf/**/*.spec.js', // Executing last to not side-effect sentinel tests.
   ],
-  timeout: 200 * 1000, //API takes a little long to start up
-  reporter: 'spec',
-  require: [ 'tests/integration/hooks.js' ],
-  captureFile: 'tests/results/results.txt',
-  exit: true,
 };
