@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as Bowser from 'bowser';
 import { Store } from '@ngrx/store';
+
 import { Selectors } from '@mm-selectors/index';
 
 type VersionSuffix = `` | `-${string}`;
@@ -49,5 +50,9 @@ export class BrowserDetectorService {
     }
 
     return this.androidAppVersion?.startsWith('v1.');
+  }
+
+  isDesktopUserAgent() {
+    return this.parser.getPlatformType(true) === 'desktop';
   }
 }

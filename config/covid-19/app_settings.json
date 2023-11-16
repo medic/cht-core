@@ -159,7 +159,8 @@
     ],
     "can_aggregate_targets": [
       "chw_supervisor"
-    ]
+    ],
+    "can_use_barcode_scanner": []
   },
   "place_hierarchy_types": [
     "district_hospital",

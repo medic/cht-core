@@ -1189,7 +1189,7 @@ mm-search-bar {
 
     .search-bar-left-icon {
       align-self: center;
-      width: 18px;
+      min-width: 18px;
       height: 20px;
       margin: 0 15px;
     }
@@ -1258,10 +1258,26 @@ mm-search-bar {
     .fa {
       font-size: @font-extra-large;
       color: @filter-icon-color;
+      vertical-align: top;
+      &.fa-qrcode {
+        font-size: @font-extra-extra-large;
+      }
+
+      &.fa-sliders {
+        vertical-align: baseline;
+      }
+
+      &:not(:first-child) {
+        margin-left: 15px;
+      }
     }
 
     &.disabled .search-bar-left-icon .fa {
       color: @inactive-color;
+    }
+
+    .barcode-scanner-input {
+      display: none;
     }
   }
 }

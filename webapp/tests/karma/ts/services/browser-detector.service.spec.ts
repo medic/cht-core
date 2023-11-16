@@ -93,4 +93,21 @@ describe('Browser Detector Service', () => {
     expect(service.isUsingChtAndroid()).to.be.false;
     expect(service.isUsingChtAndroidV1()).to.be.false;
   });
+
+  it('should return true if platform type is desktop', () => {
+    spoofUserAgent(
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' +
+      ' (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
+    );
+
+    expect(service.isDesktopUserAgent()).to.be.true;
+  });
+
+  it('should return false if platform type is not desktop', () => {
+    spoofUserAgent(
+      'Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006)' +
+      ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36'
+    );
+    expect(service.isDesktopUserAgent()).to.be.false;
+  });
 });
