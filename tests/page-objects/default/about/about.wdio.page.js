@@ -1,7 +1,7 @@
 const userName = () => $('dt=User name');
 const partners = () => $('.partners');
 const version = () => $('[test-id="about-version"]');
-const RELOAD_BUTTON = '.about.page .mat-primary';
+const RELOAD_BUTTON = '.about.page .btn-primary';
 
 const getPartnerImage = async (name) => {
   await (await partners()).waitForDisplayed();
