@@ -73,16 +73,16 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-docs handler', () => {
-  before(() => {
-    return utils
-      .saveDoc(parentPlace)
-      .then(() => sUtils.waitForSentinel())
-      .then(() => utils.createUsers(users));
+  before(async () => {
+    await utils.saveDoc(parentPlace);
+    await sUtils.waitForSentinel();
+    await utils.createUsers(users);
   });
 
-  after(() => utils
-    .revertDb([], true)
-    .then(() => utils.deleteUsers(users)));
+  after(async () => {
+    await utils.revertDb([], true);
+    await utils.deleteUsers(users);
+  });
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {

@@ -71,9 +71,11 @@ const LEGACY_FIELDS = ['language'];
 const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
   RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS, META_FIELDS);
 
-const illegalDataModificationAttempts = data => Object
-  .keys(data)
-  .filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.concat(LEGACY_FIELDS).includes(k));
+const illegalDataModificationAttempts = data => {
+  return Object
+    .keys(data)
+    .filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.concat(LEGACY_FIELDS).includes(k));
+};
 
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
@@ -739,24 +741,28 @@ const hydrateUserSettings = (userSettings) => {
     });
 };
 
-const getUserDoc = (username, dbName) => db[dbName]
-  .get(`org.couchdb.user:${username}`)
-  .catch(err => {
-    err.db = dbName;
-    throw err;
-  });
-
-const getUserDocsByName = (name) => Promise
-  .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
-  .catch(error => {
-    if (error.status !== 404) {
-      return Promise.reject(error);
-    }
-    return Promise.reject({
-      status: 404,
-      message: `Failed to find user with name [${name}] in the [${error.db}] database.`
+const getUserDoc = (username, dbName) => {
+  return db[dbName]
+    .get(`org.couchdb.user:${username}`)
+    .catch(err => {
+      err.db = dbName;
+      throw err;
     });
-  });
+};
+
+const getUserDocsByName = (name) => {
+  return Promise
+    .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
+    .catch(error => {
+      if (error.status !== 404) {
+        return Promise.reject(error);
+      }
+      return Promise.reject({
+        status: 404,
+        message: `Failed to find user with name [${name}] in the [${error.db}] database.`
+      });
+    });
+};
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);

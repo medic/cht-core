@@ -189,34 +189,40 @@ describe('Users API', () => {
         });
     });
 
-    it('Errors if a user edits themselves but attempts to change their roles', () => utils.request({
-      path: `/api/v1/users/${username}`,
-      method: 'POST',
-      body: {
-        type: 'national-manager'
-      },
-      auth: { username, password },
-    })
-      .then(() => fail('You should get an error in this situation'))
-      .catch(err => {
-        chai.expect(err.responseBody.error).to.equal('unauthorized');
-      }));
+    it('Errors if a user edits themselves but attempts to change their roles', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          body: {
+            type: 'national-manager'
+          },
+          auth: { username, password },
+        })
+        .then(() => fail('You should get an error in this situation'))
+        .catch(err => {
+          chai.expect(err.responseBody.error).to.equal('unauthorized');
+        });
+    });
 
-    it('Allows for users to modify themselves with a cookie', () => utils.request({
-      path: `/api/v1/users/${username}`,
-      method: 'POST',
-      headers: {
-        'Cookie': cookie
-      },
-      body: {
-        fullname: 'Awesome Guy'
-      },
-      auth: { username, password},
-    })
-      .then(() => utils.getDoc(getUserId(username)))
-      .then(doc => {
-        chai.expect(doc.fullname).to.equal('Awesome Guy');
-      }));
+    it('Allows for users to modify themselves with a cookie', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          headers: {
+            'Cookie': cookie
+          },
+          body: {
+            fullname: 'Awesome Guy'
+          },
+          auth: { username, password},
+        })
+        .then(() => utils.getDoc(getUserId(username)))
+        .then(doc => {
+          chai.expect(doc.fullname).to.equal('Awesome Guy');
+        });
+    });
 
     it('Does not allow users to update their password with only a cookie', () => {
       return utils

@@ -66,16 +66,13 @@ const findToClear = (registration, reported_date, config) => {
   const silenceUntil = reportedDateMoment.clone();
   silenceUntil.add(date.getDuration(config.silence_for));
 
-  const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
-    task => moment(task.due) <= silenceUntil
-  );
-  const groupTypeCombosToClear = uniqueGroupTypeCombos(
-    allTasksBeforeSilenceUntil
-  );
+  const allTasksBeforeSilenceUntil = tasksUnderReview.filter(task => moment(task.due) <= silenceUntil);
+  const groupTypeCombosToClear = uniqueGroupTypeCombos(allTasksBeforeSilenceUntil);
 
-  return tasksUnderReview.filter(({ group, type, state }) => hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
+  return tasksUnderReview.filter(({ group, type, state }) => {
     // only clear tasks that are in a clearable state!
-    statesToClear.includes(state));
+    return hasGroupAndType(groupTypeCombosToClear, [group, type]) && statesToClear.includes(state);
+  });
 };
 
 const getConfig = function(form) {

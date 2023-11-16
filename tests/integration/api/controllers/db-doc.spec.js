@@ -160,16 +160,16 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
 };
 
 describe('db-doc handler', () => {
-  before(() => {
-    return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(() => utils.saveDocs([...clinics, ...patients]));
+  before(async () => {
+    await utils.saveDoc(parentPlace);
+    await utils.createUsers(users);
+    await utils.saveDocs([...clinics, ...patients]);
   });
 
-  after(() => utils
-    .revertDb([], true)
-    .then(() => utils.deleteUsers(users)));
+  after(async () => {
+    await utils.revertDb([], true);
+    await utils.deleteUsers(users);
+  });
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
