@@ -8,22 +8,23 @@
   .target {
     width: 296px;
     min-height: 151px;
-    background-color: @gray-ultra-light;
-    border: 1px solid @gray-light;
-    border-radius: @radius-size;
-    margin: 15px;
+    background-color: @target-card-background-color;
+    border: 1px solid @target-card-border-color;
+    border-radius: @radius-size-medium;
+    margin: 10px 12px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
     .heading {
       display: flex;
-      padding: 10px;
+      padding:  15px 10px;
       background-color: @white;
-      border-bottom-left-radius: @radius-size;
-      border-bottom-right-radius: @radius-size;
+      border-bottom-left-radius: @radius-size-medium;
+      border-bottom-right-radius: @radius-size-medium;
+      border-top: 1px solid @target-card-border-color;
+      min-height: 70px;
       .title {
-        margin-left: 10px;
         h2 {
           margin: 0;
           color: @gray-ultra-dark;
@@ -34,24 +35,23 @@
         p {
           color: @gray-dark;
           font-size: @font-small;
-          font-weight: 400px;
+          font-weight: normal;
+          margin: 0;
         }
       }
       .icon {
-        float: left;
-        align-self: center;
+        margin-right: 10px;
         img,
         svg {
-          width: 35px;
-          height: 35px;
+          width: 33px;
+          height: 31px;
         }
       }
     }
     .body {
       clear: both;
-      padding: 10px 10px 0;
+      padding: 10px 10px;
       position: relative;
-      margin: 0 5px;
       min-height: 74px;
       .percent {
         position: relative;
@@ -61,18 +61,20 @@
         .number {
           text-align: center;
           font-size: 48px;
-          line-height: 1;
+          line-height: 54px;
           font-weight: bold;
+          padding-bottom: 0;
         }
         .goal {
           position: absolute;
           right: 0;
-          margin-right: 10px;
+          padding-right: 20px;
           color: @label-color;
+          top: 15px;
           p {
             font-size: @font-small;
             font-weight: 400;
-            line-height: 24px;
+            line-height: 20px;
             margin-bottom: 0;
             color: @gray-dark;
           }
@@ -93,6 +95,7 @@
   .percent {
     .number {
       color: @targets-below-color;
+      padding-bottom: 5px;
     }
     .progress-bar {
       background-color: @targets-below-color;
@@ -102,6 +105,7 @@
   .percent {
     .number {
       color: @targets-above-goal;
+      padding-bottom: 5px;
     }
     .progress-bar {
       background-color: @targets-above-goal;
@@ -112,20 +116,23 @@
   }
 
   .target-progress {
+    position: relative;
     .goal {
+      padding-top: 5px;
       position: absolute;
-      top: -10px;
+      top: -40px;
+      margin-top: 10px;
       label {
-        margin-left: -50%; /* center aligned */
+        margin-left: -40%; /* center aligned */
         white-space: nowrap;
         font-size: @font-small;
+        font-weight: normal;
         color: @label-color;
-        padding-top: 5px;
         &.pin-left {
           margin-left: 0; /* left aligned */
         }
         &.pin-right {
-          margin-left: -100%; /* right aligned */
+          margin-left: -105%; /* right aligned */
         }
       }
       .bar {
@@ -133,10 +140,12 @@
         top: 25px;
         height: 30px;
         width: 8px;
-        margin-left: -4px; /* center */
         background-color: @label-color;
         border: 2px solid @target-progress-bar-border-color;
         border-radius: @radius-size;
+      }
+      .adjust-margin {
+        margin-left: -10px
       }
     }
 
@@ -144,6 +153,7 @@
       font-size: @font-medium;
       line-height: 1;
       font-weight: bold;
+      padding-left: 6px;
     }
   }
 }
@@ -179,10 +189,9 @@
   .target {
     .target-progress {
       .progress {
-        margin: 20px 0 0 0;
 
         &.placeholder {
-          background: @background-color;
+          background: @targets-progress-bar-background-color;
         }
 
         .progress-bar {
@@ -213,15 +222,28 @@
   }
 }
 
+@media (max-width: @media-mobile) {
+  .targets {
+    padding: 0;
+    .target {
+      width: 100%;
+      margin: 10px 12px 0 12px;
+    }
+    .target:last-child {
+      margin-bottom: 10px;
+    }
+  }
+}
+
 @media (max-width: @media-small-mobile) {
   .targets {
     padding: 0;
     .target {
       width: 100%;
-      margin: 0 0 8px 0;
-      border-radius: 0;
-      border-left-width: 0;
-      border-right-width: 0;
+      margin: 10px 12px 0 12px;
+    }
+    .target:last-child {
+      margin-bottom: 10px;
     }
   }
 }
