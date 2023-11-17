@@ -785,7 +785,6 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
               } else {
-                console.log(idx, result);
                 chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
               }
             });
