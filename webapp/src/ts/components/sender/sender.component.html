@@ -1,15 +1,20 @@
 <div class="sender" [ngClass]="{ 'small-font': sentBy }" *ngIf="message">
   <div>
-    <span *ngIf="sentBy && (message.doc?.name || message.contact?.name || (!message.form && message.name) || message.from || message.sent_by || message.doc?.from)"
+    <span *ngIf="sentBy && getName()"
           class="name"
           translate
-          [translateParams]="{ senderName: message.doc?.name || message.contact?.name || (!message.form && message.name) || message.from || message.sent_by || message.doc?.from || ('messages.unknown.sender' | translate) }">
+          [translateParams]="{ senderName: getName() || ( 'messages.unknown.sender' | translate ) }">
       messages.sent.by
     </span>
     <span class="name"
-          *ngIf="!sentBy || !(message.doc?.name || message.contact?.name || (!message.form && message.name) || message.from || message.sent_by || message.doc?.from)">
-      {{ message.doc?.name || message.contact?.name || (!message.form && message.name) || message.from || message.sent_by || ('messages.unknown.sender' | translate) }}
+          *ngIf="!getId() && (!sentBy || getName())">
+      {{ getName() || ( 'messages.unknown.sender' | translate ) }}
     </span>
+    <a class="name"
+       [routerLink]="[ '/contacts', getId() ]"
+       *ngIf="getId() && (!sentBy || getName())">
+      {{ getName() || ( 'messages.unknown.sender' | translate ) }}
+    </a>
     <span class="phone" *ngIf="!(message.name && message.name === message.facility?.contact?.phone)">
       {{ message.doc?.phone || message.contact?.phone || message.phone }}
     </span>
