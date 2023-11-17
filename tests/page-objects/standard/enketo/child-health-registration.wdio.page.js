@@ -8,18 +8,16 @@ const FOLLOW_UP_SMS = enketoCommonPage.followUpSmsNote1('child_health_registrati
 
 const chwName = () => $(`${DEFAULT_NOTE} span[data-value=" /child_health_registration/chw_name "]`);
 const chwPhone = () => $(`${DEFAULT_NOTE} span[data-value=" /child_health_registration/chw_phone "]`);
-const defaultChwSmsText = () => $(DEFAULT_NOTE +
-    ' span[data-value=" /child_health_registration/group_note/default_chw_sms_text "]');
+const defaultChwSmsText = () => {
+  return $(`${DEFAULT_NOTE} span[data-value=" /child_health_registration/group_note/default_chw_sms_text "]`);
+};
 const personalNote = () => $('textarea[name="/child_health_registration/group_note/g_chw_sms"]');
-
-const sumChildName = () => $(REGISTRATION_DETAILS +
-  enketoCommonPage.patientNameSummary('child_health_registration'));
-const sumChildId = () => $(REGISTRATION_DETAILS +
-  enketoCommonPage.patientIdSummary('child_health_registration', 'summary'));
-const sumFollowUpMsgChwName = () => $(FOLLOW_UP_SMS +
-  ' span[data-value=" /child_health_registration/chw_name "]');
-const sumFollowUpMsgChwPhone = () => $(FOLLOW_UP_SMS +
-  ' span[data-value=" /child_health_registration/chw_phone "]');
+const sumChildName = () => $(REGISTRATION_DETAILS + enketoCommonPage.patientNameSummary('child_health_registration'));
+const sumChildId = () => {
+  return $(REGISTRATION_DETAILS + enketoCommonPage.patientIdSummary('child_health_registration', 'summary'));
+};
+const sumFollowUpMsgChwName = () => $(`${FOLLOW_UP_SMS} span[data-value=" /child_health_registration/chw_name "]`);
+const sumFollowUpMsgChwPhone = () => $(`${FOLLOW_UP_SMS} span[data-value=" /child_health_registration/chw_phone "]`);
 const sumFollowUpSmsContent = () => $(enketoCommonPage.followUpSmsNote2('child_health_registration', 'summary'));
 
 const getFormInformation = async () => {

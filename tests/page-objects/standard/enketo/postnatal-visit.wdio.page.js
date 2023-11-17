@@ -1,27 +1,28 @@
 const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
+const { ACTIVE } = enketoCommonPage;
 
 const assessingTo = (value) => $(`input[name="/postnatal_visit/group_who_assessed/g_who_assessed"][value="${value}"]`);
 const smsNote = () => $('textarea[name="/postnatal_visit/group_note/g_chw_sms"]');
-const dangerSigns = (person) => $$(
-  `input[name="/postnatal_visit/group_danger_signs_${person}/g_danger_signs_${person}"]`
-);
-const otherDangerSign = (person) => $(
-  `input[name="/postnatal_visit/group_danger_signs_${person}/danger_signs_${person}_other"]`
-);
-const patientNameSummary = () => $(
-  `span[data-itext-id="/postnatal_visit/group_review/r_postnatal_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientNameSummary('postnatal_visit')
-);
-const patientIdSummary = () => $(
-  `span[data-itext-id="/postnatal_visit/group_review/r_postnatal_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('postnatal_visit', 'review')
-);
-const visitInformation = () => $(
-  `label:not(.disabled) span[data-itext-id*="/postnatal_visit/group_review/r_visit_"]${enketoCommonPage.ACTIVE}`
-);
-const dangerSignsSummary = (person) => $$(
-  `span[data-itext-id*="/postnatal_visit/group_review/r_${person}_danger_sign"]${enketoCommonPage.ACTIVE}`
-);
+const dangerSigns = (person) => {
+  return $$(`input[name="/postnatal_visit/group_danger_signs_${person}/g_danger_signs_${person}"]`);
+};
+const otherDangerSign = (person) => {
+  return $(`input[name="/postnatal_visit/group_danger_signs_${person}/danger_signs_${person}_other"]`);
+};
+const patientNameSummary = () => {
+  const postNatVisit = enketoCommonPage.patientNameSummary('postnatal_visit');
+  return $(`span[data-itext-id="/postnatal_visit/group_review/r_postnatal_details:label"]${ACTIVE} ${postNatVisit}`);
+};
+const patientIdSummary = () => {
+  const postNatVisit = enketoCommonPage.patientIdSummary('postnatal_visit', 'review');
+  return $(`span[data-itext-id="/postnatal_visit/group_review/r_postnatal_details:label"]${ACTIVE} ${postNatVisit}`);
+};
+const visitInformation = () => {
+  return $(`label:not(.disabled) span[data-itext-id*="/postnatal_visit/group_review/r_visit_"]${ACTIVE}`);
+};
+const dangerSignsSummary = (person) => {
+  return $$(`span[data-itext-id*="/postnatal_visit/group_review/r_${person}_danger_sign"]${ACTIVE}`);
+};
 const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('postnatal_visit', 'review')}`);
 const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('postnatal_visit', 'review')}`);
 

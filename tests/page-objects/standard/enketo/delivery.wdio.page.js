@@ -5,30 +5,36 @@ const OUTCOME = { liveBirth: 'healthy', stillBirth: 'still_birth', miscarriage: 
 const LOCATION = { facility: 'f', homeAttendant: 's', homeNoAttendant: 'ns' };
 
 const FORM = enketoCommonPage.form('delivery');
-const pregnancyOutcome = (value) => $(FORM +
-  ` input[name="/delivery/group_delivery_summary/g_pregnancy_outcome"][value="${value}"]`);
-const pregnancyOutcomeLabel = (value) => $(FORM +
-  ` span[data-itext-id="/delivery/group_delivery_summary/g_pregnancy_outcome/${value}:label"]` +
-  enketoCommonPage.ACTIVE);
-const deliveryLocation = (value) => $(FORM +
-  ` input[name="/delivery/group_delivery_summary/g_delivery_code"][value="${value}"]`);
-const deliveryLocationLabel = (value) => $(FORM +
-  ` span[data-itext-id="/delivery/group_delivery_summary/g_delivery_code/${value}:label"]` +
-  enketoCommonPage.ACTIVE_OPTION_LABEL);
+const { ACTIVE, ACTIVE_OPTION_LABEL } = enketoCommonPage;
+const DELIV_SUM = '/delivery/group_delivery_summary/';
+const GROUP_SUM = '/delivery/group_summary/';
+
+const pregnancyOutcome = (value) => $(`${FORM} input[name="${DELIV_SUM}g_pregnancy_outcome"][value="${value}"]`);
+const pregnancyOutcomeLabel = (value) => {
+  return $(`${FORM} span[data-itext-id="${DELIV_SUM}g_pregnancy_outcome/${value}:label"]${ACTIVE}`);
+};
+const deliveryLocation = (value) => $(`${FORM} input[name="${DELIV_SUM}g_delivery_code"][value="${value}"]`);
+const deliveryLocationLabel = (value) => {
+  return $(`${FORM} span[data-itext-id="${DELIV_SUM}g_delivery_code/${value}:label"]${ACTIVE_OPTION_LABEL}`);
+};
 const deliveryDate = () => $(`${FORM} div.widget.date input`);
 const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('delivery')}`);
-const patientNameSummary = () => $(FORM +
-  ` span[data-itext-id="/delivery/group_summary/r_patient_info:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientNameSummary('delivery'));
-const patientIdSummary = () => $(FORM +
-  ` span[data-itext-id="/delivery/group_summary/r_patient_info:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('delivery', 'summary'));
-const outcomeSummary = () => $(FORM +
-  ` span[data-itext-id="/delivery/group_summary/r_pregnancy_outcome:label"]${enketoCommonPage.ACTIVE}` +
-  ' span[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]');
-const locationSummary = () => $(FORM +
-  ` span[data-itext-id="/delivery/group_summary/r_birth_date:label"]${enketoCommonPage.ACTIVE}` +
-  ' span[data-value=" /delivery/group_summary/r_delivery_location "]');
+const patientNameSummary = () => {
+  const nameSum = enketoCommonPage.patientNameSummary('delivery');
+  return $(`${FORM} span[data-itext-id="${GROUP_SUM}r_patient_info:label"]${ACTIVE} ${nameSum}`);
+};
+const patientIdSummary = () => {
+  const idSum = enketoCommonPage.patientIdSummary('delivery', 'summary');
+  return $(`${FORM} span[data-itext-id="${GROUP_SUM}r_patient_info:label"]${ACTIVE} ${idSum}`);
+};
+const outcomeSummary = () => {
+  const pregOutcomeLabel = `span[data-itext-id="${GROUP_SUM}r_pregnancy_outcome:label"]${ACTIVE}`;
+  return $(`${FORM} ${pregOutcomeLabel} span[data-value=" ${DELIV_SUM}display_delivery_outcome "]`);
+};
+const locationSummary = () => {
+  const birthDateLabel = `span[data-itext-id="${GROUP_SUM}r_birth_date:label"]${ACTIVE}`;
+  return $(`${FORM} ${birthDateLabel} span[data-value=" ${GROUP_SUM}r_delivery_location "]`);
+};
 const followUpSmsNote1 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote1('delivery', 'summary')}`);
 const followUpSmsNote2 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote2('delivery', 'summary')}`);
 

@@ -3,18 +3,23 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
 
 const FORM = enketoCommonPage.form('pregnancy_visit');
+const { ACTIVE } = enketoCommonPage;
+
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('pregnancy_visit')}`);
-const dangerSignSummary = () => $$(FORM +
-  ` span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${enketoCommonPage.ACTIVE}`);
-const patientNameSummary = () => $(FORM +
-  ` span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientNameSummary('pregnancy_visit'));
-const patientIdSummary = () => $(FORM +
-  ` span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('pregnancy_visit', 'review'));
-const followUpSmsNote1 = () => $(`${enketoCommonPage.followUpSmsNote1('pregnancy_visit', 'review')}`);
-const followUpSmsNote2 = () => $(`${enketoCommonPage.followUpSmsNote2('pregnancy_visit', 'review')}`);
+const dangerSignSummary = () => {
+  return $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${ACTIVE}`);
+};
+const patientNameSummary = () => {
+  const nameSum = enketoCommonPage.patientNameSummary('pregnancy_visit');
+  return $(`${FORM} span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${ACTIVE} ${nameSum}`);
+};
+const patientIdSummary = () => {
+  const idSum = enketoCommonPage.patientIdSummary('pregnancy_visit', 'review');
+  return $(`${FORM} span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${ACTIVE} ${idSum}`);
+};
+const followUpSmsNote1 = () => $(enketoCommonPage.followUpSmsNote1('pregnancy_visit', 'review'));
+const followUpSmsNote2 = () => $(enketoCommonPage.followUpSmsNote2('pregnancy_visit', 'review'));
 
 const selectAllDangerSigns = async () => {
   const dangerSigns = await dangerSig();

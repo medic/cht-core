@@ -8,10 +8,12 @@ const ancVisitDate = () => $(FORM +
 const reminderMethod = (value) => $(FORM +
   ` input[name="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method"][value="${value}"]`);
 
-const getAncReminderInfo = async () => ({
-  title: await formTitle().getText(),
-  visitDate: await ancVisitDate().getText(),
-});
+const getAncReminderInfo = async () => {
+  return {
+    title: await formTitle().getText(),
+    visitDate: await ancVisitDate().getText(),
+  };
+};
 
 const selectReminderMethod = async (method = 'in_person') => {
   const reminderAnc = await reminderMethod(method);

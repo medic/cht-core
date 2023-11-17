@@ -5,23 +5,31 @@ const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page
 const APROX_LMP = { up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244 };
 
 const FORM = enketoCommonPage.form('pregnancy');
+const { ACTIVE } = enketoCommonPage;
+
 const knowLMP = (value) => $(`${FORM} input[name="/pregnancy/group_lmp/g_lmp_method"][value="${value}"]`);
 const aproxLMP = (value) => $(`${FORM} input[name="/pregnancy/group_lmp/g_lmp_approx"][value="${value}"]`);
-const getEstDeliveryDate = () => $(`${FORM} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"]` +
-  enketoCommonPage.ACTIVE);
+const getEstDeliveryDate = () => {
+  return $(`${FORM} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"]${ACTIVE}`);
+};
 const risksFac = () => $$(`${FORM} [name="/pregnancy/group_risk_factors"] label:not(:first-child) > [type="checkbox"]`);
 const dangerSigns = () => $$(`${FORM} input[name="/pregnancy/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('pregnancy')}`);
-const patientNameSummary = () => $(FORM +
-  ` span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientNameSummary('pregnancy'));
-const patientIdSummary = () => $(FORM +
-  ` span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"]${enketoCommonPage.ACTIVE} ` +
-  enketoCommonPage.patientIdSummary('pregnancy', 'review'));
-const riskFactorsSummary = () => $$(`${FORM} :not(label.disabled):not(label.or-appearance-yellow)  > ` +
-  `span[data-itext-id*="/pregnancy/group_review/r_risk_factor"]${enketoCommonPage.ACTIVE}`);
-const dangerSignsSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"]` +
-  enketoCommonPage.ACTIVE);
+const patientNameSummary = () => {
+  const nameSum = enketoCommonPage.patientNameSummary('pregnancy');
+  return $(`${FORM} span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"]${ACTIVE} ${nameSum}`);
+};
+const patientIdSummary = () => {
+  const idSum = enketoCommonPage.patientIdSummary('pregnancy', 'review');
+  return $(`${FORM} span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"]${ACTIVE} ${idSum}`);
+};
+const riskFactorsSummary = () => {
+  const parent = ':not(label.disabled):not(label.or-appearance-yellow)';
+  return $$(`${FORM} ${parent}  > span[data-itext-id*="/pregnancy/group_review/r_risk_factor"]${ACTIVE}`);
+};
+const dangerSignsSummary = () => {
+  return $$(`${FORM} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"]${ACTIVE}`);
+};
 const followUpSmsNote1 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote1('pregnancy', 'review')}`);
 const followUpSmsNote2 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote2('pregnancy', 'review')}`);
 

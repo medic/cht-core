@@ -1,7 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deliveryForm = require('@page-objects/standard/enketo/delivery.wdio.page');
-const moment = require('moment/moment');
+const moment = require('moment');
 
 describe('cht-form web component - Delivery Form', () => {
 

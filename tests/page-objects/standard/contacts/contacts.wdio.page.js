@@ -18,8 +18,9 @@ const pregnancyVisits = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.prof
 const PAST_PREG_CARD_SELECTOR = 'div[test-id="contact.profile.past_pregnancies"]';
 const pastPregnancyCard = () => $(PAST_PREG_CARD_SELECTOR);
 const deliveryCode = () => $(`${PAST_PREG_CARD_SELECTOR} div[test-id*="contact.profile.delivery_code"] label`);
-const ancVisitsCompleted = () => $(`${PAST_PREG_CARD_SELECTOR} ` +
-  `div[test-id="contact.profile.anc_visit"] p.card-field-value`);
+const ancVisitsCompleted = () => {
+  return $(`${PAST_PREG_CARD_SELECTOR} div[test-id="contact.profile.anc_visit"] p.card-field-value`);
+};
 
 const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
   if (rightSideAction) {
@@ -94,11 +95,13 @@ const getAncVisits = async () => {
   return (await ancVisitsCompleted()).getText();
 };
 
-const getCurrentPlaceEditFormValues = async (type) => ({
-  name: await contactPageDefault.nameField(type).getValue(),
-  externalId: await contactPageDefault.externalIdField(type).getValue(),
-  notes: await contactPageDefault.notes(type).getValue()
-});
+const getCurrentPlaceEditFormValues = async (type) => {
+  return {
+    name: await contactPageDefault.nameField(type).getValue(),
+    externalId: await contactPageDefault.externalIdField(type).getValue(),
+    notes: await contactPageDefault.notes(type).getValue(),
+  };
+};
 
 module.exports = {
   contactPageDefault,
