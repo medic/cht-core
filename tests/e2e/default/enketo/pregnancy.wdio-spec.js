@@ -11,6 +11,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy registration', () => {
@@ -50,7 +51,8 @@ describe('Pregnancy registration', () => {
     await pregnancyForm.selectYesNoOption(pregnancyForm.KNOWN_FUTURE_VISITS);
     await pregnancyForm.setFutureVisitDate(nextANCVisit.format('YYYY-MM-DD'));
     await genericForm.nextPage();
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
+    //countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
+    await commonEnketoPage.selectRadioButton('first pregnancy', 'No');
     countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.MISCARRIAGE);
     await genericForm.nextPage();
     countRiskFactors += await pregnancyForm.selectAllRiskFactors(pregnancyForm.FIRST_PREGNANCY_VALUE.no);
