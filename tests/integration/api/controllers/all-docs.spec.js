@@ -299,7 +299,6 @@ describe('all_docs handler', () => {
         ))
       ]))
       .then(([excludeDocs, includeDocs]) => {
-        console.log(JSON.stringify(excludeDocs, null, 2));
         expect(excludeDocs.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
         expect(includeDocs.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
