@@ -3,12 +3,15 @@ const FORM = 'form[data-form-id="enketo_widgets"]';
 const formTitle = () => $(`${FORM} #form-title`);
 const selectMultipleDropdown = () => $(`${FORM} select[name="/enketo_widgets/enketo_test_select/select_spinner"]`);
 const selectOneDropdown = () => $(`${FORM} select[name="/enketo_widgets/enketo_test_select/select1_spinner"]`);
-const countryRadio = (value) => $(FORM +
-  ` input[name="/enketo_widgets/cascading_widgets/group1/country"][value="${value}"]`);
-const cityRadio = (value) => $(FORM +
-  ` input[name="/enketo_widgets/cascading_widgets/group1/city"][value="${value}"]`);
-const neighborhoodRadio = (value) => $(FORM +
-  ` input[name="/enketo_widgets/cascading_widgets/group1/neighborhood"][value="${value}"]`);
+const countryRadio = (value) => {
+  return $(`${FORM} input[name="/enketo_widgets/cascading_widgets/group1/country"][value="${value}"]`);
+};
+const cityRadio = (value) => {
+  return $(`${FORM} input[name="/enketo_widgets/cascading_widgets/group1/city"][value="${value}"]`);
+};
+const neighborhoodRadio = (value) => {
+  return $(`${FORM} input[name="/enketo_widgets/cascading_widgets/group1/neighborhood"][value="${value}"]`);
+};
 const countryDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/country2"]`);
 const cityDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/city2"]`);
 const neighborhoodDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/neighborhood2"]`);
@@ -17,10 +20,12 @@ const patientId = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/pa
 const patientName = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/name"]`);
 const patientNameErrorLabel = () => $(`${FORM} label.invalid-constraint`);
 const phoneField = () => $('input.ignore[type="tel"]:has(+ input[name="/enketo_widgets/enketo_test_select/phone"])');
-const phoneFieldRequiredMessage = () =>
-  $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-required-msg.active');
-const phoneFieldConstraintMessage = () =>
-  $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-constraint-msg.active');
+const phoneFieldRequiredMessage = () => {
+  return $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-required-msg.active');
+};
+const phoneFieldConstraintMessage = () => {
+  return $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-constraint-msg.active');
+};
 
 const getFormTitle = async () => {
   const title = await formTitle();

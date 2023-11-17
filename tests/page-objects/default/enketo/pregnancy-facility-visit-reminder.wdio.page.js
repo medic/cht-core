@@ -1,12 +1,15 @@
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
-const FORM = 'form[data-form-id="pregnancy_facility_visit_reminder"]';
+const FORM_ID = 'pregnancy_facility_visit_reminder';
+const FORM = `form[data-form-id="${FORM_ID}"]`;
 
 const formTitle = () => $(`${FORM} #form-title`);
-const ancVisitDate = () => $(FORM +
-  ' span[data-value=" /pregnancy_facility_visit_reminder/visit_date_for_task "]');
-const reminderMethod = (value) => $(FORM +
-  ` input[name="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method"][value="${value}"]`);
+const ancVisitDate = () => {
+  return $(`${FORM} span[data-value=" /${FORM_ID}/visit_date_for_task "]`);
+};
+const reminderMethod = (value) => {
+  return $(`${FORM} input[name="/${FORM_ID}/facility_visit_reminder/remind_method"][value="${value}"]`);
+};
 
 const getAncReminderInfo = async () => {
   return {
