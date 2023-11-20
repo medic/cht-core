@@ -20,6 +20,6 @@ export class SenderComponent {
   }
 
   getId() {
-    return this.message.doc?._id || this.message.contact?._id;
+    return this.message.contact?._id || this.message.doc?._id;
   }
 }
