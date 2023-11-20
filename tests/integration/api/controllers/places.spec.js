@@ -99,12 +99,12 @@ describe('Places API', () => {
 
     it('should create place with contact', () => {
       onlineRequestOptions.body = {
-        'name': 'CHP Area One',
-        'type': 'health_center',
-        'parent': 'fixture:online',
-        'contact': {
-          'name': 'Paul',
-          'phone': '+254883720611'
+        name: 'CHP Area One',
+        type: 'health_center',
+        parent: 'fixture:online',
+        contact: {
+          name: 'Paul',
+          phone: '+254883720611'
         }
       };
       return utils.request(onlineRequestOptions)
