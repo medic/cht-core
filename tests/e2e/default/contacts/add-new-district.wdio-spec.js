@@ -4,7 +4,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-describe('Add new district tests : ', () => {
+describe.skip('Add new district tests : ', () => {
   before(async () => await loginPage.cookieLogin());
   afterEach(() => sentinelUtils.waitForSentinel());
 

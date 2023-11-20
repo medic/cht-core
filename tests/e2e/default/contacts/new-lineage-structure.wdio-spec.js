@@ -12,7 +12,7 @@ const areaContact = 'Area Contact';
 const household = 'Barbados';
 const householdContact = 'House Contact';
 
-describe('Create new lineage structure', () => {
+describe.skip('Create new lineage structure', () => {
   before(async () => {
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();

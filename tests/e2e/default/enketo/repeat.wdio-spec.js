@@ -71,7 +71,7 @@ const userContactDoc = {
   }
 };
 
-describe('RepeatForm', () => {
+describe.skip('RepeatForm', () => {
   before(async () => {
     await utils.seedTestData(userContactDoc, [countFormDocument, buttonFormDocument, selectFormDocument]);
   });

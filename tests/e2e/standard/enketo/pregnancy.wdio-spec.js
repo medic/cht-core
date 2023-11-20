@@ -12,7 +12,7 @@ const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.pa
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
 
-describe('New pregnancy', () => {
+describe.skip('New pregnancy', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });

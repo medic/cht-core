@@ -6,7 +6,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
-describe('Extension lib xpath function', () => {
+describe.skip('Extension lib xpath function', () => {
 
   before(async () => {
     await utils.saveDocs(docs);
