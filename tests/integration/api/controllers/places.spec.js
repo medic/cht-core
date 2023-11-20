@@ -131,6 +131,24 @@ describe('Places API', () => {
         });
     });
 
+    it('should fail if place contact is not a person type', () => {
+      onlineRequestOptions.body = {
+        name: 'CHP Area One',
+        type: 'health_center',
+        parent: 'fixture:online',
+        contact: {
+          name: 'Paul',
+          phone: '+254883720611',
+          type: 'health_center',
+        }
+      };
+      return utils.request(onlineRequestOptions)
+        .then(() => fail('Call should fail as contact type is not a person'))
+        .catch(err => {
+          chai.expect(err.responseBody.error).to.equal('Wrong type, this is not a person.');
+        });
+
+    });
   });
 
 });
