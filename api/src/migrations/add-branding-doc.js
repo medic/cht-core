@@ -7,8 +7,8 @@ const appTitle = 'Medic';
 
 const logo = {
   name: 'logo',
-  file: 'medic-logo-light-full.svg',
-  type: 'image/svg+xml',
+  file: 'cht-logo.png',
+  type: 'image/png',
   dir: 'logo'
 };
 const favicon = {
