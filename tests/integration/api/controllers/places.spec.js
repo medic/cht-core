@@ -86,6 +86,7 @@ describe('Places API', () => {
             name: 'CHP Area One',
             type: 'health_center',
           });
+          expect(place.parent._id).to.be.a('string');
           return utils.getDoc(place.parent._id);
         })
         .then((parent) => {
