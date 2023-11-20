@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { RouterModule } from '@angular/router';
 import { expect } from 'chai';
 import { By } from '@angular/platform-browser';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -18,6 +19,7 @@ describe('sender directive', function() {
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         PipesModule,
+        RouterModule.forRoot([]),
       ],
       declarations: [
         SenderComponent,
@@ -44,7 +46,7 @@ describe('sender directive', function() {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(getElement('div .name').innerText).to.equal('+123');
+    expect(getElement('div span.name').innerText).to.equal('+123');
   });
 
   it('should render sender when message has sent by', async () => {
@@ -55,7 +57,7 @@ describe('sender directive', function() {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(getElement('div .name').innerText).to.equal('+789');
+    expect(getElement('div span.name').innerText).to.equal('+789');
   });
 
   it('should render sender when message has contact', async () => {
@@ -80,10 +82,50 @@ describe('sender directive', function() {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(getElement('div .name').innerText).to.equal('Clark ');
+    expect(getElement('div span.name').innerText).to.equal('Clark ');
     expect(getElement('div .phone').innerText).to.equal('+123');
     expect(getElement('div .position .lineage li:nth-child(1)').innerText).to.equal('Clarks House');
     expect(getElement('div .position .lineage li:nth-child(2)').innerText).to.equal('Smallville');
     expect(getElement('div .position .lineage li:nth-child(3)').innerText).to.equal('Metropolis');
+  });
+
+  it('should render sender as a link when message has a contact with id', async () => {
+    fixture.componentInstance.message = {
+      sent_by: '+789',
+      from: '+123',
+      contact: {
+        _id: 'clark-123',
+        name: 'Clark',
+        phone: '+123',
+        parent: {
+          name: 'Clarks House',
+          parent: { name: 'Smallville', parent: { name: 'Metropolis' } },
+        },
+      },
+    };
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getElement('div a.name').innerText).to.equal('Clark ');
+    expect(getElement('div .phone').innerText).to.equal('+123');
+    expect(getElement('div .position .lineage li:nth-child(1)').innerText).to.equal('Clarks House');
+    expect(getElement('div .position .lineage li:nth-child(2)').innerText).to.equal('Smallville');
+    expect(getElement('div .position .lineage li:nth-child(3)').innerText).to.equal('Metropolis');
+  });
+
+  it('should render sender as a link when message has a doc with id', async () => {
+    fixture.componentInstance.message = {
+      sent_by: '+789',
+      from: '+123',
+      doc: { _id: 'jane-123', name: 'Jane', phone: '+123' },
+      contact: null,
+    };
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getElement('div a.name').innerText).to.equal('Jane ');
+    expect(getElement('div .phone').innerText).to.equal('+123');
   });
 });

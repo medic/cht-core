@@ -6,13 +6,10 @@
           [translateParams]="{ senderName: getName() || ( 'messages.unknown.sender' | translate ) }">
       messages.sent.by
     </span>
-    <span class="name"
-          *ngIf="!getId() && (!sentBy || getName())">
+    <span class="name" *ngIf="!getId() && (!sentBy || getName())">
       {{ getName() || ( 'messages.unknown.sender' | translate ) }}
     </span>
-    <a class="name"
-       [routerLink]="[ '/contacts', getId() ]"
-       *ngIf="getId() && (!sentBy || getName())">
+    <a class="name" *ngIf="getId() && (!sentBy || getName())" [routerLink]="[ '/contacts', getId() ]">
       {{ getName() || ( 'messages.unknown.sender' | translate ) }}
     </a>
     <span class="phone" *ngIf="!(message.name && message.name === message.facility?.contact?.phone)">
