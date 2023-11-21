@@ -32,7 +32,7 @@ describe('Health Facility ANC Reminder task', () => {
   });
 
   it('should submit the health facility ANC reminder task', async () => {
-    await pregnancyForm.submitPregnancy({futureVisitDate: ancDate.format('YYYY-MM-DD')});
+    await pregnancyForm.submitDefaultPregnancy();
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();

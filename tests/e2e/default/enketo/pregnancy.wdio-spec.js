@@ -22,8 +22,6 @@ describe('Pregnancy registration', () => {
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
     parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
-  let countRiskFactors = 0;
-  let countDangerSigns = 0;
 
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
@@ -32,8 +30,8 @@ describe('Pregnancy registration', () => {
   });
 
   it('Should submit a new pregnancy', async () => {
-    const edd = moment().add(30, 'days');
-    const nextANCVisit = moment().add(1, 'day');
+    const edd = moment().add(8, 'days');
+    const nextANCVisit = moment().add(2, 'day');
 
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy');
@@ -48,44 +46,73 @@ describe('Pregnancy registration', () => {
     await genericForm.nextPage();
     await pregnancyForm.setANCVisitsPast();
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.KNOWN_FUTURE_VISITS);
+    await commonEnketoPage.selectRadioButton('If the woman has a specific upcoming ANC appointment date, ' +
+      'enter it here. You will receive a task three days before to remind her to attend.', 'Enter date');
     await pregnancyForm.setFutureVisitDate(nextANCVisit.format('YYYY-MM-DD'));
     await genericForm.nextPage();
-    //countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
-    await commonEnketoPage.selectRadioButton('first pregnancy', 'No');
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.MISCARRIAGE);
+    await commonEnketoPage.selectRadioButton('Is this the woman\'s first pregnancy?', 'No');
+    await commonEnketoPage.selectRadioButton('Has the woman had any miscarriages or stillbirths?', 'Yes');
     await genericForm.nextPage();
-    countRiskFactors += await pregnancyForm.selectAllRiskFactors(pregnancyForm.FIRST_PREGNANCY_VALUE.no);
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.ADDITIONAL_FACTORS, 'no');
+    await commonEnketoPage.selectCheckBox('Previous difficulties in childbirth');
+    await commonEnketoPage.selectCheckBox('Has delivered four or more children');
+    await commonEnketoPage.selectCheckBox('Last baby born less than one year ago');
+    await commonEnketoPage.selectCheckBox('Heart condition');
+    await commonEnketoPage.selectCheckBox('Asthma');
+    await commonEnketoPage.selectCheckBox('High blood pressure');
+    await commonEnketoPage.selectCheckBox('Diabetes');
+    await commonEnketoPage.selectRadioButton(
+      'Are there additional factors that could make this pregnancy high-risk?',
+      'No'
+    );
     await genericForm.nextPage();
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.VAGINAL_BLEEDING);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.FITS);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.ABDOMINAL_PAIN);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.HEADACHE);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.VERY_PALE);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.FEVER);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.REDUCE_FETAL_MOV);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.BREAKING_OF_WATER);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.EASILY_TIRED);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.SWELLING_HANDS);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.BREATHLESSNESS);
+    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
+    await commonEnketoPage.selectRadioButton('Fits', 'Yes');
+    await commonEnketoPage.selectRadioButton('Severe abdominal pain', 'Yes');
+    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
+    await commonEnketoPage.selectRadioButton('Very pale', 'Yes');
+    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
+    await commonEnketoPage.selectRadioButton('Reduced or no fetal movements', 'Yes');
+    await commonEnketoPage.selectRadioButton('Breaking of water', 'Yes');
+    await commonEnketoPage.selectRadioButton('Getting tired easily', 'Yes');
+    await commonEnketoPage.selectRadioButton('Swelling of face and hands', 'Yes');
+    await commonEnketoPage.selectRadioButton('Breathlessness', 'Yes');
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.LLIN);
+    await commonEnketoPage.selectRadioButton('Does the woman use a long-lasting insecticidal net (LLIN)?', 'Yes');
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.IRON_FOLATE);
+    await commonEnketoPage.selectRadioButton('Is the woman taking iron folate daily?', 'Yes');
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.DEWORMING_MEDICATION);
+    await commonEnketoPage.selectRadioButton('Has the woman received deworming medication?', 'Yes');
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.HIV_TESTED);
+    await commonEnketoPage.selectRadioButton('Has the woman been tested for HIV in the past 3 months?', 'Yes');
     await genericForm.nextPage();
 
-    const summaryDetails = await pregnancyForm.getSummaryDetails();
-    expect(summaryDetails.patientNameSumm).to.equal(pregnantWoman.name);
-    expect(summaryDetails.weeksPregnantSumm).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(Date.parse(summaryDetails.eddSumm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
-    expect(summaryDetails.riskFactorsSumm).to.equal(countRiskFactors);
-    expect(summaryDetails.dangerSignsSumm).to.equal(countDangerSigns);
+    const summaryTexts = [
+      pregnantWoman.name,
+      '38', //weeks pregnant
+      edd.format('D MMM, YYYY'),
+      'Previous miscarriages or stillbirths',
+      'Previous difficulties in childbirth',
+      'Has delivered four or more children',
+      'Last baby born less than one year ago',
+      'Heart condition',
+      'Asthma',
+      'High blood pressure',
+      'Diabetes',
+      'Vaginal bleeding',
+      'Fits',
+      'Severe abdominal pain',
+      'Severe headache',
+      'Very pale',
+      'Fever',
+      'Reduced or no fetal movements',
+      'Breaking of water',
+      'Getting tired easily',
+      'Swelling of face and hands',
+      'Breathlessness'
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -101,7 +128,7 @@ describe('Pregnancy registration', () => {
   });
 
   it('Should verify that all tasks related with the high risk pregnancy were created', async () => {
-    const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
+    const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Delivery'];
 
     await commonPage.goToTasks();
     const tasks = await tasksPage.getTasks();
