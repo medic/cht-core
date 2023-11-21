@@ -58,7 +58,6 @@ describe('login controller', () => {
     sinon.stub(privacyPolicy, 'exists').resolves(false);
 
     sinon.stub(rateLimit, 'isLimited').returns(false);
-
     sinon.stub(serverUtils, 'rateLimited').resolves();
   });
 
