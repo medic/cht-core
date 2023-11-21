@@ -313,6 +313,22 @@ jobs:
         node ./publish.js
         node ./tag-docker-images.js
 
+    - name: Add PR comment
+      if: ${{ github.event_name == 'pull_request' && env.INTERNAL_CONTRIBUTOR }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Compose URLs:
+              - [Core](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${BRANCH}/docker-compose/cht-core.yml)
+              - [CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${BRANCH}/docker-compose/cht-couchdb.yml)
+              - [CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${BRANCH}/docker-compose/cht-couchdb-clustered.yml)
+            `
+          })
+
   upgrade:
     needs: [publish]
     name: Upgrade from latest release
