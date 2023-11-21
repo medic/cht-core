@@ -314,7 +314,7 @@ jobs:
         node ./tag-docker-images.js
 
     - name: Add PR comment
-      if: ${{ github.event_name == 'pull_request' && env.INTERNAL_CONTRIBUTOR }}
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: actions/github-script@v6
       with:
         script: |
