@@ -82,8 +82,8 @@ describe('sender directive', function() {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(getElement('div span.name').innerText).to.equal('Clark ');
-    expect(getElement('div .phone').innerText).to.equal('+123');
+    expect(getElement('div span.name').innerText.trim()).to.equal('Clark');
+    expect(getElement('div .phone').innerText.trim()).to.equal('+123');
     expect(getElement('div .position .lineage li:nth-child(1)').innerText).to.equal('Clarks House');
     expect(getElement('div .position .lineage li:nth-child(2)').innerText).to.equal('Smallville');
     expect(getElement('div .position .lineage li:nth-child(3)').innerText).to.equal('Metropolis');
@@ -107,8 +107,8 @@ describe('sender directive', function() {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(getElement('div a.name').innerText).to.equal('Clark ');
-    expect(getElement('div .phone').innerText).to.equal('+123');
+    expect(getElement('div a.name').innerText.trim()).to.equal('Clark');
+    expect(getElement('div .phone').innerText.trim()).to.equal('+123');
     expect(getElement('div .position .lineage li:nth-child(1)').innerText).to.equal('Clarks House');
     expect(getElement('div .position .lineage li:nth-child(2)').innerText).to.equal('Smallville');
     expect(getElement('div .position .lineage li:nth-child(3)').innerText).to.equal('Metropolis');
@@ -125,7 +125,7 @@ describe('sender directive', function() {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(getElement('div a.name').innerText).to.equal('Jane ');
-    expect(getElement('div .phone').innerText).to.equal('+123');
+    expect(getElement('div a.name').innerText.trim()).to.equal('Jane');
+    expect(getElement('div .phone').innerText.trim()).to.equal('+123');
   });
 });
