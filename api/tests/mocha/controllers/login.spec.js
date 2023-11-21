@@ -1,19 +1,22 @@
 const rewire = require('rewire');
 const _ = require('lodash');
+const fs = require('fs');
 const chai = require('chai');
+const sinon = require('sinon');
+const request = require('request-promise-native');
+
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
 const cookie = require('../../../src/services/cookie');
 const branding = require('../../../src/services/branding');
+const rateLimit = require('../../../src/services/rate-limit');
 const db = require('../../../src/db').medic;
 const translations = require('../../../src/translations');
 const privacyPolicy = require('../../../src/services/privacy-policy');
-const sinon = require('sinon');
 const config = require('../../../src/config');
 const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
-const request = require('request-promise-native');
 const template = require('../../../src/services/template');
-const fs = require('fs');
+const serverUtils = require('../../../src/server-utils');
 
 let controller;
 
@@ -53,6 +56,9 @@ describe('login controller', () => {
 
     sinon.stub(roles, 'isOnlineOnly').returns(false);
     sinon.stub(privacyPolicy, 'exists').resolves(false);
+
+    sinon.stub(rateLimit, 'isLimited').returns(false);
+    sinon.stub(serverUtils, 'rateLimited').resolves();
   });
 
   afterEach(() => {
@@ -337,6 +343,17 @@ describe('login controller', () => {
       });
     });
 
+    it('should send 429 when rate limited', () => {
+      rateLimit.isLimited.returns(true);
+      sinon.stub(auth, 'getUserCtx');
+      return controller.tokenPost(req, res).then(() => {
+        chai.expect(rateLimit.isLimited.callCount).to.equal(1);
+        chai.expect(rateLimit.isLimited.args[0][0]).to.equal(req);
+        chai.expect(serverUtils.rateLimited.callCount).to.equal(1);
+        chai.expect(auth.getUserCtx.callCount).to.equal(0);
+      });
+    });
+
     it('should send error when error thrown while validating token', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
       sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
@@ -480,6 +497,17 @@ describe('login controller', () => {
         chai.expect(status.args[0][0]).to.equal(401);
         chai.expect(json.callCount).to.equal(1);
         chai.expect(json.args[0][0]).to.deep.equal({ error: 'Not logged in' });
+      });
+    });
+
+    it('returns 429 when rate limited', () => {
+      const post = sinon.stub(request, 'post');
+      rateLimit.isLimited.returns(true);
+      return controller.post(req, res).then(() => {
+        chai.expect(rateLimit.isLimited.callCount).to.equal(1);
+        chai.expect(rateLimit.isLimited.args[0][0]).to.equal(req);
+        chai.expect(serverUtils.rateLimited.callCount).to.equal(1);
+        chai.expect(post.callCount).to.equal(0);
       });
     });
 
