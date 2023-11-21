@@ -321,7 +321,7 @@ jobs:
       with:
         script: |
           github.rest.issues.createComment({
-            issue_number: $PR_NUMBER,
+            issue_number: `${PR_NUMBER}`,
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: `Compose URLs:
