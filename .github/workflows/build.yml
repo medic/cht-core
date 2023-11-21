@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       CHROME_VERSION: ${{ matrix.chrome-version }}
-      DEBUG: true
+      LOGLEVEL: "debug"
 
     strategy:
       fail-fast: false
