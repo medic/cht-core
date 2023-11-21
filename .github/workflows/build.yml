@@ -267,7 +267,7 @@ jobs:
     needs: [tests, config-tests, test-cht-form]
     name: Publish branch build
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' }}
 
     steps:
     - name: Delete image artifacts
@@ -335,7 +335,7 @@ jobs:
     needs: [publish]
     name: Upgrade from latest release
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' }}
 
     steps:
       - name: Configure AWS credentials Public
