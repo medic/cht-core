@@ -321,15 +321,15 @@ jobs:
       with:
         script: |
           console.log(context);
-          console.log(env);
+          console.log(process.env);
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: `Compose URLs:
-              - [Core](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${context.ref_name}/docker-compose/cht-core.yml)
-              - [CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${context.ref_name}/docker-compose/cht-couchdb.yml)
-              - [CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${context.ref_name}/docker-compose/cht-couchdb-clustered.yml)
+              - [Core](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose/cht-core.yml)
+              - [CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose/cht-couchdb.yml)
+              - [CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose/cht-couchdb-clustered.yml)
             `
           })
 
