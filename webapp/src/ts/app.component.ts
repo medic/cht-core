@@ -449,9 +449,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
 
     combineLatest([
-        this.store.select(Selectors.getPrivacyPolicyAccepted),
-        this.store.select(Selectors.getShowPrivacyPolicy),
-        this.store.select(Selectors.getTrainingCardFormId)
+      this.store.select(Selectors.getPrivacyPolicyAccepted),
+      this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getTrainingCardFormId),
     ]).subscribe(([
       privacyPolicyAccepted,
       showPrivacyPolicy,
