@@ -321,6 +321,7 @@ jobs:
       with:
         script: |
           console.log(context);
+          console.log(env);
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
