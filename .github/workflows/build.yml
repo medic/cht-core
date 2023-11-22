@@ -323,8 +323,7 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `
-              **Images published**
+            body: `**Images published**
 
               Try this PR out with [Docker Helper](https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/#cht-docker-helper-for-4x) by installing the image: ${process.env.BRANCH}
 
