@@ -316,20 +316,17 @@ jobs:
     - name: Add PR comment
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: actions/github-script@v6
-      env:
-        PR_NUMBER: ${{ github.event.number }}
       with:
         script: |
-          console.log(context);
-          console.log(process.env);
+          const urlPrefix = `https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose`;
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `Compose URLs:
-              - [Core](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose/cht-core.yml)
-              - [CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose/cht-couchdb.yml)
-              - [CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose/cht-couchdb-clustered.yml)
+            body: `Docker Compose yml files:
+              - [Core](${urlPrefix}/cht-core.yml)
+              - [CouchDB Single](${urlPrefix}/cht-couchdb.yml)
+              - [CouchDB Cluster](${urlPrefix}/cht-couchdb-clustered.yml)
             `
           })
 
