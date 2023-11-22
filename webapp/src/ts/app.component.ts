@@ -46,7 +46,6 @@ import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
-import {show} from "jsverify";
 
 const SYNC_STATUS = {
   inProgress: {
