@@ -1,4 +1,4 @@
-const moment = require('moment/moment');
+const moment = require('moment');
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');

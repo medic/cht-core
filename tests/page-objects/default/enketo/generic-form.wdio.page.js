@@ -99,6 +99,13 @@ const getFormTitle = async () => {
   return await (await formTitle()).getText();
 };
 
+const selectYesNoOption = async (selector, value = 'yes') => {
+  const element = await $(`${selector}[value="${value}"]`);
+  await element.waitForDisplayed();
+  await element.click();
+  return value === 'yes';
+};
+
 module.exports = {
   getFormTitle,
   getErrorMessage,
@@ -116,4 +123,5 @@ module.exports = {
   submitForm,
   currentFormView,
   formTitle,
+  selectYesNoOption,
 };

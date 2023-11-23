@@ -14,6 +14,10 @@ echo "build-ci: building webapp"
 cd webapp
 npm run build -- --configuration=production
 npm run compile
+
+echo "build-ci: building cht-form"
+npm run build:cht-form -- --configuration=production
+
 cd ..
 
 node ./scripts/build/cli createStagingDoc
