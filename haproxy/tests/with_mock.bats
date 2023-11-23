@@ -26,5 +26,5 @@ setup() {
 @test "should return json with on connection drop" {
 	run bash -c "curl -ksm5 http://127.0.0.1:5984/error/drop | jq .error"
 	assert_success
-	assert_output '"502 Bad Gateway"'
+	assert_output '"503 Service Unavailable"'
 }
