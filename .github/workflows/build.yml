@@ -319,12 +319,14 @@ jobs:
       with:
         script: |
           const urlPrefix = `https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${process.env.BRANCH}/docker-compose`;
+          const dockerHelperUrl = 'https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/#cht-docker-helper-for-4x';
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: `## Images published
-              Try this PR out with [Docker Helper](https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/#cht-docker-helper-for-4x) by installing the image: ${process.env.BRANCH}
+              Try this PR out with [Docker Helper](${dockerHelperUrl})
+              by installing the image: ${process.env.BRANCH}
               Or download the Docker Compose yml files:
               - [Core](${urlPrefix}/cht-core.yml)
               - [CouchDB Single](${urlPrefix}/cht-couchdb.yml)
