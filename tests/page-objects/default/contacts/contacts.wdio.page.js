@@ -19,14 +19,14 @@ const taskFilter = () => $(taskFilterSelector);
 const taskFilters = () => $$(taskFilterSelector);
 const contactList = () => $('#contacts-list');
 const contactListLoadingStatus = () => $('#contacts-list .loading-status');
-const newPlaceName = () => $('[name="/data/init/custom_place_name"]');
 const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
 const roleField = (type, role) => $(`[data-name="/data/${type}/role"][value="${role}"]`);
 const phoneField = () => $('input.ignore[type="tel"]');
-const personName = () => $('[name="/data/person/name"]');
+const nameField = (type) => $(`[name="/data/${type}/name"]`);
+const customPlaceNameField = () => $('input[name="/data/init/custom_place_name"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
@@ -53,7 +53,6 @@ const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="
 const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
 const contactCards = () => $$('.card.children');
-const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('h2[test-id="contact-name"]');
@@ -156,16 +155,16 @@ rightSideAction = true,) => {
   }
   await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
-  await (await newPrimaryContactName()).addValue(contactNameValue);
-  await (await phoneField()).addValue(phoneValue);
-  await (await dateOfBirthField()).addValue(dobValue);
+  await (await newPrimaryContactName()).setValue(contactNameValue);
+  await (await phoneField()).setValue(phoneValue);
+  await (await dateOfBirthField()).setValue(dobValue);
   await (await sexField('contact', sexValue)).click();
   await (await roleField('contact', roleValue)).click();
   await genericForm.nextPage();
   await (await writeNamePlace(typeValue)).click();
-  await (await newPlaceName()).addValue(placeNameValue);
-  await (await externalIdField(typeValue)).addValue(externalIDValue);
-  await (await notes(typeValue)).addValue(notesValue);
+  await (await customPlaceNameField()).setValue(placeNameValue);
+  await (await externalIdField(typeValue)).setValue(externalIDValue);
+  await (await notes(typeValue)).setValue(notesValue);
   await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
   const dashedType = typeValue.replace('_', '-');
@@ -183,10 +182,9 @@ const addPerson = async ({
 } = {}, waitForSentinel = true) => {
   const type = 'person';
   await commonPage.clickFastActionFAB({ actionId: type });
-  await (await genericForm.formTitle()).waitForDisplayed();
-  await (await personName()).addValue(nameValue);
+  await (await nameField(type)).addValue(nameValue);
   await (await dateOfBirthField()).addValue(dobValue);
-  await (await genericForm.formTitle()).click(); // blur the datepicker field so the sex field is visible
+  await (await nameField(type)).click(); // blur the datepicker field so the sex field is visible
   await (await phoneField()).addValue(phoneValue);
   await (await sexField(type, sexValue)).click();
   await (await roleField(type, roleValue)).click();
@@ -210,16 +208,13 @@ const editPerson = async (currentName, { name, phone, dob }) => {
   await (await genericForm.nextPage());
 
   if (name !== undefined) {
-    await (await personName()).clearValue();
-    await (await personName()).addValue(name);
+    await (await nameField('person')).setValue(name);
   }
   if (phone !== undefined) {
-    await (await phoneField()).clearValue();
-    await (await phoneField()).addValue(phone);
+    await (await phoneField()).setValue(phone);
   }
   if (dob !== undefined) {
-    await (await dateOfBirthField()).clearValue();
-    await (await dateOfBirthField()).addValue(dob);
+    await (await dateOfBirthField()).setValue(dob);
   }
 
   await submitForm();
@@ -285,7 +280,7 @@ const editDistrict = async (districtName, editedName) => {
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
-  await (await districtHospitalName()).setValue(editedName);
+  await (await nameField('district_hospital')).setValue(editedName);
   // blur field to trigger Enketo validation
   await (await notes('district_hospital')).click();
   await submitForm();
@@ -397,6 +392,20 @@ const getDisplayedContactsNames = async () => {
   }
   return contacts;
 };
+
+const getCurrentPersonEditFormValues = async (sexValue, roleValue) => {
+  return {
+    name: await nameField('person').getValue(),
+    shortName: await $('[name="/data/person/short_name"]').getValue(),
+    dateOfBirth: await dateOfBirthField().getValue(),
+    sex: await sexField('person', sexValue).parentElement().getAttribute('data-checked'),
+    role: await roleField('person', roleValue).parentElement().getAttribute('data-checked'),
+    phone: await phoneField().getValue(),
+    externalId: await externalIdField('person').getValue(),
+    notes: await notes('person').getValue(),
+  };
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -435,7 +444,6 @@ module.exports = {
   newPrimaryContactButton,
   newPrimaryContactName,
   writeNamePlace,
-  newPlaceName,
   externalIdField,
   notes,
   contactCardIcon,
@@ -457,4 +465,11 @@ module.exports = {
   getVisitLabel,
   getNumberOfReports,
   getDisplayedContactsNames,
+  nameField,
+  customPlaceNameField,
+  dateOfBirthField,
+  phoneField,
+  sexField,
+  roleField,
+  getCurrentPersonEditFormValues,
 };

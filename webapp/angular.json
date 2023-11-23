@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "newProjectRoot": "projects",
+  "newProjectRoot": "web-components",
   "projects": {
     "webapp": {
       "projectType": "application",
@@ -113,6 +113,137 @@
               "src/img",
               "src/fonts",
               "src/audio"
+            ],
+            "styles": [],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/css"
+              ]
+            },
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
+            ]
+          }
+        }
+      }
+    },
+    "cht-form": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "less"
+        }
+      },
+      "root": "web-components/cht-form",
+      "sourceRoot": "web-components/cht-form/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-builders/custom-webpack:browser",
+          "options": {
+            "outputPath": "../build/cht-form",
+            "index": "web-components/cht-form/src/index.html",
+            "main": "web-components/cht-form/src/main.ts",
+            "polyfills": "src/ts/polyfills.ts",
+            "tsConfig": "web-components/cht-form/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              {
+                "glob": "*",
+                "input": "src/fonts",
+                "output": "fonts/"
+              },
+              {
+                "glob": "*",
+                "input": "src/audio",
+                "output": "audio/"
+              }
+            ],
+            "styles": [
+              "src/css/inbox.less"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/css"
+              ]
+            },
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
+            ],
+
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
+          },
+          "configurations": {
+            "development": {
+              "deleteOutputPath": false,
+              "outputHashing": "none",
+              "sourceMap": true,
+              "namedChunks": true,
+              "extractLicenses": false,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "optimization": false
+            },
+            "production": {
+              "deleteOutputPath": false,
+              "optimization": {
+                "fonts": true,
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                }
+              },
+              "outputHashing": "none",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "tests/karma/test.ts",
+            "polyfills": "src/ts/polyfills.ts",
+            "tsConfig": "web-components/cht-form/tsconfig.spec.json",
+            "karmaConfig": "web-components/cht-form/tests/karma/karma-unit.conf.js",
+            "include": [
+              "../tests/karma/**/*.spec.ts"
+            ],
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/ts/polyfills.ts"
+            ],
+            "assets": [
+              {
+                "glob": "*",
+                "input": "src/fonts",
+                "output": "fonts/"
+              },
+              {
+                "glob": "*",
+                "input": "src/audio",
+                "output": "audio/"
+              }
             ],
             "styles": [],
             "stylePreprocessorOptions": {
