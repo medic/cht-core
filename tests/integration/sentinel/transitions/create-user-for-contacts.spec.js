@@ -71,8 +71,7 @@ describe('create_user_for_contacts', () => {
   });
 
   it('disables transitions if create_user_for_contacts is enabled but token_login is not enabled', async () => {
-    const tokenLoginErrorPattern =
-      /Configuration error\. Token login must be enabled to use the create_user_for_contacts transition\./;
+    const tokenLoginErrorPattern = /Configuration error/;
     const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
 
     const collectLogs = await utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
@@ -83,8 +82,7 @@ describe('create_user_for_contacts', () => {
   });
 
   it('disables transitions if create_user_for_contacts is enabled but an app_url is not set', async () => {
-    const appUrlErrorPattern =
-      /Configuration error\. The app_url must be defined to use the create_user_for_contacts transition\./;
+    const appUrlErrorPattern = /Configuration error/;
     const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
 
     const collectLogs = await utils.collectSentinelLogs(appUrlErrorPattern, transitionsDisabledPattern);

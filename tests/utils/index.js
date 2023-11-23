@@ -1190,7 +1190,7 @@ const apiLogTestStart = async (name) => {
   try {
     await requestOnTestDb({ path: `/${doc._id}`, method: 'PUT', body: doc });
   } catch (err) {
-    console.warn('Error logging test start - ignoring', err);
+    console.warn('Error logging test start - ignoring', err?.error);
   }
 };
 
