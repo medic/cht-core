@@ -62,17 +62,14 @@ const getBrandingDoc = async () => {
   }
 };
 
-const updateAttachment = async (doc, image) => {
-  const attachmentName = doc.resources && doc.resources[image.name];
-  const attachment = doc._attachments && doc._attachments[attachmentName];
-  if (attachment && attachment.digest !== image.digestV1) {
-    // image already configured - don't update
-    return false;
-  }
+const updateResourcesMap = (doc, image) => {
   if (!doc.resources) {
     doc.resources = {};
   }
   doc.resources[image.name] = image.file;
+};
+
+const updateAttachmentsMap = async (doc, image) => {
   if (!doc._attachments) {
     doc._attachments = {};
   }
@@ -81,6 +78,17 @@ const updateAttachment = async (doc, image) => {
     content_type: newAttachment.content_type,
     data: newAttachment.data
   };
+};
+
+const updateAttachment = async (doc, image) => {
+  const attachmentName = doc.resources?.[image.name];
+  const attachment = doc._attachments?.[attachmentName];
+  if (attachment && attachment.digest !== image.digestV1) {
+    // image already configured - don't update
+    return false;
+  }
+  updateResourcesMap(doc, image);
+  await updateAttachmentsMap(doc, image);
   return true;
 };
 
