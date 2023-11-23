@@ -326,12 +326,12 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: `## Images published
-              Try this PR out with Docker Helper by installing the image: ${process.env.BRANCH}
-              Or download the Docker Compose yml files:
-              - [Core](${urlPrefix}/cht-core.yml)
-              - [CouchDB Single](${urlPrefix}/cht-couchdb.yml)
-              - [CouchDB Cluster](${urlPrefix}/cht-couchdb-clustered.yml)
-            `
+          Try this PR out with [Docker Helper](${dockerHelperUrl})
+          by installing the image: ${process.env.BRANCH}
+          Or download the Docker Compose yml files:
+          - [Core](${urlPrefix}/cht-core.yml)
+          - [CouchDB Single](${urlPrefix}/cht-couchdb.yml)
+          - [CouchDB Cluster](${urlPrefix}/cht-couchdb-clustered.yml)`
           })
 
   upgrade:
