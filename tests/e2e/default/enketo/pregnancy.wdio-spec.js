@@ -35,7 +35,9 @@ describe('Pregnancy registration', () => {
 
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy');
-    await pregnancyForm.selectGestationAge();
+
+    await commonEnketoPage.selectRadioButton('How would you like to report the pregnancy?',
+      'Expected date of delivery (EDD)');
     await genericForm.nextPage();
     await pregnancyForm.setDeliveryDate(edd.format('YYYY-MM-DD'));
     await genericForm.nextPage();
@@ -44,7 +46,9 @@ describe('Pregnancy registration', () => {
     expect(Date.parse(confirmationDetails.eddConfirm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
 
     await genericForm.nextPage();
-    await pregnancyForm.setANCVisitsPast();
+    await commonEnketoPage.setInputValue('text',
+      'How many times has the woman been to the health facility for ANC?',
+      '0');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('If the woman has a specific upcoming ANC appointment date, ' +
       'enter it here. You will receive a task three days before to remind her to attend.', 'Enter date');

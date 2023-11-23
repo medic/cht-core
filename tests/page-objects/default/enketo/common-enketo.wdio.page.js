@@ -1,5 +1,11 @@
 const currentSection = () => $('section[class*="current"]');
 
+const spanElement =  (text) => currentSection().$(`span*=${text}`);
+
+const inputDate = 'input.ignore.input-small';
+
+const inputText = 'input';
+
 const selectRadioButton = async (question, label) => {
   const radioButton = await currentSection()
     .$(`legend*=${question}`)
@@ -19,7 +25,13 @@ const selectCheckBox = async (text) => {
   await checkbox.click();
 };
 
-const spanElement =  (text) => currentSection().$(`span*=${text}`);
+const setInputValue = async (type, question, value) => {
+  let input = await currentSection()
+    .$(`label*=${question}`);
+  input = type === 'date' ? await input.$(inputDate) : await input.$(inputText);
+  await input.waitForDisplayed();
+  await input.setValue(value);
+};
 
 const validateSummaryReport = async (textArray) => {
   for (const text of textArray) {
@@ -28,8 +40,9 @@ const validateSummaryReport = async (textArray) => {
 };
 
 module.exports = {
+  spanElement,
   selectRadioButton,
   selectCheckBox,
-  spanElement,
+  setInputValue,
   validateSummaryReport,
 };
