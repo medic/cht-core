@@ -260,6 +260,7 @@ const fillWomanDeathInformation = async ({
   deliveredBabies: deliveredBabiesValue = 'no',
   notes: notesValue = 'Test notes - Mother\'s death '
 } = {}) => {
+  await browser.keys('Escape'); // close the datepicker because it hides fields below
   await womanDeathPlace(placeValue).click();
   await womanDeliveredBabies(deliveredBabiesValue).click();
   await womanDeathNote().setValue(notesValue);
