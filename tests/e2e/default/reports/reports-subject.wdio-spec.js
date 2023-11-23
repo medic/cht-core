@@ -30,7 +30,7 @@ describe('Reports Subject', () => {
     subject = person.name,
     lineage = `${clinic.name}${healthCenter.name}${districtHospital.name}`
   }) => {
-    await commonPage.refresh();
+    await commonPage.goToPeople();
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     await reportsPage.openSelectedReport(firstReport);
@@ -46,7 +46,7 @@ describe('Reports Subject', () => {
     formName,
     subject,
     lineage = `${clinic.name}${healthCenter.name}${districtHospital.name}`,
-    senderName = `Submitted by ${user.contact.name} `,
+    senderName = `Submitted by ${user.contact.name}`,
     senderPhone = user.phone
   }) => {
     const openReportInfo = await reportsPage.getOpenReportInfo();
@@ -186,7 +186,7 @@ describe('Reports Subject', () => {
     await sentinelUtils.waitForSentinel([report._id]);
 
     await verifyListReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
-    await  verifyOpenReportContent({ formName: 'NAM_NAM ', subject: 'Unknown subject' });
+    await verifyOpenReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
   });
 
   it('should create a report using place_id with a place_uuid', async () => {
@@ -398,7 +398,7 @@ describe('Reports Subject', () => {
       formName: 'REF_REF',
       subject: newPerson.name,
       lineage: `${healthCenter.name}${districtHospital.name}`,
-      senderName: `Submitted by ${newUser.contact.name} `,
+      senderName: `Submitted by ${newUser.contact.name}`,
       senderPhone: newUser.contact.phone,
     });
   });
@@ -423,6 +423,6 @@ describe('Reports Subject', () => {
     await sentinelUtils.waitForSentinel([report._id]);
 
     await verifyListReportContent({ formName: 'SURVEY', subject: user.contact.name });
-    await verifyOpenReportContent({ formName: 'SURVEY', senderName: `${user.contact.name} `});
+    await verifyOpenReportContent({ formName: 'SURVEY', senderName: `${user.contact.name}`});
   });
 });

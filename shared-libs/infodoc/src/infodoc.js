@@ -134,9 +134,8 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
           // Store any infoDocs that have been migrated.
           if (writeDirtyInfoDocs && migratedInfoDocs.length) {
             return bulkUpdate(migratedInfoDocs);
-          } else {
-            return infoDocs;
           }
+          return infoDocs;
         });
     });
 };
@@ -213,9 +212,8 @@ const bulkUpdate = infoDocs => {
 
           return bulkUpdate(conflictingInfoDocs);
         });
-    } else {
-      return infoDocs;
     }
+    return infoDocs;
   });
 };
 

@@ -9,6 +9,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@medic/message-utils": "file:../message-utils",
+    "cron-validator": "^1.3.1",
     "lodash": "^4.17.21",
     "moment": "^2.26.0"
   }

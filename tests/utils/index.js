@@ -53,6 +53,7 @@ const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-senti
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const existingFeedbackDocIds = [];
+const MINIMUM_BROWSER_VERSION = '90';
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -468,7 +469,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForSentinelLogs( /Reminder messages allowed between/);
+    return waitForSentinelLogs(/Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };
@@ -1088,7 +1089,7 @@ const waitForDockerLogs = (container, ...regex) => {
 
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
-      console.log('Found logs', logs, 'watched for', ...regex);
+      console.log('Found logs', logs, 'did not match expected regex:', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       killSpawnedProcess(proc);
     }, 20000);
@@ -1268,6 +1269,13 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
+const isMinimumChromeVersion = () => {
+  if (process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION) {
+    return true;
+  }
+  return false;
+};
+
 const syncShards = async () => {
   await requestOnTestDb({ path: `/_sync_shards`, method: 'POST' });
   await requestOnSentinelTestDb({ path: `/_sync_shards`, method: 'POST' });
@@ -1344,5 +1352,6 @@ module.exports = {
   formDocProcessing,
   getSentinelDate,
   logFeedbackDocs,
+  isMinimumChromeVersion,
   syncShards,
 };

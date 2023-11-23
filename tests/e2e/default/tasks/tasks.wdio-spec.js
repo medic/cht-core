@@ -11,7 +11,7 @@ const chtDbUtils = require('@utils/cht-db');
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');
-  await browser.refresh();
+  await commonPage.sync(true);
 };
 
 const compileTasks = async (tasksFileName) => {

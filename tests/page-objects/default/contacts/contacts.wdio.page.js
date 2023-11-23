@@ -1,10 +1,10 @@
-const ENTER = '\uE007';
-
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const searchPage = require('@page-objects/default/search/search.wdio.page');
+const mobileSearchPage = require('@page-objects/default-mobile/search/search.wdio.page');
 
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
@@ -24,7 +24,7 @@ const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
-const roleField = (type, role) => $(`span[data-itext-id="/data/${type}/role/${role}:label"].active`);
+const roleField = (type, role) => $(`[data-name="/data/${type}/role"][value="${role}"]`);
 const phoneField = () => $('input.ignore[type="tel"]');
 const personName = () => $('[name="/data/person/name"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
@@ -74,9 +74,11 @@ const deathDate = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.d
 const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.place"] p.card-field-value`);
 
 const search = async (query) => {
-  await (await searchBox()).setValue(query);
-  await browser.keys(ENTER);
-  await commonPage.waitForLoaderToDisappear(await $('.left-pane'));
+  if (!await (await searchBox()).isDisplayed()) {
+    await mobileSearchPage.performSearch(query);
+  } else {
+    await searchPage.performSearch(query);
+  }
 };
 
 const findRowByText = async (text) => {
@@ -130,7 +132,7 @@ const waitForContactUnloaded = async () => {
 };
 
 const submitForm = async (waitForLoad = true) => {
-  await (await genericForm.submitButton()).waitForDisplayed();
+  await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
   waitForLoad && await waitForContactLoaded();
 };
@@ -181,9 +183,10 @@ const addPerson = async ({
 } = {}, waitForSentinel = true) => {
   const type = 'person';
   await commonPage.clickFastActionFAB({ actionId: type });
+  await (await genericForm.formTitle()).waitForDisplayed();
   await (await personName()).addValue(nameValue);
   await (await dateOfBirthField()).addValue(dobValue);
-  await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  await (await genericForm.formTitle()).click(); // blur the datepicker field so the sex field is visible
   await (await phoneField()).addValue(phoneValue);
   await (await sexField(type, sexValue)).click();
   await (await roleField(type, roleValue)).click();

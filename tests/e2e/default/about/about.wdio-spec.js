@@ -4,9 +4,13 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const partnersFactory = require('@factories/cht/config/partners');
 
-describe('About page', async () => {
+describe('About page', () => {
   beforeEach(async () => {
     await loginPage.cookieLogin();
+  });
+
+  afterEach(async () => {
+    await utils.deleteDocs(['partners']);
   });
 
   it('should open the about page', async () => {
@@ -31,7 +35,6 @@ describe('About page', async () => {
 
     await utils.saveDoc(partnersDoc);
     await commonPage.goToAboutPage();
-    await (await aboutPage.partners()).waitForDisplayed();
 
     const image1 = await aboutPage.getPartnerImage('image1');
     expect(image1).to.equal(`data:image/png;base64,${partnerData[0].data}`);

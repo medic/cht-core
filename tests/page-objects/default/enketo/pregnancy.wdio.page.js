@@ -68,12 +68,13 @@ const setDeliveryDate = async (value = moment().add(1, 'month').format('YYYY-MM-
   const date = await deliveryDate();
   await date.waitForDisplayed();
   await date.setValue(value);
+  await (await $('#form-title')).click(); // defocus from date
 };
 
 const getConfirmationDetails = async () => {
   return {
-    eddConfirm: await eddConfirmation().getText(),
-    weeksPregnantConfirm: await weeksPregnantConfirmation().getText(),
+    eddConfirm: await (await eddConfirmation()).getText(),
+    weeksPregnantConfirm: await (await weeksPregnantConfirmation()).getText(),
   };
 };
 

@@ -4,11 +4,17 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
+let brandingDoc;
+
 describe('Login page funcionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
   };
+
+  before(async () => {
+    brandingDoc = await utils.getDoc('branding');
+  });
 
   afterEach(async () => {
     await browser.reloadSession();
@@ -86,17 +92,15 @@ describe('Login page funcionality tests', () => {
       const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
       expect(authSessionCookie).to.include({
         httpOnly: true,
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         secure: false,
         path: '/'
       });
-      expect(authSessionCookie.expires).to.be.greaterThan(0);
+      expect(authSessionCookie.expiry).to.be.greaterThan(0);
 
       const userCtxCookie = cookies.find(cookie => cookie.name === 'userCtx');
       expect(userCtxCookie).to.include({
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         path: '/',
@@ -108,7 +112,6 @@ describe('Login page funcionality tests', () => {
 
       const localeCookie = cookies.find(cookie => cookie.name === 'locale');
       expect(localeCookie).to.include({
-        session: false,
         sameSite: 'Lax',
         domain: 'localhost',
         path: '/',
@@ -132,8 +135,8 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should have a title', async () => {
-      const branding = await utils.getDoc('branding');
-      expect(await browser.getTitle()).to.equal(branding.title);
+      await browser.url('/');
+      expect(await browser.getTitle()).to.equal(brandingDoc.title);
     });
 
     it('should try to sign in with blank password and verify that credentials were incorrect', async () => {

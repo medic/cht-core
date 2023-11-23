@@ -90,9 +90,8 @@ const getParser = (exports.getParser = (def, doc) => {
   msg = stripFormCode(code, msg);
   if (textformsParser.isCompact(def, msg, doc.locale)) {
     return textformsParser.parseCompact;
-  } else {
-    return textformsParser.parse;
   }
+  return textformsParser.parse;
 });
 
 // Uses the keys to create a deep key on the obj.
@@ -217,13 +216,13 @@ const fieldParsers = {
     const formattedAndValidatedPhone = phoneNumberParser.normalize(config.getAll(), raw);
     if (formattedAndValidatedPhone) {
       return formattedAndValidatedPhone;
-    } 
+    }
     logger.warn(`The provided phone number ${raw} is invalid`);
-    
-    // Returning raw here becuase what to do with invalid phone 
-    // is defined in transitions so error will be thrown there if required. 
+
+    // Returning raw here becuase what to do with invalid phone
+    // is defined in transitions so error will be thrown there if required.
     // Warning is logged just in case.
-    return raw;  
+    return raw;
   },
   bsYear: (raw) => {
     return standardiseDigits(raw);

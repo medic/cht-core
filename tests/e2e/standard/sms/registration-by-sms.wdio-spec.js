@@ -7,7 +7,7 @@ const userFactory = require('@factories/cht/users/users');
 const gatewayApiUtils = require('@utils/gateway-api');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
-describe('Registration by SMS', async () => {
+describe('Registration by SMS', () => {
   const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
   const user = userFactory.build({ place: district_hospital._id });
 
