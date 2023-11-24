@@ -1,0 +1,19 @@
+{{- if and (eq .Values.cluster_type "eks") (eq (toString .Values.couchdb_data.preExistingDataAvailable) "true") }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: couchdb-pv-{{ .Values.namespace }}
+spec:
+  capacity:
+    storage: {{ .Values.ebs.preExistingEBSVolumeSize }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: ebs.csi.aws.com
+    volumeHandle: {{ .Values.ebs.preExistingEBSVolumeID }}
+    fsType: ext4
+    volumeAttributes:
+      partition: "0"
+{{- end }}

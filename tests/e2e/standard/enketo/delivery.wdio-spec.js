@@ -76,12 +76,12 @@ describe('Delivery', () => {
     await deliveryForm.setNote(note);
     await genericForm.nextPage();
 
-    expect(await deliveryForm.getOutcomeSummary()).to.equal(pregnancyOutcome);
-    expect(await deliveryForm.getLocationSummary()).to.equal(locationDelivery);
-    const followUpSMS = await deliveryForm.getFollowUpSMS();
-    expect(followUpSMS).to.include(pregnantWoman1);
-    expect(followUpSMS).to.include(medicIDW1);
-    expect(followUpSMS).to.include(note);
+    const summaryDetails = await deliveryForm.getSummaryDetails();
+    expect(summaryDetails.outcome).to.equal(pregnancyOutcome);
+    expect(summaryDetails.location).to.equal(locationDelivery);
+    expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman1);
+    expect(summaryDetails.followUpSmsNote2).to.include(medicIDW1);
+    expect(summaryDetails.followUpSmsNote2).to.include(note);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

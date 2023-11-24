@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: sentinel
+  name: cht-sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: sentinel
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        cht.service: sentinel
+    spec:
+      containers:
+        - env:
+            - name: API_HOST
+              value: api.{{ .Values.namespace }}.svc.cluster.local
+            - name: COUCH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCH_URL
+            - name: API_PORT
+              value: '5988'
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-sentinel:{{ .Values.cht_image_tag }}
+          name: cht-sentinel
+          resources: {}
+      restartPolicy: Always
+status: {}

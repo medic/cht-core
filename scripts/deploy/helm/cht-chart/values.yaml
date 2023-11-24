@@ -1,0 +1,74 @@
+project_name: <your-project-name>
+namespace: "<your-namespace>" # e.g. "cht-dev-namespace"
+chtversion: 4.2.2
+#cht_image_tag: 4.1.1-4.1.1 #- This is filled in automatically by the deploy script. Don't uncomment this line.
+
+# Don't change upstream-servers unless you know what you're doing.
+upstream_servers:
+  docker_registry: "public.ecr.aws/medic"
+  builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4"
+
+# CouchDB Settings
+couchdb:
+  password: <password-value>
+  secret: <secret-value>
+  user: <user-name>
+  uuid: <uuid-value>
+  clusteredCouch_enabled: false
+  couchdb_node_storage_size: 100Mi
+clusteredCouch:
+  noOfCouchDBNodes: 3
+toleration:   # This is for the couchdb pods. Don't change this unless you know what you're doing.
+  key: "dev-couchdb-only"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"
+ingress:
+  annotations:
+    groupname: "dev-cht-alb"
+    tags: "Environment=dev,Team=QA"
+    certificate: "arn:aws:iam::<account-id>:server-certificate/2023-wildcard-dev-medicmobile-org-chain"
+  host: "gamma-cht.dev.medicmobile.org"
+  hosted_zone_id: "<the-hosted-zone-id>"
+  load_balancer: "dualstack.k8s-devchtalb-3eb0781cbb-694321496.eu-west-2.elb.amazonaws.com"
+
+environment: "remote"  # "local", "remote"
+cluster_type: "eks" # "eks" or "k3s-k3d"
+cert_source: "eks-medic" # "eks-medic" or "specify-file-path" or "my-ip-co"
+certificate_crt_file_path: "/path/to/certificate.crt" # Only required if cert_source is "specify-file-path"
+certificate_key_file_path: "/path/to/certificate.key" # Only required if cert_source is "specify-file-path"
+
+nodes:
+  # If using clustered couchdb, add the nodes here: node-1: name-of-first-node, node-2: name-of-second-node, etc.
+  # Add equal number of nodes as specified in clusteredCouch.noOfCouchDBNodes
+  node-1: "gamma-cht-couchdb-1" # This is the name of the first node where couchdb will be deployed
+  node-2: "gamma-cht-couchdb-2" # This is the name of the second node where couchdb will be deployed
+  node-3: "gamma-cht-couchdb-3" # This is the name of the third node where couchdb will be deployed
+  # For single couchdb node, use the following:
+  # Leave it commented out if you don't know what it means.
+  # Leave it commented out if you want to let kubernetes deploy this on any available node. (Recommended)
+  # single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration. 
+
+# Applicable only if using k3s
+k3s_use_vSphere_storage_class: "false" # "true" or "false"
+# vSphere specific configurations. If you set "true" for k3s_use_vSphere_storage_class, fill in the details below.
+vSphere:
+  datastoreName: "DatastoreName"  # Replace with your datastore name
+  diskPath: "path/to/disk"         # Replace with your disk path
+
+# -----------------------------------------
+#       Pre-existing data section
+# -----------------------------------------
+couchdb_data:
+  preExistingDataAvailable: "false" #If this is false, you don't have to fill in details in local_storage or remote.
+
+# If preExistingDataAvailable is true, fill in the details below.
+# For local_storage, fill in the details if you are using k3s-k3d cluster type.
+local_storage:  #If using k3s-k3d cluster type and you already have existing data.
+  preExistingDiskPath-1: "/var/lib/couchdb1" #If node1 has pre-existing data.
+  preExistingDiskPath-2: "/var/lib/couchdb2" #If node2 has pre-existing data.
+  preExistingDiskPath-3: "/var/lib/couchdb3" #If node3 has pre-existing data.
+# For ebs storage when using eks cluster type, fill in the details below.
+ebs:
+  preExistingEBSVolumeID: "vol-0123456789abcdefg" # If you have already created the EBS volume, put the ID here.
+  preExistingEBSVolumeSize: "100Gi" # The size of the EBS volume.
