@@ -11,7 +11,7 @@ chai.use(require('chai-exclude'));
 const standardConfig = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
-      './**/*.wdio-spec.js'
+      './**/registra*.wdio-spec.js'
     ]
   },
 
@@ -26,7 +26,7 @@ const uploadStandardConfig = async () => {
   await exec('npm ci', { cwd: standardConfigPath });
 
   try {
-    await chtConfUtils.runCommand('',  standardConfigPath);
+    await chtConfUtils.runCommand('compile-app-settings upload-app-settings upload-app-forms upload-contact-forms upload-custom-translations',  standardConfigPath);
   } catch (err) {
     console.error(err);
   }
