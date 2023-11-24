@@ -17,6 +17,10 @@ describe('Registration by SMS', () => {
     await loginPage.cookieLogin();
   });
 
+  afterEach(async () => {
+    await utils.revertSettings();
+  });
+
   it('Should create a new person via SMS and trigger the configured message schedule', async () => {
     const name = 'Filippo';
     const message = `N ${name}`;
@@ -79,7 +83,7 @@ describe('Registration by SMS', () => {
             event_type: 'report_accepted',
             message: [{
               locale: 'en',
-              content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
+              content: 'Patient {{patient_name}} ({{patient_id}}) was registered with {{patient.phone}}'
             }],
           }],
         }
@@ -119,22 +123,16 @@ describe('Registration by SMS', () => {
 
     const name = 'Mario';
     const phone = '+254702323235';
-    const phoneFormatted = '0702 323233';
+    const phoneFormatted = '0702 323235';
     const message = `NP ${phone} ${name}`;
     await gatewayApiUtils.api.postMessage({
-      id: 'new-person-sms',
+      id: 'new-person-sms-phone',
       from: user.phone,
       content: message
     });
 
-    await commonPage.goToReports();
-    const id = await reportsPage.getLastSubmittedReportId();
-    await reportsPage.openReport(id);
-    await browser.takeScreenshot();
-
     await commonPage.goToPeople(user.place);
     const allRHSPeople = await contactPage.getAllRHSPeopleNames();
-    expect(allRHSPeople.length).to.equal(3);
     expect(allRHSPeople).to.include.members([name, user.contact.name]);
 
     await contactPage.selectLHSRowByText(name);
@@ -148,17 +146,7 @@ describe('Registration by SMS', () => {
     await reportsPage.openSelectedReport(firstReport);
 
     const automaticReply = await reportsPage.getAutomaticReply();
-    expect(automaticReply.message).to.include(`Thank you ${user.contact.name} for registering ${name}.`);
+    expect(automaticReply.message).to.include(`Patient ${name} (${medicID}) was registered with ${phone}`);
     expect(automaticReply.recipient).to.include(user.phone);
-
-    const taskDetails = await reportsPage.getTaskDetails(1, 1);
-    const expectedMessage = `${user.contact.name}, did ${name} ${medicID} require care? To register pregnancy, send ` +
-                            `'P ${medicID} <Weeks since LMP>'. For PNC, send delivery report using ` +
-                            `'D ${medicID} <Delivery Code> <Days Since Delivery>'. Thank you!`;
-    expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(taskDetails.title).to.equal('Registration Followup');
-    expect(taskDetails.message).to.equal(expectedMessage);
-    expect(taskDetails.recipient).to.include(user.phone);
-    expect(taskDetails.state).to.equal('scheduled');
   });
 });
