@@ -91,7 +91,7 @@ const createPlace = async (place) => {
   if (contact) {
     if (!contact.type) {
       const defaultType = contactTypesUtils.getTypeById(config.get(), 'person');
-      contact.type = defaultType && defaultType.id;
+      contact.type = defaultType?.id;
     }
     const err = people._validatePerson(contact);
     if (err) {
