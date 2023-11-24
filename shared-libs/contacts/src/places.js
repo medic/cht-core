@@ -88,9 +88,11 @@ const createPlace = async (place) => {
   delete place.contact;
 
   await module.exports._validatePlace(place);
-  const err = people._validatePerson(contact);
-  if (err) {
-    return Promise.reject({ code: 400, message: err });
+  if (contact) {
+    const err = people._validatePerson(contact);
+    if (err) {
+      return Promise.reject({ code: 400, message: err });
+    }
   }
 
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
@@ -108,7 +110,7 @@ const createPlace = async (place) => {
   contact.place = placeUUID;
   const person = await people.getOrCreatePerson(contact);
   const result = await updatePlace(placeUUID, { contact: person._id });
-  return { ...result, contact: { id: person._id} };
+  return { ...result, contact: { id: person._id } };
 };
 
 /*

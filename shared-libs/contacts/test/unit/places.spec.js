@@ -263,14 +263,14 @@ describe('places controller', () => {
       };
       db.medic.post.callsFake(doc => {
         if (doc.name === 'CHP Branch One') {
-          return Promise.resolve({id: 'abc'});
+          return Promise.resolve({ id: 'abc' });
         }
         if (doc.name === 'CHP Area One') {
           // the parent should be created/resolved, parent id should be set.
           chai.expect(doc.parent._id).to.equal('abc');
           chai.expect(doc.parent.name).to.equal(undefined); // minified
           chai.expect(doc.parent.type).to.equal(undefined); // minified
-          return Promise.resolve({id: 'def'});
+          return Promise.resolve({ id: 'def' });
         }
         if (doc.name === 'CHP Family') {
           // both parents should be created/resolved
@@ -280,7 +280,7 @@ describe('places controller', () => {
           chai.expect(doc.parent.parent._id).to.equal('abc');
           chai.expect(doc.parent.parent.name).to.equal(undefined); // minified
           chai.expect(doc.parent.parent.type).to.equal(undefined); // minified
-          return Promise.resolve({id: 'ghi'});
+          return Promise.resolve({ id: 'ghi' });
         }
       });
       fetchHydratedDoc.callsFake(id => {
@@ -322,7 +322,7 @@ describe('places controller', () => {
         }
       });
       return controller._createPlaces(place).then(actual => {
-        chai.expect(actual).to.deep.equal({id: 'ghi'});
+        chai.expect(actual).to.deep.equal({ id: 'ghi' });
       });
     });
 
@@ -336,7 +336,7 @@ describe('places controller', () => {
           type: 'person'
         }
       };
-      
+
       sinon.stub(people, 'getOrCreatePerson').resolves({
         _id: 'qwe',
         _rev: '1',
@@ -388,11 +388,44 @@ describe('places controller', () => {
           rev: '2',
           contact: {
             id: 'qwe',
-            rev: '1'
           }
         });
       });
     });
+
+    it('returns err if contact does not have name', done => {
+      const place = {
+        name: 'HC',
+        type: 'district_hospital',
+        contact: {
+          type: 'person'
+        }
+      };
+      const post = db.medic.post;
+      controller._createPlaces(place).catch(err => {
+        chai.expect(err.message).to.equal('Person is missing a "name" property.');
+        chai.expect(post.callCount).to.equal(0);
+        done();
+      });
+    });
+
+    it('rejects contacts with wrong type', done => {
+      const place = {
+        name: 'HC',
+        type: 'district_hospital',
+        contact: {
+          name: 'John Doe',
+          type: 'x'
+        }
+      };
+      const post = db.medic.post;
+      controller._createPlaces(place).catch(err => {
+        chai.expect(err.message).to.equal('Wrong type, this is not a person.');
+        chai.expect(post.callCount).to.equal(0);
+        done();
+      });
+    });
+
 
     it('supports parents defined as uuids.', () => {
       const place = {
