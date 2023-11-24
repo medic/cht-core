@@ -52,7 +52,7 @@ const getMainCHTDockerCompose = async () => {
   }
 };
 
-const TEST_TIMEOUT = 250 * 1000;
+const TEST_TIMEOUT = 240 * 1000; // 4 minutes
 
 const dockerComposeCmd = (...params) => {
   const env = {
