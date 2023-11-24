@@ -133,9 +133,10 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   }
 
   private cherryPickTasks(contactIds) {
-    return this.allTasks?.filter(task =>
-      task._id !== this.lastSubmittedTask._id && // don't display the task we already completed
-      contactIds?.includes(this.getTaskOwner(task)));
+    return this.allTasks?.filter(task => {
+      return task._id !== this.lastSubmittedTask._id && // don't display the task we already completed
+             contactIds?.includes(this.getTaskOwner(task));
+    });
   }
 
   /*

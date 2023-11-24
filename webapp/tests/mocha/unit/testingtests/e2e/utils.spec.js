@@ -145,8 +145,9 @@ describe('Test utils', () => {
     const pathToDefaultTesting = path.resolve(__dirname, '../../../../../../tests/e2e/default');
     sinon.stub(sentinelUtils, 'skipToSeq');
     const suiteSpecs = [];
-    const getDirectories = (src) =>
-      new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
+    const getDirectories = (src) => {
+      return new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
+    };
 
     for (const relativePaths of Object.values(suites)) {
       for (const relativePath of relativePaths) {

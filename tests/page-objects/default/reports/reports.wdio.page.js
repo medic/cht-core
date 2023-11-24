@@ -47,8 +47,9 @@ const automaticReplyMessage = () => $(`${AUTOMATIC_REPLY_SECTION} p[test-id='mes
 const automaticReplyState = () => $(`${AUTOMATIC_REPLY_SECTION} .state`);
 const automaticReplyRecipient = () => $(`${AUTOMATIC_REPLY_SECTION} .recipient`);
 
-const detailReportRowContent = (row, type) =>
-  $$(`${REPORT_BODY_DETAILS_SELECTOR} li[test-id*='${row}'] span[test-id='${type}']`);
+const detailReportRowContent = (row, type) => {
+  return $$(`${REPORT_BODY_DETAILS_SELECTOR} li[test-id*='${row}'] span[test-id='${type}']`);
+};
 
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
