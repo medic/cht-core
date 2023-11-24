@@ -344,12 +344,7 @@ describe('places controller', () => {
         type: 'person'
       });
       db.medic.post.withArgs(
-        sinon.match(
-          (obj) => {
-            // place is saved first, then updated with contact later
-            return obj.name === 'CHP Family' && !obj.contact;
-          }
-        )
+        sinon.match((doc) => !doc.contact)
       ).callsFake(doc => {
         chai.expect(doc.name).to.equal('CHP Family');
         chai.expect(doc.parent._id).to.equal('ad06d137');
