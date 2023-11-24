@@ -9,6 +9,7 @@
 const moment = require('moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 const GESTATION_AGE = {lmp: 'method_lmp', lmpApprox: 'method_approx', edd: 'method_edd', none: 'none'};
 const FIRST_PREGNANCY_VALUE = {yes: 'primary', no: 'secondary'};
@@ -20,43 +21,43 @@ const KNOWN_FUTURE_VISITS =
 const FIRST_PREGNANCY = 'input[data-name="/pregnancy/risk_factors/risk_factors_history/first_pregnancy"]';
 const MISCARRIAGE = 'input[name="/pregnancy/risk_factors/risk_factors_history/previous_miscarriage"]';
 const ADDITIONAL_FACTORS = 'input[name="/pregnancy/risk_factors/risk_factors_present/additional_risk_check"]';
-const VAGINAL_BLEEDING = 'input[name="/pregnancy/danger_signs/vaginal_bleeding"]';
-const FITS = 'input[name="/pregnancy/danger_signs/fits"]';
-const ABDOMINAL_PAIN = 'input[name="/pregnancy/danger_signs/severe_abdominal_pain"]';
-const HEADACHE = 'input[name="/pregnancy/danger_signs/severe_headache"]';
-const VERY_PALE = 'input[name="/pregnancy/danger_signs/very_pale"]';
-const FEVER = 'input[name="/pregnancy/danger_signs/fever"]';
-const REDUCE_FETAL_MOV = 'input[name="/pregnancy/danger_signs/reduced_or_no_fetal_movements"]';
-const BREAKING_OF_WATER = 'input[name="/pregnancy/danger_signs/breaking_water"]';
-const EASILY_TIRED = 'input[name="/pregnancy/danger_signs/easily_tired"]';
-const SWELLING_HANDS = 'input[name="/pregnancy/danger_signs/face_hand_swelling"]';
-const BREATHLESSNESS = 'input[name="/pregnancy/danger_signs/breathlessness"]';
 const LLIN = 'input[name="/pregnancy/safe_pregnancy_practices/malaria/uses_llin"]';
 const IRON_FOLATE = 'input[name="/pregnancy/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
 const DEWORMING_MEDICATION = 'input[name="/pregnancy/safe_pregnancy_practices/deworming/deworming_med"]';
 const HIV_TESTED = 'input[name="/pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested"]';
 
-const gestationalAge = (value) => $(`${FORM} input[name="/pregnancy/gestational_age/register_method/lmp_method"]` +
-  `[value="${value}"]`);
+const gestationalAge = (value) => {
+  return $(`${FORM} input[name="/pregnancy/gestational_age/register_method/lmp_method"][value="${value}"]`);
+};
 const deliveryDate = () => $(`${FORM} section[name="/pregnancy/gestational_age/method_edd"] input.ignore.input-small`);
 const ancVisitsPast = () => $(`${FORM} input[name="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count"]`);
-const eddConfirmation = () => $(`${FORM} ` +
-  `span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/u_edd_note:label"] ` +
-  `span[data-value=" /pregnancy/gestational_age/g_edd "]`);
-const weeksPregnantConfirmation = () => $(`${FORM} ` +
-  `span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/lmp_note:label"] ` +
-  `span[data-value=" /pregnancy/weeks_since_lmp_rounded "] `);
-const futureVisitDate = () => $(`${FORM} ` +
-  `section[name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date"] input.ignore.input-small`);
-const riskFactors = (value) => $$(`${FORM} ` +
-  `input[name="/pregnancy/risk_factors/risk_factors_present/${value}_condition"]`);
+const eddConfirmation = () => {
+  return $(FORM +
+    ' span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/u_edd_note:label"]' +
+    ' span[data-value=" /pregnancy/gestational_age/g_edd "]');
+};
+const weeksPregnantConfirmation = () => {
+  return $(FORM +
+    ' span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/lmp_note:label"]' +
+    ' span[data-value=" /pregnancy/weeks_since_lmp_rounded "]');
+};
+const futureVisitDate = () => {
+  return $(FORM +
+    ' section[name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date"] input.ignore.input-small');
+};
+const riskFactors = (value) => {
+  return $$(`${FORM} input[name="/pregnancy/risk_factors/risk_factors_present/${value}_condition"]`);
+};
 const patientNameSummary = () => $(`${SUMMARY_SECTION} span[data-value=" /pregnancy/patient_name "]`);
 const weeksPregnantSummary = () => $(`${SUMMARY_SECTION} span[data-value=" /pregnancy/weeks_since_lmp_rounded "]`);
 const eddSummary = () => $(`${SUMMARY_SECTION} span[data-value=" /pregnancy/summary/edd_summary "]`);
-const riskFactorsSummary = () => $$(`${SUMMARY_SECTION} ` +
-  `:not(label.disabled):not(label.or-appearance-h3) span[data-itext-id*="/pregnancy/summary/r_risk"]`);
-const dangerSignsSummary = () => $$(`${SUMMARY_SECTION} ` +
-  `:not(label.disabled) span[data-itext-id*="/pregnancy/summary/r_danger_sign_"]`);
+const riskFactorsSummary = () => {
+  return $$(SUMMARY_SECTION +
+    ' :not(label.disabled):not(label.or-appearance-h3) span[data-itext-id*="/pregnancy/summary/r_risk"]');
+};
+const dangerSignsSummary = () => {
+  return $$(`${SUMMARY_SECTION} :not(label.disabled) span[data-itext-id*="/pregnancy/summary/r_danger_sign_"]`);
+};
 
 const selectGestationAge = async (value = GESTATION_AGE.edd) => {
   const getAge = await gestationalAge(value);
@@ -88,13 +89,6 @@ const setFutureVisitDate = async (value = moment().add(1, 'day').format('YYYY-MM
   const date = await futureVisitDate();
   await date.waitForDisplayed();
   await date.setValue(value);
-};
-
-const selectYesNoOption = async (selector, value = 'yes') => {
-  const element = await $(`${FORM} ${selector}[value="${value}"]`);
-  await element.waitForDisplayed();
-  await element.click();
-  return value === 'yes';
 };
 
 // The selector for the 'riskFactors' is different depending on the option selected in the 'first pregnancy' question
@@ -152,35 +146,35 @@ const submitPregnancy = async ({
   await genericForm.nextPage();
   await setANCVisitsPast(ancVisitPastValue);
   await genericForm.nextPage();
-  await selectYesNoOption(KNOWN_FUTURE_VISITS, knowFutureVisitsValue);
+  await genericForm.selectYesNoOption(KNOWN_FUTURE_VISITS, knowFutureVisitsValue);
   await setFutureVisitDate(futureVisitDateValue);
   await genericForm.nextPage();
-  await selectYesNoOption(FIRST_PREGNANCY, firstPregnancyValue);
-  await selectYesNoOption(MISCARRIAGE, miscarriageValue);
+  await genericForm.selectYesNoOption(FIRST_PREGNANCY, firstPregnancyValue);
+  await genericForm.selectYesNoOption(MISCARRIAGE, miscarriageValue);
   await genericForm.nextPage();
   await selectAllRiskFactors(firstPregnancySelectedValue);
-  await selectYesNoOption(ADDITIONAL_FACTORS, aditionalFactorsValue);
+  await genericForm.selectYesNoOption(ADDITIONAL_FACTORS, aditionalFactorsValue);
   await genericForm.nextPage();
-  await selectYesNoOption(VAGINAL_BLEEDING, vaginalBleedingValue);
-  await selectYesNoOption(FITS, fitsValue);
-  await selectYesNoOption(ABDOMINAL_PAIN, abdominalPainValue);
-  await selectYesNoOption(HEADACHE, headacheValue);
-  await selectYesNoOption(VERY_PALE, veryPaleValue);
-  await selectYesNoOption(FEVER, feverValue);
-  await selectYesNoOption(REDUCE_FETAL_MOV, reduceFetalMovValue);
-  await selectYesNoOption(BREAKING_OF_WATER, breakingWaterValue);
-  await selectYesNoOption(EASILY_TIRED, easilyTiredValue);
-  await selectYesNoOption(SWELLING_HANDS, swellingHandsValue);
-  await selectYesNoOption(BREATHLESSNESS, breathlessnessValue);
+  await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pregnancy'), vaginalBleedingValue);
+  await genericForm.selectYesNoOption(dangerSignPage.fits('pregnancy'), fitsValue);
+  await genericForm.selectYesNoOption(dangerSignPage.abdominalPain('pregnancy'), abdominalPainValue);
+  await genericForm.selectYesNoOption(dangerSignPage.headache('pregnancy'), headacheValue);
+  await genericForm.selectYesNoOption(dangerSignPage.veryPale('pregnancy'), veryPaleValue);
+  await genericForm.selectYesNoOption(dangerSignPage.fever('pregnancy'), feverValue);
+  await genericForm.selectYesNoOption(dangerSignPage.reduceFetalMov('pregnancy'), reduceFetalMovValue);
+  await genericForm.selectYesNoOption(dangerSignPage.breakingOfWater('pregnancy'), breakingWaterValue);
+  await genericForm.selectYesNoOption(dangerSignPage.easilyTired('pregnancy'), easilyTiredValue);
+  await genericForm.selectYesNoOption(dangerSignPage.swellingHands('pregnancy'), swellingHandsValue);
+  await genericForm.selectYesNoOption(dangerSignPage.breathlessness('pregnancy'), breathlessnessValue);
   await genericForm.nextPage();
-  await selectYesNoOption(LLIN, llinValue);
+  await genericForm.selectYesNoOption(LLIN, llinValue);
   await genericForm.nextPage();
-  await selectYesNoOption(IRON_FOLATE, ironFolateValue);
+  await genericForm.selectYesNoOption(IRON_FOLATE, ironFolateValue);
   await genericForm.nextPage();
-  await selectYesNoOption(DEWORMING_MEDICATION, dewormingMedicationValue);
+  await genericForm.selectYesNoOption(DEWORMING_MEDICATION, dewormingMedicationValue);
   await genericForm.nextPage();
   await genericForm.nextPage();
-  await selectYesNoOption(HIV_TESTED, hivTestedValue);
+  await genericForm.selectYesNoOption(HIV_TESTED, hivTestedValue);
   await genericForm.nextPage();
   await genericForm.submitForm();
 };
@@ -192,17 +186,6 @@ module.exports = {
   FIRST_PREGNANCY,
   MISCARRIAGE,
   ADDITIONAL_FACTORS,
-  VAGINAL_BLEEDING,
-  FITS,
-  ABDOMINAL_PAIN,
-  HEADACHE,
-  VERY_PALE,
-  FEVER,
-  REDUCE_FETAL_MOV,
-  BREAKING_OF_WATER,
-  EASILY_TIRED,
-  SWELLING_HANDS,
-  BREATHLESSNESS,
   LLIN,
   IRON_FOLATE,
   DEWORMING_MEDICATION,
@@ -211,7 +194,6 @@ module.exports = {
   setDeliveryDate,
   getConfirmationDetails,
   setANCVisitsPast,
-  selectYesNoOption,
   setFutureVisitDate,
   selectAllRiskFactors,
   submitPregnancy,
