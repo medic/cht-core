@@ -173,6 +173,16 @@ const requestOnTestDb = (options, debug) => {
   return request(options, debug);
 };
 
+const requestOnSentinelTestDb = (options) => {
+  if (typeof options === 'string') {
+    options = {
+      path: options,
+    };
+  }
+  options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
+  return request(options);
+};
+
 const requestOnTestMetaDb = (options, debug) => {
   if (typeof options === 'string') {
     options = {
@@ -272,6 +282,7 @@ const saveMetaDocs = (user, docs) => {
 };
 
 const getDoc = (id, rev, parameters = '') => {
+
   const params = {};
   if (rev) {
     params.rev = rev;
@@ -284,15 +295,14 @@ const getDoc = (id, rev, parameters = '') => {
   });
 };
 
-const getDocs = (ids, fullResponse = false) => {
-  return requestOnTestDb({
+const getDocs = async (ids, fullResponse = false) => {
+
+  const response = await requestOnTestDb({
     path: `/_all_docs?include_docs=true`,
     method: 'POST',
     body: { keys: ids || [] },
-  })
-    .then(response => {
-      return fullResponse ? response : response.rows.map(row => row.doc);
-    });
+  });
+  return fullResponse ? response : response.rows.map(row => row.doc);
 };
 
 const getMetaDocs = (user, ids, fullResponse = false) => {
@@ -1174,16 +1184,24 @@ const collectApiLogs = (...regex) => collectLogs('api', ...regex);
 
 const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
-const normalizeTestName = name => name.replace(/\s/g, '_');
+const normalizeTestName = name => name.replace(/[\s|/]/g, '_');
 
-const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
-    .catch(() => console.warn('Error logging test start - ignoring'));
+const apiLogTestStart = async (name) => {
+  const doc = { _id: `test_${normalizeTestName(name)}` };
+  try {
+    await requestOnTestDb({ path: `/${doc._id}`, method: 'PUT', body: doc });
+  } catch (err) {
+    console.warn('Error logging test start - ignoring', err?.error);
+  }
 };
 
-const apiLogTestEnd = (name) => {
-  return requestOnTestDb(`/?end=${normalizeTestName(name)}`)
-    .catch(() => console.warn('Error logging test end - ignoring'));
+const apiLogTestEnd = async (name) => {
+  const id = `test_${normalizeTestName(name)}`;
+  try {
+    await requestOnTestDb(`/?end=${id}`);
+  } catch (err) {
+    // we're expecting this doc to be deleted
+  }
 };
 
 const getDockerVersion = () => {
@@ -1259,6 +1277,11 @@ const isMinimumChromeVersion = () => {
   return false;
 };
 
+const syncShards = async () => {
+  await requestOnTestDb({ path: `/_sync_shards`, method: 'POST' });
+  await requestOnSentinelTestDb({ path: `/_sync_shards`, method: 'POST' });
+};
+
 module.exports = {
   db,
   sentinelDb,
@@ -1274,6 +1297,7 @@ module.exports = {
   request,
   requestOnTestDb,
   requestOnTestMetaDb,
+  requestOnSentinelTestDb,
   requestOnMedicDb,
   saveDoc,
   saveDocs,
@@ -1330,4 +1354,5 @@ module.exports = {
   getSentinelDate,
   logFeedbackDocs,
   isMinimumChromeVersion,
+  syncShards,
 };

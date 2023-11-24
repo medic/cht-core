@@ -452,48 +452,6 @@ describe('translations', () => {
     });
   });
 
-  describe('getTranslationDocs', () => {
-    it('should return all translation docs', () => {
-      sinon.stub(db.medic, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {} } },
-          { doc: { _id: 'messages-fr', type: 'translations', code: 'en', values: {} } },
-        ],
-      });
-      return translations.getTranslationDocs().then(results => {
-        chai.expect(results).to.deep.equal([
-          { _id: 'messages-en', type: 'translations', code: 'en', generic: {} },
-          { _id: 'messages-fr', type: 'translations', code: 'en', values: {} },
-        ]);
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
-          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
-        ]);
-      });
-    });
-
-    it('should exclude invalid docs', () => {
-      sinon.stub(db.medic, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: 'messages-en', type: 'not-translations', code: 'en', generic: {} } },
-          { doc: { _id: 'messages-fr', type: 'translations', values: {} } },
-          { doc: { _id: 'messages-fr____rev____tombstone', type: 'tombstone', values: {} } },
-          { doc: { _id: 'messages-de', type: 'translations', code: 'en' }, },
-          { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {} } },
-        ],
-      });
-      return translations.getTranslationDocs().then(results => {
-        chai.expect(results).to.deep.equal([
-          { _id: 'messages-es', type: 'translations', code: 'es', generic: {} },
-        ]);
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
-          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
-        ]);
-      });
-    });
-  });
-
   describe('getEnabledLocales', () => {
     it('should only return enabled translation docs', () => {
       it('should return all translation docs', () => {

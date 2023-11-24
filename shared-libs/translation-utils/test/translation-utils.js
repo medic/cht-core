@@ -1,4 +1,5 @@
 const lib = require('../src/translation-utils');
+const sinon = require('sinon');
 const expect = require('chai').expect;
 
 describe('Translation Utils Lib', () => {
@@ -120,6 +121,56 @@ describe('Translation Utils Lib', () => {
       'two': '${one} two'
     };
     expect(lib.loadTranslations(translations)).to.deep.equal(expected);
+  });
+
+  describe('getTranslationDocs', () => {
+    it('should return all translation docs', () => {
+      const db = {
+        medic: {
+          allDocs: sinon.stub().resolves({
+            rows: [
+              { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {} } },
+              { doc: { _id: 'messages-fr', type: 'translations', code: 'en', values: {} } },
+            ],
+          })
+        }
+      };
+      return lib.getTranslationDocs(db, { warn: sinon.stub() }).then(results => {
+        expect(results).to.deep.equal([
+          { _id: 'messages-en', type: 'translations', code: 'en', generic: {} },
+          { _id: 'messages-fr', type: 'translations', code: 'en', values: {} },
+        ]);
+        expect(db.medic.allDocs.callCount).to.equal(1);
+        expect(db.medic.allDocs.args[0]).to.deep.equal([
+          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+        ]);
+      });
+    });
+
+    it('should exclude invalid docs', () => {
+      const db = {
+        medic: {
+          allDocs: sinon.stub().resolves({
+            rows: [
+              { doc: { _id: 'messages-en', type: 'not-translations', code: 'en', generic: {} } },
+              { doc: { _id: 'messages-fr', type: 'translations', values: {} } },
+              { doc: { _id: 'messages-fr____rev____tombstone', type: 'tombstone', values: {} } },
+              { doc: { _id: 'messages-de', type: 'translations', code: 'en' }, },
+              { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {} } },
+            ],
+          })
+        }
+      };
+      return lib.getTranslationDocs(db, { warn: sinon.stub() }).then(results => {
+        expect(results).to.deep.equal([
+          { _id: 'messages-es', type: 'translations', code: 'es', generic: {} },
+        ]);
+        expect(db.medic.allDocs.callCount).to.equal(1);
+        expect(db.medic.allDocs.args[0]).to.deep.equal([
+          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+        ]);
+      });
+    });
   });
 
 });

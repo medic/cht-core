@@ -7,6 +7,7 @@ const db = require('../../../src/db');
 const dbWatcher = require('../../../src/services/db-watcher');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
+const translationUtils = require('@medic/translation-utils');
 const extensionLibsService = require('../../../src/services/extension-libs');
 const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
@@ -30,7 +31,7 @@ describe('Configuration', () => {
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
     sinon.stub(fs, 'watch');
-    sinon.stub(translations, 'getTranslationDocs');
+    sinon.stub(translationUtils, 'getTranslationDocs');
     sinon.stub(dbWatcher, 'listen');
   });
 
@@ -43,7 +44,7 @@ describe('Configuration', () => {
       settingsService.update.resolves();
       settingsService.get.resolves({ foo: 'bar' });
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
-      translations.getTranslationDocs.resolves([]);
+      translationUtils.getTranslationDocs.resolves([]);
 
       return bootstrap.load().then(() => {
         chai.expect(db.medic.get.callCount).to.equal(1);
@@ -56,7 +57,7 @@ describe('Configuration', () => {
             'docs_by_replication_key',
             'contacts_by_depth',
           ]);
-        chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
+        chai.expect(translationUtils.getTranslationDocs.callCount).to.equal(1);
 
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.get.callCount).to.equal(1);
@@ -75,7 +76,7 @@ describe('Configuration', () => {
       settingsService.update.resolves();
       settingsService.get.resolves({ foo: 'bar' });
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
-      translations.getTranslationDocs.rejects('errors nooo');
+      translationUtils.getTranslationDocs.rejects('errors nooo');
 
       return bootstrap.load().then(() => {
         chai.expect(settingsService.get.callCount).to.equal(1);
@@ -83,7 +84,7 @@ describe('Configuration', () => {
 
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
-        chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
+        chai.expect(translationUtils.getTranslationDocs.callCount).to.equal(1);
 
         chai.expect(config.setTranslationCache.callCount).to.equal(0);
       });
@@ -92,7 +93,7 @@ describe('Configuration', () => {
     it('should crash if translations are malformed', () => {
       settingsService.get.resolves({ foo: 'bar' });
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
-      translations.getTranslationDocs.resolves([
+      translationUtils.getTranslationDocs.resolves([
         { generic: 'something', code: 'en' },
         { custom: 'or other', code: 'fr', values: 'true' },
         { code: 'hi' },
@@ -119,7 +120,7 @@ describe('Configuration', () => {
     it('does nothing for irrelevant change', () => {
       dbWatcher.medic.args[0][0]({ id: 'someDoc' });
 
-      chai.expect(translations.getTranslationDocs.callCount).to.equal(0);
+      chai.expect(translationUtils.getTranslationDocs.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
     });
 
@@ -154,21 +155,21 @@ describe('Configuration', () => {
       it('reloads translations and generates service worker when translations are updated', () => {
         translations.run.resolves();
         generateServiceWorker.run.resolves();
-        translations.getTranslationDocs.resolves([]);
+        translationUtils.getTranslationDocs.resolves([]);
 
         return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(0);
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(0);
 
-          chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
+          chai.expect(translationUtils.getTranslationDocs.callCount).to.equal(1);
         });
       });
 
       it('should catch translations errors', () => {
         translations.run.rejects();
         generateServiceWorker.run.resolves();
-        translations.getTranslationDocs.resolves([]);
+        translationUtils.getTranslationDocs.resolves([]);
 
         return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
@@ -179,7 +180,7 @@ describe('Configuration', () => {
       it('should terminate process on service worker errors', () => {
         translations.run.resolves();
         generateServiceWorker.run.rejects();
-        translations.getTranslationDocs.resolves([]);
+        translationUtils.getTranslationDocs.resolves([]);
         sinon.stub(process, 'exit');
 
         return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {

@@ -31,7 +31,6 @@ const getTransitionSeq = () => {
     .getTransitionSeq()
     .catch(err => {
       logger.error('transitions: error fetching processed seq: %o', err);
-      return;
     });
 };
 
@@ -67,10 +66,11 @@ const registerFeed = (seq) => {
   return request;
 };
 
-const changeQueue = async.queue((change, callback) => {
+const changeQueue = async.queue( (change, callback) => {
   if (!change) {
     return callback();
   }
+
   logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
   if (processed > 0 && processed % PROGRESS_REPORT_INTERVAL === 0) {
     logger.info(

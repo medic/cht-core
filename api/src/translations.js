@@ -7,6 +7,7 @@ const logger = require('./logger');
 const util = require('util');
 const path = require('path');
 const settingsService = require('./services/settings');
+const translationUtils = require('@medic/translation-utils');
 
 const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
 const DOC_TYPE = 'translations';
@@ -31,19 +32,6 @@ const extractLocaleCode = filename => {
   if (parts && parts[1]) {
     return parts[1].toLowerCase();
   }
-};
-
-const validTranslationsDoc = doc => {
-  if (!doc || doc.type !== DOC_TYPE || !doc.code) {
-    return false;
-  }
-
-  if (_.isObject(doc.generic) || _.isObject(doc.values)) {
-    return true;
-  }
-
-  logger.warn(`Failed to load translations for "${doc.code}"("${doc.name}"). Translations document malformed.`);
-  return false;
 };
 
 const createDoc = attachment => {
@@ -91,16 +79,6 @@ const overwrite = (translationFiles, docs) => {
   return updatedDocs;
 };
 
-const getTranslationDocs = async () => {
-  return db.medic
-    .allDocs({ startkey: MESSAGES_DOC_ID_PREFIX, endkey: `${MESSAGES_DOC_ID_PREFIX}\ufff0`, include_docs: true })
-    .then(response => {
-      return response.rows
-        .map(row => row.doc)
-        .filter(doc => validTranslationsDoc(doc));
-    });
-};
-
 const getEnabledLocaleCodes = (languages, translationDocs) => {
   if (
     languages &&
@@ -114,7 +92,10 @@ const getEnabledLocaleCodes = (languages, translationDocs) => {
 };
 
 const getEnabledLocales = async () => {
-  const [settings, translationDocs] = await Promise.all([settingsService.get(), getTranslationDocs()]);
+  const [settings, translationDocs] = await Promise.all([
+    settingsService.get(),
+    translationUtils.getTranslationDocs(db, logger),
+  ]);
   const enabledLocaleCodes = getEnabledLocaleCodes(settings.languages, translationDocs);
   return translationDocs.filter(doc => enabledLocaleCodes.includes(doc.code));
 };
@@ -145,7 +126,7 @@ module.exports = {
         return;
       }
 
-      return getTranslationDocs()
+      return translationUtils.getTranslationDocs(db, logger)
         .then((docs) => overwrite(files, docs))
         .then(updated => {
           if (updated.length) {
@@ -155,5 +136,4 @@ module.exports = {
     });
   },
   getEnabledLocales,
-  getTranslationDocs,
 };
