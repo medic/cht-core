@@ -61,7 +61,7 @@ const dockerComposeCmd = (...params) => {
     CHT_COMPOSE_PATH: CHT_DOCKER_COMPOSE_FOLDER,
     COUCHDB_USER: constants.USERNAME,
     COUCHDB_PASSWORD: constants.PASSWORD,
-    DOCKER_CONFIG_PATH: path.join(os.homedir(), '.docker'),
+    DOCKER_CONFIG_PATH: os.homedir(),
     COUCHDB_DATA: CHT_DATA_FOLDER,
     CHT_COMPOSE_PROJECT_NAME: CHT_COMPOSE_PROJECT_NAME,
     CHT_NETWORK: 'cht-net-upgrade',
@@ -118,7 +118,7 @@ const servicesStartTimeout = () => {
 
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
-  specs: 
+  specs:
    [
      'upgrade.wdio-spec.js',
      '*.wdio-spec.js'
