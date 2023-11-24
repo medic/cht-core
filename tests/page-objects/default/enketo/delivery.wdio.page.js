@@ -1,55 +1,71 @@
-const getRadio = (name, value) => $(`input[type="radio"][name="${name}"][value="${value}"]`);
-const dangerSign = '/delivery/pnc_danger_sign_check';
-const deliveryPostnatalDangerFeverField = (value) => getRadio(`${dangerSign}/fever`, value);
-const deliveryPostnatalDangerSevereHeadacheField = (value) => getRadio(`${dangerSign}/severe_headache`, value);
-const deliveryPostnatalDangerVaginalBleedingField = (value) => getRadio(`${dangerSign}/vaginal_bleeding`, value);
-const deliveryPostnatalDangerVaginalDischargeField = (value) => getRadio(`${dangerSign}/vaginal_discharge`, value);
-const deliveryPostnatalDangerConvulsionField = (value) => getRadio(`${dangerSign}/convulsion`, value);
-const outcome = '/delivery/delivery_outcome';
-const deliveryConditionWomanOutcomeField = (value) => getRadio('/delivery/condition/woman_outcome', value);
-const deliveryOutcomeBabiesDeliveredField = (value) => getRadio(`${outcome}/babies_delivered`, value);
-const deliveryOutcomeBabiesAliveField = (value) => getRadio(`${outcome}/babies_alive`, value);
+const moment = require('moment');
+
+const getField = (type, name, expression = '') => $(`input[type="${type}"][name="/delivery/${name}"]${expression}`);
+const getRadioField = (name, value) => getField('radio', name, `[value="${value}"]`);
+
+const deliveryConditionWomanOutcomeField = (value) => getRadioField('condition/woman_outcome', value);
+const deliveryPostnatalDangerFeverField = (value) => getRadioField('pnc_danger_sign_check/fever', value);
+const deliveryPostnatalDangerSevereHeadacheField = (value) => {
+  return getRadioField('pnc_danger_sign_check/severe_headache', value);
+};
+const deliveryPostnatalDangerVaginalBleedingField = (value) => {
+  return getRadioField('pnc_danger_sign_check/vaginal_bleeding', value);
+};
+const deliveryPostnatalDangerVaginalDischargeField = (value) => {
+  return getRadioField('pnc_danger_sign_check/vaginal_discharge', value);
+};
+const deliveryPostnatalDangerConvulsionField = (value) => getRadioField('pnc_danger_sign_check/convulsion', value);
+const deliveryOutcomeBabiesDeliveredField = (value) => getRadioField('delivery_outcome/babies_delivered', value);
+const deliveryOutcomeBabiesAliveField = (value) => getRadioField('delivery_outcome/babies_alive', value);
 const dateOfDeliveryField = () => {
   return $('form > section.or-group.or-branch.or-appearance-field-list.current > label:nth-child(6) > div > input');
 };
-const deliveryPlaceField = (value) => getRadio(`${outcome}/delivery_place`, value);
-const deliveryModeField = (value) => getRadio(`${outcome}/delivery_mode`, value);
-const repeatDetails = '/delivery/babys_condition/baby_repeat/baby_details';
-const getRepeatDetailsRadioByValue = (name, value) => {
-  return $(`input[type="radio"][data-name="${repeatDetails}/${name}"][value="${value}"]`);
+const deliveryPlaceField = (value) => getRadioField('delivery_outcome/delivery_place', value);
+const deliveryModeField = (value) => getRadioField('delivery_outcome/delivery_mode', value);
+
+const BABY_DETAILS_NAME = 'babys_condition/baby_repeat/baby_details/';
+const getBabyDetailsField = (name, value) => {
+  return $(`input[type="radio"][data-name="/delivery/${BABY_DETAILS_NAME}${name}"][value="${value}"]`);
 };
-const babyConditionField = (value) => getRepeatDetailsRadioByValue('baby_condition', value);
-const babyNameField = () => $(`input[type="text"][name="${repeatDetails}/baby_name"]`);
-const babySexField = (value) => getRepeatDetailsRadioByValue('baby_sex', value);
-const babyBirthWeightKnowField = (value) => getRepeatDetailsRadioByValue('birth_weight_know', value);
-const babyBirthLengthKnowField = (value) => getRepeatDetailsRadioByValue('birth_length_know', value);
-const babyVaccinesReveivedField = (value) => getRepeatDetailsRadioByValue('vaccines_received', value);
-const babyBreastfeedingField = (value) => getRepeatDetailsRadioByValue('breastfeeding', value);
-const babyBreastfeedingWithin1HourField = (value) => getRepeatDetailsRadioByValue('breastfed_within_1_hour', value);
-const babyInfectedUmbilicalCordField = (value) => getRepeatDetailsRadioByValue('infected_umbilical_cord', value);
-const babyConvulsionField = (value) => getRepeatDetailsRadioByValue('convulsion', value);
-const babyDifficultyFeedingField = (value) => getRepeatDetailsRadioByValue('difficulty_feeding', value);
-const babyVomitField = (value) => getRepeatDetailsRadioByValue('vomit', value);
-const babyDrowsyField = (value) => getRepeatDetailsRadioByValue('drowsy', value);
-const babyStiffField = (value) => getRepeatDetailsRadioByValue('stiff', value);
-const babyYellowSkinField = (value) => getRepeatDetailsRadioByValue('yellow_skin', value);
-const babyFeverField = (value) => getRepeatDetailsRadioByValue('fever', value);
-const babyBlueSkinField = (value) => getRepeatDetailsRadioByValue('blue_skin', value);
-const deliveryPncVisitsField = (value) => $(`input[type="checkbox"]` +
-    `[name="/delivery/pnc_visits/pnc_visits_attended"][value="${value}"]`);
+const babyConditionField = (value) => getBabyDetailsField(`baby_condition`, value);
+const babyNameField = () => getField('text', `${BABY_DETAILS_NAME}baby_name`);
+const babySexField = (value) => getBabyDetailsField(`baby_sex`, value);
+const babyBirthWeightKnowField = (value) => getBabyDetailsField(`birth_weight_know`, value);
+const babyBirthLengthKnowField = (value) => getBabyDetailsField(`birth_length_know`, value);
+const babyVaccinesReveivedField = (value) => getBabyDetailsField(`vaccines_received`, value);
+const babyBreastfeedingField = (value) => getBabyDetailsField(`breastfeeding`, value);
+const babyBreastfeedingWithin1HourField = (value) => getBabyDetailsField(`breastfed_within_1_hour`, value);
+const babyInfectedUmbilicalCordField = (value) => getBabyDetailsField(`infected_umbilical_cord`, value);
+const babyConvulsionField = (value) => getBabyDetailsField(`convulsion`, value);
+const babyDifficultyFeedingField = (value) => getBabyDetailsField(`difficulty_feeding`, value);
+const babyVomitField = (value) => getBabyDetailsField(`vomit`, value);
+const babyDrowsyField = (value) => getBabyDetailsField(`drowsy`, value);
+const babyStiffField = (value) => getBabyDetailsField(`stiff`, value);
+const babyYellowSkinField = (value) => getBabyDetailsField(`yellow_skin`, value);
+const babyFeverField = (value) => getBabyDetailsField(`fever`, value);
+const babyBlueSkinField = (value) => getBabyDetailsField(`blue_skin`, value);
+const deliveryPncVisitsField = (value) => getField('checkbox', 'pnc_visits/pnc_visits_attended', `[value="${value}"]`);
 
 const SUMMARY_SECTION = 'section[name="/delivery/summary"]';
-const sumPatientName = () => $(`${SUMMARY_SECTION} span[data-value=" /delivery/patient_name "]`);
-const sumPatientAge = () => $(`${SUMMARY_SECTION} span[data-value=" /delivery/patient_age_in_years "]`);
-const sumWomanCondition = () => $(`${SUMMARY_SECTION} span[data-itext-id="/delivery/summary/r_condition_well:label"]`);
-const sumDeliveryDate = () => $(`${SUMMARY_SECTION} span[data-value=" /delivery/delivery_outcome/delivery_date "]`);
-const sumDeliveryPlace = () => $(SUMMARY_SECTION +
-  ' span[data-value=" /delivery/summary/custom_translations/delivery_place_label "]');
-const sumDeliveredBabies = () => $(SUMMARY_SECTION +
-  ' span[data-value=" /delivery/delivery_outcome/babies_delivered_num "]');
-const sumDeceasedBabies = () => $(SUMMARY_SECTION +
-  ' span[data-value=" /delivery/delivery_outcome/babies_deceased_num "]');
-const sumPncVisits = () => $(`${SUMMARY_SECTION} span[data-itext-id="/delivery/summary/r_pnc_visit_none:label"]`);
+const getSummaryField = (name) => $(`${SUMMARY_SECTION} span[data-value=" /delivery/${name} "]`);
+const getSummaryLabel = (name) => $(`${SUMMARY_SECTION} span[data-itext-id="/delivery/summary/${name}:label"]`);
+const sumPatientName = () => getSummaryField('patient_name');
+const sumPatientAge = () => getSummaryField('patient_age_in_years');
+const sumWomanCondition = () => getSummaryLabel('r_condition_well');
+const sumDeliveryDate = () => getSummaryField('delivery_outcome/delivery_date');
+const sumDeliveryPlace = () => getSummaryField('summary/custom_translations/delivery_place_label');
+const sumDeliveredBabies = () => getSummaryField('delivery_outcome/babies_delivered_num');
+const sumDeceasedBabies = () => getSummaryField('delivery_outcome/babies_deceased_num');
+const sumPncVisits = () => getSummaryLabel('r_pnc_visit_none');
+
+const womanDeathDate = () => $('section[name="/delivery/death_info_woman"] .widget.date .input-small');
+const womanDeathPlace = (value) => {
+  return $(`input[data-name="/delivery/death_info_woman/woman_death_place"][value="${value}"]`);
+};
+const womanDeliveredBabies = (value) => {
+  return $(`input[data-name="/delivery/death_info_woman/woman_death_birth"][value="${value}"]`);
+};
+const womanDeathNote = () => $('input[name="/delivery/death_info_woman/woman_death_add_notes"]');
 
 const selectDeliveryConditionWomanOutcome = async (value) => {
   const womanOutcome = await deliveryConditionWomanOutcomeField(value);
@@ -238,6 +254,18 @@ const getSummaryInfo = async () => {
   };
 };
 
+const fillWomanDeathInformation = async ({
+  date: dateValue = moment().format('YYYY-MM-DD'),
+  place: placeValue = 'health_facility',
+  deliveredBabies: deliveredBabiesValue = 'no',
+  notes: notesValue = 'Test notes - Mother\'s death '
+} = {}) => {
+  await womanDeathPlace(placeValue).click();
+  await womanDeliveredBabies(deliveredBabiesValue).click();
+  await womanDeathNote().setValue(notesValue);
+  await womanDeathDate().setValue(dateValue);
+};
+
 module.exports = {
   selectDeliveryConditionWomanOutcome,
   selectDeliveryPostnatalDangerSignsFever,
@@ -269,4 +297,5 @@ module.exports = {
   selectDeliveryBabyBlueSkin,
   selectDeliveryPncVisits,
   getSummaryInfo,
+  fillWomanDeathInformation,
 };

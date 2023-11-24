@@ -20,8 +20,11 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactSaveService } from '@mm-services/contact-save.service';
+import { reduce as _reduce } from 'lodash-es';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -35,7 +38,9 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 export class FormService {
   constructor(
     private store: Store,
+    private contactSaveService:ContactSaveService,
     private contactSummaryService: ContactSummaryService,
+    private contactTypesService:ContactTypesService,
     private dbService: DbService,
     private fileReaderService: FileReaderService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
@@ -288,6 +293,48 @@ export class FormService {
         this.submitFormBySmsService.submit(docs[0]);
         return docs;
       });
+  }
+
+  private applyTransitions(preparedDocs) {
+    return this.transitionsService
+      .applyTransitions(preparedDocs.preparedDocs)
+      .then(updatedDocs => {
+        preparedDocs.preparedDocs = updatedDocs;
+        return preparedDocs;
+      });
+  }
+
+  private generateFailureMessage(bulkDocsResult) {
+    return _reduce(bulkDocsResult, (msg: any, result) => {
+      let newMsg = msg;
+      if (!result.ok) {
+        if (!newMsg) {
+          newMsg = 'Some documents did not save correctly: ';
+        }
+        newMsg += result.id + ' with ' + result.message + '; ';
+      }
+      return newMsg;
+    }, null);
+  }
+
+  async saveContact(form, docId, type, xmlVersion) {
+    const typeFields = this.contactTypesService.isHardcodedType(type)
+      ? { type }
+      : { type: 'contact', contact_type: type };
+
+    const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
+    const preparedDocs = await this.applyTransitions(docs);
+
+    const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+    this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
+    const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
+    const failureMessage = this.generateFailureMessage(bulkDocsResult);
+
+    if (failureMessage) {
+      throw new Error(failureMessage);
+    }
+
+    return { docId: preparedDocs.docId, bulkDocsResult };
   }
 
   unload(form) {

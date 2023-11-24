@@ -56,12 +56,10 @@ const onlineRequestOptions = {
   method: 'GET',
 };
 
-const unauthenticatedRequestOptions = {
+const unauthenticatedGetRequestOptions = {
   method: 'GET',
   noAuth: true
 };
-
-const getUnauthenticatedRequestOptions = (method) => Object.assign({}, unauthenticatedRequestOptions, { method });
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -84,140 +82,82 @@ describe('routing', () => {
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   describe('unauthenticated routing', () => {
-    it('API restricts endpoints which need authentication', () => {
-      return Promise.all([
-        utils
-          .requestOnTestDb(
-            Object.assign({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions)
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/explain' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/a/b/c' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE' }, getUnauthenticatedRequestOptions('POST')))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE' }, getUnauthenticatedRequestOptions('PUT')))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE' }, getUnauthenticatedRequestOptions('DELETE')))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE/att' }, getUnauthenticatedRequestOptions('POST')))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE/att' }, getUnauthenticatedRequestOptions('PUT')))
-          .catch(err => err),
-        utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE/att' }, getUnauthenticatedRequestOptions('DELETE')))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/some-new-db' }, unauthenticatedRequestOptions)) // 403
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/some-new-db' }, getUnauthenticatedRequestOptions('PUT'))) // 403
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(Object.assign({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(Object.assign({ path: '/explain' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(Object.assign({ path: '/a/b/c' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(Object.assign({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(Object.assign({ path: '/PARENT_PLACE' }, getUnauthenticatedRequestOptions('POST')))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(Object.assign({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/api/deploy-info' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic-user-something-meta' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic-user-something-meta' }, getUnauthenticatedRequestOptions('PUT')))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic-user-something-meta/_local/test' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic-user-usr-meta/_local/t' }, getUnauthenticatedRequestOptions('PUT')))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic/_all_docs' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic/_all_docs' }, getUnauthenticatedRequestOptions('POST')))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic/_changes' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic/_changes' }, getUnauthenticatedRequestOptions('POST')))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic/_bulk_docs' }, getUnauthenticatedRequestOptions('POST') ))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/medic/_bulk_get' }, getUnauthenticatedRequestOptions('POST') ))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/purging' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/purging/changes' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/purging/changes/checkpoint' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/api/v1/contacts-by-phone' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/api/v1/contacts-by-phone' }, getUnauthenticatedRequestOptions('POST')))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/api/v1/hydrate' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/api/v1/hydrate' }, getUnauthenticatedRequestOptions('POST')))
-          .catch(err => err),
-        utils
-          .request(Object.assign({ path: '/api/v1/forms' }, unauthenticatedRequestOptions))
-          .catch(err => err),
-      ]).then(results => {
-        results.forEach(result => {
-          expect(result.statusCode).to.equal(401);
-          expect(result.response.headers['logout-authorization']).to.equal('CHT-Core API');
-          expect(result.responseBody.error).to.equal('unauthorized');
+
+    describe('API restricts endpoints which need authentication', () => {
+
+      const tests = [
+        { path: `/${constants.DB_NAME}/_design/medic/_view/someview` },
+        { path: `/${constants.DB_NAME}/explain` },
+        { path: `/${constants.DB_NAME}/a/b/c` },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE` },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE`, method: 'POST' },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE`, method: 'PUT' },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE`, method: 'DELETE' },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE/attachment` },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE/att`, method: 'POST' },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE/att`, method: 'PUT' },
+        { path: `/${constants.DB_NAME}/PARENT_PLACE/att`, method: 'DELETE' },
+        { path: '/some-new-db' },
+        { path: '/some-new-db', method: 'PUT' },
+        { path: '/medic/_design/medic/_view/someview' },
+        { path: '/medic/explain' },
+        { path: '/medic/a/b/c' },
+        { path: '/medic/PARENT_PLACE' },
+        { path: '/medic/PARENT_PLACE', method: 'POST' },
+        { path: '/medic/PARENT_PLACE/attachment' },
+        { path: '/api/deploy-info' },
+        { path: '/medic-user-something-meta' },
+        { path: '/medic-user-something-meta', method: 'PUT' },
+        { path: '/medic-user-something-meta/_local/test' },
+        { path: '/medic-user-usr-meta/_local/t', method: 'PUT' },
+        { path: '/medic/_all_docs' },
+        { path: '/medic/_all_docs', method: 'POST' },
+        { path: '/medic/_changes' },
+        { path: '/medic/_changes', method: 'POST' },
+        { path: '/medic/_bulk_docs', method: 'POST' },
+        { path: '/medic/_bulk_get', method: 'POST' },
+        { path: '/purging' },
+        { path: '/purging/changes' },
+        { path: '/purging/changes/checkpoint' },
+        { path: '/api/v1/contacts-by-phone' },
+        { path: '/api/v1/contacts-by-phone', method: 'POST' },
+        { path: '/api/v1/hydrate' },
+        { path: '/api/v1/hydrate', method: 'POST' },
+        { path: '/api/v1/forms' },
+      ];
+
+      afterEach(done => {
+        // delay for 1 second to avoid hitting API rate limit
+        setTimeout(done, 1000);
+      });
+
+      tests.forEach(test => {
+        const options = {
+          path: test.path,
+          method: test.method || 'GET',
+          noAuth: true
+        };
+        it(`: ${options.method} ${options.path}`, () => {
+          return utils
+            .request(options)
+            .catch(err => err)
+            .then(result => {
+              expect(result.statusCode).to.equal(401);
+              expect(result.response.headers['logout-authorization']).to.equal('CHT-Core API');
+              expect(result.responseBody.error).to.equal('unauthorized');
+            });
         });
       });
+
     });
 
     it('API allows endpoints which do not need authentication', () => {
       return Promise.all([
-        utils.requestOnTestDb(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/login/style.css' }, unauthenticatedRequestOptions)),
-        utils.requestOnMedicDb(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/setup/poll' }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/api/info' }, unauthenticatedRequestOptions)),
+        utils.requestOnTestDb(Object.assign({ path: '/login', json: false }, unauthenticatedGetRequestOptions)),
+        utils.request(Object.assign({ path: '/login/style.css' }, unauthenticatedGetRequestOptions)),
+        utils.requestOnMedicDb(Object.assign({ path: '/login', json: false }, unauthenticatedGetRequestOptions)),
+        utils.request(Object.assign({ path: '/setup/poll' }, unauthenticatedGetRequestOptions)),
+        utils.request(Object.assign({ path: '/api/info' }, unauthenticatedGetRequestOptions)),
       ]).then(results => {
         expect(results[0].length).to.be.above(0);
         expect(results[1].length).to.be.above(0);

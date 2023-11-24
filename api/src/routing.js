@@ -9,6 +9,7 @@ const db = require('./db');
 const path = require('path');
 const auth = require('./auth');
 const prometheusMiddleware = require('prometheus-api-metrics');
+const rateLimiterMiddleware = require('./middleware/rate-limiter');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
 const target = 'http://' + environment.host + ':' + environment.port;
@@ -161,6 +162,7 @@ app.use(
     ':res[content-length] :response-time ms'
   )
 );
+app.use(rateLimiterMiddleware);
 
 app.use(
   helmet({
