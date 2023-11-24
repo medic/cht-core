@@ -5,6 +5,7 @@ const path = require('path');
 const readFileAsync = promisify(fs.readFile);
 const logger = require('../../../src/logger');
 const db = require('../../../src/db');
+const { expect } = require('chai');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -64,7 +65,8 @@ const matches = (expected, actual) => {
 };
 
 const assertDb = expected => {
-  return db.get('medic-test').allDocs({ include_docs: true })
+  return db
+    .get('medic-test').allDocs({ include_docs: true })
     .then(results => {
       let actual = results.rows.map(row => _.omit(row.doc, ['_rev']));
       expected.sort(byId);
@@ -84,6 +86,7 @@ const assertDb = expected => {
 };
 
 const matchDbs = (expected, actual) => {
+  expect(expected.length).to.equal(actual.length);
   const errors = [];
 
   // split expected data into docs with an ID and those without

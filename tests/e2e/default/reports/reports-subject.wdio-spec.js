@@ -22,8 +22,9 @@ describe('Reports Subject', () => {
     parent: {_id: clinic._id, parent: clinic.parent}
   });
 
-  const waitElementTextEquals = async (elementGetter, expectedText) => await browser.waitUntil(async () =>
-    await elementGetter.getText() === expectedText);
+  const waitElementTextEquals = async (elementGetter, expectedText) => {
+    return await browser.waitUntil(async () => await elementGetter.getText() === expectedText);
+  };
 
   const verifyListReportContent = async ({
     formName,
