@@ -88,7 +88,10 @@ const createPlace = async (place) => {
   delete place.contact;
 
   await module.exports._validatePlace(place);
-  people._validatePerson(contact);
+  const err = people._validatePerson(contact);
+  if (err) {
+    return Promise.reject({ code: 400, message: err });
+  }
 
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
   place.reported_date = date.valueOf();
