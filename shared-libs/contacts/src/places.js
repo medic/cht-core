@@ -89,6 +89,10 @@ const createPlace = async (place) => {
 
   await module.exports._validatePlace(place);
   if (contact) {
+    if (!contact.type) {
+      const defaultType = contactTypesUtils.getTypeById(config.get(), 'person');
+      contact.type = defaultType && defaultType.id;
+    }
     const err = people._validatePerson(contact);
     if (err) {
       return Promise.reject({ code: 400, message: err });
