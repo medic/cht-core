@@ -108,7 +108,7 @@ const createPlace = async (place) => {
   contact.place = placeUUID;
   const person = await people.getOrCreatePerson(contact);
   const result = await updatePlace(placeUUID, { contact: person._id });
-  return { ...result, contact: { id: person._id, rev: person._rev } };
+  return { ...result, contact: { id: person._id} };
 };
 
 /*
