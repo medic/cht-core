@@ -15,18 +15,6 @@ const formDocument = {
   }
 };
 
-const FORM = 'form[data-form-id="pregnancy_home_visit"]';
-const LLIN = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use"]';
-const IRON_FOLATE = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
-const HIV_TESTED = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested"]';
-
-const visitOption = (value) => {
-  return $(`${FORM} input[name="/pregnancy_home_visit/pregnancy_summary/visit_option"][value="${value}"]`);
-};
-const gestationalAgeCorrect = (value) => {
-  return $(`${FORM} input[name="/pregnancy_home_visit/pregnancy_summary/g_age_correct"][value="${value}"]`);
-};
-
 const dangerSignLabel = () => {
   return $('label.question.readonly.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
 };
@@ -34,7 +22,7 @@ const dangerSignSummary = () => $$('label.question.readonly.or-branch.non-select
 const followUpMessage = () => $('[data-value=" /pregnancy_visit/chw_sms "]');
 
 const selectPatient = async (patientName) => {
-  await genericForm.selectContact('/pregnancy_visit/inputs/contact', patientName);
+  await genericForm.selectContact(patientName);
 };
 const selectDangerSign = async (value) => {
   const danger = await $(`input[value="${value}"]`);
@@ -56,18 +44,6 @@ const uploadPregnancyVisitForm = async () => {
   await utils.saveDoc(formDocument);
 };
 
-const selectVisitOption = async (value = 'yes') => {
-  const option = await visitOption(value);
-  await option.waitForClickable();
-  await option.click();
-};
-
-const confirmGestationalAge = async (value = 'yes') => {
-  const gestationalAge = await gestationalAgeCorrect(value);
-  await gestationalAge.waitForClickable();
-  await gestationalAge.click();
-};
-
 const countSummaryDangerSigns = async () => {
   return await $$(
     'section[name="/pregnancy_home_visit/summary"] ' +
@@ -76,9 +52,6 @@ const countSummaryDangerSigns = async () => {
 };
 
 module.exports = {
-  LLIN,
-  IRON_FOLATE,
-  HIV_TESTED,
   selectPatient,
   selectDangerSign,
   selectAllDangerSigns,
@@ -87,7 +60,5 @@ module.exports = {
   dangerSignSummary,
   followUpMessage,
   uploadPregnancyVisitForm,
-  selectVisitOption,
-  confirmGestationalAge,
   countSummaryDangerSigns,
 };

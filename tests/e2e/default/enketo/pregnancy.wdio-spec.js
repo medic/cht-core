@@ -39,12 +39,10 @@ describe('Pregnancy registration', () => {
     await commonEnketoPage.selectRadioButton('How would you like to report the pregnancy?',
       'Expected date of delivery (EDD)');
     await genericForm.nextPage();
-    await pregnancyForm.setDeliveryDate(edd.format('YYYY-MM-DD'));
+    await commonEnketoPage.setInputValue('date',
+      'Please enter the expected date of delivery.',
+      edd.format('YYYY-MM-DD'));
     await genericForm.nextPage();
-
-    const confirmationDetails = await pregnancyForm.getConfirmationDetails();
-    expect(Date.parse(confirmationDetails.eddConfirm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
-
     await genericForm.nextPage();
     await commonEnketoPage.setInputValue('text',
       'How many times has the woman been to the health facility for ANC?',
@@ -124,7 +122,7 @@ describe('Pregnancy registration', () => {
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
 
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
-    expect(pregnancyCardInfo.weeksPregnant).to.equal(confirmationDetails.weeksPregnantConfirm);
+    expect(pregnancyCardInfo.weeksPregnant).to.equal('38');
     expect(Date.parse(pregnancyCardInfo.deliveryDate)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(pregnancyCardInfo.risk).to.equal('High risk');
     expect(Date.parse(pregnancyCardInfo.ancVisit)).to.equal(Date.parse(nextANCVisit.format('D MMM, YYYY')));

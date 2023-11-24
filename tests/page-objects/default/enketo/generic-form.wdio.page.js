@@ -45,8 +45,8 @@ const validateReport = async () => {
   expect(await reportsPage.getSelectedReviewOption()).to.equal('Correct');
 };
 
-const selectContact = async (inputName, contactName) => {
-  const select2Selection = () => $(`section[name="${inputName}"] .select2-selection`);
+const selectContact = async (contactName) => {
+  const select2Selection = () => $('label*=What is the patient\'s name?').$('.select2-selection');
   await (await select2Selection()).click();
   const searchField = await $('.select2-search__field');
   await searchField.setValue(contactName);

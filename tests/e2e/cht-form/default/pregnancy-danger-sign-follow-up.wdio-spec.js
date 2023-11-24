@@ -1,6 +1,6 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const pregDangerSignFollowUpForm = require('@page-objects/default/enketo/pregnancy-danger-sign-follow-up.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
@@ -15,8 +15,19 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy danger sign follow-up');
 
-    await pregDangerSignFollowUpForm.selectVisitedHealthFacility(true);
-    await pregDangerSignFollowUpForm.selectDangerSigns(true);
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
+    await commonEnketoPage.selectRadioButton('Fits', 'Yes');
+    await commonEnketoPage.selectRadioButton('Severe abdominal pain', 'Yes');
+    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
+    await commonEnketoPage.selectRadioButton('Very pale', 'Yes');
+    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
+    await commonEnketoPage.selectRadioButton('Reduced or no fetal movements', 'Yes');
+    await commonEnketoPage.selectRadioButton('Breaking of water', 'Yes');
+    await commonEnketoPage.selectRadioButton('Getting tired easily', 'Yes');
+    await commonEnketoPage.selectRadioButton('Swelling of face and hands', 'Yes');
+    await commonEnketoPage.selectRadioButton('Breathlessness', 'Yes');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
     const jsonObj = doc.fields;

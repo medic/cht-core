@@ -11,6 +11,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFacilityVisitReminderPage = require(
   '@page-objects/default/enketo/pregnancy-facility-visit-reminder.wdio.page'
 );
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 describe('Health Facility ANC Reminder task', () => {
   const places = placeFactory.generateHierarchy();
@@ -42,11 +44,12 @@ describe('Health Facility ANC Reminder task', () => {
     await commonPage.goToTasks();
     await taskPage.openTaskById(pregnancyId, '~pregnancy-facility-visit-reminder~anc.facility_reminder');
 
-    const {title, visitDate} = await pregnancyFacilityVisitReminderPage.getAncReminderInfo();
-    expect(title).to.equal('Health facility ANC reminder');
+    const visitDate = await pregnancyFacilityVisitReminderPage.getAncReminderInfo();
+    expect(await genericForm.getFormTitle()).to.equal('Health facility ANC reminder');
     expect(Date.parse(visitDate)).to.equal(Date.parse(ancDate.format('D MMM, YYYY')));
 
-    await pregnancyFacilityVisitReminderPage.submitAncReminder();
+    await commonEnketoPage.selectRadioButton('Did you remind the client in-person or by phone?', 'In person');
+    await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();

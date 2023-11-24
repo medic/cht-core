@@ -37,7 +37,7 @@ const selectRadioButtonByNameAndValue = async (name, value) => {
 };
 
 const selectPatientName = (name) => {
-  return genericForm.selectContact(`/${formId}/inputs/contact`, name);
+  return genericForm.selectContact(name);
 };
 
 const selectAliveAndWell = () => {

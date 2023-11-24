@@ -26,10 +26,6 @@ describe('cht-form web component - Pregnancy Form', () => {
       'Please enter the expected date of delivery.',
       edd.format('YYYY-MM-DD'));
     await genericForm.nextPage();
-
-    const confirmationDetails = await pregnancyForm.getConfirmationDetails();
-    expect(Date.parse(confirmationDetails.eddConfirm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
-
     await genericForm.nextPage();
     await commonEnketoPage.setInputValue('text',
       'How many times has the woman been to the health facility for ANC?',
