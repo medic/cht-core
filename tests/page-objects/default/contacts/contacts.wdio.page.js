@@ -57,7 +57,6 @@ const childrenCards = () => $$('.right-pane .card.children');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
-const contactPhone = () => $('#contact_summary .cell.phone > div > p');
 const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
 const contactMuted = () => $('.heading-content .muted');
 
@@ -314,11 +313,6 @@ const getContactMedicID = async () => {
   return (await contactMedicID()).getText();
 };
 
-const getPhone = async () => {
-  await contactPhone().waitForDisplayed();
-  return (await contactPhone()).getText();
-};
-
 const getContactDeceasedStatus = async () => {
   const deceasedStatus = await contactDeceasedStatus();
   await deceasedStatus.waitForDisplayed();
@@ -478,5 +472,4 @@ module.exports = {
   sexField,
   roleField,
   getCurrentPersonEditFormValues,
-  getPhone,
 };

@@ -21,6 +21,7 @@ const deliveryCode = () => $(`${PAST_PREG_CARD_SELECTOR} div[test-id*="contact.p
 const ancVisitsCompleted = () => {
   return $(`${PAST_PREG_CARD_SELECTOR} div[test-id="contact.profile.anc_visit"] p.card-field-value`);
 };
+const contactPhone = () => $('#contact_summary .cell.phone > div > p');
 
 const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
   if (rightSideAction) {
@@ -103,6 +104,11 @@ const getCurrentPlaceEditFormValues = async (type) => {
   };
 };
 
+const getPhone = async () => {
+  await contactPhone().waitForDisplayed();
+  return (await contactPhone()).getText();
+};
+
 module.exports = {
   contactPageDefault,
   addPlace,
@@ -115,4 +121,5 @@ module.exports = {
   getDeliveryCode,
   getAncVisits,
   getCurrentPlaceEditFormValues,
+  getPhone,
 };

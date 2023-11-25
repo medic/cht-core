@@ -1,18 +1,18 @@
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const gatewayApiUtils = require('@utils/gateway-api');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 describe('Registration by SMS', () => {
-  const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
-  const user = userFactory.build({ place: district_hospital._id });
+  const districtHospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
+  const user = userFactory.build({ place: districtHospital._id });
 
   before(async () => {
-    await utils.saveDocs([district_hospital]);
+    await utils.saveDocs([districtHospital]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
   });
@@ -31,13 +31,13 @@ describe('Registration by SMS', () => {
     });
 
     await commonPage.goToPeople(user.place);
-    const allRHSPeople = await contactPage.getAllRHSPeopleNames();
+    const allRHSPeople = await contactPage.contactPageDefault.getAllRHSPeopleNames();
     expect(allRHSPeople.length).to.equal(2);
     expect(allRHSPeople).to.include.members([name, user.contact.name]);
 
-    await contactPage.selectLHSRowByText(name);
+    await contactPage.contactPageDefault.selectLHSRowByText(name);
     await commonPage.waitForPageLoaded();
-    const medicID = await contactPage.getContactMedicID();
+    const medicID = await contactPage.contactPageDefault.getContactMedicID();
 
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
@@ -47,7 +47,7 @@ describe('Registration by SMS', () => {
 
     expect(firstReportInfo.heading).to.equal(name);
     expect(firstReportInfo.form).to.equal('New Person (SMS)');
-    expect(firstReportInfo.lineage).to.equal(district_hospital.name);
+    expect(firstReportInfo.lineage).to.equal(districtHospital.name);
     expect(await reportsPage.getRawReportContent()).to.equal(message);
 
     const automaticReply = await reportsPage.getAutomaticReply();
@@ -132,13 +132,13 @@ describe('Registration by SMS', () => {
     });
 
     await commonPage.goToPeople(user.place);
-    const allRHSPeople = await contactPage.getAllRHSPeopleNames();
+    const allRHSPeople = await contactPage.contactPageDefault.getAllRHSPeopleNames();
     expect(allRHSPeople).to.include.members([name, user.contact.name]);
 
-    await contactPage.selectLHSRowByText(name);
+    await contactPage.contactPageDefault.selectLHSRowByText(name);
     await commonPage.waitForPageLoaded();
     const contactSummaryPhone = await contactPage.getPhone();
-    const medicID = await contactPage.getContactMedicID();
+    const medicID = await contactPage.contactPageDefault.getContactMedicID();
     expect(contactSummaryPhone).to.equal(phoneFormatted);
 
     await commonPage.goToReports();
