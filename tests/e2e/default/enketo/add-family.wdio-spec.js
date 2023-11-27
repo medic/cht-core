@@ -7,8 +7,9 @@ const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-xdescribe('Family form', () => {
+describe('Family form', () => {
   const contactId = userData.contactId;
   const userDocs = userData.docs;
   const formXML = fs.readFileSync(`${__dirname}/forms/add-family-multiple-repeats.xml`, 'utf8');
@@ -31,15 +32,18 @@ xdescribe('Family form', () => {
     await cookieLogin();
   });
 
-  xit('Submit Add Family form', async () => {
+  it('Submit Add Family form', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport(formDoc.internalId, false);
     await familyForm.submitFamilyForm();
     await familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
     await genericForm.editForm();
-    await familyForm.fillPrimaryCaregiver('modified');
+    await commonEnketoPage.setInputValue('Names', 'modified');
     await genericForm.nextPage(7);
-    await familyForm.finalSurvey(1, 1, 1, 1);
+    await commonEnketoPage.selectCheckBox('Spring');
+    await commonEnketoPage.selectRadioButton('Do they have mosquito nets', 'No');
+    await commonEnketoPage.selectRadioButton('Do they have an hygienic toilet', 'No');
+    await commonEnketoPage.selectCheckBox('Condoms');
     await reportsPage.submitForm();
     await familyForm.reportCheck(
       'modified Family',

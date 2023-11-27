@@ -32,10 +32,10 @@ describe('cht-form web component - Delivery Form', () => {
     await commonEnketoPage.selectRadioButton('How many babies are alive?', '1');
     await commonEnketoPage.selectRadioButton('Where did delivery take place?', 'Health facility');
     await commonEnketoPage.selectRadioButton('How did she deliver?', 'Vaginal');
-    await commonEnketoPage.setInputValue('date', 'Date of delivery', DATE);
+    await commonEnketoPage.setDateValue('Date of delivery', DATE);
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('What is the condition of baby?', 'Alive and well');
-    await commonEnketoPage.setInputValue('text', 'Name', BABY_NAME);
+    await commonEnketoPage.setInputValue('Name', BABY_NAME);
     await commonEnketoPage.selectRadioButton('Sex', 'Male');
     await commonEnketoPage.selectRadioButton('Birth weight', 'I don\'t know');
     await commonEnketoPage.selectRadioButton('Birth length', 'I don\'t know');
@@ -104,10 +104,10 @@ describe('cht-form web component - Delivery Form', () => {
 
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Deceased');
     await genericForm.nextPage();
-    await commonEnketoPage.setInputValue('date', 'Date of death', DATE);
+    await commonEnketoPage.setDateValue('Date of death', DATE);
     await commonEnketoPage.selectRadioButton('What was the place of death?', 'Health facility');
     await commonEnketoPage.selectRadioButton('Did the woman deliver any babies before she died?', 'No');
-    await commonEnketoPage.setInputValue('text', 'Additional notes', 'Test notes - Mother\'s death');
+    await commonEnketoPage.setInputValue('Additional notes', 'Test notes - Mother\'s death');
     await genericForm.nextPage();
 
     const data = await mockConfig.submitForm();

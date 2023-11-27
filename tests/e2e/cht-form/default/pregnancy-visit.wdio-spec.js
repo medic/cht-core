@@ -1,6 +1,5 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Pregnancy Visit Form', () => {
@@ -38,8 +37,21 @@ describe('cht-form web component - Pregnancy Visit Form', () => {
     await commonEnketoPage.selectRadioButton('Has the woman been tested for HIV in the past 3 months?', 'Yes');
     await genericForm.nextPage();
 
-    const countSummaryDangerSigns = await pregnancyVisitForm.countSummaryDangerSigns();
-    expect(countSummaryDangerSigns).to.equal(11);
+    const summaryTexts = [
+      'Vaginal bleeding',
+      'Fits',
+      'Severe abdominal pain',
+      'Severe headache',
+      'Very pale',
+      'Fever',
+      'Reduced or no fetal movements',
+      'Breaking of water',
+      'Getting tired easily',
+      'Swelling of face and hands',
+      'Breathlessness'
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
     const jsonObj = doc.fields;

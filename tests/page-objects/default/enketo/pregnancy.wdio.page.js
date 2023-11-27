@@ -15,14 +15,11 @@ const submitDefaultPregnancy = async () => {
   await commonEnketoPage.selectRadioButton('How would you like to report the pregnancy?',
     'Expected date of delivery (EDD)');
   await genericForm.nextPage();
-  await commonEnketoPage.setInputValue('date',
-    'Please enter the expected date of delivery.',
+  await commonEnketoPage.setDateValue('Please enter the expected date of delivery.',
     moment().add(8, 'days').format('YYYY-MM-DD'));
   await genericForm.nextPage();
   await genericForm.nextPage();
-  await commonEnketoPage.setInputValue('text',
-    'How many times has the woman been to the health facility for ANC?',
-    '0');
+  await commonEnketoPage.setInputValue('How many times has the woman been to the health facility for ANC?', '0');
   await genericForm.nextPage();
   await commonEnketoPage.selectRadioButton('If the woman has a specific upcoming ANC appointment date, ' +
     'enter it here. You will receive a task three days before to remind her to attend.', 'Enter date');

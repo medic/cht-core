@@ -51,10 +51,10 @@ describe('Contact Delivery Form', () => {
     await commonEnketoPage.selectRadioButton('How many babies are alive?', '1');
     await commonEnketoPage.selectRadioButton('Where did delivery take place?', 'Health facility');
     await commonEnketoPage.selectRadioButton('How did she deliver?', 'Vaginal');
-    await commonEnketoPage.setInputValue('date', 'Date of delivery', BABY_DOB);
+    await commonEnketoPage.setDateValue('Date of delivery', BABY_DOB);
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('What is the condition of baby?', 'Alive and well');
-    await commonEnketoPage.setInputValue('text', 'Name', BABY_NAME);
+    await commonEnketoPage.setInputValue('Name', BABY_NAME);
     await commonEnketoPage.selectRadioButton('Sex', 'Male');
     await commonEnketoPage.selectRadioButton('Birth weight', 'I don\'t know');
     await commonEnketoPage.selectRadioButton('Birth length', 'I don\'t know');

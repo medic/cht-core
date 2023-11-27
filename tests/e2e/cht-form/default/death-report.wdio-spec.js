@@ -1,7 +1,7 @@
 const mockConfig = require('../mock-config');
 const moment = require('moment');
-const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Death Report Form', () => {
 
@@ -18,14 +18,18 @@ describe('cht-form web component - Death Report Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Death report');
 
-    await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);
-    await deathReportForm.setDeathInformation(deathNote);
-    await deathReportForm.setDeathDate(date);
+    await commonEnketoPage.selectRadioButton('Place of death', 'Health facility');
+    await commonEnketoPage.setTextareaValue('Provide any relevant information related to the death of',
+      deathNote);
+    await commonEnketoPage.setDateValue('Date of Death', date);
     await genericForm.nextPage();
 
-    const {deathDate, deathInformation} = await deathReportForm.getSummaryDetails();
-    expect(deathDate).to.equal(date);
-    expect(deathInformation).to.equal(deathNote);
+    const summaryTexts = [
+      date,
+      deathNote
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
     const jsonObj = doc.fields.death_details;
@@ -34,7 +38,7 @@ describe('cht-form web component - Death Report Form', () => {
 
     expect(jsonObj.date_of_death).to.equal(date);
     expect(jsonObj.death_information).to.equal(deathNote);
-    expect(jsonObj.place_of_death).to.equal(deathReportForm.PLACE_OF_DEATH.healthFacility);
+    expect(jsonObj.place_of_death).to.equal('health_facility');
   });
 
   it('should render form in the language set for the user', async () => {
@@ -46,15 +50,14 @@ describe('cht-form web component - Death Report Form', () => {
       myForm.user = { language: 'es' };
     });
 
-    const labelsValues = await deathReportForm.getLabelsValues();
-    expect(labelsValues.details).to.equal('Detalles del fallecimiento');
-    expect(labelsValues.date).to.equal('Fecha del fallecimiento');
-    expect(labelsValues.place).to.equal('Lugar del fallecimiento');
-    expect(labelsValues.healthFacility).to.equal('Centro de salud');
-    expect(labelsValues.home).to.equal('Casa');
-    expect(labelsValues.other).to.equal('Otro');
-    expect(labelsValues.notes)
-      .to.equal('Provea cualquier información relevante relacionada con el fallecimiento de John.');
+    expect(await (await commonEnketoPage.spanElement('Detalles del fallecimiento')).isDisplayed()).to.be.true;
+    expect(await (await commonEnketoPage.spanElement('Fecha del fallecimiento')).isDisplayed()).to.be.true;
+    expect(await (await commonEnketoPage.spanElement('Lugar del fallecimiento')).isDisplayed()).to.be.true;
+    expect(await (await commonEnketoPage.spanElement('Centro de salud')).isDisplayed()).to.be.true;
+    expect(await (await commonEnketoPage.spanElement('Casa')).isDisplayed()).to.be.true;
+    expect(await (await commonEnketoPage.spanElement('Otro')).isDisplayed()).to.be.true;
+    expect(await (await commonEnketoPage.labelElement('Provea cualquier información relevante relacionada ' +
+      'con el fallecimiento de John.')).isDisplayed()).to.be.true;
   });
 
 });
