@@ -3,6 +3,11 @@ const searchPageDefault = require('@page-objects/default/search/search.wdio.page
 const openSearchBox = () => $('.mm-search-bar-container .search-bar-left-icon .fa-search');
 const barcodeSearchBox = () => $('.fa-qrcode');
 const barcodeSearchInput = () => $('.barcode-scanner-input');
+const snackbar = () => $('.snackbar-content');
+
+const getSnackbarMessage = async () => {
+  return await (await snackbar()).getText();
+};
 
 const performSearch = async (term) => {
   await (await openSearchBox()).waitForClickable();
@@ -31,4 +36,5 @@ module.exports = {
   searchPageDefault,
   performSearch,
   performBarcodeSearch,
+  getSnackbarMessage,
 };
