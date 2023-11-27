@@ -11,12 +11,11 @@ const path = require('path');
 const places = placeFactory.generateHierarchy();
 const healthCenter = places.get('health_center');
 const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
-const person = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
-const barcodeImagePath = path.join(__dirname, '/images/123456.jpg');
+const person = personFactory.build({ patient_id: '123456', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+const barcodeImagePath = path.join(__dirname, '/images/valid-barcode.gif');
 
 describe('Test Contact Search with Barcode Scanner', async () => {
   before(async () => {
-    person._id = '123456';
     await utils.saveDocs([...places.values(), person]);
     await utils.createUsers([offlineUser]);
     const canUseBarcodeScannerPermission = ['can_use_barcode_scanner'];
@@ -28,6 +27,8 @@ describe('Test Contact Search with Barcode Scanner', async () => {
 
   it('Search should display result', async () => {
     await searchPage.performBarcodeSearch(barcodeImagePath);
-
+    expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+      person.name
+    ]);
   });
 });

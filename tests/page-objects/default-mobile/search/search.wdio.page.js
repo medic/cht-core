@@ -16,15 +16,13 @@ const openBarcodeSearchBox = async () => {
 };
 
 const performBarcodeSearch = async (barcodeImagePath) => {
-  //
   const remoteFilePath = await browser.uploadFile(barcodeImagePath);
-  await (await barcodeSearchInput()).addValue(remoteFilePath);
-  //$('.barcode-scanner-input').submit();
-  //await (await barcodeSearchInput()).click();
-  //await (await searchBox()).clearValue();
-  //await browser.keys(ENTER);
-  // After search is triggered there can be a slight delay before the AJAX call
-  // is made and the search spinner shows up hence we just need to wait for a bit before moving forward
+  /*In this case the upload file button is hidden,
+  then we need to manipulate the DOM of the respective webelement to make it interactable.*/
+  browser.execute(function () {
+    document.getElementsByClassName('barcode-scanner-input')[0].style.display = 'block';
+  });
+  await (await barcodeSearchInput()).setValue(remoteFilePath);
   await browser.pause(1000);
 };
 
