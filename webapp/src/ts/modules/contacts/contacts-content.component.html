@@ -81,7 +81,7 @@
         </div>
 
         <ul>
-          <ng-container *ngFor="let child of group?.contacts" >
+          <ng-container *ngFor="let child of group?.contacts?.slice(0, 50)" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
               [route]="['/', 'contacts', child.doc._id]"
