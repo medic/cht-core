@@ -1,6 +1,6 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - PNC Danger Sign Follow-up Mother', () => {
 
@@ -15,13 +15,13 @@ describe('cht-form web component - PNC Danger Sign Follow-up Mother', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('PNC danger sign follow-up - mother');
 
-    await genericForm.selectYesNoOption(dangerSignPage.visitConfirmation('pnc_danger_sign_follow_up_mother'));
-    await genericForm.selectYesNoOption(dangerSignPage.dangerSignsPresent('pnc_danger_sign_follow_up_mother'));
-    await genericForm.selectYesNoOption(dangerSignPage.fever('pnc_danger_sign_follow_up_mother'));
-    await genericForm.selectYesNoOption(dangerSignPage.headache('pnc_danger_sign_follow_up_mother'), 'no');
-    await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pnc_danger_sign_follow_up_mother'));
-    await genericForm.selectYesNoOption(dangerSignPage.vaginalDischarge('pnc_danger_sign_follow_up_mother'), 'no');
-    await genericForm.selectYesNoOption(dangerSignPage.convulsion('pnc_danger_sign_follow_up_mother'));
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
+    await commonEnketoPage.selectRadioButton('Severe headache', 'No');
+    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
+    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'No');
+    await commonEnketoPage.selectRadioButton('Convulsions', 'Yes');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
     const jsonObj = doc.fields;

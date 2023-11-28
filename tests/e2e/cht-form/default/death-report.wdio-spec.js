@@ -50,14 +50,17 @@ describe('cht-form web component - Death Report Form', () => {
       myForm.user = { language: 'es' };
     });
 
-    expect(await (await commonEnketoPage.spanElement('Detalles del fallecimiento')).isDisplayed()).to.be.true;
-    expect(await (await commonEnketoPage.spanElement('Fecha del fallecimiento')).isDisplayed()).to.be.true;
-    expect(await (await commonEnketoPage.spanElement('Lugar del fallecimiento')).isDisplayed()).to.be.true;
-    expect(await (await commonEnketoPage.spanElement('Centro de salud')).isDisplayed()).to.be.true;
-    expect(await (await commonEnketoPage.spanElement('Casa')).isDisplayed()).to.be.true;
-    expect(await (await commonEnketoPage.spanElement('Otro')).isDisplayed()).to.be.true;
-    expect(await (await commonEnketoPage.labelElement('Provea cualquier información relevante relacionada ' +
-      'con el fallecimiento de John.')).isDisplayed()).to.be.true;
+    const summaryTexts = [
+      'Detalles del fallecimiento',
+      'Fecha del fallecimiento',
+      'Lugar del fallecimiento',
+      'Centro de salud',
+      'Casa',
+      'Otro'
+    ];
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
+    expect(await commonEnketoPage.isElementDisplayed('label', 'Provea cualquier información relevante relacionada ' +
+      'con el fallecimiento de John.')).to.be.true;
   });
 
 });

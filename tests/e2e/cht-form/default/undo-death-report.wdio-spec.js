@@ -15,7 +15,7 @@ describe('cht-form web component - Undo Death Report Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Undo death report');
 
-    expect(await (await commonEnketoPage.spanElement('John')).isDisplayed()).to.be.true;
+    expect(await commonEnketoPage.isElementDisplayed('span', 'John')).to.be.true;
     await commonEnketoPage.selectRadioButton('Submitting this form will undo the death report of John. ' +
       'Are you sure you want to undo the death report?', 'Yes');
 

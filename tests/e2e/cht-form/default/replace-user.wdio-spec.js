@@ -1,6 +1,6 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Replace User Form', () => {
 
@@ -16,17 +16,20 @@ describe('cht-form web component - Replace User Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Replace User');
 
-    await replaceUserForm.selectAdminCode('1234');
+    await commonEnketoPage.setInputValue('Admin Code', '1234');
     await genericForm.nextPage();
-    await replaceUserForm.selectContactFullName('Replacement User');
-    await replaceUserForm.selectContactSex(replaceUserForm.SEX.female);
-    await replaceUserForm.selectContactDobUnknown();
-    await replaceUserForm.selectContactAgeYears(22);
+    await commonEnketoPage.setInputValue('Full name', 'Replacement User');
+    await commonEnketoPage.selectRadioButton('Sex', 'Female');
+    await commonEnketoPage.selectCheckBox('Date of birth unknown');
+    await commonEnketoPage.setInputValue('Years', '22');
     await genericForm.nextPage();
 
-    const { phone, contactName } = await replaceUserForm.getWarningMsgDetails();
-    expect(phone).to.equal('+50689999999');
-    expect(contactName).to.equal('Replacement User');
+    const summaryTexts = [
+      '+50689999999',
+      'Replacement User'
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     const data = await mockConfig.submitForm();
     const jsonObjContact = data[0].fields;

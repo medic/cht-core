@@ -1,11 +1,15 @@
-const currentSection = () => $('section[class*="current"]');
+const currentSection =  () => $('section[class*="current"]');
 
-const spanElement =  (text) => currentSection().$(`span*=${text}`);
+const divContainer = () => $('div.container');
 
-const labelElement = (text) => currentSection().$(`label*=${text}`);
+const isElementDisplayed = async (type, text) => {
+  const page = await currentSection().isExisting() ? currentSection() : divContainer();
+  return await page.$(`${type}*=${text}`).isDisplayed();
+};
 
 const selectRadioButton = async (question, label) => {
-  const radioButton = await currentSection()
+  const page = await currentSection().isExisting() ? currentSection() : divContainer();
+  const radioButton = await page
     .$(`legend*=${question}`)
     .parentElement()
     .$(`label*=${label}`);
@@ -14,7 +18,8 @@ const selectRadioButton = async (question, label) => {
 };
 
 const selectCheckBox = async (text) => {
-  let checkbox = await currentSection();
+  const page = await currentSection().isExisting() ? currentSection() : divContainer();
+  let checkbox = await page;
   if (await checkbox.$('fieldset.or-branch:not(.disabled)').isExisting()){
     checkbox = await checkbox.$('fieldset.or-branch:not(.disabled)');
   }
@@ -24,7 +29,8 @@ const selectCheckBox = async (text) => {
 };
 
 const setValue = async (typeSelector, question, value) => {
-  const element = await currentSection()
+  const page = await currentSection().isExisting() ? currentSection() : divContainer();
+  const element = await page
     .$(`label*=${question}`)
     .$(typeSelector);
   await element.waitForDisplayed();
@@ -44,14 +50,14 @@ const setTextareaValue = async (question, value) => {
 };
 
 const validateSummaryReport = async (textArray) => {
+  const element = await currentSection().isExisting() ? currentSection() : divContainer();
   for (const text of textArray) {
-    expect(await (await spanElement(text)).isDisplayed()).to.be.true;
+    expect(await (await element.$(`span*=${text}`)).isDisplayed()).to.be.true;
   }
 };
 
 module.exports = {
-  spanElement,
-  labelElement,
+  isElementDisplayed,
   selectRadioButton,
   selectCheckBox,
   setInputValue,
