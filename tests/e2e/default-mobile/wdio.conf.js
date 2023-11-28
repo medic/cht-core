@@ -7,7 +7,7 @@ chai.use(require('chai-exclude'));
 exports.config = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
-      '/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/e2e/default-mobile/contacts/barcode-search-contacts.wdio-spec.js',
+      './**/*.wdio-spec.js',
       [
         '../default/login/login-logout.wdio-spec.js',
         '../default/navigation/navigation.wdio-spec.js',
