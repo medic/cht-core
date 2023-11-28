@@ -15,11 +15,6 @@ const performSearch = async (term) => {
   await searchPageDefault.performSearch(term);
 };
 
-const openBarcodeSearchBox = async () => {
-  await (await barcodeSearchBox()).waitForClickable();
-  await (await barcodeSearchBox()).click();
-};
-
 const performBarcodeSearch = async (barcodeImagePath) => {
   const remoteFilePath = await browser.uploadFile(barcodeImagePath);
   /*In this case the upload file button is hidden,
