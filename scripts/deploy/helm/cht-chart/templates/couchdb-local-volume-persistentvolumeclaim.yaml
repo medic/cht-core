@@ -1,0 +1,19 @@
+{{- if and (eq (toString .Values.couchdb.clusteredCouch_enabled) "false") (eq (toString .Values.cluster_type) "k3s-k3d") }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    cht.service: couchdb-claim0
+  name: local-volume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.couchdb.couchdb_node_storage_size }}
+  {{- if eq (toString .Values.couchdb_data.preExistingDataAvailable) "true" }}
+  volumeName: couchdb-pv-{{ .Values.namespace }}
+  storageClassName: ""
+  {{- end }}
+status: {}
+{{- end }}

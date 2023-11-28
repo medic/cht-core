@@ -81,8 +81,8 @@ spec:
       {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
       volumes:
         - name: local-volume
-          hostPath:
-            path: {{ .Values.local.diskPath }}
+          persistentVolumeClaim:
+            claimName: local-volume
       {{- else }}
       volumes:
         - name: couchdb-claim0

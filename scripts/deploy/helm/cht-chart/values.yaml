@@ -28,7 +28,7 @@ ingress:
     groupname: "dev-cht-alb"
     tags: "Environment=dev,Team=QA"
     certificate: "arn:aws:iam::<account-id>:server-certificate/2023-wildcard-dev-medicmobile-org-chain"
-  host: "gamma-cht.dev.medicmobile.org"
+  host: "dev.local-ip.medicmobile.org"
   hosted_zone_id: "<the-hosted-zone-id>"
   load_balancer: "dualstack.k8s-devchtalb-3eb0781cbb-694321496.eu-west-2.elb.amazonaws.com"
 
