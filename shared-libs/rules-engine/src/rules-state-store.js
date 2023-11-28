@@ -8,7 +8,7 @@ const md5 = require('md5');
 const calendarInterval = require('@medic/calendar-interval');
 const targetState = require('./target-state');
 
-const EXPIRE_CALCULATION_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+const EXPIRE_CALCULATION_AFTER_MS = 365 * 24 * 60 * 60 * 1000;
 let state;
 let currentUserContact;
 let currentUserSettings;
