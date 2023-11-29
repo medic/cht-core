@@ -15,10 +15,11 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       ],
     ]
   },
-  beforeSuite: async () => {
+  beforeHook: async () => {
     // We tried the browser.emulateDevice('...') function but it's not stable enough,
-    // it looses the mobile view and switches back to desktop
-    //await browser.setWindowSize(450, 700);
+    // it looses the mobile view and switches back to desktop.
+    // Adding to the comment above, it loses the mobile view when a test fails.
+    // It may be better to use beforeHook instead of beforeSuite so it can set the capability before each test.
     await browser.emulateDevice({
       viewport: {
         width: 600,
