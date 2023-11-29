@@ -44,7 +44,7 @@ describe('Test Contact Search with Barcode Scanner', async () => {
 
   it('With an invalid barcode image - Search should display snackbar with error message', async () => {
     await searchPage.performBarcodeSearch(invalidBarcodeImagePath);
-    expect(await searchPage.getSnackbarMessage()).to.equal('Failed to read the barcode. Retry.');
+    expect(await commonPage.snackbarMessage()).to.equal('Failed to read the barcode. Retry.');
   });
 
 });
