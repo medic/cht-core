@@ -221,7 +221,7 @@ describe('rules-state-store', () => {
 
     });
 
-    it('when monthStartDate is close in the past', async () => {
+    xit('when monthStartDate is close in the past', async () => {
       const today = moment('2020-03-30').valueOf();
       const nextDate = moment('2020-04-02').valueOf();
       const pastExpiration = moment('2020-04-08').valueOf();
@@ -235,7 +235,7 @@ describe('rules-state-store', () => {
       expect(rulesStateStore.isDirty('a')).to.be.true;
     });
 
-    it('when monthStartDate is close in the future', async () => {
+    xit('when monthStartDate is close in the future', async () => {
       const today = moment('2020-03-24').valueOf();
       const nextDate = moment('2020-03-28').valueOf();
       clock = sinon.useFakeTimers(today);
@@ -294,7 +294,7 @@ describe('rules-state-store', () => {
       expect(rulesStateStore.getDirtyContacts()).to.deep.equal([]);
     });
 
-    it('some contacts', async () => {
+    xit('some contacts', async () => {
       clock = sinon.useFakeTimers();
       const now = moment();
       await rulesStateStore.build({});

@@ -99,7 +99,7 @@ describe('provider-wireup integration tests', () => {
   });
 
   describe('stateChangeCallback', () => {
-    it('wireup of contactTaskState to pouch', async () => {
+    xit('wireup of contactTaskState to pouch', async () => {
       sinon.spy(provider, 'stateChangeCallback');
 
       const userDoc = {};

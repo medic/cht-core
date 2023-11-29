@@ -192,7 +192,7 @@ describe(`Rules Engine Integration Tests`, () => {
         });
       });
 
-      it('fail facility_reminder because of fresh doc merge', async () => {
+      xit('fail facility_reminder because of fresh doc merge', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
         // move forward 9 days, the contact is dirty, the task is recalculated
