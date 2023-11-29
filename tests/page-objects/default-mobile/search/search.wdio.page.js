@@ -15,13 +15,12 @@ const performSearch = async (term) => {
 };
 
 const performBarcodeSearch = async (barcodeImagePath) => {
-  const remoteFilePath = await browser.uploadFile(barcodeImagePath);
   /*In this case the upload file button is hidden,
   then we need to manipulate the DOM of the respective webelement to make it interactable.*/
   browser.execute(function () {
     document.getElementsByClassName('barcode-scanner-input')[0].style.display = 'block';
   });
-  await (await barcodeSearchInput()).setValue(remoteFilePath);
+  await (await barcodeSearchInput()).setValue(barcodeImagePath);
   await browser.pause(1000);
 };
 
