@@ -57,8 +57,8 @@ const settings = {
   ]
 };
 
-describe('extract-person-contacts migration', function() {
-  afterEach(function() {
+describe('extract-person-contacts migration', () => {
+  afterEach(() => {
     sinon.restore();
     return utils.tearDown();
   });
@@ -222,100 +222,96 @@ describe('extract-person-contacts migration', function() {
     await utils.initSettings(settings);
     await configWatcher.load();
     await utils.runMigration('extract-person-contacts');
-    await utils.assertDb([districtHospitalFixed, districtHospitalContact,
-      healthCenterFixed, healthCenterContact,
-      clinicFixed, clinicContact]);
+    await utils.assertDb([
+      districtHospitalFixed,
+      districtHospitalContact,
+      healthCenterFixed,
+      healthCenterContact,
+      clinicFixed,
+      clinicContact,
+    ]);
   });
 
-  it('should create a new Person from facility.contact', function() {
+  it('should create a new Person from facility.contact', () => {
     // given
-    return utils.initDb([{
-      _id: 'abc',
-      type: 'district_hospital',
-      name: 'myfacility',
-      contact: {
-        name: 'Alice',
-        phone: '+123'
-      },
-    }, ])
+    return utils
+      .initDb([{
+        _id: 'abc',
+        type: 'district_hospital',
+        name: 'myfacility',
+        contact: {
+          name: 'Alice',
+          phone: '+123'
+        },
+      }])
       .then(() => utils.initSettings(settings))
       .then(() => configWatcher.load())
-      .then(function() {
-
-        // when
-        return utils.runMigration('extract-person-contacts');
-
-      })
-      .then(function() {
-
-        // expect
-        return utils.assertDb([{
-          _id: 'abc',
-          type: 'district_hospital',
-          name: 'myfacility',
-          contact: {
-            _id: ANY_STRING,
+      .then(() => utils.runMigration('extract-person-contacts'))
+      .then(() => {
+        return utils.assertDb([
+          {
+            _id: 'abc',
+            type: 'district_hospital',
+            name: 'myfacility',
+            contact: {
+              _id: ANY_STRING,
+              parent: {
+                _id: 'abc'
+              },
+            },
+          },
+          {
+            name: 'Alice',
+            type: 'person',
+            phone: '+123',
+            reported_date: ANY_NUMBER,
             parent: {
               _id: 'abc'
             },
           },
-        }, {
-          name: 'Alice',
-          type: 'person',
-          phone: '+123',
-          reported_date: ANY_NUMBER,
-          parent: {
-            _id: 'abc'
-          },
-        }, ]);
-
+        ]);
       });
   });
 
-  it('should retain the rc code - #2970', function() {
-    // given
-    return utils.initDb([{
-      _id: 'abc',
-      type: 'district_hospital',
-      name: 'myfacility',
-      contact: {
-        name: 'Alice',
-        phone: '+123',
-        rc_code: 'rc1'
-      },
-    }, ])
+  it('should retain the rc code - #2970', () => {
+    return utils
+      .initDb([{
+        _id: 'abc',
+        type: 'district_hospital',
+        name: 'myfacility',
+        contact: {
+          name: 'Alice',
+          phone: '+123',
+          rc_code: 'rc1'
+        },
+      }])
       .then(() => utils.initSettings(settings))
       .then(() => configWatcher.load())
-      .then(function() {
-
-        // when
-        return utils.runMigration('extract-person-contacts');
-
-      })
-      .then(function() {
-
-        // expect
-        return utils.assertDb([{
-          _id: 'abc',
-          type: 'district_hospital',
-          name: 'myfacility',
-          place_id: 'rc1',
-          contact: {
-            _id: ANY_STRING,
+      .then(() => utils.runMigration('extract-person-contacts'))
+      .then(() => {
+        return utils.assertDb([
+          {
+            _id: 'abc',
+            type: 'district_hospital',
+            name: 'myfacility',
+            place_id: 'rc1',
+            contact: {
+              _id: ANY_STRING,
+              parent: {
+                _id: 'abc'
+              },
+            },
+          },
+          {
+            name: 'Alice',
+            type: 'person',
+            phone: '+123',
+            reported_date: ANY_NUMBER,
             parent: {
               _id: 'abc'
             },
-          },
-        }, {
-          name: 'Alice',
-          type: 'person',
-          phone: '+123',
-          reported_date: ANY_NUMBER,
-          parent: {
-            _id: 'abc'
-          },
-        }, ]);
-
+          }
+        ]);
       });
   });
 
@@ -326,65 +322,57 @@ describe('extract-person-contacts migration', function() {
   //     it more extensively we would need to at least reverse these tests to
   //     fail instead of pass
   describe('re: parents', () => {
-    it('should not break if parent of place not found', function() {
+    it('should not break if parent of place not found', () => {
       // given
-      return utils.initDb([{
-        _id: 'abc',
-        type: 'health_center',
-        name: 'Homa Bay Health',
-        parent: {
-          _id: 'def',
-          type: 'district_hospital',
-          name: 'Kisumu',
-          contact: {
-            name: 'Madam Regina',
-            phone: '+1234567890'
+      return utils
+        .initDb([{
+          _id: 'abc',
+          type: 'health_center',
+          name: 'Homa Bay Health',
+          parent: {
+            _id: 'def',
+            type: 'district_hospital',
+            name: 'Kisumu',
+            contact: {
+              name: 'Madam Regina',
+              phone: '+1234567890'
+            }
           }
-        }
-      }])
+        }])
         .then(() => utils.initSettings(settings))
         .then(() => configWatcher.load())
-        .then(function() {
-
-          // when
-          return utils.runMigration('extract-person-contacts');
-
-        })
-        .then(function() {
-
-          // expect
+        .then(() => utils.runMigration('extract-person-contacts'))
+        .then(() => {
           return utils.assertDb([{
             _id: 'abc',
             type: 'health_center',
             name: 'Homa Bay Health',
           }, ]);
-
         });
     });
-    it('should not break if parent of place not found, with a migrated contact', () =>
-      utils.initDb([{
-        _id: 'abc',
-        type: 'health_center',
-        name: 'Homa Bay Health',
-        contact: {
-          _id: 'contact-id'
-        },
-        parent: {
-          _id: 'def',
-          type: 'district_hospital',
-          name: 'Kisumu',
+    it('should not break if parent of place not found, with a migrated contact', () => {
+      return utils
+        .initDb([{
+          _id: 'abc',
+          type: 'health_center',
+          name: 'Homa Bay Health',
           contact: {
-            name: 'Madam Regina',
-            phone: '+1234567890'
+            _id: 'contact-id'
+          },
+          parent: {
+            _id: 'def',
+            type: 'district_hospital',
+            name: 'Kisumu',
+            contact: {
+              name: 'Madam Regina',
+              phone: '+1234567890'
+            }
           }
-        }
-      }])
+        }])
         .then(() => utils.initSettings(settings))
         .then(() => configWatcher.load())
-        .then(function() {
-          return utils.runMigration('extract-person-contacts');
-        })
-        .then(function() {
+        .then(() => utils.runMigration('extract-person-contacts'))
+        .then(() => {
           return utils.assertDb([{
             _id: 'abc',
             type: 'health_center',
@@ -393,6 +381,7 @@ describe('extract-person-contacts migration', function() {
               _id: 'contact-id'
             }
           }]);
-        }));
+        });
+    });
   });
 });

@@ -26,27 +26,38 @@ const IRON_FOLATE = 'input[name="/pregnancy/safe_pregnancy_practices/iron_folate
 const DEWORMING_MEDICATION = 'input[name="/pregnancy/safe_pregnancy_practices/deworming/deworming_med"]';
 const HIV_TESTED = 'input[name="/pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested"]';
 
-const gestationalAge = (value) => $(`${FORM} input[name="/pregnancy/gestational_age/register_method/lmp_method"]` +
-  `[value="${value}"]`);
+const gestationalAge = (value) => {
+  return $(`${FORM} input[name="/pregnancy/gestational_age/register_method/lmp_method"][value="${value}"]`);
+};
 const deliveryDate = () => $(`${FORM} section[name="/pregnancy/gestational_age/method_edd"] input.ignore.input-small`);
 const ancVisitsPast = () => $(`${FORM} input[name="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count"]`);
-const eddConfirmation = () => $(`${FORM} ` +
-  `span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/u_edd_note:label"] ` +
-  `span[data-value=" /pregnancy/gestational_age/g_edd "]`);
-const weeksPregnantConfirmation = () => $(`${FORM} ` +
-  `span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/lmp_note:label"] ` +
-  `span[data-value=" /pregnancy/weeks_since_lmp_rounded "] `);
-const futureVisitDate = () => $(`${FORM} ` +
-  `section[name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date"] input.ignore.input-small`);
-const riskFactors = (value) => $$(`${FORM} ` +
-  `input[name="/pregnancy/risk_factors/risk_factors_present/${value}_condition"]`);
+const eddConfirmation = () => {
+  return $(FORM +
+    ' span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/u_edd_note:label"]' +
+    ' span[data-value=" /pregnancy/gestational_age/g_edd "]');
+};
+const weeksPregnantConfirmation = () => {
+  return $(FORM +
+    ' span[data-itext-id="/pregnancy/gestational_age/method_lmp_summary/lmp_note:label"]' +
+    ' span[data-value=" /pregnancy/weeks_since_lmp_rounded "]');
+};
+const futureVisitDate = () => {
+  return $(FORM +
+    ' section[name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date"] input.ignore.input-small');
+};
+const riskFactors = (value) => {
+  return $$(`${FORM} input[name="/pregnancy/risk_factors/risk_factors_present/${value}_condition"]`);
+};
 const patientNameSummary = () => $(`${SUMMARY_SECTION} span[data-value=" /pregnancy/patient_name "]`);
 const weeksPregnantSummary = () => $(`${SUMMARY_SECTION} span[data-value=" /pregnancy/weeks_since_lmp_rounded "]`);
 const eddSummary = () => $(`${SUMMARY_SECTION} span[data-value=" /pregnancy/summary/edd_summary "]`);
-const riskFactorsSummary = () => $$(`${SUMMARY_SECTION} ` +
-  `:not(label.disabled):not(label.or-appearance-h3) span[data-itext-id*="/pregnancy/summary/r_risk"]`);
-const dangerSignsSummary = () => $$(`${SUMMARY_SECTION} ` +
-  `:not(label.disabled) span[data-itext-id*="/pregnancy/summary/r_danger_sign_"]`);
+const riskFactorsSummary = () => {
+  return $$(SUMMARY_SECTION +
+    ' :not(label.disabled):not(label.or-appearance-h3) span[data-itext-id*="/pregnancy/summary/r_risk"]');
+};
+const dangerSignsSummary = () => {
+  return $$(`${SUMMARY_SECTION} :not(label.disabled) span[data-itext-id*="/pregnancy/summary/r_danger_sign_"]`);
+};
 
 const selectGestationAge = async (value = GESTATION_AGE.edd) => {
   const getAge = await gestationalAge(value);

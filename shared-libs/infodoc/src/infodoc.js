@@ -273,8 +273,7 @@ module.exports = {
     db.sentinel = sentinelDb;
   },
   get: change => resolveInfoDocs([change], true).then(([firstResult]) => firstResult),
-  updateTransition: (change, transition, ok) =>
-    updateTransition(change, transition, ok),
+  updateTransition: (change, transition, ok) => updateTransition(change, transition, ok),
   //
   // NB: resolveInfoDocs does not guarantee that its returned values are in the same order as
   // changes

@@ -11,8 +11,8 @@ module.exports = {
   'validatePage': true,
   'swipePage': false,
   'textMaxChars': 2000,
+  'excludeNonRelevant': true,
   'experimentalOptimizations': {
     'computeAsync': false,
   },
-  excludeNonRelevant: true
 };

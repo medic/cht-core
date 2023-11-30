@@ -29,11 +29,13 @@ const addCheckDigit = digits => {
   return digitArray.join('');
 };
 
-const randomDigits = length =>
-  Math.random()
+const randomDigits = length => {
+  return Math
+    .random()
     .toString()
     .replace('0.', '')
     .substring(0, length);
+};
 
 const generateId = length => {
   if (length && typeof length !== 'number') {

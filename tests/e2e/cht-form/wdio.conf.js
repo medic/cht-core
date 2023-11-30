@@ -12,7 +12,7 @@ const browserLogPath = path.join(logPath, 'browser.console.log');
 const mockConfig = require('./mock-config');
 
 // Override specific properties from wdio base config
-const defaultConfig = Object.assign({
+const defaultConfig = {
   ...wdioBaseConfig.config,
   specs: ['**/*.wdio-spec.js'],
   baseUrl: mockConfig.startMockApp(),
@@ -51,6 +51,6 @@ const defaultConfig = Object.assign({
   afterTest: () => {},
 
   onComplete: () => {},
-});
+};
 
 exports.config = defaultConfig;

@@ -494,13 +494,12 @@ describe('RapidPro SMS Gateway', () => {
     });
 
     describe('recursive polling', () => {
-      const expectedStatusUpdates = (messages, state, details) =>
-        messages.map(message => ({
-          messageId: message.value.id,
-          gatewayRef: message.value.gateway_ref,
-          state,
-          details,
-        }));
+      const expectedStatusUpdates = (messages, state, details) => messages.map(message => ({
+        messageId: message.value.id,
+        gatewayRef: message.value.gateway_ref,
+        state,
+        details,
+      }));
 
       beforeEach(() => {
         sinon.stub(secureSettings, 'getCredentials').resolves('key');

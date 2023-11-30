@@ -103,6 +103,10 @@ module.exports = {
     }
   },
 
+  rateLimited: (req, res) => {
+    respond(req, res, 429, 'Too Many Requests');
+  },
+
   /**
    * Only to be used when handling unexpected errors.
    */

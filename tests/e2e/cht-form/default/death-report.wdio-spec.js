@@ -18,6 +18,7 @@ describe('cht-form web component - Death Report Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Death report');
 
+    await browser.keys('Escape'); // close the datepicker because it hides fields below
     await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);
     await deathReportForm.setDeathInformation(deathNote);
     await deathReportForm.setDeathDate(date);

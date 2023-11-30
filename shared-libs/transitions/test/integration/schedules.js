@@ -16,23 +16,8 @@ const contact = {
   }
 };
 
-const getMessage = (doc, idx) =>
-  doc &&
-  doc.tasks &&
-  doc.tasks.length &&
-  doc.tasks[idx] &&
-  doc.tasks[idx].messages &&
-  doc.tasks[idx].messages.length &&
-  doc.tasks[idx].messages[0];
-
-const getScheduledMessage = (doc, idx) =>
-  doc &&
-  doc.scheduled_tasks &&
-  doc.scheduled_tasks.length &&
-  doc.scheduled_tasks[idx] &&
-  doc.scheduled_tasks[idx].messages &&
-  doc.scheduled_tasks[idx].messages.length &&
-  doc.scheduled_tasks[idx].messages[0];
+const getMessage = (doc, idx) => doc?.tasks?.[idx]?.messages?.[0];
+const getScheduledMessage = (doc, idx) => doc?.scheduled_tasks?.[idx]?.messages?.[0];
 
 describe('functional schedules', () => {
   let schedules;

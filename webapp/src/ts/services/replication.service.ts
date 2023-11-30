@@ -63,8 +63,8 @@ export class ReplicationService {
         { responseType: 'json' }
       );
       const localIdsToDelete = (await lastValueFrom(getDeleteListReq)).doc_ids;
-      const deleteDocs = localIdsToDelete.map(id =>
-        ({ _id: id, _rev: localIdRevMap[id], _deleted: true, purged: true }));
+      const deleteDocs = localIdsToDelete
+        .map(id => ({ _id: id, _rev: localIdRevMap[id], _deleted: true, purged: true }));
       await this.dbService.get().bulkDocs(deleteDocs);
       nbrDeletes += deleteDocs.length;
     }

@@ -5,7 +5,7 @@ index 62003af..db02cba 100644
 @@ -939,6 +939,10 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function () {
              const path = that.input.getName(node);
              let target;
- 
+
 +            // CHT-CORE PATCH
 +            // /inputs is ALWAYS relevant #4875
 +            if(/\/inputs$/.test(path)) return;
@@ -27,7 +27,7 @@ index 463af2c..f7dbe4d 100644
 +                    if (isLeafNode && textContent !== '' && !path.endsWith('/inputs')) {
                          node.textContent = '';
                      }
- 
+
 diff --git a/node_modules/enketo-core/src/widget/date/datepicker-extended.js b/node_modules/enketo-core/src/widget/date/datepicker-extended.js
 index 6febee3..afbf8df 100644
 --- a/node_modules/enketo-core/src/widget/date/datepicker-extended.js
@@ -42,7 +42,7 @@ index 6febee3..afbf8df 100644
 +            $fakeDateI.blur();
          });
      }
- 
+
 diff --git a/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js b/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
 index 4a71bfa..7c72f94 100644
 --- a/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
@@ -57,4 +57,4 @@ index 4a71bfa..7c72f94 100644
 +            $els.eq(0).blur();
          });
      }
- 
+

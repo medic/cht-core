@@ -154,8 +154,9 @@ describe('Outbound', () => {
       .then(checkInfoDocs);
   });
 
-  const checkInfoDocs = (retry = 10) =>
-    sentinelUtils.getInfoDocs(docs.map(doc => doc._id))
+  const checkInfoDocs = (retry = 10) => {
+    return sentinelUtils
+      .getInfoDocs(docs.map(doc => doc._id))
       .then(infoDocs => {
         chai.expect(infoDocs).to.have.lengthOf(3);
         chai.expect(infoDocs[0]).to.nested.include({
@@ -193,4 +194,5 @@ describe('Outbound', () => {
 
         throw err;
       });
+  };
 });
