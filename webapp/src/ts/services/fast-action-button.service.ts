@@ -65,7 +65,7 @@ export class FastActionButtonService {
     return xmlForms
       .map(form => ({
         id: form.code,
-        label: this.getFormTitle(form.titleKey, form.title) || form.code,
+        label: this.getFormTitle(form.titleKey, form.title) ?? form.code,
         icon: { name: form.icon, type: IconType.RESOURCE },
         alwaysOpenInPanel: true,
         canDisplay: () => this.authService.has('can_edit'),
@@ -88,9 +88,12 @@ export class FastActionButtonService {
     return childContactTypes
       .map(contactType => ({
         id: contactType.id,
-        label: this.getFormTitle(contactType.create_key) || contactType.id,
+        label: this.getFormTitle(contactType.create_key) ?? contactType.id,
         icon: { name: contactType.icon, type: IconType.RESOURCE },
-        canDisplay: () => this.authService.has(['can_edit', 'can_create_places']),
+        canDisplay: () => this.authService.has([
+          'can_edit',
+          contactType.person ? 'can_create_people' : 'can_create_places'
+        ]),
         execute: () => {
           const route = ['/contacts', 'add', contactType.id];
           if (parentFacilityId) {
@@ -124,7 +127,7 @@ export class FastActionButtonService {
           this.executeMailto(`sms:${sendTo?.phone}`);
           return;
         }
-        callbackOpenSendMessage && callbackOpenSendMessage(sendTo?._id);
+        callbackOpenSendMessage?.(sendTo?._id);
       },
     };
   }
