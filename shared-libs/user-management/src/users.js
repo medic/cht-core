@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
+const facility = require('./libs/facility');
 const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
 const getRoles = require('./libs/types-and-roles');
@@ -116,11 +117,6 @@ const getAllUserSettings = () => {
 const getAllUsers = () => {
   return db.users.allDocs({ include_docs: true })
     .then(result => result.rows);
-};
-
-const getFacilities = () => {
-  return db.medic.query('medic-client/contacts_by_type', { include_docs: true })
-    .then(result => result.rows.map(row => row.doc));
 };
 
 const validateContact = (id, placeID) => {
@@ -780,11 +776,11 @@ module.exports = {
     return Promise
       .all([
         getAllUsers(),
-        getAllUserSettings(),
-        getFacilities()
+        getAllUserSettings()
       ])
-      .then(([ users, settings, facilities ]) => {
-        return mapUsers(users, settings, facilities);
+      .then(([ users, settings ]) => {
+        return facility.list(users, settings)
+          .then(facilities => mapUsers(users, settings, facilities));
       });
   },
   getUserSettings,
