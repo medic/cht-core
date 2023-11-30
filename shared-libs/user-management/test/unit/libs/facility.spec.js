@@ -43,6 +43,8 @@ describe('facility', () => {
     ] });
     const result = await list([ userA, userB ], [ settingA, settingB ]);
     expect(result).to.deep.equal([ facilityA, facilityB ]);
+    expect(allDocs.callCount).to.equal(1);
+    expect(allDocs.args[0][0].keys).to.deep.equal([ 'a', 'b', 'e' ]);
   });
 
 });

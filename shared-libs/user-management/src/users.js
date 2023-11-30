@@ -772,16 +772,10 @@ const getUserSettings = async({ name }) => {
  */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
-  getList: () => {
-    return Promise
-      .all([
-        getAllUsers(),
-        getAllUserSettings()
-      ])
-      .then(([ users, settings ]) => {
-        return facility.list(users, settings)
-          .then(facilities => mapUsers(users, settings, facilities));
-      });
+  getList: async () => {
+    const [ users, settings ] = await Promise.all([ getAllUsers(), getAllUserSettings() ]);
+    const facilities = await facility.list(users, settings);
+    return mapUsers(users, settings, facilities);
   },
   getUserSettings,
   /* eslint-disable max-len */

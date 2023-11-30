@@ -1,6 +1,6 @@
 const db = require('./db');
 
-const list = (users, settings) => {
+const list = async (users, settings) => {
   const ids = new Set();
   for (const user of users) {
     ids.add(user?.doc?.facility_id);
@@ -12,8 +12,8 @@ const list = (users, settings) => {
   if (!ids.size) {
     return [];
   }
-  return db.medic.allDocs({ keys: Array.from(ids), include_docs: true })
-    .then(response => response.rows.map(row => row?.doc).filter(doc => !!doc));
+  const response = await db.medic.allDocs({ keys: Array.from(ids), include_docs: true });
+  return response.rows.map(row => row?.doc).filter(doc => !!doc);
 };
 
 module.exports = {
