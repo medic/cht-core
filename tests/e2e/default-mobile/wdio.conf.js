@@ -30,7 +30,8 @@ exports.config = Object.assign(wdioBaseConfig.config, {
         isMobile: true,
         hasTouch: true,
       },
-      userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`
+      userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
+        `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`
     });
   },
 });
