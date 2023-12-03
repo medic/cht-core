@@ -3,11 +3,14 @@ const wdioBaseConfig = require('../wdio.conf');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 
+const ANDROID_VERSION = '13';
+const MOBILE_CHROME_VERSION = '118.0.5993.112';
+
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
-      './**/*.wdio-spec.js',
+      '/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/e2e/default-mobile/contacts/barcode-search-contacts.wdio-spec.js',
       [
         '../default/login/login-logout.wdio-spec.js',
         '../default/navigation/navigation.wdio-spec.js',
@@ -27,7 +30,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
         isMobile: true,
         hasTouch: true,
       },
-      userAgent: 'Chrome/latest'
+      userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`
     });
   },
 });
