@@ -5,6 +5,8 @@ from typing import List
 
 import httpx
 
+from logger import log
+
 couchdb_servers: List[str] = os.environ["COUCHDB_SERVERS"].split(",")
 # Example: COUCHDB_SERVERS="couchdb.1,couchdb.2,couchdb.3"
 username: str = os.environ["COUCHDB_USER"]
@@ -24,9 +26,9 @@ def _send_up_response(writer: asyncio.StreamWriter) -> None:
 
 
 def _send_and_close(writer: asyncio.StreamWriter, message: bytes) -> None:
-    print(f"Response: {message!r}")
+    log.info("Response: %r", message)
     writer.write(message)
-    print("Closing connection")
+    log.info("Closing connection")
     writer.close()
 
 
@@ -41,21 +43,25 @@ async def is_healthy() -> bool:
                 get_membership_endpoint(first_couchdb_server), timeout=1
             )
         data: dict = r.json()
+        log.debug("Response data: %r", data)
+
         all_nodes: List[str] = sorted(data["all_nodes"])
         cluster_nodes: List[str] = sorted(data["cluster_nodes"])
 
         if len(all_nodes) != len(couchdb_servers):
-            print("Nodes starting up")
-            print(
+            log.warning("Nodes starting up")
+            log.warning(
                 f"Details: all_nodes: {all_nodes}. couchdb_servers: {couchdb_servers}"
             )
             return False
         elif all_nodes != cluster_nodes:
-            print("_membership shows not all nodes are part of Cluster")
-            print(f"Details: all_nodes: {all_nodes}. cluster_nodes: {cluster_nodes}")
+            log.warning("_membership shows not all nodes are part of Cluster")
+            log.warning(
+                f"Details: all_nodes: {all_nodes}. cluster_nodes: {cluster_nodes}"
+            )
             return False
-        else:
-            return True
+
+        return True
 
     except Exception as e:
         print("Exception when checking health:", e)
@@ -77,7 +83,7 @@ async def main() -> None:
     )
 
     addrs: str = ", ".join(str(sock.getsockname()) for sock in server.sockets)
-    print(f"Serving on {addrs}")
+    log.info(f"Serving on {addrs}")
 
     async with server:
         await server.serve_forever()

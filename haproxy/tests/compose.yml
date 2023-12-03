@@ -18,15 +18,19 @@ services:
 
     mock-couchdb:
         image: mockserver/mockserver:5.15.0
+        ports:
+            - 127.0.0.1:5985:5984
         environment:
             MOCKSERVER_SERVER_PORT: 5984
-            # MOCKSERVER_LOG_LEVEL: WARN
+            MOCKSERVER_LOG_LEVEL: DEBUG
             MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
         volumes:
             - ./mock-config/initializerJson.json:/config/initializerJson.json
 
     haproxy-healthcheck:
         build: ../../haproxy-healthcheck
+        ports:
+            - 127.0.0.1:5555:5555
         environment:
             COUCHDB_SERVERS: mock-couchdb
             COUCHDB_USER: someuser

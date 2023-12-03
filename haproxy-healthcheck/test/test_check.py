@@ -10,7 +10,7 @@ import pytest
 def import_check(couchdb_servers: List[str]) -> ModuleType:
     "Sets required environment variables and imports check"
 
-    os.environ["COUCHDB_SERVERS"] = ",".join(COUCHDB_SERVERS)
+    os.environ["COUCHDB_SERVERS"] = ",".join(couchdb_servers)
     os.environ["COUCHDB_USER"] = "_"
     os.environ["COUCHDB_PASSWORD"] = "_"
 
