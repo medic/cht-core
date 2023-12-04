@@ -24,7 +24,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
         ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
       mobileEmulation: {
-        'deviceName': 'Galaxy S5'
+        'deviceName': 'Nexus 5X'
       },
     }
   }]
