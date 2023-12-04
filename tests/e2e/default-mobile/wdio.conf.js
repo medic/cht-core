@@ -3,8 +3,6 @@ const wdioBaseConfig = require('../wdio.conf');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 const DEBUG = process.env.DEBUG;
-const ANDROID_VERSION = '13';
-const MOBILE_CHROME_VERSION = '118.0.5993.112';
 
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
@@ -26,8 +24,8 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
         ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
       mobileEmulation: {
-        userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
-          `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`,
+        userAgent: `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ` +
+          `Chrome/119.0.0.0 Safari/537.36`,
         deviceMetrics: {
           'mobile': true,
           'touch': true,
