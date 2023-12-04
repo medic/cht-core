@@ -29,10 +29,10 @@ exports.config = Object.assign(wdioBaseConfig.config, {
         userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
           `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`,
         deviceMetrics: {
-          "mobile": true,
-          "touch": true,
-          "width": 600,
-          "height": 960
+          'mobile': true,
+          'touch': true,
+          'width': 600,
+          'height': 960
         },
       },
     }
