@@ -53,7 +53,6 @@ describe('FAB + Actionbar', () => {
       await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar']);
       await commonElements.goToPeople(healthCenter._id);
       const actionBarLabels = await commonElements.getActionBarLabels();
-      console.log(actionBarLabels);
 
       expect(actionBarLabels).to.have.members([
         'New household',
