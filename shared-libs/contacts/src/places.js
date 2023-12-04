@@ -75,6 +75,12 @@ const validatePlace = place => {
     if (!_.isString(place.contact) && !_.isObject(place.contact)) {
       return err(`Property "contact" on place ${placeId} must be an object or string.`);
     }
+    if (_.isObject(place.contact)) {
+      const err = people._validatePerson(place.contact);
+      if (err) {
+        return err(err);
+      }
+    }
   }
   if (place.parent && !_.isEmpty(place.parent)) {
     // validate parents
@@ -88,12 +94,6 @@ const createPlace = async (place) => {
 
   const contact = place.contact;
   delete place.contact;
-  if (contact && _.isObject(contact)) {
-    const err = people._validatePerson(contact);
-    if (err) {
-      return Promise.reject({ code: 400, message: err });
-    }
-  }
 
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
   place.reported_date = date.valueOf();
