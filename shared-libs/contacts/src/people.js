@@ -111,4 +111,3 @@ module.exports.isAPerson = isAPerson;
 
 module.exports._getPerson = getPerson;
 module.exports._validatePerson = validatePerson;
-module.exports._getDefaultPersonType = getDefaultPersonType;
