@@ -3,8 +3,6 @@ const wdioBaseConfig = require('../wdio.conf');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 const DEBUG = process.env.DEBUG;
-const ANDROID_VERSION = '13';
-const MOBILE_CHROME_VERSION = '118.0.5993.112';
 
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
@@ -23,19 +21,10 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors',
-        `user-agent=Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
-        `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`] :
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors',
-          `user-agent=Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
-          `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`],
+      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
+        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
       mobileEmulation: {
-        deviceMetrics: {
-          'mobile': true,
-          'touch': true,
-          'width': 600,
-          'height': 960
-        },
+        'deviceName': 'Galaxy S5'
       },
     }
   }]
