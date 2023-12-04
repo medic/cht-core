@@ -24,7 +24,32 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
         ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
       mobileEmulation: {
-        'deviceName': 'Nexus 5X'
+        'userAgent': `Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36` +
+          ` (KHTML, like Gecko) Chrome/119.0.6045.159 Mobile Safari/537.36`,
+        'deviceMetrics': {
+          'mobile': true,
+          'touch': true,
+          'width': 600,
+          'height': 960,
+          'pixelRatio': 1.75
+        },
+        'clientHints': {
+          'brands': [
+            { 'brand': 'Google Chrome', 'version': '119' },
+            { 'brand': 'Chromium', 'version': '119' }
+          ],
+          'fullVersionList': [
+            { 'brand': 'Google Chrome', 'version': '119.0.6045.159' },
+            { 'brand': 'Chromium', 'version': '119.0.6045.159' }
+          ],
+          'platform': 'Android',
+          'platformVersion': '11',
+          'architecture': 'arm',
+          'model': 'lorem ipsum (2022)',
+          'mobile': true,
+          'bitness': '32',
+          'wow64': false
+        }
       },
     }
   }]
