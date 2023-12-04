@@ -84,12 +84,11 @@ const validatePlace = place => {
 };
 
 const createPlace = async (place) => {
+  await module.exports._validatePlace(place);
+
   const contact = place.contact;
   delete place.contact;
-
-  await module.exports._validatePlace(place);
-  if (contact) {
-    contact.type = contact.type || people._getDefaultPersonType();
+  if (contact && _.isObject(contact)) {
     const err = people._validatePerson(contact);
     if (err) {
       return Promise.reject({ code: 400, message: err });
