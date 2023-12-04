@@ -131,6 +131,32 @@ describe('Places API', () => {
         });
     });
 
+    it('should create place with contact uuid', () => {
+      onlineRequestOptions.body = {
+        name: 'DS',
+        type: 'district_hospital',
+        contact: 'fixture:user:online'
+      };
+      return utils.request(onlineRequestOptions)
+        .then(result => {
+          chai.expect(result.id).to.not.be.undefined;
+          chai.expect(result.contact.id).to.not.be.undefined;
+          return utils.getDocs([result.id, result.contact.id]);
+        })
+        .then(([place, contact]) => {
+          chai.expect(contact).to.deep.include({
+            name: 'OnlineUser',
+            parent: { _id: 'fixture:online' },
+            type: 'person',
+          });
+          chai.expect(place).to.deep.include({
+            name: 'DS',
+            type: 'district_hospital',
+            contact: { _id: contact._id, parent: { _id: contact.parent._id } }
+          });
+        });
+    });
+
     it('should fail if place contact is not a person type', () => {
       onlineRequestOptions.body = {
         name: 'CHP Area One',
@@ -146,6 +172,21 @@ describe('Places API', () => {
         .then(() => fail('Call should fail as contact type is not a person'))
         .catch(err => {
           chai.expect(err.responseBody.error).to.equal('Wrong type, this is not a person.');
+        });
+
+    });
+
+    it('should fail if place contact does not exist', () => {
+      onlineRequestOptions.body = {
+        name: 'CHP Area One',
+        type: 'health_center',
+        parent: 'fixture:online',
+        contact: 'x'
+      };
+      return utils.request(onlineRequestOptions)
+        .then(() => fail('Call should fail as contact does not exist'))
+        .catch(err => {
+          chai.expect(err.responseBody.error).to.equal('Failed to find person.');
         });
 
     });
