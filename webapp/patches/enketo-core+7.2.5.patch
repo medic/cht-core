@@ -1,5 +1,5 @@
 diff --git a/node_modules/enketo-core/src/js/form.js b/node_modules/enketo-core/src/js/form.js
-index 62003af..c9f749c 100644
+index 62003af..db02cba 100644
 --- a/node_modules/enketo-core/src/js/form.js
 +++ b/node_modules/enketo-core/src/js/form.js
 @@ -939,6 +939,10 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function () {
@@ -14,17 +14,47 @@ index 62003af..c9f749c 100644
               * Copied from relevant.js:
               *
 diff --git a/node_modules/enketo-core/src/js/relevant.js b/node_modules/enketo-core/src/js/relevant.js
-index 463af2c..d55a32b 100644
+index 463af2c..f7dbe4d 100644
 --- a/node_modules/enketo-core/src/js/relevant.js
 +++ b/node_modules/enketo-core/src/js/relevant.js
-@@ -546,7 +546,9 @@ export default {
-         ) {
-             changed = true;
+@@ -458,7 +458,9 @@ export default {
+                             : currentValue,
+                     });
+                 } else {
+-                    if (isLeafNode && textContent !== '') {
++                    // CHT PATCH
++                    // /inputs is ALWAYS relevant #4875
++                    if (isLeafNode && textContent !== '' && !path.endsWith('/inputs')) {
+                         node.textContent = '';
+                     }
 
--            if (forceClearNonRelevant) {
-+            // CHT PATCH
-+            // /inputs is ALWAYS relevant #4875
-+            if (forceClearNonRelevant  && !path.endsWith('/inputs')) {
-                 this.clear(branchNode, path);
-             }
+diff --git a/node_modules/enketo-core/src/widget/date/datepicker-extended.js b/node_modules/enketo-core/src/widget/date/datepicker-extended.js
+index 6febee3..afbf8df 100644
+--- a/node_modules/enketo-core/src/widget/date/datepicker-extended.js
++++ b/node_modules/enketo-core/src/widget/date/datepicker-extended.js
+@@ -149,6 +149,10 @@ class DatepickerExtended extends Widget {
+         // Handle focus on original input (goTo functionality)
+         $(this.element).on('applyfocus', () => {
+             $fakeDateI[0].focus();
++            // CHT - https://github.com/enketo/enketo-core/issues/1002
++            // Do not automatically pop open the datepicker when just focusing on outer element
++            $fakeDateI.datepicker('hide');
++            $fakeDateI.blur();
+         });
+     }
+
+diff --git a/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js b/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
+index 4a71bfa..7c72f94 100644
+--- a/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
++++ b/node_modules/enketo-core/src/widget/datetime/datetimepicker-extended.js
+@@ -127,6 +127,10 @@ class DatetimepickerExtended extends Widget {
+         // Handle focus on original input (goTo functionality)
+         this.element.addEventListener(events.ApplyFocus().type, () => {
+             $els.eq(0).focus();
++            // CHT - https://github.com/enketo/enketo-core/issues/1002
++            // Do not automatically pop open the datepicker when just focusing on outer element
++            $els.eq(0).datepicker('hide');
++            $els.eq(0).blur();
+         });
+     }
 
