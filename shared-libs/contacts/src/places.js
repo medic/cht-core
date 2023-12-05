@@ -76,9 +76,9 @@ const validatePlace = place => {
       return err(`Property "contact" on place ${placeId} must be an object or string.`);
     }
     if (_.isObject(place.contact)) {
-      const err = people._validatePerson(place.contact);
-      if (err) {
-        return err(err);
+      const errStr = people._validatePerson(place.contact);
+      if (errStr) {
+        return err(errStr);
       }
     }
   }
@@ -90,6 +90,9 @@ const validatePlace = place => {
 };
 
 const createPlace = async (place) => {
+  if (place.contact && !place.contact.type) {
+    place.contact.type = people._getDefaultPersonType();
+  }
   await module.exports._validatePlace(place);
 
   const contact = place.contact;
