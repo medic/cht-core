@@ -21,11 +21,9 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'] :
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors'],
+      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'use-mobile-user-agent'] :
+        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'use-mobile-user-agent'],
       mobileEmulation: {
-        'userAgent': `Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36` +
-          ` (KHTML, like Gecko) Chrome/119.0.6045.159 Mobile Safari/537.36`,
         'deviceMetrics': {
           'mobile': true,
           'touch': true,
