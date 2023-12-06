@@ -9,7 +9,16 @@ const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.w
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
+const PLACES = {
+  usa: 'United States',
+  nl: 'The Netherlands',
+  nyc: 'New York City',
+  dro: 'Dronten',
+  bronx: 'Bronx',
+  havendr: 'Harbor'
+};
 
 describe('Enketo Widgets', () => {
   const districtHospital = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
@@ -38,9 +47,9 @@ describe('Enketo Widgets', () => {
   let medicId;
 
   const fillCascadingWidgetsSection = async (country, city, neighborhood, countCities, countNeighborhood) => {
-    await enketoWidgetsPage.selectCountryRadio(country);
-    await enketoWidgetsPage.selectCityRadio(city);
-    await enketoWidgetsPage.selectNeighborhoodRadio(neighborhood);
+    await commonEnketoPage.selectRadioButton('Country', PLACES[country]);
+    await commonEnketoPage.selectRadioButton('City', PLACES[city]);
+    await commonEnketoPage.selectRadioButton('Neighborhood', PLACES[neighborhood]);
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.countryDropdown());
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.countryDropdown(), 'radio', country);
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.cityDropdown());
@@ -96,7 +105,7 @@ describe('Enketo Widgets', () => {
     medicId = await contactPage.getContactMedicID();
     await commonPage.openFastActionReport(formDoc.internalId);
     await commonPage.waitForPageLoaded();
-    expect(await enketoWidgetsPage.getFormTitle()).to.equal('Enketo Widgets Test');
+    expect(await genericForm.getFormTitle()).to.equal('Enketo Widgets Test');
 
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.selectMultipleDropdown());
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectMultipleDropdown(), 'checkbox', 'a');
@@ -115,13 +124,13 @@ describe('Enketo Widgets', () => {
       .to.equal('constraint.required');
 
     // try to move to next page with an invalid phone number
-    await enketoWidgetsPage.setPhoneNumber('+4076');
+    await commonEnketoPage.setInputValue('Phone Number', '+4076');
     await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
       .to.equal('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg');
 
     // finally set a valid phone number and continue
-    await enketoWidgetsPage.setPhoneNumber(phoneNumber);
+    await commonEnketoPage.setInputValue('Phone Number', phoneNumber);
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('usa', 'nyc', 'bronx', 3, 2);
@@ -145,7 +154,7 @@ describe('Enketo Widgets', () => {
   it('should submit Enketo Widgets form - Report\'s tab', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('enketo_widgets_test', false);
-    expect(await enketoWidgetsPage.getFormTitle()).to.equal('Enketo Widgets Test');
+    expect(await genericForm.getFormTitle()).to.equal('Enketo Widgets Test');
 
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.selectMultipleDropdown());
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectMultipleDropdown(), 'checkbox', 'b');
@@ -158,18 +167,18 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'a');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option a');
-    await enketoWidgetsPage.setPhoneNumber(phoneNumber);
+    await commonEnketoPage.setInputValue('Phone Number', phoneNumber);
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('nl', 'dro', 'havendr', 3, 1);
     await genericForm.nextPage();
-    await enketoWidgetsPage.setPatientName('Eli');
-    await enketoWidgetsPage.setPatientUuid('123 456 789');
+    await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Eli');
+    await commonEnketoPage.setInputValue('What is the patient\'s uuid?', '123 456 789');
 
     expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.true;
 
-    await enketoWidgetsPage.setPatientName('Elias');
-    await enketoWidgetsPage.setPatientId('12345');
+    await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Elias');
+    await commonEnketoPage.setInputValue('What is the patient\'s id?', '12345');
 
     expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.false;
 

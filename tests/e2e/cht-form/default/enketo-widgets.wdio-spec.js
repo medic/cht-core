@@ -1,6 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Enketo Widgets', () => {
 
@@ -27,20 +28,20 @@ describe('cht-form web component - Enketo Widgets', () => {
       .to.equal('constraint.required');
 
     // try to move to next page with an invalid phone number
-    await enketoWidgetsPage.setPhoneNumber('+4076');
+    await commonEnketoPage.setInputValue('Phone Number', '+4076');
     await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
       .to.equal('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg');
 
     // finally set a valid phone number and continue
-    await enketoWidgetsPage.setPhoneNumber('+40766565656');
+    await commonEnketoPage.setInputValue('Phone Number', '+40766565656');
 
     await $('.form-footer').click();
     await genericForm.nextPage();
 
-    await enketoWidgetsPage.selectCountryRadio('usa');
-    await enketoWidgetsPage.selectCityRadio('nyc');
-    await enketoWidgetsPage.selectNeighborhoodRadio('bronx');
+    await commonEnketoPage.selectRadioButton('Country', 'United States');
+    await commonEnketoPage.selectRadioButton('City', 'New York City');
+    await commonEnketoPage.selectRadioButton('Neighborhood', 'Bronx');
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.countryDropdown());
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.countryDropdown(), 'radio', 'nl');
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.cityDropdown());
@@ -55,13 +56,13 @@ describe('cht-form web component - Enketo Widgets', () => {
     );
 
     await genericForm.nextPage();
-    await enketoWidgetsPage.setPatientName('Eli');
-    await enketoWidgetsPage.setPatientUuid('123 456 789');
+    await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Eli');
+    await commonEnketoPage.setInputValue('What is the patient\'s uuid?', '123 456 789');
 
     expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.true;
 
-    await enketoWidgetsPage.setPatientName('Elias');
-    await enketoWidgetsPage.setPatientId('12345');
+    await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Elias');
+    await commonEnketoPage.setInputValue('What is the patient\'s id?', '12345');
 
     expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.false;
 
