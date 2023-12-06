@@ -9,6 +9,8 @@ const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
+const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
 
 describe('Training Cards', () => {
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
@@ -87,6 +89,19 @@ describe('Training Cards', () => {
     expect(introCard).to.equal(
       'There have been some changes to icons in your app. The next few screens will show you the difference.'
     );
+  });
+
+  it('should display training after privacy policy', async () => {
+    const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
+    await utils.saveDocs([privacyPolicy]);
+    await commonPage.goToReports();
+    await commonElements.sync();
+    await browser.refresh();
+
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
+    await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), privacyPolicyFactory.english, false);
+    await trainingCardsPage.waitForTrainingCards();
+    await trainingCardsPage.quitTraining();
   });
 
   it('should display training after reload and complete training', async () => {

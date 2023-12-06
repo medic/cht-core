@@ -25,7 +25,7 @@ describe('branding service', () => {
       chai.expect(get.args[0][0]).to.equal('branding');
       chai.expect(get.args[0][1].attachments).to.equal(true);
       chai.expect(readFile.callCount).to.equal(1);
-      chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/logo/medic-logo-light-full.svg');
+      chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/logo/cht-logo.png');
       chai.expect(result.name).to.equal('CHT');
       chai.expect(result.logo).to.equal('data:image/svg+xml;base64,enl4');
       chai.expect(result.icon).to.equal('icon.png');
@@ -52,7 +52,7 @@ describe('branding service', () => {
       chai.expect(get.args[0][0]).to.equal('branding');
       chai.expect(get.args[0][1].attachments).to.equal(true);
       chai.expect(readFile.callCount).to.equal(1);
-      chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/logo/medic-logo-light-full.svg');
+      chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/logo/cht-logo.png');
       chai.expect(result.name).to.equal('some name');
       chai.expect(result.logo).to.equal('data:image/svg+xml;base64,enl4');
     });

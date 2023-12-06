@@ -5,7 +5,7 @@ const path = require('path');
 const db = require('../db');
 const logger = require('../logger');
 
-const DEFAULT_LOGO_PATH = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
+const DEFAULT_LOGO_PATH = path.join(__dirname, '..', 'resources', 'logo', 'cht-logo.png');
 const DEFAULT_FAVICON_PATH = path.join(__dirname, '..', 'resources', 'ico', 'favicon.ico');
 
 const getInlineImage = ({ data, contentType }) => `data:${contentType};base64,${data}`;

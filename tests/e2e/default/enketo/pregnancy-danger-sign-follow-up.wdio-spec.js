@@ -46,7 +46,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await reportsPage.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
-    expect(updatedReport.fields).excludingEvery('instanceID').to.deep.equal(initialReport.fields);
+    expect(updatedReport.fields).excludingEvery(['instanceID', 'deprecatedID']).to.deep.equal(initialReport.fields);
 
   });
 
@@ -106,6 +106,6 @@ describe('Pregnancy danger sign follow-up form', () => {
     const compareReportId = await reportsPage.getCurrentReportId();
     const compareReport = await utils.getDoc(compareReportId);
 
-    expect(updatedReport.fields).excludingEvery('instanceID').to.deep.equal(compareReport.fields);
+    expect(updatedReport.fields).excludingEvery(['instanceID', 'deprecatedID']).to.deep.equal(compareReport.fields);
   });
 });

@@ -53,7 +53,7 @@ describe('cht-conf actions tests', () => {
         console.error(error);
       }
     });
-    expect(branding.title).to.equal('Medic');
+    expect(branding.title).to.equal('Community Health Toolkit');
   });
 
   it('should upload forms', async () => {
