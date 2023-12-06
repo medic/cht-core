@@ -2,7 +2,8 @@ const wdioBaseConfig = require('../wdio.conf');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
-const DEBUG = process.env.DEBUG;
+const ANDROID_VERSION = '13';
+const MOBILE_CHROME_VERSION = '118.0.5993.112';
 
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
@@ -16,39 +17,20 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       ],
     ]
   },
-  capabilities: [{
-    maxInstances: 1,
-    browserName: 'chrome',
-    acceptInsecureCerts: true,
-    'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'use-mobile-user-agent'] :
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors', 'use-mobile-user-agent'],
-      mobileEmulation: {
-        'deviceMetrics': {
-          'mobile': true,
-          'touch': true,
-          'width': 600,
-          'height': 960,
-          'pixelRatio': 1.75
-        },
-        'clientHints': {
-          'brands': [
-            { 'brand': 'Google Chrome', 'version': '119' },
-            { 'brand': 'Chromium', 'version': '119' }
-          ],
-          'fullVersionList': [
-            { 'brand': 'Google Chrome', 'version': '119.0.6045.159' },
-            { 'brand': 'Chromium', 'version': '119.0.6045.159' }
-          ],
-          'platform': 'Android',
-          'platformVersion': '11',
-          'architecture': 'arm',
-          'model': 'lorem ipsum (2022)',
-          'mobile': true,
-          'bitness': '32',
-          'wow64': false
-        }
+  beforeSuite: async () => {
+    // We tried the browser.emulateDevice('...') function but it's not stable enough,
+    // it looses the mobile view and switches back to desktop.
+    // Adding to the comment above, it loses the mobile view when a test fails.
+    // It may be better to use beforeHook instead of beforeSuite so it can set the capability before each test.
+    await browser.emulateDevice({
+      viewport: {
+        width: 600,
+        height: 960,
+        isMobile: true,
+        hasTouch: true,
       },
-    }
-  }]
+      userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
+        `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`
+    });
+  }
 });
