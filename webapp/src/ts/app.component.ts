@@ -651,17 +651,20 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private checkBrowserCompatibility(): void {
-    const isBrowserSupported = this.browserDetectorService.isUsingSupportedBrowser();
-
-    if (!isBrowserSupported) {
-      const browserInfo = this.browserDetectorService.detect();
-      if (browserInfo.name === 'Chrome' && browserInfo.version) {
-        const majorVersion = parseInt(browserInfo.version.split('.')[0]);
-        if (majorVersion < 72 || (majorVersion >= 72 && majorVersion < 90)) {
-          this.modalService.show(BrowserCompatibilityComponent);
-        }
-      }
+    if (!this.isCompatibleChromeBrowser()) {
+      this.modalService.show(BrowserCompatibilityComponent);
     }
+  }
+
+  private isCompatibleChromeBrowser(): boolean {
+    const browserInfo = this.browserDetectorService.detect();
+
+    if (browserInfo.name !== 'Chrome' || !browserInfo.version) {
+      return true;
+    }
+
+    const majorVersion = parseInt(browserInfo.version.split('.')[0]);
+    return !(majorVersion < 72 || (majorVersion >= 72 && majorVersion < 90));
   }
 
   private recordStartupTelemetry() {
