@@ -5,8 +5,9 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
-describe('Message tab breadcrumbs', () => {
+describe('Message Tab - Sender Data', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const health_center = places.get('health_center');
@@ -82,6 +83,21 @@ describe('Message tab breadcrumbs', () => {
     const expectedLineage = clinic.name;
 
     expect(lineage).to.equal(expectedLineage);
+  });
+
+  it('should display conversation with link and navigate to contact', async () => {
+    await loginPage.login(offlineUser);
+    await commonElements.waitForPageLoaded();
+    await commonElements.goToMessages();
+
+    await messagesPage.openMessage(patient._id);
+    const header = await messagesPage.getMessageHeader();
+    expect(header.name).to.equal(patient.name);
+    expect(header.phone).to.equal(patient.phone);
+
+    await messagesPage.navigateFromConversationToContact();
+    const title = await contactsPage.getContactInfoName();
+    expect(title).to.equal(patient.name);
   });
 
 });
