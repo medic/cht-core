@@ -1,8 +1,12 @@
 #!/bin/bash
-cat ./medic_logo.txt
+cat ./cht_logo.txt
 
 BRANCH=$(git branch | grep '^*' | sed 's/* //' )
-echo "Installer version $BRANCH" | sed  -e :a -e "s/^.\{1,$(tput cols)\}$/ & /;ta" | tr -d '\n' | head -c $(tput cols)
+
+echo "  ------------------------------------------------------------------- "
+echo "     Installer version: '$BRANCH'" 
+echo "  ------------------------------------------------------------------- "
+echo;echo # two blank lines
 
 # Check if Python is installed
 echo -e "\u21B3 Checking Python3"
