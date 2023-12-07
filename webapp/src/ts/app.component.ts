@@ -46,6 +46,8 @@ import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
+import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -131,6 +133,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private analyticsModulesService: AnalyticsModulesService,
     private trainingCardsService: TrainingCardsService,
     private matIconRegistry: MatIconRegistry,
+    private browserDetectorService: BrowserDetectorService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -270,6 +273,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.countMessageService.init();
     this.feedbackService.init();
     this.sessionService.init();
+    this.checkBrowserCompatibility();
 
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = Promise.resolve()
@@ -645,6 +649,23 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  private checkBrowserCompatibility(): void {
+    console.log('Checking browser compatibility');
+    if (!this.browserDetectorService.isUsingSupportedBrowser()) {
+      const browserInfo = this.browserDetectorService.detect();
+      if (browserInfo.name === 'Chrome' && browserInfo.version) {
+        const majorVersion = parseInt(browserInfo.version.split('.')[0]);
+
+        if (majorVersion < 72) {
+          this.modalService.show(BrowserCompatibilityComponent);
+        } else if (majorVersion >= 72 && majorVersion < 90) {
+          this.modalService.show(BrowserCompatibilityComponent);
+        }
+      }
+    }
+  }
+
 
   private recordStartupTelemetry() {
     window.startupTimes.angularBootstrapped = performance.now();
