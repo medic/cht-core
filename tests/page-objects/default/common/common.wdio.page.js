@@ -12,6 +12,7 @@ const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
 const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
 const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
 const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
+const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
 const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
@@ -27,6 +28,9 @@ const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
+
+const actionBar = () => $('.detail-actions.right-pane');
+const actionBarActions = () => $$('.detail-actions.right-pane span');
 
 //languages
 const activeSnackbar = () => $('#snackbar.active');
@@ -80,6 +84,20 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
   if (waitForList) {
     await clickFastActionById(actionId);
   }
+};
+
+const getFastActionItemsLabels = async () => {
+  await closeHamburgerMenu();
+  await (await fastActionFAB()).waitForDisplayed();
+  await (await fastActionFAB()).waitForClickable();
+  await (await fastActionFAB()).click();
+
+  await browser.pause(500);
+  await (await fastActionListContainer()).waitForDisplayed();
+
+  const items = await fastActionItems();
+  const fastActionItemLabels = await Promise.all(items.map(item => item.getText()));
+  return fastActionItemLabels;
 };
 
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
@@ -406,6 +424,14 @@ const loadNextInfiniteScrollPage = async () => {
   await waitForLoaderToDisappear(await $('.left-pane'));
 };
 
+const getActionBarLabels = async () => {
+  await (await actionBar()).waitForDisplayed();
+  await (await actionBarActions())[0].waitForDisplayed();
+  const items = await actionBarActions();
+  const labels = await Promise.all(items.map(item => item.getText()));
+  return labels.filter(label => !!label);
+};
+
 module.exports = {
   openMoreOptionsMenu,
   closeFastActionList,
@@ -466,4 +492,6 @@ module.exports = {
   getAllButtonLabelsNames,
   loadNextInfiniteScrollPage,
   goToUrl,
+  getFastActionItemsLabels,
+  getActionBarLabels,
 };
