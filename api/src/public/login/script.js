@@ -20,6 +20,7 @@ const request = function(method, url, payload, callback) {
   };
   xmlhttp.open(method, url, true);
   xmlhttp.setRequestHeader('Content-Type', 'application/json');
+  xmlhttp.setRequestHeader('Accept', 'application/json');
   xmlhttp.send(payload);
 };
 

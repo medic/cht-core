@@ -503,14 +503,13 @@ describe('RapidPro SMS Gateway', () => {
       const getFinalStateByIdx = (idx) => finalStates[idx % 2];
       const getIdx = (ref) => ref.replace('gateway_ref', '');
 
-      const docs = Array.from({ length: docsCount }).map((_, idx) =>
-        genericReportFactory.reportWithTasks().build({
-          tasks: [{
-            messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
-            gateway_ref: `gateway_ref${idx}`,
-            state: getNonFinalStateByIds(idx),
-          }],
-        }));
+      const docs = Array.from({ length: docsCount }).map((_, idx) => genericReportFactory.reportWithTasks().build({
+        tasks: [{
+          messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
+          gateway_ref: `gateway_ref${idx}`,
+          state: getNonFinalStateByIds(idx),
+        }],
+      }));
 
       messagesResult = (req, res) => {
         const idx = getIdx(req.query.broadcast);
@@ -541,14 +540,13 @@ describe('RapidPro SMS Gateway', () => {
     });
 
     it('should handle rate limiting when polling', async () => {
-      const docs = Array.from({ length: 90 }).map((_, idx) =>
-        genericReportFactory.reportWithTasks().build({
-          tasks: [{
-            messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
-            gateway_ref: `gateway_ref${idx}`,
-            state: 'received-by-gateway',
-          }],
-        }));
+      const docs = Array.from({ length: 90 }).map((_, idx) => genericReportFactory.reportWithTasks().build({
+        tasks: [{
+          messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
+          gateway_ref: `gateway_ref${idx}`,
+          state: 'received-by-gateway',
+        }],
+      }));
 
       messagesResult = (req, res) => {
         if (messagesEndpointRequests.length > 10) {

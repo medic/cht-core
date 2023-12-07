@@ -10,5 +10,9 @@ module.exports = {
   'validateContinuously': false,
   'validatePage': true,
   'swipePage': false,
-  'textMaxChars': 2000
+  'textMaxChars': 2000,
+  'excludeNonRelevant': true,
+  'experimentalOptimizations': {
+    'computeAsync': false,
+  },
 };

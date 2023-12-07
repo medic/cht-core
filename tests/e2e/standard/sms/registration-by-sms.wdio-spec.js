@@ -1,20 +1,24 @@
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const gatewayApiUtils = require('@utils/gateway-api');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 describe('Registration by SMS', () => {
-  const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
-  const user = userFactory.build({ place: district_hospital._id });
+  const districtHospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
+  const user = userFactory.build({ place: districtHospital._id });
 
   before(async () => {
-    await utils.saveDocs([district_hospital]);
+    await utils.saveDocs([districtHospital]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
+  });
+
+  afterEach(async () => {
+    await utils.revertSettings();
   });
 
   it('Should create a new person via SMS and trigger the configured message schedule', async () => {
@@ -27,13 +31,13 @@ describe('Registration by SMS', () => {
     });
 
     await commonPage.goToPeople(user.place);
-    const allRHSPeople = await contactPage.getAllRHSPeopleNames();
+    const allRHSPeople = await contactPage.contactPageDefault.getAllRHSPeopleNames();
     expect(allRHSPeople.length).to.equal(2);
     expect(allRHSPeople).to.include.members([name, user.contact.name]);
 
-    await contactPage.selectLHSRowByText(name);
+    await contactPage.contactPageDefault.selectLHSRowByText(name);
     await commonPage.waitForPageLoaded();
-    const medicID = await contactPage.getContactMedicID();
+    const medicID = await contactPage.contactPageDefault.getContactMedicID();
 
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
@@ -43,7 +47,7 @@ describe('Registration by SMS', () => {
 
     expect(firstReportInfo.heading).to.equal(name);
     expect(firstReportInfo.form).to.equal('New Person (SMS)');
-    expect(firstReportInfo.lineage).to.equal(district_hospital.name);
+    expect(firstReportInfo.lineage).to.equal(districtHospital.name);
     expect(await reportsPage.getRawReportContent()).to.equal(message);
 
     const automaticReply = await reportsPage.getAutomaticReply();
@@ -59,5 +63,90 @@ describe('Registration by SMS', () => {
     expect(taskDetails.message).to.equal(expectedMessage);
     expect(taskDetails.recipient).to.include(user.phone);
     expect(taskDetails.state).to.equal('scheduled');
+  });
+
+  it('should add phone number field when set', async () => {
+    const settings = await utils.getSettings();
+    await utils.updateSettings({
+      registrations: [
+        ...settings.registrations,
+        {
+          form: 'NP',
+          events: [{
+            name: 'on_create',
+            trigger: 'add_patient',
+            params: '',
+            bool_expr: ''
+          }],
+          messages: [{
+            recipient: 'reporting_unit',
+            event_type: 'report_accepted',
+            message: [{
+              locale: 'en',
+              content: 'Patient {{patient_name}} ({{patient_id}}) was registered with {{patient.phone}}'
+            }],
+          }],
+        }
+      ],
+      forms: {
+        ...settings.forms,
+        NP: {
+          meta: { code: 'NP' },
+          fields: {
+            phone_number: {
+              labels: {
+                tiny: { en: 'phone number' },
+                description: { en: 'phone number' },
+                short: { en: 'phone number' }
+              },
+              position: 0,
+              flags: { allow_duplicate: false },
+              type: 'phone_number',
+              required: true
+            },
+            patient_name: {
+              labels: {
+                tiny: { en: 'patient_name' },
+                description: { en: 'Patient name' },
+                short: { en: 'Patient name' }
+              },
+              position: 1,
+              type: 'string',
+              length: [ 3, 30 ],
+              required: true
+            }
+          },
+          public_form: false,
+        }
+      }
+    });
+
+    const name = 'Mario';
+    const phone = '+254702323235';
+    const phoneFormatted = '0702 323235';
+    const message = `NP ${phone} ${name}`;
+    await gatewayApiUtils.api.postMessage({
+      id: 'new-person-sms-phone',
+      from: user.phone,
+      content: message
+    });
+
+    await commonPage.goToPeople(user.place);
+    const allRHSPeople = await contactPage.contactPageDefault.getAllRHSPeopleNames();
+    expect(allRHSPeople).to.include.members([name, user.contact.name]);
+
+    await contactPage.contactPageDefault.selectLHSRowByText(name);
+    await commonPage.waitForPageLoaded();
+    const contactSummaryPhone = await contactPage.getPhone();
+    const medicID = await contactPage.contactPageDefault.getContactMedicID();
+    expect(contactSummaryPhone).to.equal(phoneFormatted);
+
+    await commonPage.goToReports();
+    const firstReport = await reportsPage.firstReport();
+    await reportsPage.openSelectedReport(firstReport);
+
+    const automaticReply = await reportsPage.getAutomaticReply();
+    expect(automaticReply.message).to.include(`Patient ${name} (${medicID}) was registered with ${phone}`);
+    expect(automaticReply.recipient).to.include(user.phone);
   });
 });

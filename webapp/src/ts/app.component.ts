@@ -93,6 +93,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   unreadCount = {};
   useOldActionBar = false;
   initialisationComplete = false;
+  trainingCardFormId = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -428,28 +429,49 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private subscribeToStore() {
-    combineLatest(
+    combineLatest([
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getPrivacyPolicyAccepted),
-      this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
-    ).subscribe(([
+    ]).subscribe(([
       replicationStatus,
       androidAppVersion,
       currentTab,
-      privacyPolicyAccepted,
-      showPrivacyPolicy,
       selectMode,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
-      this.showPrivacyPolicy = showPrivacyPolicy;
-      this.privacyPolicyAccepted = privacyPolicyAccepted;
+
       this.selectMode = selectMode;
     });
+
+    combineLatest([
+      this.store.select(Selectors.getPrivacyPolicyAccepted),
+      this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getTrainingCardFormId),
+    ]).subscribe(([
+      privacyPolicyAccepted,
+      showPrivacyPolicy,
+      trainingCardFormId,
+    ]) => {
+      this.showPrivacyPolicy = showPrivacyPolicy;
+      this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.trainingCardFormId = trainingCardFormId;
+      this.displayTrainingCards();
+    });
+  }
+
+  private displayTrainingCards() {
+    if (this.showPrivacyPolicy && !this.privacyPolicyAccepted) {
+      return;
+    }
+    if (!this.trainingCardFormId) {
+      return;
+    }
+
+    this.trainingCardsService.displayTrainingCards();
   }
 
   private async subscribeToSideFilterStore() {

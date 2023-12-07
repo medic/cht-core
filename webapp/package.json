@@ -19,7 +19,9 @@
   "scripts": {
     "postinstall": "patch-package",
     "unit": "UNIT_TEST_ENV=1 ng test webapp",
+    "unit:cht-form": "ng test cht-form",
     "build": "ng build",
+    "build:cht-form": "ng build cht-form",
     "compile": "ngc"
   },
   "dependencies": {
@@ -28,6 +30,7 @@
     "@angular/common": "^16.2.3",
     "@angular/compiler": "^16.2.3",
     "@angular/core": "^16.2.3",
+    "@angular/elements": "^16.2.3",
     "@angular/forms": "^16.2.3",
     "@angular/material": "^16.2.2",
     "@angular/platform-browser": "^16.2.3",
@@ -44,7 +47,7 @@
     "bootstrap-daterangepicker": "^2.1.30",
     "bowser": "^2.11.0",
     "core-js": "^3.30.2",
-    "enketo-core": "^5.18.1",
+    "enketo-core": "^7.2.5",
     "eurodigit": "^3.1.3",
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.2.31",

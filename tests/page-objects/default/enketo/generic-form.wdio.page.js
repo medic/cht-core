@@ -53,8 +53,9 @@ const selectContact = async (inputName, contactName) => {
   const contact = await $('.name');
   await contact.waitForDisplayed();
   await contact.click();
-  await browser.waitUntil(async () =>
-    (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase()));
+  await browser.waitUntil(async () => {
+    return (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase());
+  });
 };
 const editForm = async () => {
   await commonPage.openMoreOptionsMenu();
@@ -99,6 +100,13 @@ const getFormTitle = async () => {
   return await (await formTitle()).getText();
 };
 
+const selectYesNoOption = async (selector, value = 'yes') => {
+  const element = await $(`${selector}[value="${value}"]`);
+  await element.waitForDisplayed();
+  await element.click();
+  return value === 'yes';
+};
+
 module.exports = {
   getFormTitle,
   getErrorMessage,
@@ -116,4 +124,5 @@ module.exports = {
   submitForm,
   currentFormView,
   formTitle,
+  selectYesNoOption,
 };

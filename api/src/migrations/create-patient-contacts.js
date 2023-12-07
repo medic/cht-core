@@ -40,8 +40,7 @@ const registrationIdsWithNoPatientContacts = function(batch, settings, callback)
 
           const registrations = results.rows
             .map(row => row.doc)
-            .filter(doc =>
-              registrationUtils.isValidRegistration(doc, settings));
+            .filter(doc => registrationUtils.isValidRegistration(doc, settings));
 
           callback(null, registrations);
         }

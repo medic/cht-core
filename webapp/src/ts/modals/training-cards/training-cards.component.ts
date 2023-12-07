@@ -105,12 +105,12 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const reduxSubscription = combineLatest(
+    const reduxSubscription = combineLatest([
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getTrainingCardFormId),
-    ).subscribe(([
+    ]).subscribe(([
       enketoStatus,
       enketoSaving,
       enketoError,
@@ -151,6 +151,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   close() {
+    this.globalActions.setTrainingCardFormId(null);
     this.matDialogRef.close();
   }
 

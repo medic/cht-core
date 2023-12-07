@@ -41,7 +41,7 @@ const getMessageHeader = async () => {
   return {
     name: await $(`${MESSAGE_HEADER} .name`).getText(),
     phone: await $(`${MESSAGE_HEADER} .phone`).getText(),
-    lineage: await $(`${MESSAGE_HEADER} .horizontal.lineage`).getText()
+    lineage: await $(`${MESSAGE_HEADER} .horizontal.lineage`).getText(),
   };
 };
 

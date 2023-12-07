@@ -14,8 +14,7 @@ const _hasConfig = doc => {
 
 // This is more complicated than it needs to be because JS / _ always use ===
 // for equality, complicating the use of unique tuples (i.e. [1,2] !== [1,2])
-const hasGroupAndType = (groupTypeColl, [group, type]) =>
-  groupTypeColl.find(([g, t]) => g === group && t === type);
+const hasGroupAndType = (groupTypeColl, [group, type]) => groupTypeColl.find(([g, t]) => g === group && t === type);
 
 // This should just be
 //   Object.keys(_.groupBy(tasksToClear, ({group, task}) => [group, task]))
@@ -67,17 +66,13 @@ const findToClear = (registration, reported_date, config) => {
   const silenceUntil = reportedDateMoment.clone();
   silenceUntil.add(date.getDuration(config.silence_for));
 
-  const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
-    task => moment(task.due) <= silenceUntil
-  );
-  const groupTypeCombosToClear = uniqueGroupTypeCombos(
-    allTasksBeforeSilenceUntil
-  );
+  const allTasksBeforeSilenceUntil = tasksUnderReview.filter(task => moment(task.due) <= silenceUntil);
+  const groupTypeCombosToClear = uniqueGroupTypeCombos(allTasksBeforeSilenceUntil);
 
-  return tasksUnderReview.filter(({ group, type, state }) =>
-    hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
+  return tasksUnderReview.filter(({ group, type, state }) => {
     // only clear tasks that are in a clearable state!
-    statesToClear.includes(state));
+    return hasGroupAndType(groupTypeCombosToClear, [group, type]) && statesToClear.includes(state);
+  });
 };
 
 const getConfig = function(form) {
@@ -107,8 +102,7 @@ const _silenceReminders = (registration, report, config) => {
 
 const addRegistrationToDoc = (doc, registrations) => {
   if (registrations.length) {
-    const latest = _.maxBy(registrations, registration =>
-      moment(registration.reported_date));
+    const latest = _.maxBy(registrations, registration => moment(registration.reported_date));
     doc.registration_id = latest._id;
   }
 };

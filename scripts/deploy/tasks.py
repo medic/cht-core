@@ -70,8 +70,8 @@ def obtain_certificate_and_key(c, values): # NOSONAR
         else:
             raise Exception("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'") # NOSONAR
     elif values.get('cert_source', '') == 'my-ip-co':
-        subprocess.run(["curl", "https://local-ip.medicmobile.org/fullchain", "-o", "certificate.crt"], check=True)
-        subprocess.run(["curl", "https://local-ip.medicmobile.org/key", "-o", "private.key"], check=True)
+        subprocess.run(["curl", "https://local-ip.medicmobile.org/fullchain", "-o", "certificate.crt"], check=True) # NOSONAR
+        subprocess.run(["curl", "https://local-ip.medicmobile.org/key", "-o", "private.key"], check=True) # NOSONAR
     elif values.get('cert_source', '') == 'eks-medic':
         print("Moving on. Certificate provided by the eks cluster.")
     else:
@@ -103,7 +103,7 @@ def get_image_tag(c, chtversion):
 
     raise Exception('cht image tag not found') # NOSONAR
 
-def setup_etc_hosts(c, values): # NOSONAR
+def setup_etc_hosts(c, values):  # NOSONAR
     # If the cluster_type is k3s-k3d and cert_source is my-ip-co, add the host to /etc/hosts
     if values.get('cluster_type', '') == 'k3s-k3d' and values.get('cert_source', '') == 'my-ip-co':
         host = values.get('ingress', {}).get('host', '')
@@ -121,7 +121,7 @@ def setup_etc_hosts(c, values): # NOSONAR
         print("Cluster type is not k3s-k3d or ingress choice is not my-ip-co. Skipping /etc/hosts setup.")
 
 @task
-def add_route53_entry(c, f): # NOSONAR
+def add_route53_entry(c, f):  # NOSONAR
     values = load_values(c, f)
     host = values.get('ingress', {}).get('host', '')
     load_balancer = values.get('ingress', {}).get('load_balancer', '')

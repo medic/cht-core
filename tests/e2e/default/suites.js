@@ -30,7 +30,8 @@ const SUITES = {
   ],
   enketo: [
     './enketo/**/*.wdio-spec.js',
-  ]};
+  ]
+};
 
 exports.suites = SUITES;
 

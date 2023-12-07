@@ -104,16 +104,15 @@ const hasMatchingRow = (rows, id, exact = true) => {
 };
 
 describe('all_docs handler', () => {
-  before(() => {
-    return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users));
+  before(async () => {
+    await utils.saveDoc(parentPlace);
+    await utils.createUsers(users);
   });
 
-  after(() =>
-    utils
-      .revertDb([], true)
-      .then(() => utils.deleteUsers(users)));
+  after(async () => {
+    await utils.revertDb([], true);
+    await utils.deleteUsers(users);
+  });
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
@@ -322,8 +321,10 @@ describe('all_docs handler', () => {
         });
         return utils.saveDocsRevs(docs);
       })
-      .then(() =>
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
+      .then(() => {
+        const opts = _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions);
+        return utils.requestOnTestDb(opts);
+      })
       .then(result => {
         expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });

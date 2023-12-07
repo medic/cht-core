@@ -1,5 +1,5 @@
-const contactPageDefault = require('../../default/contacts/contacts.wdio.page');
-const commonPageDefault = require('../../default/common/common.wdio.page');
+const contactPageDefault = require('@page-objects/default/contacts/contacts.wdio.page');
+const commonPageDefault = require('@page-objects//default/common/common.wdio.page');
 
 const HEALTH_PROGRAMS = { ANC: 'anc', PNC: 'pnc', IMM: 'imm', GPM: 'gpm'};
 const healthProgram = (program) => $(`input[name="/data/health_center/use_cases"][value="${program}"]`);
@@ -18,8 +18,10 @@ const pregnancyVisits = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.prof
 const PAST_PREG_CARD_SELECTOR = 'div[test-id="contact.profile.past_pregnancies"]';
 const pastPregnancyCard = () => $(PAST_PREG_CARD_SELECTOR);
 const deliveryCode = () => $(`${PAST_PREG_CARD_SELECTOR} div[test-id*="contact.profile.delivery_code"] label`);
-const ancVisitsCompleted = () => $(`${PAST_PREG_CARD_SELECTOR} ` +
-  `div[test-id="contact.profile.anc_visit"] p.card-field-value`);
+const ancVisitsCompleted = () => {
+  return $(`${PAST_PREG_CARD_SELECTOR} div[test-id="contact.profile.anc_visit"] p.card-field-value`);
+};
+const contactPhone = () => $('#contact_summary .cell.phone > div > p');
 
 const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
   if (rightSideAction) {
@@ -29,12 +31,12 @@ const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
   }
   await (await contactPageDefault.newPrimaryContactButton()).waitForDisplayed();
   await (await contactPageDefault.newPrimaryContactButton()).click();
-  await (await contactPageDefault.newPrimaryContactName()).addValue(contactName);
+  await (await contactPageDefault.newPrimaryContactName()).setValue(contactName);
   await contactPageDefault.genericForm.nextPage();
   await (await contactPageDefault.writeNamePlace(type)).click();
-  await (await contactPageDefault.newPlaceName()).addValue(placeName);
-  await (await contactPageDefault.externalIdField(type)).addValue('1234457');
-  await (await contactPageDefault.notes(type)).addValue(`Some ${type} notes`);
+  await (await contactPageDefault.customPlaceNameField()).setValue(placeName);
+  await (await contactPageDefault.externalIdField(type)).setValue('1234457');
+  await (await contactPageDefault.notes(type)).setValue(`Some ${type} notes`);
   await (await contactPageDefault.genericForm.submitButton()).click();
   const dashedType = type.replace('_', '-');
   await (await contactPageDefault.contactCardIcon(dashedType)).waitForDisplayed();
@@ -94,6 +96,19 @@ const getAncVisits = async () => {
   return (await ancVisitsCompleted()).getText();
 };
 
+const getCurrentPlaceEditFormValues = async (type) => {
+  return {
+    name: await contactPageDefault.nameField(type).getValue(),
+    externalId: await contactPageDefault.externalIdField(type).getValue(),
+    notes: await contactPageDefault.notes(type).getValue(),
+  };
+};
+
+const getPhone = async () => {
+  await contactPhone().waitForDisplayed();
+  return (await contactPhone()).getText();
+};
+
 module.exports = {
   contactPageDefault,
   addPlace,
@@ -105,4 +120,6 @@ module.exports = {
   pastPregnancyCard,
   getDeliveryCode,
   getAncVisits,
+  getCurrentPlaceEditFormValues,
+  getPhone,
 };
