@@ -24,47 +24,8 @@ const docs = [
 
 const getYNValue = (boolean) => boolean ? 'yes' : 'no';
 
-const selectRadioButtonByValue = async value => {
-  const radioElement = await $(`[value=${value}]`);
-  await radioElement.waitForClickable();
-  await radioElement.click();
-};
-
-const selectRadioButtonByNameAndValue = async (name, value) => {
-  const radioElement = await $(`[name="${name}"][value="${value}"]`);
-  await radioElement.waitForClickable();
-  await radioElement.click();
-};
-
 const selectPatientName = (name) => {
   return genericForm.selectContact(name);
-};
-
-const selectAliveAndWell = () => {
-  return selectRadioButtonByValue('alive_well');
-};
-
-const hasFever = (hasSymptom) => {
-  return selectRadioButtonByNameAndValue(`/${formId}/pnc_danger_sign_check/fever`, getYNValue(hasSymptom));
-};
-
-const hasHeadache = (hasSymptom) => {
-  return selectRadioButtonByNameAndValue(`/${formId}/pnc_danger_sign_check/severe_headache`, getYNValue(hasSymptom));
-};
-
-const hasVaginalBleeding = (hasSymptom) => {
-  return selectRadioButtonByNameAndValue(`/${formId}/pnc_danger_sign_check/vaginal_bleeding`, getYNValue(hasSymptom));
-};
-const hasVaginalDischarge = (hasSymptom) => {
-  return selectRadioButtonByNameAndValue(`/${formId}/pnc_danger_sign_check/vaginal_discharge`, getYNValue(hasSymptom));
-};
-
-const hasConvulsions = (hasSymptom) => {
-  return selectRadioButtonByNameAndValue(`/${formId}/pnc_danger_sign_check/convulsion`, getYNValue(hasSymptom));
-};
-
-const selectBabiesDelivered = (value = 'other') => {
-  return selectRadioButtonByNameAndValue(`/${formId}/delivery_outcome/babies_delivered`, value);
 };
 
 const selectNoOfBabiesDelivered = async (value) => {
@@ -72,23 +33,6 @@ const selectNoOfBabiesDelivered = async (value) => {
   await field.waitForDisplayed();
   await field.setValue(value);
   await (await field.parentElement()).click();
-};
-
-const selectBabiesAlive = (noOfBabiesAlive) => {
-  return selectRadioButtonByNameAndValue(`/${formId}/delivery_outcome/babies_alive`, noOfBabiesAlive);
-};
-
-const selectDeliveryDate = (deliveryDate) => {
-  const formatted = moment(deliveryDate).format('YYYY-MM-DD');
-  return reportsPage.setDateInput('/delivery/delivery_outcome/delivery_date', formatted);
-};
-
-const selectDeliveryPlace = (value = 'health_facility') => {
-  return selectRadioButtonByNameAndValue(`/${formId}/delivery_outcome/delivery_place`, value);
-};
-
-const selectDeliveryMethod = (value = 'vaginal') => {
-  return selectRadioButtonByValue(value);
 };
 
 const populateDeadBabyInformation = async (index, data = { place: 'health_facility', stillbirth: true }) => {
@@ -142,10 +86,6 @@ const populateAliveBabyInformation = async (index, data = { sex: 'male', danger:
   }
 };
 
-const pncCheckBox = async () => {
-  return await (await $('[value="within_24_hrs"]')).click();
-};
-
 const getDeadBabyUUID = async (index) => {
   const element = await $(
     `//*[text()="report.DD.baby_death.baby_death_repeat.${index}.baby_death_profile_doc"]/../../p`
@@ -166,25 +106,9 @@ module.exports = {
     return utils.seedTestData(userContactDoc, docs);
   },
   selectPatientName,
-  selectAliveAndWell,
-  hasFever,
-  hasHeadache,
-  hasVaginalBleeding,
-  hasVaginalDischarge,
-  hasConvulsions,
-
-  selectBabiesDelivered,
   selectNoOfBabiesDelivered,
-  selectBabiesAlive,
-  selectDeliveryDate,
-  selectDeliveryPlace,
-  selectDeliveryMethod,
-
   populateDeadBabyInformation,
   populateAliveBabyInformation,
-
-  pncCheckBox,
-
   getDeadBabyUUID,
   getAliveBabyUUID,
 };

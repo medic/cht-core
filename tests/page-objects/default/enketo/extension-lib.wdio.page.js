@@ -90,11 +90,6 @@ const configure = async (userContactDoc) => {
 
 const getInput = async (fieldName) => await $(`form[data-form-id="test-api"] input[name="/data/${fieldName}"]`);
 
-const setField = async (fieldName, val) => {
-  const input = await getInput(fieldName);
-  await input.setValue(val);
-};
-
 const getAverage = async () => {
   const input = await getInput('avg');
   return await input.getValue();
@@ -109,8 +104,6 @@ const blur = async () => {
 module.exports = {
   INTERNAL_ID,
   configure,
-  typeFirst: async (val) => await setField('first', val),
-  typeSecond: async (val) => await setField('second', val),
   blur,
   getAverage
 };

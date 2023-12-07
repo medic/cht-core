@@ -1,6 +1,6 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const contactPageDefault = require('@page-objects/default/contacts/contacts.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Create an Health Center', () => {
 
@@ -10,17 +10,18 @@ describe('cht-form web component - Create an Health Center', () => {
     const title = await genericForm.getFormTitle();
     expect(title).to.equal('New Health Center');
 
-    await (await contactPageDefault.newPrimaryContactButton()).click();
-    await (await contactPageDefault.newPrimaryContactName()).setValue('Filippo');
-    await (await contactPageDefault.phoneField()).setValue('+50689888888');
-    await (await contactPageDefault.roleField('contact', 'chw')).click();
-    await (await contactPageDefault.externalIdField('contact')).setValue('123 contact');
-    await (await contactPageDefault.notes('contact')).setValue('Test notes - new contact');
-    await contactPageDefault.genericForm.nextPage();
-    await (await contactPageDefault.writeNamePlace('health_center')).click();
-    await (await contactPageDefault.customPlaceNameField()).setValue('Filippo\'s health center test');
-    await (await contactPageDefault.externalIdField('health_center')).setValue('123 HC');
-    await (await contactPageDefault.notes('health_center')).setValue('Test notes - new health center');
+    await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Create a new person');
+    await commonEnketoPage.setInputValue('Names', 'Filippo');
+    await commonEnketoPage.setInputValue('Phone Number', '+50689888888');
+    await commonEnketoPage.selectRadioButton('Role', 'CHW');
+    await commonEnketoPage.setInputValue('External ID', '123 contact');
+    await commonEnketoPage.setTextareaValue('Notes', 'Test notes - new contact');
+    await genericForm.nextPage();
+    await commonEnketoPage.selectRadioButton('Would you like to name the place after the primary contact:',
+      'No, I want to name it manually');
+    await commonEnketoPage.setInputValue('Name of this Health Center', 'Filippo\'s health center test');
+    await commonEnketoPage.setInputValue('External ID', '123 HC');
+    await commonEnketoPage.setTextareaValue('Notes', 'Test notes - new health center');
 
     const data = await mockConfig.submitForm();
 

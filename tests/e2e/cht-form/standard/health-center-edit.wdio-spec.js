@@ -1,6 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Edit an Health Center', () => {
 
@@ -36,9 +37,9 @@ describe('cht-form web component - Edit an Health Center', () => {
     expect(placeInfo.externalId).to.equal('123 HC');
     expect(placeInfo.notes).to.equal('Test notes - new health center');
 
-    await (await contactPage.contactPageDefault.nameField('health_center')).addValue(' - Edited');
-    await (await contactPage.contactPageDefault.externalIdField('health_center')).addValue(' - Edited');
-    await (await contactPage.contactPageDefault.notes('health_center')).addValue(' - Edited');
+    await commonEnketoPage.setInputValue('Name of this Health Center', 'Filippo\'s health center test - Edited');
+    await commonEnketoPage.setInputValue('External ID', '123 HC - Edited');
+    await commonEnketoPage.setTextareaValue('Notes', 'Test notes - new health center - Edited');
 
     const data = await mockConfig.submitForm();
 

@@ -133,20 +133,10 @@ const docs = [
   }
 ];
 
-const setFieldValue = async (name, value) => {
-  const field = await $(`[name="/data/${name}"]`);
-  await field.setValue(value);
-};
-
 const clickAndGetValue = async (name) => {
   const field = await $(`[name="/data/${name}"]`);
   await field.click();
   return await field.getValue();
-};
-
-const setSex = async (sex) => {
-  const radio = await $(`[name="/data/my_sex"][value="${sex}"]`);
-  await radio.click();
 };
 
 module.exports = {
@@ -154,19 +144,6 @@ module.exports = {
     await utils.seedTestData(userContactDoc, docs);
   },
   docs,
-
-  setHeight: (height) => setFieldValue('my_height', height),
-  setWeight: (weight) => setFieldValue('my_weight', weight),
-  setAge: (age) => setFieldValue('my_age', age),
-  setSex: setSex,
-
-  setPatient: async patient => {
-    await module.exports.setSex(patient.sex);
-    await module.exports.setAge(patient.age);
-    await module.exports.setHeight(patient.height);
-    await module.exports.setWeight(patient.weight);
-  },
-
   getHeightForAge: () => clickAndGetValue('hfa'),
   getWeightForAge: () => clickAndGetValue('wfa'),
   getWeightForHeight: () => clickAndGetValue('wfh'),

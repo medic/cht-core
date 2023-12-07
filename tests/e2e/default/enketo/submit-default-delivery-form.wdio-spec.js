@@ -9,6 +9,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const sentinelUtils = require('@utils/sentinel');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 // FLAKY: https://github.com/medic/cht-core/issues/8087
 describe.skip('Submit Default Delivery Report', () => {
@@ -28,26 +29,26 @@ describe.skip('Submit Default Delivery Report', () => {
     //select name
     await deliveryReport.selectPatientName('jack');
     await genericForm.nextPage();
-    await deliveryReport.selectAliveAndWell();
+    await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await deliveryReport.hasFever(false);
-    await deliveryReport.hasHeadache(false);
-    await deliveryReport.hasVaginalBleeding(false);
-    await deliveryReport.hasVaginalDischarge(false);
-    await deliveryReport.hasConvulsions(false);
+    await commonEnketoPage.selectRadioButton('Fever', 'No');
+    await commonEnketoPage.selectRadioButton('Severe headache', 'No');
+    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'No');
+    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'No');
+    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
     await genericForm.nextPage();
 
     const noOfAliveBabies = 3;
     const noOfDeadBabies = 3;
 
     // Delivery Outcome
-    await deliveryReport.selectBabiesDelivered('other');
+    await commonEnketoPage.selectRadioButton('How many babies were delivered?', 'Other');
     await deliveryReport.selectNoOfBabiesDelivered(noOfAliveBabies + noOfDeadBabies);
-    await deliveryReport.selectBabiesAlive(noOfAliveBabies);
-    await deliveryReport.selectDeliveryDate(new Date());
-    await deliveryReport.selectDeliveryPlace();
-    await deliveryReport.selectDeliveryMethod('vaginal');
+    await commonEnketoPage.selectRadioButton('How many babies are alive?', noOfAliveBabies);
+    await commonEnketoPage.selectRadioButton('Where did delivery take place?', 'Health facility');
+    await commonEnketoPage.selectRadioButton('How did she deliver?', 'Vaginal');
+    await commonEnketoPage.setDateValue('Date of delivery', moment().format('YYYY-MM-DD'));
     await genericForm.nextPage();
 
     // Dead Babies Information
@@ -63,11 +64,8 @@ describe.skip('Submit Default Delivery Report', () => {
       await deliveryReport.populateAliveBabyInformation(i + 1);
     }
     await genericForm.nextPage();
-
     await genericForm.nextPage();
-    await genericForm.nextPage();
-    await genericForm.nextPage();
-    await deliveryReport.pncCheckBox();
+    await commonEnketoPage.selectCheckBox('Within 24 hours (check this box if facility delivery)');
     await genericForm.nextPage();
 
     //submit
@@ -194,7 +192,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await deliveryReport.selectDeliveryMethod('cesarean');
+    await commonEnketoPage.selectRadioButton('How did she deliver?', 'Cesarean');
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
@@ -218,27 +216,26 @@ describe.skip('Submit Default Delivery Report', () => {
     //select name
     await deliveryReport.selectPatientName('jack');
     await genericForm.nextPage();
-    await deliveryReport.selectAliveAndWell();
+    await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await deliveryReport.hasFever(false);
-    await deliveryReport.hasHeadache(false);
-    await deliveryReport.hasVaginalBleeding(false);
-    await deliveryReport.hasVaginalDischarge(false);
-    await deliveryReport.hasConvulsions(false);
+    await commonEnketoPage.selectRadioButton('Fever', 'No');
+    await commonEnketoPage.selectRadioButton('Severe headache', 'No');
+    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'No');
+    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'No');
+    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
     await genericForm.nextPage();
 
     const noOfAliveBabies = 2;
     const noOfDeadBabies = 2;
 
     // Delivery Outcome
-    await deliveryReport.selectBabiesDelivered('other');
+    await commonEnketoPage.selectRadioButton('How many babies were delivered?', 'Other');
     await deliveryReport.selectNoOfBabiesDelivered(noOfAliveBabies + noOfDeadBabies);
-    await deliveryReport.selectBabiesAlive(noOfAliveBabies);
-    await deliveryReport.selectDeliveryDate(new Date());
-
-    await deliveryReport.selectDeliveryPlace();
-    await deliveryReport.selectDeliveryMethod('vaginal');
+    await commonEnketoPage.selectRadioButton('How many babies are alive?', noOfAliveBabies);
+    await commonEnketoPage.selectRadioButton('Where did delivery take place?', 'Health facility');
+    await commonEnketoPage.selectRadioButton('How did she deliver?', 'Vaginal');
+    await commonEnketoPage.setDateValue('Date of delivery', moment().format('YYYY-MM-DD'));
     await genericForm.nextPage();
 
     // Dead Babies Information
@@ -254,11 +251,8 @@ describe.skip('Submit Default Delivery Report', () => {
       await deliveryReport.populateAliveBabyInformation(i + 1);
     }
     await genericForm.nextPage();
-
     await genericForm.nextPage();
-    await genericForm.nextPage();
-    await genericForm.nextPage();
-    await deliveryReport.pncCheckBox();
+    await commonEnketoPage.selectCheckBox('Within 24 hours (check this box if facility delivery)');
     await genericForm.nextPage();
 
     //submit
@@ -273,24 +267,23 @@ describe.skip('Submit Default Delivery Report', () => {
     await reportsPage.editReport(reportId);
     await deliveryReport.selectPatientName('jill');
     await genericForm.nextPage();
-    await deliveryReport.selectAliveAndWell();
+    await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await deliveryReport.hasFever(true);
-    await deliveryReport.hasHeadache(true);
-    await deliveryReport.hasVaginalBleeding(true);
-    await deliveryReport.hasVaginalDischarge(true);
-    await deliveryReport.hasConvulsions(true);
+    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
+    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
+    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
+    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'Yes');
+    await commonEnketoPage.selectRadioButton('Convulsions', 'Yes');
     await genericForm.nextPage();
 
     // Delivery Outcome
-    await deliveryReport.selectBabiesDelivered('other');
+    await commonEnketoPage.selectRadioButton('How many babies were delivered?', 'Other');
     await deliveryReport.selectNoOfBabiesDelivered(noOfAliveBabies + noOfDeadBabies);
-    await deliveryReport.selectBabiesAlive(noOfAliveBabies);
-    await deliveryReport.selectDeliveryDate(new Date());
-
-    await deliveryReport.selectDeliveryPlace();
-    await deliveryReport.selectDeliveryMethod('vaginal');
+    await commonEnketoPage.selectRadioButton('How many babies are alive?', noOfAliveBabies);
+    await commonEnketoPage.selectRadioButton('Where did delivery take place?', 'Health facility');
+    await commonEnketoPage.selectRadioButton('How did she deliver?', 'Vaginal');
+    await commonEnketoPage.setDateValue('Date of delivery', moment().format('YYYY-MM-DD'));
     await genericForm.nextPage();
 
     // Dead Babies Information
@@ -329,24 +322,23 @@ describe.skip('Submit Default Delivery Report', () => {
     //select name
     await deliveryReport.selectPatientName('jill');
     await genericForm.nextPage();
-    await deliveryReport.selectAliveAndWell();
+    await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await deliveryReport.hasFever(true);
-    await deliveryReport.hasHeadache(true);
-    await deliveryReport.hasVaginalBleeding(true);
-    await deliveryReport.hasVaginalDischarge(true);
-    await deliveryReport.hasConvulsions(true);
+    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
+    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
+    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
+    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'Yes');
+    await commonEnketoPage.selectRadioButton('Convulsions', 'Yes');
     await genericForm.nextPage();
 
     // Delivery Outcome
-    await deliveryReport.selectBabiesDelivered('other');
+    await commonEnketoPage.selectRadioButton('How many babies were delivered?', 'Other');
     await deliveryReport.selectNoOfBabiesDelivered(noOfAliveBabies + noOfDeadBabies);
-    await deliveryReport.selectBabiesAlive(noOfAliveBabies);
-    await deliveryReport.selectDeliveryDate(new Date());
-
-    await deliveryReport.selectDeliveryPlace();
-    await deliveryReport.selectDeliveryMethod('vaginal');
+    await commonEnketoPage.selectRadioButton('How many babies are alive?', noOfAliveBabies);
+    await commonEnketoPage.selectRadioButton('Where did delivery take place?', 'Health facility');
+    await commonEnketoPage.selectRadioButton('How did she deliver?', 'Vaginal');
+    await commonEnketoPage.setDateValue('Date of delivery', moment().format('YYYY-MM-DD'));
     await genericForm.nextPage();
 
     // Dead Babies Information
@@ -362,11 +354,8 @@ describe.skip('Submit Default Delivery Report', () => {
       await deliveryReport.populateAliveBabyInformation(i + 1, { sex: 'female', danger: true });
     }
     await genericForm.nextPage();
-
     await genericForm.nextPage();
-    await genericForm.nextPage();
-    await genericForm.nextPage();
-    await deliveryReport.pncCheckBox();
+    await commonEnketoPage.selectCheckBox('Within 24 hours (check this box if facility delivery)');
     await genericForm.nextPage();
 
     //submit

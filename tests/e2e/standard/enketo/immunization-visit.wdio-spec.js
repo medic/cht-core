@@ -11,6 +11,12 @@ const gatewayApiUtils = require('@utils/gateway-api');
 const immVisitForm = require('@page-objects/standard/enketo/immunization-visit.wdio.page');
 const { TARGET_MET_COLOR } = analyticsPage;
 
+const allVaccines = ['BCG', 'Cholera', 'Hepatitis A', 'Hepatitis B', 'HPV (Human Papillomavirus)', 'Influenza',
+  'Japanese Encephalitis', 'Meningococcal', 'MMR (Measles, Mumps, Rubella)',
+  'MMRV (Measles, Mumps, Rubella, Varicella)', 'Inactivated Polio', 'Fractional inactivated polio',
+  'Oral Polio', 'Pentavalent', 'Pneumococcal Pneumonia', 'Rotavirus', 'Typhoid', 'Vitamin A',
+  'Yellow Fever', 'Diptheria, Pertussis, and Tetanus (DPT)'];
+
 describe('Immunization Visit', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
@@ -23,7 +29,7 @@ describe('Immunization Visit', () => {
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
     await commonPage.goToPeople(healthCenter._id);
-    await contactPage.addHealthPrograms('imm');
+    await contactPage.addHealthPrograms('Immunizations', allVaccines);
     await commonPage.logout();
   });
 

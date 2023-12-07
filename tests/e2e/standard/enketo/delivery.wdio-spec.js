@@ -11,7 +11,7 @@ const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.pa
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
 const pregnancyVisitForm = require('@page-objects/standard/enketo/pregnancy-visit.wdio.page');
-const deliveryForm = require('@page-objects/standard/enketo/delivery.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR } = analyticsPage;
 
 describe('Delivery', () => {
@@ -69,19 +69,22 @@ describe('Delivery', () => {
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
     await commonPage.openFastActionReport('delivery');
 
-    const pregnancyOutcome = await deliveryForm.selectPregnancyOutcome();
-    const locationDelivery = await deliveryForm.selectDeliveryLocation();
-    await deliveryForm.setDeliveryDate(moment().format('YYYY-MM-DD'));
+    await commonEnketoPage.selectRadioButton('Pregnancy Outcome', 'Live Birth');
+    await commonEnketoPage.selectRadioButton('Location of Delivery', 'Facility');
+    await commonEnketoPage.setDateValue('Enter Delivery Date', moment().format('YYYY-MM-DD'));
     await genericForm.nextPage();
-    await deliveryForm.setNote(note);
+    await commonEnketoPage.setTextareaValue('You can add a personal note to the SMS here:', note);
     await genericForm.nextPage();
 
-    const summaryDetails = await deliveryForm.getSummaryDetails();
-    expect(summaryDetails.outcome).to.equal(pregnancyOutcome);
-    expect(summaryDetails.location).to.equal(locationDelivery);
-    expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman1);
-    expect(summaryDetails.followUpSmsNote2).to.include(medicIDW1);
-    expect(summaryDetails.followUpSmsNote2).to.include(note);
+    const summaryTexts = [
+      'Live Birth', //pregnancy outcome
+      'Facility', //location delivery
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
+    expect(await commonEnketoPage.isElementDisplayed('label', `Good news, ! ${pregnantWoman1} (${medicIDW1}) ` +
+      `has delivered at the health facility. We will alert you when it is time to refer them for PNC. ` +
+      `Please monitor them for danger signs. ${note}`)).to.be.true;
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

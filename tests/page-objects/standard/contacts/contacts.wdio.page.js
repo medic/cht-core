@@ -1,9 +1,6 @@
 const contactPageDefault = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonPageDefault = require('@page-objects//default/common/common.wdio.page');
-
-const HEALTH_PROGRAMS = { ANC: 'anc', PNC: 'pnc', IMM: 'imm', GPM: 'gpm'};
-const healthProgram = (program) => $(`input[name="/data/health_center/use_cases"][value="${program}"]`);
-const vaccines = () => $$('input[name="/data/health_center/vaccines"]');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 const IMM_CARD_VACCINES_SELECTOR =
   'div[test-id="contact.profile.immunizations"] div[test-id*="contact.profile.imm"] .card-field-value';
@@ -43,30 +40,16 @@ const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
   await (await contactPageDefault.contactCard()).waitForDisplayed();
 };
 
-const addAllVaccines = async () => {
-  const allVaccines = await vaccines();
-  for (const vaccine of allVaccines) {
-    await vaccine.waitForClickable();
-    await vaccine.click();
-  }
-};
 
-/**
- * Add health programs to a health facility, standard config
- *
- * @param {string} program - Refers to the different Health Programs
- *                            "anc" for Antenatal care
- *                            "pnc" for Postnatal care
- *                            "imm" for Immunizations and "gpm" for Growth monitoring (nutrition)
- */
-const addHealthPrograms = async (program = HEALTH_PROGRAMS.ANC) => {
+const addHealthPrograms = async (program, vaccines = []) => {
   await commonPageDefault.openMoreOptionsMenu();
   await (await contactPageDefault.editContactButton()).waitForClickable();
   await (await contactPageDefault.editContactButton()).click();
-  await (await healthProgram(program)).waitForDisplayed();
-  await (await healthProgram(program)).click();
-  if (program === HEALTH_PROGRAMS.IMM) {
-    await addAllVaccines();
+  await commonEnketoPage.selectCheckBox(program);
+  if (program === 'Immunizations') {
+    for (const vaccine of vaccines) {
+      await commonEnketoPage.selectCheckBox(vaccine);
+    }
   }
   await contactPageDefault.genericForm.submitButton().click();
 };

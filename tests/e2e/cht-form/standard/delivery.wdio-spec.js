@@ -1,7 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const deliveryForm = require('@page-objects/standard/enketo/delivery.wdio.page');
 const moment = require('moment');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Delivery Form', () => {
 
@@ -30,20 +30,24 @@ describe('cht-form web component - Delivery Form', () => {
       'We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. ' +
       `Thank you! ${note}`;
 
-    const pregnancyOutcome = await deliveryForm.selectPregnancyOutcome();
-    const locationDelivery = await deliveryForm.selectDeliveryLocation();
-    await deliveryForm.setDeliveryDate(date);
+    await commonEnketoPage.selectRadioButton('Pregnancy Outcome', 'Live Birth');
+    await commonEnketoPage.selectRadioButton('Location of Delivery', 'Facility');
+    await commonEnketoPage.setDateValue('Enter Delivery Date', date);
     await genericForm.nextPage();
-    await deliveryForm.setNote(note);
+    await commonEnketoPage.setTextareaValue('You can add a personal note to the SMS here:', note);
     await genericForm.nextPage();
 
-    const summaryDetails = await deliveryForm.getSummaryDetails();
-    expect(summaryDetails.patientName).to.equal('Cleo');
-    expect(summaryDetails.patientId).to.equal('98765');
-    expect(summaryDetails.outcome).to.equal(pregnancyOutcome);
-    expect(summaryDetails.location).to.equal(locationDelivery);
-    expect(summaryDetails.followUpSmsNote1).to.equal('The following will be sent as a SMS to Luna (+50689252525)');
-    expect(summaryDetails.followUpSmsNote2).to.equal(followUpSms);
+    const summaryTexts = [
+      'Cleo', //patient name
+      '98765', //patient id
+      'Live Birth', //pregnancy outcome
+      'Facility', //location delivery
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
+    expect(await commonEnketoPage.isElementDisplayed('label',
+      'The following will be sent as a SMS to Luna (+50689252525)')).to.be.true;
+    expect(await commonEnketoPage.isElementDisplayed('label', followUpSms)).to.be.true;
 
     const data = await mockConfig.submitForm();
     const jsonObj = data[0].fields;
@@ -54,8 +58,8 @@ describe('cht-form web component - Delivery Form', () => {
     expect(jsonObj.chw_name).to.equal('Luna');
     expect(jsonObj.chw_phone).to.equal('+50689252525');
     expect(jsonObj.birth_date).to.equal(date);
-    expect(jsonObj.label_pregnancy_outcome).to.equal(pregnancyOutcome);
-    expect(jsonObj.label_delivery_code).to.equal(locationDelivery);
+    expect(jsonObj.label_pregnancy_outcome).to.equal('Live Birth');
+    expect(jsonObj.label_delivery_code).to.equal('Facility');
     expect(jsonObj.chw_sms).to.equal(followUpSms);
   });
 

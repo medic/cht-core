@@ -1,6 +1,6 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const childHealthRegistrationPage = require('@page-objects/standard/enketo/child-health-registration.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Child Health Registration Form', () => {
 
@@ -24,20 +24,23 @@ describe('cht-form web component - Child Health Registration Form', () => {
 
     const defaultSms = 'Good news, Luna! Cleo (98765) has been registered for Child Health messages. Thank you!';
 
-    const formInfo = await childHealthRegistrationPage.getFormInformation();
-    expect(formInfo.chwName).to.equal('Luna');
-    expect(formInfo.chwPhone).to.equal('+50689252525');
-    expect(formInfo.defaultSms).to.equal(defaultSms);
+    expect(await commonEnketoPage.isElementDisplayed('label',
+      'The following message will be sent to Luna (+50689252525):')).to.be.true;
+    expect(await commonEnketoPage.isElementDisplayed('span', defaultSms)).to.be.true;
 
-    await childHealthRegistrationPage.setPersonalNote('Test note - child health registration');
+    await commonEnketoPage.setTextareaValue('You can add a personal note to the SMS here:',
+      'Test note - child health registration');
     await genericForm.nextPage();
 
-    const summaryInformation = await childHealthRegistrationPage.getSummaryInformation();
-    expect(summaryInformation.childId).to.equal('98765');
-    expect(summaryInformation.childName).to.equal('Cleo');
-    expect(summaryInformation.chwName).to.equal('Luna');
-    expect(summaryInformation.chwPhone).to.equal('+50689252525');
-    expect(summaryInformation.smsContent).to.equal(`${defaultSms} Test note - child health registration`);
+    const summaryTexts = [
+      '98765', //child id
+      'Cleo', //child name
+      'Luna', //chw name
+      '+50689252525', //chw phone
+      `${defaultSms} Test note - child health registration` //sms content
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     const data = await mockConfig.submitForm();
     const jsonObj = data[0].fields;
