@@ -642,6 +642,7 @@ export class EnketoFormContext {
     this.formDoc = formDoc;
     this.instanceData = instanceData;
   }
+
   shouldEvaluateExpression() {
     if (this.type === 'task') {
       return false;
