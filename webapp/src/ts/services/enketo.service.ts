@@ -644,6 +644,10 @@ export class EnketoFormContext {
   }
 
   shouldEvaluateExpression() {
+    if (this.type === 'task') {
+      return false;
+    }
+
     if (this.type === 'report' && this.editing) {
       return false;
     }
