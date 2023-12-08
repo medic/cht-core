@@ -20,7 +20,7 @@ const compileTasks = async (tasksFileName) => {
   return await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
 };
 
-describe('Task list', () => {
+describe('Tasks', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const healthCenter = places.get('health_center');
