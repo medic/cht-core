@@ -32,6 +32,7 @@ describe('Pregnancy registration', () => {
   it('Should submit a new pregnancy', async () => {
     const edd = moment().add(8, 'days');
     const nextANCVisit = moment().add(2, 'day');
+    const riskFactorsQuestion = 'Does the woman have any of these risk factors?';
 
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy');
@@ -51,13 +52,13 @@ describe('Pregnancy registration', () => {
     await commonEnketoPage.selectRadioButton('Is this the woman\'s first pregnancy?', 'No');
     await commonEnketoPage.selectRadioButton('Has the woman had any miscarriages or stillbirths?', 'Yes');
     await genericForm.nextPage();
-    await commonEnketoPage.selectCheckBox('Previous difficulties in childbirth');
-    await commonEnketoPage.selectCheckBox('Has delivered four or more children');
-    await commonEnketoPage.selectCheckBox('Last baby born less than one year ago');
-    await commonEnketoPage.selectCheckBox('Heart condition');
-    await commonEnketoPage.selectCheckBox('Asthma');
-    await commonEnketoPage.selectCheckBox('High blood pressure');
-    await commonEnketoPage.selectCheckBox('Diabetes');
+    await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Previous difficulties in childbirth');
+    await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Has delivered four or more children');
+    await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Last baby born less than one year ago');
+    await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Heart condition');
+    await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Asthma');
+    await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'High blood pressure');
+    await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Diabetes');
     await commonEnketoPage.selectRadioButton(
       'Are there additional factors that could make this pregnancy high-risk?',
       'No'

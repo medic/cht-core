@@ -40,10 +40,10 @@ describe('Family form', () => {
     await genericForm.editForm();
     await commonEnketoPage.setInputValue('Names', 'modified');
     await genericForm.nextPage(7);
-    await commonEnketoPage.selectCheckBox('Spring');
+    await commonEnketoPage.selectCheckBox('What is the family\'s source of drinking water?', 'Spring');
     await commonEnketoPage.selectRadioButton('Do they have mosquito nets', 'No');
     await commonEnketoPage.selectRadioButton('Do they have an hygienic toilet', 'No');
-    await commonEnketoPage.selectCheckBox('Condoms');
+    await commonEnketoPage.selectCheckBox('Which method of Family Planning is being used', 'Condoms');
     await reportsPage.submitForm();
     await familyForm.reportCheck(
       'modified Family',

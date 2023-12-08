@@ -18,10 +18,10 @@ const submitFamilyForm = async () => {
   await genericForm.nextPage();
   await commonEnketoPage.selectRadioButton('Do you want to register women 15-49 now?', 'No');
   await genericForm.nextPage();
-  await commonEnketoPage.selectCheckBox('Boreholes');
+  await commonEnketoPage.selectCheckBox('What is the family\'s source of drinking water?', 'Boreholes');
   await commonEnketoPage.selectRadioButton('Do they have mosquito nets', 'Yes');
   await commonEnketoPage.selectRadioButton('Do they have an hygienic toilet', 'Yes');
-  await commonEnketoPage.selectCheckBox('UCID');
+  await commonEnketoPage.selectCheckBox('Which method of Family Planning is being used', 'UCID');
   await reportsPage.submitForm();
 };
 

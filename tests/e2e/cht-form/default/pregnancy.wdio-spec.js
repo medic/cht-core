@@ -34,13 +34,16 @@ describe('cht-form web component - Pregnancy Form', () => {
     await commonEnketoPage.selectRadioButton('Is this the woman\'s first pregnancy?', 'No');
     await commonEnketoPage.selectRadioButton('Has the woman had any miscarriages or stillbirths?', 'Yes');
     await genericForm.nextPage();
-    await commonEnketoPage.selectCheckBox('Previous difficulties in childbirth');
-    await commonEnketoPage.selectCheckBox('Has delivered four or more children');
-    await commonEnketoPage.selectCheckBox('Last baby born less than one year ago');
-    await commonEnketoPage.selectCheckBox('Heart condition');
-    await commonEnketoPage.selectCheckBox('Asthma');
-    await commonEnketoPage.selectCheckBox('High blood pressure');
-    await commonEnketoPage.selectCheckBox('Diabetes');
+    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?',
+      'Previous difficulties in childbirth');
+    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?',
+      'Has delivered four or more children');
+    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?',
+      'Last baby born less than one year ago');
+    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'Heart condition');
+    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'Asthma');
+    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'High blood pressure');
+    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'Diabetes');
     await commonEnketoPage.selectRadioButton(
       'Are there additional factors that could make this pregnancy high-risk?',
       'No'

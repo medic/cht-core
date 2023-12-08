@@ -17,13 +17,16 @@ const selectRadioButton = async (question, label) => {
   await radioButton.click();
 };
 
-const selectCheckBox = async (text) => {
+const selectCheckBox = async (question, text) => {
   const page = await currentSection().isExisting() ? currentSection() : divContainer();
   let checkbox = await page;
   if (await checkbox.$('fieldset.or-branch:not(.disabled)').isExisting()){
     checkbox = await checkbox.$('fieldset.or-branch:not(.disabled)');
   }
-  checkbox = await checkbox.$(`label*=${text}`);
+  checkbox = await checkbox
+    .$(`legend*=${question}`)
+    .nextElement()
+    .$(`label*=${text}`);
   await checkbox.waitForClickable();
   await checkbox.click();
 };

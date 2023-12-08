@@ -20,7 +20,7 @@ describe('cht-form web component - Replace User Form', () => {
     await genericForm.nextPage();
     await commonEnketoPage.setInputValue('Full name', 'Replacement User');
     await commonEnketoPage.selectRadioButton('Sex', 'Female');
-    await commonEnketoPage.selectCheckBox('Date of birth unknown');
+    await commonEnketoPage.selectCheckBox(' ', 'Date of birth unknown');
     await commonEnketoPage.setInputValue('Years', '22');
     await genericForm.nextPage();
 

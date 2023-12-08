@@ -53,7 +53,7 @@ describe('cht-form web component - Delivery Form', () => {
     await commonEnketoPage.selectRadioButton('Blue skin color (hypothermia)', 'No');
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await commonEnketoPage.selectCheckBox('None of the above');
+    await commonEnketoPage.selectCheckBox('Which PNC visits have taken place so far?', 'None of the above');
     await genericForm.nextPage();
 
     const summaryTexts = [
