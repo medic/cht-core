@@ -20,7 +20,7 @@ const selectRadioButton = async (question, label) => {
 const selectCheckBox = async (question, text) => {
   const page = await currentSection().isExisting() ? currentSection() : divContainer();
   let checkbox = await page;
-  if (await checkbox.$('fieldset.or-branch:not(.disabled)').isExisting()){
+  if (await checkbox.$$('fieldset.or-branch:not(.disabled)').length === 1){
     checkbox = await checkbox.$('fieldset.or-branch:not(.disabled)');
   }
   checkbox = await checkbox

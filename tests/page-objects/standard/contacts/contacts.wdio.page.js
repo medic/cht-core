@@ -45,10 +45,10 @@ const addHealthPrograms = async (program, vaccines = []) => {
   await commonPageDefault.openMoreOptionsMenu();
   await (await contactPageDefault.editContactButton()).waitForClickable();
   await (await contactPageDefault.editContactButton()).click();
-  await commonEnketoPage.selectCheckBox(program);
+  await commonEnketoPage.selectCheckBox('Health programs', program);
   if (program === 'Immunizations') {
     for (const vaccine of vaccines) {
-      await commonEnketoPage.selectCheckBox(vaccine);
+      await commonEnketoPage.selectCheckBox('Select vaccines', vaccine);
     }
   }
   await contactPageDefault.genericForm.submitButton().click();

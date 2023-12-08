@@ -13,7 +13,7 @@ describe('cht-form web component - Edit an Health Center', () => {
       myForm.content = {
         health_center: {
           parent: 'PARENT',
-          type: '',
+          type: 'health_center',
           is_name_generated: 'false',
           name: 'Filippo\'s health center test',
           external_id: '123 HC',
@@ -37,8 +37,20 @@ describe('cht-form web component - Edit an Health Center', () => {
     expect(placeInfo.externalId).to.equal('123 HC');
     expect(placeInfo.notes).to.equal('Test notes - new health center');
 
+    const allVaccines = ['BCG', 'Cholera', 'Hepatitis A', 'Hepatitis B', 'HPV (Human Papillomavirus)', 'Influenza',
+      'Japanese Encephalitis', 'Meningococcal', 'MMR (Measles, Mumps, Rubella)',
+      'MMRV (Measles, Mumps, Rubella, Varicella)', 'Inactivated Polio', 'Fractional inactivated polio',
+      'Oral Polio', 'Pentavalent', 'Pneumococcal Pneumonia', 'Rotavirus', 'Typhoid', 'Vitamin A',
+      'Yellow Fever', 'Diptheria, Pertussis, and Tetanus (DPT)'];
+
     await commonEnketoPage.setInputValue('Name of this Health Center', 'Filippo\'s health center test - Edited');
     await commonEnketoPage.setInputValue('External ID', '123 HC - Edited');
+
+    await commonEnketoPage.selectCheckBox('Health programs', 'Immunizations');
+    for (const vaccine of allVaccines) {
+      await commonEnketoPage.selectCheckBox('Select vaccines', vaccine);
+    }
+
     await commonEnketoPage.setTextareaValue('Notes', 'Test notes - new health center - Edited');
 
     const data = await mockConfig.submitForm();
