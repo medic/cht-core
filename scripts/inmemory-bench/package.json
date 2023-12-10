@@ -1,0 +1,21 @@
+{
+  "name": "inmemory-bench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "bundle": "npx browserify ./dist/scripts/inmemory-bench/index.js -o ./dist/bundle.js",
+    "build": "npx tsc && npm run bundle",
+    "dev": "npx tsc-watch --onSuccess \"npm run bundle\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/uuid": "^9.0.7",
+    "browserify": "^17.0.0",
+    "pouchdb": "^8.0.1",
+    "pouchdb-adapter-memory": "^8.0.1",
+    "pouchdb-browser": "^8.0.1",
+    "uuid": "^9.0.1"
+  }
+}
