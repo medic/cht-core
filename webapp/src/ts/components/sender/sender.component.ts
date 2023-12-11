@@ -10,5 +10,16 @@ export class SenderComponent {
   @Input() sentBy;
   @Input() hideLineage;
 
-  constructor() { }
+  getName() {
+    return this.message.doc?.name
+      || this.message.contact?.name
+      || (!this.message.form && this.message.name)
+      || this.message.from
+      || this.message.sent_by
+      || this.message.doc?.from;
+  }
+
+  getId() {
+    return this.message.contact?._id || this.message.doc?._id;
+  }
 }
