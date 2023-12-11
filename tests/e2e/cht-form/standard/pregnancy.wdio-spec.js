@@ -1,6 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Pregnancy Registration Form', () => {
 
@@ -27,26 +28,42 @@ describe('cht-form web component - Pregnancy Registration Form', () => {
       'by the health facility. This is a high-risk pregnancy. You will receive ANC notifications for this patient. ' +
       `Please follow up with the nurse to identify the patient. Thank you! ${note}`;
 
-    await pregnancyForm.selectKnowLMP();
-    await pregnancyForm.selectAproxLMP(pregnancyForm.APROX_LMP.b7To8Months);
+    await commonEnketoPage.selectRadioButton('Does the woman know the date of the last cycle?', 'No');
+    await commonEnketoPage.selectRadioButton('Approximate start date of last cycle', 'between 7 to 8 months ago');
 
-    expect(await (await pregnancyForm.getEstDeliveryDate()).isDisplayed()).to.be.true;
+    expect(await commonEnketoPage.isElementDisplayed('label', 'Estimated delivery date is')).to.be.true;
 
     await genericForm.nextPage();
-    const riskFactors = await pregnancyForm.selectAllRiskFactors();
+    await pregnancyForm.selectAllRiskFactors();
     await genericForm.nextPage();
-    const dangerSigns = await pregnancyForm.selectAllDangerSigns();
+    await pregnancyForm.selectAllDangerSigns();
     await genericForm.nextPage();
-    await pregnancyForm.setNote(note);
+    await commonEnketoPage.setTextareaValue('You can add a personal note to the SMS here:', note);
     await genericForm.nextPage();
 
-    const summaryDetails = await pregnancyForm.getSummaryDetails();
-    expect(summaryDetails.patientName).to.equal('Cleo');
-    expect(summaryDetails.patientId).to.equal('98765');
-    expect(summaryDetails.countRiskFactors).to.equal(riskFactors.length);
-    expect(summaryDetails.countDangerSigns).to.equal(dangerSigns.length);
-    expect(summaryDetails.followUpSmsNote1).to.equal('The following will be sent as a SMS to Luna +50689252525');
-    expect(summaryDetails.followUpSmsNote2).to.equal(followUpSms);
+    const summaryTexts = [
+      'Cleo', //patient name
+      '98765', //patient id
+      'More than 4 children',
+      'Last baby born less than 1 year before',
+      'Had previous miscarriages or previous difficulties in childbirth',
+      'One of the following conditions: heart conditions, asthma, high blood pressure, known diabetes',
+      'HIV positive',
+      'Pain or cramping in abdomen',
+      'Bleeding or fluid leaking from vagina or vaginal discharge with bad odour',
+      'Severe nausea or vomiting',
+      'Fever of 38 degrees or higher',
+      'Severe headache or new, blurry vision problems',
+      'Sudden weight gain or severe swelling of feet, ankles, face, or hands',
+      'Less movement and kicking from the baby (after week 20 of pregnancy)',
+      'Blood in the urine or painful, burning urination',
+      'Diarrhea that doesn\'t go away',
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
+    expect(await commonEnketoPage.isElementDisplayed('label',
+      'The following will be sent as a SMS to Luna +50689252525')).to.be.true;
+    expect(await commonEnketoPage.isElementDisplayed('label', followUpSms)).to.be.true;
 
     const data = await mockConfig.submitForm();
     const jsonObj = data[0].fields;
