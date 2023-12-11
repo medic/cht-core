@@ -121,6 +121,14 @@ const subjectRequest = function(filters) {
   return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds);
 };
 
+const getContactParentRequest = function(filters) {
+  if (!filters.parent) {
+    return;
+  }
+
+  return getRequestWithMappedKeys('medic-client/contacts_by_parent', filters.parents, getKeysArray);
+};
+
 const contactTypeRequest = function(filters, sortByLastVisitedDate) {
   if (!filters.types) {
     return;
@@ -196,11 +204,25 @@ const requestBuilders = {
   contacts: function(filters, extensions) {
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
+
+    if (filters) {
+      filters.parents = [ '17f1df8a-b096-4d1e-823d-2723bf7d24ee' ];
+    }
+
+
     const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
     const hasTypeRequest = typeRequest && typeRequest.params.keys.length;
 
     const freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
     const hasFreetextRequests = freetextRequests && freetextRequests.length;
+
+
+
+
+    const parentContactRequest = getContactParentRequest(filters);
+
+
+
 
     if (hasTypeRequest && hasFreetextRequests) {
 
@@ -235,7 +257,7 @@ const requestBuilders = {
       return freetextRequests.map(_.partial(makeCombinedRequest, typeRequest, _));
     }
 
-    let requests = [ freetextRequests, typeRequest ];
+    let requests = [ freetextRequests, typeRequest, parentContactRequest ];
     requests = _.compact(_.flatten(requests));
 
     if (!requests.length) {
@@ -247,6 +269,7 @@ const requestBuilders = {
       // result and we'll need it later for sorting
       requests.push(sortByLastVisitedDate());
     }
+    console.warn('search requests -> ', requests);
     return requests;
   }
 };
