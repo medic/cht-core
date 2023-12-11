@@ -110,6 +110,13 @@ describe('Tasks tab breadcrumbs', () => {
         },
       ]);
     });
+
+    it('should open task with expression', async () => {
+      await tasksPage.goToTasksTab();
+      const task = await tasksPage.getTaskByContactAndForm('patient1', 'person_create');
+      await task.click();
+      await tasksPage.waitForTaskContentLoaded('Home Visit');
+    });
   });
 
   describe('for supervisor', () => {
