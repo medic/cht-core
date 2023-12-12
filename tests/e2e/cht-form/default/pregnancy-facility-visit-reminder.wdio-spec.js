@@ -1,8 +1,5 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyFacilityVisitReminderPage = require(
-  '@page-objects/default/enketo/pregnancy-facility-visit-reminder.wdio.page'
-);
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Pregnancy Facility Visit Reminder Form', () => {
@@ -22,8 +19,8 @@ describe('cht-form web component - Pregnancy Facility Visit Reminder Form', () =
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Health facility ANC reminder');
 
-    const visitDate = await pregnancyFacilityVisitReminderPage.getAncReminderInfo();
-    expect(Date.parse(visitDate)).to.equal(Date.parse('25 Jul, 2023'));
+    expect(await commonEnketoPage.isElementDisplayed('label',
+      'Please remind the client to attend their ANC visit on 25 Jul, 2023.'));
     await commonEnketoPage.selectRadioButton('Did you remind the client in-person or by phone?', 'In person');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();

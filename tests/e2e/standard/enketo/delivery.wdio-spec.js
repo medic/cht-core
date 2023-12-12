@@ -39,7 +39,7 @@ describe('Delivery', () => {
 
     // Submit 4 pregnancy visits for Woman1 to see the update in the targets
     for (let i = 0; i < 4; i++) {
-      await pregnancyVisitForm.submitPregnancyVisit();
+      await pregnancyVisitForm.submitPregnancyVisit('', pregnantWoman1);
       await commonPage.waitForPageLoaded();
     }
 
@@ -56,7 +56,7 @@ describe('Delivery', () => {
     await commonPage.waitForPageLoaded();
 
     // Submit 1 pregnancy visit for Woman2 to see the update in the targets
-    await pregnancyVisitForm.submitPregnancyVisit();
+    await pregnancyVisitForm.submitPregnancyVisit('', pregnantWoman2);
     await commonPage.waitForPageLoaded();
 
   });
@@ -72,7 +72,7 @@ describe('Delivery', () => {
     await commonEnketoPage.selectRadioButton('Pregnancy Outcome', 'Live Birth');
     await commonEnketoPage.selectRadioButton('Location of Delivery', 'Facility');
     await commonEnketoPage.setDateValue('Enter Delivery Date', moment().format('YYYY-MM-DD'));
-    await genericForm.nextPage();
+    await genericForm.nextPage(1, false);
     await commonEnketoPage.setTextareaValue('You can add a personal note to the SMS here:', note);
     await genericForm.nextPage();
 
@@ -84,7 +84,7 @@ describe('Delivery', () => {
     await commonEnketoPage.validateSummaryReport(summaryTexts);
     expect(await commonEnketoPage.isElementDisplayed('label', `Good news, ! ${pregnantWoman1} (${medicIDW1}) ` +
       `has delivered at the health facility. We will alert you when it is time to refer them for PNC. ` +
-      `Please monitor them for danger signs. ${note}`)).to.be.true;
+      `Please monitor them for danger signs. Thank you! ${note}`)).to.be.true;
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

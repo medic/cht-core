@@ -11,6 +11,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
 const pregnancyVisitForm = require('@page-objects/standard/enketo/pregnancy-visit.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Pregnancy Visit', () => {
   const places = placeFactory.generateHierarchy();
@@ -37,16 +38,31 @@ describe('Pregnancy Visit', () => {
     const note = 'Test note - pregnancy visit';
     await commonPage.openFastActionReport('pregnancy_visit');
 
-    const dangerSigns = await pregnancyVisitForm.selectAllDangerSigns();
+    await pregnancyVisitForm.selectAllDangerSigns('', pregnantWoman.name);
     await genericForm.nextPage();
-    await pregnancyVisitForm.setNote(note);
+    await commonEnketoPage.setTextareaValue('You can add a personal note to the SMS here:', note);
     await genericForm.nextPage();
 
-    const summaryDetails = await pregnancyVisitForm.getSummaryDetails();
-    expect(summaryDetails.countDangerSigns).to.equal(dangerSigns.length);
-    expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman.name);
-    expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman.patient_id);
-    expect(summaryDetails.followUpSmsNote2).to.include(note);
+    const summaryTexts = [
+      pregnantWoman.name,
+      pregnantWoman.patient_id,
+      'Pregnancy visit completed',
+      'Pain or cramping in abdomen',
+      'Bleeding or fluid leaking from vagina or vaginal discharge with bad odour',
+      'Severe nausea or vomiting',
+      'Fever of 38 degrees or higher',
+      'Severe headache or new, blurry vision problems',
+      'Sudden weight gain or severe swelling of feet, ankles, face, or hands',
+      'Less movement and kicking from the baby (after week 20 of pregnancy)',
+      'Blood in the urine or painful, burning urination',
+      'Diarrhea that doesn\'t go away'
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
+    expect(await commonEnketoPage.isElementDisplayed('label',
+      `Nice work, ! ${pregnantWoman.name} (${pregnantWoman.patient_id}) has attended ANC at the health facility. ` +
+      `Please note that ${pregnantWoman.name} has one or more danger signs for a high risk pregnancy. ` +
+      `We will send you a message when they are due for their next visit. Thank you! ${note}`)).to.be.true;
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

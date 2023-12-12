@@ -1,63 +1,32 @@
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-const FORM = enketoCommonPage.form('pregnancy_visit');
-const { ACTIVE } = enketoCommonPage;
-
-const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
-const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('pregnancy_visit')}`);
-const dangerSignSummary = () => {
-  return $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${ACTIVE}`);
-};
-const patientNameSummary = () => {
-  const nameSum = enketoCommonPage.patientNameSummary('pregnancy_visit');
-  return $(`${FORM} span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${ACTIVE} ${nameSum}`);
-};
-const patientIdSummary = () => {
-  const idSum = enketoCommonPage.patientIdSummary('pregnancy_visit', 'review');
-  return $(`${FORM} span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${ACTIVE} ${idSum}`);
-};
-const followUpSmsNote1 = () => $(enketoCommonPage.followUpSmsNote1('pregnancy_visit', 'review'));
-const followUpSmsNote2 = () => $(enketoCommonPage.followUpSmsNote2('pregnancy_visit', 'review'));
-
-const selectAllDangerSigns = async () => {
-  const dangerSigns = await dangerSig();
-  for (const dangerSign of dangerSigns) {
-    await dangerSign.click();
-  }
-  return dangerSigns;
+const selectAllDangerSigns = async (userName, patientName) => {
+  const riskFactorsQuestion = `Confirm with ${userName} if ${patientName} has any of the following danger signs.`;
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Pain, pressure or cramping in abdomen');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion,
+    'Bleeding or fluid leaking from vagina or vaginal discharge with bad od');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Severe nausea or vomiting');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Fever of 38 degrees or higher');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Severe headache or new, blurry vision problems');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion,
+    'Sudden weight gain or severe swelling of feet, ankles, face, or hands');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Less movement and kicking from the baby');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Blood in the urine or painful, burning urination');
+  await commonEnketoPage.selectCheckBox(riskFactorsQuestion, 'Diarrhea that doesn\'t go away');
 };
 
-const setNote = async (text = 'Test note') => {
-  const note = await smsNote();
-  await note.waitForDisplayed();
-  await note.setValue(text);
-};
-
-const getSummaryDetails = async () => {
-  return {
-    patientName: await patientNameSummary().getText(),
-    patientId: await patientIdSummary().getText(),
-    countDangerSigns: await dangerSignSummary().length,
-    followUpSmsNote1: await followUpSmsNote1().getText(),
-    followUpSmsNote2: await followUpSmsNote2().getText(),
-  };
-};
-
-const submitPregnancyVisit = async () => {
+const submitPregnancyVisit = async (userName, patientName) => {
   await commonPage.openFastActionReport('pregnancy_visit');
-  await selectAllDangerSigns();
+  await selectAllDangerSigns(userName, patientName);
   await genericForm.nextPage();
-  await setNote('Test note');
+  await commonEnketoPage.setTextareaValue('You can add a personal note to the SMS here:', 'Test note');
   await genericForm.nextPage();
   await genericForm.submitForm();
 };
 
 module.exports = {
   selectAllDangerSigns,
-  setNote,
-  dangerSignSummary,
-  getSummaryDetails,
   submitPregnancyVisit,
 };
