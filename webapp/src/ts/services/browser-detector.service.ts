@@ -32,6 +32,10 @@ export class BrowserDetectorService {
     return this.parser.getBrowser();
   }
 
+  public static getBowserParser() {
+    return Bowser.getParser(window.navigator.userAgent);
+  }
+
   public isUsingSupportedBrowser() {
     return this.parser.satisfies({
       chrome: '>=90', // Chrome 90 was released on April 14, 2021; for desktop and Android.
