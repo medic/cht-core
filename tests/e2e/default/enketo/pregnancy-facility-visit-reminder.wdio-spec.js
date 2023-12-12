@@ -43,7 +43,7 @@ describe('Health Facility ANC Reminder task', () => {
 
     expect(await genericForm.getFormTitle()).to.equal('Health facility ANC reminder');
     expect(await commonEnketoPage.isElementDisplayed('label',
-      `Please remind the client to attend their ANC visit on ${ancDate.format('D MMM, YYYY')}.`));
+      `Please remind the client to attend their ANC visit on ${ancDate.format('D MMM, YYYY')}.`)).to.be.true;
 
     await commonEnketoPage.selectRadioButton('Did you remind the client in-person or by phone?', 'In person');
     await genericForm.submitForm();

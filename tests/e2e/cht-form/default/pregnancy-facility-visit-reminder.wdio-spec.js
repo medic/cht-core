@@ -20,7 +20,7 @@ describe('cht-form web component - Pregnancy Facility Visit Reminder Form', () =
     expect(title).to.equal('Health facility ANC reminder');
 
     expect(await commonEnketoPage.isElementDisplayed('label',
-      'Please remind the client to attend their ANC visit on 25 Jul, 2023.'));
+      'Please remind the client to attend their ANC visit on 25 Jul, 2023.')).to.be.true;
     await commonEnketoPage.selectRadioButton('Did you remind the client in-person or by phone?', 'In person');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
