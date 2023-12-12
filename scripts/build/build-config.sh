@@ -2,9 +2,9 @@
 
 set -e
 
-echo "build-config: running medic-conf"
+echo "build-config: running cht-conf"
 
-node ./node_modules/medic-conf/src/bin/medic-conf.js \
+node ./node_modules/cht-conf/src/bin/index.js \
   --skip-dependency-check \
   --archive \
   --source=config/default \
