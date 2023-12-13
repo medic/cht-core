@@ -199,7 +199,7 @@ const exec = async (command, args, options=({})) => {
         return resolve();
       }
       return reject(`${command} exited with ${code}`);
-    }); 
+    });
   });
 };
 
