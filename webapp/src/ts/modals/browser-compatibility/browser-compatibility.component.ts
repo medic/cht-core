@@ -14,8 +14,4 @@ export class BrowserCompatibilityComponent {
   close() {
     this.matDialogRef.close();
   }
-
-  submit() {
-    this.close();
-  }
 }

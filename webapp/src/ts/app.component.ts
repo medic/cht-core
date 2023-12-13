@@ -273,7 +273,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.countMessageService.init();
     this.feedbackService.init();
     this.sessionService.init();
-    this.checkBrowserCompatibility();
+    this.warnOutdatedChrome();
 
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = Promise.resolve()
@@ -650,8 +650,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private checkBrowserCompatibility(): void {
-    if (!this.browserDetectorService.isUsingSupportedBrowser()) {
+  private warnOutdatedChrome(): void {
+    if (!this.browserDetectorService.isUsingOutdatedChromeBrowser()) {
       this.modalService.show(BrowserCompatibilityComponent);
     }
   }
