@@ -6,7 +6,7 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 
 const PAGE_SIZE = 50;
 describe('Infinite scrolling', () => {
-  /*before(async () => {
+  before(async () => {
     const type = 'district_hospital';
     const districtHospitals = Array
       .from({ length: 200 })
@@ -16,20 +16,9 @@ describe('Infinite scrolling', () => {
       }));
     await utils.saveDocs(districtHospitals);
     await login.cookieLogin({ createUser: false });
-  });*/
+  });
 
   it('should load multiple pages of contacts', async () => {
-    //before
-    const type = 'district_hospital';
-    const districtHospitals = Array
-      .from({ length: 200 })
-      .map((_, idx) => placeFactory.place().build({
-        name: `${type.replace('_', ' ')} ${idx}`,
-        type: type,
-      }));
-    await utils.saveDocs(districtHospitals);
-    await login.cookieLogin({ createUser: false });
-    //end before
     await commonPage.goToPeople();
     let nbrContacts = await contactsPage.getDisplayedContactsNames();
     expect(nbrContacts.length).to.equal(PAGE_SIZE);
