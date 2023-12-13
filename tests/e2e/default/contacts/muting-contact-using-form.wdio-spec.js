@@ -44,6 +44,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
+    await commonPage.waitForPageLoaded();
     await commonPage.sync();
 
     expect(await (await contactPage.contactMuted()).isDisplayed()).to.be.true;
