@@ -26,7 +26,7 @@ const contactTypes = [
     group_key: 'contact.type.health_center.plural',
     create_key: 'contact.type.health_center.new',
     edit_key: 'contact.type.place.edit',
-    parents: [ 'district_hospital' ],
+    parents: ['district_hospital'],
     icon: 'medic-health-center',
     create_form: 'form:contact:health_center:create',
     edit_form: 'form:contact:health_center:edit'
@@ -37,7 +37,7 @@ const contactTypes = [
     group_key: 'contact.type.clinic.plural',
     create_key: 'contact.type.clinic.new',
     edit_key: 'contact.type.place.edit',
-    parents: [ 'health_center' ],
+    parents: ['health_center'],
     icon: 'medic-clinic',
     create_form: 'form:contact:clinic:create',
     edit_form: 'form:contact:clinic:edit',
@@ -50,7 +50,7 @@ const contactTypes = [
     create_key: 'contact.type.person.new',
     edit_key: 'contact.type.person.edit',
     primary_contact_key: 'clinic.field.contact',
-    parents: [ 'district_hospital', 'health_center', 'clinic' ],
+    parents: ['district_hospital', 'health_center', 'clinic'],
     icon: 'medic-person',
     create_form: 'form:contact:person:create',
     edit_form: 'form:contact:person:edit',
@@ -263,14 +263,14 @@ describe('places controller', () => {
       };
       db.medic.post.callsFake(doc => {
         if (doc.name === 'CHP Branch One') {
-          return Promise.resolve({id: 'abc'});
+          return Promise.resolve({ id: 'abc' });
         }
         if (doc.name === 'CHP Area One') {
           // the parent should be created/resolved, parent id should be set.
           chai.expect(doc.parent._id).to.equal('abc');
           chai.expect(doc.parent.name).to.equal(undefined); // minified
           chai.expect(doc.parent.type).to.equal(undefined); // minified
-          return Promise.resolve({id: 'def'});
+          return Promise.resolve({ id: 'def' });
         }
         if (doc.name === 'CHP Family') {
           // both parents should be created/resolved
@@ -280,7 +280,7 @@ describe('places controller', () => {
           chai.expect(doc.parent.parent._id).to.equal('abc');
           chai.expect(doc.parent.parent.name).to.equal(undefined); // minified
           chai.expect(doc.parent.parent.type).to.equal(undefined); // minified
-          return Promise.resolve({id: 'ghi'});
+          return Promise.resolve({ id: 'ghi' });
         }
       });
       fetchHydratedDoc.callsFake(id => {
@@ -322,7 +322,7 @@ describe('places controller', () => {
         }
       });
       return controller._createPlaces(place).then(actual => {
-        chai.expect(actual).to.deep.equal({id: 'ghi'});
+        chai.expect(actual).to.deep.equal({ id: 'ghi' });
       });
     });
 
@@ -336,26 +336,91 @@ describe('places controller', () => {
           type: 'person'
         }
       };
+
       sinon.stub(people, 'getOrCreatePerson').resolves({
         _id: 'qwe',
+        _rev: '1',
         name: 'Jim',
         type: 'person'
       });
-      fetchHydratedDoc.resolves({
+      db.medic.post.withArgs(
+        sinon.match((doc) => !doc.contact)
+      ).callsFake(doc => {
+        chai.expect(doc.name).to.equal('CHP Family');
+        chai.expect(doc.parent._id).to.equal('ad06d137');
+        return Promise.resolve({ id: 'hc', rev: '1' });
+      });
+      db.medic.post.withArgs(
+        sinon.match(doc => doc.contact)
+      ).callsFake(doc => {
+        chai.expect(doc.name).to.equal('CHP Family');
+        chai.expect(doc.parent._id).to.equal('ad06d137');
+        chai.expect(doc.contact._id).to.equal('qwe');
+        chai.expect(doc.contact.name).to.equal(undefined); // minified
+        chai.expect(doc.contact.type).to.equal(undefined); //
+        return Promise.resolve({ id: 'hc', rev: '2' });
+      });
+
+      fetchHydratedDoc.withArgs('hc').resolves({
+        name: 'CHP Family',
+        type: 'health_center',
+        parent: {
+          _id: 'ad06d137',
+          name: 'CHP Branch One',
+          type: 'district_hospital'
+        }
+      });
+      fetchHydratedDoc.withArgs('ad06d137').resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
         type: 'district_hospital'
       });
-      db.medic.post.callsFake(doc => {
-        chai.expect(doc.contact._id).to.equal('qwe');
-        chai.expect(doc.contact.name).to.equal(undefined); // minified
-        chai.expect(doc.contact.type).to.equal(undefined); // minified
-        return Promise.resolve({id: 'ghi'});
-      });
+
       return controller._createPlaces(place).then(actual => {
-        chai.expect(actual).to.deep.equal({id: 'ghi'});
+        chai.expect(db.medic.post.callCount).to.equal(2);
+        chai.expect(actual).to.deep.equal({
+          id: 'hc',
+          rev: '2',
+          contact: {
+            id: 'qwe',
+          }
+        });
       });
     });
+
+    it('returns err if contact does not have name', done => {
+      const place = {
+        name: 'HC',
+        type: 'district_hospital',
+        contact: {
+          type: 'person'
+        }
+      };
+      const post = db.medic.post;
+      controller._createPlaces(place).catch(err => {
+        chai.expect(err.message).to.equal('Person is missing a "name" property.');
+        chai.expect(post.callCount).to.equal(0);
+        done();
+      });
+    });
+
+    it('rejects contacts with wrong type', done => {
+      const place = {
+        name: 'HC',
+        type: 'district_hospital',
+        contact: {
+          name: 'John Doe',
+          type: 'x'
+        }
+      };
+      const post = db.medic.post;
+      controller._createPlaces(place).catch(err => {
+        chai.expect(err.message).to.equal('Wrong type, this is not a person.');
+        chai.expect(post.callCount).to.equal(0);
+        done();
+      });
+    });
+
 
     it('supports parents defined as uuids.', () => {
       const place = {
@@ -375,10 +440,10 @@ describe('places controller', () => {
         chai.expect(doc.parent._id).to.equal('ad06d137');
         chai.expect(doc.parent.name).to.equal(undefined); // minified
         chai.expect(doc.parent.type).to.equal(undefined); // minified
-        return Promise.resolve({id: 'abc123'});
+        return Promise.resolve({ id: 'abc123' });
       });
       return controller._createPlaces(place).then(actual => {
-        chai.expect(actual).to.deep.equal({id: 'abc123'});
+        chai.expect(actual).to.deep.equal({ id: 'abc123' });
       });
     });
 
@@ -457,7 +522,7 @@ describe('places controller', () => {
       db.medic.post.callsFake(doc => {
         chai.expect(doc.contact._id).to.equal('a');
         chai.expect(doc.contact.name).to.equal(undefined); // minified
-        return Promise.resolve({id: 'x', rev: 'y'});
+        return Promise.resolve({ id: 'x', rev: 'y' });
       });
       return controller.updatePlace('123', data).then(actual => {
         chai.expect(actual).to.deep.equal({ id: 'x', rev: 'y' });
@@ -474,7 +539,7 @@ describe('places controller', () => {
       db.medic.post.callsFake(doc => {
         chai.expect(doc.parent._id).to.equal('a');
         chai.expect(doc.parent.name).to.equal(undefined); // minified
-        return Promise.resolve({id: 'x', rev: 'y'});
+        return Promise.resolve({ id: 'x', rev: 'y' });
       });
       return controller.updatePlace('123', data).then(actual => {
         chai.expect(actual).to.deep.equal({ id: 'x', rev: 'y' });
