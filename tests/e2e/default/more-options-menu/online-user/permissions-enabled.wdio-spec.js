@@ -58,10 +58,12 @@ describe('Menu options display - Online user', () => {
 
   after(async () => {
     await commonPage.logout();
-    await utils.revertDb([/^form:/], true);
   });
 
-  afterEach(async () => await commonPage.goToBase());
+  afterEach(async () => {
+    await commonPage.goToBase();
+    await utils.revertDb([/^form:/], true);
+  });
 
   it('should disabled the export option in Message tab when there are no messages, contacts or people created.',
     async () => {
