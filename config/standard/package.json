@@ -19,7 +19,7 @@
     "eslint": "^6.5.1",
     "eslint-plugin-json": "^1.3.2",
     "cht-conf": "3.18.3",
-    "cht-conf-test-harness": "^2.4.1",
+    "cht-conf-test-harness": "^2.4.3",
     "medic-conf-test-harness": "^0.1.19",
     "mocha": "^5.1.1"
   }
