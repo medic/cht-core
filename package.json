@@ -137,7 +137,6 @@
     "less": "^4.2.0",
     "lodash": "^4.17.21",
     "loose-envify": "^1.4.0",
-    "medic-conf": "^3.2.1",
     "mocha": "^10.2.0",
     "module-alias": "^2.2.3",
     "moment": "^2.29.4",
