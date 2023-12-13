@@ -14,13 +14,13 @@
   },
   "devDependencies": {
     "@medic/contact-summary-testing": "^2.0.1",
-    "chai": "^4.1.2",
-    "chai-exclude": "^1.0.8",
-    "eslint": "^6.5.1",
-    "eslint-plugin-json": "^1.3.2",
+    "chai": "^4.3.8",
+    "chai-exclude": "^2.1.0",
+    "eslint": "^8.49.0",
+    "eslint-plugin-json": "^3.1.0",
     "cht-conf": "3.18.3",
     "cht-conf-test-harness": "^2.4.3",
     "medic-conf-test-harness": "0.1.29",
-    "mocha": "^5.1.1"
+    "mocha": "^10.2.0"
   }
 }
