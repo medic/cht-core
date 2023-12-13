@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { sortBy as _sortBy } from 'lodash-es';
+import { Store } from '@ngrx/store';
 import * as phoneNumber from '@medic/phone-number';
 
 import { FormatProvider } from '@mm-providers/format.provider';
@@ -9,13 +11,17 @@ import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { Selectors } from '@mm-selectors/index';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Select2SearchService {
+  private currentTab;
 
   constructor(
+    private store: Store,
+    private route: ActivatedRoute,
     private formatProvider: FormatProvider,
     private translateService: TranslateService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
@@ -23,7 +29,9 @@ export class Select2SearchService {
     private sessionService: SessionService,
     private settingsService: SettingsService,
     private contactMutedService: ContactMutedService
-  ) { }
+  ) {
+    this.subscribeToStore();
+  }
 
   private defaultTemplateResult(row) {
     if (!row.doc) {
@@ -56,7 +64,8 @@ export class Select2SearchService {
     const skip = ((params.data.page || 1) - 1) * options.pageSize;
     const filters = {
       types: { selected: types },
-      search: params.data.q
+      search: params.data.q,
+      ...this.getFilterContactByParent()
     };
     const searchOptions = {
       limit: options.pageSize,
@@ -193,6 +202,22 @@ export class Select2SearchService {
       selectEl.addClass('select2-missing');
       selectEl.select2('data')[0].text = this.translateService.instant('unknown.contact');
     }
+  }
+
+  private subscribeToStore() {
+    this.store
+      .select(Selectors.getCurrentTab)
+      .subscribe(currentTab => this.currentTab = currentTab);
+  }
+
+  private getFilterContactByParent() {
+    const contactId = this.route?.snapshot?.params?.id;
+
+    if (this.currentTab !== 'contacts' || !contactId) {
+      return;
+    }
+
+    return { parents: [ contactId ] };
   }
 
   async init(selectEl, _types, _options:any = {}) {
