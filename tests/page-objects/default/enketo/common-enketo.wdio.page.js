@@ -2,14 +2,23 @@ const currentSection =  () => $('section[class*="current"]');
 
 const divContainer = () => $('div.container');
 
+const getCurrentPageSection = async () => await currentSection().isExisting() ? currentSection() : divContainer();
+
+const enabledFieldset = (section) => section.$$('fieldset.or-branch:not(.disabled)');
+
+const getCorrectFieldsetSection = async (section) => {
+  if (await enabledFieldset(section).length === 1){
+    return enabledFieldset(section)[0];
+  }
+  return section;
+};
+
 const isElementDisplayed = async (type, text) => {
-  const page = await currentSection().isExisting() ? currentSection() : divContainer();
-  return await page.$(`${type}*=${text}`).isDisplayed();
+  return await (await getCurrentPageSection()).$(`${type}*=${text}`).isDisplayed();
 };
 
 const selectRadioButton = async (question, label) => {
-  const page = await currentSection().isExisting() ? currentSection() : divContainer();
-  const radioButton = await page
+  const radioButton = await (await getCurrentPageSection())
     .$(`legend*=${question}`)
     .parentElement()
     .$(`label*=${label}`);
@@ -18,12 +27,8 @@ const selectRadioButton = async (question, label) => {
 };
 
 const selectCheckBox = async (question, text) => {
-  const page = await currentSection().isExisting() ? currentSection() : divContainer();
-  let checkbox = await page;
-  if (await checkbox.$$('fieldset.or-branch:not(.disabled)').length === 1){
-    checkbox = await checkbox.$('fieldset.or-branch:not(.disabled)');
-  }
-  checkbox = await checkbox
+  const page = await getCurrentPageSection();
+  const checkbox = await (await getCorrectFieldsetSection(page))
     .$(`legend*=${question}`)
     .nextElement()
     .$(`label*=${text}`);
@@ -32,8 +37,7 @@ const selectCheckBox = async (question, text) => {
 };
 
 const setValue = async (typeSelector, question, value) => {
-  const page = await currentSection().isExisting() ? currentSection() : divContainer();
-  const element = await page
+  const element = await (await getCurrentPageSection())
     .$(`label*=${question}`)
     .$(typeSelector);
   await element.waitForDisplayed();
@@ -53,7 +57,7 @@ const setTextareaValue = async (question, value) => {
 };
 
 const validateSummaryReport = async (textArray) => {
-  const element = await currentSection().isExisting() ? currentSection() : divContainer();
+  const element = await getCurrentPageSection();
   for (const text of textArray) {
     expect(await (await element.$(`span*=${text}`)).isDisplayed()).to.be.true;
   }

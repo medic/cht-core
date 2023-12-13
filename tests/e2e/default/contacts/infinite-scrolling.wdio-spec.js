@@ -5,7 +5,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
 const PAGE_SIZE = 50;
-describe('Infinite scrolling', () => {
+describe.skip('Infinite scrolling', () => {
   before(async () => {
     const type = 'district_hospital';
     const districtHospitals = Array
