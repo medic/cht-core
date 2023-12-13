@@ -19,7 +19,6 @@ import { environment } from '@mm-environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from '../js/bootstrapper';
-import { isBlockedChromeBrowser } from './services/browser-check-util.service';
 
 // Moment additional locales
 require('../js/moment-locales/tl');
@@ -44,15 +43,6 @@ const rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^/
 Object.defineProperties($, {
   htmlPrefilter: { value: (html) => html.replace(rxhtmlTag, '<$1></$2>') }
 });
-
-if (isBlockedChromeBrowser()) {
-  document.body.innerHTML = `
-    <div style="text-align: center; margin-top: 50px;">
-      <h2>This version of Chrome is not supported.</h2>
-      <p>Please update your browser to continue.</p>
-    </div>
-  `;
-} else {
 
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS)
@@ -85,4 +75,3 @@ bootstrapper(POUCHDB_OPTIONS)
       window.location.reload();
     }, 60 * 1000);
   });
-}
