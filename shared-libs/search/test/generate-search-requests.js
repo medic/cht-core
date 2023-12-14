@@ -168,6 +168,63 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
+  it('creates request to filter contacts by parent when contact ID and types are provided', function() {
+    const filters = {
+      types: {
+        selected: [ 'person' ],
+      },
+      parent: 'S-123',
+    };
+
+    const result = service('contacts', filters);
+
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'medic-client/contacts_by_parent',
+      params: {
+        keys: [ [ 'S-123', 'person' ] ],
+      },
+    });
+  });
+
+  it('creates request to filter contacts by parent and freetext', function() {
+    const filters = {
+      types: { selected: [ 'person' ] },
+      search: 'someth',
+      parent: 'S-123',
+    };
+
+    const result = service('contacts', filters);
+
+    chai.expect(result.length).to.equal(2);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'medic-client/contacts_by_parent',
+      params: {
+        keys: [ [ 'S-123', 'person' ] ],
+      },
+    });
+    chai.expect(result[1]).to.deep.equal({
+      view: 'medic-client/contacts_by_type_freetext',
+      union: false,
+      params: {
+        endkey: [ 'person', 'someth\ufff0' ],
+        startkey: [ 'person', 'someth' ],
+      },
+    });
+  });
+
+  it('creates request to filter contacts by parent when types are not provided', function() {
+    const filters = { parent: 'S-123' };
+
+    const result = service('contacts', filters);
+
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'medic-client/contacts_by_parent',
+      params: { keys: [ 'S-123' ] },
+    });
+  });
+
   it('creates unfiltered contacts request for types filter when all options are selected', function() {
     const filters = {
       types: {

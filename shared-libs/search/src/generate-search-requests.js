@@ -254,7 +254,7 @@ const requestBuilders = {
       return combinedRequests;
     }
 
-    const requests = _.compact(_.flatten([ freetextRequests, typeRequest ]));
+    const requests = _.compact(_.flatten([ freetextRequests, typeRequest, contactsByParentRequest ]));
     if (!requests.length) {
       requests.push(defaultContactRequest());
     }

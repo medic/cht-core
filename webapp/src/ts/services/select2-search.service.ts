@@ -56,10 +56,16 @@ export class Select2SearchService {
   private query(params, successCb, failureCb, options, types) {
     const currentQuery = params.data.q;
     const skip = ((params.data.page || 1) - 1) * options.pageSize;
+
+    let parent;
+    if (options.filterByParent) {
+      parent = this.getContactId();
+    }
+
     const filters = {
       types: { selected: types },
       search: params.data.q,
-      parent: options.filterByParent && this.getContactId(),
+      parent,
     };
     const searchOptions = {
       limit: options.pageSize,

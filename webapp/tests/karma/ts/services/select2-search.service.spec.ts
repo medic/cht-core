@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
+import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { ContactMutedService } from '@mm-services/contact-muted.service';
@@ -17,7 +18,8 @@ describe('Select2SearchService', () => {
   let lineageModelGeneratorService;
   let sessionService;
   let settingsService;
-
+  let searchService;
+  let activatedRoute;
   let selectEl;
   let val;
   let select2Val;
@@ -35,7 +37,8 @@ describe('Select2SearchService', () => {
     contactMutedService = {
       getMuted: sinon.stub().returns(false)
     };
-
+    searchService = { search: sinon.stub().resolves() };
+    activatedRoute = { firstChild: {} };
     val = '';
     select2Val = [{}];
     selectEl = {
@@ -59,9 +62,10 @@ describe('Select2SearchService', () => {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
       ],
       providers: [
+        { provide: ActivatedRoute, useValue: activatedRoute },
         { provide: ContactMutedService, useValue: contactMutedService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
-        { provide: SearchService, useValue: { } },
+        { provide: SearchService, useValue: searchService },
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
       ]
@@ -124,5 +128,62 @@ describe('Select2SearchService', () => {
       expect(selectEl.trigger.callCount).to.equal(1);
       expect(selectEl.trigger.args[0]).to.deep.equal([ 'change' ]);     // the change is notified to the component
     });
+
+    it('should set the filter by parent contact and search', fakeAsync(async () => {
+      activatedRoute.firstChild = { firstChild: { firstChild: { snapshot: { params: { id: 'A-123' } } } } };
+
+      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
+
+      const selectConfig = selectEl.select2.args[0][0];
+      selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
+      flush();
+
+      expect(searchService.search.calledOnce).to.be.true;
+      expect(searchService.search.args[0][0]).to.equal('contacts');
+      expect(searchService.search.args[0][1]).to.deep.equal({
+        types: { selected: [ 'person' ] },
+        search: 'Eric',
+        parent: 'A-123'
+      });
+      expect(searchService.search.args[0][2]).to.deep.equal({ limit: 20, skip: 0, hydrateContactNames: true });
+    }));
+
+    it('should not set the filter by parent contact when no contact ID', fakeAsync(async () => {
+      activatedRoute.firstChild = { firstChild: { snapshot: { params: { id: null } } } };
+
+      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
+
+      const selectConfig = selectEl.select2.args[0][0];
+      selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
+      flush();
+
+      expect(searchService.search.calledOnce).to.be.true;
+      expect(searchService.search.args[0][0]).to.equal('contacts');
+      expect(searchService.search.args[0][1]).to.deep.equal({
+        types: { selected: [ 'person' ] },
+        search: 'Eric',
+        parent: undefined
+      });
+      expect(searchService.search.args[0][2]).to.deep.equal({ limit: 20, skip: 0, hydrateContactNames: true });
+    }));
+
+    it('should not set the filter by parent contact when filterByParent turn off', fakeAsync(async () => {
+      activatedRoute.firstChild = { firstChild: { firstChild: { snapshot: { params: { id: 'A-123' } } } } };
+
+      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: false });
+
+      const selectConfig = selectEl.select2.args[0][0];
+      selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
+      flush();
+
+      expect(searchService.search.calledOnce).to.be.true;
+      expect(searchService.search.args[0][0]).to.equal('contacts');
+      expect(searchService.search.args[0][1]).to.deep.equal({
+        types: { selected: [ 'person' ] },
+        search: 'Eric',
+        parent: undefined
+      });
+      expect(searchService.search.args[0][2]).to.deep.equal({ limit: 20, skip: 0, hydrateContactNames: true });
+    }));
   });
 });
