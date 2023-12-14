@@ -43,6 +43,7 @@ describe('Pregnancy related targets test', () => {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }
+      clock.restore();
     }
   });
 
@@ -72,6 +73,7 @@ describe('Pregnancy related targets test', () => {
     expect(pregnancy.errors).to.be.empty;
 
     await harness.setNow('1999-10-24');//12 weeks after LMP date
+    clock.restore();
     clock = sinon.useFakeTimers(moment('1999-10-24').toDate());
 
     let activePregnancies = await harness.getTargets({ type: 'active-pregnancies-1+-visits' });
@@ -85,6 +87,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
       //await harness.setNow('1999-08-01')
       //await harness.flush(day);
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-1+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -104,6 +107,7 @@ describe('Pregnancy related targets test', () => {
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
     expect(pregnancy.errors).to.be.empty;
     await harness.setNow('1999-10-24');//12 weeks after LMP date
+    clock.restore();
     clock = sinon.useFakeTimers(moment('1999-10-24').toDate());
 
     let activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
@@ -117,6 +121,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
       //await harness.setNow('1999-08-01')
       //await harness.flush(day);
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -138,6 +143,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
       //await harness.setNow('1999-08-01')
       //await harness.flush(day);
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const activePregnancies = await harness.getTargets({ type: 'active-pregnancies-1+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -164,6 +170,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
       //await harness.setNow('1999-08-01')
       //await harness.flush(day);
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -184,6 +191,7 @@ describe('Pregnancy related targets test', () => {
     expect(pregnancy.errors).to.be.empty;
 
     await harness.setNow('1999-10-24');//12 weeks after LMP date
+    clock.restore();
     clock = sinon.useFakeTimers(moment('1999-10-24').toDate());
 
     let activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
@@ -194,6 +202,7 @@ describe('Pregnancy related targets test', () => {
       await harness.loadForm('pregnancy_home_visit');
       const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.safe1FacilityVisit);
       expect(followupFormResult.errors).to.be.empty;
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-10-24').add(i * 7 * 2, 'days').toDate()); //every 2 weeks
 
       if (i < 3) {
@@ -210,6 +219,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(20 * 7, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 20 weeks after LMP date
       //await harness.setNow('1999-08-01')
       //await harness.flush(day);
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -230,6 +240,7 @@ describe('Pregnancy related targets test', () => {
     expect(pregnancy.errors).to.be.empty;
 
     await harness.setNow('1999-10-24');//12 weeks after LMP date
+    clock.restore();
     clock = sinon.useFakeTimers(moment('1999-10-24').toDate());
 
     let activePregnancies = await harness.getTargets({ type: 'active-pregnancies-8+-contacts' });
@@ -241,6 +252,7 @@ describe('Pregnancy related targets test', () => {
       await harness.loadForm('pregnancy_home_visit');
       const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.safe1FacilityVisit);
       expect(followupFormResult.errors).to.be.empty;
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-10-24').add(i * 7 * 2, 'days').toDate()); //every 2 weeks
       countRoutineContacts += 2; //1 pregnancy home visit +  1 facility visit
 
@@ -258,6 +270,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(28 * 7, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 28 weeks after LMP date
       //await harness.setNow('1999-08-01')
       //await harness.flush(day);
+      clock.restore();
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-8+-contacts' });
       expect(activePregnancies).to.have.property('length', 1);

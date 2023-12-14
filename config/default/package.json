@@ -24,7 +24,7 @@
     "cht-conf-test-harness": "^2.4.3",
     "eslint-plugin-json": "^3.1.0",
     "mocha": "^10.2.0",
-    "sinon": "^11.1.2"
+    "sinon": "^16.1.0"
   },
   "dependencies": {
     "moment": "^2.29.4"

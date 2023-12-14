@@ -63,6 +63,7 @@ describe('Delivery tasks tests', () => {
       else {
         expect(taskForDelivery.length, day).to.equal(0);
       }
+      clock.restore();
     }
   });
 
@@ -91,6 +92,7 @@ describe('Delivery tasks tests', () => {
       else {
         expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
+      clock.restore();
     }
   });
 
@@ -118,6 +120,7 @@ describe('Delivery tasks tests', () => {
       else {
         expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
+      clock.restore();
     }
   });
 });
