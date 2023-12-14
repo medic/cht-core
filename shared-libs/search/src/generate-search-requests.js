@@ -121,12 +121,18 @@ const subjectRequest = function(filters) {
   return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds);
 };
 
-const getContactParentRequest = function(filters) {
+const getContactsByParentRequest = function(filters) {
   if (!filters.parent) {
     return;
   }
 
-  return getRequestWithMappedKeys('medic-client/contacts_by_parent', filters.parents, getKeysArray);
+  const types = filters?.types?.selected;
+  return {
+    view: 'medic-client/contacts_by_parent',
+    params: {
+      keys: types ? types.map(type => ([ filters.parent, type ])) : [ filters.parent ],
+    },
+  };
 };
 
 const contactTypeRequest = function(filters, sortByLastVisitedDate) {
@@ -183,6 +189,34 @@ const sortByLastVisitedDate = function() {
   };
 };
 
+const makeCombinedParams = function(freetextRequest, typeKey) {
+  const type = typeKey[0];
+  const params = {};
+  if (freetextRequest.key) {
+    params.key = [ type, freetextRequest.params.key[0] ];
+  } else {
+    params.startkey = [ type, freetextRequest.params.startkey[0] ];
+    params.endkey = [ type, freetextRequest.params.endkey[0] ];
+  }
+  return params;
+};
+
+const getContactsByTypeAndFreetextRequest = function(typeRequests, freetextRequest) {
+  const result = {
+    view: 'medic-client/contacts_by_type_freetext',
+    union: typeRequests.params.keys.length > 1
+  };
+
+  if (result.union) {
+    result.paramSets =
+      typeRequests.params.keys.map(_.partial(makeCombinedParams, freetextRequest, _));
+    return result;
+  }
+
+  result.params = makeCombinedParams(freetextRequest, typeRequests.params.keys[0]);
+  return result;
+};
+
 const requestBuilders = {
   reports: function(filters) {
     let requests = [
@@ -204,72 +238,32 @@ const requestBuilders = {
   contacts: function(filters, extensions) {
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
-
-    if (filters) {
-      filters.parents = [ '17f1df8a-b096-4d1e-823d-2723bf7d24ee' ];
-    }
-
-
-    const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
-    const hasTypeRequest = typeRequest && typeRequest.params.keys.length;
-
     const freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
-    const hasFreetextRequests = freetextRequests && freetextRequests.length;
+    const contactsByParentRequest = getContactsByParentRequest(filters);
+    const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
+    const hasTypeRequest = typeRequest?.params.keys.length;
 
-
-
-
-    const parentContactRequest = getContactParentRequest(filters);
-
-
-
-
-    if (hasTypeRequest && hasFreetextRequests) {
-
-      const makeCombinedParams = function(freetextRequest, typeKey) {
-        const type = typeKey[0];
-        const params = {};
-        if (freetextRequest.key) {
-          params.key = [ type, freetextRequest.params.key[0] ];
-        } else {
-          params.startkey = [ type, freetextRequest.params.startkey[0] ];
-          params.endkey = [ type, freetextRequest.params.endkey[0] ];
-        }
-        return params;
-      };
-
-      const makeCombinedRequest = function(typeRequests, freetextRequest) {
-        const result = {
-          view: 'medic-client/contacts_by_type_freetext',
-          union: typeRequests.params.keys.length > 1
-        };
-
-        if (result.union) {
-          result.paramSets =
-              typeRequests.params.keys.map(_.partial(makeCombinedParams, freetextRequest, _));
-          return result;
-        }
-
-        result.params = makeCombinedParams(freetextRequest, typeRequests.params.keys[0]);
-        return result;
-      };
-
-      return freetextRequests.map(_.partial(makeCombinedRequest, typeRequest, _));
+    if (contactsByParentRequest && hasTypeRequest && !freetextRequests?.length) {
+      // The request's keys already have the type included.
+      return [ contactsByParentRequest ];
     }
 
-    let requests = [ freetextRequests, typeRequest, parentContactRequest ];
-    requests = _.compact(_.flatten(requests));
+    if (hasTypeRequest && freetextRequests?.length) {
+      const combinedRequests = freetextRequests.map(_.partial(getContactsByTypeAndFreetextRequest, typeRequest, _));
+      contactsByParentRequest && combinedRequests.unshift(contactsByParentRequest);
+      return combinedRequests;
+    }
 
+    const requests = _.compact(_.flatten([ freetextRequests, typeRequest ]));
     if (!requests.length) {
       requests.push(defaultContactRequest());
     }
 
     if (shouldSortByLastVisitedDate) {
-      // Always push this last, search:getIntersection uses the last request
-      // result and we'll need it later for sorting
+      // Always push this last, search:getIntersection uses the last request's result, we'll need it later for sorting.
       requests.push(sortByLastVisitedDate());
     }
-    console.warn('search requests -> ', requests);
+
     return requests;
   }
 };
