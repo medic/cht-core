@@ -46,7 +46,7 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 
-describe.only('AppComponent', () => {
+describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let store;
@@ -118,7 +118,7 @@ describe.only('AppComponent', () => {
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
-    browserDetectorService = { isUsingOutdatedChromeBrowser: sinon.stub() };
+    browserDetectorService = { isUsingOutdatedChromeBrowser: sinon.stub().returns(false) };
     chtScriptApiService = { isInitialized: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
     databaseConnectionMonitorService = {
@@ -260,6 +260,14 @@ describe.only('AppComponent', () => {
     expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
     expect(component.isSidebarFilterOpen).to.be.false;
+  });
+
+  it('should display browser compatibility modal if using outdated chrome browser', async () => {
+    browserDetectorService.isUsingOutdatedChromeBrowser.returns(true);
+    await getComponent();
+
+    expect(modalService.show.callCount).to.equal(1);
+    expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
   });
 
   it('should set isSidebarFilterOpen true when filter state is open', fakeAsync(async () => {
@@ -648,15 +656,4 @@ describe.only('AppComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([[ '/error', '503' ]]);
     }));
   });
-
-  describe('Browser Compatibility modal', () => {
-    it('should open a modal if the browser is outdated', fakeAsync(async () => {
-      browserDetectorService.isUsingOutdatedChromeBrowser.returns(true);
-      await getComponent();
-      tick();
-
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.getCall(0).args[0]).to.equal(BrowserCompatibilityComponent);
-    }));
-   });
 });
