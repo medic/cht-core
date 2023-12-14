@@ -35,7 +35,9 @@ import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
+import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
@@ -44,7 +46,7 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 
-describe('AppComponent', () => {
+describe.only('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let store;
@@ -73,6 +75,7 @@ describe('AppComponent', () => {
   let setLanguageService;
   let translateService;
   let modalService;
+  let browserDetectorService;
   let databaseConnectionMonitorService;
   let translateLocaleService;
   let telemetryService;
@@ -115,6 +118,7 @@ describe('AppComponent', () => {
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
+    browserDetectorService = { isUsingOutdatedChromeBrowser: sinon.stub() };
     chtScriptApiService = { isInitialized: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
     databaseConnectionMonitorService = {
@@ -191,6 +195,7 @@ describe('AppComponent', () => {
           { provide: UpdateServiceWorkerService, useValue: {} },
           { provide: LocationService, useValue: locationService },
           { provide: ModalService, useValue: modalService },
+          { provide: BrowserDetectorService, useValue: browserDetectorService},
           { provide: FeedbackService, useValue: feedbackService },
           { provide: FormatDateService, useValue: formatDateService },
           { provide: XmlFormsService, useValue: xmlFormsService },
@@ -643,4 +648,15 @@ describe('AppComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([[ '/error', '503' ]]);
     }));
   });
+
+  describe('Browser Compatibility modal', () => {
+    it('should open a modal if the browser is outdated', fakeAsync(async () => {
+      browserDetectorService.isUsingOutdatedChromeBrowser.returns(true);
+      await getComponent();
+      tick();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.getCall(0).args[0]).to.equal(BrowserCompatibilityComponent);
+    }));
+   });
 });
