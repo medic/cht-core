@@ -53,12 +53,16 @@ export class Select2SearchService {
       .map(doc => ({ id: doc._id, doc: doc }));
   }
 
+  private calculateSkip(page: number,  pageSize: number): number {
+    return ((page || 1) - 1) * pageSize;
+  }
+
   private query(params, successCb, failureCb, options, types) {
     const currentQuery = params.data.q;
 
     const searchOptions = {
       limit: options.pageSize,
-      skip: ((params.data.page || 1) - 1) * options.pageSize,
+      skip: this.calculateSkip(params.data.page, options.pageSize),
       hydrateContactNames: true,
     };
 
