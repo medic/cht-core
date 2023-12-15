@@ -266,7 +266,7 @@ describe('AppComponent', () => {
     browserDetectorService.isUsingOutdatedChromeBrowser.returns(true);
     await getComponent();
 
-    expect(modalService.show.callCount).to.equal(1);
+    expect(modalService.show.calledOnce).to.be.true;
     expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
   });
 
