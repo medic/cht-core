@@ -5,7 +5,7 @@ import * as phoneNumber from '@medic/phone-number';
 
 import { FormatProvider } from '@mm-providers/format.provider';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { SearchService } from '@mm-services/search.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
@@ -55,23 +55,20 @@ export class Select2SearchService {
 
   private query(params, successCb, failureCb, options, types) {
     const currentQuery = params.data.q;
-    const skip = ((params.data.page || 1) - 1) * options.pageSize;
 
-    let parent;
-    if (options.filterByParent) {
-      parent = this.getContactId();
-    }
-
-    const filters = {
-      types: { selected: types },
-      search: params.data.q,
-      parent,
-    };
     const searchOptions = {
       limit: options.pageSize,
-      skip,
+      skip: ((params.data.page || 1) - 1) * options.pageSize,
       hydrateContactNames: true,
     };
+
+    const filters: Filter = {
+      types: { selected: types },
+      search: params.data.q,
+    };
+    if (options.filterByParent) {
+      filters.parent = this.getContactId();
+    }
 
     this.searchService
       .search('contacts', filters, searchOptions)
@@ -210,12 +207,7 @@ export class Select2SearchService {
       activeRoute = activeRoute.firstChild;
     }
 
-    const contactId = activeRoute?.snapshot?.params?.id;
-    if (!contactId) {
-      return;
-    }
-
-    return contactId;
+    return activeRoute?.snapshot?.params?.id;
   }
 
   async init(selectEl, _types, _options:any = {}) {

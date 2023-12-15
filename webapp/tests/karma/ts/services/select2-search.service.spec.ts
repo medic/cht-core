@@ -149,7 +149,7 @@ describe('Select2SearchService', () => {
     }));
 
     it('should not set the filter by parent contact when no contact ID', fakeAsync(async () => {
-      activatedRoute.firstChild = { firstChild: { snapshot: { params: { id: null } } } };
+      activatedRoute.firstChild = { firstChild: { snapshot: { params: undefined } } };
 
       await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
 
@@ -181,7 +181,6 @@ describe('Select2SearchService', () => {
       expect(searchService.search.args[0][1]).to.deep.equal({
         types: { selected: [ 'person' ] },
         search: 'Eric',
-        parent: undefined
       });
       expect(searchService.search.args[0][2]).to.deep.equal({ limit: 20, skip: 0, hydrateContactNames: true });
     }));
