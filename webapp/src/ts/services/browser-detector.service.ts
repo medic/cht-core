@@ -40,7 +40,7 @@ export class BrowserDetectorService {
   }
 
   public isUsingOutdatedChromeBrowser() {
-    return this.parser.satisfies({ chrome: ">74" }) && !this.parser.satisfies({ chrome: "<90" });
+    return this.parser.satisfies({ chrome: ">74" }) && this.parser.satisfies({ chrome: "<90" });
   }
 
   public isUsingChtAndroid() {
