@@ -336,7 +336,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.globalActions.unsetSelected();
         this.globalActions.clearNavigation();
 
-        const subjectId = RegistrationUtils.getSubjectId(docs[0]);
+        const subjectId = RegistrationUtils.getSubjectId(docs?.[0]);
         if (subjectId) {
           this.router.navigate(['/contacts', subjectId]);
         } else {
