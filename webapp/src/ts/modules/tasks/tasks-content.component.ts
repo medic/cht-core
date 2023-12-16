@@ -1,3 +1,4 @@
+import * as RegistrationUtils from '@medic/registration-utils';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subject, Subscription } from 'rxjs';
@@ -335,7 +336,12 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.globalActions.unsetSelected();
         this.globalActions.clearNavigation();
 
-        this.router.navigate(['/tasks', 'group']);
+        const subjectId = RegistrationUtils.getSubjectId(docs[0]);
+        if (subjectId) {
+          this.router.navigate(['/contacts', subjectId]);
+        } else {
+          this.router.navigate(['/tasks', 'group']);
+        }
       })
       .then(() => {
         this.telemetryData.postSave = Date.now();
