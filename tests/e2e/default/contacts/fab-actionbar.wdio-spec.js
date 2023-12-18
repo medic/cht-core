@@ -23,7 +23,7 @@ describe('FAB + Actionbar', () => {
   });
 
   afterEach(async () => {
-    await utils.revertSettings(false);
+    await utils.revertSettings(true);
   });
 
   describe('FAB', () => {
