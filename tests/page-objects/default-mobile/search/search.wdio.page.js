@@ -18,7 +18,7 @@ const performBarcodeSearch = async (barcodeImagePath) => {
     document.getElementsByClassName('barcode-scanner-input')[0].style.display = 'block';
   });
   await (await barcodeSearchInput()).setValue(barcodeImagePath);
-  await browser.pause(1000);
+  await browser.pause(2000);
   await commonPage.waitForLoaders();
 };
 
