@@ -6,6 +6,7 @@ const couchSettings = require('@medic/settings');
 const tokenLogin = require('../../src/token-login');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
+const facility = require('../../src/libs/facility');
 const lineage = require('../../src/libs/lineage');
 const passwords = require('../../src/libs/passwords');
 const roles = require('../../src/roles');
@@ -38,11 +39,11 @@ describe('Users service', () => {
     addMessage = sinon.stub();
     config.getTransitionsLib.returns({ messages: { addMessage } });
     service = rewire('../../src/users');
-    service.__set__('getFacilities', sinon.stub().returns([
+    sinon.stub(facility, 'list').resolves([
       facilitya,
       facilityb,
       facilityc,
-    ]));
+    ]);
     sinon.stub(couchSettings, 'getCouchConfig').resolves();
     sinon.stub(couchSettings, 'updateAdminPassword').resolves();
     userData = {
