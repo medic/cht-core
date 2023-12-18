@@ -129,7 +129,7 @@ describe('Select2SearchService', () => {
       expect(selectEl.trigger.args[0]).to.deep.equal([ 'change' ]);     // the change is notified to the component
     });
 
-    it('should set the filter by parent contact and search', fakeAsync(async () => {
+    it('should set the filter by parent contact when app form is opened from contacts tab', fakeAsync(async () => {
       activatedRoute.firstChild = { firstChild: { firstChild: { snapshot: { params: { id: 'A-123' } } } } };
 
       await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
@@ -144,6 +144,25 @@ describe('Select2SearchService', () => {
         types: { selected: [ 'person' ] },
         search: 'Eric',
         parent: 'A-123'
+      });
+      expect(searchService.search.args[0][2]).to.deep.equal({ limit: 20, skip: 0, hydrateContactNames: true });
+    }));
+
+    it('should set the filter by parent contact when contact form is opened from contacts tab', fakeAsync(async () => {
+      activatedRoute.firstChild = { firstChild: { firstChild: { snapshot: { params: { parent_id: 'A-456' } } } } };
+
+      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
+
+      const selectConfig = selectEl.select2.args[0][0];
+      selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
+      flush();
+
+      expect(searchService.search.calledOnce).to.be.true;
+      expect(searchService.search.args[0][0]).to.equal('contacts');
+      expect(searchService.search.args[0][1]).to.deep.equal({
+        types: { selected: [ 'person' ] },
+        search: 'Eric',
+        parent: 'A-456'
       });
       expect(searchService.search.args[0][2]).to.deep.equal({ limit: 20, skip: 0, hydrateContactNames: true });
     }));

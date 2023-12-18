@@ -210,8 +210,8 @@ export class Select2SearchService {
     while (activeRoute?.firstChild) {
       activeRoute = activeRoute.firstChild;
     }
-
-    return activeRoute?.snapshot?.params?.id;
+    const params = activeRoute?.snapshot?.params;
+    return params?.parent_id || params?.id;
   }
 
   async init(selectEl, _types, _options:any = {}) {

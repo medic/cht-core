@@ -250,7 +250,9 @@ const requestBuilders = {
 
     if (hasTypeRequest && freetextRequests?.length) {
       const combinedRequests = freetextRequests.map(_.partial(getContactsByTypeAndFreetextRequest, typeRequest, _));
-      contactsByParentRequest && combinedRequests.unshift(contactsByParentRequest);
+      if (contactsByParentRequest) {
+        combinedRequests.unshift(contactsByParentRequest);
+      }
       return combinedRequests;
     }
 
