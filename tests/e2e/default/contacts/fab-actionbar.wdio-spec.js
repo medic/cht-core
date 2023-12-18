@@ -17,7 +17,7 @@ describe('FAB + Actionbar', () => {
     await loginPage.login(onlineUser);
   });
 
-  after(() => {
+  after(async () => {
     await utils.deleteUsers([ onlineUser ]);
   });
 
