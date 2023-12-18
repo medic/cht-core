@@ -15,7 +15,7 @@ const person = personFactory.build({
   patient_id: '123456',
   parent: { _id: healthCenter._id, parent: healthCenter.parent }
 });
-const barcodeImagePath = path.join(__dirname, '/images/valid-barcode.gif');
+const barcodeImagePath = path.join(__dirname, '/images/valid-barcode.png');
 const invalidBarcodeImagePath = path.join(__dirname, '/images/invalid-barcode.jpg');
 
 describe('Test Contact Search with Barcode Scanner', async () => {
