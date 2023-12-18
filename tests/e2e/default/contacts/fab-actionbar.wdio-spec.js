@@ -18,12 +18,12 @@ describe('FAB + Actionbar', () => {
   });
 
   after(async () => {
-    await commonElements.logout();
+    await browser.reloadSession();
     await utils.deleteUsers([ onlineUser ]);
   });
 
   afterEach(async () => {
-    await utils.revertSettings(true);
+    await utils.revertSettings(false);
   });
 
   describe('FAB', () => {
