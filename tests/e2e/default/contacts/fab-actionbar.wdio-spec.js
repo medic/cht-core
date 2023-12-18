@@ -17,6 +17,10 @@ describe('FAB + Actionbar', () => {
     await loginPage.login(onlineUser);
   });
 
+  after(() => {
+    await utils.deleteUsers([ onlineUser ]);
+  });
+
   afterEach(async () => {
     await utils.revertSettings(false);
   });
