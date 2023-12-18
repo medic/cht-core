@@ -191,7 +191,6 @@ jobs:
     - name: Install cht-conf
       run:  npm install -g cht-conf
     - run: npm ci
-    - run: cd config/default && npm ci
     - name: Fetch allure history
       uses: actions/checkout@v3
       with:
