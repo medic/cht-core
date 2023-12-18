@@ -51,25 +51,32 @@ describe('DB Object Widget', () => {
     await commonPage.openFastActionReport(formId);
 
     const sameParent = await genericForm.getDBObjectWidgetValues('/db_object_form/people/person_test_same_parent');
-    expect(sameParent.length).to.equal(1);
-    expect(sameParent[0].name).to.equal('Mary Smith');
     await sameParent[0].click();
+    expect(sameParent.length).to.equal(1);
+    expect(sameParent[0].name).to.equal(personArea1.name);
 
     const allContacts = await genericForm.getDBObjectWidgetValues('/db_object_form/people/person_test_all');
+    await allContacts[2].click();
     expect(allContacts.length).to.equal(3);
-    expect(allContacts[0].name).to.equal('Mary Smith');
-    expect(allContacts[1].name).to.equal('OfflineUser');
-    expect(allContacts[2].name).to.equal('Patricio');
-    await allContacts[1].click();
+    expect(allContacts[0].name).to.equal(personArea1.name);
+    expect(allContacts[1].name).to.equal(offlineUser.contact.name);
+    expect(allContacts[2].name).to.equal(personArea2.name);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
     await commonPage.goToReports();
 
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
-
-    expect(firstReport.heading).to.equal('OfflineUser');
+    expect(firstReport.heading).to.equal(offlineUser.contact.name);
     expect(firstReport.form).to.equal('Form db-object-widget');
+
+    await reportsPage.openReport(firstReport.dataId);
+    expect(await reportsPage.getReportDetailFieldValueByLabel(
+      'report.db-object-widget.people.person_test_same_parent'
+    )).to.equal(personArea1._id);
+    expect(await reportsPage.getReportDetailFieldValueByLabel(
+      'report.db-object-widget.people.person_test_all'
+    )).to.equal(personArea2._id);
   });
 
 });
