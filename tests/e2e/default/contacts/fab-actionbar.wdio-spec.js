@@ -18,6 +18,7 @@ describe('FAB + Actionbar', () => {
   });
 
   after(async () => {
+    await commonElements.logout();
     await utils.deleteUsers([ onlineUser ]);
   });
 
