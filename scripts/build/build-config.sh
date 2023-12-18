@@ -4,7 +4,7 @@ set -e
 
 echo "build-config: running cht-conf"
 
-node ./node_modules/cht-conf/src/bin/index.js \
+node ./node_modules/.bin/cht \
   --skip-dependency-check \
   --archive \
   --source=config/default \
