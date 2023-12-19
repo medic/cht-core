@@ -627,13 +627,13 @@ const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
 const getLoggedInUser = async () => {
   try {
-    const cookies = browser.getCookies('userCtx');
+    const cookies = await browser.getCookies('userCtx');
     const userCtx = JSON.parse(cookies?.[0]);
     return userCtx.name;
   } catch (err) {
     return;
   }
-}
+};
 
 /**
  * Deletes _users docs and medic/user-settings docs for specified users
