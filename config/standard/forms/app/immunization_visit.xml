@@ -5521,7 +5521,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
         </translation>
       </itext>
       <instance>
-        <immunization_visit id="immunization_visit" prefix="J1!immunization_visit!" delimiter="#" version="2022-03-03 14-27">
+        <immunization_visit id="immunization_visit" prefix="J1!immunization_visit!" delimiter="#" version="2022-07-22 9-41">
           <inputs>
             <meta>
               <location>
