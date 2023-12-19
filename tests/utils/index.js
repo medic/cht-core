@@ -126,7 +126,7 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug } = {}) => {
+const request = (options, { debug } = {}) => { //NOSONAR
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -335,7 +335,7 @@ const deleteDocs = ids => {
  *                                wish to keep the document
  * @return     {Promise}  completion promise
  */
-const deleteAllDocs = (except) => {
+const deleteAllDocs = (except) => { //NOSONAR
   except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
@@ -597,7 +597,7 @@ const deleteMetaDbs = async () => {
  *                         everything will be deleted from the config, including all the enketo forms.
  * @param {boolean} ignoreRefresh
  */
-const revertDb = async (except, ignoreRefresh) => {
+const revertDb = async (except, ignoreRefresh) => { //NOSONAR
   const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertCustomSettings();
   await deleteAllDocs(except);
@@ -631,6 +631,7 @@ const getLoggedInUser = async () => {
     const userCtx = JSON.parse(cookies?.[0]);
     return userCtx.name;
   } catch (err) {
+    console.warn('Error getting userCtx', err.message);
     return;
   }
 };
@@ -641,7 +642,7 @@ const getLoggedInUser = async () => {
  * @param {Boolean} meta - if true, deletes meta db-s as well, default true
  * @return {Promise}
  */
-const deleteUsers = async (users, meta = false) => {
+const deleteUsers = async (users, meta = false) => { //NOSONAR
   if (!users.length) {
     return;
   }
@@ -1170,7 +1171,10 @@ const collectLogs = (container, ...regex) => {
 
   const collect = () => {
     if (errors.length) {
-      return Promise.reject({ message: 'CollectLogs errored', errors, logs }); // NOSONAR
+      const error = new Error('CollectLogs errored');
+      error.errors = errors;
+      error.logs = logs;
+      return Promise.reject(error);
     }
 
     return Promise.resolve(matches);
