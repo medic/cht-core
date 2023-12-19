@@ -385,15 +385,15 @@ Klik di sini untuk menelepon: <output value=" /death_confirmation/chw_phone "/>]
       <bind nodeset="/death_confirmation/inputs/contact/parent/contact/name" type="string"/>
       <bind nodeset="/death_confirmation/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
       <bind nodeset="/death_confirmation/child_name" type="string" calculate="../inputs/contact/name"/>
-      <bind nodeset="/death_confirmation/patient_id" type="string" constraint="regex(., '[0-9]{5,13}')" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/death_confirmation/patient_id" type="string" calculate="../inputs/contact/patient_id" constraint="regex(., '[0-9]{5,13}')"/>
       <bind nodeset="/death_confirmation/chw_name" type="string" calculate="../inputs/contact/parent/contact/name"/>
       <bind nodeset="/death_confirmation/chw_phone" type="string" calculate="../inputs/contact/parent/contact/phone"/>
       <bind nodeset="/death_confirmation/death_report/n_1" readonly="true()" type="string"/>
       <bind nodeset="/death_confirmation/death_report/n_2" readonly="true()" type="string"/>
       <bind nodeset="/death_confirmation/death_report/death" type="select1" required="true()"/>
-      <bind nodeset="/death_confirmation/death_report/date_of_death" type="date" required="true()" relevant=" /death_confirmation/death_report/death  = 'yes'" constraint=". &lt;= now()"/>
-      <bind nodeset="/death_confirmation/death_report/place" type="select1" required="true()" relevant=" /death_confirmation/death_report/death  = 'yes'"/>
-      <bind nodeset="/death_confirmation/death_report/other_place" type="string" required="true()" relevant=" /death_confirmation/death_report/place  = 'other'"/>
+      <bind nodeset="/death_confirmation/death_report/date_of_death" type="date" relevant=" /death_confirmation/death_report/death  = 'yes'" required="true()" constraint=". &lt;= now()"/>
+      <bind nodeset="/death_confirmation/death_report/place" type="select1" relevant=" /death_confirmation/death_report/death  = 'yes'" required="true()"/>
+      <bind nodeset="/death_confirmation/death_report/other_place" type="string" relevant=" /death_confirmation/death_report/place  = 'other'" required="true()"/>
       <bind nodeset="/death_confirmation/death_report/n_3" readonly="true()" type="string" relevant=" /death_confirmation/death_report/death  = 'no'"/>
       <bind nodeset="/death_confirmation/death_report/n_4" readonly="true()" type="string" relevant=" /death_confirmation/death_report/death  = 'yes'"/>
       <bind nodeset="/death_confirmation/death_report/notes" type="string"/>

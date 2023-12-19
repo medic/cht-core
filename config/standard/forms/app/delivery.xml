@@ -1549,7 +1549,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/group_chw_info" relevant=" /delivery/inputs/source  = 'task'"/>
       <bind nodeset="/delivery/group_chw_info/chw_information" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_chw_info/call_button" readonly="true()" type="string"/>
-      <bind nodeset="/delivery/group_chw_info/still_pregnant" type="select1" required="true()" constraint="selected(.,'no')" jr:constraintMsg="jr:itext('/delivery/group_chw_info/still_pregnant:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/group_chw_info/still_pregnant" type="select1" jr:constraintMsg="jr:itext('/delivery/group_chw_info/still_pregnant:jr:constraintMsg')" required="true()" constraint="selected(.,'no')"/>
       <bind nodeset="/delivery/group_delivery_summary" relevant="selected(coalesce( /delivery/group_chw_info/still_pregnant , 'no'), 'no')"/>
       <bind nodeset="/delivery/group_delivery_summary/g_pregnancy_outcome" type="select1" required="true()"/>
       <bind nodeset="/delivery/group_delivery_summary/g_delivery_code" type="select1" required="true()" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'"/>
@@ -1608,7 +1608,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /delivery/group_note/default_chw_sms ,' /delivery/group_note/default_chw_sms ')"/>
       <bind nodeset="/delivery/group_note/default_chw_sms_note" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_note/is_sms_edited" type="select1" required="true()"/>
-      <bind nodeset="/delivery/group_note/g_chw_sms" type="string" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/delivery/group_note/g_chw_sms:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/group_note/g_chw_sms" type="string" jr:constraintMsg="jr:itext('/delivery/group_note/g_chw_sms:jr:constraintMsg')" constraint="string-length(.) &lt;= 715"/>
       <bind nodeset="/delivery/group_summary/submit" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_summary/r_summary" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_summary/r_patient_id" type="string" calculate="../../inputs/contact/patient_id"/>

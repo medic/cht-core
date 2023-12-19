@@ -2519,7 +2519,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind nodeset="/postnatal_visit/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /postnatal_visit/group_note/default_chw_sms ,' /postnatal_visit/group_note/default_chw_sms ')"/>
       <bind nodeset="/postnatal_visit/group_note/default_chw_sms_note" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_note/is_sms_edited" type="select1" required="true()"/>
-      <bind nodeset="/postnatal_visit/group_note/g_chw_sms" type="string" jr:constraintMsg="jr:itext('/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg')" constraint="string-length(.) &lt;= 715"/>
+      <bind nodeset="/postnatal_visit/group_note/g_chw_sms" type="string" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg')"/>
       <bind nodeset="/postnatal_visit/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_summary" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_patient_id" type="string" calculate="../../inputs/contact/patient_id"/>
