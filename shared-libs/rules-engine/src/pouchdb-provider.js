@@ -4,13 +4,14 @@
  * Wireup for accessing rules document data via medic pouch db
  */
 
-// TODO work out how to pass in the logger from node/browser
 /* eslint-disable no-console */
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const uniqBy = require('lodash/uniqBy');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
+const MAX_QUERY_KEYS = 500;
+
 const docsOf = (query) => {
   return query.then(result => {
     const rows = uniqBy(result.rows, 'id');
@@ -21,19 +22,31 @@ const docsOf = (query) => {
 const rowsOf = (query) => query.then(result => uniqBy(result.rows, 'id'));
 
 const medicPouchProvider = db => {
+  const dbQuery = async (view, params) => {
+    if (!params?.keys || params.keys.length < MAX_QUERY_KEYS) {
+      return db.query(view, params);
+    }
+
+    const keys = new Set(params.keys);
+    delete params.keys;
+    const results = await db.query(view, params);
+    const rows = results.rows.filter(row => keys.has(row.key));
+    return { ...results, rows };
+  };
+
   const self = {
     // PouchDB.query slows down when provided with a large keys array.
     // For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
     allTasks: prefix => {
       const options = { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true };
-      return docsOf(db.query('medic-client/tasks_by_contact', options));
+      return docsOf(dbQuery('medic-client/tasks_by_contact', options));
     },
 
     allTaskData: userSettingsDoc => {
-      const userSettingsId = userSettingsDoc && userSettingsDoc._id;
+      const userSettingsId = userSettingsDoc?._id;
       return Promise.all([
-        docsOf(db.query('medic-client/contacts_by_type', { include_docs: true })),
-        docsOf(db.query('medic-client/reports_by_subject', { include_docs: true })),
+        docsOf(dbQuery('medic-client/contacts_by_type', { include_docs: true })),
+        docsOf(dbQuery('medic-client/reports_by_subject', { include_docs: true })),
         self.allTasks('requester'),
       ])
         .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userSettingsId }));
@@ -41,7 +54,7 @@ const medicPouchProvider = db => {
 
     contactsBySubjectId: subjectIds => {
       const keys = subjectIds.map(key => ['shortcode', key]);
-      return db.query('medic-client/contacts_by_reference', { keys, include_docs: true })
+      return dbQuery('medic-client/contacts_by_reference', { keys, include_docs: true })
         .then(results => {
           const shortcodeIds = results.rows.map(result => result.doc._id);
           const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
@@ -52,9 +65,9 @@ const medicPouchProvider = db => {
 
     stateChangeCallback: docUpdateClosure(db),
 
-    commitTargetDoc: (targets, userContactDoc, userSettingsDoc, docTag, force = false) => {
-      const userContactId = userContactDoc && userContactDoc._id;
-      const userSettingsId = userSettingsDoc && userSettingsDoc._id;
+    commitTargetDoc: (targets, userContactDoc, userSettingsDoc, docTag, force = false) => { // NOSONAR
+      const userContactId = userContactDoc?._id;
+      const userSettingsId = userSettingsDoc?._id;
       const _id = `target~${docTag}~${userContactId}~${userSettingsId}`;
       const createNew = () => ({
         _id,
@@ -92,12 +105,12 @@ const medicPouchProvider = db => {
 
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
-      return docsOf(db.query('medic-client/tasks_by_contact', { keys, include_docs: true }));
+      return docsOf(dbQuery( 'medic-client/tasks_by_contact', { keys, include_docs: true }));
     },
 
     allTaskRowsByOwner: (contactIds) => {
       const keys = contactIds.map(contactId => (['owner', 'all', contactId]));
-      return rowsOf(db.query('medic-client/tasks_by_contact', { keys }));
+      return rowsOf(dbQuery( 'medic-client/tasks_by_contact', { keys }));
     },
 
     allTaskRows: () => {
@@ -106,7 +119,7 @@ const medicPouchProvider = db => {
         endkey: ['owner', 'all', '\ufff0'],
       };
 
-      return rowsOf(db.query('medic-client/tasks_by_contact', options));
+      return rowsOf(dbQuery( 'medic-client/tasks_by_contact', options));
     },
 
     taskDataFor: (contactIds, userSettingsDoc) => {
@@ -122,10 +135,11 @@ const medicPouchProvider = db => {
           }, new Set(contactIds));
 
           const keys = Array.from(subjectIds);
-          return Promise.all([
-            docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
-            self.tasksByRelation(contactIds, 'requester'),
-          ])
+          return Promise
+            .all([
+              docsOf(dbQuery('medic-client/reports_by_subject', { keys, include_docs: true })),
+              self.tasksByRelation(contactIds, 'requester'),
+            ])
             .then(([reportDocs, taskDocs]) => {
               // tighten the connection between reports and contacts
               // a report will only be allowed to generate tasks for a single contact!
@@ -135,7 +149,7 @@ const medicPouchProvider = db => {
               });
 
               return {
-                userSettingsId: userSettingsDoc && userSettingsDoc._id,
+                userSettingsId: userSettingsDoc?._id,
                 contactDocs,
                 reportDocs,
                 taskDocs,
