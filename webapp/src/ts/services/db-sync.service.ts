@@ -4,7 +4,6 @@ import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
 import * as purger from '../../js/bootstrapper/purger';
-import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -70,7 +69,6 @@ export class DBSyncService {
     private dbService:DbService,
     private sessionService:SessionService,
     private authService:AuthService,
-    private rulesEngineService:RulesEngineService,
     private dbSyncRetryService:DbSyncRetryService,
     private ngZone:NgZone,
     private checkDateService:CheckDateService,
@@ -80,7 +78,7 @@ export class DBSyncService {
     private migrationsService:MigrationsService,
     private replicationService:ReplicationService,
   ) {
-    this.globalActions = new GlobalActions(store);
+    this.globalActions = new GlobalActions(this.store);
   }
 
   private globalActions: GlobalActions;
@@ -126,6 +124,7 @@ export class DBSyncService {
       })
       .then(info => {
         console.debug(`Replication to successful`, info);
+        this.setLastReplicatedSeq(info.last_seq);
         telemetryEntry.recordSuccess(info);
       })
       .catch(err => {
@@ -171,17 +170,67 @@ export class DBSyncService {
     }
   }
 
-
   private getCurrentSeq() {
     return this.dbService.get().info().then(info => info.update_seq + '');
   }
 
-  private getLastReplicatedSeq() {
-    return window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
+  private getLastReplicatedSeq(): number {
+    return Number(window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY)) || 0;
+  }
+
+  private setLastReplicatedSeq(sequence:number) {
+    if (!sequence) {
+      return;
+    }
+
+    const lastReplicatedSeq = this.getLastReplicatedSeq();
+    if (lastReplicatedSeq > sequence) {
+      return;
+    }
+
+    window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, sequence.toString());
   }
 
   private getLastReplicationDate() {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
+  }
+
+  private async makeBidirectionalReplication(force:boolean, quick:boolean, retries = 0) {
+    const replicationErrors = { to: null, from: null };
+    replicationErrors.to = await this.replicateTo();
+
+    if (force || !quick) {
+      replicationErrors.from = await this.replicateFrom();
+    }
+
+    let syncState = await this.getSyncState(replicationErrors);
+    if (retries < 3 && (syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required)) {
+      syncState = await this.makeBidirectionalReplication(force, quick, retries++);
+    }
+
+    if (syncState.to === SyncStatus.Success && syncState.from === SyncStatus.Success) {
+      this.syncIsRecent = true;
+    }
+
+    return syncState;
+  }
+
+  private async getSyncState(replicationErrors): Promise<SyncState> {
+    const currentSeq = await this.getCurrentSeq();
+    const lastReplicatedSeq = this.getLastReplicatedSeq();
+    const hasErrors = replicationErrors.to || replicationErrors.from;
+
+    if (!hasErrors && currentSeq === lastReplicatedSeq) {
+      return { to: SyncStatus.Success, from: SyncStatus.Success };
+    }
+
+    if (hasErrors && currentSeq === this.getLastReplicatedSeq()) {
+      // No changes to send, but may have some to receive
+      return { state: SyncStatus.Unknown };
+    }
+
+    // Definitely need to sync something
+    return { to: SyncStatus.Required, from: SyncStatus.Required };
   }
 
   private async syncMedic(force?, quick?) {
@@ -190,7 +239,6 @@ export class DBSyncService {
     }
 
     await this.checkDateService.check();
-
     if (this.inProgressSync) {
       this.sendUpdate({ state: SyncStatus.InProgress });
       return this.inProgressSync;
@@ -200,30 +248,9 @@ export class DBSyncService {
       this.sendUpdate({ state: SyncStatus.InProgress });
       this.inProgressSync = true;
 
-      const replicationErrors = { to: null, from: null };
-      replicationErrors.to = await this.replicateTo();
-
-      if (force || !quick) {
-        replicationErrors.from = await this.replicateFrom();
-      }
-
-      const currentSeq = await this.getCurrentSeq();
-      let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
-
-      if (!replicationErrors.to && !replicationErrors.from) {
-        this.syncIsRecent = true;
-        window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-      } else if (currentSeq === this.getLastReplicatedSeq()) {
-        // no changes to send, but may have some to receive
-        syncState = { state: SyncStatus.Unknown };
-      } else {
-        // definitely need to sync something
-        Object.keys(replicationErrors).forEach((directionName: 'to' | 'from') => {
-          syncState[directionName] = SyncStatus.Required;
-        });
-      }
-
+      const syncState = await this.makeBidirectionalReplication(force, quick);
       if (syncState.to === SyncStatus.Success) {
+        console.debug('Finished syncing!');
         window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
       }
 
