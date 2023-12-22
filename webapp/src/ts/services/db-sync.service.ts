@@ -333,7 +333,7 @@ export class DBSyncService {
   /**
   * Set the current user's online status to control when replications will be attempted.
   *
-  * @param newOnlineState {Boolean} The current online state of the user.
+  * @param onlineStatus {Boolean} The current online state of the user.
   */
   setOnlineStatus(onlineStatus) {
     if (this.knownOnlineState !== onlineStatus) {
