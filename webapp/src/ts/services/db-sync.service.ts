@@ -124,7 +124,7 @@ export class DBSyncService {
       })
       .then(info => {
         console.debug(`Replication to successful`, info);
-        this.setLastReplicatedSeq(info.last_seq);
+        this.setLastReplicatedSeq(info?.last_seq);
         telemetryEntry.recordSuccess(info);
       })
       .catch(err => {
@@ -171,7 +171,7 @@ export class DBSyncService {
   }
 
   private getCurrentSeq() {
-    return this.dbService.get().info().then(info => info.update_seq + '');
+    return this.dbService.get().info().then(info => info.update_seq);
   }
 
   private getLastReplicatedSeq(): number {
@@ -204,8 +204,8 @@ export class DBSyncService {
     }
 
     let syncState = await this.getSyncState(replicationErrors);
-    if (retries < 3 && (syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required)) {
-      syncState = await this.makeBidirectionalReplication(force, quick, retries++);
+    if (retries < 2 && (syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required)) {
+      syncState = await this.makeBidirectionalReplication(force, quick, (retries + 1));
     }
 
     if (syncState.to === SyncStatus.Success && syncState.from === SyncStatus.Success) {
