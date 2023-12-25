@@ -22,6 +22,7 @@ const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
+const MAX_SUCCESSIVE_SYNCS = 2;
 
 const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
@@ -195,7 +196,7 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private async makeBidirectionalReplication(force:boolean, quick:boolean, retries = 0) {
+  private async makeBidirectionalReplication(force:boolean, quick:boolean, successiveSyncs = 0) {
     const replicationErrors = { to: null, from: null };
     replicationErrors.to = await this.replicateTo();
 
@@ -204,8 +205,10 @@ export class DBSyncService {
     }
 
     let syncState = await this.getSyncState(replicationErrors);
-    if (retries < 2 && (syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required)) {
-      syncState = await this.makeBidirectionalReplication(force, quick, (retries + 1));
+    const isSyncRequired = syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required;
+    if (successiveSyncs < MAX_SUCCESSIVE_SYNCS && isSyncRequired) {
+      successiveSyncs += 1;
+      syncState = await this.makeBidirectionalReplication(force, quick, successiveSyncs);
     }
 
     if (syncState.to === SyncStatus.Success && syncState.from === SyncStatus.Success) {
@@ -224,7 +227,7 @@ export class DBSyncService {
       return { to: SyncStatus.Success, from: SyncStatus.Success };
     }
 
-    if (hasErrors && currentSeq === this.getLastReplicatedSeq()) {
+    if (hasErrors && currentSeq === lastReplicatedSeq) {
       // No changes to send, but may have some to receive
       return { state: SyncStatus.Unknown };
     }
