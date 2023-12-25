@@ -171,7 +171,7 @@ export class DBSyncService {
     }
   }
 
-  private getCurrentSeq() {
+  private getCurrentSeq(): Promise<number> {
     return this.dbService.get().info().then(info => info.update_seq);
   }
 
@@ -179,7 +179,7 @@ export class DBSyncService {
     return Number(window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY)) || 0;
   }
 
-  private setLastReplicatedSeq(sequence:number) {
+  private setLastReplicatedSeq(sequence: number) {
     if (!sequence) {
       return;
     }
@@ -196,7 +196,7 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private async makeBidirectionalReplication(force:boolean, quick:boolean, successiveSyncs = 0) {
+  private async makeBidirectionalReplication(force: boolean, quick: boolean, successiveSyncs = 0) {
     const replicationErrors = { to: null, from: null };
     replicationErrors.to = await this.replicateTo();
 
@@ -206,7 +206,8 @@ export class DBSyncService {
 
     let syncState = await this.getSyncState(replicationErrors);
     const isSyncRequired = syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required;
-    if (successiveSyncs < MAX_SUCCESSIVE_SYNCS && isSyncRequired) {
+
+    if (isSyncRequired && successiveSyncs < MAX_SUCCESSIVE_SYNCS) {
       successiveSyncs += 1;
       syncState = await this.makeBidirectionalReplication(force, quick, successiveSyncs);
     }
