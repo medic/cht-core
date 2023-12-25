@@ -298,7 +298,7 @@ describe('DBSync service', () => {
       });
     });
 
-    it('error in replication results in "required" status, it should retry 2 more times', () => {
+    it('error in replication results in "required" status, it triggers 2 more successive syncs', () => {
       const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
@@ -874,10 +874,11 @@ describe('DBSync service', () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
 
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         replicationResultTo = Promise.reject('error');
         await service.sync(true);
 
-        expectSyncCall(3); // Two more retries after the first sync.
+        expectSyncCall(1);
         expect(store.dispatch.callCount).to.equal(2);
         expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
         expect(store.dispatch.args[0][0].payload.message).to.equal('sync.status.in_progress');
@@ -1103,8 +1104,9 @@ describe('DBSync service', () => {
       hasAuth.resolves(true);
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
       localMedicDb.info.resolves({ update_seq: -99 });
+      getItem.withArgs('medic-last-replicated-seq').returns(-99);
       return service.sync().then(() => {
-        expect(to.callCount).to.equal(3); // Two retries after fail
+        expect(to.callCount).to.equal(1);
         filterFunction = to.args[0][1].filter;
       });
     });

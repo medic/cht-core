@@ -212,10 +212,6 @@ export class DBSyncService {
       syncState = await this.makeBidirectionalReplication(force, quick, successiveSyncs);
     }
 
-    if (syncState.to === SyncStatus.Success && syncState.from === SyncStatus.Success) {
-      this.syncIsRecent = true;
-    }
-
     return syncState;
   }
 
@@ -253,9 +249,11 @@ export class DBSyncService {
       this.inProgressSync = true;
 
       const syncState = await this.makeBidirectionalReplication(force, quick);
+
       if (syncState.to === SyncStatus.Success) {
         console.debug('Finished syncing!');
         window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
+        this.syncIsRecent = syncState.from === SyncStatus.Success;
       }
 
       if (force) {
