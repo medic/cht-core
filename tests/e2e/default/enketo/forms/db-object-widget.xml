@@ -21,7 +21,7 @@
     </h:head>
     <h:body class="pages">
         <group appearance="field-list" ref="/db_object_form/people">
-            <input ref="/db_object_form/people/person_test_same_parent" appearance="select-contact type-person with-same-parent">
+            <input ref="/db_object_form/people/person_test_same_parent" appearance="select-contact type-person descendant-of-current-contact">
                 <label>Select a person from same parent</label>
             </input>
             <input ref="/db_object_form/people/person_test_all" appearance="select-contact type-person">

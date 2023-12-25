@@ -55,7 +55,7 @@ const construct = ( element ) => {
   }
   const contactTypes = getContactTypes($question, $textInput);
   const allowNew = $question.hasClass('or-appearance-allow-new');
-  const filterByParent = $question.hasClass('or-appearance-with-same-parent');
+  const filterByParent = $question.hasClass('or-appearance-descendant-of-current-contact');
   Select2Search.init($selectInput, contactTypes, { allowNew, filterByParent }).then(function() {
     // select2 doesn't understand readonly
     $selectInput.prop('disabled', $textInput.prop('readonly'));
