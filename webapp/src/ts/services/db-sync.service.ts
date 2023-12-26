@@ -198,10 +198,10 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private async makeBidirectionalReplication(force: boolean, quick: boolean, successiveSyncs = 0) {
+  private async makeBidirectionalReplication(replicateFromServer: boolean, successiveSyncs = 0) {
     const replicationErrors = {
       to: await this.replicateTo(),
-      from: force || !quick ? await this.replicateFrom() : null,
+      from: replicateFromServer ? await this.replicateFrom() : null,
     };
     const hasErrors = replicationErrors.to || replicationErrors.from;
     let syncState = await this.getSyncState(hasErrors);
@@ -209,7 +209,7 @@ export class DBSyncService {
     const isSyncRequired = syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required;
     if (isSyncRequired && successiveSyncs < MAX_SUCCESSIVE_SYNCS) {
       successiveSyncs += 1;
-      syncState = await this.makeBidirectionalReplication(force, quick, successiveSyncs);
+      syncState = await this.makeBidirectionalReplication(replicateFromServer, successiveSyncs);
     }
 
     return syncState;
@@ -246,8 +246,8 @@ export class DBSyncService {
     try {
       this.sendUpdate({ state: SyncStatus.InProgress });
       this.inProgressSync = true;
-
-      const syncState = await this.makeBidirectionalReplication(force, quick);
+      const replicateFromServer = force || !quick;
+      const syncState = await this.makeBidirectionalReplication(replicateFromServer);
 
       if (syncState.to === SyncStatus.Success) {
         console.debug('Finished syncing!');
