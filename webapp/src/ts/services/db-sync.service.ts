@@ -85,6 +85,7 @@ export class DBSyncService {
   private globalActions: GlobalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
+  private canReplicateToServer = false;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
   private readonly intervalPromises: { sync?: any; meta?: any} = {
     sync: undefined,
@@ -141,8 +142,9 @@ export class DBSyncService {
   }
 
   private async replicateTo() {
-    if (!await this.authService.has('can_edit')) {
-      // not authorized to replicate - that's ok, skip silently
+    this.canReplicateToServer = await this.authService.has('can_edit');
+    if (!this.canReplicateToServer) {
+      console.debug('Not authorized to replicate - that\'s ok, skip silently');
       return;
     }
 
@@ -166,7 +168,7 @@ export class DBSyncService {
       telemetryEntry.recordSuccess(result);
     } catch (err) {
       telemetryEntry.recordFailure(err, this.knownOnlineState);
-      console.error(`Error replicating from remote server`, err);
+      console.error('Error replicating from remote server', err);
       return err;
     }
   }
@@ -220,7 +222,7 @@ export class DBSyncService {
     const lastReplicatedSeq = this.getLastReplicatedSeq();
     const hasErrors = replicationErrors.to || replicationErrors.from;
 
-    if (!hasErrors && currentSeq === lastReplicatedSeq) {
+    if (!hasErrors && (!this.canReplicateToServer || currentSeq === lastReplicatedSeq)) {
       return { to: SyncStatus.Success, from: SyncStatus.Success };
     }
 
