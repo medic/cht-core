@@ -199,16 +199,14 @@ export class DBSyncService {
   }
 
   private async makeBidirectionalReplication(force: boolean, quick: boolean, successiveSyncs = 0) {
-    const replicationErrors = { to: null, from: null };
-    replicationErrors.to = await this.replicateTo();
+    const replicationErrors = {
+      to: await this.replicateTo(),
+      from: force || !quick ? await this.replicateFrom() : null,
+    };
+    const hasErrors = replicationErrors.to || replicationErrors.from;
+    let syncState = await this.getSyncState(hasErrors);
 
-    if (force || !quick) {
-      replicationErrors.from = await this.replicateFrom();
-    }
-
-    let syncState = await this.getSyncState(replicationErrors);
     const isSyncRequired = syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required;
-
     if (isSyncRequired && successiveSyncs < MAX_SUCCESSIVE_SYNCS) {
       successiveSyncs += 1;
       syncState = await this.makeBidirectionalReplication(force, quick, successiveSyncs);
@@ -217,10 +215,9 @@ export class DBSyncService {
     return syncState;
   }
 
-  private async getSyncState(replicationErrors): Promise<SyncState> {
+  private async getSyncState(hasErrors): Promise<SyncState> {
     const currentSeq = await this.getCurrentSeq();
     const lastReplicatedSeq = this.getLastReplicatedSeq();
-    const hasErrors = replicationErrors.to || replicationErrors.from;
 
     if (!hasErrors && (!this.canReplicateToServer || currentSeq === lastReplicatedSeq)) {
       return { to: SyncStatus.Success, from: SyncStatus.Success };
