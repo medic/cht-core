@@ -370,7 +370,7 @@ describe('DBSync service', () => {
     });
 
     it('does not sync to remote if user lacks "can_edit" permission', () => {
-      getItem.withArgs('medic-last-replicated-seq').returns(99);
+      getItem.withArgs('medic-last-replicated-seq').returns(0);
       isOnlineOnly.returns(false);
       hasAuth.resolves(false);
       const onUpdate = sinon.stub();
