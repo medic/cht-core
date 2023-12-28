@@ -9,6 +9,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateService } from '@mm-services/translate.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { UserSettingsService } from './user-settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,7 @@ export class FastActionButtonService {
     private responsiveService: ResponsiveService,
     private translateService: TranslateService,
     private translateFromService: TranslateFromService,
+    private userSettingsService: UserSettingsService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.reportsActions = new ReportsActions(store);
@@ -112,6 +114,10 @@ export class FastActionButtonService {
 
     const validatePhone = () => isPhoneRequired ? !!sendTo?.phone : true;
     const canUseMailto = () => useMailtoInMobile && this.responsiveService.isMobile();
+    const userMessagingThemself = async () => {
+      const user: any = await this.userSettingsService.get();
+      return user?.contact_id === sendTo?._id;
+    };
 
     return {
       id: 'send-message',
@@ -119,8 +125,12 @@ export class FastActionButtonService {
       icon: { name: 'fa-envelope', type: IconType.FONT_AWESOME },
       canDisplay: async () => {
         const permission = [ 'can_view_message_action' ];
-        !canUseMailto() && permission.push('can_edit');
-        return validatePhone() && await this.authService.has(permission);
+        if (!canUseMailto()) {
+          permission.push('can_edit');
+        }
+        return validatePhone() &&
+          await this.authService.has(permission) &&
+          !(await userMessagingThemself());
       },
       execute: () => {
         if (canUseMailto()) {
