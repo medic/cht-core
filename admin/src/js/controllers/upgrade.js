@@ -1,4 +1,4 @@
-const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds_4';
+const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds_4';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
@@ -20,14 +20,15 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
     $scope.upgraded = $state.params.upgraded;
-    const buildsDb = pouchDB(BUILDS_DB);
 
     const UPGRADE_URL = '/api/v2/upgrade';
     const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
     const UPGRADE_CONTAINER_WAIT_PERIOD = 3 * 60 * 1000; // 3 minutes
+
     let containerWaitPeriodTimeout;
+    let buildsUrl;
 
     const logError = (error, key) => {
       return $translate
@@ -68,7 +69,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const getCurrentUpgrade = () => {
       return $http
         .get(UPGRADE_URL)
-        .then(({ data: { upgradeDoc, indexers } }) => {
+        .then(({ data: { upgradeDoc, indexers, apiBuildsUrl } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
             const expectedVersion = $scope.upgradeDoc.to && $scope.upgradeDoc.to.build;
             getExistingDeployment(true, expectedVersion);
@@ -76,6 +77,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
           $scope.upgradeDoc = upgradeDoc;
           $scope.indexerProgress = indexers;
+          buildsUrl = apiBuildsUrl;
 
           if (upgradeDoc) {
             $timeout(getCurrentUpgrade, UPGRADE_POLL_FREQ);
@@ -109,6 +111,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const loadBuilds = () => {
       const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
+      const buildsDb = pouchDB(buildsUrl || DEFAULT_BUILDS_URL);
 
       // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
       //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
@@ -141,6 +144,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         ])
         .then(([ branches, betas, releases, featureReleases ]) => {
           $scope.versions = { branches, betas, releases, featureReleases };
+          buildsDb.destroy();
         });
     };
 
