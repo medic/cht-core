@@ -28,7 +28,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const UPGRADE_CONTAINER_WAIT_PERIOD = 3 * 60 * 1000; // 3 minutes
 
     let containerWaitPeriodTimeout;
-    let buildsUrl;
+    let apiBuildsUrl;
 
     const logError = (error, key) => {
       return $translate
@@ -69,7 +69,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const getCurrentUpgrade = () => {
       return $http
         .get(UPGRADE_URL)
-        .then(({ data: { upgradeDoc, indexers, apiBuildsUrl } }) => {
+        .then(({ data: { upgradeDoc, indexers, buildsUrl } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
             const expectedVersion = $scope.upgradeDoc.to && $scope.upgradeDoc.to.build;
             getExistingDeployment(true, expectedVersion);
@@ -77,7 +77,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
           $scope.upgradeDoc = upgradeDoc;
           $scope.indexerProgress = indexers;
-          buildsUrl = apiBuildsUrl;
+          apiBuildsUrl = buildsUrl;
 
           if (upgradeDoc) {
             $timeout(getCurrentUpgrade, UPGRADE_POLL_FREQ);
@@ -111,7 +111,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const loadBuilds = () => {
       const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
-      const buildsDb = pouchDB(buildsUrl || DEFAULT_BUILDS_URL);
+      const buildsDb = pouchDB(apiBuildsUrl || DEFAULT_BUILDS_URL);
 
       // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
       //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
