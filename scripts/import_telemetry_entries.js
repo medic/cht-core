@@ -13,7 +13,8 @@ const db = require('../api/src/db');
 
 (async () => {
   let telemetry = await fs.readFile(path.join(__dirname, 'telemetry.json'), 'utf8');
-  telemetry = JSON.parse(telemetry);
+  // remove docs' revision to make couchdb happy when importing the data
+  telemetry = JSON.parse(telemetry).map(({ _rev, ...entry }) => entry);
   console.log(`importing ${telemetry.length} telemetry entries from ./telemetry.json`);
   const results = await db.medicUsersMeta.bulkDocs(telemetry);
 
