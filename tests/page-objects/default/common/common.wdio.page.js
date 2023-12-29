@@ -390,6 +390,11 @@ const openUserSettingsAndFetchProperties = async () => {
   await (await $(EDIT_PROFILE)).waitForDisplayed();
 };
 
+const openEditProfile = async () => {
+  await openUserSettingsAndFetchProperties();
+  await (await $(EDIT_PROFILE)).click();
+};
+
 const openAppManagement = async () => {
   await (await $(CONFIGURATION_APP_MENU)).waitForClickable();
   await (await $(CONFIGURATION_APP_MENU)).click();
@@ -468,6 +473,7 @@ module.exports = {
   openAboutMenu,
   openUserSettingsAndFetchProperties,
   openUserSettings,
+  openEditProfile,
   openReportBugAndFetchProperties,
   openAppManagement,
   waitForLoaderToDisappear,
