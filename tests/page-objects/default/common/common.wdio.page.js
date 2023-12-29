@@ -391,7 +391,6 @@ const openUserSettingsAndFetchProperties = async () => {
 };
 
 const openEditProfile = async () => {
-  await openUserSettingsAndFetchProperties();
   await (await $(EDIT_PROFILE)).click();
 };
 
