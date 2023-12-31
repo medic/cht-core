@@ -476,6 +476,7 @@ export class FormatDataRecordService {
             target: this.getClickTarget(key, doc),
           };
 
+          // old style filename
           const filePath = 'user-file/' + label.split('.').slice(1).join('/');
           if (doc &&
             doc._attachments &&
@@ -483,6 +484,16 @@ export class FormatDataRecordService {
             doc._attachments[filePath].content_type &&
             doc._attachments[filePath].content_type.startsWith('image/')) {
             result.imagePath = filePath;
+          }
+
+          // new style filename
+          const newFilePath = 'user-file-' + value;
+          if (doc &&
+            doc._attachments &&
+            doc._attachments[newFilePath] &&
+            doc._attachments[newFilePath].content_type &&
+            doc._attachments[newFilePath].content_type.startsWith('image/')) {
+            result.imagePath = newFilePath;
           }
 
           results.push(result);

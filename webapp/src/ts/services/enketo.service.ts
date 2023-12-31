@@ -12,6 +12,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
+import * as FileManager from '../../js/enketo/file-manager.js';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -468,16 +469,21 @@ export class EnketoService {
       this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
     };
 
-    $record
-      .find('[type=file]')
-      .each((idx, element) => {
-        const xpath = Xpath.getElementXPath(element);
-        const $input: any = $('input[type=file][name="' + xpath + '"]');
-        const file = $input[0].files[0];
-        if (file) {
-          attach(element, file, file.type, false, xpath);
-        }
-      });
+    const files = FileManager.getCurrentFiles();
+    for (const file of files) {
+      this.attachmentService.add(doc, 'user-file-' + file.name, file, file.type, false);
+    }
+
+    // $record
+    //   .find('[type=file]')
+    //   .each((idx, element) => {
+    //     const xpath = Xpath.getElementXPath(element);
+    //     const $input: any = $('input[type=file][name="' + xpath + '"]');
+    //     const file = $input[0].files[0];
+    //     if (file) {
+    //       attach(element, file, file.type, false, xpath);
+    //     }
+    //   });
 
     $record
       .find('[type=binary]')
