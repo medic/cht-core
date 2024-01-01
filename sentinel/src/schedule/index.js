@@ -43,7 +43,8 @@ const tasks = {
   outbound: require('./outbound'),
   purging: require('./purging'),
   transitionsDisabledReminder: require('./transitions-disabled-reminder'),
-  backgroundCleanup: require('./background-cleanup')
+  backgroundCleanup: require('./background-cleanup'),
+  computeDeviceMetrics: require('./compute-device-metrics'),
 };
 
 const runTasks = () => {

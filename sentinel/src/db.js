@@ -71,6 +71,7 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
+  module.exports.medicUsersMeta = new PouchDB(`${couchUrl}-users-meta`, { fetch: fetchFn });
   module.exports.medicDbName = parsedUrl.pathname.replace('/', '');
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
     fetch: fetchFn,
