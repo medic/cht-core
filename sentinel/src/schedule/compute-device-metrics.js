@@ -4,7 +4,8 @@ const db = require('../db');
 // set later to use local time
 later.date.localTime();
 
-const CRON_EXPRESSION = '0 4 * * *'; // run at 4am every day
+// const CRON_EXPRESSION = '0 4 * * *'; // run at 4am every day
+const CRON_EXPRESSION = '* * * * *'; // run every minute to debug
 let timer;
 
 module.exports = {
@@ -39,9 +40,15 @@ module.exports = {
       const cht = entry.metadata.versions.app;
       const settings = entry.metadata.versions.settings;
 
-      versionsCounts.android[android] = versionsCounts.android[android] ? versionsCounts.android[android] + 1 : 1;
-      versionsCounts.app[apk] = versionsCounts.app[apk] ? versionsCounts.app[apk] + 1 : 1;
-      versionsCounts.webview[webview] = versionsCounts.webview[webview] ? versionsCounts.webview[webview] + 1 : 1;
+      if (android) {
+        versionsCounts.android[android] = versionsCounts.android[android] ? versionsCounts.android[android] + 1 : 1;
+      }
+      if (apk) {
+        versionsCounts.app[apk] = versionsCounts.app[apk] ? versionsCounts.app[apk] + 1 : 1;
+      }
+      if (webview) {
+        versionsCounts.webview[webview] = versionsCounts.webview[webview] ? versionsCounts.webview[webview] + 1 : 1;
+      }
 
       if (!userByDeviceId[entry.metadata.user]) {
         userByDeviceId[entry.metadata.user] = [];
@@ -70,14 +77,24 @@ module.exports = {
       }
     });
 
+    const { results } = await db.medicUsersMeta.bulkGet({
+      docs: [
+        { id: 'userByDeviceId' },
+        { id: 'versionsCounts' },
+      ],
+      revs: true,
+    });
+    // console.log("results[0].docs[0]._rev", results[0].docs[0].ok._rev);
     // TODO: maybe find a different db where to store this, for now medic-users-meta is convenient
     await db.medicUsersMeta.bulkDocs([
       {
         _id: 'userByDeviceId',
+        _rev: results[0].docs[0].ok._rev,
         data: userByDeviceId,
       },
       {
         _id: 'versionsCounts',
+        _rev: results[1].docs[0].ok._rev,
         data: versionsCounts,
       },
     ]);
