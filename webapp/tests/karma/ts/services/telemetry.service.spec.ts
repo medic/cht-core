@@ -432,7 +432,7 @@ describe('TelemetryService', () => {
 
   describe('aggregateMap', () => {
 
-    describe('should emit numerical value', () => {
+    describe('should emit numerical value: ', () => {
 
       for (const val of [
         45,
@@ -440,23 +440,22 @@ describe('TelemetryService', () => {
         -20,
         0
       ]) {
-        it(JSON.stringify(val), done => {
+        it(JSON.stringify(val), () => {
           const doc = {
             key: 'mykey',
             value: val
           };
-          const emit = (key, value) => {
-            expect(key).to.equal('mykey');
-            expect(value).to.equal(val);
-            done();
-          };
+          const emit = sinon.stub();
           service._aggregateMap(doc, emit);
+          expect(emit.callCount).to.equal(1);
+          expect(emit.args[0][0]).to.equal('mykey');
+          expect(emit.args[0][1]).to.equal(val);
         });
       }
 
     });
 
-    describe('should NOT emit non-numerical value', () => {
+    describe('should NOT emit non-numerical value: ', () => {
 
       for (const val of [
         'astring',
@@ -465,16 +464,14 @@ describe('TelemetryService', () => {
         { an: 'object' },
         Number.NaN
       ]) {
-        it('' + val, done => {
+        it('' + val, () => {
           const doc = {
             key: 'mykey',
             value: val
           };
-          const emit = () => {
-            done(new Error('should not have emitted'));
-          };
+          const emit = sinon.stub();
           service._aggregateMap(doc, emit);
-          done();
+          expect(emit.called).to.be.false;
         });
       }
 
