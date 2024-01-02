@@ -307,7 +307,7 @@ export class TelemetryService {
       value = 1;
     }
     if (typeof value !== 'number' || Number.isNaN(value)) {
-      console.error(new Error('Invalid telemetry value: ' + value));
+      console.error(new Error(`Invalid telemetry value "${value}" for key "${key}"`));
       return;
     }
 
