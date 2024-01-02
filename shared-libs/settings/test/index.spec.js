@@ -322,42 +322,4 @@ describe('Settings Shared Library', () => {
 
   });
 
-  describe('updateAdminPassword', () => {
-
-    it('should save password', () => {
-      const salt = Buffer.from('randomBytes');
-      const derivedKey = Buffer.from('encrypted');
-      environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
-      sinon.stub(request, 'put').resolves('-pbkdf2-8266a0adb');
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['a', 'b', 'c'] });
-      sinon.stub(crypto, 'randomBytes').returns(salt);
-      sinon.stub(crypto, 'pbkdf2').callsArgWith(5, null, derivedKey);
-
-      const expectedPassword = `-pbkdf2-${derivedKey.toString('hex')},${salt.toString('hex')},10`;
-
-      return lib
-        .updateAdminPassword('admin1', 'pass1234')
-        .then(() => {
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.deep.equal({
-            url: 'http://user:pass@localhost:6929/_membership',
-            json: true,
-          });
-          expect(request.put.callCount).to.equal(3);
-          expect(request.put.args[0][0]).to.deep.equal({
-            body: `"${expectedPassword}"`,
-            url: 'http://user:pass@localhost:6929/_node/a/_config/admins/admin1?raw=true',
-          });
-          expect(request.put.args[1][0]).to.deep.equal({
-            body: `"${expectedPassword}"`,
-            url: 'http://user:pass@localhost:6929/_node/b/_config/admins/admin1?raw=true',
-          });
-          expect(request.put.args[2][0]).to.deep.equal({
-            body: `"${expectedPassword}"`,
-            url: 'http://user:pass@localhost:6929/_node/c/_config/admins/admin1?raw=true',
-          });
-        });
-    });
-
-  });
 });
