@@ -344,11 +344,13 @@ describe('Users API', () => {
 
     });
 
-    it('should allow to update the admin password and login successfully', async () => {
+    it('should error when updating the admin password and allow login with old password', async () => {
+      
+      const oldPassword = 'medic.123';
       const newPassword = 'medic.456';
       const otherAdmin = {
         username: 'admin2',
-        password: 'medic.123',
+        password: oldPassword,
         roles: [ 'admin' ],
         contact: { name: 'Philip' },
         place: newPlaceId,
@@ -365,24 +367,24 @@ describe('Users API', () => {
         });
       }
 
-      // Update password with new value.
-      const userResponse = await utils
+      // Attempt to update password with new value.
+      await utils
         .request({
           path: `/api/v1/users/${otherAdmin.username}`,
           method: 'POST',
           body: { password: newPassword }
         })
-        .catch((err) => {
-          chai.assert.fail(err);
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          // online users require the "can_update_users" permission to be able to access this endpoint
+          chai.expect(err.error).to.deep.equal({
+            code: 400,
+            error: 'Admin passwords must be changed manually in the database'
+          });
         });
 
-      chai.expect(userResponse.user).to.not.be.undefined;
-      chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
-      chai.expect(userResponse['user-settings']).to.not.be.undefined;
-      chai.expect(userResponse['user-settings'].id).to.equal('org.couchdb.user:admin2');
-      // Old password shouldn't work.
-      await expectPasswordLoginToFail(otherAdmin);
-      await expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
+      await expectPasswordLoginToWork({ username: otherAdmin.username, password: oldPassword });
+
     });
 
   });
