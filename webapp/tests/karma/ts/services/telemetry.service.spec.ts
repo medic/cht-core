@@ -167,6 +167,12 @@ describe('TelemetryService', () => {
       expect(telemetryDb.destroy.calledOnce).to.be.true;
     });
 
+    it('should log an error and abort if value is non-numeric', async () => {
+      await service.record('test', 'bad-value');
+      expect(consoleErrorSpy.called).to.be.true;
+      expect(telemetryDb.post.called).to.be.false;
+    });
+
     const setupDbMocks = () => {
       telemetryDb.query.resolves({
         rows: [
@@ -422,5 +428,57 @@ describe('TelemetryService', () => {
       expect(telemetryDb.destroy.calledOnce).to.be.true;
       expect(telemetryDb.close.notCalled).to.be.true;
     });
+  });
+
+  describe('aggregateMap', () => {
+
+    describe('should emit numerical value', () => {
+
+      for (const val of [
+        45,
+        4.5,
+        -20,
+        0
+      ]) {
+        it(JSON.stringify(val), done => {
+          const doc = {
+            key: 'mykey',
+            value: val
+          };
+          const emit = (key, value) => {
+            expect(key).to.equal('mykey');
+            expect(value).to.equal(val);
+            done();
+          };
+          service._aggregateMap(doc, emit);
+        });
+      }
+
+    });
+
+    describe('should NOT emit non-numerical value', () => {
+
+      for (const val of [
+        'astring',
+        undefined,
+        null,
+        { an: 'object' },
+        Number.NaN
+      ]) {
+        it('' + val, done => {
+          const doc = {
+            key: 'mykey',
+            value: val
+          };
+          const emit = () => {
+            done(new Error('should not have emitted'));
+          };
+          service._aggregateMap(doc, emit);
+          done();
+        });
+      }
+
+    });
+
   });
 });
