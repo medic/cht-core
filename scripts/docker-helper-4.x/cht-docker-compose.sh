@@ -242,9 +242,9 @@ get_system_and_docker_info(){
   echo $"$info" | column -t
 }
 
-if [ -n "$(required_apps_installed "docker-compose")" ];then
+if [ -n "$(required_apps_installed "docker")" ];then
   echo ""
-  echo -e "${red}\"docker-compose\" is not installed or could not be found. Please install and try again!${noColor}"
+  echo -e "${red}\"docker\" is not installed or could not be found. Please install and try again!${noColor}"
   show_help_existing_stop_and_destroy
   exit 0
 fi
@@ -401,7 +401,7 @@ projectURL=$(get_local_ip_url "$(get_lan_ip)")
 if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 
 echo "";echo "homedir: $homeDir"
-docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
+docker compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
 if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 
 set +e

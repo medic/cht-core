@@ -25,7 +25,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
 let originalSettings;
-let dockerVersion;
 let browserLogStream;
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
@@ -770,7 +769,7 @@ const dockerComposeCmd = (...params) => {
   const projectParams = ['-p', PROJECT_NAME];
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [...projectParams, ...composeFilesParam, ...params], { env });
+    const cmd = spawn('docker', ['compose', ...projectParams, ...composeFilesParam, ...params], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1213,30 +1212,13 @@ const apiLogTestEnd = (name) => {
     .catch(() => console.warn('Error logging test end - ignoring'));
 };
 
-const getDockerVersion = () => {
-  try {
-    const response = execSync('docker-compose -v').toString();
-    const version = response.match(semver.re[3])[0];
-    return semver.major(version);
-  } catch (err) {
-    console.error(err);
-    return 1;
-  }
-};
-
 const updateContainerNames = (project = PROJECT_NAME) => {
-  dockerVersion = dockerVersion || getDockerVersion();
-
   Object.entries(services).forEach(([key, service]) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
   });
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
-const getContainerName = (service, project = PROJECT_NAME) => {
-  dockerVersion = dockerVersion || getDockerVersion();
-  const separator = dockerVersion === 2 ? '-' : '_';
-  return `${project}${separator}${service}${separator}1`;
-};
+const getContainerName = (service, project = PROJECT_NAME) => [project, service, 1].join('-');
 
 const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
   const settings = await getSettings();

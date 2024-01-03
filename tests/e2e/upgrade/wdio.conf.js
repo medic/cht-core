@@ -70,8 +70,8 @@ const dockerComposeCmd = (...params) => {
   params.unshift('-p', 'upgrade');
 
   return new Promise((resolve, reject) => {
-    console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params ]);
-    const cmd = spawn('docker-compose', [ '-f', UPGRADE_SERVICE_DC, ...params ], { env });
+    console.log(...['docker compose', '-f', UPGRADE_SERVICE_DC, ...params ]);
+    const cmd = spawn('docker', [ 'compose', '-f', UPGRADE_SERVICE_DC, ...params ], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();

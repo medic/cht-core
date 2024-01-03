@@ -58,15 +58,15 @@ To test that your configuration changes don't impact entrypoint and clustering s
 1. Run tests for the clustered couchdb nodes scenario
 
 ```bash
- docker-compose -f couchdb/test.couchdb-cluster.yml  build
- docker-compose -f couchdb/test.couchdb-cluster.yml  run  sut
+ docker compose -f couchdb/test.couchdb-cluster.yml  build
+ docker compose -f couchdb/test.couchdb-cluster.yml  run  sut
 
 ```
 
 2. Tear down test containers
 
 ```bash
- docker-compose -f couchdb/test.couchdb-cluster.yml down
+ docker compose -f couchdb/test.couchdb-cluster.yml down
 ```
 
 To create more tests, add them couchdb/tests/tests.bats

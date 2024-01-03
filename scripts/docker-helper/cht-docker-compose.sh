@@ -186,9 +186,9 @@ docker_up_or_restart(){
   sleep 3
 
   # haproxy never starts on first "up" call, so you know, call it twice ;)
-  docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
-  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
-  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
 }
 
 install_local_ip_cert(){
@@ -237,7 +237,7 @@ local_ip_cert_expired(){
 docker_down(){
   envFile=$1
   composeFile=$2
-  docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
 }
 
 docker_destroy(){
