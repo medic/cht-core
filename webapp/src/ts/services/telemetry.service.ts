@@ -145,16 +145,35 @@ export class TelemetryService {
     };
   }
 
+  /**
+   * Emit the value of the doc.
+   * Skip over values that aren't numeric because they will cause an Error in the "_stats" reduce function.
+   * Exposed for unit testing.
+   * @param doc The db doc to map.
+   * @param emit A function called with the key and value to map the doc to.
+   */
+  _aggregateMap(doc, emit) {
+    const val = doc.value;
+    if (typeof val === 'number' && !Number.isNaN(val)) {
+      emit(doc.key, val);
+    }
+  }
+
+  private aggregateMapReduce(db) {
+    return db.query(
+      {
+        map: this._aggregateMap,
+        reduce: '_stats',
+      },
+      { group: true }
+    );
+  }
+
   private async aggregate(db, dbName) {
     const [ metadata, dbInfo, reduceResult ] = await Promise.all([
       this.generateMetadataSection(dbName),
-      this.dbService
-        .get()
-        .info(),
-      db.query(
-        { reduce: '_stats', map: (doc, emit) => emit(doc.key, doc.value) },
-        { group: true },
-      )
+      this.dbService.get().info(),
+      this.aggregateMapReduce(db),
     ]);
 
     const aggregateDoc = {
@@ -286,6 +305,10 @@ export class TelemetryService {
   private async _record(key, value?) {
     if (value === undefined) {
       value = 1;
+    }
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      console.error(new Error(`Invalid telemetry value "${value}" for key "${key}"`));
+      return;
     }
 
     try {

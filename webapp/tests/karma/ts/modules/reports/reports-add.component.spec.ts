@@ -34,6 +34,7 @@ describe('Reports Add Component', () => {
   let geoHandle;
   let formService;
   let router;
+  let telemetryService;
   let route;
 
   beforeEach(waitForAsync(() => {
@@ -54,6 +55,7 @@ describe('Reports Add Component', () => {
       params: new Subject(),
     };
     router = { navigate: sinon.stub() };
+    telemetryService = { record: sinon.stub() };
 
     const mockedSelectors = [
       { selector: Selectors.getLoadingContent, value: false },
@@ -85,7 +87,7 @@ describe('Reports Add Component', () => {
           { provide: FormService, useValue: formService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
-          { provide: TelemetryService, useValue: { record: sinon.stub() }},
+          { provide: TelemetryService, useValue: telemetryService },
         ],
       })
       .compileComponents()
@@ -201,6 +203,9 @@ describe('Reports Add Component', () => {
         component.ngAfterViewInit();
         tick();
 
+        expect(telemetryService.record.callCount).to.equal(1);
+        expect(telemetryService.record.args[0][0]).to.equal('enketo:reports:my_form:add:render');
+        expect(telemetryService.record.args[0][1]).to.not.be.undefined;
         expect(geolocationService.init.calledOnce).to.be.true;
         expect(openReportContentStub.calledOnce).to.be.true;
         expect(openReportContentStub.args[0]).to.deep.equal([{ formInternalId: 'my_form' }]);
