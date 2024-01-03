@@ -367,7 +367,7 @@ describe('Users API', () => {
         });
       }
 
-      await delayPromise(1000);
+      await utils.delayPromise(1000);
 
       // Attempt to update password with new value.
       // await utils
