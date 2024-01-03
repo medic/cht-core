@@ -383,7 +383,7 @@ describe('Users API', () => {
           });
         });
 
-      await expectPasswordLoginToWork({ username: otherAdmin.username, password: oldPassword });
+      await expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
 
     });
 
