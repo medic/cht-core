@@ -2422,7 +2422,7 @@ describe('Users service', () => {
         chai.expect.fail('should have thrown');
       } catch (e) {
         chai.expect(e.message).to.equal('Admin passwords must be changed manually in the database');
-        chai.expect(e.status).to.equal(400);
+        chai.expect(e.code).to.equal(400);
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
         chai.expect(couchSettings.getCouchConfig.calledOnce).to.be.true;
@@ -3054,7 +3054,7 @@ describe('Users service', () => {
         chai.expect.fail('should have thrown');
       } catch (e) {
         chai.expect(e.message).to.equal('Admin passwords must be changed manually in the database');
-        chai.expect(e.status).to.equal(400);
+        chai.expect(e.code).to.equal(400);
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
         chai.expect(db.users.put.callCount).to.equal(0);
