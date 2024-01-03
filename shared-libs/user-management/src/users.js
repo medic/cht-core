@@ -505,9 +505,7 @@ const isDbAdmin = user => {
 
 const saveUserUpdates = async (user) => {
   if (user.password && await isDbAdmin(user)) {
-    const err = new Error('Admin passwords must be changed manually in the database');
-    err.status = 400;
-    throw err;
+    throw error400('Admin passwords must be changed manually in the database');
   }
   const savedDoc = await db.users.put(user);
   return {
