@@ -144,7 +144,11 @@ angular.module('controllers').controller('UpgradeCtrl',
         ])
         .then(([ branches, betas, releases, featureReleases ]) => {
           $scope.versions = { branches, betas, releases, featureReleases };
-          buildsDb.destroy();
+          buildsDb.close();
+        })
+        .catch(err => {
+          buildsDb.close();
+          throw err;
         });
     };
 

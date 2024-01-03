@@ -28,7 +28,7 @@ describe('UpgradeCtrl controller', () => {
 
     buildsDb = {
       query: sinon.stub(),
-      destroy: sinon.stub()
+      close: sinon.stub()
     };
     pouchDb = sinon.stub();
     pouchDb.returns(buildsDb);
@@ -166,6 +166,7 @@ describe('UpgradeCtrl controller', () => {
         limit: 50,
       }
     ]);
+    expect(buildsDb.close.callCount).to.equal(1);
   });
 
   it('should load builds from configured builds url', async () => {
@@ -235,6 +236,7 @@ describe('UpgradeCtrl controller', () => {
         limit: 50,
       }
     ]);
+    expect(buildsDb.close.callCount).to.equal(1);
   });
 
   it('should catch couch query errors', async () => {
@@ -259,6 +261,7 @@ describe('UpgradeCtrl controller', () => {
 
     expect(scope.loading).to.equal(false);
     expect(scope.versions).to.deep.equal({});
+    expect(buildsDb.close.callCount).to.equal(1);
   });
 
   it('should follow upgrade if already in progress', async () => {
