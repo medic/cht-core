@@ -364,7 +364,7 @@ describe('Users API', () => {
           method: 'PUT',
           path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
           body: `"${otherAdmin.password}"`,
-        });
+        }, { debug: true });
       }
 
       await utils.delayPromise(1000);
