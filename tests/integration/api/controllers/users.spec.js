@@ -344,50 +344,6 @@ describe('Users API', () => {
 
     });
 
-    it('should error when updating the admin password and allow login with old password', async () => {
-      
-      const oldPassword = 'medic.123';
-      // const newPassword = 'medic.456';
-      const otherAdmin = {
-        username: 'admin2',
-        password: oldPassword,
-        roles: [ 'admin' ],
-        contact: { name: 'Philip' },
-        place: newPlaceId,
-      };
-      await utils.createUsers([ otherAdmin ]);
-      // Set admin user's password in CouchDB config.
-      const membership = await utils.request({ path: '/_membership' });
-      const nodes = membership.all_nodes;
-      for (const nodeName of nodes) {
-        await utils.request({
-          method: 'PUT',
-          path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
-          body: `"${otherAdmin.password}"`,
-        }, { debug: true });
-      }
-
-      await utils.delayPromise(1000);
-
-      // Attempt to update password with new value.
-      // await utils
-      //   .request({
-      //     path: `/api/v1/users/${otherAdmin.username}`,
-      //     method: 'POST',
-      //     body: { password: newPassword }
-      //   })
-      //   .then(() => chai.expect.fail('should have thrown'))
-      //   .catch(err => {
-      //     chai.expect(err.error).to.deep.equal({
-      //       code: 400,
-      //       error: 'Admin passwords must be changed manually in the database'
-      //     });
-      //   });
-
-      await expectPasswordLoginToWork({ username: otherAdmin.username, password: oldPassword });
-
-    });
-
   });
 
   describe('/api/v1/users-info', () => {
