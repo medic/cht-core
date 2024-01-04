@@ -186,11 +186,6 @@ export class DBSyncService {
       return;
     }
 
-    const lastReplicatedSeq = this.getLastReplicatedSeq();
-    if (lastReplicatedSeq > sequence) {
-      return;
-    }
-
     window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, sequence.toString());
   }
 
@@ -198,7 +193,7 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private async makeBidirectionalReplication(replicateFromServer: boolean, successiveSyncs = 0) {
+  private async syncMedic(replicateFromServer: boolean, successiveSyncs = 0) {
     const replicationErrors = {
       to: await this.replicateTo(),
       from: replicateFromServer ? await this.replicateFrom() : null,
@@ -209,7 +204,7 @@ export class DBSyncService {
     const isSyncRequired = syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required;
     if (isSyncRequired && successiveSyncs < MAX_SUCCESSIVE_SYNCS) {
       successiveSyncs += 1;
-      syncState = await this.makeBidirectionalReplication(replicateFromServer, successiveSyncs);
+      syncState = await this.syncMedic(replicateFromServer, successiveSyncs);
     }
 
     return syncState;
@@ -232,7 +227,8 @@ export class DBSyncService {
     return { to: SyncStatus.Required, from: SyncStatus.Required };
   }
 
-  private async syncMedic(force?, quick?) {
+  private async startSyncMedic(force?, quick?) {
+    this.resetSyncInterval();
     if (!this.knownOnlineState && !force) {
       return Promise.resolve();
     }
@@ -247,7 +243,7 @@ export class DBSyncService {
       this.sendUpdate({ state: SyncStatus.InProgress });
       this.inProgressSync = true;
       const replicateFromServer = force || !quick;
-      const syncState = await this.makeBidirectionalReplication(replicateFromServer);
+      const syncState = await this.syncMedic(replicateFromServer);
 
       if (syncState.to === SyncStatus.Success) {
         console.debug('Finished syncing!');
@@ -341,8 +337,7 @@ export class DBSyncService {
       this.knownOnlineState = !!onlineStatus;
 
       if (this.knownOnlineState && !this.syncIsRecent) {
-        this.resetSyncInterval();
-        return this.syncMedic();
+        return this.startSyncMedic();
       }
     }
   }
@@ -382,8 +377,7 @@ export class DBSyncService {
       this.syncMeta();
     }
 
-    this.resetSyncInterval();
-    return this.syncMedic(force, quick);
+    return this.startSyncMedic(force, quick);
   }
 }
 
