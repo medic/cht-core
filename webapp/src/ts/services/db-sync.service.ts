@@ -227,6 +227,20 @@ export class DBSyncService {
     return { to: SyncStatus.Required, from: SyncStatus.Required };
   }
 
+  private updateAfterSyncMedic(syncState, force) {
+    if (syncState.to === SyncStatus.Success) {
+      console.debug('Finished syncing!');
+      window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
+      this.syncIsRecent = syncState.from === SyncStatus.Success;
+    }
+
+    if (force) {
+      this.displayUserFeedback(syncState);
+    }
+
+    this.sendUpdate(syncState);
+  }
+
   private async startSyncMedic(force?, quick?) {
     this.resetSyncInterval();
     if (!this.knownOnlineState && !force) {
@@ -244,17 +258,7 @@ export class DBSyncService {
       this.inProgressSync = true;
       const replicateFromServer = force || !quick;
       const syncState = await this.syncMedic(replicateFromServer);
-
-      if (syncState.to === SyncStatus.Success) {
-        console.debug('Finished syncing!');
-        window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
-        this.syncIsRecent = syncState.from === SyncStatus.Success;
-      }
-
-      if (force) {
-        this.displayUserFeedback(syncState);
-      }
-      this.sendUpdate(syncState);
+      this.updateAfterSyncMedic(syncState, force);
     } finally {
       this.inProgressSync = undefined;
     }
