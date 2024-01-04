@@ -9,7 +9,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateService } from '@mm-services/translate.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { UserSettingsService } from './user-settings.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
