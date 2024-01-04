@@ -218,7 +218,7 @@ module.exports = {
       Object.assign(content, opts);
 
       const pregnancyAnswers = [content.firstPregnancy];
-      if (content.firstPregnancy === 'no' && content.miscarriages) {
+      if (content.firstPregnancy === 'no') {
         pregnancyAnswers.push(content.miscarriages);
       }
 
