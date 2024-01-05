@@ -5,6 +5,7 @@ import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import { IndexedDbService } from '@mm-services/indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,7 @@ export class TelemetryService {
     private dbService:DbService,
     private sessionService:SessionService,
     private ngZone:NgZone,
+    private indexedDbService:IndexedDbService,
     @Inject(DOCUMENT) private document:Document,
   ) {
     this.windowRef = this.document.defaultView;
@@ -117,9 +119,9 @@ export class TelemetryService {
     };
   }
 
-  private async getTelemetryDBs(databases): Promise<undefined|string[]> {
-    return databases
-      ?.map(db => db.name?.replace(this.POUCH_PREFIX, '') || '')
+  private async getTelemetryDBs(databaseNames): Promise<undefined|string[]> {
+    return databaseNames
+      ?.forEach(dbName => dbName?.replace(this.POUCH_PREFIX, '') || '')
       .filter(dbName => dbName?.startsWith(this.TELEMETRY_PREFIX));
   }
 
@@ -215,6 +217,7 @@ export class TelemetryService {
       currentDB = this.generateTelemetryDBName(today);
     }
 
+    await this.indexedDbService.saveDatabaseName(currentDB); // Firefox support.
     return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
   }
 
@@ -244,6 +247,7 @@ export class TelemetryService {
         const db = this.windowRef.PouchDB(dbName);
         await this.aggregate(db, dbName);
         await db.destroy();
+        await this.indexedDbService.deleteDatabaseName(dbName); // Firefox support.
       } catch (error) {
         console.error('Error when aggregating the telemetry records', error);
       } finally {
@@ -313,9 +317,9 @@ export class TelemetryService {
 
     try {
       const today = this.getToday();
-      const databases = await this.windowRef?.indexedDB?.databases();
-      await this.deleteDeprecatedTelemetryDB(databases);
-      const telemetryDBs = await this.getTelemetryDBs(databases);
+      const databaseNames = await this.indexedDbService.getDatabaseNames();
+      await this.deleteDeprecatedTelemetryDB(databaseNames);
+      const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
       await this
@@ -333,19 +337,19 @@ export class TelemetryService {
    * It was decided to not aggregate the DB content.
    * @private
    */
-  private async deleteDeprecatedTelemetryDB(databases) {
+  private async deleteDeprecatedTelemetryDB(databaseNames) {
     if (this.hasTransitionFinished) {
       return;
     }
 
-    databases?.forEach(db => {
-      const nameNoPrefix = db.name?.replace(this.POUCH_PREFIX, '') || '';
+    databaseNames?.forEach(dbName => {
+      const nameNoPrefix = dbName?.replace(this.POUCH_PREFIX, '') || '';
 
       // Skips new Telemetry DB, then matches the old deprecated Telemetry DB.
       if (!nameNoPrefix.startsWith(this.TELEMETRY_PREFIX)
         && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
         && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
-        this.windowRef?.indexedDB.deleteDatabase(db.name);
+        this.windowRef?.indexedDB.deleteDatabase(dbName);
       }
     });
 
