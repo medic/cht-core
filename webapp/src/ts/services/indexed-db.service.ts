@@ -21,13 +21,13 @@ export class IndexedDbService {
   async getDatabaseNames() {
     if (this.hasDatabasesFn) {
       const databases = await this.document.defaultView!.indexedDB.databases();
-      return databases.map(db => db.name);
+      return databases?.map(db => db.name) || [];
     }
 
     const doc = await this.dbService
       .get({ meta: true })
       .get(this.LOCAL_DOC);
-    return doc?.db_names;
+    return doc?.db_names || [];
   }
 
   async saveDatabaseName(name: string) {
@@ -35,7 +35,7 @@ export class IndexedDbService {
       return;
     }
 
-    const dbNames = (await this.getDatabaseNames()) || [];
+    const dbNames = await this.getDatabaseNames();
     if (dbNames.find(dbName => dbName === name)) {
       return;
     }
@@ -50,7 +50,7 @@ export class IndexedDbService {
     }
 
     const dbNames = await this.getDatabaseNames();
-    if (!dbNames?.length) {
+    if (!dbNames.length) {
       return;
     }
 
