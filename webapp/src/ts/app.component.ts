@@ -651,7 +651,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async warnOutdatedChrome(): Promise<void> {
-    if (this.browserDetectorService.isUsingOutdatedChromeBrowser()) {
+    if (!this.browserDetectorService.isUsingOutdatedBrowser()) {
       return;
     }
     await this.translationsLoaded;
