@@ -650,10 +650,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private warnOutdatedChrome(): void {
+  private async warnOutdatedChrome(): Promise<void> {
     if (this.browserDetectorService.isUsingOutdatedChromeBrowser()) {
-      this.modalService.show(BrowserCompatibilityComponent);
+      return;
     }
+    await this.translationsLoaded;
+    this.modalService.show(BrowserCompatibilityComponent);
   }
 
   private recordStartupTelemetry() {
