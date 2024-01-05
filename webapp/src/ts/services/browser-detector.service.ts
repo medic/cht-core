@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import * as Bowser from 'bowser';
 import { Store } from '@ngrx/store';
 import { Selectors } from '@mm-selectors/index';
+const OUTDATED_BROWSER_VERSION_MIN = '74';
+const OUTDATED_BROWSER_VERSION_MAX = '90';
 
 type VersionSuffix = `` | `-${string}`;
 type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
@@ -39,8 +41,11 @@ export class BrowserDetectorService {
     });
   }
 
-  public isUsingOutdatedChromeBrowser() {
-    return this.parser.satisfies({ chrome: '>74' }) && this.parser.satisfies({ chrome: '<90' });
+  public isUsingOutdatedBrowser() {
+    return (
+      this.parser.satisfies({ chrome: `>${OUTDATED_BROWSER_VERSION_MIN}` }) &&
+      this.parser.satisfies({ chrome: `<${OUTDATED_BROWSER_VERSION_MAX}` })
+    );
   }
 
   public isUsingChtAndroid() {

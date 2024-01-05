@@ -95,11 +95,11 @@ describe('Browser Detector Service', () => {
     expect(service.isUsingChtAndroidV1()).to.be.false;
   });
 
-  it('runs with outdated Chrome', () => {
+  it('runs with outdated Browser version', () => {
     const chtAndroidVersion = 'v1.0.1-alpha.1';
     spoofUserAgent(getChtAndroidUserAgent(chtAndroidVersion, '76.0.2743.116'));
     androidAppVersion.next(chtAndroidVersion);
 
-    expect(service.isUsingOutdatedChromeBrowser()).to.be.true;
+    expect(service.isUsingOutdatedBrowser()).to.be.true;
   });
 });

@@ -118,7 +118,7 @@ describe('AppComponent', () => {
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
-    browserDetectorService = { isUsingOutdatedChromeBrowser: sinon.stub().returns(false) };
+    browserDetectorService = { isUsingOutdatedBrowser: sinon.stub().returns(false) };
     chtScriptApiService = { isInitialized: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
     databaseConnectionMonitorService = {
@@ -263,7 +263,7 @@ describe('AppComponent', () => {
   });
 
   it('should display browser compatibility modal if using outdated chrome browser', async () => {
-    browserDetectorService.isUsingOutdatedChromeBrowser.returns(true);
+    browserDetectorService.isUsingOutdatedBrowser.returns(true);
     await getComponent();
 
     expect(modalService.show.calledOnce).to.be.true;
