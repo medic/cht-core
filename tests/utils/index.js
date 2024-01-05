@@ -977,7 +977,7 @@ const setupSettings = () => {
 const createLogDir = async () => {
   const logDirPath = path.join(__dirname, '../logs');
   if (fs.existsSync(logDirPath)) {
-    await fs.promises.rmdir(logDirPath, { recursive: true });
+    await fs.promises.rm(logDirPath, { recursive: true });
   }
   await fs.promises.mkdir(logDirPath);
 };
