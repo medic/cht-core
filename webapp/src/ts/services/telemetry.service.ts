@@ -121,7 +121,7 @@ export class TelemetryService {
 
   private async getTelemetryDBs(databaseNames): Promise<undefined|string[]> {
     return databaseNames
-      ?.forEach(dbName => dbName?.replace(this.POUCH_PREFIX, '') || '')
+      ?.map(dbName => dbName?.replace(this.POUCH_PREFIX, '') || '')
       .filter(dbName => dbName?.startsWith(this.TELEMETRY_PREFIX));
   }
 

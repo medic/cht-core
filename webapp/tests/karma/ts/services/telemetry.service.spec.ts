@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import { IndexedDbService } from '@mm-services/indexed-db.service';
 
 describe('TelemetryService', () => {
   const NOW = new Date(2018, 10, 10, 12, 33).getTime(); // -> 2018-11-10T12:33:00
@@ -14,6 +15,7 @@ describe('TelemetryService', () => {
   let metaDb;
   let medicDb;
   let sessionService;
+  let indexedDbService;
   let clock;
   let telemetryDb;
   let consoleErrorSpy;
@@ -99,6 +101,11 @@ describe('TelemetryService', () => {
         return Promise.resolve();
       })
     };
+    indexedDbService = {
+      getDatabaseNames: sinon.stub(),
+      saveDatabaseName: sinon.stub(),
+      deleteDatabaseName: sinon.stub(),
+    };
     sessionService = { userCtx: sinon.stub().returns({ name: 'greg' }) };
     windowMock = {
       PouchDB: sinon.stub().returns(telemetryDb),
@@ -115,6 +122,7 @@ describe('TelemetryService', () => {
         { provide: DbService, useValue: dbService },
         { provide: SessionService, useValue: sessionService },
         { provide: DOCUMENT, useValue: documentMock },
+        { provide: IndexedDbService, useValue: indexedDbService },
       ]
     });
 
@@ -132,10 +140,10 @@ describe('TelemetryService', () => {
     it('should record a piece of telemetry', async () => {
       medicDb.query.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
-      windowMock.indexedDB.databases.resolves([
-        { name: '_pouch_telemetry-2018-11-10-greg' },
-        { name: '_pouch_some-other-db' },
-        { name: '_pouch_telemetry-2018-11-09-greg' },
+      indexedDbService.getDatabaseNames.resolves([
+        '_pouch_telemetry-2018-11-10-greg',
+        '_pouch_some-other-db',
+        '_pouch_telemetry-2018-11-09-greg',
       ]);
 
       await service.record('test', 100);
@@ -144,7 +152,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.calledOnce).to.be.true;
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
       expect(telemetryDb.post.args[0][0].date_recorded).to.be.above(0);
-      expect(windowMock.indexedDB.databases.calledOnce).to.be.true;
+      expect(indexedDbService.getDatabaseNames.calledOnce).to.be.true;
       expect(windowMock.PouchDB.calledTwice).to.be.true;
       expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-09-greg' ]);
       expect(windowMock.PouchDB.args[1]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
@@ -154,10 +162,10 @@ describe('TelemetryService', () => {
     it('should default the value to 1 if not passed', async () => {
       medicDb.query.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
-      windowMock.indexedDB.databases.resolves([
-        { name: 'telemetry-2018-11-10-greg' },
-        { name: 'some-other-db' },
-        { name: 'telemetry-2018-11-09-greg' },
+      indexedDbService.getDatabaseNames.resolves([
+        'telemetry-2018-11-10-greg',
+        'some-other-db',
+        'telemetry-2018-11-09-greg',
       ]);
 
       await service.record('test');
@@ -211,11 +219,11 @@ describe('TelemetryService', () => {
     };
 
     it('should aggregate once a day and delete previous telemetry databases', async () => {
-      windowMock.indexedDB.databases.resolves([
-        { name: 'telemetry-2018-11-10-greg' },
-        { name: 'some-other-db' },
-        { name: 'telemetry-2018-11-09-greg' },
-        { name: 'telemetry-2018-10-02-greg' },
+      indexedDbService.getDatabaseNames.resolves([
+        'telemetry-2018-11-10-greg',
+        'some-other-db',
+        'telemetry-2018-11-09-greg',
+        'telemetry-2018-10-02-greg',
       ]);
       setupDbMocks();
 
@@ -283,9 +291,9 @@ describe('TelemetryService', () => {
     });
 
     it('should not aggregate when recording the day the db was created and next day it should aggregate', async () => {
-      windowMock.indexedDB.databases.resolves([
-        { name: 'telemetry-2018-11-10-greg' },
-        { name: 'some-other-db' },
+      indexedDbService.getDatabaseNames.resolves([
+        'telemetry-2018-11-10-greg',
+        'some-other-db',
       ]);
       setupDbMocks();
 
@@ -334,7 +342,7 @@ describe('TelemetryService', () => {
     });
 
     it('should aggregate from days with records skipping days without records', async () => {
-      windowMock.indexedDB.databases.resolves([]);
+      indexedDbService.getDatabaseNames.resolves([]);
       setupDbMocks();
 
       await service.record('datapoint', 12);
@@ -353,7 +361,7 @@ describe('TelemetryService', () => {
       expect(metaDb.put.notCalled).to.be.true;         // still NO telemetry has been recorded (same day)
 
       clock.tick('48:00:00'); // 2 days later ...
-      windowMock.indexedDB.databases.resolves([ { name: 'telemetry-2018-11-10-greg' } ]);
+      indexedDbService.getDatabaseNames.resolves([ 'telemetry-2018-11-10-greg' ]);
       await service.record('test', 2);
 
       expect(telemetryDb.post.calledThrice).to.be.true; // third call
@@ -367,7 +375,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.destroy.calledOnce).to.be.true;                      // from 2 days ago (not Yesterday)
 
       clock.tick(5 * 24 * 60 * 60 * 1000); // 5 more days later ...
-      windowMock.indexedDB.databases.resolves([ { name: 'telemetry-2018-11-12-greg' } ]);
+      indexedDbService.getDatabaseNames.resolves([ 'telemetry-2018-11-12-greg' ]);
       await service.record('point.a', 1);
 
       expect(telemetryDb.post.callCount).to.equal(4);       // 4th call
@@ -380,7 +388,7 @@ describe('TelemetryService', () => {
 
       // A new record is added ...
       clock.tick('02:00:00'); // 2 hours later ...
-      windowMock.indexedDB.databases.resolves([]);
+      indexedDbService.getDatabaseNames.resolves([]);
       await service.record('point.b', 0); // 1 record added
       // ...the aggregation count is the same because
       // the aggregation was already performed 2 hours ago within the same day
@@ -393,7 +401,7 @@ describe('TelemetryService', () => {
 
   describe('storeConflictedAggregate()', () => {
     it('should deal with conflicts by making the ID unique and noting the conflict in the new document', async () => {
-      windowMock.indexedDB.databases.resolves([ { name: '_pouch_telemetry-2018-11-05-greg' } ]);
+      indexedDbService.getDatabaseNames.resolves([ '_pouch_telemetry-2018-11-05-greg' ]);
 
       telemetryDb.query = sinon.stub().resolves({
         rows: [
