@@ -265,6 +265,7 @@ describe('AppComponent', () => {
   it('should display browser compatibility modal if using outdated chrome browser', async () => {
     browserDetectorService.isUsingOutdatedBrowser.returns(true);
     await getComponent();
+    await component.translationsLoaded;
 
     expect(modalService.show.calledOnce).to.be.true;
     expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
