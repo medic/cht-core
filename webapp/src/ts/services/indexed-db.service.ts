@@ -24,10 +24,19 @@ export class IndexedDbService {
       return databases?.map(db => db.name) || [];
     }
 
-    const doc = await this.dbService
-      .get({ meta: true })
-      .get(this.LOCAL_DOC);
-    return doc?.db_names || [];
+    try {
+      const doc = await this.dbService
+        .get({ meta: true })
+        .get(this.LOCAL_DOC);
+      return doc?.db_names || [];
+
+    } catch (error) {
+      if (error.status === 404) {
+        console.debug('IndexedDbService :: Local doc not created yet. Ignoring error.');
+        return [];
+      }
+      throw error;
+    }
   }
 
   async saveDatabaseName(name: string) {
