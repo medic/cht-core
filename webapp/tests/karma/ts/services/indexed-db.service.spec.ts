@@ -66,6 +66,7 @@ describe('IndexedDbService', () => {
     });
 
     it('should return empty array if no db_names in local doc', async () => {
+      metaDb.get.resolves({ db_names: [] });
       service = TestBed.inject(IndexedDbService);
 
       const dbNames = await service.getDatabaseNames();
@@ -104,6 +105,7 @@ describe('IndexedDbService', () => {
 
     it('should save name when it is new', async () => {
       metaDb.get.resolves({
+        _id: '_local/indexeddb-placeholder',
         db_names: [ 'db-a', 'db-b', 'db-c' ],
       });
       service = TestBed.inject(IndexedDbService);
@@ -159,6 +161,7 @@ describe('IndexedDbService', () => {
 
     it('should delete name when it exists in db_names', async () => {
       metaDb.get.resolves({
+        _id: '_local/indexeddb-placeholder',
         db_names: [ 'db-a', 'db-b', 'db-c' ],
       });
       service = TestBed.inject(IndexedDbService);

@@ -7,8 +7,10 @@ import { DbService } from '@mm-services/db.service';
   providedIn: 'root'
 })
 export class IndexedDbService {
-  private hasDatabasesFn = true;
   private readonly LOCAL_DOC = '_local/indexeddb-placeholder';
+  private loadingLocalDoc: Promise<IndexedDBDoc> | undefined;
+  private hasDatabasesFn: boolean;
+  private isUpdatingLocalDoc: boolean;
 
   constructor(
     private dbService: DbService,
@@ -21,60 +23,77 @@ export class IndexedDbService {
   async getDatabaseNames() {
     if (this.hasDatabasesFn) {
       const databases = await this.document.defaultView!.indexedDB.databases();
-      return databases?.map(db => db.name) || [];
+      return databases?.map(db => db.name);
     }
 
-    try {
-      const doc = await this.dbService
-        .get({ meta: true })
-        .get(this.LOCAL_DOC);
-      return doc?.db_names || [];
-
-    } catch (error) {
-      if (error.status === 404) {
-        console.debug('IndexedDbService :: Local doc not created yet. Ignoring error.');
-        return [];
-      }
-      throw error;
-    }
+    const doc = await this.getLocalDoc();
+    return doc?.db_names || [];
   }
 
   async saveDatabaseName(name: string) {
-    if (this.hasDatabasesFn || !name) {
+    if (this.hasDatabasesFn || this.isUpdatingLocalDoc) {
       return;
     }
 
-    const dbNames = await this.getDatabaseNames();
-    if (dbNames.find(dbName => dbName === name)) {
+    this.isUpdatingLocalDoc = true;
+    const localDoc = await this.getLocalDoc();
+    if (localDoc.db_names.indexOf(name) > -1) {
+      this.isUpdatingLocalDoc = false;
       return;
     }
 
-    dbNames.push(name);
-    this.updateLocalDoc(dbNames);
+    localDoc.db_names.push(name);
+    await this.updateLocalDoc(localDoc);
+    this.isUpdatingLocalDoc = false;
   }
 
   async deleteDatabaseName(name: string) {
-    if (this.hasDatabasesFn || !name) {
+    if (this.hasDatabasesFn || this.isUpdatingLocalDoc) {
       return;
     }
 
-    const dbNames = await this.getDatabaseNames();
-    if (!dbNames.length) {
+    this.isUpdatingLocalDoc = true;
+    const localDoc = await this.getLocalDoc();
+    const dbNameIdx = localDoc.db_names.indexOf(name);
+    if (dbNameIdx === -1) {
+      this.isUpdatingLocalDoc = false;
       return;
     }
 
-    const dbNameIdx = dbNames?.indexOf(name);
-    if (dbNameIdx < 0) {
-      return;
-    }
-
-    dbNames.splice(dbNameIdx, 1);
-    this.updateLocalDoc(dbNames);
+    localDoc.db_names.splice(dbNameIdx, 1);
+    await this.updateLocalDoc(localDoc);
+    this.isUpdatingLocalDoc = false;
   }
 
-  private updateLocalDoc(dbNames: string[]) {
-    return this.dbService
+  private async updateLocalDoc(localDoc) {
+    await this.dbService
       .get({ meta: true })
-      .put({ _id: this.LOCAL_DOC, db_names: dbNames });
+      .put(localDoc);
+    this.loadingLocalDoc = undefined; // To fetch again and get the new doc's _rev number.
   }
+
+  private async getLocalDoc(): Promise<IndexedDBDoc> {
+    // Avoids "Failed to execute transaction on IDBDatabase" exception.
+    if (!this.loadingLocalDoc) {
+      this.loadingLocalDoc = this.dbService
+        .get({ meta: true })
+        .get(this.LOCAL_DOC);
+    }
+
+    let localDoc;
+    try {
+      localDoc = await this.loadingLocalDoc;
+    } catch (error) {
+      if (error.status !== 404) {
+        throw error;
+      }
+      console.debug('IndexedDbService :: Local doc not created yet. Ignoring error.');
+    }
+    return localDoc ? { ...localDoc } : { _id: this.LOCAL_DOC, db_names: [] };
+  }
+}
+
+interface IndexedDBDoc {
+  _id: string;
+  db_names: string[];
 }
