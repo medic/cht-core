@@ -140,6 +140,11 @@ const request = (options, { debug } = {}) => { //NOSONAR
   }
 
   options.transform = (body, response, resolveWithFullResponse) => {
+    if (debug) {
+      console.log('RESPONSE');
+      console.log(response.statusCode);
+      console.log(response.body);
+    }
     // we might get a json response for a non-json request.
     const contentType = response.headers['content-type'];
     if (contentType?.startsWith('application/json') && !options.json) {
