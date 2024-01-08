@@ -2,6 +2,7 @@ const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
 const moment = require('moment');
+const semver = require('semver');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -171,9 +172,10 @@ describe('routing', () => {
       return Promise.all([
         utils.request(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
-        utils.requestOnTestDb('/_design/medic-client')
+        utils.requestOnTestDb('/_design/medic-client'),
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
-        const deployInfo = Object.assign(ddoc.deploy_info, ddoc.build_info, { version: ddoc.version });
+        expect(semver.valid(deployInfoOnline.version)).to.be.ok;
+        const deployInfo = Object.assign(ddoc.deploy_info, ddoc.build_info);
         expect(deployInfoOnline).to.deep.equal(deployInfo);
         expect(deployInfoOffline).to.deep.equal(deployInfo);
       });

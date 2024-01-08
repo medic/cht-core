@@ -61,8 +61,7 @@ const dbInfos = [
 ];
 
 const setUpMocks = () => {
-  sinon.stub(db.medic, 'get').withArgs('_design/medic')
-    .resolves({ deploy_info: { version: '5.3.2' } });
+  sinon.stub(db.medic, 'get').withArgs('_design/medic').resolves({ build_info: { version: '5.3.2' } });
   sinon.stub(request, 'get')
     .withArgs(sinon.match({ url: environment.serverUrl })).resolves({ version: 'v3.3.3' })
     .withArgs(sinon.match({ url: `${environment.couchUrl}/_changes` })).resolves({ pending: 24 });

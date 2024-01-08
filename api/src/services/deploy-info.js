@@ -12,7 +12,7 @@ const getDeployInfo = async () => {
 
   try {
     const ddoc = await db.medic.get(ddocs.getId(environment.ddoc));
-    deployInfoCache = Object.assign({}, ddoc.build_info, ddoc.deploy_info, { version: ddoc.version });
+    deployInfoCache = { version: ddoc.version, ...ddoc.build_info, ...ddoc.deploy_info };
 
     return deployInfoCache;
   } catch (err) {

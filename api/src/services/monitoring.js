@@ -23,11 +23,9 @@ const fromEntries = (keys, value) => {
 const getSequenceNumber = seq => {
   if (seq) {
     const parts = seq.split('-');
-    if (parts.length) {
-      const result = parseInt(parts[0]);
-      if (!isNaN(result)) {
-        return result;
-      }
+    const result = parseInt(parts?.[0]);
+    if (!isNaN(result)) {
+      return result;
     }
   }
   return -1;
@@ -36,7 +34,7 @@ const getSequenceNumber = seq => {
 const getAppVersion = () => {
   return db.medic
     .get('_design/medic')
-    .then(ddoc => (ddoc.deploy_info && ddoc.deploy_info.version) || ddoc.version)
+    .then(ddoc => ddoc.build_info?.version || ddoc.version)
     .catch(err => {
       logger.error('Error fetching app version: %o', err);
       return '';
@@ -194,7 +192,7 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
     .then(counts => {
       const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
       counts.forEach((count, idx) => {
-        const row = count && count.rows && count.rows[0];
+        const row = count?.rows?.[0];
         if (row) {
           result[MESSAGE_QUEUE_STATUS_KEYS[idx]] = row.value;
         }
