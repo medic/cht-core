@@ -11,6 +11,8 @@ import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 
+import * as FileManager from '../../../../src/js/enketo/file-manager.js';
+
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
@@ -1017,30 +1019,32 @@ describe('Enketo service', () => {
     });
 
     it('should save attachments', () => {
-      const jqFind = $.fn.find;
-      sinon.stub($.fn, 'find');
-      //@ts-ignore
-      $.fn.find.callsFake(jqFind);
-
-      $.fn.find
-        //@ts-ignore
-        .withArgs('input[type=file][name="/my-form/my_file"]')
-        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
-
       form.validate.resolves(true);
       const content = loadXML('file-field');
 
       form.getDataStr.returns(content);
       dbGetAttachment.resolves('<form/>');
+      const image = {
+        name: 'some_name.png',
+        type: 'image/png'
+      };
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([ image ]);
 
       return service
         .completeNewReport('my-form', form, { doc: { } }, { _id: 'my-user', phone: '8989' })
-        .then(() => {
-          expect(AddAttachment.calledOnce);
+        .then(([actual]) => {
+          expect(actual.fields).to.deep.equal({
+            name: 'Mary',
+            age: '10',
+            gender: 'f',
+            my_file: 'some_name.png',
+          });
 
-          expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-          expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-          expect(AddAttachment.args[0][3]).to.equal('image');
+          expect(AddAttachment.calledOnce);
+          expect(AddAttachment.args[0][1]).to.equal('user-file-some_name.png');
+          expect(AddAttachment.args[0][2]).to.deep.equal(image);
+          expect(AddAttachment.args[0][3]).to.equal('image/png');
         });
     });
 
@@ -1058,50 +1062,16 @@ describe('Enketo service', () => {
             name: 'Mary',
             age: '10',
             gender: 'f',
-            my_file: '',
+            my_file: 'binary-0',
           });
-          expect(AddAttachment.callCount).to.equal(1);
 
-          expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][1]).to.equal('user-file-binary-0');
           expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
           expect(AddAttachment.args[0][3]).to.equal('image/png');
         });
     });
 
-    it('should assign attachment names relative to the form name not the root node name', () => {
-      const jqFind = $.fn.find;
-      sinon.stub($.fn, 'find');
-      //@ts-ignore
-      $.fn.find.callsFake(jqFind);
-      $.fn.find
-        //@ts-ignore
-        .withArgs('input[type=file][name="/my-root-element/my_file"]')
-        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
-      $.fn.find
-        //@ts-ignore
-        .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
-        .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
-      form.validate.resolves(true);
-      const content = loadXML('deep-file-fields');
-
-      form.getDataStr.returns(content);
-      dbGetAttachment.resolves('<form/>');
-
-      return service
-        .completeNewReport('my-form-internal-id', form, { doc: { } }, { _id: 'my-user', phone: '8989' })
-        .then(() => {
-          expect(AddAttachment.callCount).to.equal(2);
-
-          expect(AddAttachment.args[0][1]).to.equal('user-file/my-form-internal-id/my_file');
-          expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-          expect(AddAttachment.args[0][3]).to.equal('image');
-
-          expect(AddAttachment.args[1][1])
-            .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
-          expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
-          expect(AddAttachment.args[1][3]).to.equal('mytype');
-        });
-    });
   });
 
   describe('multimedia', () => {

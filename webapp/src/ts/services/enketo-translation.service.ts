@@ -35,16 +35,12 @@ export class EnketoTranslationService {
     path = path || '';
     const result = {};
     this.withElements(data).forEach((n:any) => {
-      const typeAttribute = n.attributes.getNamedItem('type');
       const updatedPath = path + '/' + n.nodeName;
       let value;
 
       const hasChildren = this.withElements(n.childNodes).length > 0;
       if (hasChildren) {
         value = this.nodesToJs(n.childNodes, repeatPaths, updatedPath);
-      } else if (typeAttribute && typeAttribute.value === 'binary') {
-        // this is attached to the doc instead of inlined
-        value = '';
       } else {
         value = n.textContent;
       }

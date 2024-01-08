@@ -461,37 +461,21 @@ export class EnketoService {
     }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
 
-    const attach = (elem, file, type, alreadyEncoded, xpath?) => {
-      xpath = xpath || Xpath.getElementXPath(elem);
-      // replace instance root element node name with form internal ID
-      const filename = 'user-file' +
-        (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
-    };
-
     const files = FileManager.getCurrentFiles();
     for (const file of files) {
       this.attachmentService.add(doc, 'user-file-' + file.name, file, file.type, false);
     }
 
-    // $record
-    //   .find('[type=file]')
-    //   .each((idx, element) => {
-    //     const xpath = Xpath.getElementXPath(element);
-    //     const $input: any = $('input[type=file][name="' + xpath + '"]');
-    //     const file = $input[0].files[0];
-    //     if (file) {
-    //       attach(element, file, file.type, false, xpath);
-    //     }
-    //   });
-
     $record
       .find('[type=binary]')
       .each((idx, element) => {
-        const file = $(element).text();
+        const $element = $(element);
+        const file = $element.text();
         if (file) {
-          $(element).text('');
-          attach(element, file, 'image/png', true);
+          const name = `binary-${idx}`;
+          const type = 'image/png';
+          $element.text(name);
+          this.attachmentService.add(doc, 'user-file-' + name, file, type, true);
         }
       });
 

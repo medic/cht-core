@@ -26,13 +26,15 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
-import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { cloneDeep } from 'lodash-es';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+
+import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
+import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -1049,15 +1051,11 @@ describe('Form service', () => {
 
     describe('Saving attachments', () => {
       it('should save attachments', () => {
-        const jqFind = $.fn.find;
-        sinon.stub($.fn, 'find');
-        //@ts-ignore
-        $.fn.find.callsFake(jqFind);
-
-        $.fn.find
-          //@ts-ignore
-          .withArgs('input[type=file][name="/my-form/my_file"]')
-          .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+        const image = {
+          name: 'some_name.png',
+          type: 'image/png'
+        };
+        sinon.stub(FileManager, 'getCurrentFiles').returns([ image ]);
 
         form.validate.resolves(true);
         const content = loadXML('file-field');
@@ -1075,9 +1073,9 @@ describe('Form service', () => {
             expect(AddAttachment.calledOnce);
             expect(saveDocsSpy.calledOnce);
 
-            expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-            expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-            expect(AddAttachment.args[0][3]).to.equal('image');
+            expect(AddAttachment.args[0][1]).to.equal('user-file-some_name.png');
+            expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image/png', name: 'some_name.png' });
+            expect(AddAttachment.args[0][3]).to.equal('image/png');
 
             expect(globalActions.setSnackbarContent.notCalled);
           });

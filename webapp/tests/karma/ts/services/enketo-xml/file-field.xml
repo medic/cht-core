@@ -2,5 +2,5 @@
   <name>Mary</name>
   <age>10</age>
   <gender>f</gender>
-  <my_file type="file">some image name.png</my_file>
+  <my_file type="file">some_name.png</my_file>
 </my-form>
