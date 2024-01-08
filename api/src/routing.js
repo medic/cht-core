@@ -28,6 +28,7 @@ const exportData = require('./controllers/export-data');
 const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
+const usersDevices = require('./controllers/users-devices');
 const { people, places } = require('@medic/contacts')(config, db);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
@@ -413,6 +414,8 @@ app.get('/api/v1/forms/', (req, res) => {
 app.get('/api/v1/forms', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
+
+app.get('/api/v1/users-devices', usersDevices.get);
 
 app.get('/api/v1/users', users.get);
 app.get('/api/v2/users', users.v2.get);
