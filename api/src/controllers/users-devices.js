@@ -9,11 +9,10 @@ module.exports = {
       // TODO: refine permissions
       // await auth.check(req, 'can_view_users');
 
-      // const filename = `users-devices-${moment().format('YYYYMMDDHHmm')}.csv`;
+      const filename = `users-devices-${moment().format('YYYYMMDDHHmm')}.csv`;
       res
-        .set('Content-Type', 'application/json');
-      //   .set('Content-Type', 'text/csv')
-      //   .set('Content-Disposition', 'attachment; filename=' + filename);
+        .set('Content-Type', 'text/csv')
+        .set('Content-Disposition', 'attachment; filename=' + filename);
 
       const telemetry = await db.medicUsersMeta.query('users-meta/device_telemetry_entries', { include_docs: true });
       const userByDeviceId = {};
@@ -55,7 +54,14 @@ module.exports = {
         }
       });
 
-      res.send(userByDeviceId);
+      let csv = '"user","device","webview","apk","android","cht"\n';
+      for (const [user, devices] of Object.entries(userByDeviceId)) {
+        for (const metas of devices) {
+          csv += `"${user}","${metas.deviceId}","${metas.webview}","${metas.apk}","${metas.android}","${metas.cht}"\n`;
+        }
+      }
+
+      res.send(csv);
 
       // TODO: use a stream & pipe it to `res`
       /*// To respond as quickly to the request as possible
