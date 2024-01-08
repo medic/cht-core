@@ -82,7 +82,7 @@ module.exports = new Factory()
     };
     if (groupLmp.g_lmp_method === 'calendar') {
       groupLmp.g_lmp_calendar = moment()
-        .subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month')
+        .subtract(Faker.faker.number.int({ min: 1, max: 9 }), 'month')
         .format('YYYY-MM-DD');
       groupLmp.g_lmp_date_raw = groupLmp.g_lmp_calendar;
       groupLmp.g_lmp_date_8601 = groupLmp.g_lmp_calendar;
@@ -146,13 +146,13 @@ module.exports = new Factory()
       if (groupAncVisit.prophylaxis_taken === 'yes') {
         groupAncVisit.last_dose = Faker.faker.helpers.arrayElement(['ipt_1', 'ipt_2', 'ipt_3', 'ipt_4']);
         groupAncVisit.last_dose_date = moment()
-          .subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month')
+          .subtract(Faker.faker.number.int({ min: 1, max: 120 }), 'month')
           .format('YYYY-MM-DD');
       }
       if (groupAncVisit.tt_imm === 'yes') {
         groupAncVisit.tt_received = Faker.faker.helpers.arrayElement(['tt_1', 'tt_2']);
         groupAncVisit.tt_date = moment()
-          .subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month')
+          .subtract(Faker.faker.number.int({ min: 1, max: 120 }), 'month')
           .format('YYYY-MM-DD');
 
       }
@@ -162,8 +162,8 @@ module.exports = new Factory()
   .attr('g_nutrition_screening', ['group_lmp'], (groupLmp) => {
     if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
       const gNutritionScreening = {
-        muac_score: Faker.faker.datatype.number(),
-        mother_weight: Faker.faker.datatype.number(),
+        muac_score: Faker.faker.number.int(),
+        mother_weight: Faker.faker.number.int(),
         last_fed: Faker.faker.helpers.arrayElement(['1', '2', '3', '4', '5', '6', '7']),
         last_food: [],
         mother_hiv_status: Faker.faker.helpers.arrayElement(...POSITIVE_NEGATIVE, 'unknown', 'undisclosed'),
@@ -171,7 +171,7 @@ module.exports = new Factory()
       };
       if (Faker.faker.datatype.boolean()) {
         gNutritionScreening.last_food.push(
-          Faker.faker.helpers.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 }))
+          Faker.faker.helpers.uniqueArray(LAST_FOOD, Faker.faker.number.int({ min: 1, max: 3 }))
         );
       } else {
         gNutritionScreening.last_food.push(NONE);
@@ -196,11 +196,11 @@ module.exports = new Factory()
   .attr('group_risk_factors', ['group_lmp'], (groupLmp) => {
     if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
       const groupRiskFactors = {
-        gravida: Faker.faker.datatype.number({ min: 0, max: 4 }),
+        gravida: Faker.faker.number.int({ min: 0, max: 4 }),
         parity: null,
         g_risk_factors: []
       };
-      groupRiskFactors.parity = Faker.faker.datatype.number({ min: 0, max: groupRiskFactors.gravida });
+      groupRiskFactors.parity = Faker.faker.number.int({ min: 0, max: groupRiskFactors.gravida });
       const noRisk = Faker.faker.datatype.boolean();
       if (noRisk) {
         groupRiskFactors.g_risk_factors.push('r8');
@@ -209,12 +209,12 @@ module.exports = new Factory()
         if (firstPregnancy) {
           groupRiskFactors.g_risk_factors.push(Faker.faker.helpers.uniqueArray(
             ['r5', 'r6'],
-            Faker.faker.datatype.number({ min: 0, max: 2 })
+            Faker.faker.number.int({ min: 0, max: 2 })
           ));
         } else {
           groupRiskFactors.g_risk_factors.push(Faker.faker.helpers.uniqueArray(
             ['r2', 'r3', 'r4', 'r5', 'r6', 'r7'],
-            Faker.faker.datatype.number({ min: 0, max: 6 })
+            Faker.faker.number.int({ min: 0, max: 6 })
           ));
         }
       }
@@ -225,7 +225,7 @@ module.exports = new Factory()
     if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
       const groupDangerSigns = {
         g_danger_signs: Faker.faker.helpers.uniqueArray(['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9'],
-          Faker.faker.datatype.number({ min: 0, max: 9 }))
+          Faker.faker.number.int({ min: 0, max: 9 }))
       };
       return groupDangerSigns;
     }

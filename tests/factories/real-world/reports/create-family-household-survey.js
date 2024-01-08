@@ -9,7 +9,7 @@ module.exports = new Factory()
     }
     return Faker.faker.helpers.uniqueArray(
       ['boiling', 'filtration', 'chlorination', 'other'],
-      Faker.faker.datatype.number({ min: 1, max: 4 })
+      Faker.faker.number.int({ min: 1, max: 4 })
     ).join(' ');
   })
   .attr('kitchen', Faker.faker.datatype.boolean)
