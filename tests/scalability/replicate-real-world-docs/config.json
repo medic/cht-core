@@ -1,21 +1,20 @@
 {
-  "data_directory": "/Users/marialorenarodriguezviruel/medic-workspace/generated-data/main-script-data/",
-  "url": "localhost",
+  "url": "https://127-0-0-1.my.local-ip.co:8443/medic",
   "users": [
     {
-      "name": "jalentest-districthospitaldistricthospital0healthcenter0user0",
+      "name": "lilianatestcomplete2-districthospitaldistricthospital0healthcenter0user0",
       "pass": "Secret_1",
-      "contact": "b365d33a-31d6-4db3-9e10-a31eace12422"
+      "contact": "f10da95d-2b13-44c8-a633-388187c53681"
     },
     {
-      "name": "jonastest-districthospitaldistricthospital0healthcenter1user0",
+      "name": "jamietestcomplete2-districthospitaldistricthospital0healthcenter1user0",
       "pass": "Secret_1",
-      "contact": "3519f217-3f76-46b7-a91a-5a1f24f5f4da"
+      "contact": "39fe4393-8d34-4885-a989-668f409a5e3c"
     },
     {
-      "name": "lysannetest-districthospitaldistricthospital0healthcenter2user0",
+      "name": "ashlytestcomplete2-districthospitaldistricthospital0healthcenter2user0",
       "pass": "Secret_1",
-      "contact": "62570443-b08d-4652-aebc-4dcbdb1035ec"
+      "contact": "e5a20af5-2bba-468b-b315-00db6833ff1d"
     }
   ]
 }
