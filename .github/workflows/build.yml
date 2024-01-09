@@ -79,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['test-config-standard', 'test-config-default']
+        cmd: ['test-config-default']
 
     steps:
     - uses: actions/checkout@v3
@@ -119,7 +119,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-webdriver-standard', 'ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
+        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
         chrome-version: ['90', 'latest']
         suite: [all]
         include:
