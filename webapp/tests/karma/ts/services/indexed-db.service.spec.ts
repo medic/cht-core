@@ -71,7 +71,7 @@ describe('IndexedDbService', () => {
 
       const dbNames = await service.getDatabaseNames();
 
-      expect(dbNames.length).to.equal(0);
+      expect(dbNames?.length).to.equal(0);
     });
   });
 
