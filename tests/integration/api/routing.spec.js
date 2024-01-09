@@ -174,6 +174,7 @@ describe('routing', () => {
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
         utils.requestOnTestDb('/_design/medic-client'),
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
+        console.log(JSON.stringify(deployInfoOnline, null, 2));
         expect(semver.valid(deployInfoOnline.version)).to.be.ok;
         const deployInfo = Object.assign(ddoc.deploy_info, ddoc.build_info);
         expect(deployInfoOnline).to.deep.equal(deployInfo);
