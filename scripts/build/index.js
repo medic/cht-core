@@ -37,7 +37,7 @@ const getApiUrl = (pathname = '') => {
   return apiUrl.toString();
 };
 
-const releaseName = TAG || BRANCH || `${packageJson.version}-local-development`;
+const releaseName = TAG || `${packageJson.version}-${BRANCH}` || `${packageJson.version}-local-development`;
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
@@ -198,7 +198,7 @@ const exec = async (command, args, options=({})) => {
       if (code === 0) {
         return resolve();
       }
-      return reject(`${command} exited with ${code}`);
+      return reject(new Error(`${command} exited with ${code}`));
     }); 
   });
 };
