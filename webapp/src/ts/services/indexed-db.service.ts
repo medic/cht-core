@@ -22,7 +22,7 @@ export class IndexedDbService {
 
   async getDatabaseNames() {
     if (this.hasDatabasesFn) {
-      const databases = await this.document.defaultView!.indexedDB.databases();
+      const databases = await this.document.defaultView?.indexedDB?.databases();
       return databases?.map(db => db.name);
     }
 
