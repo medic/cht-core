@@ -4,10 +4,10 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
 
 // skipping for now per: https://github.com/medic/cht-core/issues/8603
 // and https://github.com/medic/cht-core/pull/8762#pullrequestreview-1784800918. Be sure to uncomment next line:
-// const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
 describe.skip('Pregnancy Visit', () => {
   before(async () => {
     await pregnancyVisitForm.uploadPregnancyVisitForm();
