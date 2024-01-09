@@ -174,11 +174,11 @@ describe('routing', () => {
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
         utils.requestOnTestDb('/_design/medic-client'),
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
-        console.log(JSON.stringify(deployInfoOnline, null, 2));
         expect(semver.valid(deployInfoOnline.version)).to.be.ok;
         const deployInfo = Object.assign(ddoc.deploy_info, ddoc.build_info);
-        expect(deployInfoOnline).to.deep.equal(deployInfo);
-        expect(deployInfoOffline).to.deep.equal(deployInfo);
+        // for historical reasons, for a branch the version in the ddoc is the branch name.
+        expect(deployInfoOnline).excluding('version').to.deep.equal(deployInfo);
+        expect(deployInfoOffline).excluding('version').to.deep.equal(deployInfo);
       });
     });
   });
