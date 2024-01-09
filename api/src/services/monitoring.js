@@ -4,6 +4,7 @@ const moment = require('moment');
 const db = require('../db');
 const environment = require('../environment');
 const logger = require('../logger');
+const deployInfoService = require('./deploy-info');
 
 const DBS_TO_MONITOR = {
   'medic': environment.db,
@@ -31,14 +32,14 @@ const getSequenceNumber = seq => {
   return -1;
 };
 
-const getAppVersion = () => {
-  return db.medic
-    .get('_design/medic')
-    .then(ddoc => ddoc.build_info?.version || ddoc.version)
-    .catch(err => {
-      logger.error('Error fetching app version: %o', err);
-      return '';
-    });
+const getAppVersion = async () => {
+  try {
+    const deployInfo = await deployInfoService.get();
+    return deployInfo.version;
+  } catch (err) {
+    logger.error('Error fetching app version: %o', err);
+    return '';
+  }
 };
 
 const getSentinelProcessedSeq = () => {
