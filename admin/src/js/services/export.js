@@ -6,6 +6,7 @@ const KNOWN_EXPORTS = [
   'feedback',
   'messages',
   'reports',
+  'usersDevices',
 ];
 
 angular.module('inboxServices').factory('Export',
