@@ -107,6 +107,28 @@ const selectYesNoOption = async (selector, value = 'yes') => {
   return value === 'yes';
 };
 
+const getDBObjectWidgetValues = async (field) => {
+  const widget = $(`[data-contains-ref-target="${field}"] .selection`);
+  await (await widget).waitForClickable();
+  await (await widget).click();
+
+  const dropdown = $('.select2-dropdown--below');
+  await (await dropdown).waitForDisplayed();
+  const firstElement = $('.select2-results__options > li');
+  await (await firstElement).waitForClickable();
+
+  const list = await $$('.select2-results__options > li');
+  const contacts = [];
+  for (const item of list) {
+    contacts.push({
+      name: await (item.$('.name').getText()),
+      click: () => item.click(),
+    });
+  }
+
+  return contacts;
+};
+
 module.exports = {
   getFormTitle,
   getErrorMessage,
@@ -125,4 +147,5 @@ module.exports = {
   currentFormView,
   formTitle,
   selectYesNoOption,
+  getDBObjectWidgetValues,
 };

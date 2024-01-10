@@ -9,7 +9,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ServicesActions } from '@mm-actions/services';
 import { ChangesService } from '@mm-services/changes.service';
-import { SearchService } from '@mm-services/search.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
@@ -52,7 +52,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
   appending = false;
   moreItems: boolean;
-  filters:any = {};
+  filters: Filter = {};
   hasReports: boolean;
   selectMode = false;
   selectModeAvailable = false;
