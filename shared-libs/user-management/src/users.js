@@ -504,12 +504,10 @@ const isDbAdmin = user => {
 };
 
 const saveUserUpdates = async (user) => {
-  const savedDoc = await db.users.put(user);
-
   if (user.password && await isDbAdmin(user)) {
-    await couchSettings.updateAdminPassword(user.name, user.password);
+    throw error400('Admin passwords must be changed manually in the database');
   }
-
+  const savedDoc = await db.users.put(user);
   return {
     id: savedDoc.id,
     rev: savedDoc.rev

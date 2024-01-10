@@ -128,7 +128,6 @@ describe('Pregnancy form tests', () => {
     it('shows summary when this is the first pregnancy for the woman and there are all the risk factors', async() => {
       const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger({
         firstPregnancy: 'yes',
-        miscarriages: 'no',
         conditions: ['heart_condition', 'asthma', 'high_blood_pressure', 'diabetes'],
         additionalFactors: ['yes', 'underweight']
       }));

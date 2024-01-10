@@ -1,6 +1,7 @@
 const should = require('chai').should();
 
 const sinon = require('sinon');
+const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 
@@ -27,9 +28,14 @@ describe('Upgrade controller', () => {
     sinon.stub(serverUtils, 'error');
     sinon.stub(service, 'upgrade').resolves();
     sinon.stub(service, 'complete').resolves();
+
+    environment.buildsUrl = 'https://mybuild.com';
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    environment.buildsUrl = '';
+    sinon.restore();
+  });
 
   describe('Upgrade', () => {
     it('checks that user has the right permissions', () => {
@@ -193,6 +199,7 @@ describe('Upgrade controller', () => {
       service.indexerProgress.callCount.should.equal(1);
       res.json.callCount.should.equal(1);
       res.json.args[0].should.deep.equal([ {
+        buildsUrl: 'https://mybuild.com',
         upgradeDoc: { the: 'upgrade' },
         indexers: ['indexers'],
       }]);

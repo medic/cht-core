@@ -344,47 +344,6 @@ describe('Users API', () => {
 
     });
 
-    it('should allow to update the admin password and login successfully', async () => {
-      const newPassword = 'medic.456';
-      const otherAdmin = {
-        username: 'admin2',
-        password: 'medic.123',
-        roles: [ 'admin' ],
-        contact: { name: 'Philip' },
-        place: newPlaceId,
-      };
-      await utils.createUsers([ otherAdmin ]);
-      // Set admin user's password in CouchDB config.
-      const membership = await utils.request({ path: '/_membership' });
-      const nodes = membership.all_nodes;
-      for (const nodeName of nodes) {
-        await utils.request({
-          method: 'PUT',
-          path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
-          body: `"${otherAdmin.password}"`,
-        });
-      }
-
-      // Update password with new value.
-      const userResponse = await utils
-        .request({
-          path: `/api/v1/users/${otherAdmin.username}`,
-          method: 'POST',
-          body: { password: newPassword }
-        })
-        .catch((err) => {
-          chai.assert.fail(err);
-        });
-
-      chai.expect(userResponse.user).to.not.be.undefined;
-      chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
-      chai.expect(userResponse['user-settings']).to.not.be.undefined;
-      chai.expect(userResponse['user-settings'].id).to.equal('org.couchdb.user:admin2');
-      // Old password shouldn't work.
-      await expectPasswordLoginToFail(otherAdmin);
-      await expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
-    });
-
   });
 
   describe('/api/v1/users-info', () => {
