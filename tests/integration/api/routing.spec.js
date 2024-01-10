@@ -184,8 +184,8 @@ describe('routing', () => {
           version: BRANCH ? ddoc.build_info.build : ddoc.build_info.version
         };
         // for historical reasons, for a branch the version in the ddoc is the branch name.
-        expect(deployInfoOnline).excluding('version').to.deep.equal(deployInfo);
-        expect(deployInfoOffline).excluding('version').to.deep.equal(deployInfo);
+        expect(deployInfoOnline).to.deep.equal(deployInfo);
+        expect(deployInfoOffline).to.deep.equal(deployInfo);
       });
     });
   });
