@@ -175,7 +175,14 @@ describe('routing', () => {
         utils.requestOnTestDb('/_design/medic-client'),
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
         expect(semver.valid(deployInfoOnline.version)).to.be.ok;
-        const deployInfo = Object.assign(ddoc.deploy_info, ddoc.build_info);
+        expect(semver.valid(deployInfoOffline.version)).to.be.ok;
+
+        const { BRANCH } = process.env;
+        const deployInfo = {
+          ...ddoc.deploy_info,
+          ...ddoc.build_info,
+          version: BRANCH ? ddoc.build_info.build : ddoc.build_info.version
+        };
         // for historical reasons, for a branch the version in the ddoc is the branch name.
         expect(deployInfoOnline).excluding('version').to.deep.equal(deployInfo);
         expect(deployInfoOffline).excluding('version').to.deep.equal(deployInfo);
