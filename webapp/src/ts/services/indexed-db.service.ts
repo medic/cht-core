@@ -14,7 +14,7 @@ export class IndexedDbService {
 
   constructor(
     private dbService: DbService,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
   ) {
     // Firefox doesn't support the databases() function. Issue: https://github.com/medic/cht-core/issues/8777
     this.hasDatabasesFn = !!this.document.defaultView?.indexedDB?.databases;
