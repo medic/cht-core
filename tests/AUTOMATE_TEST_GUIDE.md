@@ -4,15 +4,11 @@ This style guide provides editorial guidelines for anyone creating new automated
 
 There are three files that are the base of every new automated test case, the most important one is the `spec` file, which contains the actual test that will be executed. 
 
-Right now the automated tests cover different [CHT Configs](../config/), consider the following setups when writing a new test:
+Right now the automated tests cover different [CHT Configs](/config), consider the following setups when writing a new test:
 * **default**
     * Config file: [`../tests/e2e/default/wdio.conf.js`](e2e/default/wdio.conf.js)
     * Name convention for the `spec` file: `../tests/e2e/default/*/<name>.wdio-spec.js`
     * Command to execute the tests that belong to this config:  `npm run wdio-local`
-* **standard**
-    * Config file: [`../tests/e2e/standard/wdio.conf.js`](e2e/standard/wdio.conf.js)
-    * Name convention for the `spec` file: `../tests/e2e/standard/*/<name>.wdio-spec.js`
-    * Command to execute the tests that belong to this config:  `npm run standard-wdio-local`
 
 **Important:** Make sure the `spec` file follows the name convention correctly, otherwise the file won't be executed. 
 
@@ -31,11 +27,9 @@ Right now the automated tests cover different [CHT Configs](../config/), conside
 
 * e2e testing file. Use the correct name convention when working with the following configs:
     - default: (`../tests/e2e/default/*/<name>.wdio-spec.js`) 
-    - standard: (`../tests/e2e/standard/*/<name>.wdio-spec.js`)
 
     This file should contain **only** the scenario setup and assertions of the test that is going to be executed. All the DOM queries, logging, contact creation and data assignments should be delegated to the Page Object file and the Data file. This will increase test readability and code reusability. For a better understanding follow these files as examples:
     * default config: [`../tests/e2e/default/enketo/pregnancy-visit.wdio-spec.js`](e2e/default/enketo/pregnancy-visit.wdio-spec.js).
-    * standard config: [`../test/e2e/standard/enketo/immunization-visit.wdio-spec.js`](e2e/standard/enketo/immunization-visit.wdio-spec.js)
 
 ## Tips to write test cases
 ### File Structure (spec files)
@@ -58,18 +52,18 @@ Ex:
 * Since every test is created by _"selectors"_, it makes sense to locate them into a folder that represents the page being tested and not the feature. Please try to locate every test file in the correct folder.
 * Every file name should use `dash-case` (`-`). Do not use `snake-case` (`_`) nor `camelCase`. Please consider the following examples:
   * Correct:
-    * `immunizacion-visit.wdio-spec.js`
+    * `pregnancy-visit.wdio-spec.js`
   * Incorrect:
-    * `immunizacion_visit.wdio-spec.js`
-    * `immunizacionVisit.wdio-spec.js`
-    * `ImmunizacionVisit.wdio-spec.js`
-* Whenever possible avoid repeating the folder name in the file name. Please consider the following examples where the file is located in the path `e2e/standard/enketo`:
+    * `pregnancy_visit.wdio-spec.js`
+    * `pregnancyVisit.wdio-spec.js`
+    * `PregnancyVisit.wdio-spec.js`
+* Whenever possible avoid repeating the folder name in the file name. Please consider the following examples where the file is located in the path `e2e/default/enketo`:
   * Correct:
-    * `immunizacion-visit.wdio-spec.js`
+    * `pregnancy-visit.wdio-spec.js`
   * Incorrect:
-    * `immunizacion-visit-enketo.wdio-spec.js`
-    * `immunizacion-visit-standard.wdio-spec.js`
-    * `immunizacion-visit-enketo-standard.wdio-spec.js`
+    * `pregnancy-visit-enketo.wdio-spec.js`
+    * `pregnancy-visit-default.wdio-spec.js`
+    * `pregnancy-visit-enketo-default.wdio-spec.js`
 
 ### Adding identifiers
 In some cases, adding a unique identifier to an element may be necessary. This could be a piece of data related to the element, or a unique name (which can be done by adding a `test-` attribute to the app code).
@@ -82,9 +76,6 @@ Adding a test identifier is a good option for cases where a CSS selector would o
 
 ### Notes:
 
-* Sometimes the same functionality behaves differently depending on the config, to manage those scenarios a new file should be created to overwrite the method that needs some variations and extend from the default file to have access to all of its methods.
-For a better understanding please take a look at the file [`../page-objects/standard/contacts/contacts.wdio.page.js`](page-objects/standard/contacts/contacts.wdio.page.js) that has a different implementation for the method `addPlace()` and imports everything else from the file [`../page-objects/default/contacts/contacts.wdio.page`](page-objects/default/contacts/contacts.wdio.page.js)
-
 * We decided to separate every functionality in files/folders because we want to make sure that we can reuse as much code as possible. If something new is implemented and might be used for another test, then please isolate the code in a separate file, so it can be reused in future tests.
 
-* If the new test is not associated to a specific configuration, please locate the test inside the correct folder of the default config [`e2e/default/*`](e2e/default/). 
+* If the new test is not associated to a specific configuration, please locate the test inside the correct folder of the default config [`e2e/default/*`](e2e/default). 

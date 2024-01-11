@@ -4,9 +4,7 @@ const modalPage = require('../common/modal.wdio.page');
 const languageDropDown = () => $('#language');
 
 const openEditSettings = async () => {
-  const links = await $('.content .configuration');
-  await links.waitForDisplayed();
-  await (await links.$$('.btn-link'))[1].click();
+  await commonPage.openEditProfile();
   //modals have an animation and the click might land somewhere else
   await browser.pause(500);
 };

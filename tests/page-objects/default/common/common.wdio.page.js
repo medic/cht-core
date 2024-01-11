@@ -43,7 +43,6 @@ const snackbarAction = () => $('#snackbar.active .snackbar-action');
 //Hamburguer menu
 //User settings
 const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
-const UPDATE_PASSWORD = '.user .configuration.page i.fa-key';
 const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
 const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
@@ -392,8 +391,11 @@ const openUserSettings = async () => {
 const openUserSettingsAndFetchProperties = async () => {
   await (await $(USER_SETTINGS)).waitForClickable();
   await (await $(USER_SETTINGS)).click();
-  await (await $(UPDATE_PASSWORD)).waitForDisplayed();
   await (await $(EDIT_PROFILE)).waitForDisplayed();
+};
+
+const openEditProfile = async () => {
+  await (await $(EDIT_PROFILE)).click();
 };
 
 const openAppManagement = async () => {
@@ -474,6 +476,7 @@ module.exports = {
   openAboutMenu,
   openUserSettingsAndFetchProperties,
   openUserSettings,
+  openEditProfile,
   openReportBugAndFetchProperties,
   openAppManagement,
   waitForLoaderToDisappear,

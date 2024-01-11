@@ -1,19 +1,6 @@
 const fs = require('fs');
 const utils = require('@utils');
 const genericForm = require('./generic-form.wdio.page');
-const xmlForm = fs.readFileSync(`${__dirname}/../../../../config/standard/forms/app/pregnancy_visit.xml`, 'utf8');
-const formDocument = {
-  _id: 'form:pregnancy-visit',
-  internalId: 'pregnancy-visit',
-  title: 'Pregnancy Visit',
-  type: 'form',
-  _attachments: {
-    xml: {
-      content_type: 'application/octet-stream',
-      data: Buffer.from(xmlForm).toString('base64')
-    }
-  }
-};
 
 const FORM = 'form[data-form-id="pregnancy_home_visit"]';
 const LLIN = 'input[name="/pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use"]';
@@ -53,6 +40,19 @@ const addNotes = async (notes = 'Some notes') => {
 };
 
 const uploadPregnancyVisitForm = async () => {
+  const xmlForm = fs.readFileSync(`${__dirname}/../../../../config/standard/forms/app/pregnancy_visit.xml`, 'utf8');
+  const formDocument = {
+    _id: 'form:pregnancy-visit',
+    internalId: 'pregnancy-visit',
+    title: 'Pregnancy Visit',
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(xmlForm).toString('base64')
+      }
+    }
+  };
   await utils.saveDoc(formDocument);
 };
 

@@ -6,7 +6,9 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
 
-describe('Pregnancy Visit', () => {
+// skipping for now per: https://github.com/medic/cht-core/issues/8603
+// and https://github.com/medic/cht-core/pull/8762#pullrequestreview-1784800918. Be sure to uncomment next line:
+describe.skip('Pregnancy Visit', () => {
   before(async () => {
     await pregnancyVisitForm.uploadPregnancyVisitForm();
     await utils.seedTestData(userData.userContactDoc, userData.docs);

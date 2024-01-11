@@ -45,7 +45,6 @@ describe('Users service', () => {
       facilityc,
     ]);
     sinon.stub(couchSettings, 'getCouchConfig').resolves();
-    sinon.stub(couchSettings, 'updateAdminPassword').resolves();
     userData = {
       username: 'x',
       password: COMPLEX_PASSWORD,
@@ -2406,36 +2405,30 @@ describe('Users service', () => {
       });
     });
 
-    it('should update the admin password in CouchDB config', async () => {
+    it('should throw when trying to update admin password - #8096', async () => {
       const data = { password: COMPLEX_PASSWORD };
       couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
       });
+
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       db.medic.put.resolves({});
       db.users.put.resolves({});
 
-      await service.updateUser('admin2', data, true);
+      try {
+        await service.updateUser('admin2', data, true);
+        chai.expect.fail('should have thrown');
+      } catch (e) {
+        chai.expect(e.message).to.equal('Admin passwords must be changed manually in the database');
+        chai.expect(e.code).to.equal(400);
+        chai.expect(db.medic.put.callCount).to.equal(0);
+        chai.expect(db.users.put.callCount).to.equal(0);
+        chai.expect(couchSettings.getCouchConfig.calledOnce).to.be.true;
+        chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
+      }
 
-      chai.expect(db.medic.put.callCount).to.equal(1);
-      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:admin2',
-        name: 'admin2',
-        type: 'user-settings',
-      });
-      chai.expect(db.users.put.callCount).to.equal(1);
-      chai.expect(db.users.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:admin2',
-        name: 'admin2',
-        password: COMPLEX_PASSWORD,
-        type: 'user',
-      });
-      chai.expect(couchSettings.updateAdminPassword.calledOnce).to.be.true;
-      chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['admin2', COMPLEX_PASSWORD]);
-      chai.expect(couchSettings.getCouchConfig.calledOnce).to.be.true;
-      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
     });
 
     it('should update admin when no password is sent', async () => {
@@ -2464,11 +2457,10 @@ describe('Users service', () => {
         name: 'admin2',
         type: 'user',
       });
-      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
       chai.expect(couchSettings.getCouchConfig.callCount).to.equal(0);
     });
 
-    it('should not update the password in CouchDB config if user isnt admin', async () => {
+    it('should not update the password in CouchDB config if user is not admin', async () => {
       const data = { password: COMPLEX_PASSWORD };
       couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
@@ -2494,7 +2486,6 @@ describe('Users service', () => {
         type: 'user',
         password: COMPLEX_PASSWORD,
       });
-      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
       chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
       chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
     });
@@ -3044,7 +3035,7 @@ describe('Users service', () => {
       chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
     });
 
-    it('should reset password for admin user', async () => {
+    it('should throw for admin user', async () => {
       const expectedPassword = 'newpassword';
       sinon
         .stub(passwords, 'generate')
@@ -3058,17 +3049,19 @@ describe('Users service', () => {
       db.users.put.resolves({ id: 'org.couchdb.user:sally' });
       couchSettings.getCouchConfig.resolves({ sally: 'oldpassword' });
 
-      const password = await service.resetPassword('sally');
+      try {
+        await service.resetPassword('sally');
+        chai.expect.fail('should have thrown');
+      } catch (e) {
+        chai.expect(e.message).to.equal('Admin passwords must be changed manually in the database');
+        chai.expect(e.code).to.equal(400);
+        chai.expect(db.users.get.callCount).to.equal(1);
+        chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+        chai.expect(db.users.put.callCount).to.equal(0);
+        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
+        chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
+      }
 
-      chai.expect(password).to.equal(expectedPassword);
-      chai.expect(db.users.get.callCount).to.equal(1);
-      chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
-      chai.expect(db.users.put.callCount).to.equal(1);
-      chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
-      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
-      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
-      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(1);
-      chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['sally', expectedPassword]);
     });
 
     it('should throw error for non-existent user', async () => {
