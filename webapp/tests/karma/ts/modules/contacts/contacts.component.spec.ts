@@ -33,6 +33,7 @@ import { FastActionButtonService } from '@mm-services/fast-action-button.service
 import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -53,6 +54,7 @@ describe('Contacts component', () => {
   let exportService;
   let xmlFormsService;
   let fastActionButtonService;
+  let performanceService;
   let globalActions;
   let district;
 
@@ -103,7 +105,7 @@ describe('Contacts component', () => {
       getContactLeftSideActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
     };
-
+    performanceService = { track: sinon.stub() };
     contactListContains = sinon.stub();
     const selectedContact =  {
       type: { person: true },
@@ -155,6 +157,7 @@ describe('Contacts component', () => {
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: NavigationService, useValue: {} },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: PerformanceService, useValue: performanceService },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })

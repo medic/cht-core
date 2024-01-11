@@ -24,6 +24,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -78,6 +79,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private relativeDateService: RelativeDateService,
     private router: Router,
     private exportService: ExportService,
+    private performanceService: PerformanceService,
     private xmlFormsService: XmlFormsService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -119,6 +121,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.subscription.add(changesSubscription);
 
+    const trackPerformance = this.performanceService.track('contact-list:initial_load');
     Promise
       .all([
         this.getUserHomePlaceSummary(),
@@ -152,6 +155,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = false;
         this.appending = false;
         console.error('Error searching for contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
@@ -206,6 +212,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getUserHomePlaceSummary() {
+    const trackPerformance = this.performanceService.track('contact-list:initial_load:fetch_user_place_summary');
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
@@ -219,6 +226,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           summary.home = true;
         }
         return summary;
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
@@ -231,7 +241,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private formatContacts(contacts) {
-    return contacts.map(updatedContact => {
+    const trackPerformance = this.performanceService.track('contact-list:query:format_contacts');
+    const formattedContacts = contacts.map(updatedContact => {
       const contact = { ...updatedContact };
       const typeId = this.contactTypesService.getTypeId(contact);
       const type = this.contactTypesService.getTypeById(this.contactTypes, typeId);
@@ -278,9 +289,12 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
       return contact;
     });
+    trackPerformance?.stop();
+    return formattedContacts;
   }
 
   private getChildren() {
+    const trackPerformance = this.performanceService.track('contact-list:initial_load:fetch_children');
     const filterChildPlaces = (children) => children.filter(child => !child.person);
 
     if (this.usersHomePlace) {
@@ -288,13 +302,19 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       const homeType = this.contactTypesService.getTypeId(this.usersHomePlace);
       return this.contactTypesService
         .getChildren(homeType)
-        .then(filterChildPlaces);
+        .then(filterChildPlaces)
+        .finally(() => {
+          trackPerformance?.stop();
+        });
     }
 
     if (this.isOnlineOnly) {
       return this.contactTypesService
         .getChildren()
-        .then(filterChildPlaces);
+        .then(filterChildPlaces)
+        .finally(() => {
+          trackPerformance?.stop();
+        });
     }
 
     return Promise.resolve([]);
@@ -315,6 +335,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
+    const trackPerformance = this.performanceService.track('contact-list:query');
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
       options.limit = this.PAGE_SIZE;
@@ -401,6 +422,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.error = true;
         this.loading = false;
         console.error('Error loading contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
@@ -469,9 +493,11 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
 
+        const trackPerformance = this.performanceService.track('contact-list:display_contact_forms');
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
         this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
         this.updateFastActions();
+        trackPerformance?.stop();
       }
     );
     this.subscription.add(subscription);
