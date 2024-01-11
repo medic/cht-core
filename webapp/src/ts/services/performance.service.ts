@@ -9,6 +9,7 @@ import { AuthService } from '@mm-services/auth.service';
 })
 export class PerformanceService {
   private readonly TRACK_PERFORMANCE = 'track_performance';
+  private readonly TELEMETRY_PREFIX = 'perf:';
   private trackPerformance = true;
 
   constructor(
@@ -39,6 +40,6 @@ export class PerformanceService {
     }
 
     const time = this.document.defaultView.performance.now() - startTime;
-    await this.telemetryService.record(name, time);
+    await this.telemetryService.record(this.TELEMETRY_PREFIX + name, time);
   }
 }
