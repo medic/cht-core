@@ -7,7 +7,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const path = require('path');
-const aboutPage = require('@page-objects/default/about/about.wdio.page');
+const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 
 const places = placeFactory.generateHierarchy();
 const healthCenter = places.get('health_center');
@@ -30,10 +30,8 @@ describe('Test Contact Search with Barcode Scanner', async () => {
   });
 
   it('Search should display correct results, clear search should display all contacts', async () => {
-    //Checking version
     await commonPage.goToAboutPage();
-    await (await aboutPage.currentVersion()).waitForDisplayed();
-    const currentVersion = await (await aboutPage.currentVersion()).getText();
+    const currentVersion = await upgradePage.getCurrentVersion();
     console.log('Current version ' + currentVersion);
     await commonPage.goToPeople();
     await searchPage.performBarcodeSearch(barcodeImagePath);
