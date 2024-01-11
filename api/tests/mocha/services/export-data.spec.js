@@ -308,6 +308,59 @@ describe('Export Data Service', () => {
 
   });
 
+  describe('Export users devices', () => {
+    it('handles empty db', async () => {
+      sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
+      const actual = await mockRequest('usersDevices');
+      actual.should.equal('user,deviceId,date,webview,apk,android,cht,settings\n');
+    });
+
+    it('works', async () => {
+      const rows = [
+        {
+          key: 'admin-central-2',
+          value: {
+            date: '2022-11-21',
+            id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
+            device: {
+              deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
+              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36', // eslint-disable-line max-len
+              versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
+            },
+          },
+        },
+        {
+          key: 'chw1',
+          value: {
+            date: '2022-11-29',
+            id: 'telemetry-2022-11-29-chw1-b1c172d8-82b0-42fd-8401-313796b8c801',
+            device: {
+              deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
+              userAgent: 'Mozilla/5.0 (Linux; Android 10; 8094X Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/88.0.4324.181 Mobile Safari/537.36 org.medicmobile.webapp.mobile.moh_mali_chw_training_2/v1.0.4-4', // eslint-disable-line max-len
+              versions: {
+                apk: 'v1.0.4-4',
+                android: '10',
+                cht: 'unknown',
+                settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+              },
+            },
+          },
+        },
+      ];
+      sinon.stub(db.medicUsersMeta, 'query')
+        .onCall(0).resolves({ rows })
+        .onCall(1).resolves({ rows })
+        .onCall(2).resolves({ rows: [] });
+      const actual = await mockRequest('usersDevices');
+      /* eslint-disable max-len */
+      actual.should.equal(`user,deviceId,date,webview,apk,android,cht,settings
+"admin-central-2","d26e2875-53af-4e9b-b695-c82faf0db5d8","2022-11-21","107.0",,,"unknown","4-83c8561a13479b245b295e97401f2f55"
+"chw1","b1c172d8-82b0-42fd-8401-313796b8c801","2022-11-29","88.0","v1.0.4-4","10","unknown","5-5ad24c388d1d4c4a7fcb6b05cff875ba"
+`);
+      /* eslint-enable max-len */
+    });
+  });
+
   describe('Handle error', () => {
     it('emit error', () => {
       const type = 'feedback';
