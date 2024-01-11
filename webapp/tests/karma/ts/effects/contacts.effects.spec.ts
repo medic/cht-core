@@ -17,6 +17,7 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -27,6 +28,7 @@ describe('Contacts effects', () => {
   let store;
   let targetAggregateService;
   let tasksForContactService;
+  let performanceService;
   let routeSnapshotService;
 
   beforeEach(async() => {
@@ -42,6 +44,7 @@ describe('Contacts effects', () => {
       loadChildren: sinon.stub().resolves([]),
       loadReports: sinon.stub().resolves([]),
     };
+    performanceService = { track: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getCurrentTargetDoc: sinon.stub().resolves() };
@@ -59,6 +62,7 @@ describe('Contacts effects', () => {
         { provide: ContactSummaryService, useValue: contactSummaryService },
         { provide: TargetAggregatesService, useValue: targetAggregateService },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: PerformanceService, useValue: performanceService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
       ]
     });
