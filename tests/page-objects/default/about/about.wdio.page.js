@@ -1,5 +1,6 @@
 const userName = () => $('dt=User name');
 const partners = () => $('.partners');
+const currentVersion = () => $('[test-id="about-version"]');
 
 const getPartnerImage = async (name) => {
   await (await partners()).waitForDisplayed();
@@ -13,4 +14,5 @@ module.exports = {
   userName,
   partners,
   getPartnerImage,
+  currentVersion,
 };
