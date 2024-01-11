@@ -204,23 +204,21 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       const form = await this.formService.render(formContext);
       this.form = form;
       this.globalActions.setLoadingContent(false);
-      if (!model.doc || !model.doc._id) {
-        return;
+      if (model?.doc?._id) {
+        await this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(model));
       }
-
-      await this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(model));
-
-      this.telemetryData.postRender = Date.now();
-      this.telemetryData.action = model.doc ? 'edit' : 'add';
-      this.telemetryData.form = model.formInternalId;
-      this.telemetryService.record(
-        `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-        this.telemetryData.postRender - this.telemetryData.preRender
-      );
     } catch (err) {
       this.setError(err);
       console.error('Error loading form.', err);
     }
+
+    this.telemetryData.postRender = Date.now();
+    this.telemetryData.action = model.doc ? 'edit' : 'add';
+    this.telemetryData.form = model.formInternalId;
+    this.telemetryService.record(
+      `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+      this.telemetryData.postRender - this.telemetryData.preRender
+    );
   }
 
   private setError(err) {

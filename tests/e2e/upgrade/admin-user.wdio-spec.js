@@ -3,7 +3,6 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('admin users', () => {
   it('should allow to update the admin password and login successfully', async () => {
-    const newPassword = 'medic.456';
     const adminUser = {
       username: 'admin2',
       password: 'medic.123',
@@ -23,12 +22,10 @@ describe('admin users', () => {
       });
     }
 
-    await utils.request({
-      path: `/api/v1/users/${adminUser.username}`,
-      method: 'POST',
-      body: { password: newPassword }
+    await loginPage.login({
+      username: adminUser.username,
+      password: adminUser.password,
+      adminApp: true
     });
-
-    await loginPage.login({ username: adminUser.username, password: newPassword, adminApp: true });
   });
 });

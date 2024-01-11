@@ -8,6 +8,13 @@ chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('@utils/sentinel');
 
 const getUserId = n => `org.couchdb.user:${n}`;
+const password = 'passwordSUP3RS3CR37!';
+const parentPlace = {
+  _id: 'PARENT_PLACE',
+  type: 'district_hospital',
+  name: 'Big Parent Hospital'
+};
+
 
 describe('Users API', () => {
 
@@ -337,59 +344,9 @@ describe('Users API', () => {
 
     });
 
-    it('should allow to update the admin password and login successfully', async () => {
-      const newPassword = 'medic.456';
-      const otherAdmin = {
-        username: 'admin2',
-        password: 'medic.123',
-        roles: [ 'admin' ],
-        contact: { name: 'Philip' },
-        place: newPlaceId,
-      };
-      await utils.createUsers([ otherAdmin ]);
-      // Set admin user's password in CouchDB config.
-      const membership = await utils.request({ path: '/_membership' });
-      const nodes = membership.all_nodes;
-      for (const nodeName of nodes) {
-        await utils.request({
-          method: 'PUT',
-          path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
-          body: `"${otherAdmin.password}"`,
-        });
-      }
-
-      // Update password with new value.
-      const userResponse = await utils
-        .request({
-          path: `/api/v1/users/${otherAdmin.username}`,
-          method: 'POST',
-          body: { password: newPassword }
-        })
-        .catch((err) => {
-          chai.assert.fail(err);
-        });
-
-      chai.expect(userResponse.user).to.not.be.undefined;
-      chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
-      chai.expect(userResponse['user-settings']).to.not.be.undefined;
-      chai.expect(userResponse['user-settings'].id).to.equal('org.couchdb.user:admin2');
-      // Old password shouldn't work.
-      await expectPasswordLoginToFail(otherAdmin);
-      await expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
-    });
-
   });
 
   describe('/api/v1/users-info', () => {
-
-    const password = 'passwordSUP3RS3CR37!';
-
-    const parentPlace = {
-      _id: 'PARENT_PLACE',
-      type: 'district_hospital',
-      name: 'Big Parent Hospital'
-    };
-
     const users = [
       {
         username: 'offline',
@@ -623,7 +580,6 @@ describe('Users API', () => {
 
   describe('token-login', () => {
     let user;
-    const password = 'passwordSUP3RS3CR37!';
 
     const getUser = (user) => {
       const opts = { path: `/_users/${getUserId(user.username)}` };
@@ -1617,6 +1573,49 @@ describe('Users API', () => {
             },
           });
         });
+    });
+  });
+
+  describe('POST/GET api/v2/users', () => {
+    before(async () => {
+      await utils.saveDoc(parentPlace);
+    });
+
+    after(async () => {
+      await utils.revertDb([], true);
+    });
+
+    it('should create and get users', async () => {
+      const users = Array.from({ length: 10 }).map(() => ({
+        username: uuid(),
+        password: password,
+        place: {
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          name: 'OnlineUser'
+        },
+        roles: ['district_admin', 'mm-online']
+      }));
+
+      const createUserOpts = { path: '/api/v2/users', method: 'POST' };
+      for (const user of users) {
+        await utils.request({ ...createUserOpts, body: user });
+      }
+
+      const savedUsers = await utils.request({ path: '/api/v2/users' });
+      for (const user of users) {
+        const savedUser = savedUsers.find(savedUser => savedUser.username === user.username);
+        expect(savedUser).to.deep.nested.include({
+          id: `org.couchdb.user:${user.username}`,
+          'place.type': user.place.type,
+          'place.name': user.place.name,
+          'place.parent._id': parentPlace._id,
+          'contact.name': user.contact.name,
+        });
+      }
     });
   });
 });

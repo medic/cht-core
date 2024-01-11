@@ -4,6 +4,7 @@ const moment = require('moment');
 const db = require('../db');
 const environment = require('../environment');
 const logger = require('../logger');
+const deployInfoService = require('./deploy-info');
 
 const DBS_TO_MONITOR = {
   'medic': environment.db,
@@ -23,24 +24,22 @@ const fromEntries = (keys, value) => {
 const getSequenceNumber = seq => {
   if (seq) {
     const parts = seq.split('-');
-    if (parts.length) {
-      const result = parseInt(parts[0]);
-      if (!isNaN(result)) {
-        return result;
-      }
+    const result = parseInt(parts?.[0]);
+    if (!isNaN(result)) {
+      return result;
     }
   }
   return -1;
 };
 
-const getAppVersion = () => {
-  return db.medic
-    .get('_design/medic')
-    .then(ddoc => (ddoc.deploy_info && ddoc.deploy_info.version) || ddoc.version)
-    .catch(err => {
-      logger.error('Error fetching app version: %o', err);
-      return '';
-    });
+const getAppVersion = async () => {
+  try {
+    const deployInfo = await deployInfoService.get();
+    return deployInfo.version;
+  } catch (err) {
+    logger.error('Error fetching app version: %o', err);
+    return '';
+  }
 };
 
 const getSentinelProcessedSeq = () => {
@@ -194,7 +193,7 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
     .then(counts => {
       const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
       counts.forEach((count, idx) => {
-        const row = count && count.rows && count.rows[0];
+        const row = count?.rows?.[0];
         if (row) {
           result[MESSAGE_QUEUE_STATUS_KEYS[idx]] = row.value;
         }

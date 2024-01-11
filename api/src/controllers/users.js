@@ -189,8 +189,7 @@ module.exports = {
 
             if (_.isUndefined(basic) && changingPassword) {
               return Promise.reject({
-                message:
-                  'You must authenticate with Basic Auth to modify your password',
+                message: 'You must authenticate with Basic Auth to modify your password',
                 code: 403,
               });
             }
@@ -199,13 +198,11 @@ module.exports = {
           return users
             .updateUser(username, req.body, !!fullPermission, getAppUrl(req))
             .then(result => {
+              const body = Object.keys(req.body).join(',');
               logger.info(
-                `REQ ${
-                  req.id
-                } - Updated user '${username}'. Setting field(s) '${Object.keys(
-                  req.body
-                ).join(',')}'. Requested by '${requesterContext &&
-                  requesterContext.name}'.`
+                `REQ ${req.id} - Updated user '${username}'. ` +
+                `Setting field(s) '${body}'. ` +
+                `Requested by '${requesterContext?.name}'.`
               );
               return result;
             });

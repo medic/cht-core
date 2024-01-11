@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+    <h:head>
+        <h:title>DB Object Form</h:title>
+        <model>
+            <instance>
+                <db_object_form id="db_object_form" prefix="J1!db_object_form!" delimiter="#" version="2021-12-01 00:00:00">
+                    <people>
+                        <person_test_same_parent/>
+                        <person_test_all/>
+                    </people>
+                    <meta tag="hidden">
+                        <instanceID/>
+                    </meta>
+                </db_object_form>
+            </instance>
+            <bind nodeset="/db_object_form/people/person_test_same_parent" type="string"/>
+            <bind nodeset="/db_object_form/people/person_test_all" type="string"/>
+            <bind nodeset="/db_object_form/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+        </model>
+    </h:head>
+    <h:body class="pages">
+        <group appearance="field-list" ref="/db_object_form/people">
+            <input ref="/db_object_form/people/person_test_same_parent" appearance="select-contact type-person descendant-of-current-contact">
+                <label>Select a person from same parent</label>
+            </input>
+            <input ref="/db_object_form/people/person_test_all" appearance="select-contact type-person">
+                <label>Select a person from all</label>
+            </input>
+        </group>
+    </h:body>
+</h:html>
