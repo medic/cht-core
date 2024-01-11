@@ -26,6 +26,7 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
 
@@ -42,7 +43,6 @@ const snackbarAction = () => $('#snackbar.active .snackbar-action');
 //Hamburguer menu
 //User settings
 const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
-const UPDATE_PASSWORD = '.user .configuration.page i.fa-key';
 const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
 const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
@@ -322,6 +322,9 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
+  if (await (await syncInProgress()).isExisting()) {
+    await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
+  }
   await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
@@ -388,8 +391,11 @@ const openUserSettings = async () => {
 const openUserSettingsAndFetchProperties = async () => {
   await (await $(USER_SETTINGS)).waitForClickable();
   await (await $(USER_SETTINGS)).click();
-  await (await $(UPDATE_PASSWORD)).waitForDisplayed();
   await (await $(EDIT_PROFILE)).waitForDisplayed();
+};
+
+const openEditProfile = async () => {
+  await (await $(EDIT_PROFILE)).click();
 };
 
 const openAppManagement = async () => {
@@ -470,6 +476,7 @@ module.exports = {
   openAboutMenu,
   openUserSettingsAndFetchProperties,
   openUserSettings,
+  openEditProfile,
   openReportBugAndFetchProperties,
   openAppManagement,
   waitForLoaderToDisappear,

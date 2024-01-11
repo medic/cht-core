@@ -198,7 +198,7 @@ const exec = async (command, args, options=({})) => {
       if (code === 0) {
         return resolve();
       }
-      return reject(`${command} exited with ${code}`);
+      return reject(new Error(`${command} exited with ${code}`));
     }); 
   });
 };

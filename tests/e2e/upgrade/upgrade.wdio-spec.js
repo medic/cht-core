@@ -9,6 +9,7 @@ const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
+const semver = require('semver');
 
 const docs = dataFactory.createHierarchy({
   name: 'offlineupgrade',
@@ -70,6 +71,12 @@ describe('Performing an upgrade', () => {
     });
   });
 
+  // TODO Enable this test after 4.6.0 is released
+  xit('should have valid semver after installing', async () => {
+    const deployInfo = await utils.request({ path: '/api/deploy-info' });
+    expect(semver.valid(deployInfo.version)).to.be.ok;
+  });
+
   it('should upgrade to current branch', async () => {
     await upgradePage.goToUpgradePage();
     await upgradePage.expandPreReleasesAccordion();
@@ -99,6 +106,9 @@ describe('Performing an upgrade', () => {
     expect(staged.length).to.equal(0);
 
     ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
+
+    const deployInfo = await utils.request({ path: '/api/deploy-info' });
+    expect(semver.valid(deployInfo.version)).to.be.ok;
 
     const logs = await getUpgradeLogs();
     expect(logs.length).to.equal(2);

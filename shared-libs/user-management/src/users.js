@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
+const facility = require('./libs/facility');
 const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
 const getRoles = require('./libs/types-and-roles');
@@ -116,11 +117,6 @@ const getAllUserSettings = () => {
 const getAllUsers = () => {
   return db.users.allDocs({ include_docs: true })
     .then(result => result.rows);
-};
-
-const getFacilities = () => {
-  return db.medic.query('medic-client/contacts_by_type', { include_docs: true })
-    .then(result => result.rows.map(row => row.doc));
 };
 
 const validateContact = (id, placeID) => {
@@ -508,12 +504,10 @@ const isDbAdmin = user => {
 };
 
 const saveUserUpdates = async (user) => {
-  const savedDoc = await db.users.put(user);
-
   if (user.password && await isDbAdmin(user)) {
-    await couchSettings.updateAdminPassword(user.name, user.password);
+    throw error400('Admin passwords must be changed manually in the database');
   }
-
+  const savedDoc = await db.users.put(user);
   return {
     id: savedDoc.id,
     rev: savedDoc.rev
@@ -776,16 +770,10 @@ const getUserSettings = async({ name }) => {
  */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
-  getList: () => {
-    return Promise
-      .all([
-        getAllUsers(),
-        getAllUserSettings(),
-        getFacilities()
-      ])
-      .then(([ users, settings, facilities ]) => {
-        return mapUsers(users, settings, facilities);
-      });
+  getList: async () => {
+    const [ users, settings ] = await Promise.all([ getAllUsers(), getAllUserSettings() ]);
+    const facilities = await facility.list(users, settings);
+    return mapUsers(users, settings, facilities);
   },
   getUserSettings,
   /* eslint-disable max-len */

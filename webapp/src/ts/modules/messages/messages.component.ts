@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -34,7 +34,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
   currentLevel;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private store: Store,
     private changesService: ChangesService,

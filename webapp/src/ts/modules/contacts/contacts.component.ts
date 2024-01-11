@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
-import { ServicesActions } from '@mm-actions/services';
 import { ContactsActions } from '@mm-actions/contacts';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -15,7 +14,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { Selectors } from '@mm-selectors/index';
-import { SearchService } from '@mm-services/search.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
@@ -33,7 +32,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
   private contactsActions: ContactsActions;
-  private servicesActions: ServicesActions;
   private listContains;
   private destroyed: boolean;
   private isOnlineOnly: boolean;
@@ -44,8 +42,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   error;
   appending: boolean;
   hasContacts = true;
-  filters:any = {};
-  defaultFilters:any = {};
+  filters: Filter = {};
+  defaultFilters: Filter = {};
   moreItems;
   usersHomePlace;
   contactTypes;
@@ -62,7 +60,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private store: Store,
-    private route: ActivatedRoute,
     private changesService: ChangesService,
     private fastActionButtonService: FastActionButtonService,
     private translateService: TranslateService,
@@ -82,7 +79,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
-    this.servicesActions = new ServicesActions(store);
   }
 
   ngOnInit() {
