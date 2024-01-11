@@ -8,6 +8,7 @@ const purgedDocs = require('../../../src/services/purged-docs');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const { roles, users } = require('@medic/user-management')(config, db);
+const replicationLimitLog = require('../../../src/services/replication-limit-log');
 
 let req;
 let userCtx;
@@ -373,6 +374,7 @@ describe('Users Controller', () => {
           .onCall(0).returns(docIds)
           .onCall(1).returns(docIds.slice(0, 9800));
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
+        sinon.stub(replicationLimitLog, 'put');
 
         return controller.info(req, res).then(() => {
           chai.expect(res.json.callCount).to.equal(1);
@@ -407,6 +409,7 @@ describe('Users Controller', () => {
           .onCall(0).returns(docIds)
           .onCall(1).returns(docIds.slice(0, 9800));
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
+        sinon.stub(replicationLimitLog, 'put');
 
         return controller.info(req, res).then(() => {
           chai.expect(res.json.callCount).to.equal(1);
@@ -437,6 +440,7 @@ describe('Users Controller', () => {
         authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
         authorization.filterAllowedDocIds.returns(docIds);
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
+        sinon.stub(replicationLimitLog, 'put');
 
         return controller.info(req, res).then(() => {
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
@@ -488,6 +492,7 @@ describe('Users Controller', () => {
           roles.hasOnlineRole.returns(false);
           auth.hasAllPermissions.returns(true);
           serverUtils.error.resolves();
+          sinon.stub(replicationLimitLog, 'put');
         });
 
         scenarios.forEach(scenario => {
@@ -532,6 +537,7 @@ describe('Users Controller', () => {
         authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
         authorization.filterAllowedDocIds.returns(docIds);
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
+        sinon.stub(replicationLimitLog, 'put');
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -576,6 +582,7 @@ describe('Users Controller', () => {
           .onCall(0).returns(docIds)
           .onCall(1).returns(docIds.slice(0, 11000));
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
+        sinon.stub(replicationLimitLog, 'put');
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -603,6 +610,7 @@ describe('Users Controller', () => {
           .onCall(0).returns(docIds)
           .onCall(1).returns(docIds.slice(0, 9600));
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
+        sinon.stub(replicationLimitLog, 'put');
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -629,6 +637,7 @@ describe('Users Controller', () => {
         authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
         authorization.filterAllowedDocIds.returns(docIds);
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
+        sinon.stub(replicationLimitLog, 'put');
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -660,6 +669,7 @@ describe('Users Controller', () => {
         .onCall(0).returns(allDocIds)
         .onCall(1).returns(warnDocIds);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
+      sinon.stub(replicationLimitLog, 'put');
 
       return controller.info(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(0);
