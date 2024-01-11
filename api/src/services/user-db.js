@@ -16,8 +16,9 @@ const DB_NAME_BLOCKED_CHARS = /[^a-z0-9_$()+/-]/g;
 // We are currently testing the exact content of the map function in tests/unit/lib/user-db.js
 /* eslint-disable no-var */
 /* istanbul ignore next */
+
 const readMapFunction = function (doc) {
-  var parts = doc._id.split(':'); // NOSONAR
+  var parts = doc._id.split(':');/*NOSONAR*/
   if (parts[0] === 'read') {
     emit(parts[1]);
   }
@@ -26,8 +27,8 @@ const readMapFunction = function (doc) {
 
 /* istanbul ignore next */
 const validateDocUpdate = function (newDoc) {
-  if (newDoc?._deleted && newDoc?.purged) {
-    throw ({forbidden: 'Purged documents should not be written to CouchDB!'}); // NOSONAR
+  if (newDoc && newDoc._deleted && newDoc.purged) {/*NOSONAR*/
+    throw ({forbidden: 'Purged documents should not be written to CouchDB!'});/*NOSONAR*/
   }
 };
 
