@@ -352,9 +352,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     let docIds;
     if (options.withIds) {
-      docIds = this.contactsList.map((item) => {
-        return item._id;
-      });
+      docIds = this.contactsList.map((item) => item._id);
+      if (this.usersHomePlace && !docIds.includes(this.usersHomePlace._id)) {
+        docIds.push(this.usersHomePlace._id);
+      }
     }
 
     return this.searchService
@@ -365,19 +366,22 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           const homeIndex = _findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
           });
+
           this.additionalListItem =
             !this.filters.search &&
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
-          if (!this.appending) {
-            if (homeIndex !== -1) {
-              // move it to the top
+          if (homeIndex !== -1) {
+            // Update usersHomePlace in the list with the new data
+            this.usersHomePlace = updatedContacts[homeIndex];
+            if (!this.appending) {
+              // move usersHomePlacem to the top
               updatedContacts.splice(homeIndex, 1);
               updatedContacts.unshift(this.usersHomePlace);
-            } else if (!this.filters.search) {
-              updatedContacts.unshift(this.usersHomePlace);
             }
+          } else if (this.additionalListItem) {
+            updatedContacts.unshift(this.usersHomePlace);
           }
         }
 
