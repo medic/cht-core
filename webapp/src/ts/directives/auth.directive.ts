@@ -12,10 +12,7 @@ export class AuthDirective implements OnChanges {
 
   private hidden = true;
 
-  constructor(
-    private el: ElementRef,
-    private authService: AuthService,
-  ) { }
+  constructor(private authService: AuthService) { }
 
   private compile() {
     const dynamicChecks = allowed => {
