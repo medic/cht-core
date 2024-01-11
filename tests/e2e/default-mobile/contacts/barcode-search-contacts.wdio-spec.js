@@ -27,15 +27,15 @@ describe('Test Contact Search with Barcode Scanner', async () => {
     await utils.updatePermissions(offlineUser.roles, canUseBarcodeScannerPermission, [], false);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
+    await commonPage.goToPeople();
   });
 
   it('Search should display correct results, clear search should display all contacts', async () => {
     //Checking version
     await commonPage.goToAboutPage();
-    await (await aboutPage.currentVersion()).waitForDisplayed();
-    const currentVersion = await (await aboutPage.currentVersion()).getText();
-    console.log('Current version ' + currentVersion);
-    await commonPage.goToPeople();
+    await (await aboutPage.userName()).waitForDisplayed();
+    await browser.takeScreenshot();
+
     await searchPage.performBarcodeSearch(barcodeImagePath);
     expect(await contactPage.getAllLHSContactsNames()).to.have.members([
       person.name
