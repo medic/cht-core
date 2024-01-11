@@ -25,12 +25,12 @@ describe('deploy info', () => {
           user: 'my user',
         },
         build_info: {
-          base_version: '3.14.0',
-          build: '3.14.0-56437856378453',
+          base_version: '4.6.0',
+          build: '4.6.0.6922454971',
           time: 'human readable',
-          version: 'aaa',
+          version: '4.6.0',
         },
-        version: '3.14.0-dev.547839573',
+        version: '4.6.0.6922454971',
       };
 
       sinon.stub(environment, 'ddoc').value('medic');
@@ -41,9 +41,9 @@ describe('deploy info', () => {
       expect(deployInfo).to.deep.equal({
         timestamp: 1000,
         user: 'my user',
-        version: '3.14.0-dev.547839573',
-        base_version: '3.14.0',
-        build: '3.14.0-56437856378453',
+        version: '4.6.0',
+        base_version: '4.6.0',
+        build: '4.6.0.6922454971',
         time: 'human readable',
       });
 
@@ -56,7 +56,7 @@ describe('deploy info', () => {
         deploy_info: {
           timestamp: 2000,
           user: 'admin',
-          version: '4.0.0',
+          version: '4.0.0-beta.1',
         },
         version: '4.0.0-beta.1',
       };

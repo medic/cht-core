@@ -49,6 +49,7 @@
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
     "sanitize-html": "^2.11.0",
+    "semver": "^7.5.4",
     "simple-password-tester": "^1.0.0",
     "url": "^0.11.1",
     "url-join": "^4.0.1",
