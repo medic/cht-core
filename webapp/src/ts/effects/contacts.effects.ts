@@ -104,7 +104,7 @@ export class ContactsEffects {
   }
 
   private loadContact(id) {
-    const trackPerformance = this.performanceService.track('select_contact:contact_data');
+    const trackPerformance = this.performanceService.track('select_contact:load_everything:contact_data');
     this.contactsActions.setContactIdToLoad(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
@@ -126,7 +126,7 @@ export class ContactsEffects {
   }
 
   private loadChildren(contactId, userFacilityId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_children');
+    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_children');
     const getChildPlaces = userFacilityId !== contactId;
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
@@ -141,7 +141,7 @@ export class ContactsEffects {
   }
 
   private loadReports(contactId, forms) {
-    const trackPerformance = this.performanceService.track('select_contact:load_reports');
+    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_reports');
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
       .then(reports => {
@@ -155,7 +155,7 @@ export class ContactsEffects {
   }
 
   private loadTargetDoc(contactId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_targets');
+    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_targets');
     return this.targetAggregateService
       .getCurrentTargetDoc(this.selectedContact)
       .then(targetDoc => {
@@ -169,7 +169,7 @@ export class ContactsEffects {
   }
 
   private loadTasks(contactId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_tasks');
+    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_tasks');
     return this.tasksForContactService
       .get(this.selectedContact)
       .then(tasks => {
@@ -183,7 +183,7 @@ export class ContactsEffects {
   }
 
   private loadContactSummary(contactId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_contact_summary');
+    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_contact_summary');
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
