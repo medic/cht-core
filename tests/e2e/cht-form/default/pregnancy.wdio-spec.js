@@ -18,58 +18,7 @@ describe('cht-form web component - Pregnancy Form', () => {
     const nextANCVisit = moment().add(2, 'day').format('YYYY-MM-DD');
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy registration');
-
-    await commonEnketoPage.selectRadioButton('How would you like to report the pregnancy?',
-      'Expected date of delivery (EDD)');
-    await genericForm.nextPage();
-    await commonEnketoPage.setDateValue('Please enter the expected date of delivery.', edd.format('YYYY-MM-DD'));
-    await genericForm.nextPage();
-    await genericForm.nextPage();
-    await commonEnketoPage.setInputValue('How many times has the woman been to the health facility for ANC?', '0');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('If the woman has a specific upcoming ANC appointment date, ' +
-      'enter it here. You will receive a task three days before to remind her to attend.', 'Enter date');
-    await pregnancyForm.setFutureVisitDate(nextANCVisit);
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Is this the woman\'s first pregnancy?', 'No');
-    await commonEnketoPage.selectRadioButton('Has the woman had any miscarriages or stillbirths?', 'Yes');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?',
-      'Previous difficulties in childbirth');
-    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?',
-      'Has delivered four or more children');
-    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?',
-      'Last baby born less than one year ago');
-    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'Heart condition');
-    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'Asthma');
-    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'High blood pressure');
-    await commonEnketoPage.selectCheckBox('Does the woman have any of these risk factors?', 'Diabetes');
-    await commonEnketoPage.selectRadioButton(
-      'Are there additional factors that could make this pregnancy high-risk?',
-      'No'
-    );
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
-    await commonEnketoPage.selectRadioButton('Fits', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe abdominal pain', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
-    await commonEnketoPage.selectRadioButton('Very pale', 'Yes');
-    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
-    await commonEnketoPage.selectRadioButton('Reduced or no fetal movements', 'Yes');
-    await commonEnketoPage.selectRadioButton('Breaking of water', 'Yes');
-    await commonEnketoPage.selectRadioButton('Getting tired easily', 'Yes');
-    await commonEnketoPage.selectRadioButton('Swelling of face and hands', 'Yes');
-    await commonEnketoPage.selectRadioButton('Breathlessness', 'Yes');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Does the woman use a long-lasting insecticidal net (LLIN)?', 'Yes');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Is the woman taking iron folate daily?', 'Yes');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Has the woman received deworming medication?', 'Yes');
-    await genericForm.nextPage();
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Has the woman been tested for HIV in the past 3 months?', 'Yes');
-    await genericForm.nextPage();
+    await pregnancyForm.submitDefaultPregnancy(false);
 
     const summaryTexts = [
       '38', //weeks pregnant

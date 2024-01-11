@@ -5,6 +5,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('Pregnancy danger sign follow-up form', () => {
   before(async () => {
@@ -70,17 +71,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
     await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
-    await commonEnketoPage.selectRadioButton('Fits', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe abdominal pain', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
-    await commonEnketoPage.selectRadioButton('Very pale', 'Yes');
-    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
-    await commonEnketoPage.selectRadioButton('Reduced or no fetal movements', 'Yes');
-    await commonEnketoPage.selectRadioButton('Breaking of water', 'Yes');
-    await commonEnketoPage.selectRadioButton('Getting tired easily', 'Yes');
-    await commonEnketoPage.selectRadioButton('Swelling of face and hands', 'Yes');
-    await commonEnketoPage.selectRadioButton('Breathlessness', 'Yes');
+    await dangerSignPage.selectAllDangerSignsPregnancy();
     await reportsPage.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
@@ -90,17 +81,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
     await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
-    await commonEnketoPage.selectRadioButton('Fits', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe abdominal pain', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
-    await commonEnketoPage.selectRadioButton('Very pale', 'Yes');
-    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
-    await commonEnketoPage.selectRadioButton('Reduced or no fetal movements', 'Yes');
-    await commonEnketoPage.selectRadioButton('Breaking of water', 'Yes');
-    await commonEnketoPage.selectRadioButton('Getting tired easily', 'Yes');
-    await commonEnketoPage.selectRadioButton('Swelling of face and hands', 'Yes');
-    await commonEnketoPage.selectRadioButton('Breathlessness', 'Yes');
+    await dangerSignPage.selectAllDangerSignsPregnancy();
     await reportsPage.submitForm();
 
     const compareReportId = await reportsPage.getCurrentReportId();

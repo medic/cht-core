@@ -10,6 +10,7 @@ const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const sentinelUtils = require('@utils/sentinel');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 // FLAKY: https://github.com/medic/cht-core/issues/8087
 describe.skip('Submit Default Delivery Report', () => {
@@ -32,11 +33,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await commonEnketoPage.selectRadioButton('Fever', 'No');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'No');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'No');
-    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'No');
-    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
+    await dangerSignPage.selectAllDangerSignsDelivery('No');
     await genericForm.nextPage();
 
     const noOfAliveBabies = 3;
@@ -219,11 +216,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await commonEnketoPage.selectRadioButton('Fever', 'No');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'No');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'No');
-    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'No');
-    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
+    await dangerSignPage.selectAllDangerSignsDelivery('No');
     await genericForm.nextPage();
 
     const noOfAliveBabies = 2;
@@ -270,11 +263,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
-    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'Yes');
-    await commonEnketoPage.selectRadioButton('Convulsions', 'Yes');
+    await dangerSignPage.selectAllDangerSignsDelivery();
     await genericForm.nextPage();
 
     // Delivery Outcome
@@ -325,11 +314,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
 
-    await commonEnketoPage.selectRadioButton('Fever', 'Yes');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
-    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'Yes');
-    await commonEnketoPage.selectRadioButton('Convulsions', 'Yes');
+    await dangerSignPage.selectAllDangerSignsDelivery();
     await genericForm.nextPage();
 
     // Delivery Outcome

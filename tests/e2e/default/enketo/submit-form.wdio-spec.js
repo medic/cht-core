@@ -28,7 +28,7 @@ describe('Submit Enketo form', () => {
     </h:head>
     <h:body>
       <input ref="/data/name">
-        <label>person.field.name</label>
+        <label>Person name:</label>
       </input>
     </h:body>
   </h:html>`;
@@ -119,7 +119,7 @@ describe('Submit Enketo form', () => {
     await commonElements.openFastActionReport(assessmentForm.internalId, false);
 
     // enter name
-    await commonEnketoPage.setInputValue('person.field.name', 'Jones');
+    await commonEnketoPage.setInputValue('Person name', 'Jones');
 
     // submit form
     await (await genericForm.submitButton()).click();
@@ -154,7 +154,7 @@ describe('Submit Enketo form', () => {
     await commonElements.goToReports();
     const originalReportsText = await reportsPage.getAllReportsText();
     await commonElements.openFastActionReport(assessmentForm.internalId, false);
-    await commonEnketoPage.setInputValue('person.field.name', 'Jones');
+    await commonEnketoPage.setInputValue('Person name', 'Jones');
     await (await genericForm.cancelButton()).click();
 
     await modalPage.submit();

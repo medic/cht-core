@@ -7,8 +7,9 @@ const getCurrentPageSection = async () => await currentSection().isExisting() ? 
 const enabledFieldset = (section) => section.$$('fieldset.or-branch:not(.disabled)');
 
 const getCorrectFieldsetSection = async (section) => {
-  if (await enabledFieldset(section).length === 1){
-    return enabledFieldset(section)[0];
+  const countFieldset = await enabledFieldset(section).length;
+  if (countFieldset){
+    return enabledFieldset(section)[countFieldset-1];
   }
   return section;
 };

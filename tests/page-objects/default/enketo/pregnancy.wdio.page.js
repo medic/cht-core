@@ -1,7 +1,7 @@
 const moment = require('moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 const setFutureVisitDate = async (value = moment().add(1, 'day').format('YYYY-MM-DD')) => {
   const date = await $('section[name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date"] ' +
@@ -10,10 +10,9 @@ const setFutureVisitDate = async (value = moment().add(1, 'day').format('YYYY-MM
   await date.setValue(value);
 };
 
-const submitDefaultPregnancy = async () => {
+const submitDefaultPregnancy = async (submitForm = true) => {
   const riskFactorsQuestion = 'Does the woman have any of these risk factors?';
 
-  await commonPage.openFastActionReport('pregnancy');
   await commonEnketoPage.selectRadioButton('How would you like to report the pregnancy?',
     'Expected date of delivery (EDD)');
   await genericForm.nextPage();
@@ -42,17 +41,7 @@ const submitDefaultPregnancy = async () => {
     'No'
   );
   await genericForm.nextPage();
-  await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'Yes');
-  await commonEnketoPage.selectRadioButton('Fits', 'Yes');
-  await commonEnketoPage.selectRadioButton('Severe abdominal pain', 'Yes');
-  await commonEnketoPage.selectRadioButton('Severe headache', 'Yes');
-  await commonEnketoPage.selectRadioButton('Very pale', 'Yes');
-  await commonEnketoPage.selectRadioButton('Fever', 'Yes');
-  await commonEnketoPage.selectRadioButton('Reduced or no fetal movements', 'Yes');
-  await commonEnketoPage.selectRadioButton('Breaking of water', 'Yes');
-  await commonEnketoPage.selectRadioButton('Getting tired easily', 'Yes');
-  await commonEnketoPage.selectRadioButton('Swelling of face and hands', 'Yes');
-  await commonEnketoPage.selectRadioButton('Breathlessness', 'Yes');
+  await dangerSignPage.selectAllDangerSignsPregnancy();
   await genericForm.nextPage();
   await commonEnketoPage.selectRadioButton('Does the woman use a long-lasting insecticidal net (LLIN)?', 'Yes');
   await genericForm.nextPage();
@@ -63,7 +52,9 @@ const submitDefaultPregnancy = async () => {
   await genericForm.nextPage();
   await commonEnketoPage.selectRadioButton('Has the woman been tested for HIV in the past 3 months?', 'Yes');
   await genericForm.nextPage();
-  await genericForm.submitForm();
+  if (submitForm) {
+    await genericForm.submitForm();
+  }
 };
 
 module.exports = {

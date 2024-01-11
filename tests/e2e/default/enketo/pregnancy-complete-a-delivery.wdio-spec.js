@@ -11,6 +11,7 @@ const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Contact Delivery Form', () => {
@@ -36,16 +37,13 @@ describe('Contact Delivery Form', () => {
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth.', async () => {
+    await commonPage.openFastActionReport('pregnancy');
     await pregnancyForm.submitDefaultPregnancy();
 
     await commonPage.openFastActionReport('delivery');
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Fever', 'No');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'No');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'No');
-    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'No');
-    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
+    await dangerSignPage.selectAllDangerSignsDelivery('No');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('How many babies were delivered?', '1');
     await commonEnketoPage.selectRadioButton('How many babies are alive?', '1');

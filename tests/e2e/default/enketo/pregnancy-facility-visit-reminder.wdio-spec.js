@@ -31,6 +31,7 @@ describe('Health Facility ANC Reminder task', () => {
   });
 
   it('should submit the health facility ANC reminder task', async () => {
+    await commonPage.openFastActionReport('pregnancy');
     await pregnancyForm.submitDefaultPregnancy();
     await commonPage.waitForPageLoaded();
 

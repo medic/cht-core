@@ -2,6 +2,7 @@ const mockConfig = require('../mock-config');
 const moment = require('moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('cht-form web component - Delivery Form', () => {
   const DATE = moment().format('YYYY-MM-DD');
@@ -22,11 +23,7 @@ describe('cht-form web component - Delivery Form', () => {
 
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Fever', 'No');
-    await commonEnketoPage.selectRadioButton('Severe headache', 'No');
-    await commonEnketoPage.selectRadioButton('Vaginal bleeding', 'No');
-    await commonEnketoPage.selectRadioButton('Foul smelling vaginal discharge', 'No');
-    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
+    await dangerSignPage.selectAllDangerSignsDelivery('No');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('How many babies were delivered?', '1');
     await commonEnketoPage.selectRadioButton('How many babies are alive?', '1');
