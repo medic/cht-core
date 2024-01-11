@@ -1,5 +1,5 @@
 import * as _ from 'lodash-es';
-import { Directive, ElementRef, Input, HostBinding, OnChanges } from '@angular/core';
+import { Directive, Input, HostBinding, OnChanges } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 @Directive({
