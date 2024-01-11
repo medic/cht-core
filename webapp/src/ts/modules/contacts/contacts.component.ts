@@ -240,7 +240,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.authService.has('can_view_last_visited_date');
   }
 
-  private formatContacts(contacts) {
+  private formatContacts(contacts) { //NOSONAR
     const trackPerformance = this.performanceService.track('contact-list:query:format_contacts');
     const formattedContacts = contacts.map(updatedContact => {
       const contact = { ...updatedContact };
