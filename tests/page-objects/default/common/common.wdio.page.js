@@ -26,6 +26,7 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
 
@@ -321,6 +322,9 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
+  if (await (await syncInProgress()).isExisting()) {
+    await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
+  }
   await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 

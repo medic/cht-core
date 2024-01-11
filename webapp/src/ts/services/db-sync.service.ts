@@ -4,7 +4,6 @@ import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
 import * as purger from '../../js/bootstrapper/purger';
-import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -23,6 +22,7 @@ const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
+const MAX_SUCCESSIVE_SYNCS = 2;
 
 const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
@@ -70,7 +70,6 @@ export class DBSyncService {
     private dbService:DbService,
     private sessionService:SessionService,
     private authService:AuthService,
-    private rulesEngineService:RulesEngineService,
     private dbSyncRetryService:DbSyncRetryService,
     private ngZone:NgZone,
     private checkDateService:CheckDateService,
@@ -80,12 +79,13 @@ export class DBSyncService {
     private migrationsService:MigrationsService,
     private replicationService:ReplicationService,
   ) {
-    this.globalActions = new GlobalActions(store);
+    this.globalActions = new GlobalActions(this.store);
   }
 
   private globalActions: GlobalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
+  private canReplicateToServer = false;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
   private readonly intervalPromises: { sync?: any; meta?: any} = {
     sync: undefined,
@@ -126,6 +126,7 @@ export class DBSyncService {
       })
       .then(info => {
         console.debug(`Replication to successful`, info);
+        this.setLastReplicatedSeq(info?.last_seq);
         telemetryEntry.recordSuccess(info);
       })
       .catch(err => {
@@ -141,8 +142,9 @@ export class DBSyncService {
   }
 
   private async replicateTo() {
-    if (!await this.authService.has('can_edit')) {
-      // not authorized to replicate - that's ok, skip silently
+    this.canReplicateToServer = await this.authService.has('can_edit');
+    if (!this.canReplicateToServer) {
+      console.debug('Not authorized to replicate - that\'s ok, skip silently');
       return;
     }
 
@@ -166,31 +168,86 @@ export class DBSyncService {
       telemetryEntry.recordSuccess(result);
     } catch (err) {
       telemetryEntry.recordFailure(err, this.knownOnlineState);
-      console.error(`Error replicating from remote server`, err);
+      console.error('Error replicating from remote server', err);
       return err;
     }
   }
 
-
-  private getCurrentSeq() {
-    return this.dbService.get().info().then(info => info.update_seq + '');
+  private getCurrentSeq(): Promise<number> {
+    return this.dbService.get().info().then(info => info.update_seq);
   }
 
-  private getLastReplicatedSeq() {
-    return window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
+  private getLastReplicatedSeq(): number {
+    return Number(window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY)) || 0;
+  }
+
+  private setLastReplicatedSeq(sequence: number) {
+    if (!sequence) {
+      return;
+    }
+
+    window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, sequence.toString());
   }
 
   private getLastReplicationDate() {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private async syncMedic(force?, quick?) {
+  private async syncMedic(replicateFromServer: boolean, successiveSyncs = 0) {
+    const replicationErrors = {
+      to: await this.replicateTo(),
+      from: replicateFromServer ? await this.replicateFrom() : null,
+    };
+    const hasErrors = replicationErrors.to || replicationErrors.from;
+    let syncState = await this.getSyncState(hasErrors);
+
+    const isSyncRequired = syncState.to === SyncStatus.Required || syncState.from === SyncStatus.Required;
+    if (isSyncRequired && successiveSyncs < MAX_SUCCESSIVE_SYNCS) {
+      successiveSyncs += 1;
+      syncState = await this.syncMedic(replicateFromServer, successiveSyncs);
+    }
+
+    return syncState;
+  }
+
+  private async getSyncState(hasErrors): Promise<SyncState> {
+    const currentSeq = await this.getCurrentSeq();
+    const lastReplicatedSeq = this.getLastReplicatedSeq();
+
+    if (!hasErrors && (!this.canReplicateToServer || currentSeq === lastReplicatedSeq)) {
+      return { to: SyncStatus.Success, from: SyncStatus.Success };
+    }
+
+    if (hasErrors && currentSeq === lastReplicatedSeq) {
+      // No changes to send, but may have some to receive
+      return { state: SyncStatus.Unknown };
+    }
+
+    // Definitely need to sync something
+    return { to: SyncStatus.Required, from: SyncStatus.Required };
+  }
+
+  private updateAfterSyncMedic(syncState, force) {
+    if (syncState.to === SyncStatus.Success) {
+      console.debug('Finished syncing!');
+      window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
+      this.syncIsRecent = syncState.from === SyncStatus.Success;
+    }
+
+    if (force) {
+      this.displayUserFeedback(syncState);
+    }
+
+    this.sendUpdate(syncState);
+  }
+
+  private async startSyncMedic(force?, quick?) {
+    this.resetSyncInterval();
     if (!this.knownOnlineState && !force) {
       return Promise.resolve();
     }
 
     await this.checkDateService.check();
-
     if (this.inProgressSync) {
       this.sendUpdate({ state: SyncStatus.InProgress });
       return this.inProgressSync;
@@ -199,38 +256,9 @@ export class DBSyncService {
     try {
       this.sendUpdate({ state: SyncStatus.InProgress });
       this.inProgressSync = true;
-
-      const replicationErrors = { to: null, from: null };
-      replicationErrors.to = await this.replicateTo();
-
-      if (force || !quick) {
-        replicationErrors.from = await this.replicateFrom();
-      }
-
-      const currentSeq = await this.getCurrentSeq();
-      let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
-
-      if (!replicationErrors.to && !replicationErrors.from) {
-        this.syncIsRecent = true;
-        window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-      } else if (currentSeq === this.getLastReplicatedSeq()) {
-        // no changes to send, but may have some to receive
-        syncState = { state: SyncStatus.Unknown };
-      } else {
-        // definitely need to sync something
-        Object.keys(replicationErrors).forEach((directionName: 'to' | 'from') => {
-          syncState[directionName] = SyncStatus.Required;
-        });
-      }
-
-      if (syncState.to === SyncStatus.Success) {
-        window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
-      }
-
-      if (force) {
-        this.displayUserFeedback(syncState);
-      }
-      this.sendUpdate(syncState);
+      const replicateFromServer = force || !quick;
+      const syncState = await this.syncMedic(replicateFromServer);
+      this.updateAfterSyncMedic(syncState, force);
     } finally {
       this.inProgressSync = undefined;
     }
@@ -306,15 +334,14 @@ export class DBSyncService {
   /**
   * Set the current user's online status to control when replications will be attempted.
   *
-  * @param newOnlineState {Boolean} The current online state of the user.
+  * @param onlineStatus {Boolean} The current online state of the user.
   */
   setOnlineStatus(onlineStatus) {
     if (this.knownOnlineState !== onlineStatus) {
       this.knownOnlineState = !!onlineStatus;
 
       if (this.knownOnlineState && !this.syncIsRecent) {
-        this.resetSyncInterval();
-        return this.syncMedic();
+        return this.startSyncMedic();
       }
     }
   }
@@ -354,8 +381,7 @@ export class DBSyncService {
       this.syncMeta();
     }
 
-    this.resetSyncInterval();
-    return this.syncMedic(force, quick);
+    return this.startSyncMedic(force, quick);
   }
 }
 
