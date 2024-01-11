@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -14,10 +13,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
   analyticsModules = [];
 
-  constructor(
-    private store: Store,
-    private route: ActivatedRoute,
-  ) {
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
   }
 

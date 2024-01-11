@@ -7,7 +7,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
-import { ServicesActions } from '@mm-actions/services';
 import { ChangesService } from '@mm-services/changes.service';
 import { Filter, SearchService } from '@mm-services/search.service';
 import { Selectors } from '@mm-selectors/index';
@@ -36,7 +35,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
-  private servicesActions: ServicesActions;
   private listContains;
   private destroyed: boolean;
   private isOnlineOnly = false;
@@ -87,7 +85,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
-    this.servicesActions = new ServicesActions(store);
   }
 
   ngOnInit() {
