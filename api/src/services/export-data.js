@@ -95,7 +95,7 @@ module.exports = {
       feedback: 'can_export_feedback',
       messages: 'can_export_messages',
       reports: 'can_export_messages',
-      'user-devices': 'can_export_messages', // TODO use a diff permission
+      'user-devices': 'can_export_feedback',
     };
 
     const permission = typeToPermissionMap[type];
