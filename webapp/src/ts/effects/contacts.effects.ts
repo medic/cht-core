@@ -13,6 +13,7 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -25,6 +26,7 @@ export class ContactsEffects {
   constructor(
     private actions$: Actions,
     private store: Store,
+    private performanceService: PerformanceService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private contactSummaryService: ContactSummaryService,
     private tasksForContactService: TasksForContactService,
@@ -45,6 +47,7 @@ export class ContactsEffects {
   }
 
   selectContact = createEffect(() => {
+    const trackPerformance = this.performanceService.track('select_contact:load_everything');
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
       withLatestFrom(
@@ -82,6 +85,9 @@ export class ContactsEffects {
             console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
             return of(this.contactsActions.clearSelection());
+          })
+          .finally(() => {
+            trackPerformance?.stop();
           });
 
         return of(loadContact);
@@ -98,6 +104,7 @@ export class ContactsEffects {
   }
 
   private loadContact(id) {
+    const trackPerformance = this.performanceService.track('select_contact:contact_data');
     this.contactsActions.setContactIdToLoad(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
@@ -108,6 +115,9 @@ export class ContactsEffects {
             this.globalActions.settingSelected();
             this.contactsActions.setSelectedContact(model);
           });
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
@@ -116,6 +126,7 @@ export class ContactsEffects {
   }
 
   private loadChildren(contactId, userFacilityId) {
+    const trackPerformance = this.performanceService.track('select_contact:load_children');
     const getChildPlaces = userFacilityId !== contactId;
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
@@ -123,40 +134,56 @@ export class ContactsEffects {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactChildren(children));
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
   private loadReports(contactId, forms) {
+    const trackPerformance = this.performanceService.track('select_contact:load_reports');
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
       .then(reports => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactReports(reports));
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
   private loadTargetDoc(contactId) {
+    const trackPerformance = this.performanceService.track('select_contact:load_targets');
     return this.targetAggregateService
       .getCurrentTargetDoc(this.selectedContact)
       .then(targetDoc => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc));
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
   private loadTasks(contactId) {
+    const trackPerformance = this.performanceService.track('select_contact:load_tasks');
     return this.tasksForContactService
       .get(this.selectedContact)
       .then(tasks => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.updateSelectedContactsTasks(tasks));
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 
   private loadContactSummary(contactId) {
+    const trackPerformance = this.performanceService.track('select_contact:load_contact_summary');
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
@@ -167,6 +194,9 @@ export class ContactsEffects {
             this.contactsActions.setContactsLoadingSummary(false);
             return this.contactsActions.updateSelectedContactSummary(summary);
           });
+      })
+      .finally(() => {
+        trackPerformance?.stop();
       });
   }
 }
