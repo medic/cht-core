@@ -311,7 +311,7 @@ describe('Export Data Service', () => {
   describe('Export users devices', () => {
     it('handles empty db', async () => {
       sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
-      const actual = await mockRequest('usersDevices');
+      const actual = await mockRequest('user-devices');
       actual.should.equal('user,deviceId,date,webview,apk,android,cht,settings\n');
     });
 
@@ -351,7 +351,7 @@ describe('Export Data Service', () => {
         .onCall(0).resolves({ rows })
         .onCall(1).resolves({ rows })
         .onCall(2).resolves({ rows: [] });
-      const actual = await mockRequest('usersDevices');
+      const actual = await mockRequest('user-devices');
       /* eslint-disable max-len */
       actual.should.equal(`user,deviceId,date,webview,apk,android,cht,settings
 "admin-central-2","d26e2875-53af-4e9b-b695-c82faf0db5d8","2022-11-21","107.0",,,"unknown","4-83c8561a13479b245b295e97401f2f55"

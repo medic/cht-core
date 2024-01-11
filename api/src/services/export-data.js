@@ -8,7 +8,7 @@ const MAPPERS = {
   contacts: require('./export/contact-mapper'),
   messages: require('./export/message-mapper'),
   feedback: require('./export/feedback-mapper'),
-  usersDevices: require('./export/users-devices-mapper'),
+  'user-devices': require('./export/user-devices-mapper'),
 };
 
 const joinLine = (csvLine) => csvLine.join(',') + '\n';
@@ -95,7 +95,7 @@ module.exports = {
       feedback: 'can_export_feedback',
       messages: 'can_export_messages',
       reports: 'can_export_messages',
-      usersDevices: 'can_export_messages', // TODO use a diff permission
+      'user-devices': 'can_export_messages', // TODO use a diff permission
     };
 
     const permission = typeToPermissionMap[type];

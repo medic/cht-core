@@ -1,4 +1,4 @@
-angular.module('controllers').controller('ExportUsersDevicesCtrl',
+angular.module('controllers').controller('ExportUserDevicesCtrl',
   function (
     $scope,
     Export
@@ -8,7 +8,7 @@ angular.module('controllers').controller('ExportUsersDevicesCtrl',
     'ngInject';
 
     $scope.export = function() {
-      Export('usersDevices', {}, {});
+      Export('user-devices', {}, {});
     };
 
   });
