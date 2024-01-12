@@ -52,3 +52,4 @@ couchdb/srv*
 tests/scalability/jmeter/
 webapp/analyzer.report.html
 /webapp/.angular/
+.nyc_output
