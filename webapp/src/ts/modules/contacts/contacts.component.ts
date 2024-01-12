@@ -335,7 +335,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
-    const trackPerformance = this.performanceService.track('contact-list:query');
+    const trackPerformance = this.performanceService.track('contact-list:query:execute_search');
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
       options.limit = this.PAGE_SIZE;

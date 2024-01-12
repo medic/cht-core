@@ -104,7 +104,7 @@ export class ContactsEffects {
   }
 
   private loadContact(id) {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything:contact_data');
+    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_contact_data');
     this.contactsActions.setContactIdToLoad(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
