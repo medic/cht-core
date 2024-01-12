@@ -17,8 +17,9 @@ const DB_NAME_BLOCKED_CHARS = /[^a-z0-9_$()+/-]/g;
 /* eslint-disable no-var */
 /* istanbul ignore next */
 
+// NOSONAR_BEGIN
 const readMapFunction = function (doc) {
-  var parts = doc._id.split(':');/*NOSONAR*/
+  var parts = doc._id.split(':');
   if (parts[0] === 'read') {
     emit(parts[1]);
   }
@@ -27,10 +28,11 @@ const readMapFunction = function (doc) {
 
 /* istanbul ignore next */
 const validateDocUpdate = function (newDoc) {
-  if (newDoc && newDoc._deleted && newDoc.purged) {/*NOSONAR*/
-    throw ({forbidden: 'Purged documents should not be written to CouchDB!'});/*NOSONAR*/
+  if (newDoc && newDoc._deleted && newDoc.purged) {
+    throw ({forbidden: 'Purged documents should not be written to CouchDB!'});
   }
 };
+// NOSONAR_END
 
 const ddoc = {
   _id: '_design/medic-user',

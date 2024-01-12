@@ -71,12 +71,12 @@ describe('User DB service', () => {
         chai.expect(ddoc).to.have.all.keys('_id', 'views', 'validate_doc_update');
         chai.expect(ddoc._id).to.equal('_design/medic-user');
         chai.expect(ddoc.views.read.map).to.equal(
-          'function(doc){var parts=doc._id.split(\':\');/*NOSONAR*/if(parts[0]===\'read\'){emit(parts[1]);}}'
+          'function(doc){var parts=doc._id.split(\':\');if(parts[0]===\'read\'){emit(parts[1]);}}'
         );
         chai.expect(ddoc.views.read.reduce).to.equal('_count');
         chai.expect(ddoc.validate_doc_update).to.equal(
-          'function(newDoc){if(newDoc&&newDoc._deleted&&newDoc.purged){/*NOSONAR*/' +
-          'throw{forbidden:\'Purged documents should not be written to CouchDB!\'};/*NOSONAR*/}}'
+          'function(newDoc){if(newDoc&&newDoc._deleted&&newDoc.purged){' +
+          'throw{forbidden:\'Purged documents should not be written to CouchDB!\'};}}'
         );
         chai.expect(db.close.callCount).to.equal(1);
         chai.expect(db.close.args[0]).to.deep.equal([userDb]);

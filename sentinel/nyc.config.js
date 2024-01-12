@@ -5,9 +5,5 @@ module.exports = {
   include: [
     'src/**/*.js'
   ],
-  exclude: [
-    'tests/**/*.js',
-    'shared-libs/**/*.*',
-  ],
   reporter: 'text-summary'
 };
