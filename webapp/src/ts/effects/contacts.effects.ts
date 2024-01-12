@@ -47,7 +47,6 @@ export class ContactsEffects {
   }
 
   selectContact = createEffect(() => {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything');
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
       withLatestFrom(
@@ -55,6 +54,7 @@ export class ContactsEffects {
         this.store.select(Selectors.getForms),
       ),
       exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
+        const trackPerformance = this.performanceService.track('select_contact:load_everything');
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
