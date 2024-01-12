@@ -3,7 +3,7 @@ const wdioBaseConfig = require('../wdio.conf');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 const ANDROID_VERSION = '13';
-const MOBILE_CHROME_VERSION = '118.0.5993.112';
+const MOBILE_CHROME_VERSION = '120.0.6099.199';
 
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
