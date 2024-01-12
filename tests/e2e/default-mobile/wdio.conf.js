@@ -17,12 +17,14 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       ],
     ]
   },
-  beforeHook: async () => {
+  beforeSuite: async () => {
     // We tried the browser.emulateDevice('...') function but it's not stable enough,
     // it looses the mobile view and switches back to desktop.
     // Adding to the comment above, it loses the mobile view when a test fails.
     // It may be better to use beforeHook instead of beforeSuite so it can set the capability before each test.
-    console.log('default-mobile beforeHook code');
+    // eslint-disable-next-line no-undef
+    const currentUserAgent = await browser.execute(() => navigator.userAgent);
+    console.log('Current User Agent:', currentUserAgent);
     await browser.emulateDevice({
       viewport: {
         width: 600,

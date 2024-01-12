@@ -26,11 +26,11 @@ describe('Test Contact Search with Barcode Scanner', async () => {
     await utils.updatePermissions(offlineUser.roles, canUseBarcodeScannerPermission, [], false);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
-    await browser.refresh();
   });
 
   it('Search should display correct results, clear search should display all contacts', async () => {
     await commonPage.goToPeople();
+    await browser.refresh();
     await searchPage.performBarcodeSearch(barcodeImagePath);
     expect(await contactPage.getAllLHSContactsNames()).to.have.members([
       person.name
