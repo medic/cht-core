@@ -15,7 +15,7 @@ const person = personFactory.build({
   patient_id: '123456',
   parent: { _id: healthCenter._id, parent: healthCenter.parent }
 });
-const barcodeImagePath = path.join(__dirname, '/images/valid-barcode.png');
+const barcodeImagePath = path.join(__dirname, '/images/valid-barcode.jpg');
 const invalidBarcodeImagePath = path.join(__dirname, '/images/invalid-barcode.jpg');
 
 describe('Test Contact Search with Barcode Scanner', async () => {
@@ -26,10 +26,10 @@ describe('Test Contact Search with Barcode Scanner', async () => {
     await utils.updatePermissions(offlineUser.roles, canUseBarcodeScannerPermission, [], false);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
-    await commonPage.goToPeople();
   });
 
   it('Search should display correct results, clear search should display all contacts', async () => {
+    await commonPage.goToPeople();
     await searchPage.performBarcodeSearch(barcodeImagePath);
     expect(await contactPage.getAllLHSContactsNames()).to.have.members([
       person.name
@@ -43,7 +43,9 @@ describe('Test Contact Search with Barcode Scanner', async () => {
   });
 
   it('With an invalid barcode image - Search should display snackbar with error message', async () => {
+    await commonPage.goToPeople();
     await searchPage.performBarcodeSearch(invalidBarcodeImagePath);
+    await commonPage.waitForLoaders();
     expect(await commonPage.snackbarMessage()).to.equal('Failed to read the barcode. Retry.');
   });
 
