@@ -11,11 +11,6 @@ const performSearch = async (term) => {
 };
 
 const performBarcodeSearch = async (barcodeImagePath) => {
-  // eslint-disable-next-line no-undef
-  const currentUserAgent = await browser.execute(() => navigator.userAgent);
-  console.log('Current User Agent:', currentUserAgent);
-  //const outerHTML = await $('.mm-search-bar-container').getHTML();
-  //console.log(outerHTML);
   await $('.mm-search-bar-container .fa.fa-qrcode').waitForDisplayed();
   //await $('.barcode-scanner-input').waitForExist();
   // In this case the upload file button is hidden,
