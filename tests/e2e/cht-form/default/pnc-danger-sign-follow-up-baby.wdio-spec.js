@@ -1,6 +1,6 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
 
@@ -15,17 +15,17 @@ describe('cht-form web component - PNC Danger Sign Follow-up Baby', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('PNC danger sign follow-up - baby');
 
-    await genericForm.selectYesNoOption(dangerSignPage.visitConfirmation('pnc_danger_sign_follow_up_baby'));
-    await genericForm.selectYesNoOption(dangerSignPage.dangerSignsPresent('pnc_danger_sign_follow_up_baby'));
-    await genericForm.selectYesNoOption(dangerSignPage.infectedUmbilicalCord('pnc_danger_sign_follow_up_baby'));
-    await genericForm.selectYesNoOption(dangerSignPage.convulsion('pnc_danger_sign_follow_up_baby'), 'no');
-    await genericForm.selectYesNoOption(dangerSignPage.difficultyFeeding('pnc_danger_sign_follow_up_baby'));
-    await genericForm.selectYesNoOption(dangerSignPage.vomit('pnc_danger_sign_follow_up_baby'), 'no');
-    await genericForm.selectYesNoOption(dangerSignPage.drowsy('pnc_danger_sign_follow_up_baby'));
-    await genericForm.selectYesNoOption(dangerSignPage.stiffness('pnc_danger_sign_follow_up_baby'), 'no');
-    await genericForm.selectYesNoOption(dangerSignPage.yellowSkin('pnc_danger_sign_follow_up_baby'));
-    await genericForm.selectYesNoOption(dangerSignPage.fever('pnc_danger_sign_follow_up_baby'), 'no');
-    await genericForm.selectYesNoOption(dangerSignPage.blueSkin('pnc_danger_sign_follow_up_baby'));
+    await commonEnketoPage.selectRadioButton('Was the baby taken to the health facility as recommended?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Is the baby still experiencing any danger signs?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Infected umbilical cord', 'Yes');
+    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
+    await commonEnketoPage.selectRadioButton('Difficulty feeding or drinking', 'Yes');
+    await commonEnketoPage.selectRadioButton('Vomits everything', 'No');
+    await commonEnketoPage.selectRadioButton('Drowsy or unconscious', 'Yes');
+    await commonEnketoPage.selectRadioButton('Body stiffness', 'No');
+    await commonEnketoPage.selectRadioButton('Yellow skin color', 'Yes');
+    await commonEnketoPage.selectRadioButton('Fever', 'No');
+    await commonEnketoPage.selectRadioButton('Blue skin color (hypothermia)', 'Yes');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
     const jsonObj = doc.fields;

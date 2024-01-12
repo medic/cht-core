@@ -9,7 +9,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
-const undoDeathReportForm = require('@page-objects/default/enketo/undo-death-report.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Submit an undo death report', () => {
@@ -31,7 +31,12 @@ describe('Submit an undo death report', () => {
 
   it('Should submit an undo death report', async () => {
     await commonPage.openFastActionReport('undo_death_report');
-    await undoDeathReportForm.setConfirmUndoDeathOption();
+    await commonEnketoPage.selectRadioButton(
+      'Submitting this form will undo the death report of ' +
+      person.name +
+      '. Are you sure you want to undo the death report?',
+      'Yes'
+    );
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
     await commonPage.sync(true);

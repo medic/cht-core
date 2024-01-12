@@ -8,7 +8,7 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
-const undoDeathReportForm = require('@page-objects/default/enketo/undo-death-report.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Mute/Unmute contacts using a specific form.', () => {
   const places = placeFactory.generateHierarchy();
@@ -44,6 +44,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
+    await commonPage.waitForPageLoaded();
     await commonPage.sync();
 
     expect(await (await contactPage.contactMuted()).isDisplayed()).to.be.true;
@@ -53,7 +54,12 @@ describe('Mute/Unmute contacts using a specific form.', () => {
   it('Should unmute a contact using the defined unmute_forms (undo_death_report).', async () => {
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('undo_death_report');
-    await undoDeathReportForm.setConfirmUndoDeathOption();
+    await commonEnketoPage.selectRadioButton(
+      'Submitting this form will undo the death report of ' +
+      person.name +
+      '. Are you sure you want to undo the death report?',
+      'Yes'
+    );
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
     await commonPage.sync();

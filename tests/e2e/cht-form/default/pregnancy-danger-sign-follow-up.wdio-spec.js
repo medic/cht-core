@@ -1,6 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const pregDangerSignFollowUpForm = require('@page-objects/default/enketo/pregnancy-danger-sign-follow-up.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('cht-form web component - Pregnancy Danger Sign Form', () => {
 
@@ -15,8 +16,9 @@ describe('cht-form web component - Pregnancy Danger Sign Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy danger sign follow-up');
 
-    await pregDangerSignFollowUpForm.selectVisitedHealthFacility(true);
-    await pregDangerSignFollowUpForm.selectDangerSigns(true);
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
+    await dangerSignPage.selectAllDangerSignsPregnancy();
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
     const jsonObj = doc.fields;

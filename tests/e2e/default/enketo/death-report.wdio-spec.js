@@ -9,8 +9,8 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const sentinelUtils = require('@utils/sentinel');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Submit a death report', () => {
@@ -31,17 +31,22 @@ describe('Submit a death report', () => {
 
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('death_report');
-    await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);
-    await deathReportForm.setDeathInformation(deathNote);
-    await deathReportForm.setDeathDate(deathDate.format('YYYY-MM-DD'));
+    await commonEnketoPage.selectRadioButton('Place of death', 'Health facility');
+    await commonEnketoPage.setTextareaValue(`Provide any relevant information related to the death of ${person.name}.`,
+      deathNote);
+    await commonEnketoPage.setDateValue('Date of Death', deathDate.format('YYYY-MM-DD'));
     await genericForm.nextPage();
 
-    const summaryDetails = await deathReportForm.getSummaryDetails();
-    expect(summaryDetails.patientName).to.equal(person.name);
-    expect(summaryDetails.deathDate).to.equal(deathDate.format('YYYY-MM-DD'));
-    expect(summaryDetails.deathInformation).to.equal(deathNote);
+    const summaryTexts = [
+      person.name,
+      deathDate.format('YYYY-MM-DD'),
+      deathNote
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
     await commonPage.sync();
     await sentinelUtils.waitForSentinel();
     await commonPage.sync();

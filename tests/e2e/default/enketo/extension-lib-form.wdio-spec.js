@@ -3,6 +3,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
@@ -24,8 +25,8 @@ describe('Extension lib xpath function', () => {
 
     await commonPage.openFastActionReport(extensionLibsPage.INTERNAL_ID, false);
 
-    await extensionLibsPage.typeFirst(5);
-    await extensionLibsPage.typeSecond(8);
+    await commonEnketoPage.setInputValue('first', 5);
+    await commonEnketoPage.setInputValue('second', 8);
     await extensionLibsPage.blur();
 
     const average = await extensionLibsPage.getAverage();
