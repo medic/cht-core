@@ -234,6 +234,11 @@ describe('replication', () => {
       await utils.saveDocs([...allowedDocs, ...deniedDocs]);
       const response = await requestDocs('bob');
       assertDocIds(response, ...bobsIds, ...getIds(allowedDocs));
+
+      const replicationLimit = await utils.request('/api/v1/users-doc-count');
+      const bobReplicationCount = replicationLimit.users.find(log => log.user === 'bob');
+      expect(bobReplicationCount).to.be.ok;
+      expect(bobReplicationCount.count).to.be.greaterThan([...bobsIds, ...getIds(allowedDocs)].length);
     });
 
     it('should return relevant ids for concurrent users', async () => {
@@ -242,10 +247,16 @@ describe('replication', () => {
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
 
       await utils.saveDocs([ ...allowedBob, ...allowedSteve, ...deniedDocs ]);
-      const [responseBob, responseSteve] = await Promise
-        .all([await requestDocs('bob'), await requestDocs('steve')]);
+      const [responseBob, responseSteve] = await Promise.all([
+        await requestDocs('bob'),
+        await requestDocs('steve')
+      ]);
       assertDocIds(responseBob, ...bobsIds, ...getIds(allowedBob));
       assertDocIds(responseSteve, ...stevesIds, ...getIds(allowedSteve));
+
+      const replicationLimit = await utils.request('/api/v1/users-doc-count');
+      const steveReplicationCount = replicationLimit.users.find(log => log.user === 'steve');
+      expect(steveReplicationCount.count).to.be.greaterThan([...stevesIds, ...getIds(allowedSteve)].length);
     });
 
     describe('reports with no associated contact', () => {
