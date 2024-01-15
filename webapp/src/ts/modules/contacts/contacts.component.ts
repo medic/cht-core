@@ -310,6 +310,43 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.sortDirection === 'last_visited_date';
   }
 
+  private getDocumentIds(contactsList, usersHomePlace): string[] {
+    const docIds = contactsList.map((item) => item._id);
+    if (usersHomePlace && !docIds.includes(usersHomePlace._id)) {
+      docIds.push(usersHomePlace._id);
+    }
+    return docIds;
+  }
+
+  private setUsersHomePlace(updatedContacts) {
+    if (this.usersHomePlace) {
+      console.log('Received usersHomePlace before forced update:', this.usersHomePlace);
+      const homeIndex = _findIndex(updatedContacts, (contact: any) => contact._id === this.usersHomePlace._id);
+
+      console.log('This is homeIndex', homeIndex);
+      console.log('This is the value of homeIndex in updatedContacts', updatedContacts[homeIndex]);
+
+      this.additionalListItem =
+        !this.filters.search &&
+        (this.additionalListItem || !this.appending) &&
+        homeIndex === -1;
+
+      if (homeIndex !== -1) {
+        // Update usersHomePlace in the list with the new data
+        this.usersHomePlace = updatedContacts[homeIndex];
+        console.log('Received usersHomePlace AFTER forced update:', this.usersHomePlace);
+        if (!this.appending) {
+          // move usersHomePlace to the top
+          updatedContacts.splice(homeIndex, 1);
+          updatedContacts.unshift(this.usersHomePlace);
+        }
+      } else if (this.additionalListItem) {
+        updatedContacts.unshift(this.usersHomePlace);
+      }
+    }
+    return updatedContacts;
+  }
+
   private query(opts?) {
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
@@ -350,40 +387,13 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       extensions.sortByLastVisitedDate = true;
     }
 
-    let docIds;
-    if (options.withIds) {
-      docIds = this.contactsList.map((item) => item._id);
-      if (this.usersHomePlace && !docIds.includes(this.usersHomePlace._id)) {
-        docIds.push(this.usersHomePlace._id);
-      }
-    }
+    const docIds = this.getDocumentIds(this.contactsList, this.usersHomePlace);
 
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
-        if (this.usersHomePlace) {
-          const homeIndex = _findIndex(updatedContacts, (contact:any) => {
-            return contact._id === this.usersHomePlace._id;
-          });
-
-          this.additionalListItem =
-            !this.filters.search &&
-            (this.additionalListItem || !this.appending) &&
-            homeIndex === -1;
-
-          if (homeIndex !== -1) {
-            // Update usersHomePlace in the list with the new data
-            this.usersHomePlace = updatedContacts[homeIndex];
-            if (!this.appending) {
-              // move usersHomePlacem to the top
-              updatedContacts.splice(homeIndex, 1);
-              updatedContacts.unshift(this.usersHomePlace);
-            }
-          } else if (this.additionalListItem) {
-            updatedContacts.unshift(this.usersHomePlace);
-          }
-        }
+        updatedContacts = this.setUsersHomePlace(updatedContacts);
 
         updatedContacts = this.formatContacts(updatedContacts);
         this.contactsActions.updateContactsList(updatedContacts);
