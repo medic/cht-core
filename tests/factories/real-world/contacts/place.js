@@ -16,7 +16,7 @@ const place = () => {
     .attr('contact', '')
     .attr('geolocation', ['type'], (type) => {
       if (type === 'clinic') {
-        return Faker.faker.address.latitude() + ' ' + Faker.faker.address.longitude();
+        return Faker.faker.location.latitude() + ' ' + Faker.faker.location.longitude();
       }
       return null;
     })

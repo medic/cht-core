@@ -24,7 +24,7 @@ module.exports = new Factory()
   .attr('o_lmp', Faker.faker.datatype.boolean())
   .attr('o_lmp_start', ['o_lmp'], (oLmp) => {
     if (oLmp) {
-      return moment().subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');
+      return moment().subtract(Faker.faker.number.int({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');
     }
   })
   .attr('o_lmp_approx', ['o_lmp'], (oLmp) => {
