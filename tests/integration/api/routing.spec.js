@@ -174,15 +174,17 @@ describe('routing', () => {
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
         utils.requestOnTestDb('/_design/medic-client'),
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
-        expect(semver.valid(deployInfoOnline.version)).to.be.ok;
-        expect(semver.valid(deployInfoOffline.version)).to.be.ok;
-
         const { BRANCH } = process.env;
         const deployInfo = {
           ...ddoc.deploy_info,
           ...ddoc.build_info,
           version: BRANCH ? ddoc.build_info.build : ddoc.build_info.version
         };
+        console.log('***** deployInfo', JSON.stringify(deployInfo, null, 4));
+        console.log('***** deployInfoOnline', JSON.stringify(deployInfoOnline, null, 4));
+        console.log('***** deployInfoOffline', JSON.stringify(deployInfoOffline, null, 4));
+        expect(semver.valid(deployInfoOnline.version)).to.be.ok;
+        expect(semver.valid(deployInfoOffline.version)).to.be.ok;
         // for historical reasons, for a branch the version in the ddoc is the branch name.
         expect(deployInfoOnline).to.deep.equal(deployInfo);
         expect(deployInfoOffline).to.deep.equal(deployInfo);
