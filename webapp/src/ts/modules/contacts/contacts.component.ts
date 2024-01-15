@@ -318,32 +318,40 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return docIds;
   }
 
-  private setUsersHomePlace(updatedContacts) {
-    if (this.usersHomePlace) {
-      console.log('Received usersHomePlace before forced update:', this.usersHomePlace);
-      const homeIndex = _findIndex(updatedContacts, (contact: any) => contact._id === this.usersHomePlace._id);
+  private findHomeIndex(updatedContacts: any[]): number {
+    return _findIndex(updatedContacts, contact => contact._id === this.usersHomePlace._id);
+  }
 
-      console.log('This is homeIndex', homeIndex);
-      console.log('This is the value of homeIndex in updatedContacts', updatedContacts[homeIndex]);
+  private checkAdditionalListItem(homeIndex: number) {
+    this.additionalListItem =
+      !this.filters.search &&
+      (this.additionalListItem || !this.appending) &&
+      homeIndex === -1;
+  }
 
-      this.additionalListItem =
-        !this.filters.search &&
-        (this.additionalListItem || !this.appending) &&
-        homeIndex === -1;
+  private updateUsersHomePlace(updatedContacts: any[], homeIndex: number) {
+    if (homeIndex !== -1) {
+      this.usersHomePlace = updatedContacts[homeIndex];
 
-      if (homeIndex !== -1) {
-        // Update usersHomePlace in the list with the new data
-        this.usersHomePlace = updatedContacts[homeIndex];
-        console.log('Received usersHomePlace AFTER forced update:', this.usersHomePlace);
-        if (!this.appending) {
-          // move usersHomePlace to the top
-          updatedContacts.splice(homeIndex, 1);
-          updatedContacts.unshift(this.usersHomePlace);
-        }
-      } else if (this.additionalListItem) {
+      if (!this.appending) {
+        updatedContacts.splice(homeIndex, 1);
         updatedContacts.unshift(this.usersHomePlace);
       }
+    } else if (this.additionalListItem) {
+      updatedContacts.unshift(this.usersHomePlace);
     }
+  }
+
+  private setUsersHomePlace(updatedContacts) {
+    if (!this.usersHomePlace) {
+      return updatedContacts;
+    }
+
+    const homeIndex = this.findHomeIndex(updatedContacts);
+
+    this.checkAdditionalListItem(homeIndex);
+    this.updateUsersHomePlace(updatedContacts, homeIndex);
+
     return updatedContacts;
   }
 
