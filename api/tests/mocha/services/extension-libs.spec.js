@@ -45,7 +45,7 @@ describe('Extension Libs service', () => {
       dbGet.rejects({ status: 403 });
       try {
         await service.getAll();
-      } catch(e) {
+      } catch (e) {
         chai.expect(e.status).to.equal(403);
         chai.expect(dbGet.callCount).to.equal(1);
         return;
@@ -105,7 +105,7 @@ describe('Extension Libs service', () => {
       dbGet.rejects({ status: 403 });
       try {
         await service.get('second');
-      } catch(e) {
+      } catch (e) {
         chai.expect(e.status).to.equal(403);
         chai.expect(dbGet.callCount).to.equal(1);
         return;

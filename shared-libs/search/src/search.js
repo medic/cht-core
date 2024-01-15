@@ -80,9 +80,8 @@ module.exports = function(Promise, DB) {
         return _.flatten(data.map(function(datum) {
           if (request.map) {
             return datum.rows.map(request.map);
-          } else {
-            return datum.rows;
           }
+          return datum.rows;
         }), true);
       });
   };
@@ -134,11 +133,10 @@ module.exports = function(Promise, DB) {
             queryResultsCache: results.queryResultsCache,
             docIds: _.map(results.docIds, 'id')
           };
-        } else {
-          return {
-            docIds: _.map(results, 'id')
-          };
         }
+        return {
+          docIds: _.map(results, 'id')
+        };
       });
   };
 };

@@ -2,22 +2,22 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ComponentFixture, fakeAsync, TestBed, flush, waitForAsync } from '@angular/core/testing';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { Subject } from 'rxjs';
 
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { DbService } from '@mm-services/db.service';
-import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('DeleteDocConfirmComponent', () => {
   let component: DeleteDocConfirmComponent;
   let fixture: ComponentFixture<DeleteDocConfirmComponent>;
   let store: MockStore;
-  let bdModalRef;
+  let matDialogRef;
   let dbService;
   let localDb;
   let router;
@@ -26,7 +26,7 @@ describe('DeleteDocConfirmComponent', () => {
   let mockedSelectors;
 
   beforeEach(waitForAsync(() => {
-    bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
+    matDialogRef = { close: sinon.stub() };
     localDb = { put: sinon.stub().resolves(true) };
     dbService = { get: sinon.stub().returns(localDb) };
     router = {
@@ -47,13 +47,15 @@ describe('DeleteDocConfirmComponent', () => {
         ],
         declarations: [
           DeleteDocConfirmComponent,
-          MmModal
+          ModalLayoutComponent,
+          PanelHeaderComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: BsModalRef, useValue: bdModalRef },
           { provide: DbService, useValue: dbService },
           { provide: Router, useValue: router },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
         ]
       })
       .compileComponents()
@@ -76,10 +78,10 @@ describe('DeleteDocConfirmComponent', () => {
     expect(component).to.exist;
   });
 
-  it('close() should call hide from BsModalRef', () => {
+  it('should close modal', () => {
     component.close();
 
-    expect(bdModalRef.hide.callCount).to.equal(1);
+    expect(matDialogRef.close.calledOnce).to.be.true;
   });
 
   describe('submit()', () => {
@@ -91,28 +93,26 @@ describe('DeleteDocConfirmComponent', () => {
           parent: { _id: 'id456' }
         }
       };
-      component.model = {
-        doc: {
-          id: 'id',
-          patient: {},
-          rev: 'rev',
-          type: 'data_record',
-          contact: {
-            _id: 'id',
-            parent: {
-              _id: 'id123',
-              parent: { _id: 'id456' }
-            }
+      component.doc = {
+        id: 'id',
+        patient: {},
+        rev: 'rev',
+        type: 'data_record',
+        contact: {
+          _id: 'id',
+          parent: {
+            _id: 'id123',
+            parent: { _id: 'id456' }
           }
-        }
+        },
       };
       fixture.detectChanges();
 
       component.submit();
 
-      expect(component.model.doc).to.not.have.key('patient');
-      expect(component.model.doc.contact).to.deep.equal(minifiedContact);
-      expect(component.model.doc.contact.parent).to.not.have.key('name');
+      expect(component.doc).to.not.have.key('patient');
+      expect(component.doc.contact).to.deep.equal(minifiedContact);
+      expect(component.doc.contact.parent).to.not.have.key('name');
       expect(localDb.put.callCount).to.equal(1);
       expect(localDb.put.args[0][0]).to.deep.equal({
         _deleted: true,
@@ -146,14 +146,10 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should not navigate if url is not from reports or contacts', fakeAsync(() => {
       router.url = '/something';
-      component.model = {
-        doc: {
-          id: 'id',
-          type: 'data_record',
-          parent: {
-            _id: 'id123',
-          }
-        }
+      component.doc = {
+        id: 'id',
+        type: 'data_record',
+        parent: { _id: 'id123' },
       };
       fixture.detectChanges();
 
@@ -168,14 +164,12 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate if it is not selectMode and url is from reports', fakeAsync(() => {
       router.url = '/reports/id';
-      component.model = {
-        doc: {
-          id: 'id',
-          type: 'data_record',
-          parent: {
-            _id: 'id123',
-          }
-        }
+      component.doc = {
+        id: 'id',
+        type: 'data_record',
+        parent: {
+          _id: 'id123',
+        },
       };
       fixture.detectChanges();
 
@@ -191,12 +185,10 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate if it is not selectMode and url is from contact with not parent place', fakeAsync(() => {
       router.url = '/contacts/id';
-      component.model = {
-        doc: {
-          id: 'id',
-          type: 'data_record',
-          parent: {}
-        }
+      component.doc = {
+        id: 'id',
+        type: 'data_record',
+        parent: {},
       };
       fixture.detectChanges();
 
@@ -212,14 +204,10 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate to parent place if it is not selectMode and url is from contact', fakeAsync(() => {
       router.url = '/contacts/id';
-      component.model = {
-        doc: {
-          id: 'id',
-          type: 'data_record',
-          parent: {
-            _id: '12345'
-          }
-        }
+      component.doc = {
+        id: 'id',
+        type: 'data_record',
+        parent: { _id: '12345' },
       };
       fixture.detectChanges();
 

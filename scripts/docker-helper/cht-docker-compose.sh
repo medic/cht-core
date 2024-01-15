@@ -45,7 +45,7 @@ get_lan_ip() {
 get_local_ip_url(){
   lanIp=$1
   cookedLanAddress=$(echo "$lanIp" | tr . -)
-  url="https://${cookedLanAddress}.my.local-ip.co:${CHT_HTTPS}"
+  url="https://${cookedLanAddress}.local-ip.medicmobile.org:${CHT_HTTPS}"
   echo "$url"
 }
 
@@ -72,10 +72,10 @@ port_open(){
 
 has_self_signed_cert() {
   # todo - when there's no connectivity, this fails w/ DNS
-  # curl: (6) Could not resolve host: 127-0-0-1.my.local-ip.co
+  # curl: (6) Could not resolve host: 127-0-0-1.local-ip.medicmobile.org
 
   # todo - macos returns this error some times
-  # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.my.local-ip.co:8443
+  # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.local-ip.medicmobile.org:8443
   url=$1
   curl --insecure -vvI "$url" 2>&1 | grep -c "self signed certificate"
 }
@@ -88,12 +88,16 @@ cht_healthy(){
   if [ "$portIsOpen" = "0" ]; then
     # todo - when there's no connectivity or DNS server is messing with resolution,
     #  this fails w/ DNS like one of these two:
-    # curl: (6) Could not resolve host: 127-0-0-1.my.local-ip.co
-    # curl: (6) Could not resolve host: 192-168-217-207.my.local-ip.co
+    # curl: (6) Could not resolve host: 127-0-0-1.local-ip.medicmobile.org
+    # curl: (6) Could not resolve host: 192-168-217-207.local-ip.medicmobile.org
 
     # todo - macos returns this error some times
-    # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.my.local-ip.co:8443
+    # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.local-ip.medicmobile.org:8443
     http_code=$(curl -k --silent --show-error --head "$chtUrl" --write-out '%{http_code}' | tail -n1)
+
+    if [ "$http_code" = "404" ]; then
+      add_missing_5xx_file
+    fi
     if [ "$http_code" != "200" ]; then
       echo "CHT is returning $http_code instead of 200."
     fi
@@ -123,7 +127,7 @@ validate_env_file(){
 }
 
 get_running_container_count(){
-  docker ps -qf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | wc -l
+  docker ps -qf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" | wc -l
 }
 
 get_global_running_container_count(){
@@ -190,11 +194,22 @@ docker_up_or_restart(){
 install_local_ip_cert(){
   medicOs=$(get_container_name "medic-os")
 
-  docker exec -it "${medicOs}" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key http://local-ip.co/cert/server.key" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "echo '<html><head><title>Error</title></head><body><h1>Error</h1><p>Server Error - check error logs</p></body>' > /srv/storage/medic-core/nginx/data/html/50x.html" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "apt update" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "apt install -y libssl1.0.0 openssl libgnutls30  ca-certificates curl libcurl3-gnutls" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "curl -s -o server.pem https://local-ip.medicmobile.org/cert" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem https://local-ip.medicmobile.org/chain" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key https://local-ip.medicmobile.org/key" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
+}
+
+add_missing_5xx_file(){
+  medicOs=$(get_container_name "medic-os")
+  docker exec -it "${medicOs}" bash -c "mkdir -p /srv/storage/medic-core/nginx/data/html" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "echo '<html><head><title>Error</title></head><body><h1>Error</h1><p>Server Error - check error logs</p></body>' > /srv/storage/medic-core/nginx/data/html/50x.html" >/dev/null 2>&1
+  docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
+  echo "Adding missing 5xx files!"
 }
 
 # thanks https://github.com/medic/nginx-local-ip/blob/main/entrypoint.sh#L44 !
@@ -365,12 +380,12 @@ $container_stat\
 }
 
 get_all_project_containers(){
-  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | tr '\n' ' '
+  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]"  | tr '\n' ' '
 }
 
 get_container_name(){
   container_type=$1
-  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+${container_type}[-_]+[0-9]" --format '{{.Names}}'
+  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+${container_type}[-_]+[0-9]"
 }
 
 counter=1
@@ -547,8 +562,8 @@ main (){
   # check for self signed cert, install if so
   if [ "$self_signed" = "1" ]; then
     window "WARNING: CHT has self signed certificate" "red" "100%"
-    append "Installing local-ip.co certificate to fix..."
-    last_action="Installing local-ip.co certificate..."
+    append "Installing local-ip.medicmobile.org certificate to fix..."
+    last_action="Installing local-ip.medicmobile.org certificate..."
     endwin
     install_local_ip_cert &
     return 0
@@ -558,16 +573,16 @@ main (){
   expired_cert=$(local_ip_cert_expired)
   if [[ "$expired_cert" = "1" ]] && [[ $tls_reinstalls = 0 ]]; then
     window "WARNING: CHT has expired certificate" "red" "100%"
-    append "Re-installing local-ip.co certificate to fix..."
-    last_action="Re-installing expired local-ip.co certificate..."
+    append "Re-installing local-ip.medicmobile.org certificate to fix..."
+    last_action="Re-installing expired local-ip.medicmobile.org certificate..."
     endwin
     (( tls_reinstalls++ ))
     install_local_ip_cert&
     return 0
   elif [[ "$expired_cert" = "1" ]]; then
-    window "local-ip.co certificate renewed, but still expired" "red" "100%"
+    window "local-ip.medicmobile.org certificate renewed, but still expired" "red" "100%"
     append "HTTPS calls will fail. Try running this script tomorrow"
-    append "when hopefully local-ip.co has renewed their certificate."
+    append "when hopefully local-ip.medicmobile.org has renewed their certificate."
     endwin
     log_iteration 0
     set -e

@@ -10,6 +10,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
+const sentinelUtils = require('@utils/sentinel');
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();
@@ -40,15 +42,24 @@ describe('Submit a death report', () => {
     expect(summaryDetails.deathInformation).to.equal(deathNote);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await commonPage.sync(true);
+    await commonPage.sync();
+    await sentinelUtils.waitForSentinel();
+    await commonPage.sync();
 
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;
 
     const deathCardInfo = await contactPage.getDeathCardInfo();
-    expect(deathCardInfo.deathDate).to.equal(deathDate.format('D MMM, YYYY'));
+    expect(Date.parse(deathCardInfo.deathDate)).to.equal(Date.parse(deathDate.format('D MMM, YYYY')));
     expect(deathCardInfo.deathPlace).to.equal('Health facility');
+  });
+
+  it('should edit the report', async () => {
+    await commonPage.goToReports();
+    const reportId = await reportsPage.getLastSubmittedReportId();
+    await reportsPage.editReport(reportId);
+    await genericForm.nextPage();
+    await reportsPage.submitForm();
   });
 
   it('Should verify that the report related to the death was created', async () => {
@@ -64,14 +75,20 @@ describe('Submit a death report', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '1' },
-      { title: 'New pregnancies', goal: '20', count: '0' },
-      { title: 'Live births', count: '0' },
-      { title: 'Active pregnancies', count: '0' },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'Deaths', goal: '0', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', goal: '20', count: '0', countNumberColor: TARGET_UNMET_COLOR },
+      { title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 1+ routine facility visits',
+        count: '0',
+        countNumberColor: TARGET_MET_COLOR
+      },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0' }
+      { title: 'Active pregnancies with 4+ routine facility visits',
+        count: '0',
+        countNumberColor: TARGET_MET_COLOR
+      },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR }
     ]);
   });
 

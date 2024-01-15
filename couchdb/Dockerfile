@@ -1,4 +1,4 @@
-FROM couchdb:2.3.1 as base_couchdb_build
+FROM couchdb:3.3.2 as base_couchdb_build
 
 # Add configuration
 COPY --chown=couchdb:couchdb 10-docker-default.ini /opt/couchdb/etc/default.d/

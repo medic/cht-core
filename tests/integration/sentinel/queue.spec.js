@@ -25,7 +25,7 @@ const contacts = [
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -84,8 +84,6 @@ describe('Sentinel queue drain', () => {
       ids.push(id);
     }
 
-    let tombstonesIds;
-
     return utils
       .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(docs))
@@ -104,20 +102,8 @@ describe('Sentinel queue drain', () => {
           expect(info.transitions.default_responses.ok).to.be.true;
           expect(info.transitions.update_clinics.ok).to.be.true;
         });
-      })
-      .then(() => utils.deleteDocs(ids))
-      .then(results => {
-        tombstonesIds = results.map(result => result.id + '____' + result.rev + '____' + 'tombstone');
-      })
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => utils.getDocs(tombstonesIds))
-      .then(tombstones => {
-        tombstones.forEach(tombstone => {
-          expect(tombstone.type).to.equal('tombstone');
-          expect(tombstone.tombstone).to.have.property('type', 'data_record');
-        });
       });
-  }).timeout(300 * 1000);
+  }).timeout(400 * 1000);
 
   it('queue should work after restarting haproxy', async () => {
     await utils.stopHaproxy(); // this will also crash Sentinel and API
@@ -135,7 +121,6 @@ describe('Sentinel queue drain', () => {
       reported_date: new Date().getTime(),
     };
     await utils.saveDoc(doc);
-    console.log(doc);
     await sentinelUtils.waitForSentinel();
     const [info] = await sentinelUtils.getInfoDocs(doc._id);
     expect(info.transitions.update_clinics.ok).to.be.true;

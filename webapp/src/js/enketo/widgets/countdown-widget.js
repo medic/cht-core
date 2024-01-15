@@ -107,11 +107,11 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
   const animate = (start) => {
     const offset = Date.now() - start;
 
-    if(!running) {
+    if (!running) {
       return;
     }
 
-    if(offset < LIM*2) {
+    if (offset < LIM*2) {
       drawAnimation(offset);
       requestAnimationFrame(function() {
         animate(start);
@@ -137,7 +137,7 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
     resetTimer();
 
     canvas.addEventListener('click', function() {
-      if(running) {
+      if (running) {
         resetTimer();
       } else {
         startTimer();

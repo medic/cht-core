@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { DOCUMENT } from '@angular/common';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import * as moment from 'moment';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { DbService } from '@mm-services/db.service';
@@ -16,11 +16,8 @@ describe('TelemetryService', () => {
   let sessionService;
   let clock;
   let telemetryDb;
-  let storageGetItemStub;
-  let storageSetItemStub;
   let consoleErrorSpy;
-
-  const windowPouchOriginal = window.PouchDB;
+  let windowMock;
 
   const windowScreenOriginal = {
     availWidth: window.screen.availWidth,
@@ -77,19 +74,6 @@ describe('TelemetryService', () => {
     );
   };
 
-  const subtractDays = (numDays) => {
-    return moment()
-      .subtract(numDays, 'days')
-      .valueOf()
-      .toString();
-  };
-
-  const sameDay = () => {
-    return moment()
-      .valueOf()
-      .toString();
-  };
-
   beforeEach(() => {
     defineWindow();
     metaDb = {
@@ -102,7 +86,7 @@ describe('TelemetryService', () => {
       allDocs: sinon.stub()
     };
     const getStub = sinon.stub();
-    getStub.withArgs({meta: true}).returns(metaDb);
+    getStub.withArgs({ meta: true }).returns(metaDb);
     getStub.returns(medicDb);
     dbService = { get: getStub };
     consoleErrorSpy = sinon.spy(console, 'error');
@@ -116,63 +100,78 @@ describe('TelemetryService', () => {
       })
     };
     sessionService = { userCtx: sinon.stub().returns({ name: 'greg' }) };
-    storageGetItemStub = sinon.stub(window.localStorage, 'getItem');
-    storageSetItemStub = sinon.stub(window.localStorage, 'setItem');
+    windowMock = {
+      PouchDB: sinon.stub().returns(telemetryDb),
+      indexedDB: { databases: sinon.stub() },
+      localStorage: { getItem: sinon.stub(), setItem: sinon.stub() },
+    };
+    const documentMock = {
+      defaultView: windowMock,
+      querySelectorAll: sinon.stub().returns([]),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: dbService },
-        { provide: SessionService, useValue: sessionService }
+        { provide: SessionService, useValue: sessionService },
+        { provide: DOCUMENT, useValue: documentMock },
       ]
     });
 
     service = TestBed.inject(TelemetryService);
     clock = sinon.useFakeTimers(NOW);
-    window.PouchDB = () => telemetryDb;
   });
 
   afterEach(() => {
     clock.restore();
     sinon.restore();
-    window.PouchDB = windowPouchOriginal;
     restoreWindow();
   });
 
   describe('record()', () => {
     it('should record a piece of telemetry', async () => {
-      storageGetItemStub.withArgs('medic-greg-telemetry-db').returns('dbname');
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(Date.now().toString());
+      medicDb.query.resolves({ rows: [] });
+      telemetryDb.query.resolves({ rows: [] });
+      windowMock.indexedDB.databases.resolves([
+        { name: '_pouch_telemetry-2018-11-10-greg' },
+        { name: '_pouch_some-other-db' },
+        { name: '_pouch_telemetry-2018-11-09-greg' },
+      ]);
 
       await service.record('test', 100);
 
-      expect(consoleErrorSpy.callCount).to.equal(0);
-      expect(telemetryDb.post.callCount).to.equal(1);
+      expect(consoleErrorSpy.notCalled).to.be.true;
+      expect(telemetryDb.post.calledOnce).to.be.true;
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
       expect(telemetryDb.post.args[0][0].date_recorded).to.be.above(0);
-      expect(storageGetItemStub.callCount).to.equal(3);
-      expect(storageGetItemStub.args[0]).to.deep.equal(['medic-greg-telemetry-db']);
-      expect(storageGetItemStub.args[1]).to.deep.equal(['medic-greg-telemetry-date']);
-      expect(storageGetItemStub.args[2]).to.deep.equal(['medic-greg-telemetry-db']);
-      expect(telemetryDb.close.callCount).to.equal(1);
+      expect(windowMock.indexedDB.databases.calledOnce).to.be.true;
+      expect(windowMock.PouchDB.calledTwice).to.be.true;
+      expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-09-greg' ]);
+      expect(windowMock.PouchDB.args[1]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
+      expect(telemetryDb.destroy.calledOnce).to.be.true;
     });
 
     it('should default the value to 1 if not passed', async () => {
-      storageGetItemStub.withArgs('medic-greg-telemetry-db').returns('dbname');
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(Date.now().toString());
+      medicDb.query.resolves({ rows: [] });
+      telemetryDb.query.resolves({ rows: [] });
+      windowMock.indexedDB.databases.resolves([
+        { name: 'telemetry-2018-11-10-greg' },
+        { name: 'some-other-db' },
+        { name: 'telemetry-2018-11-09-greg' },
+      ]);
 
       await service.record('test');
 
-      expect(consoleErrorSpy.callCount).to.equal(0);
+      expect(consoleErrorSpy.notCalled).to.be.true;
       expect(telemetryDb.post.args[0][0].value).to.equal(1);
-      expect(telemetryDb.close.callCount).to.equal(1);
+      expect(telemetryDb.destroy.calledOnce).to.be.true;
     });
 
     const setupDbMocks = () => {
-      storageGetItemStub.returns('dbname');
       telemetryDb.query.resolves({
         rows: [
-          { key: 'foo', value: {sum:2876, min:581, max:2295, count:2, sumsqr:5604586} },
-          { key: 'bar', value: {sum:93, min:43, max:50, count:2, sumsqr:4349} },
+          { key: 'foo', value: { sum: 2876, min: 581, max: 2295, count: 2, sumsqr: 5604586 } },
+          { key: 'bar', value: { sum: 93, min: 43, max: 50, count: 2, sumsqr: 4349 } },
         ],
       });
       medicDb.info.resolves({ some: 'stats' });
@@ -181,7 +180,7 @@ describe('TelemetryService', () => {
         .withArgs('_design/medic-client')
         .resolves({
           _id: '_design/medic-client',
-          deploy_info: { version: '3.0.0' }
+          build_info: { version: '3.0.0' }
         });
       medicDb.query.resolves({
         rows: [
@@ -205,178 +204,195 @@ describe('TelemetryService', () => {
       });
     };
 
-    it('should aggregate once a day and resets the db first', async () => {
+    it('should aggregate once a day and delete previous telemetry databases', async () => {
+      windowMock.indexedDB.databases.resolves([
+        { name: 'telemetry-2018-11-10-greg' },
+        { name: 'some-other-db' },
+        { name: 'telemetry-2018-11-09-greg' },
+        { name: 'telemetry-2018-10-02-greg' },
+      ]);
       setupDbMocks();
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(subtractDays(5));
 
       await service.record('test', 1);
 
-      expect(telemetryDb.post.callCount).to.equal(1);
+      expect(telemetryDb.post.calledOnce).to.be.true;
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 1 });
+      expect(metaDb.put.calledTwice).to.be.true;
 
-      expect(metaDb.put.callCount).to.equal(1);
-      const aggregatedDoc = metaDb.put.args[0][0];
-      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+$/);
-      expect(aggregatedDoc.metrics).to.deep.equal({
-        foo: {sum:2876, min:581, max:2295, count:2, sumsqr:5604586},
-        bar: {sum:93, min:43, max:50, count:2, sumsqr:4349},
+      const aggregatedDocNov = metaDb.put.args[0][0];
+      expect(aggregatedDocNov._id).to.match(/^telemetry-2018-11-9-greg-[\w-]+$/);
+      expect(aggregatedDocNov.metrics).to.deep.equal({
+        foo: { sum: 2876, min: 581, max: 2295, count: 2, sumsqr: 5604586 },
+        bar: { sum: 93, min: 43, max: 50, count: 2, sumsqr: 4349 },
       });
-      expect(aggregatedDoc.type).to.equal('telemetry');
-      expect(aggregatedDoc.metadata.year).to.equal(2018);
-      expect(aggregatedDoc.metadata.month).to.equal(11);
-      expect(aggregatedDoc.metadata.day).to.equal(5);
-      expect(aggregatedDoc.metadata.user).to.equal('greg');
-      expect(aggregatedDoc.metadata.versions).to.deep.equal({
+      expect(aggregatedDocNov.type).to.equal('telemetry');
+      expect(aggregatedDocNov.metadata.year).to.equal(2018);
+      expect(aggregatedDocNov.metadata.month).to.equal(11);
+      expect(aggregatedDocNov.metadata.day).to.equal(9);
+      expect(aggregatedDocNov.metadata.user).to.equal('greg');
+      expect(aggregatedDocNov.metadata.versions).to.deep.equal({
         app: '3.0.0',
-        forms: {
-          anc_followup: '1-abc'
-        },
-        settings: 'somerandomrevision'
+        forms: { anc_followup: '1-abc' },
+        settings: 'somerandomrevision',
       });
-      expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
-      expect(aggregatedDoc.device).to.deep.equal({
+      expect(aggregatedDocNov.dbInfo).to.deep.equal({ some: 'stats' });
+      expect(aggregatedDocNov.device).to.deep.equal({
         userAgent: 'Agent Smith',
         hardwareConcurrency: 4,
-        screen: {
-          width: 768,
-          height: 1024,
-        },
+        screen: { width: 768, height: 1024 },
         deviceInfo: {}
       });
 
-      expect(medicDb.query.callCount).to.equal(1);
-      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
-      expect(medicDb.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
-      expect(telemetryDb.destroy.callCount).to.equal(1);
-      expect(telemetryDb.close.callCount).to.equal(0);
+      const aggregatedDocOct = metaDb.put.args[1][0];
+      expect(aggregatedDocOct._id.startsWith('telemetry-2018-10-2-greg')).to.be.true;
+      expect(aggregatedDocOct.metrics).to.deep.equal({
+        foo: { sum: 2876, min: 581, max: 2295, count: 2, sumsqr: 5604586 },
+        bar: { sum: 93, min: 43, max: 50, count: 2, sumsqr: 4349 },
+      });
+      expect(aggregatedDocOct.type).to.equal('telemetry');
+      expect(aggregatedDocOct.metadata.year).to.equal(2018);
+      expect(aggregatedDocOct.metadata.month).to.equal(10);
+      expect(aggregatedDocOct.metadata.day).to.equal(2);
+      expect(aggregatedDocOct.metadata.user).to.equal('greg');
+      expect(aggregatedDocOct.metadata.versions).to.deep.equal({
+        app: '3.0.0',
+        forms: { anc_followup: '1-abc' },
+        settings: 'somerandomrevision',
+      });
+      expect(aggregatedDocOct.dbInfo).to.deep.equal({ some: 'stats' });
+      expect(aggregatedDocOct.device).to.deep.equal({
+        userAgent: 'Agent Smith',
+        hardwareConcurrency: 4,
+        screen: { width: 768, height: 1024 },
+        deviceInfo: {}
+      });
 
-      expect(consoleErrorSpy.callCount).to.equal(0);  // no errors
+      expect(medicDb.query.calledTwice).to.be.true;
+      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
+      expect(medicDb.query.args[0][1]).to.deep.equal({ key: [ 'form' ], include_docs: true });
+      expect(telemetryDb.destroy.calledTwice).to.be.true;
+      expect(telemetryDb.close.notCalled).to.be.true;
+
+      expect(consoleErrorSpy.notCalled).to.be.true;
     });
 
     it('should not aggregate when recording the day the db was created and next day it should aggregate', async () => {
+      windowMock.indexedDB.databases.resolves([
+        { name: 'telemetry-2018-11-10-greg' },
+        { name: 'some-other-db' },
+      ]);
       setupDbMocks();
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());
 
       await service.record('test', 10);
 
-      expect(telemetryDb.post.callCount).to.equal(1);     // Telemetry entry has been recorded
+      expect(telemetryDb.post.calledOnce).to.be.true;   // Telemetry entry has been recorded
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 10 });
-      expect(telemetryDb.query.called).to.be.false;       // NO telemetry aggregation has
-      expect(metaDb.put.callCount).to.equal(0);           // been recorded yet
+      expect(telemetryDb.query.notCalled).to.be.true;   // NO telemetry aggregation has
+      expect(metaDb.put.notCalled).to.be.true;          // been recorded yet
+      expect(windowMock.PouchDB.calledOnce).to.be.true;
+      expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
 
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
+      clock.tick('01:00'); // 1 min later ...
       await service.record('test', 5);
 
-      expect(telemetryDb.post.callCount).to.equal(2);     // second call
+      expect(telemetryDb.post.calledTwice).to.be.true;  // second call
       expect(telemetryDb.post.args[1][0]).to.deep.include({ key: 'test', value: 5 });
-      expect(telemetryDb.query.called).to.be.false;       // still NO aggregation has
-      expect(metaDb.put.callCount).to.equal(0);           // been recorded (same day)
+      expect(telemetryDb.query.notCalled).to.be.true;   // still NO aggregation has
+      expect(metaDb.put.notCalled).to.be.true;          // been recorded (same day)
+      expect(windowMock.PouchDB.calledTwice).to.be.true;
+      expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
 
       let postCalledAfterQuery = false;
       telemetryDb.post.callsFake(async () => postCalledAfterQuery = telemetryDb.query.called);
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'days').valueOf()); // 1 day later ...
+      clock.tick('24:00:00'); // 1 day later ...
       await service.record('test', 2);
 
-      expect(telemetryDb.post.callCount).to.equal(3);     // third call
+      expect(telemetryDb.post.calledThrice).to.be.true; // third call
       expect(telemetryDb.post.args[2][0]).to.deep.include({ key: 'test', value: 2 });
-      expect(telemetryDb.query.callCount).to.equal(1);    // Now aggregation HAS been performed
-      expect(metaDb.put.callCount).to.equal(1);           // and the stats recorded
+      expect(telemetryDb.query.calledOnce).to.be.true;  // Now aggregation HAS been performed
+      expect(metaDb.put.calledOnce).to.be.true;         // and the stats recorded
+      expect(windowMock.PouchDB.callCount).to.equal(4);
+      expect(windowMock.PouchDB.args[2]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
+      expect(windowMock.PouchDB.args[3]).to.deep.equal([ 'telemetry-2018-11-11-greg' ]);
 
       // The telemetry record has been recorded after aggregation to not being included in the stats,
       // because the record belong to the current date, not the day aggregated (yesterday)
       expect(postCalledAfterQuery).to.be.true;
 
       const aggregatedDoc = metaDb.put.args[0][0];
-      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);     // Now is 2018-11-11 but aggregation
-      expect(telemetryDb.destroy.callCount).to.equal(1);                            // is from the previous day
+      // Now is 2018-11-11 and aggregated telemetry for 2018-11-10
+      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);
+      expect(telemetryDb.destroy.calledOnce).to.be.true;   // is from the previous day
 
-      expect(consoleErrorSpy.callCount).to.equal(0);      // no errors
+      expect(consoleErrorSpy.notCalled).to.be.true;
     });
 
     it('should aggregate from days with records skipping days without records', async () => {
+      windowMock.indexedDB.databases.resolves([]);
       setupDbMocks();
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());
 
       await service.record('datapoint', 12);
 
-      expect(telemetryDb.post.callCount).to.equal(1);
-      expect(metaDb.put.callCount).to.equal(0);             // NO telemetry has been recorded yet
+      expect(telemetryDb.post.calledOnce).to.be.true;
+      expect(windowMock.PouchDB.calledOnce).to.be.true;
+      expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
+      expect(metaDb.put.notCalled).to.be.true;         // NO telemetry has been recorded yet
 
-      clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
+      clock.tick('01:00'); // 1 min later ...
       await service.record('another.datapoint');
 
-      expect(telemetryDb.post.callCount).to.equal(2);       // second call
-      expect(metaDb.put.callCount).to.equal(0);             // still NO telemetry has been recorded (same day)
+      expect(telemetryDb.post.calledTwice).to.be.true; // second call
+      expect(windowMock.PouchDB.calledTwice).to.be.true;
+      expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
+      expect(metaDb.put.notCalled).to.be.true;         // still NO telemetry has been recorded (same day)
 
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());
-      clock = sinon.useFakeTimers(moment(NOW).add(2, 'days').valueOf()); // 2 days later ...
+      clock.tick('48:00:00'); // 2 days later ...
+      windowMock.indexedDB.databases.resolves([ { name: 'telemetry-2018-11-10-greg' } ]);
       await service.record('test', 2);
 
-      expect(telemetryDb.post.callCount).to.equal(3);       // third call
-      expect(metaDb.put.callCount).to.equal(1);             // Now telemetry IS recorded
+      expect(telemetryDb.post.calledThrice).to.be.true; // third call
+      expect(windowMock.PouchDB.callCount).to.equal(4);
+      expect(windowMock.PouchDB.args[2]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
+      expect(windowMock.PouchDB.args[3]).to.deep.equal([ 'telemetry-2018-11-12-greg' ]);
+      expect(metaDb.put.calledOnce).to.be.true;       // Now telemetry IS recorded
 
       let aggregatedDoc = metaDb.put.args[0][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);  // Today 2018-11-12 but aggregation is
-      expect(telemetryDb.destroy.callCount).to.equal(1);                         // from from 2 days ago (not Yesterday)
+      expect(telemetryDb.destroy.calledOnce).to.be.true;                      // from 2 days ago (not Yesterday)
 
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());    // same day now is 2 days ahead
-
-      clock = sinon.useFakeTimers(moment(NOW).add(7, 'days').valueOf());  // 7 days later ...
+      clock.tick(5 * 24 * 60 * 60 * 1000); // 5 more days later ...
+      windowMock.indexedDB.databases.resolves([ { name: 'telemetry-2018-11-12-greg' } ]);
       await service.record('point.a', 1);
 
       expect(telemetryDb.post.callCount).to.equal(4);       // 4th call
-      expect(metaDb.put.callCount).to.equal(2);             // Telemetry IS recorded again
+      expect(windowMock.PouchDB.callCount).to.equal(6);
+      expect(windowMock.PouchDB.args[4]).to.deep.equal([ 'telemetry-2018-11-12-greg' ]);
+      expect(windowMock.PouchDB.args[5]).to.deep.equal([ 'telemetry-2018-11-17-greg' ]);
+      expect(metaDb.put.calledTwice).to.be.true;            // Telemetry IS recorded again
       aggregatedDoc = metaDb.put.args[1][0];
-      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-12-greg-[\w-]+$/); // Now is Nov 19 but agg. is from Nov 12
+      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-12-greg-[\w-]+$/); // Now is Nov 17 but agg. is from Nov 12
 
       // A new record is added ...
-      clock = sinon.useFakeTimers(moment(NOW).add(2, 'hours').valueOf()); // ... 2 hours later ...
+      clock.tick('02:00:00'); // 2 hours later ...
+      windowMock.indexedDB.databases.resolves([]);
       await service.record('point.b', 0); // 1 record added
       // ...the aggregation count is the same because
       // the aggregation was already performed 2 hours ago within the same day
       expect(telemetryDb.post.callCount).to.equal(5);       // 5th call
-      expect(metaDb.put.callCount).to.equal(2);             // Telemetry count is the same
+      expect(metaDb.put.calledTwice).to.be.true;            // Telemetry count is the same
 
-      expect(consoleErrorSpy.callCount).to.equal(0);        // no errors
-    });
-  });
-
-  describe('getDb()', () => {
-    it('should set localStorage values', async () => {
-      storageGetItemStub
-        .withArgs('medic-greg-telemetry-db')
-        .returns(undefined);
-      storageGetItemStub
-        .withArgs('medic-greg-telemetry-date')
-        .returns(undefined);
-
-      await service.record('test', 1);
-
-      expect(consoleErrorSpy.callCount).to.equal(0);
-      expect(storageSetItemStub.callCount).to.equal(3);
-      expect(storageSetItemStub.args[0][0]).to.equal('medic-greg-telemetry-db');
-      expect(storageSetItemStub.args[0][1]).to.match(/^medic-user-greg-telemetry-[\w-]+$/);
-      expect(storageSetItemStub.args[1][0]).to.equal('medic-greg-telemetry-date');
-      expect(storageSetItemStub.args[1][1]).to.equal(NOW.toString());
+      expect(consoleErrorSpy.notCalled).to.be.true;
     });
   });
 
   describe('storeConflictedAggregate()', () => {
-
     it('should deal with conflicts by making the ID unique and noting the conflict in the new document', async () => {
-      storageGetItemStub.withArgs('medic-greg-telemetry-db').returns('dbname');
-      storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(subtractDays(5));
+      windowMock.indexedDB.databases.resolves([ { name: '_pouch_telemetry-2018-11-05-greg' } ]);
 
       telemetryDb.query = sinon.stub().resolves({
         rows: [
-          {
-            key: 'foo',
-            value: 'stats',
-          },
-          {
-            key: 'bar',
-            value: 'more stats',
-          },
+          { key: 'foo', value: 'stats' },
+          { key: 'bar', value: 'more stats' },
         ],
       });
       medicDb.info.resolves({ some: 'stats' });
@@ -384,7 +400,7 @@ describe('TelemetryService', () => {
       metaDb.put.onSecondCall().resolves();
       medicDb.get.withArgs('_design/medic-client').resolves({
         _id: '_design/medic-client',
-        deploy_info: {
+        build_info: {
           version: '3.0.0'
         }
       });
@@ -399,12 +415,12 @@ describe('TelemetryService', () => {
 
       await service.record('test', 1);
 
-      expect(consoleErrorSpy.callCount).to.equal(0);
-      expect(metaDb.put.callCount).to.equal(2);
+      expect(consoleErrorSpy.notCalled).to.be.true;
+      expect(metaDb.put.calledTwice).to.be.true;
       expect(metaDb.put.args[1][0]._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+-conflicted-[\w-]+$/);
       expect(metaDb.put.args[1][0].metadata.conflicted).to.equal(true);
-      expect(telemetryDb.destroy.callCount).to.equal(1);
-      expect(telemetryDb.close.callCount).to.equal(0);
+      expect(telemetryDb.destroy.calledOnce).to.be.true;
+      expect(telemetryDb.close.notCalled).to.be.true;
     });
   });
 });

@@ -39,12 +39,12 @@ describe('validate doc update', () => {
 
   const clientValidateDocUpdate = function() {
     const fn = fs.readFileSync('./ddocs/medic-db/medic-client/validate_doc_update.js');
-    eval('(' + fn + ')').apply(null, arguments);
+    eval('log = console.log; (' + fn + ')').apply(null, arguments);
   };
 
   const serverValidateDocUpdate = function() {
     const fn = fs.readFileSync('./ddocs/medic-db/medic/validate_doc_update.js');
-    eval('(' + fn + ')').apply(null, arguments);
+    eval('log = console.log; (' + fn + ')').apply(null, arguments);
   };
 
   const allowedOnServer = _.partial(checkFn, serverValidateDocUpdate);
@@ -62,10 +62,13 @@ describe('validate doc update', () => {
       'partners': { _id: 'partners' }
     }).forEach(([ name, doc ]) => {
       it(name, done => {
-        assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-        assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
+        assert.equal(allowedOnServer(userCtx( {roles: [ '_admin' ] }), doc), true);
         assert.deepEqual(
-          allowedOnServer(userCtx({roles: [ ]}), doc),
+          allowedOnServer(userCtx({ roles: [ 'national_admin' ] }), doc),
+          { forbidden: 'You are not authorized to edit admin only docs' }
+        );
+        assert.deepEqual(
+          allowedOnServer(userCtx({ roles: [ 'test' ] }), doc),
           disallowed('You are not authorized to edit admin only docs')
         );
         done();

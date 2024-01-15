@@ -1,6 +1,6 @@
 {
   "context": {
-    "expression": "!contact || contact.type === 'person'",
+    "expression": "false",
     "person": true,
     "place": false
   },

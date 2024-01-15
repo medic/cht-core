@@ -13,6 +13,7 @@ const smsTask = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
     .attr('messages', [message().build()])
+    .attr('gateway_ref', uuid.v4)
     .attr('state', 'pending')
     .attr('state_history', [
       {
@@ -28,6 +29,7 @@ const smsScheduledTask = () => {
     .attr('group', 2)
     .attr('type', 'ANC Reminders LMP')
     .attr('messages', [message().build()])
+    .attr('gateway_ref', uuid.v4)
     .attr('state', 'scheduled')
     .attr('state_history', [
       {
@@ -40,26 +42,28 @@ const smsScheduledTask = () => {
 const reminderMsg = 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
 'When she does let us know with "V 28551". Thanks!';
 
-const scheduled_tasks = [
-  smsScheduledTask().build({
-    messages: [message().build({
-      message: reminderMsg
-    })],
-  }),
-  smsScheduledTask().build({
-    messages: [message().build({
-      message: 'Did Shannon attend her ANC visit? When she does, respond with "V 28551". Thank you!'
-    })],
-    due: '2016-09-04T22:00:00.000Z',
-  }),
-  smsScheduledTask().build({
-    group: 3,
-    messages: [message().build({
-      message: reminderMsg,
-    })],
-    due: '2016-10-23T20:00:00.000Z',
-  })
-];
+const scheduledTasks = () => {
+  return [
+    smsScheduledTask().build({
+      messages: [message().build({
+        message: reminderMsg
+      })],
+    }),
+    smsScheduledTask().build({
+      messages: [message().build({
+        message: 'Did Shannon attend her ANC visit? When she does, respond with "V 28551". Thank you!'
+      })],
+      due: '2016-09-04T22:00:00.000Z',
+    }),
+    smsScheduledTask().build({
+      group: 3,
+      messages: [message().build({
+        message: reminderMsg,
+      })],
+      due: '2016-10-23T20:00:00.000Z',
+    })
+  ];
+};
 
 const fields = {
   last_menstrual_period: 20,
@@ -83,7 +87,7 @@ const pregnancy = () => {
     .attr('from', '+64275555556')
     .attr('form', 'P')
     .attr('tasks', [smsTask().build()])
-    .attr('scheduled_tasks', scheduled_tasks)
+    .attr('scheduled_tasks', scheduledTasks())
     .attr('fields', fields)
     .attr('sms_message', sms_message)
     .attr('contact', person.build())

@@ -24,11 +24,10 @@ export class ContactsFiltersComponent {
   @Input() sortDirection;
   @Input() lastVisitedDateExtras;
 
-  @ViewChild(FreetextFilterComponent)
-  freetextFilter:FreetextFilterComponent;
+  @ViewChild(FreetextFilterComponent) freetextFilter:FreetextFilterComponent;
 
-  applyFilters(force?) {
-    this.search.emit(force);
+  applyFilters() {
+    this.search.emit();
   }
 
   resetFilters() {

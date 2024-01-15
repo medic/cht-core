@@ -10,7 +10,7 @@
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
     "@medic/lineage": "file:../lineage",
-    "lodash": "4.17.19",
+    "lodash": "^4.17.21",
     "moment": "^2.29.1"
   }
 }

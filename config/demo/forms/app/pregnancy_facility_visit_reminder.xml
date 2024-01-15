@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>Health facility ANC reminder</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label_translator/woman:label">
+            <value>the woman</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator/woman-start:label">
+            <value>The woman</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method/by_phone:label">
+            <value>By phone</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method/in_person:label">
+            <value>In person</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method:label">
+            <value>Did you remind the client in-person or by phone?</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_note:label">
+            <value>Please remind the client to attend their ANC visit on <output value=" /pregnancy_facility_visit_reminder/visit_date_for_task "/>.</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/facility_visit_reminder:label">
+            <value>Reminder of Upcoming Health Facility Visit</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent/_id:label">
+            <value>Parent ID</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact/chw_name:label">
+            <value>CHW name</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact/phone:label">
+            <value>CHW phone</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/contact/short_name:label">
+            <value>Short Name</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/source:label">
+            <value>Source</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/source_id:label">
+            <value>Source ID</value>
+          </text>
+          <text id="/pregnancy_facility_visit_reminder/inputs/source_visit_date:label">
+            <value>Visit Date</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <pregnancy_facility_visit_reminder id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" delimiter="#" version="2019-11-04 14:15:20">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <source_visit_date/>
+            <contact>
+              <_id/>
+              <name/>
+              <short_name/>
+              <patient_id/>
+              <date_of_birth>0</date_of_birth>
+              <sex/>
+              <parent>
+                <_id/>
+                <parent>
+                  <contact>
+                    <chw_name/>
+                    <phone/>
+                  </contact>
+                </parent>
+              </parent>
+            </contact>
+          </inputs>
+          <patient_age_in_years tag="hidden"/>
+          <patient_uuid tag="hidden"/>
+          <patient_id tag="hidden"/>
+          <patient_name tag="hidden"/>
+          <patient_short_name tag="hidden"/>
+          <patient_short_name_start tag="hidden"/>
+          <pregnancy_uuid_ctx/>
+          <visit_date_for_task/>
+          <facility_visit_reminder>
+            <remind_note tag="hidden"/>
+            <remind_method/>
+            <custom_translations tag="hidden">
+              <custom_woman_label_translator/>
+              <custom_woman_label/>
+              <custom_woman_start_label_translator/>
+              <custom_woman_start_label/>
+            </custom_translations>
+          </facility_visit_reminder>
+          <data tag="hidden">
+            <__how_reminded/>
+            <meta tag="hidden">
+              <__patient_uuid/>
+              <__patient_id/>
+              <__household_uuid/>
+              <__source/>
+              <__source_id/>
+              <__pregnancy_uuid/>
+            </meta>
+          </data>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </pregnancy_facility_visit_reminder>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source_id" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source_visit_date" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/name" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/short_name" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/sex" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact/chw_name" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact/phone" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/patient_age_in_years" type="string" calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../facility_visit_reminder/custom_translations/custom_woman_label)"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../facility_visit_reminder/custom_translations/custom_woman_start_label)"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/pregnancy_uuid_ctx" type="string" calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/visit_date_for_task" type="string" calculate="format-date-time(../inputs/source_visit_date, &quot;%e %b, %Y&quot;)"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_note" readonly="true()" type="string"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method" type="select1"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label_translator" type="select1" calculate="&quot;woman&quot;"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label_translator ,' /pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label_translator ')"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator" type="select1" calculate="&quot;woman-start&quot;"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label" type="string" calculate="jr:choice-name( /pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator ,' /pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator ')"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/data/__how_reminded" type="string" calculate=" /pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method "/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/data/meta/__source" type="string" calculate="../../../inputs/source"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/data/meta/__pregnancy_uuid" type="string" calculate=" /pregnancy_facility_visit_reminder/pregnancy_uuid_ctx "/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/pregnancy_facility_visit_reminder/inputs">
+      <group ref="/pregnancy_facility_visit_reminder/inputs/contact">
+        <input appearance="db-object" ref="/pregnancy_facility_visit_reminder/inputs/contact/_id">
+          <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/_id:label')"/>
+        </input>
+        <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent">
+          <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent">
+            <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact"/>
+          </group>
+        </group>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/pregnancy_facility_visit_reminder/facility_visit_reminder">
+      <label ref="jr:itext('/pregnancy_facility_visit_reminder/facility_visit_reminder:label')"/>
+      <input ref="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_note">
+        <label ref="jr:itext('/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_note:label')"/>
+      </input>
+      <select1 ref="/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method">
+        <label ref="jr:itext('/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method:label')"/>
+        <item>
+          <label ref="jr:itext('/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method/in_person:label')"/>
+          <value>in_person</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/pregnancy_facility_visit_reminder/facility_visit_reminder/remind_method/by_phone:label')"/>
+          <value>by_phone</value>
+        </item>
+      </select1>
+      <group appearance="hidden" ref="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations">
+        <select1 ref="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label_translator">
+          <item>
+            <label ref="jr:itext('/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_label_translator/woman:label')"/>
+            <value>woman</value>
+          </item>
+        </select1>
+        <select1 ref="/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator">
+          <item>
+            <label ref="jr:itext('/pregnancy_facility_visit_reminder/facility_visit_reminder/custom_translations/custom_woman_start_label_translator/woman-start:label')"/>
+            <value>woman-start</value>
+          </item>
+        </select1>
+      </group>
+    </group>
+    <group appearance="hidden" ref="/pregnancy_facility_visit_reminder/data">
+      <group ref="/pregnancy_facility_visit_reminder/data/meta"/>
+    </group>
+  </h:body>
+</h:html>

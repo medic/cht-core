@@ -47,9 +47,8 @@ module.exports = {
 
     if (/\d+/.test(value) && /(second|minute|hour|day|week|month|year)s?/.test(unit)) {
       return moment.duration(Number(value), unit);
-    } else {
-      return false;
     }
+    return false;
   },
   getNextTimes: function(doc, now) {
     const first = _.first(doc.scheduled_tasks) || {};
@@ -98,7 +97,7 @@ module.exports = {
       startFrom = 'reported_date';
     }
 
-    const docStart = objectPath.get(doc, startFrom);
+    const docStart = Array.isArray(startFrom)? objectPath.coalesce(doc, startFrom): objectPath.get(doc, startFrom);
 
     // if the document does not have the `start_from` property (or its
     // falsey) do nothing; this will be rerun on next document change
@@ -171,7 +170,8 @@ module.exports = {
                 patient: patient,
                 placeRegistrations: placeRegistrations,
                 place: place,
-              });
+              }
+            );
           }
           const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';
           utils.setTaskState(task, state);
@@ -179,7 +179,7 @@ module.exports = {
           doc.scheduled_tasks = doc.scheduled_tasks || [];
           doc.scheduled_tasks.push(task);
 
-        } catch(e) {
+        } catch (e) {
           utils.addError(doc, {
             message: e.message + ': ' + msg.message,
             code: 'parse_error'

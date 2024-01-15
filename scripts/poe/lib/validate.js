@@ -8,7 +8,7 @@ const {
 const fileExists = (fpath) => {
   const file = `${process.cwd()}/${fpath}`;
   const valid = fs.existsSync(file);
-  if(!valid) {
+  if (!valid) {
     utils.error(`Unable to find your translation file:\n${file}`);
   }
   return valid;
@@ -16,7 +16,7 @@ const fileExists = (fpath) => {
 
 const hasValidName = (fpath) => {
   const valid = fpath.indexOf('-') >= 0 && fpath.indexOf('.') >= 0;
-  if(!valid) {
+  if (!valid) {
     utils.error(`Unexpected filename: ${fpath}`);
     utils.log('Please rename to <some-name>-<language-code>.<extension>');
   }
@@ -29,7 +29,7 @@ const validTranslations = (fpath) => {
 
 const validDirectory = (fpath) => {
   const valid = utils.mkdir(fpath);
-  if(!valid) {
+  if (!valid) {
     utils.error(`Unable to access directory ${fpath}`);
   }
   return valid;

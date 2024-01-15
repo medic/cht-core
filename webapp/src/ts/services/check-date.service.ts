@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 
 const A_DATE_IN_THE_PAST = 1606230000000;   // 2020-11-24T15:00:00.000Z
@@ -27,9 +27,7 @@ export class CheckDateService {
   private checked = false;
 
   showModal(dates: CheckDateData) {
-    this.modalService
-      .show(CheckDateComponent, {initialState: dates})
-      .catch(() => {});
+    this.modalService.show(CheckDateComponent, { data: dates });
   }
 
   check(showModal?) {

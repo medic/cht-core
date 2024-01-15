@@ -146,7 +146,7 @@ const getRemoteState = (credentials, gatewayRef, messageId) => {
  * Gets the current RapidPro statuses for a provided list of messages, converts to CHT-Core states
  * @param {{ apiToken:string, host:string }} credentials - RapidPro API authorization token and host
  * @param {Array<{ gateway_ref:string, id:string }>} messages - messages to check
- * @returns {Promise<[stateUpdate]>} list of state updates
+ * @returns {Promise<String[]>} list of state updates
  */
 const getRemoteStates = (credentials, messages) => {
   let promiseChain = Promise.resolve([]);
@@ -240,7 +240,7 @@ module.exports = {
    * Given an array of messages, returns a promise which resolves with an array of state updates
    * (which also update messages' gateway_ref properties), for each message that has been successfully relayed.
    * @param {Array<{ to:string, message:string }>} messages - messages to send
-   * @returns {Promise<[stateUpdate]>} - array of state update objects.
+   * @returns {Promise<String[]>} - array of state update objects.
    */
   send: (messages) => {
     // get the credentials every call so changes can be made without restarting api

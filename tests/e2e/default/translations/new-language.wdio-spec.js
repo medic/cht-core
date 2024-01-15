@@ -12,9 +12,9 @@ const ENG_LANG_CODE = 'en';
 const NEW_LANG_NAME = 'Afrikaans';
 const NEW_LANG_CODE = 'afr';
 const NEW_TRANSLATIONS = {
-  'No messages found':'Geen boodskappe gevind nie',
-  'No contacts found':'Geen mense gevind nie',
-  'reports.none':'Geen verslae gevind nie',
+  'No messages found': 'Geen boodskappe gevind nie',
+  'No contacts found': 'Geen mense gevind nie',
+  'reports.none': 'Geen verslae gevind nie',
   'Analytics': 'Analytiks'
 };
 

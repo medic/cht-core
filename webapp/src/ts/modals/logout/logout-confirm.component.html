@@ -1,10 +1,10 @@
-<mm-modal
+<mm-modal-layout
   danger="true"
-  [titleKey]="'Confirm'"
-  [submitKey]="'yes'"
-  [cancelKey]="'no'"
-  (onCancel)="cancel()"
+  [titleKey]="'Log Out'"
+  [submitKey]="'Log Out'"
+  [cancelKey]="'Cancel'"
+  (onCancel)="close()"
   (onSubmit)="submit()"
 >
   <p>{{'confirm.logout' | translate}}</p>
-</mm-modal>
+</mm-modal-layout>

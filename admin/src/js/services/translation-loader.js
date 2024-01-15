@@ -63,5 +63,4 @@ angular.module('inboxServices').factory('TranslationLoader',
     };
 
     return service;
-  }
-);
+  });

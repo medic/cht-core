@@ -100,5 +100,4 @@ angular.module('controllers').controller('ImagesPartnersCtrl',
       addAttachment(files[0]);
       
     };
-  }
-);
+  });

@@ -124,12 +124,12 @@ module.exports = {
   ask: async (arg) => {
     const values = await inquirer.prompt(questions[arg]);
     ['overwrite', 'sync_terms', 'fuzzy_trigger'].forEach(key => {
-      if(values[key]) {
+      if (values[key]) {
         values[key] = values[key] === 'yes' ? 1 : 0;
       }
     });
     ['filters', 'tags'].forEach(key => {
-      if(['', 'none'].includes(values[key])) {
+      if (['', 'none'].includes(values[key])) {
         delete values[key];
       }
     });

@@ -50,5 +50,4 @@ angular.module('controllers').controller('SmsTestCtrl',
       }
     };
 
-  }
-);
+  });

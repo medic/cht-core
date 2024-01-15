@@ -1,11 +1,7 @@
 {
   "name": "Collect (Standard)",
   "short_description": "Allows health workers to complete & send reports to a Medic instance",
-  "long_description": "<b>This app is for users of Medic's Standard Package. Please contact hello@medic.org if you need help getting started!</b>
-
-  --------------------------------------
-
-  Using <i>Collect</i> by Medic health workers register people into health programs, screen for high-risk pregnancies, report about pregnancy or immunization visits, and more. Reports can be submitted using data (mobile internet, or wifi) as well as SMS.",
+  "long_description": "<b>This app is for users of Medic's Standard Package. Please contact hello@medic.org if you need help getting started!</b>\nUsing <i>Collect</i> by Medic health workers register people into health programs, screen for high-risk pregnancies, report about pregnancy or immunization visits, and more. Reports can be submitted using data (mobile internet, or wifi) as well as SMS.",
   "application_type": "application",
   "category": "Medical",
   "website": "http://medicmobile.org",

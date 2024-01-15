@@ -4,7 +4,6 @@
  */
 
 const ADMIN_ROLE = '_admin';
-const NATIONAL_ADMIN_ROLE = 'national_admin'; // Deprecated: kept for backwards compatibility: #4525
 const DISALLOWED_PERMISSION_PREFIX = '!';
 
 const isAdmin = (userRoles) => {
@@ -12,7 +11,7 @@ const isAdmin = (userRoles) => {
     return false;
   }
 
-  return [ADMIN_ROLE, NATIONAL_ADMIN_ROLE].some(role => userRoles.includes(role));
+  return userRoles.includes(ADMIN_ROLE);
 };
 
 const groupPermissions = (permissions) => {

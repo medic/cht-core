@@ -6,7 +6,7 @@ import { Actions as GlobalActions } from '@mm-actions/global';
 export interface MessagesState {
   error: boolean;
   conversations: object[];
-  selected: object;
+  selected: object | null;
 }
 
 const initialState: MessagesState = {

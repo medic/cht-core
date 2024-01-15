@@ -25,7 +25,7 @@ const readMapFunction = function (doc) {
 
 const validateDocUpdate = function (newDoc) {
   if (newDoc && newDoc._deleted && newDoc.purged) {
-    throw({forbidden: 'Purged documents should not be written to CouchDB!'});
+    throw ({forbidden: 'Purged documents should not be written to CouchDB!'});
   }
 };
 

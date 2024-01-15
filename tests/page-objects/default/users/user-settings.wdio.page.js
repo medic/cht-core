@@ -1,6 +1,6 @@
 const commonPage = require('../common/common.wdio.page');
+const modalPage = require('../common/modal.wdio.page');
 
-const submitButton = () => $('.btn.submit.btn-primary');
 const languageDropDown = () => $('#language');
 
 const openEditSettings = async () => {
@@ -15,9 +15,8 @@ const selectLanguage = async (code) => {
   await (await languageDropDown()).waitForDisplayed();
   await browser.waitUntil(async () => (await (await languageDropDown()).getValue()).length);
   await (await languageDropDown()).selectByAttribute('value', code);
-  await (await submitButton()).waitForClickable();
-  await (await submitButton()).click();
-  await (await submitButton()).waitForDisplayed({ timeout: 60000, reverse: true });
+  await modalPage.submit();
+  await modalPage.checkModalHasClosed();
 };
 
 const setLanguage = async (code) => {

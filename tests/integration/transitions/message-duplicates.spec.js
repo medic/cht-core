@@ -32,7 +32,7 @@ const settings = {
 const getPostOpts = (path, body) => ({
   path: path,
   method: 'POST',
-  headers: { 'Content-Type':'application/json' },
+  headers: { 'Content-Type': 'application/json' },
   body: body
 });
 

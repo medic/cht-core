@@ -1,0 +1,10 @@
+HTTP/1.1 502 Bad Gateway
+Content-length: 124
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "502 Bad Gateway",
+  "reason": "The server returned an invalid or incomplete response",
+  "server": "haproxy"
+}

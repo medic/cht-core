@@ -1,4 +1,7 @@
-const wdioBaseConfig = require('../default/wdio.conf');
+require('../../aliases');
+const constants = require('@constants');
+constants.DB_NAME = 'medic';
+
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -8,9 +11,8 @@ chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
 const utils = require('@utils');
-const constants = require('@constants');
+const wdioBaseConfig = require('../wdio.conf');
 
-constants.DB_NAME = 'medic';
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
@@ -26,16 +28,31 @@ const getUpgradeServiceDockerCompose = async () => {
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
+const getLatestRelease = async () => {
+  const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
+  const query = {
+    startKey: [ 'release', 'medic', 'medic', {}],
+    descending: true,
+    limit: 1,
+  };
+  const releases = await rpn.get({ url: url, qs: query, json: true });
+  if (!releases.rows.length) {
+    return MAIN_BRANCH;
+  }
+  return releases.rows[0].id;
+};
+
 const getMainCHTDockerCompose = async () => {
+  const latestRelease = await getLatestRelease();
   for (const composeFile of COMPOSE_FILES) {
-    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${MAIN_BRANCH}/docker-compose/${composeFile}.yml`;
+    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${latestRelease}/docker-compose/${composeFile}.yml`;
     const contents = await rpn.get(composeFileUrl);
     const filePath = path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`);
     await fs.promises.writeFile(filePath, contents);
   }
 };
 
-const TEST_TIMEOUT = 250 * 1000;
+const TEST_TIMEOUT = 240 * 1000; // 4 minutes
 
 const dockerComposeCmd = (...params) => {
   const env = {
@@ -44,7 +61,7 @@ const dockerComposeCmd = (...params) => {
     CHT_COMPOSE_PATH: CHT_DOCKER_COMPOSE_FOLDER,
     COUCHDB_USER: constants.USERNAME,
     COUCHDB_PASSWORD: constants.PASSWORD,
-    DOCKER_CONFIG_PATH: path.join(os.homedir(), '.docker'),
+    DOCKER_CONFIG_PATH: os.homedir(),
     COUCHDB_DATA: CHT_DATA_FOLDER,
     CHT_COMPOSE_PROJECT_NAME: CHT_COMPOSE_PROJECT_NAME,
     CHT_NETWORK: 'cht-net-upgrade',
@@ -101,10 +118,11 @@ const servicesStartTimeout = () => {
 
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
-  specs: [
-    'upgrade.wdio-spec.js',
-    '*.wdio-spec.js'
-  ],
+  specs:
+   [
+     'upgrade.wdio-spec.js',
+     '*.wdio-spec.js'
+   ],
   exclude: [],
 
   onPrepare: async () => {

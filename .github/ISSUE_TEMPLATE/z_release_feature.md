@@ -26,7 +26,7 @@ When development is ready to begin on a [Feature Release](https://docs.community
 
 This is an iterative process and it's assumed there will be multiple numbered releases throughout development of the Feature Release.
 
-- [ ] Build a beta named `<major>.<minor>.<patch>-FR-<FEATURE-NAME>-beta.1` by pushing a git tag and when CI completes successfully notify the QA team that it's ready for release testing. If an updated Feature Release is needed, increment the last `1` by calling it `<major>.<minor>.<patch>-FR-<FEATURE-NAME>-beta.2` etc.
+- [ ] Build a beta named `<major>.<minor>.<patch>-FR-<FEATURE-NAME>-beta.1` by pushing a git tag. If an updated Feature Release is needed, increment the last `1` by calling it `<major>.<minor>.<patch>-FR-<FEATURE-NAME>-beta.2` etc.
 
 # Close-out
 

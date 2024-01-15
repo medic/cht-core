@@ -1,0 +1,10 @@
+HTTP/1.1 500 Internal Server Error
+Content-length: 114
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "500 Internal Server Error",
+  "reason": "An internal server error occurred",
+  "server": "haproxy"
+}

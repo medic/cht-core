@@ -1,0 +1,29 @@
+diff --git a/node_modules/font-awesome/less/path.less b/node_modules/font-awesome/less/path.less
+index 835be41..dab7b92 100644
+--- a/node_modules/font-awesome/less/path.less
++++ b/node_modules/font-awesome/less/path.less
+@@ -1,14 +1,18 @@
+ /* FONT PATH
+  * -------------------------- */
+ 
++// CHT-CORE PATCH
++// patch font-awesome to remove version attributes
++// https://github.com/FortAwesome/Font-Awesome/issues/3286
++
+ @font-face {
+   font-family: 'FontAwesome';
+-  src: url('@{fa-font-path}/fontawesome-webfont.eot?v=@{fa-version}');
+-  src: url('@{fa-font-path}/fontawesome-webfont.eot?#iefix&v=@{fa-version}') format('embedded-opentype'),
+-    url('@{fa-font-path}/fontawesome-webfont.woff2?v=@{fa-version}') format('woff2'),
+-    url('@{fa-font-path}/fontawesome-webfont.woff?v=@{fa-version}') format('woff'),
+-    url('@{fa-font-path}/fontawesome-webfont.ttf?v=@{fa-version}') format('truetype'),
+-    url('@{fa-font-path}/fontawesome-webfont.svg?v=@{fa-version}#fontawesomeregular') format('svg');
++  src: url('@{fa-font-path}/fontawesome-webfont.eot');
++  src: url('@{fa-font-path}/fontawesome-webfont.eot?#iefix') format('embedded-opentype'),
++    url('@{fa-font-path}/fontawesome-webfont.woff2') format('woff2'),
++    url('@{fa-font-path}/fontawesome-webfont.woff') format('woff'),
++    url('@{fa-font-path}/fontawesome-webfont.ttf') format('truetype'),
++    url('@{fa-font-path}/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+   // src: url('@{fa-font-path}/FontAwesome.otf') format('opentype'); // used when developing fonts
+   font-weight: normal;
+   font-style: normal;

@@ -18,5 +18,4 @@ angular.module('inboxServices').factory('Location',
       dbName: dbName,
       url: url
     };
-  }
-);
+  });

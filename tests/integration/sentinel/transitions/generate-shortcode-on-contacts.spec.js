@@ -88,7 +88,7 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok' : true });
+        expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {

@@ -19,5 +19,4 @@ angular.module('inboxServices').service('Translate',
     return {
       fieldIsRequired: fieldIsRequired
     };    
-  }
-);
+  });

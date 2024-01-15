@@ -18,7 +18,8 @@ const person = personFactory.build(
       _id: districtHospital._id,
       parent: districtHospital.parent
     }
-  });
+  }
+);
 
 const docs = [...places.values(), person];
 
@@ -30,6 +31,9 @@ describe('User Test Cases ->', () => {
   });
 
   beforeEach(async () => {
+    if (await usersAdminPage.addUserDialog().isDisplayed()) {
+      await usersAdminPage.closeAddUserDialog();
+    }
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();
   });

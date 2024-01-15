@@ -590,7 +590,7 @@ describe('RulesEngineService', () => {
   it('should record correct telemetry data with emitted events', async () => {
     clock = sinon.useFakeTimers(1000);
     let fetchTargetResultPromise;
-    const fetchTasksResultPromise = [];
+    const fetchTasksResultPromise: any[] = [];
     fetchTargetsResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTargetResultPromise = resolve));
     fetchTasksResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTasksResultPromise.push(resolve)));
     service = TestBed.inject(RulesEngineService);

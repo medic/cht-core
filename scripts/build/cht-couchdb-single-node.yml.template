@@ -12,7 +12,7 @@ services:
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC_NAME:-couchdb}"
-      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
     restart: always
     logging:
       driver: "local"

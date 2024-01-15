@@ -260,7 +260,7 @@ describe('Transitions Service', () => {
         expect(settingsService.get.callCount).to.equal(1);
         expect(mutingTransition.init.callCount).to.equal(1);
 
-        try{
+        try {
           await service.applyTransitions(docs);
           expect.fail('should have thrown an error');
         } catch (err) {

@@ -91,7 +91,13 @@ const getPurgeDbs = () => {
   });
 };
 
-const waitForPurgeCompletion = seq => {
+const waitForPurgeCompletion = async (seq) => {
+  const waitForWipe = await utils.waitForApiLogs(/Wiping purged docs cache/);
+  await waitForPurgeLog(seq);
+  await waitForWipe.promise;
+};
+
+const waitForPurgeLog = seq => {
   const params = {
     since: seq,
     feed: 'longpoll',
@@ -102,7 +108,7 @@ const waitForPurgeCompletion = seq => {
         return;
       }
 
-      return waitForPurgeCompletion(result.last_seq);
+      return waitForPurgeLog(result.last_seq);
     });
 };
 

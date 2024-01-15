@@ -11,12 +11,11 @@ angular.module('inboxServices').factory('ExtractLineage',
       }
       const result = { _id: contact._id };
       let minified = result;
-      while(contact.parent) {
+      while (contact.parent) {
         minified.parent = { _id: contact.parent._id };
         minified = minified.parent;
         contact = contact.parent;
       }
       return result;
     };
-  }
-);
+  });

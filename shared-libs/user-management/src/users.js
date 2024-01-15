@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
+const facility = require('./libs/facility');
 const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
 const getRoles = require('./libs/types-and-roles');
@@ -71,8 +72,11 @@ const LEGACY_FIELDS = ['language'];
 const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
   RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS, META_FIELDS);
 
-const illegalDataModificationAttempts = data =>
-  Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.concat(LEGACY_FIELDS).includes(k));
+const illegalDataModificationAttempts = data => {
+  return Object
+    .keys(data)
+    .filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.concat(LEGACY_FIELDS).includes(k));
+};
 
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
@@ -113,11 +117,6 @@ const getAllUserSettings = () => {
 const getAllUsers = () => {
   return db.users.allDocs({ include_docs: true })
     .then(result => result.rows);
-};
-
-const getFacilities = () => {
-  return db.medic.query('medic-client/contacts_by_type', { include_docs: true })
-    .then(result => result.rows.map(row => row.doc));
 };
 
 const validateContact = (id, placeID) => {
@@ -738,15 +737,17 @@ const hydrateUserSettings = (userSettings) => {
     });
 };
 
-const getUserDoc = (username, dbName) => db[dbName]
-  .get(`org.couchdb.user:${username}`)
-  .catch(err => {
-    err.db = dbName;
-    throw err;
-  });
+const getUserDoc = (username, dbName) => {
+  return db[dbName]
+    .get(`org.couchdb.user:${username}`)
+    .catch(err => {
+      err.db = dbName;
+      throw err;
+    });
+};
 
-const getUserDocsByName = (name) =>
-  Promise
+const getUserDocsByName = (name) => {
+  return Promise
     .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
     .catch(error => {
       if (error.status !== 404) {
@@ -757,6 +758,7 @@ const getUserDocsByName = (name) =>
         message: `Failed to find user with name [${name}] in the [${error.db}] database.`
       });
     });
+};
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
@@ -770,16 +772,10 @@ const getUserSettings = async({ name }) => {
  */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
-  getList: () => {
-    return Promise
-      .all([
-        getAllUsers(),
-        getAllUserSettings(),
-        getFacilities()
-      ])
-      .then(([ users, settings, facilities ]) => {
-        return mapUsers(users, settings, facilities);
-      });
+  getList: async () => {
+    const [ users, settings ] = await Promise.all([ getAllUsers(), getAllUserSettings() ]);
+    const facilities = await facility.list(users, settings);
+    return mapUsers(users, settings, facilities);
   },
   getUserSettings,
   /* eslint-disable max-len */
@@ -893,7 +889,7 @@ module.exports = {
         response = await createUserEntities(user, appUrl);
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
-      } catch(error) {
+      } catch (error) {
         response = { error: error.message };
         progress.saving.failed++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));

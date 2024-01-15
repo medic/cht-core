@@ -646,7 +646,7 @@ describe('messaging service', () => {
         .onCall(1).returns({ message: 'two' })
         .onCall(2).returns({ message: 'three' });
 
-      sinon.stub(db.medic, 'query').resolves({ offset:0, total_rows:0, rows:[] });
+      sinon.stub(db.medic, 'query').resolves({ offset: 0, total_rows: 0, rows: [] });
 
       const transitionsLib = {
         processDocs: sinon.stub().resolves([
@@ -658,9 +658,9 @@ describe('messaging service', () => {
       sinon.stub(config, 'getTransitionsLib').returns(transitionsLib);
 
       const given = [
-        { id:'1', from:'+1', content:'one'   },
-        { id:'2', from:'+2', content:'two'   },
-        { id:'3', from:'+3', content:'three' },
+        { id: '1', from: '+1', content: 'one'   },
+        { id: '2', from: '+2', content: 'two'   },
+        { id: '3', from: '+3', content: 'three' },
       ];
 
       return service.processIncomingMessages(given).then(actual => {

@@ -16,10 +16,11 @@ module.exports = function(config) {
       }
     },
     preprocessors: {
-      'src/**/*.html': ['ng-html2js']
+      'src/templates/*.html': ['ng-html2js']
     },
     ngHtml2JsPreprocessor: {
-      moduleName: 'templates'
+      moduleName: 'templates',
+      stripPrefix: 'src/',
     },
     files: [
       // used to query html

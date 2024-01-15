@@ -11,7 +11,7 @@ welcome_message(){
 
 main(){
   welcome_message
-  node /api/server.js
+  node /service/api/server.js
 }
 
 "$@"

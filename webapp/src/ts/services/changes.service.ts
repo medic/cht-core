@@ -34,7 +34,7 @@ export class ChangesService {
     }
   };
 
-  private watches = [];
+  private watches: any[] = [];
 
   private lastChangedDoc;
   private servicesActions;
@@ -136,7 +136,7 @@ export class ChangesService {
         if (!options.filter || options.filter(change)) {
           options.callback(change);
         }
-      } catch(e) {
+      } catch (e) {
         console.error(new Error('Error executing changes callback: ' + options.key), e);
       }
     });

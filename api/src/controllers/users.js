@@ -5,7 +5,7 @@ const { bulkUploadLog, roles, users } = require('@medic/user-management')(config
 const auth = require('../auth');
 const logger = require('../logger');
 const serverUtils = require('../server-utils');
-const initialReplication = require('../services/initial-replication');
+const replication = require('../services/replication');
 
 const hasFullPermission = req => {
   return auth
@@ -96,7 +96,7 @@ const getInfoUserCtx = req => {
 };
 
 const getAllowedDocsCounts = async (userCtx) => {
-  const { docIds, warnDocIds, warn, limit } = await initialReplication.getContext(userCtx);
+  const { docIds, warnDocIds, warn, limit } = await replication.getContext(userCtx);
 
   return {
     total_docs: docIds.length,
@@ -238,7 +238,7 @@ module.exports = {
       try {
         const body = await getUserList(req, res);
         res.json(body);
-      } catch(err) {
+      } catch (err) {
         serverUtils.error(err, req, res);
       }
     },

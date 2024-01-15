@@ -20,7 +20,7 @@ export class TasksForContactService {
   }
 
   getIdsForTasks(model) {
-    const contactIds = [];
+    const contactIds: any[] = [];
     if (!model?.type?.person && model?.children) {
       model.children.forEach(child => {
         if (child?.type?.person && child?.contacts?.length) {

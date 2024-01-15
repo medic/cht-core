@@ -46,19 +46,18 @@ export class DeleteDocsService {
       });
 
       return this.bulkDeleteRemoteDocs(docIds, eventListeners);
-    } else {
-      docsToDelete.forEach((doc) => {
-        doc._deleted = true;
-      });
-      this.checkForDuplicates(docsToDelete);
-      return this.utils
-        .updateParentContacts(docsToDelete)
-        .then((updatedParents) => {
-          const allDocs = docsToDelete.concat(updatedParents.docs);
-          this.minifyLineage(allDocs);
-          return this.dbService.get().bulkDocs(allDocs);
-        });
     }
+    docsToDelete.forEach((doc) => {
+      doc._deleted = true;
+    });
+    this.checkForDuplicates(docsToDelete);
+    return this.utils
+      .updateParentContacts(docsToDelete)
+      .then((updatedParents) => {
+        const allDocs = docsToDelete.concat(updatedParents.docs);
+        this.minifyLineage(allDocs);
+        return this.dbService.get().bulkDocs(allDocs);
+      });
   }
 
   bulkDeleteRemoteDocs(docs, eventListeners) {

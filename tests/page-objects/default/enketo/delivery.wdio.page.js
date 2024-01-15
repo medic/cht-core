@@ -1,218 +1,289 @@
-const deliveryConditionWomanOutcomeField = (value) =>
-  $(`input[type="radio"][name="/delivery/condition/woman_outcome"][value="${value}"]`);
-const deliveryPosnatalDangerFeverField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/fever"][value="${value}"]`);
-const deliveryPosnatalDangerSevereFeverField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/severe_headache"][value="${value}"]`);
-const deliveryPosnatalDangerVaginalBleedingField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/vaginal_bleeding"][value="${value}"]`);
-const deliveryPosnatalDangerVaginalDischargeField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/vaginal_discharge"][value="${value}"]`);
-const deliveryPosnatalDangerConvulsionField = (value) =>
-  $(`input[type="radio"][name="/delivery/pnc_danger_sign_check/convulsion"][value="${value}"]`);
-const deliveryOutcomeBabiesDeliveredField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/babies_delivered"][value="${value}"]`);
-const deliveryOutcomeBabiesAliveField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/babies_alive"][value="${value}"]`);
-const dateOfDeliveryField = () =>
-  $('form > section.or-group.or-branch.or-appearance-field-list.current > label:nth-child(6) > div > input');
-const deliveryPlaceField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/delivery_place"][value="${value}"]`);
-const deliveryModeField = (value) =>
-  $(`input[type="radio"][name="/delivery/delivery_outcome/delivery_mode"][value="${value}"]`);
-const babyConditionField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/baby_condition"][value="${value}"]`);
-const babysNameField = () =>
-  $(`input[type="text"][name="/delivery/babys_condition/baby_repeat/baby_details/baby_name"]`);
-const babysSexField = (value) =>
-  $(`input[type="radio"][data-name="/delivery/babys_condition/baby_repeat/baby_details/baby_sex"][value="${value}"]`);
-const babysBirthWeightKnowField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/birth_weight_know"][value="${value}"]`);
-const babysBirthLengthKnowField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/birth_length_know"][value="${value}"]`);
-const babysVaccinesReveivedField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/vaccines_received"][value="${value}"]`);
-const babyBreastfeedingField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding"][value="${value}"]`);
-const babyBreastfeedingWithin1HourField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour"][value="${value}"]`);
-const babyInfectedUmbilicalCordField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/infected_umbilical_cord"][value="${value}"]`);
-const babyConvulsionField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/convulsion"][value="${value}"]`);
-const babyDifficultyFeedingField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/difficulty_feeding"][value="${value}"]`);
-const babyVomitField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/vomit"][value="${value}"]`);
-const babyDrowsyField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/drowsy"][value="${value}"]`);
-const babyStiffField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/stiff"][value="${value}"]`);
-const babyYellowSkinField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/yellow_skin"][value="${value}"]`);
-const babyFeverField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/fever"][value="${value}"]`);
-const babyBlueSkinField = (value) =>
-  $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/blue_skin"][value="${value}"]`);
-const deliveryPncVisitsField = (value) =>
-  $(`input[type="checkbox"]` +
-    `[name="/delivery/pnc_visits/pnc_visits_attended"][value="${value}"]`);
-const submitButton = () => $('#contact-report .form-footer .btn.submit.btn-primary');
+const moment = require('moment');
+
+const getField = (type, name, expression = '') => $(`input[type="${type}"][name="/delivery/${name}"]${expression}`);
+const getRadioField = (name, value) => getField('radio', name, `[value="${value}"]`);
+
+const deliveryConditionWomanOutcomeField = (value) => getRadioField('condition/woman_outcome', value);
+const deliveryPostnatalDangerFeverField = (value) => getRadioField('pnc_danger_sign_check/fever', value);
+const deliveryPostnatalDangerSevereHeadacheField = (value) => {
+  return getRadioField('pnc_danger_sign_check/severe_headache', value);
+};
+const deliveryPostnatalDangerVaginalBleedingField = (value) => {
+  return getRadioField('pnc_danger_sign_check/vaginal_bleeding', value);
+};
+const deliveryPostnatalDangerVaginalDischargeField = (value) => {
+  return getRadioField('pnc_danger_sign_check/vaginal_discharge', value);
+};
+const deliveryPostnatalDangerConvulsionField = (value) => getRadioField('pnc_danger_sign_check/convulsion', value);
+const deliveryOutcomeBabiesDeliveredField = (value) => getRadioField('delivery_outcome/babies_delivered', value);
+const deliveryOutcomeBabiesAliveField = (value) => getRadioField('delivery_outcome/babies_alive', value);
+const dateOfDeliveryField = () => {
+  return $('form > section.or-group.or-branch.or-appearance-field-list.current > label:nth-child(6) > div > input');
+};
+const deliveryPlaceField = (value) => getRadioField('delivery_outcome/delivery_place', value);
+const deliveryModeField = (value) => getRadioField('delivery_outcome/delivery_mode', value);
+
+const BABY_DETAILS_NAME = 'babys_condition/baby_repeat/baby_details/';
+const getBabyDetailsField = (name, value) => {
+  return $(`input[type="radio"][data-name="/delivery/${BABY_DETAILS_NAME}${name}"][value="${value}"]`);
+};
+const babyConditionField = (value) => getBabyDetailsField(`baby_condition`, value);
+const babyNameField = () => getField('text', `${BABY_DETAILS_NAME}baby_name`);
+const babySexField = (value) => getBabyDetailsField(`baby_sex`, value);
+const babyBirthWeightKnowField = (value) => getBabyDetailsField(`birth_weight_know`, value);
+const babyBirthLengthKnowField = (value) => getBabyDetailsField(`birth_length_know`, value);
+const babyVaccinesReveivedField = (value) => getBabyDetailsField(`vaccines_received`, value);
+const babyBreastfeedingField = (value) => getBabyDetailsField(`breastfeeding`, value);
+const babyBreastfeedingWithin1HourField = (value) => getBabyDetailsField(`breastfed_within_1_hour`, value);
+const babyInfectedUmbilicalCordField = (value) => getBabyDetailsField(`infected_umbilical_cord`, value);
+const babyConvulsionField = (value) => getBabyDetailsField(`convulsion`, value);
+const babyDifficultyFeedingField = (value) => getBabyDetailsField(`difficulty_feeding`, value);
+const babyVomitField = (value) => getBabyDetailsField(`vomit`, value);
+const babyDrowsyField = (value) => getBabyDetailsField(`drowsy`, value);
+const babyStiffField = (value) => getBabyDetailsField(`stiff`, value);
+const babyYellowSkinField = (value) => getBabyDetailsField(`yellow_skin`, value);
+const babyFeverField = (value) => getBabyDetailsField(`fever`, value);
+const babyBlueSkinField = (value) => getBabyDetailsField(`blue_skin`, value);
+const deliveryPncVisitsField = (value) => getField('checkbox', 'pnc_visits/pnc_visits_attended', `[value="${value}"]`);
+
+const SUMMARY_SECTION = 'section[name="/delivery/summary"]';
+const getSummaryField = (name) => $(`${SUMMARY_SECTION} span[data-value=" /delivery/${name} "]`);
+const getSummaryLabel = (name) => $(`${SUMMARY_SECTION} span[data-itext-id="/delivery/summary/${name}:label"]`);
+const sumPatientName = () => getSummaryField('patient_name');
+const sumPatientAge = () => getSummaryField('patient_age_in_years');
+const sumWomanCondition = () => getSummaryLabel('r_condition_well');
+const sumDeliveryDate = () => getSummaryField('delivery_outcome/delivery_date');
+const sumDeliveryPlace = () => getSummaryField('summary/custom_translations/delivery_place_label');
+const sumDeliveredBabies = () => getSummaryField('delivery_outcome/babies_delivered_num');
+const sumDeceasedBabies = () => getSummaryField('delivery_outcome/babies_deceased_num');
+const sumPncVisits = () => getSummaryLabel('r_pnc_visit_none');
+
+const womanDeathDate = () => $('section[name="/delivery/death_info_woman"] .widget.date .input-small');
+const womanDeathPlace = (value) => {
+  return $(`input[data-name="/delivery/death_info_woman/woman_death_place"][value="${value}"]`);
+};
+const womanDeliveredBabies = (value) => {
+  return $(`input[data-name="/delivery/death_info_woman/woman_death_birth"][value="${value}"]`);
+};
+const womanDeathNote = () => $('input[name="/delivery/death_info_woman/woman_death_add_notes"]');
 
 const selectDeliveryConditionWomanOutcome = async (value) => {
-  return (await deliveryConditionWomanOutcomeField(value)).click();
+  const womanOutcome = await deliveryConditionWomanOutcomeField(value);
+  await womanOutcome.waitForClickable();
+  await womanOutcome.click();
 };
 
-const selectDeliveryPosnatalDangerSignsFever = async (value) => {
-  return (await deliveryPosnatalDangerFeverField(value)).click();
+const selectDeliveryPostnatalDangerSignsFever = async (value) => {
+  const fever = await deliveryPostnatalDangerFeverField(value);
+  await fever.waitForClickable();
+  await fever.click();
 };
 
-const selectDeliveryPosnatalDangerSevereFever = async (value) => {
-  return (await deliveryPosnatalDangerSevereFeverField(value)).click();
+const selectDeliveryPostnatalDangerSevereHeadache = async (value) => {
+  const severeHeadache = await deliveryPostnatalDangerSevereHeadacheField(value);
+  await severeHeadache.waitForClickable();
+  await severeHeadache.click();
 };
 
-const selectDeliveryPosnatalDangerVaginalBleeding = async (value) => {
-  return (await deliveryPosnatalDangerVaginalBleedingField(value)).click();
+const selectDeliveryPostnatalDangerVaginalBleeding = async (value) => {
+  const vaginalBleeding = await deliveryPostnatalDangerVaginalBleedingField(value);
+  await vaginalBleeding.waitForClickable();
+  await vaginalBleeding.click();
 };
 
-const selectDeliveryPosnatalDangerVaginalDischarge = async (value) => {
-  return (await deliveryPosnatalDangerVaginalDischargeField(value)).click();
+const selectDeliveryPostnatalDangerVaginalDischarge = async (value) => {
+  const vaginalDischarge = await deliveryPostnatalDangerVaginalDischargeField(value);
+  await vaginalDischarge.waitForClickable();
+  await vaginalDischarge.click();
 };
 
-const selectDeliveryPosnatalDangerConvulsion = async (value) => {
-  return (await deliveryPosnatalDangerConvulsionField(value)).click();
+const selectDeliveryPostnatalDangerConvulsion = async (value) => {
+  const convulsion = await deliveryPostnatalDangerConvulsionField(value);
+  await convulsion.waitForClickable();
+  await convulsion.click();
 };
 
 const selectDeliveryOutcomeBabiesDelivered = async (value) => {
-  return (await deliveryOutcomeBabiesDeliveredField(value)).click();
+  const babiesDelivered = await deliveryOutcomeBabiesDeliveredField(value);
+  await babiesDelivered.waitForClickable();
+  await babiesDelivered.click();
 };
 
 const selectDeliveryOutcomeBabiesAlive = async (value) => {
-  return (await deliveryOutcomeBabiesAliveField(value)).click();
+  const babiesAlive = await deliveryOutcomeBabiesAliveField(value);
+  await babiesAlive.waitForClickable();
+  await babiesAlive.click();
 };
 
 const setDeliveryOutcomeDateOfDelivery = async (value) => {
-  return (await dateOfDeliveryField()).addValue(value);
+  const dateOfDelivery = await dateOfDeliveryField();
+  await dateOfDelivery.waitForDisplayed();
+  await dateOfDelivery.setValue(value);
 };
 
 const selectDeliveryOutcomeDeliveryPlace = async (value) => {
-  return (await deliveryPlaceField(value)).click();
+  const deliveryPlace = await deliveryPlaceField(value);
+  await deliveryPlace.waitForClickable();
+  await deliveryPlace.click();
 };
 
 const selectDeliveryOutcomeDeliveryMode = async (value) => {
-  await (await deliveryModeField(value)).waitForDisplayed();
-  return (await deliveryModeField(value)).click();
+  const deliveryMode =  await deliveryModeField(value);
+  await deliveryMode.waitForClickable();
+  await deliveryMode.click();
 };
 
-const selectDeliveryBabysCondition = async (value) => {
-  return (await babyConditionField(value)).click();
+const selectDeliveryBabyCondition = async (value) => {
+  const babyCondition = await babyConditionField(value);
+  await babyCondition.waitForClickable();
+  await babyCondition.click();
 };
 
-const setDeliveryBabysName = async (value) => {
-  return (await babysNameField(value)).addValue(value);
+const setDeliveryBabyName = async (value) => {
+  const babyName = await babyNameField(value);
+  await babyName.waitForDisplayed();
+  await babyName.setValue(value);
 };
 
-const selectDeliveryBabysSex = async (value) => {
-  return (await babysSexField(value)).click();
+const selectDeliveryBabySex = async (value) => {
+  const babySex = await babySexField(value);
+  await babySex.waitForClickable();
+  await babySex.click();
 };
 
-const selectDeliveryBabysBirthWeightKnow = async (value) => {
-  return (await babysBirthWeightKnowField(value)).click();
+const selectDeliveryBabyBirthWeightKnown = async (value) => {
+  const birthWeight = await babyBirthWeightKnowField(value);
+  await birthWeight.waitForClickable();
+  await birthWeight.click();
 };
 
-const selectDeliveryBabysBirthLengthKnow = async (value) => {
-  return (await babysBirthLengthKnowField(value)).click();
+const selectDeliveryBabyBirthLengthKnown = async (value) => {
+  const birthLength = await babyBirthLengthKnowField(value);
+  await birthLength.waitForClickable();
+  await birthLength.click();
 };
 
-const selectDeliveryBabysVaccinesReveived = async (value) => {
-  return (await babysVaccinesReveivedField(value)).click();
+const selectDeliveryBabyVaccinesReceived = async (value) => {
+  const vaccinesReceived = await babyVaccinesReveivedField(value);
+  await vaccinesReceived.waitForClickable();
+  await vaccinesReceived.click();
 };
 
 const selectDeliveryBabyBreastfeeding = async (value) => {
-  return (await babyBreastfeedingField(value)).click();
+  const babyBreastfeeding = await babyBreastfeedingField(value);
+  await babyBreastfeeding.waitForClickable();
+  await babyBreastfeeding.click();
 };
 
 const selectDeliveryBabyBreastfeedingWithin1Hour = async (value) => {
-  return (await babyBreastfeedingWithin1HourField(value)).click();
+  const breastfeedingWithin1Hour = await babyBreastfeedingWithin1HourField(value);
+  await breastfeedingWithin1Hour.waitForClickable();
+  await breastfeedingWithin1Hour.click();
 };
 
 const selectDeliveryBabyInfectedUmbilicalCord = async (value) => {
-  return (await babyInfectedUmbilicalCordField(value)).click();
+  const infectedUmbilicalCord = await babyInfectedUmbilicalCordField(value);
+  await infectedUmbilicalCord.waitForClickable();
+  await infectedUmbilicalCord.click();
 };
 
 const selectDeliveryBabyConvulsion = async (value) => {
-  return (await babyConvulsionField(value)).click();
+  const convulsion = await babyConvulsionField(value);
+  await convulsion.waitForClickable();
+  await convulsion.click();
 };
 
 const selectDeliveryBabyDifficultyFeeding = async (value) => {
-  return (await babyDifficultyFeedingField(value)).click();
+  const difficultyFeeding = await babyDifficultyFeedingField(value);
+  await difficultyFeeding.waitForClickable();
+  await difficultyFeeding.click();
 };
 
 const selectDeliveryBabyVomit = async (value) => {
-  return (await babyVomitField(value)).click();
+  const vomit = await babyVomitField(value);
+  await vomit.waitForClickable();
+  await vomit.click();
 };
 
 const selectDeliveryBabyDrowsy = async (value) => {
-  return (await babyDrowsyField(value)).click();
+  const drowsy = await babyDrowsyField(value);
+  await drowsy.waitForClickable();
+  await drowsy.click();
 };
 
 const selectDeliveryBabyStiff = async (value) => {
-  return (await babyStiffField(value)).click();
+  const stiff = await babyStiffField(value);
+  await stiff.waitForClickable();
+  await stiff.click();
 };
 
 const selectDeliveryBabyYellowSkin = async (value) => {
-  return (await babyYellowSkinField(value)).click();
+  const yellowSkin = await babyYellowSkinField(value);
+  await yellowSkin.waitForClickable();
+  await yellowSkin.click();
 };
 
 const selectDeliveryBabyFever = async (value) => {
-  return (await babyFeverField(value)).click();
+  const fever = await babyFeverField(value);
+  await fever.waitForClickable();
+  await fever.click();
 };
 
 const selectDeliveryBabyBlueSkin = async (value) => {
-  return (await babyBlueSkinField(value)).click();
+  const blueSkin = await babyBlueSkinField(value);
+  await blueSkin.waitForClickable();
+  await blueSkin.click();
 };
 
 const selectDeliveryPncVisits = async (value) => {
-  return (await deliveryPncVisitsField(value)).click();
+  const pncVisits = await deliveryPncVisitsField(value);
+  await pncVisits.waitForClickable();
+  await pncVisits.click();
 };
 
-const submitForm = async () => {
-  await (await submitButton()).click();
+const getSummaryInfo = async () => {
+  return {
+    patientName: await sumPatientName().getText(),
+    patientAge: await sumPatientAge().getText(),
+    womanCondition: await sumWomanCondition().getText(),
+    deliveryDate: await sumDeliveryDate().getText(),
+    deliveryPlace: await sumDeliveryPlace().getText(),
+    deliveredBabies: await sumDeliveredBabies().getText(),
+    deceasedBabies: await sumDeceasedBabies().getText(),
+    pncVisits: await sumPncVisits().getText(),
+  };
+};
+
+const fillWomanDeathInformation = async ({
+  date: dateValue = moment().format('YYYY-MM-DD'),
+  place: placeValue = 'health_facility',
+  deliveredBabies: deliveredBabiesValue = 'no',
+  notes: notesValue = 'Test notes - Mother\'s death '
+} = {}) => {
+  await womanDeathPlace(placeValue).click();
+  await womanDeliveredBabies(deliveredBabiesValue).click();
+  await womanDeathNote().setValue(notesValue);
+  await womanDeathDate().setValue(dateValue);
 };
 
 module.exports = {
   selectDeliveryConditionWomanOutcome,
-  selectDeliveryPosnatalDangerSignsFever,
-  selectDeliveryPosnatalDangerSevereFever,
-  selectDeliveryPosnatalDangerVaginalBleeding,
-  selectDeliveryPosnatalDangerVaginalDischarge,
-  selectDeliveryPosnatalDangerConvulsion,
+  selectDeliveryPostnatalDangerSignsFever,
+  selectDeliveryPostnatalDangerSevereHeadache,
+  selectDeliveryPostnatalDangerVaginalBleeding,
+  selectDeliveryPostnatalDangerVaginalDischarge,
+  selectDeliveryPostnatalDangerConvulsion,
   selectDeliveryOutcomeBabiesDelivered,
   selectDeliveryOutcomeBabiesAlive,
   selectDeliveryOutcomeDeliveryPlace,
   setDeliveryOutcomeDateOfDelivery,
   selectDeliveryOutcomeDeliveryMode,
-  selectDeliveryBabysCondition,
-  setDeliveryBabysName,
-  selectDeliveryBabysSex,
-  selectDeliveryBabysBirthWeightKnow,
-  selectDeliveryBabysBirthLengthKnow,
-  selectDeliveryBabysVaccinesReveived,
+  selectDeliveryBabyCondition,
+  setDeliveryBabyName,
+  selectDeliveryBabySex,
+  selectDeliveryBabyBirthWeightKnown,
+  selectDeliveryBabyBirthLengthKnown,
+  selectDeliveryBabyVaccinesReceived,
   selectDeliveryBabyBreastfeeding,
   selectDeliveryBabyBreastfeedingWithin1Hour,
   selectDeliveryBabyInfectedUmbilicalCord,
@@ -225,5 +296,6 @@ module.exports = {
   selectDeliveryBabyFever,
   selectDeliveryBabyBlueSkin,
   selectDeliveryPncVisits,
-  submitForm
+  getSummaryInfo,
+  fillWomanDeathInformation,
 };

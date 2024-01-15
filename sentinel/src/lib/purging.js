@@ -1,7 +1,7 @@
 const config = require('../config');
 const registrationUtils = require('@medic/registration-utils');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const serverSidePurgeUtils = require('@medic/purging-utils');
+const chtScriptApi = require('@medic/cht-script-api');
 const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
@@ -193,31 +193,17 @@ const assignContactToGroups = (row, groups, subjectIds) => {
     messages: [],
     ids: []
   };
-  let key;
   const contact = row.doc;
-  if (tombstoneUtils.isTombstoneId(row.id)) {
-    // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
-    // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
-    key =  tombstoneUtils.extractStub(row.id).id;
-    group.contact = { _deleted: true };
-    group.subjectIds = registrationUtils.getSubjectIds(row.doc.tombstone);
-  } else {
-    key = row.id;
-    group.contact = row.doc;
-    group.subjectIds = registrationUtils.getSubjectIds(contact);
-    group.ids.push(row.id);
-  }
+  group.contact = row.doc;
+  group.subjectIds = registrationUtils.getSubjectIds(contact);
+  group.ids.push(row.id);
 
-  groups[key] = group;
+  groups[row.id] = group;
   subjectIds.push(...group.subjectIds);
 };
 
 const isRelevantRecordEmission = (row, groups) => {
   if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
-    return false;
-  }
-
-  if (tombstoneUtils.isTombstoneId(row.id)) { // we don't purge tombstones
     return false;
   }
 
@@ -353,7 +339,16 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
         return;
       }
 
-      const idsToPurge = purgeFn({ roles: roles[hash] }, group.contact, group.reports, group.messages);
+      const permissionSettings = config.get('permissions');
+
+      const idsToPurge = purgeFn(
+        { roles: roles[hash] },
+        group.contact,
+        group.reports,
+        group.messages,
+        chtScriptApi,
+        permissionSettings
+      );
       if (!validPurgeResults(idsToPurge)) {
         return;
       }
@@ -455,6 +450,7 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
     startkey_docid: startKeyDocId,
     include_docs: true
   });
+  const permissionSettings = config.get('permissions');
 
   const getIdsToPurge = (rolesHashes, rows) => {
     const toPurge = {};
@@ -463,8 +459,8 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
       rolesHashes.forEach(hash => {
         toPurge[hash] = toPurge[hash] || {};
         const purgeIds = doc.form ?
-          purgeFn({ roles: roles[hash] }, {}, [doc], []) :
-          purgeFn({ roles: roles[hash] }, {}, [], [doc]);
+          purgeFn({ roles: roles[hash] }, {}, [doc], [], chtScriptApi, permissionSettings) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc], chtScriptApi, permissionSettings);
 
         if (!validPurgeResults(purgeIds)) {
           return;

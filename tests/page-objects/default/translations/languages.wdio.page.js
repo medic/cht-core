@@ -23,7 +23,7 @@ const addNewLanguage = async (code, name) => {
   await (await languageCodeInput()).setValue(code);
   await (await languageNameInput()).setValue(name);
   await (await languageSubmitButton()).click();
-  await (await languageSubmitButton()).waitForDisplayed({reverse:true});
+  await (await languageSubmitButton()).waitForDisplayed({reverse: true});
 };
 
 const languageDisplayed = async (code) => {
@@ -35,7 +35,7 @@ const languageDisplayed = async (code) => {
 const selectLanguage = async (element, code) => {
   await (await element()).selectByAttribute('value', `string:${code}`);
   await (await submitButton()).click();
-  await (await $('.loader.inline')).waitForDisplayed({reverse:true});
+  await (await $('.loader.inline')).waitForDisplayed({reverse: true});
   const newLanguage = await $(`[value="string:${code}"]`);
   return await newLanguage.isSelected();
 };

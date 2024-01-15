@@ -1,15 +1,15 @@
-const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const targetAggregatesPage = require('../../../page-objects/default/targets/target-aggregates.wdio.page');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page.js');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 const moment = require('moment');
 const _ = require('lodash');
 const fs = require('fs');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const personFactory = require('../../../factories/cht/contacts/person');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const personFactory = require('@factories/cht/contacts/person');
 
 const randomNumber = (max) => Math.floor(Math.random() * max);
 

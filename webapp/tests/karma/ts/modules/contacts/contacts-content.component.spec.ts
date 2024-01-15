@@ -15,7 +15,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { GlobalActions } from '@mm-actions/global';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
@@ -25,6 +25,10 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { AuthService } from '@mm-services/auth.service';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -61,9 +65,9 @@ describe('Contacts content component', () => {
     settingsService = { get: sinon.stub().resolves(settings) };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     translateFromService = { get: sinon.stub().returnsArg(0) };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
     userSettingsService = {
@@ -107,7 +111,7 @@ describe('Contacts content component', () => {
       { selector: Selectors.getFilters, value: {} },
     ];
     activatedRoute = { params: of({}), snapshot: { params: {} } };
-    router = { navigate: sinon.stub() };
+    router = { navigate: sinon.stub(), events: { pipe: sinon.stub().returns({ subscribe: sinon.stub() }) } };
     responsiveService = { isMobile: sinon.stub() };
 
     return TestBed
@@ -115,7 +119,11 @@ describe('Contacts content component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ ContactsContentComponent, ResourceIconPipe ],
+        declarations: [
+          ContactsContentComponent,
+          ResourceIconPipe,
+          FastActionButtonComponent
+        ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ActivatedRoute, useValue: activatedRoute },
@@ -136,6 +144,9 @@ describe('Contacts content component', () => {
           { provide: ContactMutedService, useValue: contactMutedService },
           { provide: MutingTransition, useValue: mutingTransition },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: AuthService, useValue: { has: sinon.stub() } },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents()

@@ -14,11 +14,12 @@ describe('Extension lib xpath function', () => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await extensionLibsPage.configure(userContactDoc);
     await waitForServiceWorker.promise;
+    await browser.reloadSession();
+    await browser.url('/');
   });
 
   it('calculate average', async () => {
     await loginPage.cookieLogin();
-    await browser.refresh();
     await commonPage.goToReports();
 
     await commonPage.openFastActionReport(extensionLibsPage.INTERNAL_ID, false);

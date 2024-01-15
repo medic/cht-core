@@ -1,0 +1,28 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@mm-actions/*": ["src/ts/actions/*"],
+      "@mm-providers/*": ["src/ts/providers/*"],
+      "@mm-reducers/*": ["src/ts/reducers/*"],
+      "@mm-selectors/*": ["src/ts/selectors/*"],
+      "@mm-services/*": ["src/ts/services/*"],
+      "@mm-services/db.service": ["web-components/cht-form/src/stubs/db.service.ts"],
+    },
+    "outDir": "../out-tsc/spec",
+    "types": [
+      "mocha",
+      "sinon",
+      "node",
+      "jquery"
+    ]
+  },
+  "files": [
+    "../../tests/karma/test.ts",
+    "../../src/ts/polyfills.ts"
+  ],
+  "include": [
+    "tests/karma/**/*.spec.ts"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+    "icon": "icon-pregnancy-danger",
+    "title": "Pregnancy danger sign",
+    "context": {
+        "person": true,
+        "place": false,
+        "expression": "contact.type === 'person' && summary.alive && !summary.muted && summary.is_active_pregnancy && user.parent.type === 'health_center' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 12 && ageInYears(contact) <= 49)) && user._id != contact._id"
+    }
+}

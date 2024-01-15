@@ -1,0 +1,10 @@
+HTTP/1.1 421 Misdirected Request
+Content-length: 121
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "421 Misdirected Request",
+  "reason": "Request sent to a non-authoritative server",
+  "server": "haproxy"
+}

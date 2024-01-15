@@ -22,7 +22,7 @@ describe('records service', () => {
   it('create form returns error if form value is missing', done => {
     try {
       service.createByForm({ message: 'test' });
-    } catch(e) {
+    } catch (e) {
       chai.expect(e.publicMessage).to.equal('Missing required value: from');
       done();
     }
@@ -32,7 +32,7 @@ describe('records service', () => {
     const body = { name: 'bob' };
     try {
       service.createRecordByJSON(body);
-    } catch(e) {
+    } catch (e) {
       chai.expect(e.publicMessage).to.equal('Missing _meta property.');
       done();
     }

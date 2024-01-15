@@ -20,15 +20,15 @@ const POE_FUNS = {import: 'upload', export: 'download'};
 log.setDefaultLevel(process.env.DEBUG === 'true' ? 'debug' : 'info');
 
 const options = async (args) => {
-  if(args.length > 1) {
+  if (args.length > 1) {
     const opts = config[args[0]];
     opts.file = args[1];
     opts.api_token = process.env.POE_API_TOKEN; // eslint-disable-line camelcase
     opts.id = process.env.POE_PROJECT_ID;
-    if(args[0] === 'import') {
+    if (args[0] === 'import') {
       // Tags the import with ../../package.json version or the extra arg
       opts.tags = args.length > 2 ? [args[2]] : [version];
-    } else if(args[0] === 'export' && args.length > 2) {
+    } else if (args[0] === 'export' && args.length > 2) {
       // Exports using a specific tag or just gets the latest (no tag)
       opts.tags = args[2];
     }
@@ -41,17 +41,17 @@ const options = async (args) => {
 
 const run = async (args) => {
   const cmd = args.length && ALL_CMDS.includes(args[0]) && args[0];
-  if(!cmd) {
+  if (!cmd) {
     usage.show(ALL_CMDS);
   } else {
-    if(POE_CMDS.includes(cmd)) {
+    if (POE_CMDS.includes(cmd)) {
       const opts = await options(args);
       const spinner = new Spinner(`${capitalize(cmd)}ing translations...`);
       spinner.start();
       let failed;
       try {
         await poe[POE_FUNS[cmd]](opts);
-      } catch(ex) {
+      } catch (ex) {
         console.log(ex);
         failed = true;
       } finally {

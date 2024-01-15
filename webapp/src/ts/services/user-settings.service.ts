@@ -3,6 +3,7 @@ import {Injectable} from '@angular/core';
 import { CacheService } from '@mm-services/cache.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import { LanguageService } from '@mm-services/language.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class UserSettingsService {
   constructor(
     private cacheService:CacheService,
     private dbService:DbService,
+    private languageService:LanguageService,
     private sessionService:SessionService,
   ) {
     this.cache = this.cacheService.register({
@@ -56,6 +58,14 @@ export class UserSettingsService {
         resolve(userSettings);
       });
     });
+  }
+
+  async getWithLanguage(): Promise<Object> {
+    const [userSettings, language] = await Promise.all([
+      this.get(),
+      this.languageService.get()
+    ]);
+    return { ...userSettings, language };
   }
 
   put(doc): Promise<Object> {

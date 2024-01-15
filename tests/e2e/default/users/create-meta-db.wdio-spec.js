@@ -1,8 +1,9 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const usersPage = require('@page-objects/default/users/user.wdio.page');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const uuid = require('uuid').v4;
 
 const username = 'fulltester';
 const fullName = 'Roger Milla';
@@ -23,21 +24,26 @@ describe('Create user meta db : ', () => {
     await usersPage.openAddUserDialog();
     await usersPage.inputAddUserFields(username, fullName, 'program_officer', '', '', password);
     await usersPage.saveUser();
-    await commonElements.goToMessages();
-    await commonElements.logout();
+    await commonPage.goToMessages();
+    await commonPage.logout();
     await loginPage.login({ username, password });
-    await commonElements.waitForPageLoaded();
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToReports();
 
-    const doc = { _id: 'this is a random uuid' };
+    const doc = { _id: uuid() };
     await utils.requestOnTestMetaDb(_.defaults({ method: 'POST', body: doc }, options));
 
     const response = await utils.requestOnTestMetaDb(_.defaults({ path: '/_changes' }, options));
 
     const changes = response.results;
-    expect(changes.length).to.equal(2);
-    const ids = changes.map(change => change.id).sort();
-    expect(ids[0]).to.equal('_design/medic-user');
-    expect(ids[1]).to.equal(doc._id);
-  });
+    const ids = changes.map(change => change.id);
+    expect(ids).to.include.members(['_design/medic-user', doc._id]);
 
+    // admins can also read and write from the users meta db
+    const adminDoc = { _id: uuid() };
+    await utils.requestOnTestMetaDb({ method: 'POST', body: adminDoc, userName: options.userName });
+    const adminChanges = await utils.requestOnTestMetaDb({ path: '/_changes', userName: options.userName });
+    const adminChangeIds = adminChanges.results.map(change => change.id);
+    expect(adminChangeIds).to.include.members(['_design/medic-user', doc._id, adminDoc._id]);
+  });
 });

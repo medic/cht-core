@@ -42,12 +42,14 @@ describe('Bulk GET controller', () => {
 
       it('returns error when body is missing `docs` property', () => {
         controller._invalidRequest({ body: {} }).should.deep.equal(
-          { error: 'bad_request', reason: 'Missing JSON list of `docs`.' });
+          { error: 'bad_request', reason: 'Missing JSON list of `docs`.' }
+        );
       });
 
       it('returns error when `docs` is not an array', () => {
         controller._invalidRequest({ body: { docs: 'alpha' } }).should.deep.equal(
-          { error: 'bad_request', reason: '`docs` parameter must be an array.' });
+          { error: 'bad_request', reason: '`docs` parameter must be an array.' }
+        );
       });
     });
 

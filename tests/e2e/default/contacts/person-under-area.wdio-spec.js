@@ -31,7 +31,8 @@ const person1 = personFactory.build(
       _id: healthCenters._id,
       parent: healthCenters.parent
     }
-  });
+  }
+);
 const person2 = personFactory.build(
   {
     name: 'Jack',
@@ -39,11 +40,12 @@ const person2 = personFactory.build(
       _id: healthCenter2._id,
       parent: healthCenter2.parent
     }
-  });
+  }
+);
 
 const docs = [...places.values(), healthCenter2, person1, person2];
 
-describe('Create Person Under Area', async () => {
+describe('Create Person Under Area', () => {
   beforeEach(async () => {
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();

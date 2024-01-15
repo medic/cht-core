@@ -1,0 +1,10 @@
+HTTP/1.1 404 Not Found
+Content-length: 100
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "404 Not Found",
+  "reason": "The resource could not be found",
+  "server": "haproxy"
+}

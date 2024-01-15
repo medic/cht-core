@@ -88,12 +88,11 @@ describe('Reports Filters Component', () => {
 
   it('apply filters should emit search', () => {
     const searchSpy = sinon.spy(component.search, 'emit');
+
     component.applyFilters();
-    expect(searchSpy.callCount).to.equal(1);
-    expect(searchSpy.args[0]).to.deep.equal([undefined]);
-    component.applyFilters(true);
-    expect(searchSpy.callCount).to.equal(2);
-    expect(searchSpy.args[1]).to.deep.equal([true]);
+
+    expect(searchSpy.calledOnce).to.be.true;
+    expect(searchSpy.args[0][0]).to.be.undefined;
   });
 
   it('reset filters should reset all filters', () => {
@@ -106,13 +105,14 @@ describe('Reports Filters Component', () => {
     const freetextClearSpy = sinon.spy(component.freetextFilter, 'clear');
 
     component.resetFilters();
-    expect(clearFilters.callCount).to.equal(1);
-    expect(searchSpy.callCount).to.equal(1);
-    expect(searchSpy.args[0]).to.deep.equal([undefined]);
-    expect(formTypeClearSpy.callCount).to.equal(1);
-    expect(facilityClearSpy.callCount).to.equal(1);
-    expect(dateClearSpy.callCount).to.equal(1);
-    expect(statusClearSpy.callCount).to.equal(1);
-    expect(freetextClearSpy.callCount).to.equal(1);
+
+    expect(clearFilters.calledOnce).to.be.true;
+    expect(searchSpy.calledOnce).to.be.true;
+    expect(searchSpy.args[0][0]).to.be.undefined;
+    expect(formTypeClearSpy.calledOnce).to.be.true;
+    expect(facilityClearSpy.calledOnce).to.be.true;
+    expect(dateClearSpy.calledOnce).to.be.true;
+    expect(statusClearSpy.calledOnce).to.be.true;
+    expect(freetextClearSpy.calledOnce).to.be.true;
   });
 });

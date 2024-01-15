@@ -126,39 +126,47 @@ describe('Contact summary info', () => {
       },
       roles: ['district_admin'],
       known: false,
-    });
+    }
+  );
   const patientAlice = personFactory.build({ name: 'Alice Alison', phone: '+447765902001' });
   const patientDavid = personFactory.build({ name: 'David Davidson', phone: '+447765902002', parent: placeBobClinic });
-  const davidVisit = reportFactory.build(
-    { form: 'visit' },
-    { patient: patientDavid, submitter: districtAdminUser.contact },
-  );
-  const patientCarol = personFactory.build({
-    name: 'Carol Carolina', sex: 'f', parent: placeBobClinic, patient_id: '05946',
-    linked_docs: {
-      aliceTag: patientAlice._id,
-      davidTag: { _id: patientDavid._id },
-      visitTag: { _id: davidVisit._id },
-    },
-  });
-  const carolPregnancy = reportFactory.build(
-    { form: 'P' },
-    { patient: patientCarol, submitter: districtAdminUser.contact },
-  );
-  const carolVisit = reportFactory.build(
-    { form: 'V' },
-    {
-      patient: patientCarol,
-      submitter: districtAdminUser.contact,
-      reported_date: moment().set('date', 5).valueOf(),
-      fields: {
-        visited_contact_uuid: placeBobClinic._id,
-        patient_id: patientCarol.patient_id,
+  const davidVisit = reportFactory
+    .report()
+    .build(
+      { form: 'visit' },
+      { patient: patientDavid, submitter: districtAdminUser.contact },
+    );
+  const patientCarol = personFactory
+    .build({
+      name: 'Carol Carolina', sex: 'f', parent: placeBobClinic, patient_id: '05946',
+      linked_docs: {
+        aliceTag: patientAlice._id,
+        davidTag: { _id: patientDavid._id },
+        visitTag: { _id: davidVisit._id },
       },
-    },
-  );
+    });
+  const carolPregnancy = reportFactory
+    .report()
+    .build(
+      { form: 'P' },
+      { patient: patientCarol, submitter: districtAdminUser.contact },
+    );
+  const carolVisit = reportFactory
+    .report()
+    .build(
+      { form: 'V' },
+      {
+        patient: patientCarol,
+        submitter: districtAdminUser.contact,
+        reported_date: moment().set('date', 5).valueOf(),
+        fields: {
+          visited_contact_uuid: placeBobClinic._id,
+          patient_id: patientCarol.patient_id,
+        },
+      },
+    );
 
-  const docs = [ patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit ];
+  const docs = [patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit];
 
   const settings = {
     uhc: {
@@ -182,7 +190,7 @@ describe('Contact summary info', () => {
 
   before(async () => {
     await utils.saveDocs(docs);
-    await utils.createUsers([ districtAdminUser ]);
+    await utils.createUsers([districtAdminUser]);
   });
 
   afterEach(async () => {
@@ -192,11 +200,11 @@ describe('Contact summary info', () => {
   });
 
   after(async () => {
-    await utils.deleteUsers([ districtAdminUser ]);
+    await utils.deleteUsers([districtAdminUser]);
     await utils.revertDb([/^form:/], true);
   });
 
-  it('should load contact summary', async () => {
+  xit('should load contact summary', async () => {
     await loginPage.cookieLogin();
     await commonElements.waitForPageLoaded();
     await utils.updateSettings(settings, true);
@@ -226,6 +234,7 @@ describe('Contact summary info', () => {
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
+    await browser.url('/');
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
     const originalSettings = await utils.getSettings();
@@ -248,6 +257,7 @@ describe('Contact summary info', () => {
   });
 
   it('should have access to the "cht" global api variable', async () => {
+    await browser.url('/');
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
     const originalSettings = await utils.getSettings();

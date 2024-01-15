@@ -166,7 +166,8 @@ describe('infodoc', () => {
           assert.equal(db.medic.allDocs.callCount, 1);
           assert.deepEqual(db.medic.allDocs.args[0], [{ keys: ['a-info', 'b-info', 'c-info'], include_docs: true }]);
         });
-      });
+      }
+    );
 
     it('should generate infodocs with unknown dates for existing documents, if they do not already exist', () => {
       const changes = [
@@ -416,7 +417,8 @@ describe('infodoc', () => {
           transitions: {
             update_clinics: { ok: true, seq: 12, last_rev: 2 }
           }
-        });
+        }
+      );
       lib.updateTransition(change, 'accept_patient_reports', false);
       assert.deepEqual(
         change.info,
@@ -425,7 +427,8 @@ describe('infodoc', () => {
             update_clinics: { ok: true, seq: 12, last_rev: 2 },
             accept_patient_reports: { ok: false, seq: 12, last_rev: 2 }
           }
-        });
+        }
+      );
     });
 
     it('saveTransitions should update infodoc', () => {

@@ -305,7 +305,6 @@ describe('infodocs', () => {
               assert.equal(infodoc.some, 'legacy data');
             });
         }).catch(err => {
-          console.log('OH NOOOOO', err);
           console.log(err);
           throw err;
         });

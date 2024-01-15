@@ -151,8 +151,6 @@ describe('ContactSummary service', () => {
         expect(err.message).to.equal('Configuration error');
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
       });
   });
 

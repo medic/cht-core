@@ -5,10 +5,10 @@ import { Actions as GlobalActions } from '@mm-actions/global';
 import { UniqueSortedList } from '@mm-reducers/utils';
 
 const initialState = {
-  reports: [],
+  reports: [] as any[],
   reportsById: new Map(),
-  selectedReport: undefined,
-  selectedReports: [],
+  selectedReport: undefined as any,
+  selectedReports: [] as any[],
   verifyingReport: false,
   filters: {},
 };

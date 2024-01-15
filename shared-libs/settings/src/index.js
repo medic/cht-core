@@ -5,7 +5,7 @@ const IV_LENGTH = 16;
 const KEY_LENGTH = 32;
 const CRYPTO_ALGO = 'aes-256-cbc';
 
-const getCredentialId = id => `credential:${id}`;
+const getCredentialId = id => `credential:${encodeURIComponent(id)}`;
 
 const getCouchUrl = () => {
   const couchUrl = process.env.COUCH_URL;

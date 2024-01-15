@@ -16,7 +16,7 @@ export class HydrateContactNamesService {
 
   private findMutedState(contactSummaries, id) {
     const cs = _.find(contactSummaries, { _id: id });
-    return (cs && cs.muted) || false;
+    return cs?.muted || false;
   }
 
   private replaceContactIdsWithNames(summaries, contactSummaries) {
@@ -35,7 +35,7 @@ export class HydrateContactNamesService {
 
   private getMutedState(summaries, contactSummaries) {
     summaries.forEach((summary) => {
-      if (summary.muted || !summary.lineage || !summary.lineage.length) {
+      if (!summary || summary.muted || !summary.lineage || !summary.lineage.length) {
         return;
       }
 

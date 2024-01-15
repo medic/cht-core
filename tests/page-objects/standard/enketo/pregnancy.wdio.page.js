@@ -1,19 +1,37 @@
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
 
-const APROX_LMP = {up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244};
+const APROX_LMP = { up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244 };
 
-const form = 'form[data-form-id="pregnancy"]';
-const knowLMP = (value) => $(`${form} input[name="/pregnancy/group_lmp/g_lmp_method"][value="${value}"]`);
-const aproxLMP = (value) => $(`${form} input[name="/pregnancy/group_lmp/g_lmp_approx"][value="${value}"]`);
-const getEstDeliveryDate = () => $(`${form} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"].active`);
-const risksFac = () => $$(`${form} [name="/pregnancy/group_risk_factors"] label:not(:first-child) > [type="checkbox"]`);
-const dangerSigns = () => $$(`${form} input[name="/pregnancy/group_danger_signs/g_danger_signs"]`);
-const smsNote = () => $(`${form} textarea[name="/pregnancy/group_note/g_chw_sms"]`);
-const riskFactorsSummary = () => $$(`${form} :not(label.disabled):not(label.or-appearance-yellow)  > ` +
-  `span[data-itext-id*="/pregnancy/group_review/r_risk_factor"].active`);
-const dangerSignsSummary = () => $$(`${form} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"].active`);
-const followUpSMS = () => $(`${form} [data-value=" /pregnancy/chw_sms "]`);
+const FORM = enketoCommonPage.form('pregnancy');
+const { ACTIVE } = enketoCommonPage;
+
+const knowLMP = (value) => $(`${FORM} input[name="/pregnancy/group_lmp/g_lmp_method"][value="${value}"]`);
+const aproxLMP = (value) => $(`${FORM} input[name="/pregnancy/group_lmp/g_lmp_approx"][value="${value}"]`);
+const getEstDeliveryDate = () => {
+  return $(`${FORM} span[data-itext-id="/pregnancy/group_lmp/g_display_edd:label"]${ACTIVE}`);
+};
+const risksFac = () => $$(`${FORM} [name="/pregnancy/group_risk_factors"] label:not(:first-child) > [type="checkbox"]`);
+const dangerSigns = () => $$(`${FORM} input[name="/pregnancy/group_danger_signs/g_danger_signs"]`);
+const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('pregnancy')}`);
+const patientNameSummary = () => {
+  const nameSum = enketoCommonPage.patientNameSummary('pregnancy');
+  return $(`${FORM} span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"]${ACTIVE} ${nameSum}`);
+};
+const patientIdSummary = () => {
+  const idSum = enketoCommonPage.patientIdSummary('pregnancy', 'review');
+  return $(`${FORM} span[data-itext-id="/pregnancy/group_review/r_pregnancy_details:label"]${ACTIVE} ${idSum}`);
+};
+const riskFactorsSummary = () => {
+  const parent = ':not(label.disabled):not(label.or-appearance-yellow)';
+  return $$(`${FORM} ${parent}  > span[data-itext-id*="/pregnancy/group_review/r_risk_factor"]${ACTIVE}`);
+};
+const dangerSignsSummary = () => {
+  return $$(`${FORM} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"]${ACTIVE}`);
+};
+const followUpSmsNote1 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote1('pregnancy', 'review')}`);
+const followUpSmsNote2 = () => $(`${FORM} ${enketoCommonPage.followUpSmsNote2('pregnancy', 'review')}`);
 
 const selectKnowLMP = async (value = 'approx') => {
   const lmpOption = await knowLMP(value);
@@ -50,10 +68,15 @@ const setNote = async (text = 'Test note') => {
   await note.setValue(text);
 };
 
-const getFollowUpSMS = async () => {
-  const sms = await followUpSMS();
-  await sms.waitForDisplayed();
-  return sms.getText();
+const getSummaryDetails = async () => {
+  return {
+    patientName: await patientNameSummary().getText(),
+    patientId: await patientIdSummary().getText(),
+    countRiskFactors: await riskFactorsSummary().length,
+    countDangerSigns: await dangerSignsSummary().length,
+    followUpSmsNote1: await followUpSmsNote1().getText(),
+    followUpSmsNote2: await followUpSmsNote2().getText(),
+  };
 };
 
 const submitPregnancy = async () => {
@@ -80,6 +103,6 @@ module.exports = {
   setNote,
   riskFactorsSummary,
   dangerSignsSummary,
-  getFollowUpSMS,
+  getSummaryDetails,
   submitPregnancy,
 };

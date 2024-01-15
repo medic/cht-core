@@ -8,9 +8,8 @@ angular.module('inboxServices').factory('JsonParse',
     return function(json) {
       try {
         return $q.resolve(JSON.parse(json));
-      } catch(e) {
+      } catch (e) {
         return $q.reject(e);
       }
     };
-  }
-);
+  });

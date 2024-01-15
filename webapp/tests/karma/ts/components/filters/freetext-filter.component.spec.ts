@@ -73,11 +73,13 @@ describe('Freetext Filter Component', () => {
   it('should set the filter correctly', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
     const emitSpy = sinon.spy(component.search, 'emit');
+
     component.applyFieldChange('new value', true);
-    expect(setFilter.callCount).to.equal(1);
+
+    expect(setFilter.calledOnce).to.be.true;
     expect(setFilter.args[0]).to.deep.equal([{ search: 'new value' }]);
-    expect(emitSpy.callCount).to.equal(1);
-    expect(emitSpy.args[0]).to.deep.equal([true]);
+    expect(emitSpy.calledOnce).to.be.true;
+    expect(emitSpy.args[0]).to.be.empty;
   });
 
   it('should do nothing if component is disabled', () => {

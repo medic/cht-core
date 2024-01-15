@@ -71,5 +71,4 @@ angular.module('controllers').controller('BackupCtrl',
       .catch(function(err) {
         $log.error('Error fetching settings', err);
       });
-  }
-);
+  });

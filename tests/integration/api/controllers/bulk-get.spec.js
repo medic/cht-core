@@ -72,17 +72,15 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-get handler', () => {
-  before(() => {
-    return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users));
+  before(async () => {
+    await utils.saveDoc(parentPlace);
+    await utils.createUsers(users);
   });
 
-  after(() =>
-    utils
-      .revertDb([], true)
-      .then(() => utils.deleteUsers(users))
-  );
+  after(async () => {
+    await utils.revertDb([], true);
+    await utils.deleteUsers(users);
+  });
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
@@ -153,10 +151,8 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
-      .then(results => {
-        results.forEach((row, idx) => docs[idx]._rev = row.rev);
-
+      .saveDocsRevs(docs)
+      .then(() => {
         offlineRequestOptions.body = {
           docs: [
             { id: 'allowed_contact_1' },
@@ -265,11 +261,10 @@ describe('bulk-get handler', () => {
     const revs = {};
 
     return utils
-      .saveDocs(docs)
+      .saveDocsRevs(docs)
       .then(results => {
-        results.forEach((result, idx) => {
+        results.forEach((result) => {
           revs[result.id] = [ result.rev ];
-          docs[idx]._rev = result.rev;
         });
 
         docs[1].parent = { _id: 'fixture:online' };
@@ -278,7 +273,7 @@ describe('bulk-get handler', () => {
         docs[3].parent = { _id: 'fixture:offline' };
         docs[3].name = 'Previously denied Contact 2';
 
-        return utils.saveDocs(docs);
+        return utils.saveDocsRevs(docs);
       })
       .then(results => {
         results.forEach(result => revs[result.id].push(result.rev));
@@ -406,7 +401,7 @@ describe('bulk-get handler', () => {
       });
   });
 
-  it('returns bodies of couchDB delete stubs', () => {
+  it('does not return bodies of couchDB delete stubs', () => {
     const docs = [
       { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
       { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
@@ -430,20 +425,7 @@ describe('bulk-get handler', () => {
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {
-        chai.expect(result.results).to.deep.equal([
-          {
-            id: 'a1',
-            docs: [{ ok: { _id: 'a1', _rev: docs[0]._rev, _deleted: true }}],
-          },
-          {
-            id: 'a2',
-            docs: [{ ok: { _id: 'a2', _rev: docs[1]._rev, _deleted: true }}],
-          },
-          {
-            id: 'a3',
-            docs: [{ ok: { _id: 'a3', _rev: docs[2]._rev, _deleted: true }}],
-          }
-        ]);
+        chai.expect(result.results).to.deep.equal([]);
       });
   });
 
@@ -456,10 +438,8 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
-      .then(results => {
-        results.forEach((row, idx) => docs[idx]._rev = row.rev);
-
+      .saveDocsRevs(docs)
+      .then(() => {
         offlineRequestOptions.body = {
           docs: [
             { id: 'allowed_contact_1' },
@@ -591,8 +571,7 @@ describe('bulk-get handler', () => {
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs(existentDocs))
-      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
         offlineRequestOptions.body = { docs };
@@ -677,8 +656,7 @@ describe('bulk-get handler', () => {
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs(existentDocs))
-      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
         offlineRequestOptions.body = { docs };
@@ -763,8 +741,7 @@ describe('bulk-get handler', () => {
     const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs(existentDocs))
-      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
         offlineRequestOptions.body = { docs };
@@ -862,9 +839,8 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
-      .then(result => {
-        result.forEach((r, idx) => docs[idx]._rev = r.rev);
+      .saveDocsRevs(docs)
+      .then(() => {
         offlineRequestOptions.body = { docs: docs.map(doc => ({ id: doc._id, rev: doc._rev })) };
       })
       .then(() => utils.requestOnMedicDb(offlineRequestOptions))

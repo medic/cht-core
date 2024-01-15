@@ -16,23 +16,8 @@ const contact = {
   }
 };
 
-const getMessage = (doc, idx) =>
-  doc &&
-  doc.tasks &&
-  doc.tasks.length &&
-  doc.tasks[idx] &&
-  doc.tasks[idx].messages &&
-  doc.tasks[idx].messages.length &&
-  doc.tasks[idx].messages[0];
-
-const getScheduledMessage = (doc, idx) =>
-  doc &&
-  doc.scheduled_tasks &&
-  doc.scheduled_tasks.length &&
-  doc.scheduled_tasks[idx] &&
-  doc.scheduled_tasks[idx].messages &&
-  doc.scheduled_tasks[idx].messages.length &&
-  doc.scheduled_tasks[idx].messages[0];
+const getMessage = (doc, idx) => doc?.tasks?.[idx]?.messages?.[0];
+const getScheduledMessage = (doc, idx) => doc?.scheduled_tasks?.[idx]?.messages?.[0];
 
 describe('functional schedules', () => {
   let schedules;
@@ -112,7 +97,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
 
       /*
        * Also checks that recipient using doc property value is resolved
@@ -121,7 +107,8 @@ describe('functional schedules', () => {
       testMessage(
         getScheduledMessage(doc, 0),
         '+1234',
-        'Mustaches.  Overrated or underrated?');
+        'Mustaches.  Overrated or underrated?'
+      );
 
     });
   });
@@ -176,7 +163,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
 
       // check that message generation is deferred until later
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -244,7 +232,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
 
       /*
        * Also checks that recipient using doc property value is resolved
@@ -253,7 +242,8 @@ describe('functional schedules', () => {
       testMessage(
         getScheduledMessage(doc, 0),
         '+1234',
-        'Mustaches.  Overrated or underrated?');
+        'Mustaches.  Overrated or underrated?'
+      );
     });
   });
 
@@ -289,7 +279,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+5551596',
-        'Thanks');
+        'Thanks'
+      );
     });
   });
 
@@ -405,7 +396,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks for registering barry');
+        'thanks for registering barry'
+      );
 
       /*
        * Also checks that recipient using doc property value is resolved
@@ -414,7 +406,8 @@ describe('functional schedules', () => {
       testMessage(
         getScheduledMessage(doc, 0),
         '+1234',
-        'Remember to visit barry');
+        'Remember to visit barry'
+      );
 
       assert.equal(utils.getRegistrations.callCount, 4);
 
@@ -483,7 +476,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
     });
   });
 
@@ -721,6 +715,132 @@ describe('functional schedules', () => {
         assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
         assert.equal(doc.scheduled_tasks[0].state, 'scheduled');
       });
+  });
+
+  it('schedule can be configured from single element in start_from array.', () => {
+    config.get.returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: ''
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks {{contact.name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: ['reported_date'],
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Mustaches.  Overrated or underrated?',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
+    });
+
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks?.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks?.length, 1);
+
+      testMessage(
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie'
+      );
+    });
+  });
+
+  it('schedule is configured from second field, if first is not available.', () => {
+    config.get.returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: ''
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks {{contact.name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: ['reported_date', 'dob'],
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Mustaches.  Overrated or underrated?',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
+    });
+
+    const doc = {
+      dob: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+      testMessage(
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie'
+      );
+    });
   });
 
   const testMessage = (message, expectedTo, expectedContent) => {

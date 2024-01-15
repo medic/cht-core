@@ -1,7 +1,7 @@
-const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
 const _ = require('lodash');
+const url = require('node:url');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
@@ -14,15 +14,18 @@ const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
 const translations = require('../translations');
 const template = require('../services/template');
+const rateLimitService = require('../services/rate-limit');
+const serverUtils = require('../server-utils');
 
 const templates = {
   login: {
-    content: null,
-    file: 'index.html',
+    file: path.join(__dirname, '..', 'templates', 'login', 'index.html'),
     translationStrings: [
       'login',
       'login.error',
+      'login.hide_password',
       'login.incorrect',
+      'login.show_password',
       'login.unsupported_browser',
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',
@@ -34,8 +37,7 @@ const templates = {
     ],
   },
   tokenLogin: {
-    content: null,
-    file: 'token-login.html',
+    file: path.join(__dirname, '..', 'templates', 'login', 'token-login.html'),
     translationStrings: [
       'login.token.missing',
       'login.token.expired',
@@ -72,8 +74,8 @@ const getRedirectUrl = (userCtx, requested) => {
     // invalid url - return the default
     return root;
   }
-  const parsed = url.parse(requested);
-  return parsed.path + (parsed.hash || '');
+  const parsed = new URL(requested, 'resolve://');
+  return parsed.pathname + (parsed.hash || '');
 };
 
 const getEnabledLocales = () => {
@@ -90,9 +92,7 @@ const getEnabledLocales = () => {
 };
 
 const getTemplate = (page) => {
-  const filepath = path.join(__dirname, '..', 'templates', 'login', templates[page].file);
-  templates[page].content = template.getTemplate(filepath);
-  return templates[page].content;
+  return template.getTemplate(templates[page].file);
 };
 
 const getTranslationsString = page => {
@@ -141,12 +141,7 @@ const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
   return request.post({
-    url: url.format({
-      protocol: environment.protocol,
-      hostname: environment.host,
-      port: environment.port,
-      pathname: '_session',
-    }),
+    url: new URL('/_session', environment.serverUrlNoAuth).toString(),
     json: true,
     resolveWithFullResponse: true,
     simple: false, // doesn't throw an error on non-200 responses
@@ -172,8 +167,7 @@ const setCookies = (req, res, sessionRes) => {
     throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
-  return auth
-    .getUserCtx(options)
+  return getUserCtxRetry(options)
     .then(userCtx => {
       cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
@@ -202,6 +196,19 @@ const setCookies = (req, res, sessionRes) => {
 const renderTokenLogin = (req, res) => {
   return render('tokenLogin', req, { tokenUrl: req.url })
     .then(body => res.send(body));
+};
+
+const getUserCtxRetry = async (options, retry = 10) => {
+  try {
+    return await auth.getUserCtx(options);
+  } catch (err) {
+    // in a clustered setup, requesting session immediately after changing a password might 401
+    if (retry > 0 && err && err.code === 401) {
+      await new Promise(r => setTimeout(r, 10));
+      return getUserCtxRetry(options, --retry);
+    }
+    throw err;
+  }
 };
 
 const createSessionRetry = (req, retry=10) => {
@@ -264,6 +271,24 @@ const renderLogin = (req) => {
   return render('login', req);
 };
 
+const login = async (req, res) => {
+  try {
+    const sessionRes = await createSession(req);
+    if (sessionRes.statusCode !== 200) {
+      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+    } else {
+      const redirectUrl = await setCookies(req, res, sessionRes);
+      res.status(302).send(redirectUrl);
+    }
+  } catch (e) {
+    if (e.status === 401) {
+      return res.status(401).json({ error: e.error });
+    }
+    logger.error('Error logging in: %o', e);
+    res.status(500).json({ error: 'Unexpected error logging in' });
+  }
+};
+
 module.exports = {
   renderLogin,
 
@@ -280,26 +305,12 @@ module.exports = {
       })
       .catch(next);
   },
-  post: (req, res) => {
-    return createSession(req)
-      .then(sessionRes => {
-        if (sessionRes.statusCode !== 200) {
-          res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-          return;
-        }
-        return setCookies(req, res, sessionRes)
-          .then(redirectUrl => res.status(302).send(redirectUrl))
-          .catch(err => {
-            if (err.status === 401) {
-              return res.status(err.status).json({ error: err.error });
-            }
-            throw err;
-          });
-      })
-      .catch(err => {
-        logger.error('Error logging in: %o', err);
-        res.status(500).json({ error: 'Unexpected error logging in' });
-      });
+  post: async (req, res) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+    await login(req, res);
   },
   getIdentity: (req, res) => {
     res.type('application/json');
@@ -316,17 +327,19 @@ module.exports = {
   },
 
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
-  tokenPost: (req, res, next) => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        return res.status(302).send(getRedirectUrl(userCtx));
-      })
-      .catch(err => {
-        if (err.code === 401) {
-          return loginByToken(req, res);
-        }
-        next(err);
-      });
+  tokenPost: async (req, res, next) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+    try {
+      const userCtx = await auth.getUserCtx(req);
+      return res.status(302).send(getRedirectUrl(userCtx));
+    } catch (e) {
+      if (e.code === 401) {
+        return loginByToken(req, res);
+      }
+      next(e);
+    }
   },
 };

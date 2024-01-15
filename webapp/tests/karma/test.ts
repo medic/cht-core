@@ -17,6 +17,9 @@ chai.config.truncateThreshold = 0;
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting()
+  platformBrowserDynamicTesting(),
+  {
+    errorOnUnknownElements: true,
+    errorOnUnknownProperties: true
+  }
 );
-

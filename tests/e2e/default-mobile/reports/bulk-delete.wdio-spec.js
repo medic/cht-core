@@ -10,29 +10,40 @@ const personFactory = require('@factories/cht/contacts/person');
 describe('Bulk delete reports', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
-  const offlineUser = userFactory.build({ username: 'offline_chw_bulk_delete', place: healthCenter._id });
-  const patient = personFactory.build({ parent: { _id: healthCenter._id } });
+  const contact = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+  const offlineUser = userFactory.build({
+    username: 'offline_chw_bulk_delete',
+    place: healthCenter._id,
+    contact: contact._id,
+  });
+  const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const reports = [
-    reportFactory.build(
-      { form: 'P' },
-      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' }}
-    ),
-    reportFactory.build(
-      { form: 'P' },
-      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' }}
-    ),
-    reportFactory.build(
-      { form: 'V' },
-      { patient, submitter: offlineUser.contact, fields: { ok: 'Yes!' }}
-    ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'P' },
+        { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' }}
+      ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'P' },
+        { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' }}
+      ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'V' },
+        { patient, submitter: offlineUser.contact, fields: { ok: 'Yes!' }}
+      ),
   ];
 
   const savedUuids = [];
   before(async () => {
-    await utils.saveDocs([ ...places.values(), patient ]);
+    await utils.saveDocs([ ...places.values(), contact, patient ]);
     await utils.createUsers([ offlineUser ]);
-    await loginPage.login(offlineUser);
     (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
+    await loginPage.login(offlineUser);
   });
 
   it('should select, deselect and delete only selected reports', async () => {

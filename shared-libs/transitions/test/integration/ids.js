@@ -13,6 +13,7 @@ describe('functional ids', () => {
 
     assert(
       collisions <= MAX_RETRIES,
-      'Should have at most ' + MAX_RETRIES + ' collisions, had: ' + collisions);
+      'Should have at most ' + MAX_RETRIES + ' collisions, had: ' + collisions
+    );
   });
 });

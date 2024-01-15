@@ -26,7 +26,7 @@ Xpath.getElementXPath = function(element)
 
 Xpath.getElementTreeXPath = function(element)
 {
-    var paths = [];
+    var paths: string[] = [];
 
     // Use nodeName (instead of localName) so namespace prefix is included (if any).
     for (; element && element.nodeType == Node.ELEMENT_NODE; element = element.parentNode)

@@ -11,6 +11,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();
@@ -41,46 +43,46 @@ describe('Pregnancy registration', () => {
     await genericForm.nextPage();
 
     const confirmationDetails = await pregnancyForm.getConfirmationDetails();
-    expect(confirmationDetails.eddConfirm).to.equal(edd.format('D MMM, YYYY'));
+    expect(Date.parse(confirmationDetails.eddConfirm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
 
     await genericForm.nextPage();
     await pregnancyForm.setANCVisitsPast();
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.KNOWN_FUTURE_VISITS);
+    await genericForm.selectYesNoOption(pregnancyForm.KNOWN_FUTURE_VISITS);
     await pregnancyForm.setFutureVisitDate(nextANCVisit.format('YYYY-MM-DD'));
     await genericForm.nextPage();
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.MISCARRIAGE);
+    countRiskFactors += await genericForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
+    countRiskFactors += await genericForm.selectYesNoOption(pregnancyForm.MISCARRIAGE);
     await genericForm.nextPage();
     countRiskFactors += await pregnancyForm.selectAllRiskFactors(pregnancyForm.FIRST_PREGNANCY_VALUE.no);
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.ADDITIONAL_FACTORS, 'no');
+    countRiskFactors += await genericForm.selectYesNoOption(pregnancyForm.ADDITIONAL_FACTORS, 'no');
     await genericForm.nextPage();
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.VAGINAL_BLEEDING);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.FITS);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.ABDOMINAL_PAIN);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.HEADACHE);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.VERY_PALE);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.FEVER);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.REDUCE_FETAL_MOV);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.BREAKING_OF_WATER);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.EASILY_TIRED);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.SWELLING_HANDS);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.BREATHLESSNESS);
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.fits('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.abdominalPain('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.headache('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.veryPale('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.fever('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.reduceFetalMov('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.breakingOfWater('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.easilyTired('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.swellingHands('pregnancy'));
+    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.breathlessness('pregnancy'));
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.LLIN);
+    await genericForm.selectYesNoOption(pregnancyForm.LLIN);
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.IRON_FOLATE);
+    await genericForm.selectYesNoOption(pregnancyForm.IRON_FOLATE);
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.DEWORMING_MEDICATION);
+    await genericForm.selectYesNoOption(pregnancyForm.DEWORMING_MEDICATION);
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.HIV_TESTED);
+    await genericForm.selectYesNoOption(pregnancyForm.HIV_TESTED);
     await genericForm.nextPage();
 
     const summaryDetails = await pregnancyForm.getSummaryDetails();
     expect(summaryDetails.patientNameSumm).to.equal(pregnantWoman.name);
     expect(summaryDetails.weeksPregnantSumm).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(summaryDetails.eddSumm).to.equal(edd.format('D MMM, YYYY'));
+    expect(Date.parse(summaryDetails.eddSumm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(summaryDetails.riskFactorsSumm).to.equal(countRiskFactors);
     expect(summaryDetails.dangerSignsSumm).to.equal(countDangerSigns);
 
@@ -91,9 +93,9 @@ describe('Pregnancy registration', () => {
 
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
     expect(pregnancyCardInfo.weeksPregnant).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(pregnancyCardInfo.deliveryDate).to.equal(edd.format('D MMM, YYYY'));
+    expect(Date.parse(pregnancyCardInfo.deliveryDate)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(pregnancyCardInfo.risk).to.equal('High risk');
-    expect(pregnancyCardInfo.ancVisit).to.equal(nextANCVisit.format('D MMM, YYYY'));
+    expect(Date.parse(pregnancyCardInfo.ancVisit)).to.equal(Date.parse(nextANCVisit.format('D MMM, YYYY')));
 
   });
 
@@ -125,14 +127,14 @@ describe('Pregnancy registration', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0' },
-      { title: 'New pregnancies', goal: '20', count: '1' },
-      { title: 'Live births', count: '0' },
-      { title: 'Active pregnancies', count: '1' },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR },
+      { title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0' }
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR  }
     ]);
   });
 });

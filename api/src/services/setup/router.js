@@ -19,7 +19,7 @@ const STATUS = 503;
 router.use(express.static(environment.staticPath));
 router.use(getLocale);
 router.use(
-  morgan('STARTUP RES :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length]')
+  morgan(':date STARTUP RES: :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length]')
 );
 
 const getEnabledLocales = () => {

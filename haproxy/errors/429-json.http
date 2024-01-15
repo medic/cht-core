@@ -1,0 +1,10 @@
+HTTP/1.1 429 Too Many Requests
+Content-length: 134
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "429 Too Many Requests",
+  "reason": "You have sent too many requests in a given amount of time",
+  "server": "haproxy"
+}

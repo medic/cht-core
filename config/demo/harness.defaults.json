@@ -1,0 +1,44 @@
+{
+  "coreVersion": "3.14.0",
+  "user": "chw_id",
+  "subject": "patient_id",
+
+  "ownedBySubject": true,
+
+  "docs": [
+    {
+      "_id": "chw_id",
+      "name": "CHW",
+      "date_of_birth": "1971-03-10",
+      "phone": "+17782475555",
+      "reported_date": 1550559625153,
+      "type": "person",
+      "parent": {
+        "_id": "chw_area_id",
+        "parent": {
+          "_id": "district_id"
+        }
+      }
+    },
+
+    {
+      "_id": "patient_id",
+      "type": "person",
+      "name": "Patient Name",
+      "role": "patient",
+      "date_of_birth": "1970-07-09",
+      "sex": "female",
+      "reported_date": 928195200000,
+      "patient_id": "patient_id",
+      "parent": {
+        "_id": "patient_parent_id",
+        "parent": {
+          "_id": "chw_area_id",
+          "parent": {
+            "_id": "district_id"
+          }
+        }
+      }
+    }
+  ]
+}

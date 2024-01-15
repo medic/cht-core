@@ -42,11 +42,11 @@ describe('Pregnancy Visit', () => {
     await pregnancyVisitForm.setNote(note);
     await genericForm.nextPage();
 
-    expect((await pregnancyVisitForm.dangerSignSummary()).length).to.equal(dangerSigns.length);
-    const followUpSMS = await pregnancyVisitForm.getFollowUpSMS();
-    expect(followUpSMS).to.include(pregnantWoman.name);
-    expect(followUpSMS).to.include(pregnantWoman.patient_id);
-    expect(followUpSMS).to.include(note);
+    const summaryDetails = await pregnancyVisitForm.getSummaryDetails();
+    expect(summaryDetails.countDangerSigns).to.equal(dangerSigns.length);
+    expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman.name);
+    expect(summaryDetails.followUpSmsNote2).to.include(pregnantWoman.patient_id);
+    expect(summaryDetails.followUpSmsNote2).to.include(note);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

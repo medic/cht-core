@@ -31,6 +31,7 @@ export const routes: Routes = [
               }
             };
           }
+          return null;
         },
         redirectTo: ':type_id'
       },

@@ -4,20 +4,19 @@ const rewire = require('rewire');
 const { expect } = require('chai');
 const utils = rewire('../../../src/js/bootstrapper/utils');
 
-/** global window  **/
-
 describe('utils', () => {
+
   afterEach(() => {
     sinon.restore();
   });
 
   beforeEach(() => {
     utils.setOptions({ remote_headers: { head: 'er' } });
-    window.location = {
+    utils.__set__('window', { location: {
       hostname: 'localhost',
       port: '5984',
       protocol: 'http:',
-    };
+    } });
   });
 
   describe('fetchJSON', () => {

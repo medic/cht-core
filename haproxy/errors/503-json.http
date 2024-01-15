@@ -1,0 +1,10 @@
+HTTP/1.1 503 Service Unavailable
+Content-length: 124
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "503 Service Unavailable",
+  "reason": "No server is available to handle this request",
+  "server": "haproxy"
+}

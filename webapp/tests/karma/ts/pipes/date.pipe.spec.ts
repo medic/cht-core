@@ -89,10 +89,8 @@ describe('date pipes', () => {
     it('should return nicely-formatted output', () => {
       relativeDateService.getRelativeDate.returns('76 years');
       const pipe = new AgePipe(formatDateService, relativeDateService, sanitizer);
-      const expected = '<span class="relative-date future age" title="2046-01-02">' +
-        '<span class="relative-date-content update-relative-date" ' +
-        'data-date-options="someOptions"' +
-        '>' +
+      const expected = '<span class="relative-date future age" title="2046-01-02" tabindex="0">' +
+        '<span class="relative-date-content update-relative-date" data-date-options="someOptions">' +
         '76 years' +
         '</span>' +
         '</span>';
@@ -108,8 +106,8 @@ describe('date pipes', () => {
   describe('autoreply', () => {
     it('should return nicely-formatted output', async () => {
       const pipe = new AutoreplyPipe(translateService, formatDateService, relativeDateService, sanitizer);
-      const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;' +
-        '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>';
+      const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;<span class="autoreply" ' +
+        'title="MESSAGE" tabindex="0"><span class="autoreply-content">autoreply</span></span>&nbsp</span>';
       const actual = await pipe.transform(TEST_TASK);
       assert.equal(actual, expected);
     });
@@ -147,7 +145,7 @@ describe('date pipes', () => {
       relativeDateService.getRelativeDate.returns('0 days');
       const pipe = new RelativeDatePipe(sanitizer, formatDateService, relativeDateService);
 
-      const expected = '<span class="relative-date future" title="2046-01-02T02:14:45.558Z">' +
+      const expected = '<span class="relative-date future" title="2046-01-02T02:14:45.558Z" tabindex="0">' +
         '<span class="relative-date-content update-relative-date" ' +
         'data-date-options="someOptions">0 days</span>' +
         '</span>';
@@ -166,7 +164,7 @@ describe('date pipes', () => {
       relativeDateService.getRelativeDate.returns('0 days');
       const pipe = new RelativeDayPipe(sanitizer, formatDateService, relativeDateService);
 
-      const expected = '<span class="relative-date future" title="2046-01-02">' +
+      const expected = '<span class="relative-date future" title="2046-01-02" tabindex="0">' +
         '<span class="relative-date-content update-relative-date" ' +
         'data-date-options="someOptions"' +
         '>' +
@@ -222,7 +220,7 @@ describe('date pipes', () => {
 
       const pipe = new DateOfDeathPipe(translateService, formatDateService, relativeDateService, sanitizer);
       const expected = 'contact.deceased.date.prefix&nbsp;' +
-      '<span class="relative-date future" title="2046-01-02">' +
+      '<span class="relative-date future" title="2046-01-02" tabindex="0">' +
         '<span class="relative-date-content update-relative-date" data-date-options="someOptions">' +
         'sometime in the past' +
         '</span>' +
@@ -271,7 +269,7 @@ describe('date pipes rendering', () => {
   let formatDate;
   let translate;
 
-  const override = async(template, { task=undefined, date=undefined }={}) => {
+  const override = async(template, { task, date }: { task?; date? } = {}) => {
     TestBed.overrideTemplate(TestComponent, template);
     fixture = TestBed.createComponent(TestComponent);
     fixture.componentInstance.date = date;

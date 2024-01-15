@@ -61,7 +61,7 @@ describe('NavigationComponent', () => {
     store.overrideSelector(Selectors.getEnketoSavingStatus, true);
     store.refreshState();
 
-    component.ngAfterViewInit();
+    component.ngAfterContentInit();
 
     expect(component.isCancelCallbackSet).to.be.true;
     expect(component.title).to.equal('Something');

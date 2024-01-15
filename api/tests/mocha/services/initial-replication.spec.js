@@ -1,10 +1,11 @@
 const sinon = require('sinon');
-const { expect } = require('chai');
+const chai = require('chai').use(require('chai-as-promised'));
+const expect = chai.expect;
 
 const db = require('../../../src/db');
 const authorization = require('../../../src/services/authorization');
 const purgedDocs = require('../../../src/services/purged-docs');
-const initialReplication = require('../../../src/services/initial-replication');
+const replication = require('../../../src/services/replication');
 
 let userCtx;
 let authContext;
@@ -29,7 +30,7 @@ describe('Initial Replication service', () => {
       sinon.stub(authorization, 'filterAllowedDocIds').returns([1, 2, 3, 'purged']);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves([1, 2, 3]);
 
-      const result = await initialReplication.getContext(userCtx);
+      const result = await replication.getContext(userCtx);
 
       expect(result).to.deep.equal({
         docIds: [1, 2, 3],
@@ -42,10 +43,10 @@ describe('Initial Replication service', () => {
       expect(authorization.getAuthorizationContext.args).to.deep.equal([[userCtx]]);
       expect(authorization.getDocsByReplicationKey.args).to.deep.equal([[authContext]]);
       expect(authorization.filterAllowedDocIds.args).to.deep.equal([
-        [authContext, docsByReplicationKey, { includeTombstones: false }],
-        [authContext, docsByReplicationKey, { includeTombstones: false, includeTasks: false }],
+        [authContext, docsByReplicationKey],
+        [authContext, docsByReplicationKey, { includeTasks: false }],
       ]);
-      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx.roles, [1, 2, 3, 'purged']]]);
+      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx, [1, 2, 3, 'purged']]]);
       expect(db.medic.info.callCount).to.equal(1);
     });
 
@@ -57,7 +58,7 @@ describe('Initial Replication service', () => {
       sinon.stub(authorization, 'filterAllowedDocIds').returns(allDocsIds);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(allDocsIds);
 
-      const result = await initialReplication.getContext(userCtx);
+      const result = await replication.getContext(userCtx);
 
       expect(result).to.deep.equal({
         docIds: allDocsIds,
@@ -67,7 +68,7 @@ describe('Initial Replication service', () => {
         lastSeq: '222-bbb',
       });
 
-      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx.roles, allDocsIds]]);
+      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx, allDocsIds]]);
     });
 
     it('should only warn about unpurged docs', async () => {
@@ -79,7 +80,7 @@ describe('Initial Replication service', () => {
       sinon.stub(authorization, 'filterAllowedDocIds').returns(allDocsIds);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedDocsIDs);
 
-      const result = await initialReplication.getContext(userCtx);
+      const result = await replication.getContext(userCtx);
 
       expect(result).to.deep.equal({
         docIds: unpurgedDocsIDs,
@@ -101,7 +102,7 @@ describe('Initial Replication service', () => {
         .onCall(1).returns(notTasks);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(allDocsIds);
 
-      const result = await initialReplication.getContext(userCtx);
+      const result = await replication.getContext(userCtx);
 
       expect(result).to.deep.equal({
         docIds: allDocsIds,
@@ -115,14 +116,14 @@ describe('Initial Replication service', () => {
     it('should throw db info errors', async () => {
       sinon.stub(db.medic, 'info').rejects(new Error('omg'));
 
-      await expect(initialReplication.getContext(userCtx)).to.be.rejectedWith(Error, 'omg');
+      await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'omg');
     });
 
     it('should throw getAuthorizationContext errors', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '333-ccc' });
       sinon.stub(authorization, 'getAuthorizationContext').rejects(new Error('failed'));
 
-      await expect(initialReplication.getContext(userCtx)).to.be.rejectedWith(Error, 'failed');
+      await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'failed');
     });
 
     it('should throw getDocsByReplicationKey errors', async () => {
@@ -130,7 +131,7 @@ describe('Initial Replication service', () => {
       sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
       sinon.stub(authorization, 'getDocsByReplicationKey').rejects(new Error('wrong'));
 
-      await expect(initialReplication.getContext(userCtx)).to.be.rejectedWith(Error, 'wrong');
+      await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'wrong');
     });
 
     it('should throw getUnPurgedIds errors', async () => {
@@ -140,7 +141,7 @@ describe('Initial Replication service', () => {
       sinon.stub(authorization, 'filterAllowedDocIds').returns([1, 2, 3]);
       sinon.stub(purgedDocs, 'getUnPurgedIds').rejects(new Error('didnt work'));
 
-      await expect(initialReplication.getContext(userCtx)).to.be.rejectedWith(Error, 'didnt work');
+      await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'didnt work');
     });
   });
 
@@ -156,7 +157,7 @@ describe('Initial Replication service', () => {
         ]
       });
 
-      const response = await initialReplication.getDocIdsRevPairs([1, 2, 3, 4, 5]);
+      const response = await replication.getDocIdsRevPairs([1, 2, 3, 4, 5]);
 
       expect(response).to.deep.equal([
         { id: '1', rev: 1 },
@@ -179,7 +180,7 @@ describe('Initial Replication service', () => {
         ]
       });
 
-      const response = await initialReplication.getDocIdsRevPairs([1, 2, 3, 4, 5]);
+      const response = await replication.getDocIdsRevPairs([1, 2, 3, 4, 5]);
 
       expect(response).to.deep.equal([
         { id: '1', rev: 1 },
@@ -191,7 +192,7 @@ describe('Initial Replication service', () => {
 
     it('should throw allDocs errors', async () => {
       sinon.stub(db.medic, 'allDocs').rejects(new Error('boom'));
-      await expect(initialReplication.getDocIdsRevPairs([123])).to.be.rejectedWith(Error, 'boom');
+      await expect(replication.getDocIdsRevPairs([123])).to.be.rejectedWith(Error, 'boom');
     });
   });
 });

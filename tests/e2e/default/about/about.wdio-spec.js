@@ -4,9 +4,13 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const partnersFactory = require('@factories/cht/config/partners');
 
-describe('About page', async () => {
+describe('About page', () => {
   beforeEach(async () => {
     await loginPage.cookieLogin();
+  });
+
+  afterEach(async () => {
+    await utils.deleteDocs(['partners']);
   });
 
   it('should open the about page', async () => {

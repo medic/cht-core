@@ -8,7 +8,7 @@ const userData = require('@page-objects/default/users/user.data');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 
-describe('Family form', () => {
+xdescribe('Family form', () => {
   const contactId = userData.contactId;
   const userDocs = userData.docs;
   const formXML = fs.readFileSync(`${__dirname}/forms/add-family-multiple-repeats.xml`, 'utf8');

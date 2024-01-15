@@ -9,6 +9,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const gatewayApiUtils = require('@utils/gateway-api');
 const immVisitForm = require('@page-objects/standard/enketo/immunization-visit.wdio.page');
+const { TARGET_MET_COLOR } = analyticsPage;
 
 describe('Immunization Visit', () => {
   const places = placeFactory.generateHierarchy();
@@ -16,20 +17,24 @@ describe('Immunization Visit', () => {
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
   const babyName = 'Baby1';
   let babyMedicID = '';
-  let countAppliedVaccines = 0;
 
   before(async () => {
     await utils.saveDocs([...places.values()]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
-
     await commonPage.goToPeople(healthCenter._id);
     await contactPage.addHealthPrograms('imm');
+    await commonPage.logout();
   });
 
+  afterEach(async () => await commonPage.logout());
+
   it('Add a new child under 2 years old - SMS CW form', async () => {
+    await loginPage.cookieLogin();
+    await commonPage.waitForPageLoaded();
+
     const messageValue = `CW 60 ${babyName}`;
-    
+
     await gatewayApiUtils.api.postMessage({
       id: 'CW-id',
       from: user.phone,
@@ -46,8 +51,15 @@ describe('Immunization Visit', () => {
     expect(firstReport.heading).to.equal(babyName);
     expect(firstReport.form).to.equal('New Child Registration (SMS)');
   });
-  
-  it('Submit immunization visit - webapp', async () => {        
+
+  it('Submit immunization visit - webapp', async () => {
+    const notes = 'Test notes - immunization visit';
+
+    let countAppliedVaccines = 0;
+
+    await loginPage.login(user);
+    await commonPage.waitForPageLoaded();
+
     await commonPage.goToPeople();
     await contactPage.contactPageDefault.selectLHSRowByText(babyName);
     babyMedicID = await contactPage.contactPageDefault.getContactMedicID();
@@ -91,21 +103,26 @@ describe('Immunization Visit', () => {
     await genericForm.nextPage();
     countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.YELLOW_FEVER_VACCINE, 'yes');
     await genericForm.nextPage();
-    await immVisitForm.addNotes();
+    await immVisitForm.addNotes(notes);
     await genericForm.nextPage();
 
-    expect(await immVisitForm.getPatientNameSummaryPage()).to.equal(babyName);
-    expect(countAppliedVaccines).to.equal(await immVisitForm.getAppliedVaccinesSummary());
-    expect(await immVisitForm.getFollowUpSMS()).to.include(babyName);
-    expect(await immVisitForm.getFollowUpSMS()).to.include(babyMedicID);
-    expect(await immVisitForm.getFollowUpSMS()).to.include(await immVisitForm.getNotes());
+    const summaryDetails = await immVisitForm.getSummaryDetails();
+    expect(summaryDetails.patientName).to.equal(babyName);
+    expect(summaryDetails.appliedVaccines).to.equal(countAppliedVaccines);
+    expect(summaryDetails.followUpSmsNote2).to.include(babyName);
+    expect(summaryDetails.followUpSmsNote2).to.include(babyMedicID);
+    expect(summaryDetails.followUpSmsNote2).to.include(notes);
 
     await genericForm.submitForm();
-  });
+    await commonPage.waitForPageLoaded();
 
-  it('Verify immunization card', async () => {
+    //Verify immunization card
     const vaccinesValues = await contactPage.getImmCardVaccinesValues();
     for (const value of vaccinesValues) {
+      if (value.error) {
+        continue;
+      }
+
       if (value.includes('of')) {
         const totalVaccines = value.split(' of ')[1];
         expect(value).to.equal(`${totalVaccines} of ${totalVaccines}`);
@@ -113,17 +130,37 @@ describe('Immunization Visit', () => {
         expect(value).to.equal('Yes');
       }
     }
-  });
 
-  it('Verify immunization report', async () => {
+    //Verify immunization report
     await commonPage.goToReports();
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const firstReport = await reportsPage.firstReport();
+    const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
-    expect(firstReport.heading).to.equal(babyName);
-    expect(firstReport.form).to.equal('Immunization Visit');
+    expect(firstReportInfo.heading).to.equal(babyName);
+    expect(firstReportInfo.form).to.equal('Immunization Visit');
+
+    await reportsPage.openSelectedReport(firstReport);
+    await commonPage.waitForPageLoaded();
+
+    const openReportInfo = await reportsPage.getOpenReportInfo();
+    expect(openReportInfo.patientName).to.equal(babyName);
+    expect(openReportInfo.reportName).to.equal('Immunization Visit');
+    expect(openReportInfo.senderName).to.equal(`Submitted by ${user.contact.name}`);
+    expect(openReportInfo.senderPhone).to.equal(user.contact.phone);
+
+    expect((await reportsPage.getDetailReportRowContent('chw_sms')).rowValues[0]).to.equal('Nice work, ! ' +
+      `${babyName} (${babyMedicID}) attended their immunizations visit at the health facility. ` +
+      `Keep up the good work. Thank you! ${notes}`);
+
+    const { rowValues } = await reportsPage.getDetailReportRowContent('vaccines_received.');
+    rowValues.forEach(value => expect(value).to.equal('yes'));
   });
+
 
   it('Submit immunization visit - SMS IMM form', async () => {
+    await loginPage.cookieLogin();
+    await commonPage.waitForPageLoaded();
+
     const messageValue = `IMM ${babyMedicID}`;
 
     await gatewayApiUtils.api.postMessage({
@@ -131,7 +168,7 @@ describe('Immunization Visit', () => {
       from: user.phone,
       content: messageValue
     });
-  
+
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal(babyName);
@@ -139,31 +176,32 @@ describe('Immunization Visit', () => {
   });
 
   it('Verify the targets page', async () => {
-    await commonPage.logout();
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
+    await commonPage.sync();
+
     await commonPage.goToAnalytics();
     const targets = await analyticsPage.getTargets();
-    
+
     expect(targets).to.have.deep.members([
-      { title: 'Active pregnancies', count: '0' }, 
-      { title: 'New pregnancies', count: '0' }, 
-      { title: 'Births', count: '0' }, 
-      { title: 'Deliveries with 1+ visit', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Deliveries with 4+ visits', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Deliveries at facility', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Children under 5', count: '1' }, 
-      { title: 'Children registered', count: '1' }, 
-      { title: 'Vaccines given', count: '2' }, 
-      { title: 'Children vaccinated', count: '1' }, 
-      { title: 'Children with no vaccines reported', count: '0' }, 
-      { title: 'Children with BCG reported', percent: '100%', percentCount: '(1 of 1)' }, 
-      { title: '<5 children screened for growth monitoring', percent: '0%', percentCount: '(0 of 1)' }, 
-      { title: '<5 Underweight Growth Monitoring', count: '0' }, 
-      { title: 'Active MAM cases', count: '0' }, 
-      { title: 'Active SAM cases', count: '0' }, 
-      { title: 'Active OTP cases', count: '0' }, 
-      { title: 'Active SFP cases', count: '0' } 
+      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Births', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Deliveries with 1+ visit', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Deliveries with 4+ visits', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Deliveries at facility', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Children under 5', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Children registered', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Vaccines given', count: '2', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Children vaccinated', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Children with no vaccines reported', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Children with BCG reported', percent: '100%', percentCount: '(1 of 1)' },
+      { title: '<5 children screened for growth monitoring', percent: '0%', percentCount: '(0 of 1)' },
+      { title: '<5 Underweight Growth Monitoring', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active MAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SAM cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active OTP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active SFP cases', count: '0', countNumberColor: TARGET_MET_COLOR },
     ]);
   });
 

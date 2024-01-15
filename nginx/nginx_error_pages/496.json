@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "400 Bad Request - No required SSL certificate was sent",
+  "server": "nginx"
+}

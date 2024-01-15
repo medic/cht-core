@@ -79,7 +79,7 @@ describe('Contacts effects', () => {
     let setContactIdToLoadStub;
 
     const simulateContactsReducer = () => {
-      let selectedContact = null;
+      let selectedContact: any = null;
       let contactIdToLoad = null;
 
       const refreshState = () => {

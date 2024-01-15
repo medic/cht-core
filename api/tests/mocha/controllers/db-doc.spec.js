@@ -104,7 +104,8 @@ describe('db-doc controller', () => {
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
           service.filterOfflineRequest.args[0].should.deep.equal(
-            [ testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body ]);
+            [ testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body ]
+          );
           next.callCount.should.equal(1);
           testRes.json.callCount.should.equal(0);
           service.filterOfflineOpenRevsRequest.callCount.should.equal(0);
@@ -241,7 +242,8 @@ describe('db-doc controller', () => {
               _.defaults(
                 { method: 'POST', query: { open_revs: true }, params: {}},
                 testReq
-              ), testRes, next),
+              ), testRes, next
+            ),
             controller.request(_.defaults({ method: 'POST', params: {} }, testReq), testRes, next),
             controller.request(_.defaults({ method: 'PUT', query: { open_revs: true } }, testReq), testRes, next),
             controller.request(_.defaults({ method: 'PUT' }, testReq), testRes, next),

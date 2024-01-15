@@ -25,5 +25,4 @@ angular.module('inboxServices').factory('ValidateForm',
           throw new Error('Error validating form - ' + errorMsg);
         });
     };
-  }
-);
+  });

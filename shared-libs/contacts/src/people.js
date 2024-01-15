@@ -96,9 +96,8 @@ const getOrCreatePerson = data => {
     // create and fetch
     return self.createPerson(data)
       .then(resp => self._getPerson(resp.id));
-  } else {
-    return Promise.reject({ code: 400, message: 'Person must be a new object or string identifier (UUID).' });
   }
+  return Promise.reject({ code: 400, message: 'Person must be a new object or string identifier (UUID).' });
 };
 
 /*
@@ -111,3 +110,4 @@ module.exports.isAPerson = isAPerson;
 
 module.exports._getPerson = getPerson;
 module.exports._validatePerson = validatePerson;
+module.exports._getDefaultPersonType = getDefaultPersonType;

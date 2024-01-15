@@ -9,11 +9,11 @@ const serverUtils = require('../server-utils');
 
 // map from the medic-gateway state to the medic app's state
 const STATUS_MAP = {
-  UNSENT:    'received-by-gateway',
-  PENDING:   'forwarded-by-gateway',
-  SENT:      'sent',
+  UNSENT: 'received-by-gateway',
+  PENDING: 'forwarded-by-gateway',
+  SENT: 'sent',
   DELIVERED: 'delivered',
-  FAILED:    'failed',
+  FAILED: 'failed',
 };
 
 const mapStateFields = update => {

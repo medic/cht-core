@@ -173,8 +173,11 @@ module.exports = {
     }
 
     // this function accepts subject ids, but rulesStateStore accepts a contact id, so a conversion is required
-    return provider.contactsBySubjectId(subjectIds)
-      .then(contactIds => rulesStateStore.markDirty(contactIds));
+    return enqueue(() => {
+      return provider
+        .contactsBySubjectId(subjectIds)
+        .then(contactIds => rulesStateStore.markDirty(contactIds));
+    });
   },
 };
 

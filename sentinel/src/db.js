@@ -3,8 +3,6 @@ const request = require('request-promise-native');
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
-const url = require('url');
-
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
     logger.error(
@@ -61,7 +59,7 @@ if (UNIT_TEST_ENV) {
 
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
-  const parsedUrl = url.parse(couchUrl);
+  const parsedUrl = new URL(couchUrl);
 
   module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 
@@ -73,7 +71,7 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.medicDbName = parsedUrl.path.replace('/', '');
+  module.exports.medicDbName = parsedUrl.pathname.replace('/', '');
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
     fetch: fetchFn,
   });

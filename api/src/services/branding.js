@@ -5,7 +5,7 @@ const path = require('path');
 const db = require('../db');
 const logger = require('../logger');
 
-const DEFAULT_LOGO_PATH = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
+const DEFAULT_LOGO_PATH = path.join(__dirname, '..', 'resources', 'logo', 'cht-logo.png');
 const DEFAULT_FAVICON_PATH = path.join(__dirname, '..', 'resources', 'ico', 'favicon.ico');
 
 const getInlineImage = ({ data, contentType }) => `data:${contentType};base64,${data}`;
@@ -13,8 +13,10 @@ const getInlineImage = ({ data, contentType }) => `data:${contentType};base64,${
 const getBrandingDoc = async () => {
   try {
     return await db.medic.get('branding', { attachments: true });
-  } catch(e) {
-    logger.warn('Could not find branding doc on CouchDB: %o', e);
+  } catch (e) {
+    if (e.status !== 404) {
+      logger.error('Error fetching branding doc from CouchDB: %o', e);
+    }
     return;
   }
 };

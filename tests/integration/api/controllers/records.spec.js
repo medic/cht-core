@@ -9,7 +9,7 @@ describe('Import Records', () => {
   before(() => utils.updateSettings({
     forms: {
       'TEST': {
-        'meta':{
+        'meta': {
           'code': 'TEST'
         },
         'fields': {

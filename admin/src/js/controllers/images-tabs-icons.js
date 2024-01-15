@@ -60,5 +60,4 @@ angular.module('controllers').controller('ImagesTabsIconsCtrl',
     };
 
     this.getSetupPromiseForTesting = () => setupPromise;
-  }
-);
+  });

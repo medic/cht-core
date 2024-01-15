@@ -33,5 +33,5 @@ module.exports = {
   DOWNLOAD_DIRECTORY: 'tempDownload',
 
   USERNAME,
-  PASSWORD
+  PASSWORD,
 };

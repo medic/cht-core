@@ -332,7 +332,7 @@
             <value>-</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/female:label">
-            <value>Hembra</value>
+            <value>Femenino</value>
           </text>
           <text id="/nutrition_screening/measurements/gender/male:label">
             <value>Masculino</value>

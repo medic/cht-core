@@ -1,9 +1,9 @@
 const reportsPageDefault = require('../../default/reports/reports.wdio.page');
 const commonElements = require('../../default/common/common.wdio.page');
+const modalPage = require('../../default/common/modal.wdio.page');
 
 const SELECT_ALL = '.mobile.multiselect-bar-container .select-all-label';
 const DESELECT_ALL = '.mobile.multiselect-bar-container .deselect-all';
-const DELETE_CONFIRM_MODAL = 'mm-modal#bulk-delete-confirm';
 const deleteAllButton = () => $('.mobile.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.mobile.multiselect-bar-container .selection-count .minimal');
 const closeOpenReportBtn = () => $('.navigation .filter-bar-back');
@@ -54,11 +54,8 @@ const deleteSelectedReports = async () => {
   await (await deleteAllButton()).click();
 
   await (await reportsPageDefault.bulkDeleteModal()).waitForDisplayed();
-  await (await $(`${DELETE_CONFIRM_MODAL} .btn.submit.btn-danger`)).click();
-  const confirmButton = $(`${DELETE_CONFIRM_MODAL} [test-id="bulkdelete.complete.action"]`);
-  await (await confirmButton).waitForDisplayed();
-  await (await confirmButton).click();
-  await (await reportsPageDefault.bulkDeleteModal()).waitForDisplayed({ reverse: true });
+  await (await modalPage.submit());
+  await (await modalPage.checkModalHasClosed());
 
   await commonElements.waitForPageLoaded();
   await (await reportsPageDefault.reportList()).waitForDisplayed();

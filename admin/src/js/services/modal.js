@@ -71,5 +71,4 @@ angular.module('inboxServices').factory('Modal',
 
       return instanceCache[options.templateUrl].result;
     };
-  }
-);
+  });

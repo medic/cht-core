@@ -22,7 +22,7 @@ exports.parse = (def, doc) => {
   // placeholder.
   const parts = data.replace(/([^\\])#/g, '$1\u000B').split('\u000B');
 
-  if(!def || !def.fields) {
+  if (!def || !def.fields) {
     return {};
   }
 

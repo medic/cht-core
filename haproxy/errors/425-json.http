@@ -1,0 +1,10 @@
+HTTP/1.1 425 Too Early
+Content-length: 97
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "425 Too Early",
+  "reason": "Your browser sent early data",
+  "server": "haproxy"
+}

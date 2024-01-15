@@ -6,6 +6,9 @@
     "csv-parser": "^3.0.0",
     "minimist": "^1.2.7",
     "pouchdb": "^7.3.1",
-    "pouchdb-adapter-memory": "^7.3.1"
+    "pouchdb-adapter-memory": "^7.3.1",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9",
+    "rewire": "^6.0.0"
   }
 }

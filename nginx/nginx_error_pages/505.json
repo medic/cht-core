@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "505 HTTP Version Not Supported",
+  "server": "nginx"
+}

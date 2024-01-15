@@ -101,5 +101,4 @@ angular.module('services').factory('ImportContacts',
         return importContact(overwrite, contact);
       }));
     };
-  }
-);
+  });

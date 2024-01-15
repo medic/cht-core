@@ -46,6 +46,7 @@ describe('Server Checks service', () => {
           env: {},
           exit: sinon.stub(),
         };
+        service.__set__('process', process);
         service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
         chai.assert.equal(console.log.callCount, 2);
@@ -55,6 +56,7 @@ describe('Server Checks service', () => {
 
       it('too old', () => {
         process = { versions: { node: '12.1.0' }, exit: sinon.stub() };
+        service.__set__('process', process);
         service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
         chai.assert.equal(console.log.callCount, 1);

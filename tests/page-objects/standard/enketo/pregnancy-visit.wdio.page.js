@@ -1,11 +1,25 @@
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const enketoCommonPage = require('@page-objects/standard/enketo/enketo.wdio.page.js');
 
-const FORM = 'form[data-form-id="pregnancy_visit"]';
+const FORM = enketoCommonPage.form('pregnancy_visit');
+const { ACTIVE } = enketoCommonPage;
+
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
-const smsNote = () => $(`${FORM} textarea[name="/pregnancy_visit/group_note/g_chw_sms"]`);
-const dangerSignSummary = () => $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"].active`);
-const followUpSMS = () => $(`${FORM} span[data-value=" /pregnancy_visit/chw_sms "]`);
+const smsNote = () => $(`${FORM} ${enketoCommonPage.smsNote('pregnancy_visit')}`);
+const dangerSignSummary = () => {
+  return $$(`${FORM} span[data-itext-id*="/pregnancy_visit/group_review/r_danger_sign"]${ACTIVE}`);
+};
+const patientNameSummary = () => {
+  const nameSum = enketoCommonPage.patientNameSummary('pregnancy_visit');
+  return $(`${FORM} span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${ACTIVE} ${nameSum}`);
+};
+const patientIdSummary = () => {
+  const idSum = enketoCommonPage.patientIdSummary('pregnancy_visit', 'review');
+  return $(`${FORM} span[data-itext-id="/pregnancy_visit/group_review/r_pregnancy_details:label"]${ACTIVE} ${idSum}`);
+};
+const followUpSmsNote1 = () => $(enketoCommonPage.followUpSmsNote1('pregnancy_visit', 'review'));
+const followUpSmsNote2 = () => $(enketoCommonPage.followUpSmsNote2('pregnancy_visit', 'review'));
 
 const selectAllDangerSigns = async () => {
   const dangerSigns = await dangerSig();
@@ -21,10 +35,14 @@ const setNote = async (text = 'Test note') => {
   await note.setValue(text);
 };
 
-const getFollowUpSMS = async () => {
-  const sms = await followUpSMS();
-  await sms.waitForDisplayed();
-  return sms.getText();
+const getSummaryDetails = async () => {
+  return {
+    patientName: await patientNameSummary().getText(),
+    patientId: await patientIdSummary().getText(),
+    countDangerSigns: await dangerSignSummary().length,
+    followUpSmsNote1: await followUpSmsNote1().getText(),
+    followUpSmsNote2: await followUpSmsNote2().getText(),
+  };
 };
 
 const submitPregnancyVisit = async () => {
@@ -40,6 +58,6 @@ module.exports = {
   selectAllDangerSigns,
   setNote,
   dangerSignSummary,
-  getFollowUpSMS,
+  getSummaryDetails,
   submitPregnancyVisit,
 };

@@ -57,5 +57,4 @@ angular.module('controllers').controller('EditLanguageCtrl',
     $scope.cancel = function() {
       $uibModalInstance.dismiss();
     };
-  }
-);
+  });

@@ -73,7 +73,8 @@ const formRequest = function(filters) {
       return forms.map(function(form) {
         return [ form.code ];
       });
-    });
+    }
+  );
 
   if (req) {
     req.params.reduce = false;

@@ -42,10 +42,10 @@ describe('Contacts Reducer', () => {
   describe('updateContacts', () => {
     it('should update empty state', () => {
       const contacts = [
-        {  _id: '1', name: 'Centre 1', type:'health_center' },
-        {  _id: '2', name: 'Facility 3', type:'district_hospital' },
-        {  _id: '3', name: 'Person 1', type:'person' },
-        {  _id: '4', name: 'Person 2', type:'person' },
+        {  _id: '1', name: 'Centre 1', type: 'health_center' },
+        {  _id: '2', name: 'Facility 3', type: 'district_hospital' },
+        {  _id: '3', name: 'Person 1', type: 'person' },
+        {  _id: '4', name: 'Person 2', type: 'person' },
       ];
       const newState = contactsReducer(undefined, Actions.updateContactsList(contacts));
 
@@ -58,10 +58,10 @@ describe('Contacts Reducer', () => {
           { _id: '4', name: 'Person 2', type: 'person' }
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Person 1', type:'person' }],
-          ['4', { _id: '4', name: 'Person 2', type:'person' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Person 1', type: 'person' }],
+          ['4', { _id: '4', name: 'Person 2', type: 'person' }],
         ]),
         filters: {},
         selected: null,
@@ -79,8 +79,8 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
         ])
       };
       const newContacts = [
@@ -98,8 +98,8 @@ describe('Contacts Reducer', () => {
           { _id: '4', name: 'Person 1', type: 'person' }
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
           ['3', { _id: '3', name: 'Facility 2', type: 'district_hospital' }],
           ['4', { _id: '4', name: 'Person 1', type: 'person' }],
         ])
@@ -113,8 +113,8 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
         ])
       };
       const updatedContacts = [
@@ -131,9 +131,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ])
       });
     });
@@ -148,9 +148,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ])
       };
       const newState = contactsReducer(state, Actions.removeContactFromList({ _id: '2'}));
@@ -161,8 +161,8 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ])
       });
     });
@@ -175,9 +175,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ])
       };
 
@@ -190,9 +190,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ])
       });
     });
@@ -212,9 +212,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ]),
         selected: [],
         filters: {},
@@ -357,9 +357,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ]),
       };
       const selected = { _id: 'selected_contact', some: 'data' };
@@ -372,9 +372,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ]),
         selected: { _id: 'selected_contact', some: 'data' },
       });
@@ -388,9 +388,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ]),
         selected: { _id: 'first_selected_contact', some: 'data' }
       };
@@ -404,9 +404,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ]),
         selected: { _id: 'second_selected_contact', some: 'other data' },
       });
@@ -418,7 +418,7 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
         ]),
         selected: { _id: 'selected_contact' },
       };
@@ -430,7 +430,7 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
         ]),
         selected: null
       });
@@ -462,9 +462,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ]),
         selected: { _id: 'first_selected_contact', some: 'data' }
       };
@@ -478,9 +478,9 @@ describe('Contacts Reducer', () => {
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1', type:'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type:'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type:'district_hospital' }],
+          ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
         ]),
         selected: { _id: 'first_selected_contact', some: 'data', summary: { some: 'summary' } }
       });

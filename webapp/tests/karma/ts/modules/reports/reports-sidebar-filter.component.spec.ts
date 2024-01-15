@@ -1,4 +1,7 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { DatePipe } from '@angular/common';
@@ -44,6 +47,9 @@ describe('Reports Sidebar Filter Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatExpansionModule,
+          BrowserAnimationsModule,
+          BsDropdownModule
         ],
         declarations: [
           ReportsSidebarFilterComponent,
@@ -212,6 +218,16 @@ describe('Reports Sidebar Filter Component', () => {
     expect(fromDateClearSpy.notCalled).to.be.true;
     expect(toDateClearSpy.notCalled).to.be.true;
     expect(statusClearSpy.notCalled).to.be.true;
+  });
 
+  it('should set default the facility filter', () => {
+    const setDefaultSpy = sinon.spy(component.facilityFilter, 'setDefault');
+
+    component.setDefaultFacilityFilter({ facility: 'facility-1' });
+    expect(setDefaultSpy.calledOnce).to.be.true;
+
+    sinon.resetHistory();
+    component.setDefaultFacilityFilter(null);
+    expect(setDefaultSpy.calledOnce).to.be.true;
   });
 });

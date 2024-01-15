@@ -32,7 +32,6 @@ describe('Settings Shared Library', () => {
         });
     });
 
-
     it('should throw error from request', () => {
       sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
 
@@ -52,6 +51,17 @@ describe('Settings Shared Library', () => {
         .getCredentials('mykey')
         .then(actual => {
           expect(actual).to.be.undefined;
+        });
+    });
+
+    it('should encode credential id', () => {
+      sinon.stub(request, 'get').resolves({});
+      return lib
+        .getCredentials('/../../some-other-db')
+        .then(() => {
+          expect(request.get.callCount).to.equal(1);
+          expect(request.get.args[0][0])
+            .to.equal('http://user:pass@server.com/medic-vault/credential:%2F..%2F..%2Fsome-other-db');
         });
     });
 
@@ -128,6 +138,24 @@ describe('Settings Shared Library', () => {
           expect(request.get.callCount).to.equal(2);
           expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
           expect(err.message).to.equal('down');
+        });
+    });
+
+    it('should encode credential id', () => {
+      sinon.stub(request, 'get')
+        .onCall(0).rejects({ message: 'missing', statusCode: 404 })
+        .onCall(1).resolves('mysecret');
+      sinon.stub(request, 'put').resolves();
+      return lib
+        .setCredentials('/../../some-other-db', 'mypass')
+        .then(() => {
+          expect(request.get.callCount).to.equal(2);
+          expect(request.put.callCount).to.equal(1);
+          expect(request.put.args[0][0]).to.equal('http://server.com/medic-vault/credential:%2F..%2F..%2Fsome-other-db');
+          expect(request.put.args[0][1].body).to.deep.equal({
+            _id: 'credential:%2F..%2F..%2Fsome-other-db',
+            password: 'myiv:' + Buffer.from('startend').toString('hex')
+          });
         });
     });
 

@@ -1,25 +1,16 @@
 import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
-
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'contacts-muted',
   templateUrl: './contacts-muted.component.html'
 })
-export class ContactsMutedComponent extends MmModalAbstract {
+export class ContactsMutedComponent {
   static id = 'contacts-muted-modal';
 
-  constructor(bsModalRef: BsModalRef) {
-    super(bsModalRef);
-  }
+  constructor(private matDialogRef: MatDialogRef<ContactsMutedComponent>) { }
 
-  submit() {
-    this.close();
+  close(result) {
+    this.matDialogRef.close(result);
   }
-
-  closeModal() {
-    this.cancel();
-  }
-
 }

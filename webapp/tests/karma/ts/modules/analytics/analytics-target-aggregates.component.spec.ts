@@ -7,6 +7,7 @@ import sinon from 'sinon';
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
+import { Store } from '@ngrx/store';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
@@ -58,7 +59,11 @@ describe('Analytics Target Aggregates Component', () => {
   });
 
   it('should instantiate correctly', () => {
-    const newComponent = new AnalyticsTargetAggregatesComponent(null, null);
+
+    const newComponent = new AnalyticsTargetAggregatesComponent(
+      sinon.createStubInstance(Store),
+      sinon.createStubInstance(TargetAggregatesService)
+    );
 
     expect(newComponent.loading).to.equal(true);
     expect(newComponent.error).to.equal(null);

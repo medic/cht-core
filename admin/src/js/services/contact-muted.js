@@ -33,5 +33,4 @@ angular.module('inboxServices').service('ContactMuted',
 
       return false;
     };
-  }
-);
+  });

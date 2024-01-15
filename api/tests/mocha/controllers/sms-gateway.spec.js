@@ -54,9 +54,9 @@ describe('sms-gateway controller', () => {
 
       const req = { body: {
         messages: [
-          { id:'1', from:'+1', content:'one'   },
-          { id:'2', from:'+2', content:'two'   },
-          { id:'3', from:'+3', content:'three' },
+          { id: '1', from: '+1', content: 'one'   },
+          { id: '2', from: '+2', content: 'two'   },
+          { id: '3', from: '+3', content: 'three' },
         ]
       } };
 
@@ -66,9 +66,9 @@ describe('sms-gateway controller', () => {
         chai.expect(getOutgoingMessages.callCount).to.equal(1);
         chai.expect(messaging.processIncomingMessages.callCount).to.equal(1);
         chai.expect(messaging.processIncomingMessages.args[0][0]).to.deep.equal([
-          { id:'1', from:'+1', content:'one'   },
-          { id:'2', from:'+2', content:'two'   },
-          { id:'3', from:'+3', content:'three' },
+          { id: '1', from: '+1', content: 'one'   },
+          { id: '2', from: '+2', content: 'two'   },
+          { id: '3', from: '+3', content: 'three' },
         ]);
       });
     });
@@ -84,11 +84,11 @@ describe('sms-gateway controller', () => {
 
       const req = { body: {
         updates: [
-          { id:'1', status:'UNSENT' },
-          { id:'2', status:'PENDING' },
-          { id:'3', status:'SENT' },
-          { id:'4', status:'DELIVERED' },
-          { id:'5', status:'FAILED', reason:'bad' },
+          { id: '1', status: 'UNSENT' },
+          { id: '2', status: 'PENDING' },
+          { id: '3', status: 'SENT' },
+          { id: '4', status: 'DELIVERED' },
+          { id: '5', status: 'FAILED', reason: 'bad' },
         ],
       } };
 
@@ -96,11 +96,11 @@ describe('sms-gateway controller', () => {
       return controller.post(req, res).then(() => {
         // then
         chai.expect(updateMessageTaskStates.args[0][0]).to.deep.equal([
-          { messageId: '1', state:'received-by-gateway' },
-          { messageId: '2', state:'forwarded-by-gateway'},
-          { messageId: '3', state:'sent' },
-          { messageId: '4', state:'delivered' },
-          { messageId: '5', state:'failed', details:{ reason:'bad' } },
+          { messageId: '1', state: 'received-by-gateway' },
+          { messageId: '2', state: 'forwarded-by-gateway'},
+          { messageId: '3', state: 'sent' },
+          { messageId: '4', state: 'delivered' },
+          { messageId: '5', state: 'failed', details: { reason: 'bad' } },
         ]);
       });
     });
@@ -116,8 +116,8 @@ describe('sms-gateway controller', () => {
 
       const req = { body: {
         updates: [
-          { id:'1', status:'INVENTED-1' },
-          { id:'2', status:'INVENTED-2' },
+          { id: '1', status: 'INVENTED-1' },
+          { id: '2', status: 'INVENTED-2' },
         ],
       } };
 
@@ -125,8 +125,8 @@ describe('sms-gateway controller', () => {
       return controller.post(req, res).then(() => {
         // then
         chai.expect(updateMessageTaskStates.args[0][0]).to.deep.equal([
-          { messageId: '1', state:'unrecognised', details:{ gateway_status:'INVENTED-1' }},
-          { messageId: '2', state:'unrecognised', details:{ gateway_status:'INVENTED-2' }},
+          { messageId: '1', state: 'unrecognised', details: { gateway_status: 'INVENTED-1' }},
+          { messageId: '2', state: 'unrecognised', details: { gateway_status: 'INVENTED-2' }},
         ]);
       });
     });
@@ -136,9 +136,9 @@ describe('sms-gateway controller', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(res, 'json').returns();
       sinon.stub(messaging, 'getOutgoingMessages').resolves([
-        { id:'1', to:'+1', content:'one' },
-        { id:'2', to:'+2', content:'two' },
-        { id:'3', to:'+3', content:'three' },
+        { id: '1', to: '+1', content: 'one' },
+        { id: '2', to: '+2', content: 'two' },
+        { id: '3', to: '+3', content: 'three' },
       ]);
       sinon.stub(messaging, 'isMedicGatewayEnabled').returns(true);
       sinon.stub(messaging, 'processIncomingMessages').resolves();
@@ -154,16 +154,16 @@ describe('sms-gateway controller', () => {
         const actual = res.json.args[0][0];
         chai.expect(actual).to.deep.equal({
           messages: [
-            { id:'1', to:'+1', content:'one' },
-            { id:'2', to:'+2', content:'two' },
-            { id:'3', to:'+3', content:'three' },
+            { id: '1', to: '+1', content: 'one' },
+            { id: '2', to: '+2', content: 'two' },
+            { id: '3', to: '+3', content: 'three' },
           ],
         });
         chai.expect(updateMessageTaskStates.callCount).to.equal(1);
         chai.expect(updateMessageTaskStates.args[0][0]).to.deep.equal([
-          { messageId: '1', state:'forwarded-to-gateway' },
-          { messageId: '2', state:'forwarded-to-gateway' },
-          { messageId: '3', state:'forwarded-to-gateway' },
+          { messageId: '1', state: 'forwarded-to-gateway' },
+          { messageId: '2', state: 'forwarded-to-gateway' },
+          { messageId: '3', state: 'forwarded-to-gateway' },
         ]);
       });
     });
@@ -177,7 +177,7 @@ describe('sms-gateway controller', () => {
 
       const req = { body: {
         messages: [
-          { id:'1', from:'+1', content:'one'   },
+          { id: '1', from: '+1', content: 'one'   },
         ]
       } };
 

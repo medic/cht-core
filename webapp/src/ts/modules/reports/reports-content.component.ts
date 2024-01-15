@@ -10,7 +10,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { MessageStateService } from '@mm-services/message-state.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
@@ -56,7 +56,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       if (params.id) {
         this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
-        $('.tooltip').remove();
         return;
       }
       this.globalActions.unsetComponents();
@@ -128,7 +127,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
             this.deselect(change.id);
             return;
           }
-          this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+          this.router.navigate([this.route.snapshot.parent?.routeConfig?.path]);
           return;
         }
 
@@ -173,6 +172,9 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   search(query) {
+    if (this.selectMode) {
+      return;
+    }
     this.searchFiltersService.freetextSearch(query);
   }
 
@@ -215,11 +217,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       reportContentType: selectedReportDoc.content_type,
       communicationContext: {
         sendTo: await this.getReportContact(selectedReportDoc.contact._id),
-        callbackOpenSendMessage: (sendTo) => {
-          this.modalService
-            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-            .catch(() => {});
-        },
+        callbackOpenSendMessage: (sendTo) => this.modalService.show(SendMessageComponent, { data: { to: sendTo } }),
       },
     });
   }
@@ -233,12 +231,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   edit(report, group) {
-    return this.modalService
-      .show(
-        EditMessageGroupComponent,
-        { initialState: { model: { report, group: _.cloneDeep(group) } } },
-      )
-      .catch(() => {});
+    return this.modalService.show(EditMessageGroupComponent, { data: { report, group: _.cloneDeep(group) } });
   }
 
   isMobile() {

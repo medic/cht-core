@@ -8,7 +8,7 @@ const argv = minimist(process.argv.slice(2), {
   }
 });
 
-if(argv.h|| !argv.url || !argv.user || !argv.password) {
+if (argv.h|| !argv.url || !argv.user || !argv.password) {
   console.log(`Set all user passwords to Secret_1.
 
 Usage:
@@ -28,7 +28,7 @@ Options:
 let url;
 try {
   url = new URL('/api/v1/users', argv.url);
-} catch(e) {
+} catch (e) {
   console.log('Error while creating url', e.message);
 }
 

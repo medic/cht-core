@@ -1,4 +1,6 @@
 import { TestBed, ComponentFixture, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -28,6 +30,9 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -60,10 +65,14 @@ describe('Contacts component', () => {
     searchService = { search: sinon.stub().resolves([]) };
     settingsService = { get: sinon.stub().resolves([]) };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
-    authService = { has: sinon.stub().resolves(false) };
+    authService = {
+      has: sinon.stub().resolves(false),
+      online: sinon.stub().resolves(false),
+      any: sinon.stub().resolves(false)
+    };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: district._id })
@@ -122,10 +131,13 @@ describe('Contacts component', () => {
         declarations: [
           ContactsComponent,
           ContactsFiltersComponent,
+          ContactsMoreMenuComponent,
           FreetextFilterComponent,
           NavigationComponent,
           ResetFiltersComponent,
           SortFilterComponent,
+          FastActionButtonComponent,
+          SearchBarComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -142,6 +154,8 @@ describe('Contacts component', () => {
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: NavigationService, useValue: {} },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents().then(() => {
@@ -496,7 +510,7 @@ describe('Contacts component', () => {
 
     it('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', fakeAsync(() => {
       const mockResults = (count, startAt = 0) => {
-        const result = [];
+        const result: { _id: string }[] = [];
         for (let i = startAt; i < startAt + count; i++) {
           result.push({ _id: `search-result${i}` });
         }
@@ -613,14 +627,11 @@ describe('Contacts component', () => {
 
   describe('last visited date', () => {
     it('does not enable LastVisitedDate features not allowed', () => {
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(false);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
       expect(component.defaultSortDirection).to.equal('alpha');
-      expect(userSettingsService.get.callCount).to.equal(1);
+      expect(userSettingsService.get.callCount).to.equal(2);
       expect(searchService.search.callCount).to.equal(1);
       expect(searchService.search.args[0]).to.deep.equal(
         [
@@ -639,9 +650,6 @@ describe('Contacts component', () => {
       userSettingsService.get.resetHistory();
       component.ngOnInit();
       flush();
-      expect(authService.has.callCount).equal(3);
-      expect(authService.has.args[2]).to.deep.equal(['can_view_last_visited_date']);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
@@ -956,9 +964,7 @@ describe('Contacts component', () => {
             'does require refreshing when sorting is `last_visited_date` and visit report is received',
             fakeAsync(() => {
               searchResults = [];
-              Array.apply(null, Array(5)).forEach((k, i) =>
-                searchResults.push({ _id: i })
-              );
+              Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               searchService.search.resetHistory();
@@ -1001,16 +1007,15 @@ describe('Contacts component', () => {
                   ]);
                 }
               });
-            }));
+            })
+          );
         });
 
         describe('last_visited_date default sorting', () => {
 
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             searchResults = [];
-            Array.apply(null, Array(5)).forEach((k, i) =>
-              searchResults.push({ _id: i })
-            );
+            Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(true);
@@ -1050,9 +1055,7 @@ describe('Contacts component', () => {
                 uhc: { contacts_default_sort: 'last_visited_date' },
               });
               searchResults = [];
-              Array.apply(null, Array(5)).forEach((k, i) =>
-                searchResults.push({ _id: i })
-              );
+              Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               authService.has.resolves(true);
@@ -1094,17 +1097,16 @@ describe('Contacts component', () => {
                   ]);
                 }
               });
-            }));
+            })
+          );
         });
       });
 
       describe('uhc visits disabled', () => {
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
-            const searchResults = [];
-            Array.apply(null, Array(5)).forEach((k, i) =>
-              searchResults.push({ _id: i })
-            );
+            const searchResults: { _id: string }[] = [];
+            Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(false);
@@ -1140,7 +1142,7 @@ describe('Contacts component', () => {
           it(
             'does require refreshing when sorting is `last_visited_date` and visit report is received',
             fakeAsync(() => {
-              const searchResults = [];
+              const searchResults: { _id: string }[] = [];
               Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
@@ -1154,26 +1156,29 @@ describe('Contacts component', () => {
               flush();
               const changesCallback = changesService.subscribe.args[1][0].callback;
 
-              return Promise.all([
-                changesCallback({ doc: relevantVisitReport }),
-                changesCallback({ doc: irrelevantReport }),
-                changesCallback({ doc: irrelevantVisitReport }),
-                changesCallback({ doc: deletedVisitReport, deleted: true }),
-                changesCallback({ doc: someContact }),
-              ]).then(() => {
-                expect(searchService.search.callCount).to.equal(6);
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantVisitReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
+                  changesCallback({ doc: someContact }),
+                ])
+                .then(() => {
+                  expect(searchService.search.callCount).to.equal(6);
 
-                for (let i = 1; i < 6; i++) {
-                  expect(searchService.search.args[i]).to.deep.equal([
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 49, withIds: false, silent: true },
-                    {},
-                    undefined,
-                  ]);
-                }
-              });
-            }));
+                  for (let i = 1; i < 6; i++) {
+                    expect(searchService.search.args[i]).to.deep.equal([
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 49, withIds: false, silent: true },
+                      {},
+                      undefined,
+                    ]);
+                  }
+                });
+            })
+          );
         });
       });
 
@@ -1182,7 +1187,7 @@ describe('Contacts component', () => {
           settingsService.get.resolves({
             uhc: { contacts_default_sort: 'last_visited_date' },
           });
-          sessionService.isDbAdmin.returns(true);
+          sessionService.isAdmin.returns(true);
           authService.has.resetHistory();
           searchService.search.resetHistory();
           component.ngOnInit();

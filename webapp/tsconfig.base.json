@@ -29,7 +29,8 @@
       "@mm-reducers/*": ["src/ts/reducers/*"],
       "@mm-selectors/*": ["src/ts/selectors/*"],
       "@mm-services/*": ["src/ts/services/*"]
-    }
+    },
+    "strictNullChecks": true
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

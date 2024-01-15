@@ -37,14 +37,14 @@
   let-filter="filter">
   <li
     role="presentation"
-    [class.selected]="filter?.selected.has(facility)"
+    [class.selected]="filter?.selected.has(facility.doc._id)"
     [class.disabled]="selectedParent || disabled"
     [class.accordion-facility-list]="inline"
     [class.accordion-facility-list-expand]="facility.toggle"
     [class.accordion-facility-caret]="facility?.children?.length">
     <span
       class="fa accordion-facility-check"
-      [ngClass]="filter?.selected.has(facility) ? 'fa-check-square' : 'fa-square-o'"
+      [ngClass]="filter?.selected.has(facility.doc._id) ? 'fa-check-square' : 'fa-square-o'"
       (click)="select(selectedParent, facility, filter, true)">
     </span>
     <a
@@ -65,7 +65,7 @@
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
         [ngTemplateOutlet]="facilityTemplate"
-        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: filter?.selected.has(facility), facilityDepth: facilityDepth + 1, filter: filter }">
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: filter?.selected.has(facility.doc._id), facilityDepth: facilityDepth + 1, filter: filter }">
       </ng-container>
     </ul>
   </li>

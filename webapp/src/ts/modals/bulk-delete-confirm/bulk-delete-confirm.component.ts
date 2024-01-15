@@ -1,57 +1,56 @@
-import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { Component, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
-import { take } from 'rxjs/operators';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'bulk-delete-confirm',
   templateUrl: './bulk-delete-confirm.component.html'
 })
-export class BulkDeleteConfirmComponent extends MmModalAbstract {
+export class BulkDeleteConfirmComponent {
   static id = 'bulk-delete-confirm-modal';
 
   totalDocsSelected = 0;
   totalDocsDeleted = 0;
-  deleteComplete = false;
-
-  model = { docs: [], type: '' }; // assigned by bsModule
+  processing = false;
+  error;
+  docs = [] as any[];
+  type;
 
   constructor(
-    bsModalRef: BsModalRef,
     private deleteDocsService: DeleteDocsService,
     private telemetryService: TelemetryService,
+    private matDialogRef: MatDialogRef<BulkDeleteConfirmComponent>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
-    super(bsModalRef);
-    bsModalRef.onHidden
-      .pipe(take(1)) // so we don't need to unsubscribe
-      .subscribe(() => this.deleteComplete && window.location.reload());
+    this.docs = this.matDialogData.docs || [];
+    this.type = this.matDialogData.type;
   }
 
   private updateTotalDocsDeleted(totalDocsDeleted) {
     this.totalDocsDeleted = totalDocsDeleted;
   }
 
-  submit() {
-    if (this.deleteComplete) {
-      return window.location.reload();
+  close() {
+    this.matDialogRef.close();
+  }
+
+  async submit(reload = true) {
+    try {
+      this.totalDocsSelected = this.docs.length;
+      this.totalDocsDeleted = 0;
+      this.processing = true;
+      await this.deleteDocsService.delete(this.docs, { progress: this.updateTotalDocsDeleted.bind(this) });
+    } catch (error) {
+      this.error = 'Error deleting document';
+      console.error(this.error, error);
+      return;
+    } finally {
+      this.processing = false;
     }
 
-    const docs = this.model?.docs || [];
-    this.totalDocsSelected = docs.length;
-    this.totalDocsDeleted = 0;
-    this.setProcessing();
-    return this.deleteDocsService
-      .delete(docs, { progress: this.updateTotalDocsDeleted.bind(this) })
-      .then(() => {
-        this.deleteComplete = true;
-        this.telemetryService.record(`bulk_delete:${this.model?.type}`, this.totalDocsSelected);
-        this.setFinished();
-      })
-      .catch((err) => {
-        this.setError(err, 'Error deleting document');
-      });
+    this.telemetryService.record(`bulk_delete:${this.type}`, this.totalDocsSelected);
+    reload && window.location.reload(); // On testing we don't reload
   }
 }

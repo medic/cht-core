@@ -1,0 +1,29 @@
+version: "3.7"
+services:
+    cht-nginx:
+        build:
+            context: ../
+        ports:
+            - 127.0.0.1:1080:80
+            - 127.0.0.1:1443:443
+        environment:
+            API_HOST: cht-api
+            API_PORT: 5988
+            CERTIFICATE_MODE: SELF_SIGNED
+        volumes:
+            - cht-ssl:/root/.acme.sh/
+        depends_on:
+            - cht-api
+
+    cht-api:
+        image: mockserver/mockserver:5.15.0
+        command: -serverPort 5988
+        environment:
+            MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
+            MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
+        volumes:
+            - ./mock-config:/config
+
+volumes:
+    cht-ssl:
+        name: cht-ssl
