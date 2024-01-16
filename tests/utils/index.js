@@ -10,6 +10,7 @@ const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 const semver = require('semver');
 const moment = require('moment');
+
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
@@ -17,6 +18,9 @@ const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+PouchDB.plugin(require('@medic/pouchdb-http-auth-session'));
+
+const cookieJar = rpn.jar();
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
@@ -92,11 +96,7 @@ const getHostRoot = () => {
     return 'host.docker.internal';
   }
   const gateway = dockerGateway();
-  if (gateway && gateway[0] && gateway[0].Gateway) {
-    return gateway[0].Gateway;
-  }
-
-  return 'localhost';
+  return gateway?.[0]?.Gateway || 'localhost';
 };
 
 const hostURL = (port = 80) => {
@@ -128,12 +128,39 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
+const getSession = async () => {
+  if (cookieJar.getCookies().length) {
+    return;
+  }
+
+  const options = {
+    method: 'POST',
+    uri: `${constants.BASE_URL}/_session`,
+    json: true,
+    body: { name: auth.username, password: auth.password},
+    auth,
+    resolveWithFullResponse: true,
+  };
+  const response = await rpn(options);
+  const setCookie = response.headers?.['set-cookie'];
+  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
+  if (header) {
+    try {
+      cookieJar.setCookie(header, constants.BASE_URL);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug } = {}) => {
+const request = async (options, { debug } = {}) => {
+  await getSession();
+
   options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth) {
-    options.auth = options.auth || auth;
+  if (!options.noAuth && !options.auth) {
+    options.jar = cookieJar;
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
@@ -146,18 +173,20 @@ const request = (options, { debug } = {}) => {
   options.transform = (body, response, resolveWithFullResponse) => {
     // we might get a json response for a non-json request.
     const contentType = response.headers['content-type'];
-    if (contentType && contentType.startsWith('application/json') && !options.json) {
+    if (contentType?.startsWith('application/json') && !options.json) {
       response.body = JSON.parse(response.body);
     }
     // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  return rpn(options).catch(err => {
-    err.responseBody = err.response && err.response.body;
+  try {
+    return await rpn(options);
+  } catch (err) {
+    err.responseBody = err?.response?.body;
     console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
     throw err;
-  });
+  }
 };
 
 const requestOnTestDb = (options, debug) => {
@@ -339,7 +368,7 @@ const deleteDocs = ids => {
  *                                wish to keep the document
  * @return     {Promise}  completion promise
  */
-const deleteAllDocs = (except) => {
+const deleteAllDocs = (except) => { //NOSONAR
   except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
@@ -516,7 +545,7 @@ const revertSettings = async ignoreRefresh => {
   }
 
   if (!needsRefresh) {
-    watcher && watcher.cancel();
+    watcher?.cancel();
     return;
   }
 
@@ -557,7 +586,7 @@ const deleteLocalDocs = async () => {
   const localDocs = await requestOnTestDb({ path: '/_local_docs?include_docs=true' });
 
   const docsToDelete = localDocs.rows
-    .filter(row => row && row.doc && row.doc.replicator === 'pouchdb')
+    .filter(row => row?.doc?.replicator === 'pouchdb')
     .map(row => {
       row.doc._deleted = true;
       return row.doc;
@@ -577,7 +606,7 @@ const setUserContactDoc = (attempt = 0) => {
   return db
     .get(docId)
     .catch(() => ({}))
-    .then(existing => Object.assign(defaultDoc, { _rev: existing && existing._rev }))
+    .then(existing => Object.assign(defaultDoc, { _rev: existing?._rev }))
     .then(newDoc => db.put(newDoc))
     .catch(err => {
       if (attempt > 3) {
@@ -601,7 +630,7 @@ const deleteMetaDbs = async () => {
  *                         everything will be deleted from the config, including all the enketo forms.
  * @param {boolean} ignoreRefresh
  */
-const revertDb = async (except, ignoreRefresh) => {
+const revertDb = async (except, ignoreRefresh) => { //NOSONAR
   const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertCustomSettings();
   await deleteAllDocs(except);
@@ -610,12 +639,12 @@ const revertDb = async (except, ignoreRefresh) => {
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
-    watcher && watcher.cancel();
+    watcher?.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
     await watcher && watcher.promise; // NOSONAR
   } else {
-    watcher && watcher.cancel();
+    watcher?.cancel();
   }
 
   await deleteMetaDbs();
@@ -635,7 +664,7 @@ const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
  * @param {Boolean} meta - if true, deletes meta db-s as well, default true
  * @return {Promise}
  */
-const deleteUsers = async (users, meta = false) => {
+const deleteUsers = async (users, meta = false) => { //NOSONAR
   if (!users.length) {
     return;
   }
@@ -683,11 +712,10 @@ const createUsers = async (users, meta = false) => {
   const createUserOpts = {
     path: '/api/v1/users',
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
   };
 
   for (const user of users) {
-    await request(Object.assign({ body: user }, createUserOpts));
+    await request({ ...createUserOpts, body: user });
   }
 
   await delayPromise(1000);
@@ -965,7 +993,7 @@ const setupSettings = () => {
 const createLogDir = async () => {
   const logDirPath = path.join(__dirname, '../logs');
   if (fs.existsSync(logDirPath)) {
-    await fs.promises.rmdir(logDirPath, { recursive: true });
+    await fs.promises.rm(logDirPath, { recursive: true });
   }
   await fs.promises.mkdir(logDirPath);
 };
@@ -1159,7 +1187,10 @@ const collectLogs = (container, ...regex) => {
 
   const collect = () => {
     if (errors.length) {
-      return Promise.reject({ message: 'CollectLogs errored', errors, logs });
+      const error = new Error('CollectLogs errored');
+      error.errors = errors;
+      error.logs = logs;
+      return Promise.reject(error);
     }
 
     return Promise.resolve(matches);
@@ -1252,12 +1283,7 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
-const isMinimumChromeVersion = () => {
-  if (process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION) {
-    return true;
-  }
-  return false;
-};
+const isMinimumChromeVersion = () => process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
 
 module.exports = {
   db,

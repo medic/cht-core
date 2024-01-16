@@ -5,6 +5,7 @@ const rpn = require('request-promise-native');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+PouchDB.plugin(require('@medic/pouchdb-http-auth-session'));
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -134,7 +135,7 @@ if (UNIT_TEST_ENV) {
         json: true
       })
       .then(tasks => {
-        // TODO: consider how to filter these just to the active database.
+        // consider how to filter these just to the active database.
         // On CouchDB 2.x you only get the shard name, which looks like:
         // shards/80000000-ffffffff/medic.1525076838
         // On CouchDB 1.x (I think) you just get the exact DB name

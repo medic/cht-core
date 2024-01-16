@@ -56,9 +56,11 @@ if (UNIT_TEST_ENV) {
   PouchDB.plugin(require('pouchdb-adapter-http'));
   PouchDB.plugin(require('pouchdb-mapreduce'));
   PouchDB.plugin(require('pouchdb-replication'));
+  // eslint-disable-next-line node/no-extraneous-require
+  PouchDB.plugin(require('@medic/pouchdb-http-auth-session'));
 
   // strip trailing slash from to prevent bugs in path matching
-  const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
+  const couchUrl = COUCH_URL?.replace(/\/$/, '');
   const parsedUrl = new URL(couchUrl);
 
   module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
@@ -72,12 +74,10 @@ if (UNIT_TEST_ENV) {
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
   module.exports.medicDbName = parsedUrl.pathname.replace('/', '');
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
-    fetch: fetchFn,
-  });
+  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn });
 
   module.exports.allDbs = () => request.get({ url: `${module.exports.serverUrl}/_all_dbs`, json: true });
-  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
+  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`, { fetch: fetchFn });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -91,7 +91,6 @@ if (UNIT_TEST_ENV) {
   };
   module.exports.couchUrl = couchUrl;
   module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch: fetchFn });
-  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
