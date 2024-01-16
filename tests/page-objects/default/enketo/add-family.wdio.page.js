@@ -25,37 +25,18 @@ const submitFamilyForm = async () => {
   await reportsPage.submitForm();
 };
 
-const reportCheck =  async (
-  caregiverName,
-  sourceOfWater,
-  mosquitoNet,
-  hygeinicToilet,
-  planningMethod
-) => {
-  const savedParameters = await $$('.details>ul>li');
-
-  // Primary Caregiver
-  expect((await savedParameters[2].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.add-family.clinic.name' + caregiverName
-  );
-  // Source of water
-  expect((await savedParameters[6].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.add-family.clinic.household_survey.source_of_drinking_water' +
-      sourceOfWater
-  );
-  // Mosquito net
-  expect((await savedParameters[7].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.add-family.clinic.household_survey.mosquito_nets' + mosquitoNet
-  );
-  // Hygeinic toilet
-  expect((await savedParameters[8].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.add-family.clinic.household_survey.hygeinic_toilet' + hygeinicToilet
-  );
-  // Planning method
-  expect((await savedParameters[9].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.add-family.clinic.household_survey.family_planning_method' +
-      planningMethod
-  );
+const reportCheck =  async (caregiverName, sourceOfWater, mosquitoNet, hygeinicToilet, planningMethod) => {
+  const reportName = 'report.add-family-multiple-repeats.clinic';
+  expect((await reportsPage.getDetailReportRowContent(`${reportName}.name`))
+    .rowValues[0]).to.equal(caregiverName);
+  expect((await reportsPage.getDetailReportRowContent(`${reportName}.household_survey.source_of_drinking_water`))
+    .rowValues[0]).to.equal(sourceOfWater);
+  expect((await reportsPage.getDetailReportRowContent(`${reportName}.household_survey.mosquito_nets`))
+    .rowValues[0]).to.equal(mosquitoNet);
+  expect((await reportsPage.getDetailReportRowContent(`${reportName}.household_survey.hygeinic_toilet`))
+    .rowValues[0]).to.equal(hygeinicToilet);
+  expect((await reportsPage.getDetailReportRowContent(`${reportName}.household_survey.family_planning_method`))
+    .rowValues[0]).to.equal(planningMethod);
 };
 
 module.exports =  {
