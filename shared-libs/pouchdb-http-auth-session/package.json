@@ -4,7 +4,7 @@
   "description": "Plugin that forces session authentication for PouchDb http adapter",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": ""
   },
   "author": "Diana Barsan",
   "license": "AGPL-3.0-only",
