@@ -4,7 +4,7 @@
   "description": "Our implemenation of search using (C|P)ouchDB views.",
   "main": "src/search.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0",

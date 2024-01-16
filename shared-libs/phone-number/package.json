@@ -6,7 +6,7 @@
   "author": "",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "dependencies": {
     "google-libphonenumber": "^3.2.31"

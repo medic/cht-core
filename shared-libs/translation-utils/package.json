@@ -4,7 +4,7 @@
   "description": "Provides helper function to support nested keys in translations.",
   "main": "src/translation-utils.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0"
