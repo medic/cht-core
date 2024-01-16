@@ -143,6 +143,7 @@
     "moment": "^2.29.4",
     "moment-locales-webpack-plugin": "^1.2.0",
     "mustache": "^4.2.0",
+    "node-fetch": "^2.7.0",
     "nodemon": "^3.0.1",
     "patch-package": "^8.0.0",
     "postcss": "^8.4.29",
