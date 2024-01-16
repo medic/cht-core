@@ -310,7 +310,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.sortDirection === 'last_visited_date';
   }
 
-  private getDocumentIds(contactsList, usersHomePlace): string[] {
+  private getContactsDocIds(contactsList, usersHomePlace): string[] {
     const docIds = contactsList.map((item) => item._id);
     if (usersHomePlace && !docIds.includes(usersHomePlace._id)) {
       docIds.push(usersHomePlace._id);
@@ -329,16 +329,19 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       homeIndex === -1;
   }
 
-  private updateUsersHomePlace(updatedContacts: any[], homeIndex: number) {
+  private moveUserHomePlaceToTop(updatedContacts: any[], homeIndex: number) {
     if (homeIndex !== -1) {
       this.usersHomePlace = updatedContacts[homeIndex];
 
       if (!this.appending) {
-        updatedContacts.splice(homeIndex, 1);
-        updatedContacts.unshift(this.usersHomePlace);
+        return [this.usersHomePlace, ...updatedContacts.slice(1)];
       }
-    } else if (this.additionalListItem) {
-      updatedContacts.unshift(this.usersHomePlace);
+
+      if (this.additionalListItem) {
+        return [this.usersHomePlace, ...updatedContacts];
+      }
+
+      return updatedContacts;
     }
   }
 
@@ -350,9 +353,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     const homeIndex = this.findHomeIndex(updatedContacts);
 
     this.checkAdditionalListItem(homeIndex);
-    this.updateUsersHomePlace(updatedContacts, homeIndex);
-
-    return updatedContacts;
+    return this.moveUserHomePlaceToTop(updatedContacts, homeIndex);
   }
 
   private query(opts?) {
@@ -395,7 +396,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       extensions.sortByLastVisitedDate = true;
     }
 
-    const docIds = this.getDocumentIds(this.contactsList, this.usersHomePlace);
+    const docIds = this.getContactsDocIds(this.contactsList, this.usersHomePlace);
 
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
