@@ -225,19 +225,6 @@ const editPersonName = async (name, updatedName) => {
   return (await contactCard()).getText();
 };
 
-const editPlace = async (editedPlaceName) => {
-  await waitForContactLoaded();
-
-  await commonPage.openMoreOptionsMenu();
-  await (await editContactButton()).waitForClickable();
-  await (await editContactButton()).click();
-
-  if (editedPlaceName !== undefined) {
-    await (await nameField('health_center')).setValue(editedPlaceName);
-  }
-  await submitForm();
-};
-
 const deletePerson = async () => {
   await commonPage.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
@@ -285,17 +272,17 @@ const allContactsList = async () => {
   }));
 };
 
-const editDistrict = async (districtName, editedName) => {
-  await selectLHSRowByText(districtName, true);
+const editPlace = async (currentName, editedName, placeType) => {
+  await selectLHSRowByText(currentName, true);
   await waitForContactLoaded();
 
   await commonPage.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
-  await (await nameField('district_hospital')).setValue(editedName);
+  await (await nameField(placeType)).setValue(editedName);
   // blur field to trigger Enketo validation
-  await (await notes('district_hospital')).click();
+  await (await notes(placeType)).click();
   await submitForm();
 };
 
@@ -447,7 +434,6 @@ module.exports = {
   rhsTaskListElement,
   deletePerson,
   allContactsList,
-  editDistrict,
   childrenCards,
   submitForm,
   openReport,

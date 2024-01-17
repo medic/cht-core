@@ -84,7 +84,7 @@ describe('Edit Person Under Area', () => {
     await loginPage.login({ username: onlineUsername, password });
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
-    await contactPage.editPlace(editedPlaceName);
+    await contactPage.editPlace(healthCenter.name, editedPlaceName, 'health_center');
     await commonPage.waitForPageLoaded();
     await commonPage.logout();
 
