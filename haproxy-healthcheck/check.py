@@ -28,7 +28,7 @@ def _send_up_response(writer: asyncio.StreamWriter) -> None:
 def _send_and_close(writer: asyncio.StreamWriter, message: bytes) -> None:
     log.info("Response: %r", message)
     writer.write(message)
-    log.info("Closing connection")
+    log.debug("Closing connection")
     writer.close()
 
 
@@ -54,7 +54,8 @@ async def is_healthy() -> bool:
                 f"Details: all_nodes: {all_nodes}. couchdb_servers: {couchdb_servers}"
             )
             return False
-        elif all_nodes != cluster_nodes:
+
+        if all_nodes != cluster_nodes:
             log.warning("_membership shows not all nodes are part of Cluster")
             log.warning(
                 f"Details: all_nodes: {all_nodes}. cluster_nodes: {cluster_nodes}"

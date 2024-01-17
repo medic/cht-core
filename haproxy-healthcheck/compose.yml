@@ -15,6 +15,6 @@ services:
       COUCHDB_SERVERS: mock-couchdb
       COUCHDB_USER: someuser
       COUCHDB_PASSWORD: insecure_pw
-      APP_LOGLEVEL: DEBUG
+      HEALTHCHECK_LOG_LEVEL: DEBUG
     ports:
       - 127.0.0.1:5555:5555

@@ -2,12 +2,12 @@ import logging
 import os
 import sys
 
-loglevel = os.getenv("APP_LOGLEVEL", "INFO")
+loglevel = os.getenv("HEALTHCHECK_LOG_LEVEL", "INFO")
 
 
-def _init_logger(level: str) -> logging.Logger:
-    root_logger = logging.getLogger()
-    root_logger.setLevel(level)
+def _init_logger(level: str, name=__name__) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
 
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(level)
@@ -15,8 +15,8 @@ def _init_logger(level: str) -> logging.Logger:
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     handler.setFormatter(formatter)
-    root_logger.addHandler(handler)
-    return root_logger
+    logger.addHandler(handler)
+    return logger
 
 
-log = _init_logger(loglevel)
+log = _init_logger(loglevel, "healthcheck")
