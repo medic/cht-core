@@ -303,6 +303,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       .catch(error => console.error('Error fetching settings', error));
   }
 
+  private getTrackName(processName) {
+    return `select_contact:${this.selectedContact?.doc?.contact_type}:${processName}`;
+  }
+
   private async setChildTypesBySelectedContact() {
     if (!this.selectedContact) {
       this.childTypesBySelectedContact = [];
@@ -315,7 +319,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.childTypesBySelectedContact = [];
       return;
     }
-    const trackPerformance = this.performanceService.track('select_contact:set_child_types');
+    const trackPerformance = this.performanceService.track(this.getTrackName('set_child_types'));
     return this.contactTypesService
       .getChildren(this.selectedContact.type.id)
       .then(childTypes => this.childTypesBySelectedContact = childTypes)
@@ -339,7 +343,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           return;
         }
 
-        const trackPerformance = this.performanceService.track('select_contact:display_contact_forms');
+        const trackPerformance = this.performanceService.track(this.getTrackName('display_contact_forms'));
         const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
         this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
         this.updateFastActions();
@@ -377,7 +381,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         if (!forms) {
           return;
         }
-        const trackPerformance = this.performanceService.track('select_contact:display_app_forms');
+        const trackPerformance = this.performanceService.track(this.getTrackName('display_app_forms'));
         this.relevantReportForms = forms
           .map(xForm => {
             const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);

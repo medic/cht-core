@@ -29,7 +29,7 @@ export class PerformanceService {
 
     const startTime = this.document.defaultView.performance.now();
     return {
-      name,
+      setName: newName => name = newName,
       stop: () => this.recordPerformance(name, startTime),
     };
   }

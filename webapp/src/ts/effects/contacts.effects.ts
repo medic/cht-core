@@ -23,6 +23,8 @@ export class ContactsEffects {
   private selectedContact;
   private contactIdToLoad;
 
+  private selectContactTrack;
+
   constructor(
     private actions$: Actions,
     private store: Store,
@@ -54,7 +56,8 @@ export class ContactsEffects {
         this.store.select(Selectors.getForms),
       ),
       exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
-        const trackPerformance = this.performanceService.track('select_contact:load_everything');
+        this.selectContactTrack = 'select_contact:load_everything';
+        const trackPerformance = this.performanceService.track(this.selectContactTrack);
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
@@ -87,6 +90,7 @@ export class ContactsEffects {
             return of(this.contactsActions.clearSelection());
           })
           .finally(() => {
+            trackPerformance?.setName(this.selectContactTrack);
             trackPerformance?.stop();
           });
 
@@ -103,12 +107,18 @@ export class ContactsEffects {
     this.globalActions.setTitle(this.translateService.instant(title));
   }
 
+  private getPerformanceTrackName(processName) {
+    return `${this.selectContactTrack}:${processName}`;
+  }
+
   private loadContact(id) {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_contact_data');
+    const trackProcessName = 'load_contact_data';
+    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName(trackProcessName));
     this.contactsActions.setContactIdToLoad(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
       .then(model => {
+        this.selectContactTrack = `select_contact:${model.doc.contact_type}:load_everything`;
         return this
           .verifySelectedContactNotChanged(model._id)
           .then(() => {
@@ -117,6 +127,7 @@ export class ContactsEffects {
           });
       })
       .finally(() => {
+        trackPerformance?.setName(this.getPerformanceTrackName(trackProcessName));
         trackPerformance?.stop();
       });
   }
@@ -126,7 +137,7 @@ export class ContactsEffects {
   }
 
   private loadChildren(contactId, userFacilityId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_children');
+    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_children'));
     const getChildPlaces = userFacilityId !== contactId;
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
@@ -141,7 +152,7 @@ export class ContactsEffects {
   }
 
   private loadReports(contactId, forms) {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_reports');
+    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_reports'));
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
       .then(reports => {
@@ -155,7 +166,7 @@ export class ContactsEffects {
   }
 
   private loadTargetDoc(contactId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_targets');
+    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_targets'));
     return this.targetAggregateService
       .getCurrentTargetDoc(this.selectedContact)
       .then(targetDoc => {
@@ -169,7 +180,7 @@ export class ContactsEffects {
   }
 
   private loadTasks(contactId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_tasks');
+    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_tasks'));
     return this.tasksForContactService
       .get(this.selectedContact)
       .then(tasks => {
@@ -183,7 +194,7 @@ export class ContactsEffects {
   }
 
   private loadContactSummary(contactId) {
-    const trackPerformance = this.performanceService.track('select_contact:load_everything:load_contact_summary');
+    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_contact_summary'));
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)

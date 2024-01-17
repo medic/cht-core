@@ -117,7 +117,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.subscription.add(changesSubscription);
 
-    const trackPerformance = this.performanceService.track('contact-list:initial_load');
+    const trackPerformance = this.performanceService.track(this.getTrackName('initial_load'));
     Promise
       .all([
         this.getUserHomePlaceSummary(),
@@ -208,7 +208,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getUserHomePlaceSummary() {
-    const trackPerformance = this.performanceService.track('contact-list:initial_load:fetch_user_place_summary');
+    const trackPerformance = this.performanceService.track(this.getTrackName('initial_load:fetch_user_place_summary'));
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
@@ -237,7 +237,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private formatContacts(contacts) { //NOSONAR
-    const trackPerformance = this.performanceService.track('contact-list:query:format_contacts');
+    const trackPerformance = this.performanceService.track(this.getTrackName('query:format_contacts'));
     const formattedContacts = contacts.map(updatedContact => { //NOSONAR
       const contact = { ...updatedContact };
       const typeId = this.contactTypesService.getTypeId(contact);
@@ -290,7 +290,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getChildren() {
-    const trackPerformance = this.performanceService.track('contact-list:initial_load:fetch_children');
+    const trackPerformance = this.performanceService.track(this.getTrackName('initial_load:fetch_children'));
     const filterChildPlaces = (children) => children.filter(child => !child.person);
 
     if (this.usersHomePlace) {
@@ -331,7 +331,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
-    const trackPerformance = this.performanceService.track('contact-list:query:execute_search');
+    const trackPerformance = this.performanceService.track(this.getTrackName('query:execute_search'));
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
       options.limit = this.PAGE_SIZE;
@@ -479,6 +479,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.exportService.export('contacts', this.filters, { humanReadable: true });
   }
 
+  private getTrackName(processName) {
+    return `contact_list:${processName}`;
+  }
+
   private subscribeToAllContactXmlForms() {
     const subscription = this.xmlFormsService.subscribe(
       'ContactForms',
@@ -489,7 +493,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
 
-        const trackPerformance = this.performanceService.track('contact-list:display_contact_forms');
+        const trackPerformance = this.performanceService.track(this.getTrackName('display_contact_forms'));
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
         this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
         this.updateFastActions();
