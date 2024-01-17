@@ -225,6 +225,19 @@ const editPersonName = async (name, updatedName) => {
   return (await contactCard()).getText();
 };
 
+const editPlace = async (editedPlaceName) => {
+  await waitForContactLoaded();
+
+  await commonPage.openMoreOptionsMenu();
+  await (await editContactButton()).waitForClickable();
+  await (await editContactButton()).click();
+
+  if (editedPlaceName !== undefined) {
+    await (await nameField('health_center')).setValue(editedPlaceName);
+  }
+  await submitForm();
+};
+
 const deletePerson = async () => {
   await commonPage.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
@@ -425,6 +438,7 @@ module.exports = {
   contactCard,
   editPerson,
   editPersonName,
+  editPlace,
   exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
