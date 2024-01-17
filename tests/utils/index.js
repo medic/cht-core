@@ -156,10 +156,9 @@ const getSession = async () => {
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
 const request = async (options, { debug } = {}) => {
-  await getSession();
-
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth && !options.auth) {
+    await getSession();
     options.jar = cookieJar;
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;

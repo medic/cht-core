@@ -3,6 +3,7 @@ const { Headers } = require('node-fetch');
 
 const sessionCookieName = 'AuthSession';
 const cookieRegex = new RegExp(`${sessionCookieName}=(.*)`);
+const sessions = {};
 
 const parseCookie = (response) => {
   const cookie = response.headers.get('set-cookie');
@@ -29,27 +30,47 @@ const parseCookie = (response) => {
   return session;
 };
 
-const getSession = async (opts) => {
-  const url = new URL(opts.name);
+const getExistingSession = (db) => {
+  const url = new URL(db.name);
   url.pathname = '/_session';
+  const urlString = url.toString();
+  if (sessions[urlString] && !isExpired(sessions[urlString])) {
+    return sessions[urlString];
+  }
+};
 
-  const authString = `${opts.credentials.username}:${opts.credentials.password}`;
+const getSessionUrl = (db) => {
+  const url = new URL(db.name);
+  url.pathname = '/_session';
+  return url.toString();
+};
+
+const authenticate = async (db) => {
+  const url = getSessionUrl(db);
+
+  const authString = `${db.credentials.username}:${db.credentials.password}`;
   const token = btoa(decodeURIComponent(encodeURIComponent(authString)));
   const headers = new Headers();
   headers.set('Authorization', 'Basic ' + token);
   headers.set('Content-Type', 'application/json');
 
-  const body = JSON.stringify({ name: opts.credentials.username, password: opts.credentials.password});
+  const body = JSON.stringify({ name: db.credentials.username, password: db.credentials.password});
 
-  const response = await opts.originalFetch(url.toString(), { method: 'POST', headers, body });
-  updateSession(opts, response);
+  const response = await db.originalFetch(url.toString(), { method: 'POST', headers, body });
+  updateSession(db, response);
 };
 
 const updateSession = (db, response) => {
   const session = parseCookie(response);
   if (session) {
-    db.session = session;
+    const url = getSessionUrl(db);
+    sessions[url] = session;
   }
+};
+
+const invalidateSession = db => {
+  const url = getSessionUrl(db);
+  delete sessions[url];
 };
 
 const isExpired = (session) => Date.now() > session.expires;
@@ -70,7 +91,7 @@ const extractAuth = (opts) => {
 };
 
 // eslint-disable-next-line func-style
-function wrapAdapter (HttpPouch) {
+function wrapAdapter (PouchDB, HttpPouch) {
   // eslint-disable-next-line func-style
   function HttpSessionPouch(db, callback) {
     extractAuth(db);
@@ -79,17 +100,19 @@ function wrapAdapter (HttpPouch) {
       return;
     }
 
-    db.originalFetch = db.fetch;
+    db.originalFetch = db.fetch || PouchDB.fetch;
     db.fetch = async (url, opts) => {
-      if (!db.session || isExpired(db.session)) {
-        await getSession(db);
+      let session = getExistingSession(db);
+      if (!session) {
+        await authenticate(db);
+        session = getExistingSession(db);
       }
 
-      opts.headers.set(sessionCookieName, db.session.token);
+      opts.headers.set(sessionCookieName, session.token);
 
       const response = await db.originalFetch(url, opts);
-      if (response.status === 401 && db.session) {
-        db.session = null;
+      if (response.status === 401 && session) {
+        invalidateSession(db);
         return db.fetch(url, opts);
       }
 
@@ -106,6 +129,6 @@ function wrapAdapter (HttpPouch) {
 }
 
 module.exports = function (PouchDB) {
-  PouchDB.adapters.http = wrapAdapter(PouchDB.adapters.http);
-  PouchDB.adapters.https = wrapAdapter(PouchDB.adapters.https);
+  PouchDB.adapters.http = wrapAdapter(PouchDB, PouchDB.adapters.http);
+  PouchDB.adapters.https = wrapAdapter(PouchDB, PouchDB.adapters.https);
 };
