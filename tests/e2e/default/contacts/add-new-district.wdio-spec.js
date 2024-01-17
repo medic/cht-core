@@ -42,7 +42,7 @@ describe('Add new district tests : ', () => {
 
     await utils.saveDocs([ district, person ]);
     await commonPage.goToPeople();
-    await contactPage.editDistrict('Caroline\'s district', 'Edited Caroline\'s');
+    await contactPage.editPlace('Caroline\'s district', 'Edited Caroline\'s', 'district_hospital');
     await commonPage.waitForPageLoaded();
     expect(await contactPage.getContactCardText()).to.equal('Edited Caroline\'s');
   });
@@ -70,7 +70,7 @@ describe('Add new district tests : ', () => {
 
     await utils.saveDocs([ district, person1, person2 ]);
     await commonPage.goToPeople();
-    await contactPage.editDistrict('Tudor\'s district', 'At Tudor\'s');
+    await contactPage.editDistrict('Tudor\'s district', 'At Tudor\'s', 'district_hospital');
     await commonPage.waitForPageLoaded();
 
     expect(await (await contactPage.contactCard()).getText()).to.equal('At Tudor\'s');
