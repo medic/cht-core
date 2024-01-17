@@ -118,7 +118,7 @@ export class ContactsEffects {
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
       .then(model => {
-        this.selectContactTrack = `select_contact:${model.doc.contact_type}:load_everything`;
+        this.selectContactTrack = `select_contact:${model?.doc?.contact_type || 'contact'}:load_everything`;
         return this
           .verifySelectedContactNotChanged(model._id)
           .then(() => {
