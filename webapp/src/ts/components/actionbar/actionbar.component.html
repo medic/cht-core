@@ -38,10 +38,10 @@
       </div>
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
-        <div test-id='create_places' class="actions dropup" mmAuth [mmAuthAny]="[ actionBar?.left?.childPlaces && 'can_create_places' ]">
+        <div test-id='create_places' class="actions dropup" mmAuth [mmAuthAny]="[ 'can_export_all', 'can_export_contacts', 'can_create_places', 'can_create_people' ]">
           <a
             *ngIf="actionBar?.left?.childPlaces?.length > 1"
-            mmAuth="can_edit,can_create_places"
+            mmAuth="can_edit" [mmAuthAny]="['can_create_places', 'can_create_people']"
             class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle create-place"
             data-toggle="dropdown"
           >
@@ -51,7 +51,7 @@
 
           <ul
             *ngIf="actionBar?.left?.childPlaces?.length > 1"
-            mmAuth="can_edit,can_create_places"
+            mmAuth="can_edit" [mmAuthAny]="['can_create_places', 'can_create_people']"
             class="dropdown-menu mm-dropdown-menu with-icon"
           >
             <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
@@ -66,7 +66,7 @@
 
           <a
             *ngIf="actionBar?.left?.childPlaces?.length === 1"
-            mmAuth="can_edit,can_create_places"
+            mmAuth="can_edit" [mmAuthAny]="['can_create_places', 'can_create_people']"
             class="mm-icon mm-icon-inverse mm-icon-caption create-place"
             [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
             [queryParams]="{ from: 'list' }"

@@ -45,6 +45,12 @@ const getMessageHeader = async () => {
   };
 };
 
+const navigateFromConversationToContact = async () => {
+  await $(`${MESSAGE_HEADER} a.name`).waitForClickable();
+  await $(`${MESSAGE_HEADER} a.name`).click();
+  await commonPage.waitForPageLoaded();
+};
+
 const getMessageContent = async  (index = 1) => {
   const sms = await $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
   await sms.waitForDisplayed();
@@ -140,5 +146,6 @@ module.exports = {
   sendReply,
   replyAddRecipients,
   getAmountOfMessagesByPhone,
+  navigateFromConversationToContact,
   getMessagesModalDetails,
 };

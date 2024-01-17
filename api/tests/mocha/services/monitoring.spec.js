@@ -5,6 +5,7 @@ const _ = require('lodash');
 
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
+const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 
 let clock;
@@ -61,8 +62,7 @@ const dbInfos = [
 ];
 
 const setUpMocks = () => {
-  sinon.stub(db.medic, 'get').withArgs('_design/medic')
-    .resolves({ deploy_info: { version: '5.3.2' } });
+  sinon.stub(deployInfo, 'get').resolves({ version: '5.3.2' });
   sinon.stub(request, 'get')
     .withArgs(sinon.match({ url: environment.serverUrl })).resolves({ version: 'v3.3.3' })
     .withArgs(sinon.match({ url: `${environment.couchUrl}/_changes` })).resolves({ pending: 24 });
@@ -302,7 +302,7 @@ describe('Monitoring service', () => {
   });
 
   it('v1 handles errors gracefully', () => {
-    sinon.stub(db.medic, 'get').withArgs('_design/medic').rejects();
+    sinon.stub(deployInfo, 'get').rejects();
     sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl })).rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
     sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
@@ -370,7 +370,7 @@ describe('Monitoring service', () => {
   });
 
   it('v2 handles errors gracefully', () => {
-    sinon.stub(db.medic, 'get').withArgs('_design/medic').rejects();
+    sinon.stub(deployInfo, 'get').rejects();
     sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl })).rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
     sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
@@ -461,8 +461,7 @@ describe('Monitoring service', () => {
   });
 
   it('v1 handles empty reduce response correctly', () => {
-    sinon.stub(db.medic, 'get').withArgs('_design/medic')
-      .resolves({ version: '5.3.2' });
+    sinon.stub(deployInfo, 'get').resolves({ version: '5.3.2' });
     sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl }))
       .resolves({ version: 'v3.3.3' });
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))

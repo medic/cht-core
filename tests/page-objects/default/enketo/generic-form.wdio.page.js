@@ -45,8 +45,8 @@ const validateReport = async () => {
   expect(await reportsPage.getSelectedReviewOption()).to.equal('Correct');
 };
 
-const selectContact = async (inputName, contactName) => {
-  const select2Selection = () => $(`section[name="${inputName}"] .select2-selection`);
+const selectContact = async (contactName) => {
+  const select2Selection = () => $('label*=What is the patient\'s name?').$('.select2-selection');
   await (await select2Selection()).click();
   const searchField = await $('.select2-search__field');
   await searchField.setValue(contactName);
@@ -107,6 +107,28 @@ const selectYesNoOption = async (selector, value = 'yes') => {
   return value === 'yes';
 };
 
+const getDBObjectWidgetValues = async (field) => {
+  const widget = $(`[data-contains-ref-target="${field}"] .selection`);
+  await (await widget).waitForClickable();
+  await (await widget).click();
+
+  const dropdown = $('.select2-dropdown--below');
+  await (await dropdown).waitForDisplayed();
+  const firstElement = $('.select2-results__options > li');
+  await (await firstElement).waitForClickable();
+
+  const list = await $$('.select2-results__options > li');
+  const contacts = [];
+  for (const item of list) {
+    contacts.push({
+      name: await (item.$('.name').getText()),
+      click: () => item.click(),
+    });
+  }
+
+  return contacts;
+};
+
 module.exports = {
   getFormTitle,
   getErrorMessage,
@@ -125,4 +147,5 @@ module.exports = {
   currentFormView,
   formTitle,
   selectYesNoOption,
+  getDBObjectWidgetValues,
 };

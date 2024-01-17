@@ -70,7 +70,8 @@ describe('extract-person-contacts migration', () => {
       name: 'The Clinic',
       contact: {
         name: 'Clinic Contact',
-        phone: '555 1000'
+        phone: '555 1000',
+        type: 'person'
       },
       parent: {
         _id: 'hc-id',
@@ -145,7 +146,8 @@ describe('extract-person-contacts migration', () => {
       name: 'The Health Center',
       contact: {
         name: 'HC Contact',
-        phone: '555 2000'
+        phone: '555 2000',
+        type: 'person'
       },
       parent: {
         _id: 'dh-id',
@@ -194,7 +196,8 @@ describe('extract-person-contacts migration', () => {
       parent: {},
       contact: {
         name: 'DH Contact',
-        phone: '555 3000'
+        phone: '555 3000',
+        type: 'person'
       }
     };
     const districtHospitalContact = {

@@ -116,6 +116,7 @@ describe('Service worker cache', () => {
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
+      '/img/cht-logo-light.png',
       '/img/icon.png',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',

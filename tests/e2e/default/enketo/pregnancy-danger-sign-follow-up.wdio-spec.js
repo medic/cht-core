@@ -4,7 +4,8 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const dangerSignFollowUpForm = require('@page-objects/default/enketo/pregnancy-danger-sign-follow-up.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('Pregnancy danger sign follow-up form', () => {
   before(async () => {
@@ -17,10 +18,10 @@ describe('Pregnancy danger sign follow-up form', () => {
     await commonPage.goToReports();
 
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
-    await dangerSignFollowUpForm.selectPatient('jack');
+    await genericForm.selectContact('jack');
     await genericForm.nextPage();
-    await dangerSignFollowUpForm.selectVisitedHealthFacility(true);
-    await dangerSignFollowUpForm.selectDangerSigns(false);
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
     await reportsPage.submitForm();
 
     await genericForm.verifyReport();
@@ -30,10 +31,10 @@ describe('Pregnancy danger sign follow-up form', () => {
     await commonPage.goToReports();
 
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
-    await dangerSignFollowUpForm.selectPatient('jill');
+    await genericForm.selectContact('jill');
     await genericForm.nextPage();
-    await dangerSignFollowUpForm.selectVisitedHealthFacility(true);
-    await dangerSignFollowUpForm.selectDangerSigns(false);
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
     await reportsPage.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
@@ -46,7 +47,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await reportsPage.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
-    expect(updatedReport.fields).excludingEvery('instanceID').to.deep.equal(initialReport.fields);
+    expect(updatedReport.fields).excludingEvery(['instanceID', 'deprecatedID']).to.deep.equal(initialReport.fields);
 
   });
 
@@ -54,10 +55,10 @@ describe('Pregnancy danger sign follow-up form', () => {
     await commonPage.goToReports();
 
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
-    await dangerSignFollowUpForm.selectPatient('jill');
+    await genericForm.selectContact('jill');
     await genericForm.nextPage();
-    await dangerSignFollowUpForm.selectVisitedHealthFacility(true);
-    await dangerSignFollowUpForm.selectDangerSigns(false);
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
     await reportsPage.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
@@ -66,24 +67,26 @@ describe('Pregnancy danger sign follow-up form', () => {
     expect(initialReport._attachments).to.equal(undefined);
 
     await reportsPage.editReport(reportId);
-    await dangerSignFollowUpForm.selectPatient('jack');
+    await genericForm.selectContact('jack');
     await genericForm.nextPage();
-    await dangerSignFollowUpForm.selectVisitedHealthFacility(false);
-    await dangerSignFollowUpForm.selectDangerSigns(true);
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
+    await dangerSignPage.selectAllDangerSignsPregnancy();
     await reportsPage.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
 
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
-    await dangerSignFollowUpForm.selectPatient('jack');
+    await genericForm.selectContact('jack');
     await genericForm.nextPage();
-    await dangerSignFollowUpForm.selectVisitedHealthFacility(false);
-    await dangerSignFollowUpForm.selectDangerSigns(true);
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
+    await dangerSignPage.selectAllDangerSignsPregnancy();
     await reportsPage.submitForm();
 
     const compareReportId = await reportsPage.getCurrentReportId();
     const compareReport = await utils.getDoc(compareReportId);
 
-    expect(updatedReport.fields).excludingEvery('instanceID').to.deep.equal(compareReport.fields);
+    expect(updatedReport.fields).excludingEvery(['instanceID', 'deprecatedID']).to.deep.equal(compareReport.fields);
   });
 });

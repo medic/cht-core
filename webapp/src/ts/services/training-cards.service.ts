@@ -84,11 +84,6 @@ export class TrainingCardsService {
       return;
     }
 
-    const routeSnapshot = this.routeSnapshotService.get();
-    if (routeSnapshot?.data?.hideTraining) {
-      return;
-    }
-
     try {
       const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(xForms);
       if (!firstChronologicalTrainingCard) {
@@ -96,12 +91,18 @@ export class TrainingCardsService {
       }
 
       this.globalActions.setTrainingCardFormId(firstChronologicalTrainingCard.code);
-      this.modalService.show(TrainingCardsComponent);
-
     } catch (error) {
       console.error('Training Cards :: Error showing modal.', error);
       return;
     }
+  }
+
+  displayTrainingCards() {
+    const routeSnapshot = this.routeSnapshotService.get();
+    if (routeSnapshot?.data?.hideTraining) {
+      return;
+    }
+    this.modalService.show(TrainingCardsComponent);
   }
 
   private async getFirstChronologicalForm(xForms) {

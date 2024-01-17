@@ -12,14 +12,16 @@ import { TranslateService } from '@mm-services/translate.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ReportsActions } from '@mm-actions/reports';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
-describe('Session service', () => {
+describe('Fast Action Button service', () => {
   let service: FastActionButtonService;
   let router;
   let authService;
   let responsiveService;
   let translateService;
   let translateFromService;
+  let userSettingsService;
   let documentMock;
   let domElement;
 
@@ -29,6 +31,7 @@ describe('Session service', () => {
     responsiveService = { isMobile: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     translateFromService = { get: sinon.stub().returnsArg(0) };
+    userSettingsService = { get: sinon.stub().resolves() };
     domElement = {
       click: sinon.stub(),
       remove: sinon.stub(),
@@ -46,6 +49,7 @@ describe('Session service', () => {
         { provide: ResponsiveService, useValue: responsiveService },
         { provide: TranslateService, useValue: translateService },
         { provide: TranslateFromService, useValue: translateFromService },
+        { provide: UserSettingsService, useValue: userSettingsService },
         { provide: DOCUMENT, useValue: documentMock},
       ],
     });
@@ -198,6 +202,7 @@ describe('Session service', () => {
         childContactTypes: [
           { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
           { id: 'child-place-2', icon: 'child-place-2-icon' },
+          { id: 'child-place-3', icon: 'child-place-3-icon', person: true },
         ],
         xmlReportForms: [
           { code: 'report-form-1', titleKey: 'report-form-1-title-key', icon: 'report-form-1-icon' },
@@ -214,12 +219,13 @@ describe('Session service', () => {
 
       const actions = await service.getContactRightSideActions(context);
 
-      expect(actions.length).to.equal(6);
+      expect(actions.length).to.equal(7);
       expect(authService.has.args).to.have.deep.members([
         [ 'can_view_call_action' ],
         [ [ 'can_view_message_action', 'can_edit' ] ],
         [ [ 'can_edit', 'can_create_places' ] ],
         [ [ 'can_edit', 'can_create_places' ] ],
+        [ [ 'can_edit', 'can_create_people' ] ],
         [ 'can_edit' ],
         [ 'can_edit' ],
         [ 'can_edit' ],
@@ -240,19 +246,26 @@ describe('Session service', () => {
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-2' ],
         queryParams: null,
       });
-      assertReportFormAction(actions[3], {
+      assertContactFormAction(actions[3], {
+        id: 'child-place-3',
+        label: 'child-place-3',
+        icon: 'child-place-3-icon',
+        route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-3' ],
+        queryParams: null,
+      });
+      assertReportFormAction(actions[4], {
         id: 'report-form-1',
         label: 'report-form-1-title-key',
         icon: 'report-form-1-icon',
         route: [ '/reports', 'add', 'report-form-1' ],
       });
-      assertReportFormAction(actions[4], {
+      assertReportFormAction(actions[5], {
         id: 'report-form-2',
         label: 'report-form-2-title',
         icon: 'report-form-2-icon',
         route: [ '/reports', 'add', 'report-form-2' ],
       });
-      assertReportFormAction(actions[5], {
+      assertReportFormAction(actions[6], {
         id: 'report-form-3',
         label: 'report-form-3',
         icon: 'report-form-3-icon',
@@ -266,6 +279,7 @@ describe('Session service', () => {
         childContactTypes: [
           { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
           { id: 'child-place-2', icon: 'child-place-2-icon' },
+          { id: 'child-place-3', icon: 'child-place-3-icon', person: true },
         ],
         xmlReportForms: [
           { code: 'report-form-1', titleKey: 'report-form-1-title-key', icon: 'report-form-1-icon' },
@@ -282,12 +296,13 @@ describe('Session service', () => {
 
       const actions = await service.getContactRightSideActions(context);
 
-      expect(actions.length).to.equal(7);
+      expect(actions.length).to.equal(8);
       expect(authService.has.args).to.have.deep.members([
         [ 'can_view_call_action' ],
         [ [ 'can_view_message_action' ] ],
         [ [ 'can_edit', 'can_create_places' ] ],
         [ [ 'can_edit', 'can_create_places' ] ],
+        [ [ 'can_edit', 'can_create_people' ] ],
         [ 'can_edit' ],
         [ 'can_edit' ],
         [ 'can_edit' ],
@@ -309,19 +324,26 @@ describe('Session service', () => {
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-2' ],
         queryParams: null,
       });
-      assertReportFormAction(actions[4], {
+      assertContactFormAction(actions[4], {
+        id: 'child-place-3',
+        label: 'child-place-3',
+        icon: 'child-place-3-icon',
+        route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-3' ],
+        queryParams: null,
+      });
+      assertReportFormAction(actions[5], {
         id: 'report-form-1',
         label: 'report-form-1-title-key',
         icon: 'report-form-1-icon',
         route: [ '/reports', 'add', 'report-form-1' ],
       });
-      assertReportFormAction(actions[5], {
+      assertReportFormAction(actions[6], {
         id: 'report-form-2',
         label: 'report-form-2-title',
         icon: 'report-form-2-icon',
         route: [ '/reports', 'add', 'report-form-2' ],
       });
-      assertReportFormAction(actions[6], {
+      assertReportFormAction(actions[7], {
         id: 'report-form-3',
         label: 'report-form-3',
         icon: 'report-form-3-icon',
@@ -735,6 +757,29 @@ describe('Session service', () => {
 
       expect(actions.length).to.equal(1);
       expect(authService.has.args).to.have.deep.members([
+        [ 'can_edit' ],
+      ]);
+
+      assertUpdateFacilityAction(actions[0]);
+    });
+
+    it('should not return send message action if sendto matches user', async () => {
+      const context = {
+        reportContentType: 'other',
+        communicationContext: {
+          sendTo: { _id: '1234', phone: '+2541234567890' },
+          callbackOpenSendMessage: sinon.stub(),
+        },
+      };
+      authService.has.resolves(true);
+      responsiveService.isMobile.returns(true);
+      userSettingsService.get.resolves({ contact_id: '1234' });
+
+      const actions = await service.getReportRightSideActions(context);
+
+      expect(actions.length).to.equal(1);
+      expect(authService.has.args).to.have.deep.members([
+        [ [ 'can_view_message_action' ] ],
         [ 'can_edit' ],
       ]);
 

@@ -3,7 +3,6 @@ import { Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { exhaustMap, filter, withLatestFrom, concatMap, tap } from 'rxjs/operators';
-import { Router } from '@angular/router';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -11,7 +10,6 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { DbService } from '@mm-services/db.service';
-import { SearchService } from '@mm-services/search.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-services/modal.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
@@ -32,8 +30,6 @@ export class ReportsEffects {
     private reportViewModelGeneratorService:ReportViewModelGeneratorService,
     private markReadService:MarkReadService,
     private dbService:DbService,
-    private router:Router,
-    private searchService:SearchService,
     private modalService:ModalService,
     private translateService:TranslateService,
     private authService:AuthService,

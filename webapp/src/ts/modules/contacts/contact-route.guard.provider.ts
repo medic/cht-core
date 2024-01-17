@@ -1,4 +1,4 @@
-import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 
@@ -11,10 +11,7 @@ import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.co
 })
 export class ContactRouteGuardProvider implements CanDeactivate<ContactsEditComponent | ContactsReportComponent> {
   private globalActions;
-  constructor(
-    private router:Router,
-    private store:Store,
-  ) {
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
   }
 

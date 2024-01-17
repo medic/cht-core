@@ -84,7 +84,7 @@ module.exports = new Factory()
       death_cause: null
     };
     if (groupAssess.is_alive === NO) {
-      const amount = Faker.faker.datatype.number({ min: 1, max: 6 });
+      const amount = Faker.faker.number.int({ min: 1, max: 6 });
       groupAssess.death_date = moment().subtract(amount, 'months').format('YYYY-MM-DD');
       groupAssess.death_cause = Faker.faker.helpers
         .arrayElement(['diarrhoea', 'malaria', 'pneumonia', 'other']);
@@ -109,7 +109,7 @@ module.exports = new Factory()
         malaria_painkiller_given: null
       };
       if (groupFever.patient_fever === YES) {
-        groupFever.patient_temperature = Faker.faker.datatype.number({ min: 32, max: 45 });
+        groupFever.patient_temperature = Faker.faker.number.int({ min: 32, max: 45 });
         groupFever.fever_duration = Faker.faker.helpers.arrayElement(SYMPTOM_DURATION_DAYS);
         groupFever.mrdt_treated = Faker.faker.helpers.arrayElement(YES_NO);
         groupFever.mrdt_result = Faker.faker.helpers.arrayElement(['positive', 'negative', 'none']);
@@ -149,7 +149,7 @@ module.exports = new Factory()
       if (isAChildAndAlive(5, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)
         && groupCough.patient_coughs === YES) {
         const groupBreathing = {
-          breath_count: Faker.faker.datatype.number({ min: 10, max: 85 }),
+          breath_count: Faker.faker.number.int({ min: 10, max: 85 }),
           fast_breathing: null,
           pneumonia_treatment_given: null,
           pneumonia_treatment: null
@@ -193,7 +193,7 @@ module.exports = new Factory()
         const groupDangerSigns = {
           danger_signs: Faker.faker.helpers.uniqueArray(
             ['convulsions', 'unable_to_feed', 'vomits_everything', 'very_sleepy', 'chest_indrawing'],
-            Faker.faker.datatype.number({ min: 1, max: 5 })
+            Faker.faker.number.int({ min: 1, max: 5 })
           )
         };
         return groupDangerSigns;
@@ -220,7 +220,7 @@ module.exports = new Factory()
           if (groupImmLess2mo.imm_current_2mo === YES) {
             groupImmLess2mo.imm_given_2mo = Faker.faker.helpers.uniqueArray(
               ['bcg', 'polio_0', 'polio_1', 'dpt_hib1', 'pcv_1', 'rota_1'],
-              Faker.faker.datatype.number({ min: 1, max: 6 })
+              Faker.faker.number.int({ min: 1, max: 6 })
             );
           }
           groupImm.group_imm_less_2mo = groupImmLess2mo;
@@ -237,7 +237,7 @@ module.exports = new Factory()
           if (groupImm2mo9mo.imm_current_9mo === YES) {
             groupImm2mo9mo.imm_given_9mo = Faker.faker.helpers.uniqueArray(
               ['dpt_hib2', 'pcv_2', 'rota_2', 'dpt_hib3', 'pcv_3', 'rota_3'],
-              Faker.faker.datatype.number({ min: 1, max: 6 })
+              Faker.faker.number.int({ min: 1, max: 6 })
             );
           }
           groupImm.group_imm_less_2mo = groupImm2mo9mo;
@@ -268,13 +268,13 @@ module.exports = new Factory()
         if (patientAgeInMonths > 6) {
           if (Faker.faker.datatype.boolean()) {
             vitReceived.push(...Faker.faker.helpers.uniqueArray(DEWORMING_AND_VITAMINS,
-              Faker.faker.datatype.number({ min: 1, max: 10 })));
+              Faker.faker.number.int({ min: 1, max: 10 })));
           } else {
             vitReceived.push(NONE);
           }
           if (Faker.faker.datatype.boolean()) {
             dewormingReceived.push(...Faker.faker.helpers.uniqueArray(DEWORMING_AND_VITAMINS,
-              Faker.faker.datatype.number({ min: 1, max: 10 })));
+              Faker.faker.number.int({ min: 1, max: 10 })));
           } else {
             dewormingReceived.push(NONE);
           }
@@ -291,8 +291,8 @@ module.exports = new Factory()
     (patientAgeInYears, patientAgeInMonths, groupAssess) => {
       if (isAChildAndAlive(5, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
         const groupNutritionAssessment = {
-          muac_score: Faker.faker.datatype.float({ min: 1, max: 500 }),
-          child_weight: Faker.faker.datatype.float({ min: 1, max: 30 }),
+          muac_score: Faker.faker.number.float({ min: 1, max: 500 }),
+          child_weight: Faker.faker.number.float({ min: 1, max: 30 }),
           has_oedema: Faker.faker.helpers.arrayElement(YES_NO),
           micronutrient: null,
           num_satchets: null,
@@ -304,18 +304,18 @@ module.exports = new Factory()
         if ((patientAgeInMonths > 6 && patientAgeInMonths < 60)) {
           groupNutritionAssessment.micronutrient = Faker.faker.helpers.arrayElement(YES_NO);
           if (groupNutritionAssessment.micronutrient === YES) {
-            groupNutritionAssessment.num_satchets = Faker.faker.datatype.number({ min: 1, max: 10 });
+            groupNutritionAssessment.num_satchets = Faker.faker.number.int({ min: 1, max: 10 });
             if (groupNutritionAssessment.num_satchets < 10) {
               groupNutritionAssessment.buy_mpn = Faker.faker.helpers.arrayElement(YES_NO);
               if (groupNutritionAssessment.buy_mpn === YES) {
-                groupNutritionAssessment.mpn_num = Faker.faker.datatype.number({ min: 1, max: 10 });
+                groupNutritionAssessment.mpn_num = Faker.faker.number.int({ min: 1, max: 10 });
               }
             }
           }
           if (groupNutritionAssessment.micronutrient === NO) {
             groupNutritionAssessment.buy_mpn = Faker.faker.helpers.arrayElement(YES_NO);
             if (groupNutritionAssessment.buy_mpn === YES) {
-              groupNutritionAssessment.mpn_num = Faker.faker.datatype.number({ min: 1, max: 10 });
+              groupNutritionAssessment.mpn_num = Faker.faker.number.int({ min: 1, max: 10 });
             }
           }
         }
@@ -330,7 +330,7 @@ module.exports = new Factory()
             if (groupNutritionAssessment.group_under_2yr.breastfed_24hrs === YES) {
               groupNutritionAssessment.group_under_2yr.times_breastfed = Faker.faker.helpers
                 .uniqueArray(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-                  Faker.faker.datatype.number({ min: 1, max: 10 }))
+                  Faker.faker.number.int({ min: 1, max: 10 }))
                 .join(' ');
             }
           }
@@ -344,11 +344,11 @@ module.exports = new Factory()
             if (Faker.faker.datatype.boolean()) {
               if (groupNutritionAssessment.group_under_2yr.breastfeeding === YES) {
                 const foodEaten = Faker.faker.helpers
-                  .uniqueArray([...FOOD_EATEN, BREAST_MILK], Faker.faker.datatype.number({ min: 1, max: 4 }));
+                  .uniqueArray([...FOOD_EATEN, BREAST_MILK], Faker.faker.number.int({ min: 1, max: 4 }));
                 groupNutritionAssessment.group_food_eaten.food_eaten.push(...foodEaten);
               } else {
                 groupNutritionAssessment.group_food_eaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
-                  FOOD_EATEN, Faker.faker.datatype.number({ min: 1, max: 3 })
+                  FOOD_EATEN, Faker.faker.number.int({ min: 1, max: 3 })
                 ));
               }
             } else {

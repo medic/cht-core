@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
 import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
 
@@ -26,7 +25,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     private contactTypesService: ContactTypesService,
     private rulesEngineService: RulesEngineService,
     private telemetryService: TelemetryService,
-    private route: ActivatedRoute,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private userContactService: UserContactService,
     private sessionService: SessionService,

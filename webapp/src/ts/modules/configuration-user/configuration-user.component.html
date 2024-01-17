@@ -2,11 +2,11 @@
   <div class="inner"></div>
 </div>
 
-<div class="inner" *ngIf="user">
+<div class="inner">
   <div class="col-sm-12 page configuration" ui-view="content">
     <div class="loader" *ngIf="loading"></div>
     <div *ngIf="!loading">
-      <div *ngIf="!user.token_login">
+      <div *ngIf="canUpdatePassword">
         <a (click)="updatePassword()" class="btn btn-link">
           <i class="fa fa-fw fa-key"></i>
           <span>{{'password.update' | translate}}</span>

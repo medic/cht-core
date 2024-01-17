@@ -155,7 +155,7 @@ const getSession = async () => {
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = async (options, { debug } = {}) => {
+const request = async (options, { debug } = {}) => { //NOSONAR
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth && !options.auth) {
     await getSession();
@@ -170,6 +170,11 @@ const request = async (options, { debug } = {}) => {
   }
 
   options.transform = (body, response, resolveWithFullResponse) => {
+    if (debug) {
+      console.log('RESPONSE');
+      console.log(response.statusCode);
+      console.log(response.body);
+    }
     // we might get a json response for a non-json request.
     const contentType = response.headers['content-type'];
     if (contentType?.startsWith('application/json') && !options.json) {
@@ -657,6 +662,17 @@ const getBaseUrl = () => `${constants.BASE_URL}/#/`;
 
 const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
+const getLoggedInUser = async () => {
+  try {
+    const cookies = await browser.getCookies('userCtx');
+    const userCtx = JSON.parse(cookies?.[0]);
+    return userCtx.name;
+  } catch (err) {
+    console.warn('Error getting userCtx', err.message);
+    return;
+  }
+};
+
 /**
  * Deletes _users docs and medic/user-settings docs for specified users
  * @param {Array} users - list of users to be deleted
@@ -666,6 +682,11 @@ const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 const deleteUsers = async (users, meta = false) => { //NOSONAR
   if (!users.length) {
     return;
+  }
+
+  const loggedUser = await getLoggedInUser();
+  if (loggedUser && users.find(user => user.username === loggedUser)) {
+    await browser.reloadSession();
   }
 
   const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);

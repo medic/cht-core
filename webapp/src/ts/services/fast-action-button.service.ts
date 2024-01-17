@@ -9,6 +9,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateService } from '@mm-services/translate.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,7 @@ export class FastActionButtonService {
     private responsiveService: ResponsiveService,
     private translateService: TranslateService,
     private translateFromService: TranslateFromService,
+    private userSettingsService: UserSettingsService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.reportsActions = new ReportsActions(store);
@@ -65,7 +67,7 @@ export class FastActionButtonService {
     return xmlForms
       .map(form => ({
         id: form.code,
-        label: this.getFormTitle(form.titleKey, form.title) || form.code,
+        label: this.getFormTitle(form.titleKey, form.title) ?? form.code,
         icon: { name: form.icon, type: IconType.RESOURCE },
         alwaysOpenInPanel: true,
         canDisplay: () => this.authService.has('can_edit'),
@@ -88,9 +90,12 @@ export class FastActionButtonService {
     return childContactTypes
       .map(contactType => ({
         id: contactType.id,
-        label: this.getFormTitle(contactType.create_key) || contactType.id,
+        label: this.getFormTitle(contactType.create_key) ?? contactType.id,
         icon: { name: contactType.icon, type: IconType.RESOURCE },
-        canDisplay: () => this.authService.has(['can_edit', 'can_create_places']),
+        canDisplay: () => this.authService.has([
+          'can_edit',
+          contactType.person ? 'can_create_people' : 'can_create_places'
+        ]),
         execute: () => {
           const route = ['/contacts', 'add', contactType.id];
           if (parentFacilityId) {
@@ -109,6 +114,10 @@ export class FastActionButtonService {
 
     const validatePhone = () => isPhoneRequired ? !!sendTo?.phone : true;
     const canUseMailto = () => useMailtoInMobile && this.responsiveService.isMobile();
+    const userMessagingThemself = async () => {
+      const user: any = await this.userSettingsService.get();
+      return user?.contact_id === sendTo?._id;
+    };
 
     return {
       id: 'send-message',
@@ -116,15 +125,19 @@ export class FastActionButtonService {
       icon: { name: 'fa-envelope', type: IconType.FONT_AWESOME },
       canDisplay: async () => {
         const permission = [ 'can_view_message_action' ];
-        !canUseMailto() && permission.push('can_edit');
-        return validatePhone() && await this.authService.has(permission);
+        if (!canUseMailto()) {
+          permission.push('can_edit');
+        }
+        return validatePhone() &&
+          await this.authService.has(permission) &&
+          !(await userMessagingThemself());
       },
       execute: () => {
         if (canUseMailto()) {
           this.executeMailto(`sms:${sendTo?.phone}`);
           return;
         }
-        callbackOpenSendMessage && callbackOpenSendMessage(sendTo?._id);
+        callbackOpenSendMessage?.(sendTo?._id);
       },
     };
   }

@@ -1209,3 +1209,44 @@ describe('Enketo service', () => {
     }));
   });
 });
+
+describe('EnketoFormContext', () => {
+  it('should construct object correctly', () => {
+    const context = new EnketoFormContext('#sel', 'task', { doc: 1 }, { data: 1 });
+    expect(context).to.deep.include({
+      selector: '#sel',
+      type: 'task',
+      formDoc: { doc: 1 },
+      instanceData: { data: 1 },
+    });
+  });
+
+  it('shouldEvaluateExpression should return false for tasks', () => {
+    const ctx = new EnketoFormContext('a', 'task', {}, {});
+    expect(ctx.shouldEvaluateExpression()).to.eq(false);
+  });
+
+  it('shouldEvaluateExpression should return false for editing reports', () => {
+    const ctx = new EnketoFormContext('a', 'report', {}, {});
+    ctx.editing = true;
+    expect(ctx.shouldEvaluateExpression()).to.eq(false);
+  });
+
+  it('shouldEvaluateExpression should return true for reports and contact forms', () => {
+    const ctxReport = new EnketoFormContext('a', 'report', {}, {});
+    expect(ctxReport.shouldEvaluateExpression()).to.eq(true);
+
+    const ctxContact = new EnketoFormContext('a', 'contact', {}, {});
+    expect(ctxContact.shouldEvaluateExpression()).to.eq(true);
+  });
+
+  it('requiresContact should return true when type is not contact', () => {
+    const ctxReport = new EnketoFormContext('a', 'report', {}, {});
+    expect(ctxReport.requiresContact()).to.eq(true);
+  });
+
+  it('requiresContact should return false when type is contact', () => {
+    const ctxReport = new EnketoFormContext('a', 'contact', {}, {});
+    expect(ctxReport.requiresContact()).to.eq(false);
+  });
+});
