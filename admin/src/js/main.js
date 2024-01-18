@@ -187,7 +187,6 @@ angular.module('adminApp').config(function(
   $ngReduxProvider.createStoreWith(RootReducer, []);
   $httpProvider.defaults.headers.common.Accept = 'application/json';
 
-  // NOSONAR_BEGIN
   $stateProvider
     .state('display', {
       url: '/display',
@@ -470,7 +469,6 @@ angular.module('adminApp').config(function(
         }
       }
     });
-  // NOSONAR_END
 });
 
 angular.element(document).ready(function() {
