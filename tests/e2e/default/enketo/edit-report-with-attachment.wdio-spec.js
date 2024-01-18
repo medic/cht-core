@@ -73,14 +73,16 @@ describe('Edit report with attachment', () => {
 
     await commonElements.goToReports();
 
-    await reportsPage.editReport(reportDoc._id);
+    await reportsPage.openReport(reportDoc._id);
+    await genericForm.editForm();
     await reportsPage.submitForm();
 
     const editedReport = await utils.getDoc(reportDoc._id);
     expect(editedReport._attachments).to.be.undefined;
     expect(editedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'initial text' });
 
-    await reportsPage.editReport(reportDoc._id);
+    await reportsPage.openReport(reportDoc._id);
+    await genericForm.editForm();
     await reportsPage.submitForm();
 
     const twiceEditedReport = await utils.getDoc(reportDoc._id);
@@ -93,7 +95,8 @@ describe('Edit report with attachment', () => {
     await utils.saveDoc(reportDoc);
 
     await commonElements.goToReports();
-    await reportsPage.editReport(reportDoc._id);
+    await reportsPage.openReport(reportDoc._id);
+    await genericForm.editForm();
     await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' updated');
     await reportsPage.submitForm();
 
@@ -101,7 +104,8 @@ describe('Edit report with attachment', () => {
     expect(editedReport._attachments).to.be.undefined;
     expect(editedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'initial text updated' });
 
-    await reportsPage.editReport(reportDoc._id);
+    await reportsPage.openReport(reportDoc._id);
+    await genericForm.editForm();
     await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' twice');
     await reportsPage.submitForm();
 

@@ -5,6 +5,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const setPatient = async (sex, height, weight, age) => {
   await commonEnketoPage.selectRadioButton('Gender', sex);
@@ -74,7 +75,7 @@ describe('Submit Z-Score form', () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
 
-    await reportsPage.editReport(reportId);
+    await genericForm.editForm();
     await reportsPage.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);

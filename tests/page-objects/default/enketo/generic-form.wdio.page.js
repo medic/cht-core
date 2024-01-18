@@ -1,6 +1,6 @@
 const utils = require('@utils');
-const commonPage = require('../common/common.wdio.page');
-const reportsPage = require('../reports/reports.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 const submitButton = () => $('.enketo .submit');
 const cancelButton = () => $('.enketo .cancel');
@@ -57,10 +57,22 @@ const selectContact = async (contactName) => {
     return (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase());
   });
 };
+
+
 const editForm = async () => {
   await commonPage.openMoreOptionsMenu();
-  await (await reportsPage.editReportButton()).waitForClickable();
-  await (await reportsPage.editReportButton()).click();
+
+  /*await (await reportsPage.editReportButton()).waitForClickable();
+  await (await reportsPage.editReportButton()).click();*/
+
+  const editButtonSelector = await reportsPage.editReportButton();
+  await editButtonSelector.waitForClickable();
+  await editButtonSelector.click();
+
+  /*const editButtonSelector = await tatiTest();
+  await editButtonSelector.waitForClickable();
+  await editButtonSelector.click();*/
+  await (await formTitle()).waitForDisplayed();
 };
 
 const verifyReport = async () => {

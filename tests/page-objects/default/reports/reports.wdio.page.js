@@ -2,6 +2,7 @@ const commonElements = require('../common/common.wdio.page');
 const modalPage = require('../common/modal.wdio.page');
 const searchElements = require('../search/search.wdio.page');
 const utils = require('@utils');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const REPORTS_LIST_ID = '#reports-list';
 const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox"]`;
@@ -59,7 +60,7 @@ const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
 
 const unreadCount = () => $('#reports-tab .mm-badge');
-const formTitle = () => $('#report-form #form-title');
+//const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
@@ -99,7 +100,7 @@ const setDateInput = async (name, date) => {
   const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
-  await (await formTitle()).click();
+  await (await genericForm.formTitle()).click();
 };
 
 const setBikDateInput = async (name, date) => {
@@ -109,7 +110,7 @@ const setBikDateInput = async (name, date) => {
   await (await dateWidget.$('.dropdown-toggle')).click();
   await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
-  await (await formTitle()).click();
+  await (await genericForm.formTitle()).click();
 };
 
 const getSummaryField = async (name) => {
@@ -373,15 +374,6 @@ const openReport = async (reportId) => {
   await reportBodyDetails().waitForDisplayed();
 };
 
-const editReport = async (reportId) => {
-  await commonElements.goToReports();
-  await openReport(reportId);
-  await commonElements.openMoreOptionsMenu();
-  await (await editReportButton()).waitForClickable();
-  await (await editReportButton()).click();
-  await (await formTitle()).waitForDisplayed();
-};
-
 const fieldByIndex = async (index) => {
   return await (await $(`${REPORT_BODY_DETAILS_SELECTOR} li:nth-child(${index}) p`)).getText();
 };
@@ -430,7 +422,17 @@ const getReportListLoadingStatus = async () => {
   return await (await reportListLoadingStatus()).getText();
 };
 
+/*const editReport = async () => {
+  /!*await commonElements.goToReports();
+  await openReport(reportId);*!/
+  await commonElements.openMoreOptionsMenu();
+  await (await editReportButton()).waitForClickable();
+  await (await editReportButton()).click();
+  await (await genericForm.formTitle()).waitForDisplayed();
+};*/
+
 module.exports = {
+  //editReport,
   getCurrentReportId,
   getLastSubmittedReportId,
   noReportSelectedLabel,
@@ -444,7 +446,6 @@ module.exports = {
   goToReportById,
   sentTask,
   getTaskDetails,
-  formTitle,
   openSidebarFilter,
   openSidebarFilterDateAccordion,
   setSidebarFilterFromDate,
@@ -482,7 +483,6 @@ module.exports = {
   openReport,
   reportTasks,
   editReportButton,
-  editReport,
   deleteReport,
   exportReports,
   openReviewAndSelectOption,

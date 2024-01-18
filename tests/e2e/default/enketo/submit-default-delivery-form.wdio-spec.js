@@ -90,7 +90,8 @@ describe.skip('Submit Default Delivery Report', () => {
     expect(_.uniq(deadBabyUUIds).length).to.equal(noOfDeadBabies);
     expect(_.uniq(aliveBabyUUIds).length).to.deep.equal(noOfAliveBabies);
 
-    await reportsPage.editReport(reportId);
+    await reportsPage.openReport(reportId);
+    await genericForm.editForm();
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
@@ -185,7 +186,8 @@ describe.skip('Submit Default Delivery Report', () => {
     });
 
     // edit one field
-    await reportsPage.editReport(reportId);
+    await reportsPage.openReport(reportId);
+    await genericForm.editForm();
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
@@ -257,7 +259,8 @@ describe.skip('Submit Default Delivery Report', () => {
     expect(initialReport._attachments).to.equal(undefined);
     await browser.refresh();
 
-    await reportsPage.editReport(reportId);
+    await reportsPage.openReport(reportId);
+    await genericForm.editForm();
     await deliveryReport.selectPatientName('jill');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');

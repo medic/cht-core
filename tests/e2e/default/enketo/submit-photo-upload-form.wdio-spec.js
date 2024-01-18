@@ -5,6 +5,7 @@ const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const path = require('path');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
@@ -31,7 +32,8 @@ describe('Submit Photo Upload form', () => {
     const initialReport = await utils.getDoc(reportId);
     expect(Object.keys(initialReport._attachments)).to.deep.equal(['user-file/photo-upload/my_photo']);
 
-    await reportsPage.editReport(reportId);
+    await reportsPage.openReport(reportId);
+    await genericForm.editForm();
     await (photoUpload.imagePreview()).waitForDisplayed();
     await reportsPage.submitForm();
 
@@ -57,7 +59,8 @@ describe('Submit Photo Upload form', () => {
     const initialReport = await utils.getDoc(reportId);
     expect(Object.keys(initialReport._attachments)).to.deep.equal(['user-file/photo-upload/my_photo']);
 
-    await reportsPage.editReport(reportId);
+    await reportsPage.openReport(reportId);
+    await genericForm.editForm();
     await (photoUpload.imagePreview()).waitForDisplayed();
     await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/layers.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
