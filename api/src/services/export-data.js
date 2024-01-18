@@ -95,7 +95,7 @@ module.exports = {
       feedback: 'can_export_feedback',
       messages: 'can_export_messages',
       reports: 'can_export_messages',
-      'user-devices': 'can_export_feedback',
+      'user-devices': 'can_export_devices_details',
     };
 
     const permission = typeToPermissionMap[type];
