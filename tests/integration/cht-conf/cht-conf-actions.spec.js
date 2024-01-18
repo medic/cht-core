@@ -129,182 +129,182 @@ describe('cht-conf actions tests', () => {
     expect(resources._attachments).to.deep.equal({
       'Icon-healthcare-generic@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-x+vjoMsPBe8JcrcxM8qU6w==',
         length: 690,
         stub: true
       },
       'icon-ANC-danger-sign@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-B1hE//00k0/1ucAxX0dY+w==',
         length: 1168,
         stub: true
       },
       'icon-calendar.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-VeHPwrHAh540f9pH8aZcyg==',
         length: 1313,
         stub: true
       },
       'icon-death-general.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-44sZ9ttrLxPz2RlWCA3Dnw==',
         length: 411,
         stub: true
       },
       'icon-death-maternal.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-aW6f+dRG+NfXESUeTbSKkQ==',
         length: 638,
         stub: true
       },
       'icon-death-neonatal.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-ejce8OxOczRoKBWvXhuZmA==',
         length: 712,
         stub: true
       },
       'icon-followup-general@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-vH6PiFI89+HjrbnscXFCxA==',
         length: 1289,
         stub: true
       },
       'icon-healthcare-immunization@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-GT9Fuf1XNFyq5Ew5+QTSIA==',
         length: 889,
         stub: true
       },
       'icon-healthcare-medicine@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-MQshm84Jkdc+/9VlekIO/A==',
         length: 1073,
         stub: true
       },
       'icon-healthcare-warning@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-VUxpfDqkYkMNwIQjrKvkSg==',
         length: 870,
         stub: true
       },
       'icon-messages-off@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-IrxXsdKwTUIoHLttuJLt2w==',
         length: 1314,
         stub: true
       },
       'icon-messages-on@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-HYXvDWZgffEOpCJZKwGXSA==',
         length: 449,
         stub: true
       },
       'icon-people-baby@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-EY7c/5YMOevZEnSNNpSMOg==',
         length: 997,
         stub: true
       },
       'icon-people-child@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-oIKDpoiD1r3EgVM0Cz2Hfw==',
         length: 829,
         stub: true
       },
       'icon-people-children@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-1X2qRRh1fgFi9W7QF+f0+g==',
         length: 1215,
         stub: true
       },
       'icon-people-family@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-ib3By5zqFubosC90QRK5Qg==',
         length: 1393,
         stub: true
       },
       'icon-people-nurse-crop@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-+X46qt+78/4xG7HlCOmZFA==',
         length: 1105,
         stub: true
       },
       'icon-people-person-general@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-158qdmymTnrPCtECE4aGlQ==',
         length: 749,
         stub: true
       },
       'icon-people-woman-baby@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-4dGUiG8KGGTWvnF/WlNBIg==',
         length: 937,
         stub: true
       },
       'icon-people-woman-pregnant@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-TYwCWVE0rAuKmo+DETOVhg==',
         length: 878,
         stub: true
       },
       'icon-places-CHW-area@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-IhS7x0SpIlMYXdgweJCrNA==',
         length: 1224,
         stub: true
       },
       'icon-places-clinic@2x.png': {
         content_type: 'image/png',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-9zkj2JJH1rgQEdjB+RwOGg==',
         length: 681,
         stub: true
       },
       'medic-chw-area.svg': {
         content_type: 'image/svg+xml',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-70oHopHsHzRVOcClV5FYTw==',
         length: 1145,
         stub: true
       },
       'medic-family.svg': {
         content_type: 'image/svg+xml',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-Q0gO1YOmJ4C7w6OCCVB3zw==',
         length: 1654,
         stub: true
       },
       'medic-health-center.svg': {
         content_type: 'image/svg+xml',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-xtvZAXNBODZNz3AsX1+btg==',
         length: 357,
         stub: true
       },
       'medic-person.svg': {
         content_type: 'image/svg+xml',
-        revpos: 3,
+        revpos: 1,
         digest: 'md5-8HoRGS0ihs2qwbg+N4Gmiw==',
         length: 435,
         stub: true
