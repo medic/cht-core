@@ -434,7 +434,7 @@ const getActionBarLabels = async () => {
   await (await actionBar()).waitForDisplayed();
   await (await actionBarActions())[0].waitForDisplayed();
   const items = await actionBarActions();
-  const labels = items.map(item => item.getText());
+  const labels = items.map(async item => await item.getText());
   return labels.filter(label => !!label);
 };
 

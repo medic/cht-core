@@ -112,8 +112,8 @@ const selectRHSRowById = async (id) => {
 
 const getReportFiltersText = async () => {
   await (await reportFilter()).waitForDisplayed();
-  const reportFilters = await reportFilters();
-  return reportFilters.map(filter => filter.getText());
+  const filters = await reportFilters();
+  return filters.map(filter => filter.getText());
 };
 
 const getReportTaskFiltersText = async () => {
