@@ -1,95 +1,52 @@
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const utils = require('@utils');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const personFactory = require('@factories/cht/contacts/person');
 
 describe('Edit Person Under Area', () => {
-  const placeFactory = require('@factories/cht/contacts/place');
-  const personFactory = require('@factories/cht/contacts/person');
   const places = placeFactory.generateHierarchy();
-  const districtHospital = places.get('district_hospital');
+  const healthCenter = places.get('health_center');
 
-  const offlineUsername = 'jack_test';
-  const onlineUsername = 'program_officer';
-  const password = 'Jacktest@123';
+  const offlineUserContact = personFactory.build({ parent: healthCenter });
+  const onlineUserContact = personFactory.build({ parent: healthCenter });
+  const offlineUser = userFactory.build({
+    username: 'offline_user',
+    place: healthCenter._id,
+    roles: ['chw'],
+    contact: offlineUserContact
+  });
+  const onlineUser = userFactory.build({
+    username: 'online_user',
+    place: healthCenter._id,
+    roles: ['program_officer'],
+    contact: onlineUserContact
+  });
   const editedPlaceName = 'Updated Health Center';
 
-  const healthCenter = placeFactory.place().build({
-    name: 'HealthCenter',
-    type: 'health_center',
-    parent: {
-      _id: districtHospital._id,
-      parent: {
-        _id: '',
-      },
-    },
-  });
+  const docs = [...places.values()];
 
-  const offlinePerson = personFactory.build({
-    name: 'Jack',
-    parent: {
-      _id: healthCenter._id,
-      parent: healthCenter.parent,
-    },
-  });
-
-  const onlinePerson = personFactory.build({
-    name: 'Program Officer',
-    parent: {
-      _id: healthCenter._id,
-      parent: healthCenter.parent,
-    },
-  });
-
-  const docs = [...places.values(), healthCenter, onlinePerson, offlinePerson];
-
-  beforeEach(async () => {
+  before(async () => {
     await utils.saveDocs(docs);
-    await loginPage.cookieLogin();
-    await usersAdminPage.goToAdminUser();
-    await usersAdminPage.openAddUserDialog();
-    await usersAdminPage.inputAddUserFields(
-      offlineUsername,
-      'Jack',
-      'chw',
-      healthCenter.name,
-      offlinePerson.name,
-      password
-    );
-    await usersAdminPage.saveUser();
-
-    await usersAdminPage.openAddUserDialog();
-    await usersAdminPage.inputAddUserFields(
-      onlineUsername,
-      'Program Officer',
-      'program_officer',
-      healthCenter.name,
-      onlinePerson.name,
-      password
-    );
-    await usersAdminPage.saveUser();
-
-    await browser.reloadSession();
+    await utils.createUsers([offlineUser, onlineUser]);
   });
 
   it('can sync and update offlineUser HomePlace', async () => {
-    await browser.url('/');
-    await loginPage.login({ username: offlineUsername, password });
+    await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
     await commonPage.logout();
 
-    await browser.url('/');
-    await loginPage.login({ username: onlineUsername, password });
+    await loginPage.login(onlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
     await contactPage.editPlace(healthCenter.name, editedPlaceName, 'health_center');
     await commonPage.waitForPageLoaded();
     await commonPage.logout();
 
-    await browser.url('/');
-    await loginPage.login({ username: offlineUsername, password });
+    await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
 
