@@ -22,7 +22,7 @@ const submitFamilyForm = async () => {
   await commonEnketoPage.selectRadioButton('Do they have mosquito nets', 'Yes');
   await commonEnketoPage.selectRadioButton('Do they have an hygienic toilet', 'Yes');
   await commonEnketoPage.selectCheckBox('Which method of Family Planning is being used', 'UCID');
-  await reportsPage.submitForm();
+  await genericForm.submitForm();
 };
 
 const reportCheck =  async (caregiverName, sourceOfWater, mosquitoNet, hygeinicToilet, planningMethod) => {

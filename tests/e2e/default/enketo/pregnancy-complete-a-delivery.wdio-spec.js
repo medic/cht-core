@@ -82,9 +82,7 @@ describe('Contact Delivery Form', () => {
     ];
 
     await commonEnketoPage.validateSummaryReport(summaryTexts);
-
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
 
     await contactPage.openReport();
     await (await reportPage.reportBodyDetails()).waitForDisplayed();

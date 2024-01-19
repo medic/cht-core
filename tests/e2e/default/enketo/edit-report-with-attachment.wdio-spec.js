@@ -6,6 +6,7 @@ const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const fs = require('fs');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
 const instanceID = uuid();
@@ -74,16 +75,16 @@ describe('Edit report with attachment', () => {
     await commonElements.goToReports();
 
     await reportsPage.openReport(reportDoc._id);
-    await genericForm.editForm();
-    await reportsPage.submitForm();
+    await reportsPage.editReport();
+    await genericForm.submitForm();
 
     const editedReport = await utils.getDoc(reportDoc._id);
     expect(editedReport._attachments).to.be.undefined;
     expect(editedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'initial text' });
 
     await reportsPage.openReport(reportDoc._id);
-    await genericForm.editForm();
-    await reportsPage.submitForm();
+    await reportsPage.editReport();
+    await genericForm.submitForm();
 
     const twiceEditedReport = await utils.getDoc(reportDoc._id);
     expect(editedReport._attachments).to.be.undefined;
@@ -93,21 +94,22 @@ describe('Edit report with attachment', () => {
   it('should save edits', async () => {
     reportDoc._id = uuid();
     await utils.saveDoc(reportDoc);
+    await browser.refresh();
 
     await commonElements.goToReports();
     await reportsPage.openReport(reportDoc._id);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' updated');
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const editedReport = await utils.getDoc(reportDoc._id);
     expect(editedReport._attachments).to.be.undefined;
     expect(editedReport.fields).excludingEvery('meta').to.deep.equal({ intro: 'initial text updated' });
 
     await reportsPage.openReport(reportDoc._id);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' twice');
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const twiceEditedReport = await utils.getDoc(reportDoc._id);
     expect(twiceEditedReport._attachments).to.be.undefined;

@@ -57,7 +57,7 @@ describe.skip('Pregnancy Visit', () => {
 
     await commonEnketoPage.validateSummaryReport(summaryTexts);
 
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     //report summary
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());

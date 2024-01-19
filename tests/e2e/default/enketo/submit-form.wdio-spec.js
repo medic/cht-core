@@ -134,7 +134,7 @@ describe('Submit Enketo form', () => {
   it('allows forms with required notes to be submitted', async () => {
     await commonElements.goToReports();
     await commonElements.openFastActionReport(requiredNoteForm.internalId, false);
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
   });
 
   it('cancelling form with no input does not trigger confirmation dialog', async () => {

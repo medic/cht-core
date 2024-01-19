@@ -135,7 +135,6 @@ describe('Enketo Widgets', () => {
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('usa', 'nyc', 'bronx', 3, 2);
     await genericForm.submitForm();
-    await commonPage.waitForLoaders();
 
     await commonPage.goToReports();
     await verifyReport(

@@ -4,6 +4,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
@@ -22,7 +23,7 @@ describe('Countdown timer widget', () => {
     await commonPage.openFastActionReport(countdownTimerPage.INTERNAL_ID, false);
     await countdownTimerPage.clickTimer(); // start
     await countdownTimerPage.clickTimer(); // stop
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
     const report = await utils.getDoc(reportId);

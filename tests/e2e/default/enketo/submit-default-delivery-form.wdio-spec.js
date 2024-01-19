@@ -66,7 +66,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
 
     //submit
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
 
     const reportId = await reportsPage.getCurrentReportId();
@@ -91,7 +91,7 @@ describe.skip('Submit Default Delivery Report', () => {
     expect(_.uniq(aliveBabyUUIds).length).to.deep.equal(noOfAliveBabies);
 
     await reportsPage.openReport(reportId);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
@@ -100,7 +100,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
     await browser.refresh();
 
@@ -187,7 +187,7 @@ describe.skip('Submit Default Delivery Report', () => {
 
     // edit one field
     await reportsPage.openReport(reportId);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
@@ -197,7 +197,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
 
     const cesareanReport = await utils.getDoc(reportId);
@@ -251,7 +251,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
 
     //submit
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
 
     const reportId = await reportsPage.getCurrentReportId();
@@ -260,7 +260,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await browser.refresh();
 
     await reportsPage.openReport(reportId);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await deliveryReport.selectPatientName('jill');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
@@ -294,7 +294,7 @@ describe.skip('Submit Default Delivery Report', () => {
 
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
 
     const updatedReport = await utils.getDoc(reportId);
@@ -347,7 +347,7 @@ describe.skip('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
 
     //submit
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const compareReportId = await reportsPage.getCurrentReportId();
     const compareReport = await utils.getDoc(compareReportId);

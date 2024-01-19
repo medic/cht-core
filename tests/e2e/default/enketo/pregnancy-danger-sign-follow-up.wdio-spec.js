@@ -14,28 +14,27 @@ describe('Pregnancy danger sign follow-up form', () => {
     await commonPage.hideSnackbar();
   });
 
-  it('Submit and validate Pregnancy danger sign follow-up form and keeps the report minified', async () => {
+  beforeEach(async () => {
     await commonPage.goToReports();
-
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
+  });
+
+  it('Submit and validate Pregnancy danger sign follow-up form and keeps the report minified', async () => {
     await genericForm.selectContact('jack');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
     await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
-    await genericForm.verifyReport();
+    await reportsPage.verifyReport();
   });
 
   it('should submit and edit Pregnancy danger sign follow-up form (no changes)', async () => {
-    await commonPage.goToReports();
-
-    await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
     await genericForm.selectContact('jill');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
     await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -43,9 +42,9 @@ describe('Pregnancy danger sign follow-up form', () => {
     expect(initialReport._attachments).to.equal(undefined);
 
     await reportsPage.openReport(reportId);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await genericForm.nextPage();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
     expect(updatedReport.fields).excludingEvery(['instanceID', 'deprecatedID']).to.deep.equal(initialReport.fields);
@@ -53,14 +52,11 @@ describe('Pregnancy danger sign follow-up form', () => {
   });
 
   it('should submit and edit Pregnancy danger sign follow-up form with changes', async () => {
-    await commonPage.goToReports();
-
-    await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
     await genericForm.selectContact('jill');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
     await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -68,13 +64,13 @@ describe('Pregnancy danger sign follow-up form', () => {
     expect(initialReport._attachments).to.equal(undefined);
 
     await reportsPage.openReport(reportId);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await genericForm.selectContact('jack');
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
     await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
     await dangerSignPage.selectAllDangerSignsPregnancy();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
 
@@ -84,7 +80,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
     await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
     await dangerSignPage.selectAllDangerSignsPregnancy();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     const compareReportId = await reportsPage.getCurrentReportId();
     const compareReport = await utils.getDoc(compareReportId);

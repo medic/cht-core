@@ -7,6 +7,7 @@ const utils = require('@utils');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
+
 const setPatient = async (sex, height, weight, age) => {
   await commonEnketoPage.selectRadioButton('Gender', sex);
   await commonEnketoPage.setInputValue('How tall are you? (cm)', height);
@@ -50,7 +51,7 @@ describe('Submit Z-Score form', () => {
     expect(await ZScoreForm.getWeightForAge()).to.equal('2.9789983844911148');
     expect(await ZScoreForm.getWeightForHeight()).to.equal('4');
 
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
   });
 
   it('saves z-score values', async () => {
@@ -63,7 +64,7 @@ describe('Submit Z-Score form', () => {
     expect(await ZScoreForm.getWeightForAge()).to.equal('-0.4708520179372194');
     expect(await ZScoreForm.getWeightForHeight()).to.equal('2.0387096774193547');
 
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
     expect(await reportsPage.fieldByIndex(1)).to.equal('45.1');
     expect(await reportsPage.fieldByIndex(2)).to.equal('3');
     expect(await reportsPage.fieldByIndex(3)).to.equal('female');
@@ -75,8 +76,8 @@ describe('Submit Z-Score form', () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
 
-    await genericForm.editForm();
-    await reportsPage.submitForm();
+    await reportsPage.editReport();
+    await genericForm.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
     expect(updatedReport.fields).excludingEvery(['instanceID', 'meta']).to.deep.equal(initialReport.fields);

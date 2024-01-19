@@ -65,7 +65,6 @@ describe('Pregnancy registration', () => {
     await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
 
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
 

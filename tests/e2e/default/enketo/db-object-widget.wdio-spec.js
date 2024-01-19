@@ -47,7 +47,6 @@ describe('DB Object Widget', () => {
     expect(allContacts[2].name).to.equal(personArea2.name);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
     await commonPage.goToReports();
 
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());

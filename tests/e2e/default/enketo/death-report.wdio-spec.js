@@ -45,7 +45,6 @@ describe('Submit a death report', () => {
     ];
     await commonEnketoPage.validateSummaryReport(summaryTexts);
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
     await commonPage.sync();
     await sentinelUtils.waitForSentinel();
     await commonPage.sync();
@@ -66,10 +65,10 @@ describe('Submit a death report', () => {
     expect((await reportsPage.getDetailReportRowContent('place_of_death')).rowValues[0]).to.equal('health_facility');
 
     // Edit the report created
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await commonEnketoPage.selectRadioButton('Place of death', 'Home');
     await genericForm.nextPage();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
     expect((await reportsPage.getDetailReportRowContent('place_of_death')).rowValues[0]).to.equal('home');
 
     // Verify the tile in the Target section

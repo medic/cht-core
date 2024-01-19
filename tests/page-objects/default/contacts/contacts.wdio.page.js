@@ -130,12 +130,6 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const submitForm = async (waitForLoad = true) => {
-  await (await genericForm.submitButton()).waitForClickable();
-  await (await genericForm.submitButton()).click();
-  waitForLoad && await waitForContactLoaded();
-};
-
 const addPlace = async ({
   type: typeValue = 'district_hospital',
   placeName: placeNameValue = 'District Test',
@@ -190,7 +184,7 @@ const addPerson = async ({
   await (await roleField(type, roleValue)).click();
   await (await externalIdField(type)).addValue(externalIDValue);
   await (await notes(type)).addValue(notesValue);
-  await submitForm();
+  await genericForm.submitForm();
   if (waitForSentinel) {
     await sentinelUtils.waitForSentinel();
   }
@@ -217,7 +211,7 @@ const editPerson = async (currentName, { name, phone, dob }) => {
     await (await dateOfBirthField()).setValue(dob);
   }
 
-  await submitForm();
+  await genericForm.submitForm();
 };
 
 const editPersonName = async (name, updatedName) => {
@@ -283,7 +277,7 @@ const editDistrict = async (districtName, editedName) => {
   await (await nameField('district_hospital')).setValue(editedName);
   // blur field to trigger Enketo validation
   await (await notes('district_hospital')).click();
-  await submitForm();
+  await genericForm.submitForm();
 };
 
 const openFormWithWarning = async (formId) => {
@@ -435,7 +429,6 @@ module.exports = {
   allContactsList,
   editDistrict,
   childrenCards,
-  submitForm,
   openReport,
   getContactCardTitle,
   getContactInfoName,

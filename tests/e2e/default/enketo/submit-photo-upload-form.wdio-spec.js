@@ -17,25 +17,24 @@ describe('Submit Photo Upload form', () => {
     await commonPage.hideSnackbar();
   });
 
-  it('submit and edit (no changes)', async () => {
+  beforeEach(async () => {
     await commonPage.goToReports();
-
     await commonPage.openFastActionReport(photoUpload.docs[0].internalId, false);
     await photoUpload.selectImage(path.join(__dirname, '/images/photo-for-upload-form.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
-
-    await reportsPage.submitForm();
-
+    await genericForm.submitForm();
     await (await photoUpload.reportImagePreview()).waitForDisplayed();
+  });
 
+  it('submit and edit (no changes)', async () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
     expect(Object.keys(initialReport._attachments)).to.deep.equal(['user-file/photo-upload/my_photo']);
 
     await reportsPage.openReport(reportId);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await (photoUpload.imagePreview()).waitForDisplayed();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     await (await photoUpload.reportImagePreview()).waitForDisplayed();
     const updatedReport = await utils.getDoc(reportId);
@@ -45,26 +44,16 @@ describe('Submit Photo Upload form', () => {
   });
 
   it('submit and edit (with changes)', async () => {
-    await commonPage.goToReports();
-
-    await commonPage.openFastActionReport(photoUpload.docs[0].internalId, false);
-    await photoUpload.selectImage(path.join(__dirname, '/images/photo-for-upload-form.png'));
-    await (photoUpload.imagePreview()).waitForDisplayed();
-
-    await reportsPage.submitForm();
-
-    await (await photoUpload.reportImagePreview()).waitForDisplayed();
-
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
     expect(Object.keys(initialReport._attachments)).to.deep.equal(['user-file/photo-upload/my_photo']);
 
     await reportsPage.openReport(reportId);
-    await genericForm.editForm();
+    await reportsPage.editReport();
     await (photoUpload.imagePreview()).waitForDisplayed();
     await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/layers.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
 
     await (await photoUpload.reportImagePreview()).waitForDisplayed();
     const updatedReport = await utils.getDoc(reportId);

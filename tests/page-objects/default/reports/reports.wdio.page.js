@@ -2,7 +2,6 @@ const commonElements = require('../common/common.wdio.page');
 const modalPage = require('../common/modal.wdio.page');
 const searchElements = require('../search/search.wdio.page');
 const utils = require('@utils');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const REPORTS_LIST_ID = '#reports-list';
 const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox"]`;
@@ -60,8 +59,6 @@ const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
 
 const unreadCount = () => $('#reports-tab .mm-badge');
-//const formTitle = () => $('#report-form #form-title');
-const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
 const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
@@ -100,7 +97,6 @@ const setDateInput = async (name, date) => {
   const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
-  await (await genericForm.formTitle()).click();
 };
 
 const setBikDateInput = async (name, date) => {
@@ -110,7 +106,6 @@ const setBikDateInput = async (name, date) => {
   await (await dateWidget.$('.dropdown-toggle')).click();
   await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
-  await (await genericForm.formTitle()).click();
 };
 
 const getSummaryField = async (name) => {
@@ -122,12 +117,6 @@ const getSummaryField = async (name) => {
 const getFieldValue = async (name) => {
   const input = await $(`input[name="${name}"]`);
   return input.getValue();
-};
-
-const submitForm = async () => {
-  await (await submitButton()).waitForDisplayed();
-  await (await submitButton()).click();
-  await (await reportBodyDetails()).waitForDisplayed();
 };
 
 const getElementText = async (element) => {
@@ -374,6 +363,12 @@ const openReport = async (reportId) => {
   await reportBodyDetails().waitForDisplayed();
 };
 
+const editReport = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await editReportButton()).waitForClickable();
+  await (await editReportButton()).click();
+};
+
 const fieldByIndex = async (index) => {
   return await (await $(`${REPORT_BODY_DETAILS_SELECTOR} li:nth-child(${index}) p`)).getText();
 };
@@ -422,17 +417,35 @@ const getReportListLoadingStatus = async () => {
   return await (await reportListLoadingStatus()).getText();
 };
 
-/*const editReport = async () => {
-  /!*await commonElements.goToReports();
-  await openReport(reportId);*!/
-  await commonElements.openMoreOptionsMenu();
-  await (await editReportButton()).waitForClickable();
-  await (await editReportButton()).click();
-  await (await genericForm.formTitle()).waitForDisplayed();
-};*/
+const invalidateReport = async () => {
+  await openReviewAndSelectOption('invalid-option');
+  await commonElements.waitForPageLoaded();
+  expect(await getSelectedReviewOption()).to.equal('Has errors');
+};
+
+const validateReport = async () => {
+  await openReviewAndSelectOption('valid-option');
+  await commonElements.waitForPageLoaded();
+  expect(await getSelectedReviewOption()).to.equal('Correct');
+};
+
+const verifyReport = async () => {
+  const reportId = await getCurrentReportId();
+  const initialReport = await utils.getDoc(reportId);
+  expect(initialReport.verified).to.be.undefined;
+
+  await invalidateReport();
+  const invalidatedReport = await utils.getDoc(reportId);
+  expect(invalidatedReport.verified).to.be.false;
+  expect(invalidatedReport.patient).to.be.undefined;
+
+  await validateReport();
+  const validatedReport = await utils.getDoc(reportId);
+  expect(validatedReport.verified).to.be.true;
+  expect(validatedReport.patient).to.be.undefined;
+};
 
 module.exports = {
-  //editReport,
   getCurrentReportId,
   getLastSubmittedReportId,
   noReportSelectedLabel,
@@ -454,7 +467,6 @@ module.exports = {
   getFieldValue,
   setBikDateInput,
   getSummaryField,
-  submitForm,
   reportsListDetails,
   selectAll,
   deselectAll,
@@ -481,6 +493,7 @@ module.exports = {
   getListReportInfo,
   resetFilter,
   openReport,
+  editReport,
   reportTasks,
   editReportButton,
   deleteReport,
@@ -492,4 +505,7 @@ module.exports = {
   clickOnCaseId,
   getReportListLoadingStatus,
   openSelectedReport,
+  invalidateReport,
+  validateReport,
+  verifyReport,
 };
