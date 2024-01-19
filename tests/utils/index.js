@@ -26,7 +26,6 @@ const DEBUG = process.env.DEBUG;
 
 let originalSettings;
 let dockerVersion;
-let browserLogStream;
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
@@ -632,9 +631,9 @@ const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
 const getLoggedInUser = async () => {
   try {
-    const cookies = await browser.getCookies('userCtx');
-    const userCtx = JSON.parse(cookies?.[0]);
-    return userCtx.name;
+    const [cookie] = await browser.getCookies('userCtx');
+    const userCtxCookieValue = cookie && JSON.parse(decodeURIComponent(cookie.value));
+    return userCtxCookieValue?.name;
   } catch (err) {
     console.warn('Error getting userCtx', err.message);
     return;
@@ -1014,26 +1013,6 @@ const prepServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
-const saveBrowserLogs = () => {
-  // wdio also writes in this file
-  if (!browserLogStream) {
-    browserLogStream = fs.createWriteStream(path.join(__dirname, '..', 'logs/browser.console.log'));
-  }
-
-  return browser
-    .manage()
-    .logs()
-    .get('browser')
-    .then(logs => {
-      const currentSpec = jasmine.currentSpec.fullName;
-      browserLogStream.write(`\n~~~~~~~~~~~ ${currentSpec} ~~~~~~~~~~~~~~~~~~~~~\n\n`);
-      logs
-        .map(log => `[${log.level.name_}] ${log.message}\n`)
-        .forEach(log => browserLogStream.write(log));
-      browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
-    });
-};
-
 const getDockerLogs = (container) => {
   const logFile = path.resolve(__dirname, '../logs', `${container}.log`);
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
@@ -1330,7 +1309,6 @@ module.exports = {
   enableLanguages,
   getSettings,
   prepServices,
-  saveBrowserLogs,
   tearDownServices,
   waitForApiLogs,
   waitForSentinelLogs,

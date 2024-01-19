@@ -213,7 +213,15 @@ const baseConfig = {
    * @param {Object} config wdio configuration object
    * @param {Array.<Object>} capabilities list of capabilities details
    */
-  onPrepare: async function () {
+  onPrepare: async function (config, capabilities) {
+
+    console.log('\n\n');
+    console.log('~~~~~~~~~~~~~~~~~~~~~~ WDIO config');
+    console.log(JSON.stringify(config, null, 2));
+    console.log('~~~~~~~~~~~~~~~~~~~~~~ WDIO capabilities');
+    console.log(JSON.stringify(capabilities, null, 2));
+    console.log('\n\n');
+
     // delete all previous test
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
@@ -393,6 +401,5 @@ const baseConfig = {
   //onReload: function(oldSessionId, newSessionId) {
   //}
 };
-
 
 exports.config = baseConfig;
