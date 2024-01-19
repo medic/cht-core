@@ -283,6 +283,7 @@ describe('Contacts component', () => {
   });
 
   describe('Search', () => {
+    component.usersHomePlace = { _id: 'district-id' };
     it('Puts the home place at the top of the list', fakeAsync(() => {
       searchResults = [
         {
@@ -290,7 +291,7 @@ describe('Contacts component', () => {
         },
       ];
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       component.ngOnInit();
       flush();
       const contacts = component.contactsActions.updateContactsList.args[0][0];
@@ -304,7 +305,7 @@ describe('Contacts component', () => {
       sinon.resetHistory();
       searchResults = [ { _id: 'search-result' } ];
 
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');
       district.contact_type = 'whatever';
       contactTypesService.getTypeId.returns('some type');
@@ -331,7 +332,7 @@ describe('Contacts component', () => {
       ];
 
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
@@ -353,7 +354,7 @@ describe('Contacts component', () => {
       ];
       contactTypesService.getChildren.resetHistory();
       searchService.search.resetHistory();
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
@@ -373,7 +374,7 @@ describe('Contacts component', () => {
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -393,7 +394,7 @@ describe('Contacts component', () => {
     it('when paginating, does modify skip for non-admins #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -414,7 +415,7 @@ describe('Contacts component', () => {
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -435,7 +436,7 @@ describe('Contacts component', () => {
     it('when refreshing list as non-admin, does modify limit #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -453,7 +454,7 @@ describe('Contacts component', () => {
     it('resets limit/skip modifier when filtering #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -464,7 +465,7 @@ describe('Contacts component', () => {
 
       expect(contacts.length).to.equal(11);
       searchResults = Array(50).fill(searchResult);
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       store.refreshState();
       component.filters = { search: true };
@@ -491,7 +492,7 @@ describe('Contacts component', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(49).fill(searchResult);
       searchResults.push({ _id: 'district-id' });
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -517,7 +518,7 @@ describe('Contacts component', () => {
         return result;
       };
       searchResults = mockResults(50);
-      searchService.search.resolves(searchResults);
+      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
