@@ -119,7 +119,6 @@ jobs:
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
     runs-on: ubuntu-22.04
     env:
-      NODE: ${{ env.NODE_VERSION }}
       CHROME_VERSION: ${{ matrix.chrome-version }}
 
     strategy:
