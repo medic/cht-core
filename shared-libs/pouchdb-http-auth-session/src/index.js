@@ -76,6 +76,11 @@ const invalidateSession = db => {
 const isExpired = (session) => Date.now() > session.expires;
 
 const extractAuth = (opts) => {
+  if (opts.auth) {
+    opts.credentials = opts.auth;
+    delete opts.auth;
+  }
+
   const url = new URL(opts.name);
   if (!url.username) {
     return;

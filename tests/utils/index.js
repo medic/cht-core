@@ -129,7 +129,7 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
 };
 
 const getSession = async () => {
-  if (cookieJar.getCookies().length) {
+  if (cookieJar.getCookies(constants.BASE_URL).length) {
     return;
   }
 
@@ -146,7 +146,7 @@ const getSession = async () => {
   const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
   if (header) {
     try {
-      cookieJar.setCookie(header, constants.BASE_URL);
+      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
     } catch (err) {
       console.error(err);
     }
