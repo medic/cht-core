@@ -6,7 +6,6 @@ const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const fs = require('fs');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
-const commonPage = require('@page-objects/default/common/common.wdio.page');
 const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
 const instanceID = uuid();
