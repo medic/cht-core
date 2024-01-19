@@ -112,7 +112,8 @@ const selectRHSRowById = async (id) => {
 
 const getReportFiltersText = async () => {
   await (await reportFilter()).waitForDisplayed();
-  return Promise.all((await reportFilters()).map(filter => filter.getText()));
+  const reportFilters = await reportFilters();
+  return reportFilters.map(filter => filter.getText());
 };
 
 const getReportTaskFiltersText = async () => {
@@ -264,12 +265,12 @@ const getAllRHSTaskNames = async () => {
 
 const allContactsList = async () => {
   const parentCards = await contactCards();
-  return Promise.all(parentCards.map(async (parent) => {
+  return parentCards.map(async (parent) => {
     return {
       heading: await (await parent.$('h3')).getText(),
       contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
     };
-  }));
+  });
 };
 
 const editDistrict = async (districtName, editedName) => {

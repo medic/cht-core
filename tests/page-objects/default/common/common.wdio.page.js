@@ -96,8 +96,7 @@ const getFastActionItemsLabels = async () => {
   await (await fastActionListContainer()).waitForDisplayed();
 
   const items = await fastActionItems();
-  const fastActionItemLabels = await Promise.all(items.map(item => item.getText()));
-  return fastActionItemLabels;
+  return items.map(item => item.getText());
 };
 
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
@@ -435,7 +434,7 @@ const getActionBarLabels = async () => {
   await (await actionBar()).waitForDisplayed();
   await (await actionBarActions())[0].waitForDisplayed();
   const items = await actionBarActions();
-  const labels = await Promise.all(items.map(item => item.getText()));
+  const labels = items.map(item => item.getText());
   return labels.filter(label => !!label);
 };
 
