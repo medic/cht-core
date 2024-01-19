@@ -330,19 +330,19 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private moveUserHomePlaceToTop(updatedContacts: any[], homeIndex: number) {
-    if (homeIndex !== -1) {
-      this.usersHomePlace = updatedContacts[homeIndex];
-
-      if (!this.appending) {
-        return [this.usersHomePlace, ...updatedContacts.slice(1)];
-      }
-
-      if (this.additionalListItem) {
-        return [this.usersHomePlace, ...updatedContacts];
-      }
-
+    if (homeIndex < 0) {
       return updatedContacts;
     }
+    this.usersHomePlace = updatedContacts[homeIndex];
+
+    if (!this.appending) {
+      return [this.usersHomePlace, ...updatedContacts.slice(1)];
+    }
+    
+    if (this.additionalListItem) {
+      return [this.usersHomePlace, ...updatedContacts];
+    }
+    return updatedContacts;
   }
 
   private setUsersHomePlace(updatedContacts) {
