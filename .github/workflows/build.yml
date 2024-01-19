@@ -38,7 +38,7 @@ jobs:
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -152,7 +152,7 @@ jobs:
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -279,7 +279,7 @@ jobs:
 
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -293,7 +293,7 @@ jobs:
 
     - name: Configure AWS credentials Public
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -323,7 +323,7 @@ jobs:
     steps:
       - name: Configure AWS credentials Public
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        uses: aws-actions/configure-aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
