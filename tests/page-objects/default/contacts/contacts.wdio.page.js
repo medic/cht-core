@@ -118,7 +118,8 @@ const getReportFiltersText = async () => {
 
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
-  return await Promise.all((await taskFilters()).map(filter => filter.getText()));
+  const filters = await taskFilters();
+  return filters.map(filter => filter.getText());
 };
 
 const waitForContactLoaded = async (type) => {
