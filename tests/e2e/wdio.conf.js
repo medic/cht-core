@@ -312,7 +312,8 @@ const baseConfig = {
   afterTest: async (test, context, { passed }) => {
     await utils.apiLogTestEnd(test.title);
     if (passed === false) {
-      await browser.takeScreenshot();
+      // await browser.takeScreenshot();
+      // await browser.takeScreenshot(`./errorShots/${Date.now()}.png`)
     }
 
     const savedFeedbackDocs = await utils.logFeedbackDocs(test);
