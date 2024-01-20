@@ -629,16 +629,16 @@ const getBaseUrl = () => `${constants.BASE_URL}/#/`;
 
 const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
-const getLoggedInUser = async () => {
-  try {
-    const [cookie] = await browser.getCookies('userCtx');
-    const userCtxCookieValue = cookie && JSON.parse(decodeURIComponent(cookie.value));
-    return userCtxCookieValue?.name;
-  } catch (err) {
-    console.warn('Error getting userCtx', err.message);
-    return;
-  }
-};
+// const getLoggedInUser = async () => {
+//   try {
+//     const [cookie] = await browser.getCookies('userCtx');
+//     const userCtxCookieValue = cookie && JSON.parse(decodeURIComponent(cookie.value));
+//     return userCtxCookieValue?.name;
+//   } catch (err) {
+//     console.warn('Error getting userCtx', err.message);
+//     return;
+//   }
+// };
 
 /**
  * Deletes _users docs and medic/user-settings docs for specified users
@@ -651,10 +651,10 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
     return;
   }
 
-  const loggedUser = await getLoggedInUser();
-  if (loggedUser && users.find(user => user.username === loggedUser)) {
-    await browser.reloadSession();
-  }
+  // const loggedUser = await getLoggedInUser();
+  // if (loggedUser && users.find(user => user.username === loggedUser)) {
+  //   await browser.reloadSession();
+  // }
 
   const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
