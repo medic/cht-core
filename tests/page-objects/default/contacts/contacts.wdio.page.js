@@ -267,10 +267,10 @@ const getAllRHSTaskNames = async () => {
 const allContactsList = async () => {
   const parentCards = await contactCards();
   return parentCards.map(async (parent) => {
-    return {
-      heading: await (await parent.$('h3')).getText(),
-      contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
-    };
+    const heading = await (await parent.$('h3')).getText();
+    const contacts = await parent.$$('.children h4 span');
+    const contactNames = contacts.map(filter => filter.getText());
+    return { heading, contactNames };
   });
 };
 
