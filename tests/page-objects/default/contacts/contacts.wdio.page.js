@@ -269,7 +269,7 @@ const allContactsList = async () => {
   return parentCards.map(async (parent) => {
     const heading = await (await parent.$('h3')).getText();
     const contacts = await parent.$$('.children h4 span');
-    const contactNames = contacts.map(filter => filter.getText());
+    const contactNames = await contacts.map(filter => filter.getText());
     return { heading, contactNames };
   });
 };
