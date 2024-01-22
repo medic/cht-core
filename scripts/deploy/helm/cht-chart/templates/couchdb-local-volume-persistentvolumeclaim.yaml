@@ -4,7 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   labels:
     cht.service: couchdb-claim0
-  name: local-volume
+  name: couchdb-claim0
 spec:
   accessModes:
     - ReadWriteOnce
@@ -13,7 +13,7 @@ spec:
       storage: {{ .Values.couchdb.couchdb_node_storage_size }}
   {{- if eq (toString .Values.couchdb_data.preExistingDataAvailable) "true" }}
   volumeName: couchdb-pv-{{ .Values.namespace }}
-  storageClassName: ""
+  storageClassName: "local-path"
   {{- end }}
 status: {}
 {{- end }}
