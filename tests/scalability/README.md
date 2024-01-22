@@ -59,7 +59,7 @@ Install Merge Results Plugin
 https://jmeter-plugins.org/wiki/MergeResults/
 
 ### Merging Results
-The data used to run this and environment should hopefully be the same each run. Use CSV to docs to generate data on empty database. Create users with medic-conf in the appropriate place.
+The data used to run this and environment should hopefully be the same each run. Use CSV to docs to generate data on empty database. Create users with cht-conf in the appropriate place.
 
 1. Using the jmeter [merge results plug-in](https://jmeter-plugins.org/wiki/MergeResults/).
 2. Open the jmeter

@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/validation.js",
   "scripts": {
-    "test": "mocha ./test/**/*"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test/**/*"
   },
   "license": "Apache-2.0",
   "dependencies": {

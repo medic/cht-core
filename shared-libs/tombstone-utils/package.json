@@ -4,7 +4,7 @@
   "description": "Provides helper function that generate and manage doc tombstones, to be used in _changes handler",
   "main": "src/tombstone-utils.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0",
