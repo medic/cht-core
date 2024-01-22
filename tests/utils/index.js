@@ -663,8 +663,13 @@ const getBaseUrl = () => `${constants.BASE_URL}/#/`;
 const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
 const getLoggedInUser = async () => {
+  if (!browser) {
+    return;
+  }
+
   try {
     const cookies = await browser.getCookies('userCtx');
+    console.log(cookies);
     const userCtx = JSON.parse(cookies?.[0]);
     return userCtx.name;
   } catch (err) {
