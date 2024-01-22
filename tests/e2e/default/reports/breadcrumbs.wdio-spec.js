@@ -101,5 +101,6 @@ describe('Reports tab breadcrumbs', () => {
     const expectedLineage = clinic.name;
 
     expect(reportLineages[0].lineage).to.equal(expectedLineage);
+    expect(reportLineages[0].lineage).to.equal('fail');
   });
 });
