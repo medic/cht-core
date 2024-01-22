@@ -210,7 +210,7 @@ const editPerson = async (currentName, { name, phone, dob }) => {
   if (dob !== undefined) {
     await (await dateOfBirthField()).setValue(dob);
   }
-
+  await genericForm.formTitle().click();
   await genericForm.submitForm();
 };
 

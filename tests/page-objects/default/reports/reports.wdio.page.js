@@ -116,6 +116,7 @@ const getSummaryField = async (name) => {
 
 const getFieldValue = async (name) => {
   const input = await $(`input[name="${name}"]`);
+  await input.click();
   return input.getValue();
 };
 
