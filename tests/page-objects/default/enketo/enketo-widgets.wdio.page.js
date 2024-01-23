@@ -1,16 +1,18 @@
-const FORM = 'form[data-form-id="enketo_widgets"]';
+const FORM = 'form[data-form-id="enketo_widgets_test"]';
 
-const selectMultipleDropdown = () => $(`${FORM} select[name="/enketo_widgets/enketo_test_select/select_spinner"]`);
-const selectOneDropdown = () => $(`${FORM} select[name="/enketo_widgets/enketo_test_select/select1_spinner"]`);
-const countryDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/country2"]`);
-const cityDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/city2"]`);
-const neighborhoodDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/neighborhood2"]`);
+const selectMultipleDropdown = () => $(`${FORM} select[name="/enketo_widgets_test/enketo_test_select/select_spinner"]`);
+const selectOneDropdown = () => $(`${FORM} select[name="/enketo_widgets_test/enketo_test_select/select1_spinner"]`);
+const countryDropdown = () => $(`${FORM} select[name="/enketo_widgets_test/cascading_widgets/group2/country2"]`);
+const cityDropdown = () => $(`${FORM} select[name="/enketo_widgets_test/cascading_widgets/group2/city2"]`);
+const neighborhoodDropdown = () => {
+  return $(`${FORM} select[name="/enketo_widgets_test/cascading_widgets/group2/neighborhood2"]`);
+};
 const patientNameErrorLabel = () => $(`${FORM} label.invalid-constraint`);
 const phoneFieldRequiredMessage = () => {
-  return $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-required-msg.active');
+  return $('input[name="/enketo_widgets_test/enketo_test_select/phone"] ~ .or-required-msg.active');
 };
 const phoneFieldConstraintMessage = () => {
-  return $('input[name="/enketo_widgets/enketo_test_select/phone"] ~ .or-constraint-msg.active');
+  return $('input[name="/enketo_widgets_test/enketo_test_select/phone"] ~ .or-constraint-msg.active');
 };
 
 const openDropdown = async (element) => {
