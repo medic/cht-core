@@ -645,12 +645,12 @@ const revertDb = async (except, ignoreRefresh) => { //NOSONAR
   await revertTranslations();
   await deleteLocalDocs();
 
-  // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
+  // only refresh if the settings were changed or modal was already present, and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
     watcher?.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise; // NOSONAR
+    watcher && await watcher.promise; // NOSONAR
   } else {
     watcher?.cancel();
   }
