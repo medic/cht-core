@@ -211,6 +211,7 @@ const shouldDisableTokenLogin = data => data.token_login === false;
 
 const isTokenLoginEnabled = () => {
   const tokenLoginConfig = config.get('token_login');
+  // eslint-disable-next-line no-console
   console.log('tokenLoginConfig', tokenLoginConfig);
   return !!(tokenLoginConfig && tokenLoginConfig.enabled);
 };
