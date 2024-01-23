@@ -9,7 +9,7 @@ describe('cht-form web component - Enketo Widgets', () => {
     await mockConfig.loadForm('default', 'test', 'enketo_widgets');
 
     const title  = await genericForm.getFormTitle();
-    expect(title).to.equal('Enketo Widgets');
+    expect(title).to.equal('enketo_widgets_test');
 
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.selectMultipleDropdown());
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectMultipleDropdown(), 'checkbox', 'a');
@@ -87,7 +87,7 @@ describe('cht-form web component - Enketo Widgets', () => {
 
   it('should verify the cancel button', async () => {
     await mockConfig.loadForm('default', 'test', 'enketo_widgets');
-    expect(await genericForm.getFormTitle()).to.equal('Enketo Widgets');
+    expect(await genericForm.getFormTitle()).to.equal('enketo_widgets_test');
 
     const cancelResult = await browser.executeAsync((resolve) => {
       const myForm = document.getElementById('myform');
