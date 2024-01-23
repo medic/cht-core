@@ -153,11 +153,15 @@ const getSession = async () => {
   }
 };
 
+const isLoginRequest = options => {
+  return options.path === '/medic/login' && options.body.user !== auth.username;
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
 const request = async (options, { debug } = {}) => { //NOSONAR
   options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth && !options.auth) {
+  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
     await getSession();
     options.jar = cookieJar;
   }
@@ -663,14 +667,15 @@ const getBaseUrl = () => `${constants.BASE_URL}/#/`;
 const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
 const getLoggedInUser = async () => {
-  if (!browser) {
-    return;
-  }
-
   try {
+    if (typeof browser === 'undefined') {
+      return;
+    }
     const cookies = await browser.getCookies('userCtx');
-    console.log(cookies);
-    const userCtx = JSON.parse(cookies?.[0]);
+    if (!cookies.length) {
+      return;
+    }
+    const userCtx = JSON.parse(decodeURIComponent(cookies?.[0]?.value));
     return userCtx.name;
   } catch (err) {
     console.warn('Error getting userCtx', err.message);

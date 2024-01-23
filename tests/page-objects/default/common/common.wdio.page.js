@@ -350,7 +350,7 @@ const syncAndWaitForFailure = async () => {
   await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
+const closeReloadModal = async (shouldUpdate = false, timeout = 10000) => {
   try {
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
     await modalPage.checkModalHasClosed();
