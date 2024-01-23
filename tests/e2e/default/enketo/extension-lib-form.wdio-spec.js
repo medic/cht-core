@@ -5,9 +5,8 @@ const userData = require('@page-objects/default/users/user.data');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-const { userContactDoc, docs } = userData;
-
 describe('Extension lib xpath function', () => {
+  const { userContactDoc, docs } = userData;
 
   before(async () => {
     await utils.saveDocs(docs);
