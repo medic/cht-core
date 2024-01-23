@@ -49,7 +49,11 @@ const getMessage = (value, locale) => {
 };
 
 module.exports = {
-  set: (newSettings) => settings = newSettings,
+  set: (newSettings) => {
+    // eslint-disable-next-line no-console
+    console.log('newSettings.token_login', newSettings.token_login);
+    settings = newSettings;
+  },
   setTranslationCache: (newTranslations) => translationCache = newTranslations,
   setTransitionsLib: (newTransitionsLib) => transitionsLib = newTransitionsLib,
 
