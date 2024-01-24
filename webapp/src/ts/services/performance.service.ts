@@ -8,9 +8,12 @@ import { AuthService } from '@mm-services/auth.service';
   providedIn: 'root'
 })
 export class PerformanceService {
-  private readonly TRACK_PERFORMANCE = 'track_performance';
-  private readonly TELEMETRY_PREFIX = 'perf:';
   private trackPerformance = true;
+  private readonly CAN_TRACK_PERFORMANCE = 'track_performance';
+  private readonly TELEMETRY_PERFORMANCE_PREFIX = 'perf:';
+  private readonly TELEMETRY_APDEX_SUBFIX = ':apdex';
+  private readonly APXDEX_T = 3;
+  private readonly APXDEX_TOLERANCE = 4;
 
   constructor(
     private telemetryService: TelemetryService,
@@ -18,7 +21,7 @@ export class PerformanceService {
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.authService
-      .has(this.TRACK_PERFORMANCE)
+      .has(this.CAN_TRACK_PERFORMANCE)
       .then(result => this.trackPerformance = result);
   }
 
@@ -30,16 +33,40 @@ export class PerformanceService {
     const startTime = this.document.defaultView.performance.now();
     return {
       setName: newName => name = newName,
-      stop: () => this.recordPerformance(name, startTime),
+      stop: (recordApdex?) => this.recordPerformance(name, startTime, recordApdex),
     };
   }
 
-  private async recordPerformance(name: string, startTime: number) {
+  private async recordPerformance(name: string, startTime: number, recordApdex = false) {
     if (!this.trackPerformance || !this.document?.defaultView) {
       return;
     }
 
     const time = this.document.defaultView.performance.now() - startTime;
-    await this.telemetryService.record(this.TELEMETRY_PREFIX + name, time);
+    await this.telemetryService.record(this.TELEMETRY_PERFORMANCE_PREFIX + name, time);
+
+    if (recordApdex) {
+      await this.recordApDex(name, time);
+    }
+  }
+
+  private async recordApDex(name: string, time: number) {
+    if (time <= this.APXDEX_T) {
+      await this.telemetryService.record(
+        this.TELEMETRY_PERFORMANCE_PREFIX + name + this.TELEMETRY_APDEX_SUBFIX + ':satisfied'
+      );
+      return;
+    }
+
+    if (time <= (this.APXDEX_TOLERANCE * this.APXDEX_T)) {
+      await this.telemetryService.record(
+        this.TELEMETRY_PERFORMANCE_PREFIX + name + this.TELEMETRY_APDEX_SUBFIX + ':tolerating'
+      );
+      return;
+    }
+
+    await this.telemetryService.record(
+      this.TELEMETRY_PERFORMANCE_PREFIX + name + this.TELEMETRY_APDEX_SUBFIX + ':frustrated'
+    );
   }
 }

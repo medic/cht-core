@@ -91,7 +91,7 @@ export class ContactsEffects {
           })
           .finally(() => {
             trackPerformance?.setName(this.selectContactTrack);
-            trackPerformance?.stop();
+            trackPerformance?.stop(true);
           });
 
         return of(loadContact);

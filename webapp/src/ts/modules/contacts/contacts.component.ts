@@ -153,7 +153,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error searching for contacts', err);
       })
       .finally(() => {
-        trackPerformance?.stop();
+        trackPerformance?.stop(true);
       });
   }
 
