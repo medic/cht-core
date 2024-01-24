@@ -34,7 +34,7 @@ import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-me
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 
-describe.only('Contacts component', () => {
+describe('Contacts component', () => {
   let searchResults;
   let component;
   let store: MockStore;
@@ -928,13 +928,15 @@ describe.only('Contacts component', () => {
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             const searchResult = { _id: 'search-result' };
-            searchResults = Array(60).fill(searchResult);
+            searchResults = Array(59).fill(searchResult);
+            const usersHomePlace = 'district-id';
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             searchService.search.resetHistory();
             component.ngOnInit();
             flush();
             const changesCallback = changesService.subscribe.args[1][0].callback;
+            const docIds = Array(59).fill('search-result').concat(usersHomePlace);
 
             return Promise.all([
               changesCallback({ doc: relevantVisitReport }),
@@ -946,15 +948,16 @@ describe.only('Contacts component', () => {
               expect(searchService.search.callCount).to.equal(6);
 
               for (let i = 1; i < 6; i++) {
-                expect(searchService.search.args[i]).to.deep.equal(
-                  [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 60, withIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {} },
-                    [0, 1, 2, 3, 4, 'district-id'],
-                  ]
-                );
+                const actualArgs = searchService.search.args[i];
+                const expectedArgs = [
+                  'contacts',
+                  { types: { selected: ['childType'] } },
+                  { limit: 58, withIds: false, silent: true },
+                  { displayLastVisitedDate: true, visitCountSettings: {} },
+                  docIds,
+                ];
+
+                expect(JSON.stringify(actualArgs)).to.equal(JSON.stringify(expectedArgs));
               }
             });
           }));
