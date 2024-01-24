@@ -1,6 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Edit Person Form', () => {
 
@@ -60,9 +61,9 @@ describe('cht-form web component - Edit Person Form', () => {
     expect(personInfo.externalId).to.equal('12345');
     expect(personInfo.notes).to.equal('Test notes');
 
-    await (await contactPage.nameField('person')).addValue(' Dog');
-    await (await contactPage.phoneField()).setValue('+50688888888');
-    await (await contactPage.notes('person')).addValue(' - New note');
+    await commonEnketoPage.setInputValue('Full name', 'Filippo Dog');
+    await commonEnketoPage.setInputValue('Phone Number', '+50688888888');
+    await commonEnketoPage.setTextareaValue('Notes', 'Test notes - New note');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
 

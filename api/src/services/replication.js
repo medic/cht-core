@@ -2,7 +2,7 @@ const db = require('../db');
 const authorization = require('./authorization');
 const purgedDocs = require('./purged-docs');
 const _ = require('lodash');
-const { DOC_IDS_WARN_LIMIT } = require('../services/replication-limit-log');
+const replicationLimitLog = require('../services/replication-limit-log');
 
 const getContext = async (userCtx) => {
   const info = await db.medic.info();
@@ -16,11 +16,13 @@ const getContext = async (userCtx) => {
   const warnIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey, excludeTasks);
   const unpurgedWarnIds = _.intersection(unpurgedIds, warnIds);
 
+  await replicationLimitLog.put(userCtx.name, unpurgedIds.length);
+
   return {
     docIds: unpurgedIds,
     warnDocIds: unpurgedWarnIds,
-    warn: unpurgedWarnIds.length >= DOC_IDS_WARN_LIMIT,
-    limit: DOC_IDS_WARN_LIMIT,
+    warn: unpurgedWarnIds.length >= replicationLimitLog.DOC_IDS_WARN_LIMIT,
+    limit: replicationLimitLog.DOC_IDS_WARN_LIMIT,
     lastSeq: info.update_seq,
   };
 };
@@ -28,14 +30,18 @@ const getContext = async (userCtx) => {
 const getDocIdsRevPairs = async (docIds) => {
   const result = await db.medic.allDocs({ keys: docIds });
   return result.rows
-    .filter(row => row.value && row.value.rev)
+    .filter(row => row?.value?.rev)
     .map(row => ({ id: row.id, rev: row.value.rev }));
 };
 
 const getDocIdsToDelete = async (userCtx, docIds) => {
+  if (!docIds.length) {
+    return [];
+  }
+
   const allDocs = await db.medic.allDocs({ keys: docIds });
   const toDelete = allDocs.rows
-    .filter(row => row.error === 'deleted' || (row.value && row.value.deleted))
+    .filter(row => row.error === 'deleted' || row?.value?.deleted)
     .map(row => row.key);
 
   const toPurge = await purgedDocs.getPurgedIds(userCtx, docIds, false);
@@ -43,8 +49,6 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
 
   return toDelete;
 };
-
-// todo add replication limit log
 
 module.exports = {
   getDocIdsRevPairs,

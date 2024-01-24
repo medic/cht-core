@@ -1,7 +1,8 @@
 const mockConfig = require('../mock-config');
 const moment = require('moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const deliveryForm = require('@page-objects/default/enketo/delivery.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 describe('cht-form web component - Delivery Form', () => {
   const DATE = moment().format('YYYY-MM-DD');
@@ -20,52 +21,45 @@ describe('cht-form web component - Delivery Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Delivery');
 
-    await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
+    await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Alive and well');
     await genericForm.nextPage();
-    await deliveryForm.selectDeliveryPostnatalDangerSignsFever('no');
-    await deliveryForm.selectDeliveryPostnatalDangerSevereHeadache('no');
-    await deliveryForm.selectDeliveryPostnatalDangerVaginalBleeding('no');
-    await deliveryForm.selectDeliveryPostnatalDangerVaginalDischarge('no');
-    await deliveryForm.selectDeliveryPostnatalDangerConvulsion('no');
-
+    await dangerSignPage.selectAllDangerSignsDelivery('No');
     await genericForm.nextPage();
-    await deliveryForm.selectDeliveryOutcomeBabiesDelivered('1');
-    await deliveryForm.selectDeliveryOutcomeBabiesAlive('1');
-    await deliveryForm.selectDeliveryOutcomeDeliveryPlace('health_facility');
-    await deliveryForm.selectDeliveryOutcomeDeliveryMode('vaginal');
-    await deliveryForm.setDeliveryOutcomeDateOfDelivery(DATE);
-
+    await commonEnketoPage.selectRadioButton('How many babies were delivered?', '1');
+    await commonEnketoPage.selectRadioButton('How many babies are alive?', '1');
+    await commonEnketoPage.selectRadioButton('Where did delivery take place?', 'Health facility');
+    await commonEnketoPage.selectRadioButton('How did she deliver?', 'Vaginal');
+    await commonEnketoPage.setDateValue('Date of delivery', DATE);
     await genericForm.nextPage();
-
-    await deliveryForm.selectDeliveryBabyCondition('alive_well');
-    await deliveryForm.setDeliveryBabyName(BABY_NAME);
-    await deliveryForm.selectDeliveryBabySex(BABY_SEX);
-    await deliveryForm.selectDeliveryBabyBirthWeightKnown('no');
-    await deliveryForm.selectDeliveryBabyBirthLengthKnown('no');
-    await deliveryForm.selectDeliveryBabyVaccinesReceived('none');
-    await deliveryForm.selectDeliveryBabyBreastfeeding('yes');
-    await deliveryForm.selectDeliveryBabyBreastfeedingWithin1Hour('yes');
-    await deliveryForm.selectDeliveryBabyInfectedUmbilicalCord('no');
-    await deliveryForm.selectDeliveryBabyConvulsion('no');
-    await deliveryForm.selectDeliveryBabyDifficultyFeeding('no');
-    await deliveryForm.selectDeliveryBabyVomit('no');
-    await deliveryForm.selectDeliveryBabyDrowsy('no');
-    await deliveryForm.selectDeliveryBabyStiff('no');
-    await deliveryForm.selectDeliveryBabyYellowSkin('no');
-    await deliveryForm.selectDeliveryBabyFever('no');
-    await deliveryForm.selectDeliveryBabyBlueSkin('no');
+    await commonEnketoPage.selectRadioButton('What is the condition of baby?', 'Alive and well');
+    await commonEnketoPage.setInputValue('Name', BABY_NAME);
+    await commonEnketoPage.selectRadioButton('Sex', 'Male');
+    await commonEnketoPage.selectRadioButton('Birth weight', 'I don\'t know');
+    await commonEnketoPage.selectRadioButton('Birth length', 'I don\'t know');
+    await commonEnketoPage.selectRadioButton('What vaccines have they received?', 'None');
+    await commonEnketoPage.selectRadioButton('Is the child exclusively breastfeeding?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Were they initiated on breastfeeding within on hour of delivery?', 'Yes');
+    await commonEnketoPage.selectRadioButton('Infected umbilical cord', 'No');
+    await commonEnketoPage.selectRadioButton('Convulsions', 'No');
+    await commonEnketoPage.selectRadioButton('Difficulty feeding or drinking', 'No');
+    await commonEnketoPage.selectRadioButton('Vomits everything', 'No');
+    await commonEnketoPage.selectRadioButton('Drowsy or unconscious', 'No');
+    await commonEnketoPage.selectRadioButton('Body stiffness', 'No');
+    await commonEnketoPage.selectRadioButton('Yellow skin color', 'No');
+    await commonEnketoPage.selectRadioButton('Fever', 'No');
+    await commonEnketoPage.selectRadioButton('Blue skin color (hypothermia)', 'No');
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await deliveryForm.selectDeliveryPncVisits('none');
+    await commonEnketoPage.selectCheckBox('Which PNC visits have taken place so far?', 'None of the above');
     await genericForm.nextPage();
 
-    const summaryInfo = await deliveryForm.getSummaryInfo();
-    expect(summaryInfo.womanCondition).to.equal('Alive and well');
-    expect(summaryInfo.deliveryDate).to.equal(DATE);
-    expect(summaryInfo.deliveryPlace).to.equal('Health facility');
-    expect(summaryInfo.deliveredBabies).to.equal('1');
-    expect(summaryInfo.deceasedBabies).to.equal('0');
-    expect(summaryInfo.pncVisits).to.equal('None');
+    const summaryTexts = [
+      'Alive and well', //woman's condition
+      DATE,
+      'Health facility' //delivery place
+    ];
+
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     const data = await mockConfig.submitForm();
     const jsonObjMother = data[0].fields;
@@ -105,14 +99,12 @@ describe('cht-form web component - Delivery Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Delivery');
 
-    await deliveryForm.selectDeliveryConditionWomanOutcome('deceased');
+    await commonEnketoPage.selectRadioButton('What is the outcome for the woman?', 'Deceased');
     await genericForm.nextPage();
-    await deliveryForm.fillWomanDeathInformation({
-      date: DATE,
-      place: 'health_facility',
-      notes: 'Test notes - Mother\'s death'
-    });
-    await $('.form-footer').click();
+    await commonEnketoPage.setDateValue('Date of death', DATE);
+    await commonEnketoPage.selectRadioButton('What was the place of death?', 'Health facility');
+    await commonEnketoPage.selectRadioButton('Did the woman deliver any babies before she died?', 'No');
+    await commonEnketoPage.setInputValue('Additional notes', 'Test notes - Mother\'s death');
     await genericForm.nextPage();
 
     const data = await mockConfig.submitForm();

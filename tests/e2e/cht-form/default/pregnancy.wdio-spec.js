@@ -2,7 +2,7 @@ const mockConfig = require('../mock-config');
 const moment = require('moment');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
-const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Pregnancy Form', () => {
 
@@ -14,60 +14,37 @@ describe('cht-form web component - Pregnancy Form', () => {
       myForm.content = { contact: { _id: '12345'} };
     });
 
-    let countRiskFactors = 0;
-    let countDangerSigns = 0;
-    const edd = moment().add(30, 'days');
-    const nextANCVisit = moment().add(1, 'day').format('YYYY-MM-DD');
+    const edd = moment().add(8, 'days');
+    const nextANCVisit = moment().add(2, 'day').format('YYYY-MM-DD');
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Pregnancy registration');
+    await pregnancyForm.submitDefaultPregnancy(false);
 
-    await pregnancyForm.selectGestationAge();
-    await genericForm.nextPage();
-    await pregnancyForm.setDeliveryDate(edd.format('YYYY-MM-DD'));
-    await genericForm.nextPage();
+    const summaryTexts = [
+      '38', //weeks pregnant
+      edd.format('D MMM, YYYY'),
+      'Previous miscarriages or stillbirths',
+      'Previous difficulties in childbirth',
+      'Has delivered four or more children',
+      'Last baby born less than one year ago',
+      'Heart condition',
+      'Asthma',
+      'High blood pressure',
+      'Diabetes',
+      'Vaginal bleeding',
+      'Fits',
+      'Severe abdominal pain',
+      'Severe headache',
+      'Very pale',
+      'Fever',
+      'Reduced or no fetal movements',
+      'Breaking of water',
+      'Getting tired easily',
+      'Swelling of face and hands',
+      'Breathlessness'
+    ];
 
-    const confirmationDetails = await pregnancyForm.getConfirmationDetails();
-    expect(Date.parse(confirmationDetails.eddConfirm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
-
-    await genericForm.nextPage();
-    await pregnancyForm.setANCVisitsPast();
-    await genericForm.nextPage();
-    await genericForm.selectYesNoOption(pregnancyForm.KNOWN_FUTURE_VISITS);
-    await pregnancyForm.setFutureVisitDate(nextANCVisit);
-    await genericForm.nextPage();
-    countRiskFactors += await genericForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
-    countRiskFactors += await genericForm.selectYesNoOption(pregnancyForm.MISCARRIAGE);
-    await genericForm.nextPage();
-    countRiskFactors += await pregnancyForm.selectAllRiskFactors(pregnancyForm.FIRST_PREGNANCY_VALUE.no);
-    countRiskFactors += await genericForm.selectYesNoOption(pregnancyForm.ADDITIONAL_FACTORS, 'no');
-    await genericForm.nextPage();
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.vaginalBleeding('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.fits('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.abdominalPain('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.headache('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.veryPale('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.fever('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.reduceFetalMov('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.breakingOfWater('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.easilyTired('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.swellingHands('pregnancy'));
-    countDangerSigns += await genericForm.selectYesNoOption(dangerSignPage.breathlessness('pregnancy'));
-    await genericForm.nextPage();
-    await genericForm.selectYesNoOption(pregnancyForm.LLIN);
-    await genericForm.nextPage();
-    await genericForm.selectYesNoOption(pregnancyForm.IRON_FOLATE);
-    await genericForm.nextPage();
-    await genericForm.selectYesNoOption(pregnancyForm.DEWORMING_MEDICATION);
-    await genericForm.nextPage();
-    await genericForm.nextPage();
-    await genericForm.selectYesNoOption(pregnancyForm.HIV_TESTED);
-    await genericForm.nextPage();
-
-    const summaryDetails = await pregnancyForm.getSummaryDetails();
-    expect(summaryDetails.weeksPregnantSumm).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(Date.parse(summaryDetails.eddSumm)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
-    expect(summaryDetails.riskFactorsSumm).to.equal(countRiskFactors);
-    expect(summaryDetails.dangerSignsSumm).to.equal(countDangerSigns);
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
     const jsonObj = doc.fields;

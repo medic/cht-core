@@ -6,6 +6,7 @@ const db = require('../../../src/db');
 const authorization = require('../../../src/services/authorization');
 const purgedDocs = require('../../../src/services/purged-docs');
 const replication = require('../../../src/services/replication');
+const replicationLimitLog = require('../../../src/services/replication-limit-log');
 
 let userCtx;
 let authContext;
@@ -13,7 +14,7 @@ let docsByReplicationKey;
 
 describe('Initial Replication service', () => {
   beforeEach(() => {
-    userCtx = Object.freeze({ roles: ['one'] });
+    userCtx = Object.freeze({ roles: ['one'], name: 'john' });
     authContext = Object.freeze({ auth: 'context' });
     docsByReplicationKey = Object.freeze({ docs: 'by replication key' });
   });
@@ -29,6 +30,7 @@ describe('Initial Replication service', () => {
       sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
       sinon.stub(authorization, 'filterAllowedDocIds').returns([1, 2, 3, 'purged']);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves([1, 2, 3]);
+      sinon.stub(replicationLimitLog, 'put');
 
       const result = await replication.getContext(userCtx);
 
@@ -48,6 +50,7 @@ describe('Initial Replication service', () => {
       ]);
       expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx, [1, 2, 3, 'purged']]]);
       expect(db.medic.info.callCount).to.equal(1);
+      expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3]]);
     });
 
     it('should warn if there are too many allowed docs', async () => {
@@ -57,6 +60,7 @@ describe('Initial Replication service', () => {
       const allDocsIds = Array.from({ length: 12000 }).map((_, i) => i);
       sinon.stub(authorization, 'filterAllowedDocIds').returns(allDocsIds);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(allDocsIds);
+      sinon.stub(replicationLimitLog, 'put');
 
       const result = await replication.getContext(userCtx);
 
@@ -69,6 +73,7 @@ describe('Initial Replication service', () => {
       });
 
       expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx, allDocsIds]]);
+      expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, allDocsIds.length]]);
     });
 
     it('should only warn about unpurged docs', async () => {
@@ -79,6 +84,7 @@ describe('Initial Replication service', () => {
       const unpurgedDocsIDs = allDocsIds.filter(key => key % 2 === 0);
       sinon.stub(authorization, 'filterAllowedDocIds').returns(allDocsIds);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedDocsIDs);
+      sinon.stub(replicationLimitLog, 'put');
 
       const result = await replication.getContext(userCtx);
 
@@ -101,6 +107,7 @@ describe('Initial Replication service', () => {
         .onCall(0).returns(allDocsIds)
         .onCall(1).returns(notTasks);
       sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(allDocsIds);
+      sinon.stub(replicationLimitLog, 'put');
 
       const result = await replication.getContext(userCtx);
 
@@ -193,6 +200,82 @@ describe('Initial Replication service', () => {
     it('should throw allDocs errors', async () => {
       sinon.stub(db.medic, 'allDocs').rejects(new Error('boom'));
       await expect(replication.getDocIdsRevPairs([123])).to.be.rejectedWith(Error, 'boom');
+    });
+  });
+
+  describe('getDocIdsToDelete', () => {
+    const userCtx = { name: 'Boss' };
+
+    it('should do nothing when no doc ids are passed', async () => {
+      expect(await replication.getDocIdsToDelete({}, [])).to.deep.equal([]);
+    });
+
+    it('should return deleted docs', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: 1 } },
+          { key: 'doc2', id: 'doc2', value: { deleted: true } },
+          { key: 'doc3', error: 'deleted' },
+        ]
+      });
+
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves([]);
+
+      const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2', 'doc3']);
+      expect(result).to.have.members(['doc2', 'doc3']);
+
+      expect(db.medic.allDocs.args).to.deep.equal([[{ keys: ['doc1', 'doc2', 'doc3'] }]]);
+      expect(purgedDocs.getPurgedIds.args).to.deep.equal([[userCtx, ['doc1', 'doc2', 'doc3'], false]]);
+    });
+
+    it('should return purged docs', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: 1 } },
+          { key: 'doc2', id: 'doc2', value: { rev: 1 } },
+          { key: 'doc3', id: 'doc3', value: { rev: 1 } },
+        ]
+      });
+
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves(['doc1', 'doc2']);
+
+      const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2', 'doc3']);
+      expect(result).to.have.members(['doc1', 'doc2']);
+
+      expect(db.medic.allDocs.args).to.deep.equal([[{ keys: ['doc1', 'doc2', 'doc3'] }]]);
+      expect(purgedDocs.getPurgedIds.args).to.deep.equal([[userCtx, ['doc1', 'doc2', 'doc3'], false]]);
+    });
+
+    it('should return deleted and purged docs', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: 1 } },
+          { key: 'doc2', error: 'deleted' },
+          { key: 'doc3', id: 'doc3', value: { rev: 1 } },
+          { key: 'doc4', id: 'doc3', value: { deleted: true } },
+          { key: 'doc5', id: 'doc5', value: { rev: 1 } },
+        ]
+      });
+
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves(['doc1', 'doc5']);
+
+      const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2', 'doc3', 'doc4', 'doc5']);
+      expect(result).to.have.members(['doc1', 'doc2', 'doc4', 'doc5']);
+
+      expect(db.medic.allDocs.args).to.deep.equal([[{ keys: ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'] }]]);
+      expect(purgedDocs.getPurgedIds.args).to.deep.equal([[userCtx, ['doc1', 'doc2', 'doc3', 'doc4', 'doc5'], false]]);
+    });
+
+    it('should throw error on db errors', async () => {
+      sinon.stub(db.medic, 'allDocs').rejects(new Error('failed'));
+      await expect(replication.getDocIdsToDelete(userCtx, [1])).to.be.rejectedWith(Error, 'failed');
+    });
+
+    it('should throw error on purgedDocs errors', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
+      sinon.stub(purgedDocs, 'getPurgedIds').rejects(new Error('boom'));
+
+      await expect(replication.getDocIdsToDelete(userCtx, [1])).to.be.rejectedWith(Error, 'boom');
     });
   });
 });

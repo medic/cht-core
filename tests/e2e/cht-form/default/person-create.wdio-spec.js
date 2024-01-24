@@ -1,6 +1,6 @@
 const mockConfig = require('../mock-config');
-const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Create Person Form', () => {
 
@@ -10,13 +10,13 @@ describe('cht-form web component - Create Person Form', () => {
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('New Person');
 
-    await (await contactPage.nameField('person')).setValue('Filippo');
-    await (await contactPage.sexField('person', 'male')).click();
-    await (await contactPage.phoneField()).setValue('+50689999999');
-    await (await contactPage.dateOfBirthField()).setValue('2000-09-20');
-    await (await contactPage.roleField('person', 'chw')).click();
-    await (await contactPage.externalIdField('person')).setValue('12345');
-    await (await contactPage.notes('person')).setValue('Test notes - create new person');
+    await commonEnketoPage.setInputValue('Full name', 'Filippo');
+    await commonEnketoPage.setInputValue('Phone Number', '+50689999999');
+    await commonEnketoPage.selectRadioButton('Sex', 'Male');
+    await commonEnketoPage.setDateValue('Age', '2000-09-20');
+    await commonEnketoPage.selectRadioButton('Role', 'CHW');
+    await commonEnketoPage.setInputValue('External ID', '12345');
+    await commonEnketoPage.setTextareaValue('Notes', 'Test notes - create new person');
 
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
 

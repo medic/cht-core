@@ -4,7 +4,7 @@
   "description": "Common utility functions for bulk docs operations",
   "main": "src/bulk-docs-utils.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0"

@@ -4,6 +4,15 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+
+const setPatient = async (sex, height, weight, age) => {
+  await commonEnketoPage.selectRadioButton('Gender', sex);
+  await commonEnketoPage.setInputValue('How tall are you? (cm)', height);
+  await commonEnketoPage.setInputValue('How much do you weigh? (kg)', weight);
+  await commonEnketoPage.setInputValue('How old are you? (days)', age);
+
+};
 
 describe('Submit Z-Score form', () => {
   before(async () => {
@@ -16,25 +25,25 @@ describe('Submit Z-Score form', () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport(ZScoreForm.docs[0].internalId, false);
 
-    await ZScoreForm.setPatient({ sex: 'female', height: 45, weight: 2, age: 0 });
+    await setPatient('Female', 45, 2, 0);
 
     expect(await ZScoreForm.getHeightForAge()).to.equal('-2.226638023630504');
     expect(await ZScoreForm.getWeightForAge()).to.equal('-3.091160220994475');
     expect(await ZScoreForm.getWeightForHeight()).to.equal('-2.402439024390243');
 
-    await ZScoreForm.setPatient({ sex: 'male', height: 45, weight: 2, age: 0 });
+    await setPatient('Male', 45, 2, 0);
 
     expect(await ZScoreForm.getHeightForAge()).to.equal('-2.5800316957210767');
     expect(await ZScoreForm.getWeightForAge()).to.equal('-3.211081794195251');
     expect(await ZScoreForm.getWeightForHeight()).to.equal('-2.259036144578314');
 
-    await ZScoreForm.setPatient({ sex: 'female', height: 45.2, weight: 5, age: 1 });
+    await setPatient('Female', 45.2, 5, 1);
 
     expect(await ZScoreForm.getHeightForAge()).to.equal('-2.206434316353886');
     expect(await ZScoreForm.getWeightForAge()).to.equal('3.323129251700681');
     expect(await ZScoreForm.getWeightForHeight()).to.equal('4');
 
-    await ZScoreForm.setPatient({ sex: 'male', height: 45.2, weight: 5, age: 1 });
+    await setPatient('Male', 45.2, 5, 1);
 
     expect(await ZScoreForm.getHeightForAge()).to.equal('-2.5651715039577816');
     expect(await ZScoreForm.getWeightForAge()).to.equal('2.9789983844911148');
@@ -47,7 +56,7 @@ describe('Submit Z-Score form', () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport(ZScoreForm.docs[0].internalId, false);
 
-    await ZScoreForm.setPatient({ sex: 'female', height: 45.1, weight: 3, age: 2 });
+    await setPatient('Female', 45.1, 3, 2);
 
     expect(await ZScoreForm.getHeightForAge()).to.equal('-2.346895074946466');
     expect(await ZScoreForm.getWeightForAge()).to.equal('-0.4708520179372194');

@@ -174,8 +174,14 @@ describe('routing', () => {
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
         utils.requestOnTestDb('/_design/medic-client'),
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
-        expect(semver.valid(deployInfoOnline.version)).to.be.ok;
-        expect(semver.valid(deployInfoOffline.version)).to.be.ok;
+        expect(
+          semver.valid(deployInfoOnline.version),
+          `"${deployInfoOnline.version}" is not valid semver`,
+        ).to.be.ok;
+        expect(
+          semver.valid(deployInfoOffline.version),
+          `"${deployInfoOffline.version}" is not valid semver`,
+        ).to.be.ok;
 
         const { BRANCH } = process.env;
         const deployInfo = {
