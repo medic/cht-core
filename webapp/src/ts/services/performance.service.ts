@@ -12,8 +12,8 @@ export class PerformanceService {
   private readonly CAN_TRACK_PERFORMANCE = 'track_performance';
   private readonly TELEMETRY_PERFORMANCE_PREFIX = 'perf:';
   private readonly TELEMETRY_APDEX_SUBFIX = ':apdex';
-  private readonly APXDEX_T = 3;
-  private readonly APXDEX_TOLERANCE = 4;
+  private readonly APXDEX_T = 3 * 1000;
+  private readonly APXDEX_TOLERANCE = 4; // 4xT
 
   constructor(
     private telemetryService: TelemetryService,
