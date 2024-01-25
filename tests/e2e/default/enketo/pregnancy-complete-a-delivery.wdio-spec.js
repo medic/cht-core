@@ -124,33 +124,4 @@ describe('Contact Delivery Form', () => {
 
   });
 
-  /*it('The past pregnancy card should show', async () => {
-    await commonPage.goToPeople(pregnantWoman._id);
-    await contactPage.getContactCardTitle();
-    expect((await contactPage.getContactCardTitle())).to.equal('Past pregnancy');
-  });*/
-
-  /*it('The child registered during birth should be created and should display the proper information', async () => {
-    await contactPage.selectLHSRowByText(BABY_NAME);
-    expect((await contactPage.getContactInfoName())).to.equal(BABY_NAME);
-    expect((await contactPage.getContactSummaryField('contact.sex')).toLocaleUpperCase())
-      .to.equal(BABY_SEX.toLocaleUpperCase());
-  });*/
-
-  /*it('The targets page should be updated', async () => {
-    await commonPage.goToAnalytics();
-    await analyticsPage.goToTargets();
-    const targets = await analyticsPage.getTargets();
-
-    expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR },
-      { title: 'Live births', count: '1', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'In-facility deliveries', percent: '100%', percentCount: '(1 of 1)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR },
-    ]);
-  });*/
 });
