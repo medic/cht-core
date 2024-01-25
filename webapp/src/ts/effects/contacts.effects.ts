@@ -23,8 +23,6 @@ export class ContactsEffects {
   private selectedContact;
   private contactIdToLoad;
 
-  private selectContactTrack;
-
   constructor(
     private actions$: Actions,
     private store: Store,
@@ -56,11 +54,11 @@ export class ContactsEffects {
         this.store.select(Selectors.getForms),
       ),
       exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
-        this.selectContactTrack = 'select_contact:load_everything';
-        const trackPerformance = this.performanceService.track(this.selectContactTrack);
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
+
+        const trackPerformance = this.performanceService.track();
 
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
@@ -68,8 +66,10 @@ export class ContactsEffects {
           this.contactsActions.setContactsLoadingSummary(true);
         }
 
+        let selectedContact;
         const loadContact = this
           .loadContact(id)
+          .then(contact => selectedContact = contact)
           .then(() => this.verifySelectedContactNotChanged(id))
           .then(() => this.setTitle())
           .then(() => this.loadChildren(id, userFacilityId))
@@ -90,8 +90,14 @@ export class ContactsEffects {
             return of(this.contactsActions.clearSelection());
           })
           .finally(() => {
-            trackPerformance?.setName(this.selectContactTrack);
-            trackPerformance?.stop(true);
+            trackPerformance?.stop({
+              recordApdex: true,
+              name: [
+                'select_contact',
+                selectedContact?.doc?.contact_type || 'contact',
+                'load_everything'
+              ].join(':'),
+            });
           });
 
         return of(loadContact);
@@ -112,12 +118,12 @@ export class ContactsEffects {
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
       .then(model => {
-        this.selectContactTrack = `select_contact:${model?.doc?.contact_type || 'contact'}:load_everything`;
         return this
           .verifySelectedContactNotChanged(model._id)
           .then(() => {
             this.globalActions.settingSelected();
             this.contactsActions.setSelectedContact(model);
+            return model;
           });
       });
   }

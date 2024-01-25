@@ -259,9 +259,8 @@ describe('TasksComponent', () => {
     });
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
-    expect(performanceService.track.callCount).to.equal(1);
-    expect(performanceService.track.args[0][0]).to.equal('tasks:load');
-    expect(stopPerformanceTrackStub.callCount).to.equal(1);
+    expect(performanceService.track.calledOnce).to.be.true;
+    expect(stopPerformanceTrackStub.calledOnceWith({ name: 'tasks:load', recordApdex: true }));
   });
 
   it('should should record telemetry on refresh', fakeAsync(async () => {
@@ -287,10 +286,10 @@ describe('TasksComponent', () => {
     flush();
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(2);
-    expect(performanceService.track.callCount).to.equal(2);
-    expect(performanceService.track.args[0][0]).to.equal('tasks:load');
-    expect(performanceService.track.args[1][0]).to.equal('tasks:refresh');
-    expect(stopPerformanceTrackStub.callCount).to.equal(2);
+    expect(performanceService.track.calledTwice).to.be.true;
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'tasks:load', recordApdex: true });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'tasks:refresh', recordApdex: false });
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
 

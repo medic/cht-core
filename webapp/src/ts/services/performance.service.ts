@@ -10,12 +10,10 @@ import { AuthService } from '@mm-services/auth.service';
 export class PerformanceService {
   private trackPerformance = false;
   private readonly CAN_TRACK_PERFORMANCE = 'track_performance';
-  private readonly PERFORMANCE_PREFIX = 'perf:';
-  private readonly APDEX_SUBFIX = ':apdex';
-  private readonly APDEX_SATISFIED = ':satisfied';
-  private readonly APDEX_TOLERATING = ':tolerable';
-  private readonly APDEX_FRUSTRATED = ':frustrated';
-  private readonly APDEX_AGGREGATE = ':aggregate';
+  private readonly APDEX_LABEL = 'apdex';
+  private readonly APDEX_SATISFIED = 'satisfied';
+  private readonly APDEX_TOLERABLE = 'tolerable';
+  private readonly APDEX_FRUSTRATED = 'frustrated';
   private readonly APDEX_T = 3 * 1000;
   private readonly APDEX_TOLERANCE = 4; // 4xT
 
@@ -29,64 +27,53 @@ export class PerformanceService {
       .then(result => this.trackPerformance = result);
   }
 
-  track(name: string) {
-    if (!this.trackPerformance || !name || !this.document?.defaultView) {
+  track() {
+    if (!this.trackPerformance || !this.document?.defaultView) {
       return;
     }
 
     const startTime = this.document.defaultView.performance.now();
     return {
-      setName: newName => name = newName,
-      stop: (recordApdex = false, prefix = true) => this.recordPerformance(name, startTime, recordApdex, prefix),
+      stop: (options: Options) => this.recordPerformance(startTime, options),
     };
   }
 
   /**
    * Records Telemetry entry
-   * @param name        Telemetry entry's name
    * @param startTime   Process start time in milliseconds
-   * @param recordApdex If true, then record Apdex as additional Telemetry entry
-   * @param prefix      If false, then don't prefix with "perf:" the Telemetry entry's name. Introduced to keep old
-   *                    Telemetry entries' name.
+   * @param name        Telemetry entry's name
+   * @param recordApdex If true, record the Apdex as additional Telemetry entry
    * @private
    */
-  private async recordPerformance(name: string, startTime: number, recordApdex = false, prefix = true) {
-    if (!this.trackPerformance || !this.document?.defaultView) {
+  private async recordPerformance(startTime:number, { name, recordApdex = false }:Options) {
+    if (!this.trackPerformance || !name || !this.document?.defaultView) {
       return;
     }
 
-    const telemetryName = prefix ? this.PERFORMANCE_PREFIX + name : name;
-    const time = this.document.defaultView.performance.now() - startTime;
-    await this.telemetryService.record(telemetryName, time);
+    const duration = this.document.defaultView.performance.now() - startTime;
+    await this.telemetryService.record(name, duration);
 
     if (recordApdex) {
-      const { component, aggregate } = this.getApdexLabels(name, time);
-      await this.telemetryService.record(component, time);
-      await this.telemetryService.record(aggregate, time);
+      const result = this.evaluateApdex(duration);
+      const apdexTelemetry = [ name, this.APDEX_LABEL, result ].join(':');
+      await this.telemetryService.record(apdexTelemetry, duration);
     }
   }
   
-  private getApdexLabels(name: string, time: number) {
-    const component = this.PERFORMANCE_PREFIX + name + this.APDEX_SUBFIX;
-    const aggregate = this.PERFORMANCE_PREFIX + 'app' + this.APDEX_SUBFIX + this.APDEX_AGGREGATE;
-
-    if (time <= this.APDEX_T) {
-      return {
-        component: component + this.APDEX_SATISFIED,
-        aggregate: aggregate + this.APDEX_SATISFIED,
-      };
+  private evaluateApdex(duration: number) {
+    if (duration <= this.APDEX_T) {
+      return this.APDEX_SATISFIED;
     }
     
-    if (time <= (this.APDEX_TOLERANCE * this.APDEX_T)) {
-      return {
-        component: component + this.APDEX_TOLERATING,
-        aggregate: aggregate + this.APDEX_TOLERATING,
-      };
+    if (duration <= (this.APDEX_TOLERANCE * this.APDEX_T)) {
+      return this.APDEX_TOLERABLE;
     }
 
-    return {
-      component: component + this.APDEX_FRUSTRATED,
-      aggregate: aggregate + this.APDEX_FRUSTRATED,
-    };
+    return this.APDEX_FRUSTRATED;
   }
+}
+
+interface Options {
+  name: string;
+  recordApdex?: boolean;
 }

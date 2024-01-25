@@ -135,9 +135,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private async refreshTasks() {
     try {
-      const recordApdex = !this.tasksLoaded;
-      const trackName = !this.tasksLoaded ? 'tasks:load' : 'tasks:refresh';
-      const track = this.performanceService.track(trackName);
+      const track = this.performanceService.track();
 
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
@@ -161,7 +159,10 @@ export class TasksComponent implements OnInit, OnDestroy {
         this.tasksActions.setTasksLoaded(true);
       }
 
-      track?.stop(recordApdex, false);
+      track?.stop({
+        name: this.tasksLoaded ? 'tasks:refresh' : 'tasks:load',
+        recordApdex: !this.tasksLoaded,
+      });
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);

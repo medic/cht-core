@@ -117,7 +117,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.subscription.add(changesSubscription);
 
-    const trackPerformance = this.performanceService.track('contact_list:initial_load');
+    const trackPerformance = this.performanceService.track();
     Promise
       .all([
         this.getUserHomePlaceSummary(),
@@ -153,7 +153,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error searching for contacts', err);
       })
       .finally(() => {
-        trackPerformance?.stop(true);
+        trackPerformance?.stop({
+          name: 'contact_list:initial_load',
+          recordApdex: true,
+        });
       });
   }
 
