@@ -311,8 +311,8 @@ describe('Export Data Service', () => {
   describe('Export users devices', () => {
     it('handles empty db', async () => {
       sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
-      const actual = await mockRequest('user-devices');
-      actual.should.equal('user,deviceId,date,webview,apk,android,cht,settings\n');
+      const actual = await service.exportObject('user-devices');
+      actual.should.deep.equal([]);
     });
 
     it('works', async () => {
@@ -347,17 +347,30 @@ describe('Export Data Service', () => {
           },
         },
       ];
-      sinon.stub(db.medicUsersMeta, 'query')
-        .onCall(0).resolves({ rows })
-        .onCall(1).resolves({ rows })
-        .onCall(2).resolves({ rows: [] });
-      const actual = await mockRequest('user-devices');
-      /* eslint-disable max-len */
-      actual.should.equal(`user,deviceId,date,webview,apk,android,cht,settings
-"admin-central-2","d26e2875-53af-4e9b-b695-c82faf0db5d8","2022-11-21","107.0",,,"unknown","4-83c8561a13479b245b295e97401f2f55"
-"chw1","b1c172d8-82b0-42fd-8401-313796b8c801","2022-11-29","88.0","v1.0.4-4","10","unknown","5-5ad24c388d1d4c4a7fcb6b05cff875ba"
-`);
-      /* eslint-enable max-len */
+      sinon.stub(db.medicUsersMeta, 'query').resolves({ rows });
+      const actual = await service.exportObject('user-devices');
+      actual.should.deep.equal([
+        {
+          user: 'admin-central-2',
+          deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
+          date: '2022-11-21',
+          webview: '107.0',
+          apk: undefined,
+          android: undefined,
+          cht: 'unknown',
+          settings: '4-83c8561a13479b245b295e97401f2f55'
+        },
+        {
+          user: 'chw1',
+          deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
+          date: '2022-11-29',
+          webview: '88.0',
+          apk: 'v1.0.4-4',
+          android: '10',
+          cht: 'unknown',
+          settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+        }
+      ]);
     });
   });
 
