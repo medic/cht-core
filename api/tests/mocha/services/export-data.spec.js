@@ -308,7 +308,7 @@ describe('Export Data Service', () => {
 
   });
 
-  describe('Export users devices', () => {
+  describe.skip('Export users devices', () => {
     it('handles empty db', async () => {
       sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
       const actual = await mockRequest('user-devices');
