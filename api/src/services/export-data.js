@@ -82,7 +82,7 @@ class SearchResultReader extends Readable {
   }
 }
 
-const format = type => type === 'dhis' ? 'json' : 'csv';
+const format = type => ['dhis', 'user-devices'].includes(type) ? 'json' : 'csv';
 
 module.exports = {
   exportStream: (type, filters, options) => new SearchResultReader(type, filters, options),
