@@ -10,7 +10,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
@@ -23,7 +23,8 @@ describe('TasksComponent', () => {
   let getComponent;
   let changesService;
   let rulesEngineService;
-  let telemetryService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let contactTypesService;
   let clock;
   let store;
@@ -49,8 +50,8 @@ describe('TasksComponent', () => {
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
       contactsMarkedAsDirty: sinon.stub(),
     };
-
-    telemetryService = { record: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     contactTypesService = {
       includes: sinon.stub(),
     };
@@ -72,7 +73,7 @@ describe('TasksComponent', () => {
         provideMockStore(),
         { provide: ChangesService, useValue: changesService },
         { provide: RulesEngineService, useValue: rulesEngineService },
-        { provide: TelemetryService, useValue: telemetryService },
+        { provide: PerformanceService, useValue: performanceService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
         { provide: SessionService, useValue: sessionService },
@@ -258,8 +259,9 @@ describe('TasksComponent', () => {
     });
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
-    expect(telemetryService.record.callCount).to.equal(1);
-    expect(telemetryService.record.args[0][0]).to.equal('tasks:load');
+    expect(performanceService.track.callCount).to.equal(1);
+    expect(performanceService.track.args[0][0]).to.equal('tasks:load');
+    expect(stopPerformanceTrackStub.callCount).to.equal(1);
   });
 
   it('should should record telemetry on refresh', fakeAsync(async () => {
@@ -285,9 +287,10 @@ describe('TasksComponent', () => {
     flush();
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(2);
-    expect(telemetryService.record.callCount).to.equal(2);
-    expect(telemetryService.record.args[0][0]).to.equal('tasks:load');
-    expect(telemetryService.record.args[1][0]).to.equal('tasks:refresh');
+    expect(performanceService.track.callCount).to.equal(2);
+    expect(performanceService.track.args[0][0]).to.equal('tasks:load');
+    expect(performanceService.track.args[1][0]).to.equal('tasks:refresh');
+    expect(stopPerformanceTrackStub.callCount).to.equal(2);
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
 

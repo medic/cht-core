@@ -67,6 +67,24 @@ describe('Performance Service', () => {
     expect(telemetryService.record.args[0][1]).to.equal(27542);
   }));
 
+  it('should track but no append prefix', fakeAsync(() => {
+    authService.has.resolves(true);
+    performanceService = TestBed.inject(PerformanceService);
+    flush();
+
+    performanceNowStub.returns(97176);
+    const track = performanceService.track('some-component');
+
+    expect(track).to.not.be.undefined;
+    performanceNowStub.returns(124718);
+    track.stop(false, false);
+    flush();
+
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0][0]).to.equal('some-component');
+    expect(telemetryService.record.args[0][1]).to.equal(27542);
+  }));
+
   it('should track and record "satisfied" Apdex when time is less than T', fakeAsync(() => {
     authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);

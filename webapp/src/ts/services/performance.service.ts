@@ -37,17 +37,27 @@ export class PerformanceService {
     const startTime = this.document.defaultView.performance.now();
     return {
       setName: newName => name = newName,
-      stop: (recordApdex?) => this.recordPerformance(name, startTime, recordApdex),
+      stop: (recordApdex = false, prefix = true) => this.recordPerformance(name, startTime, recordApdex, prefix),
     };
   }
 
-  private async recordPerformance(name: string, startTime: number, recordApdex = false) {
+  /**
+   * Records Telemetry entry
+   * @param name        Telemetry entry's name
+   * @param startTime   Process start time in milliseconds
+   * @param recordApdex If true, then record Apdex as additional Telemetry entry
+   * @param prefix      If false, then don't prefix with "perf:" the Telemetry entry's name. Introduced to keep old
+   *                    Telemetry entries' name.
+   * @private
+   */
+  private async recordPerformance(name: string, startTime: number, recordApdex = false, prefix = true) {
     if (!this.trackPerformance || !this.document?.defaultView) {
       return;
     }
 
+    const telemetryName = prefix ? this.PERFORMANCE_PREFIX + name : name;
     const time = this.document.defaultView.performance.now() - startTime;
-    await this.telemetryService.record(this.PERFORMANCE_PREFIX + name, time);
+    await this.telemetryService.record(telemetryName, time);
 
     if (recordApdex) {
       const { component, aggregate } = this.getApdexLabels(name, time);

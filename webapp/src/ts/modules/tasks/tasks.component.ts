@@ -9,11 +9,11 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
-import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -24,7 +24,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     private changesService: ChangesService,
     private contactTypesService: ContactTypesService,
     private rulesEngineService: RulesEngineService,
-    private telemetryService: TelemetryService,
+    private performanceService: PerformanceService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private userContactService: UserContactService,
     private sessionService: SessionService,
@@ -135,9 +135,9 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private async refreshTasks() {
     try {
-      const telemetryData: any = {
-        start: Date.now(),
-      };
+      const recordApdex = !this.tasksLoaded;
+      const trackName = !this.tasksLoaded ? 'tasks:load' : 'tasks:refresh';
+      const track = this.performanceService.track(trackName);
 
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
@@ -161,9 +161,7 @@ export class TasksComponent implements OnInit, OnDestroy {
         this.tasksActions.setTasksLoaded(true);
       }
 
-      telemetryData.end = Date.now();
-      const telemetryEntryName = !this.tasksLoaded ? `tasks:load` : `tasks:refresh`;
-      this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
+      track?.stop(recordApdex, false);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
