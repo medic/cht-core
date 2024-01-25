@@ -84,7 +84,7 @@ async def main() -> None:
     )
 
     addrs: str = ", ".join(str(sock.getsockname()) for sock in server.sockets)
-    log.info(f"Serving on {addrs}")
+    log.warning(f"Serving on {addrs}")
 
     async with server:
         await server.serve_forever()

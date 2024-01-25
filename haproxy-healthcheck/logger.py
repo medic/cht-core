@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 
-loglevel = os.getenv("HEALTHCHECK_LOG_LEVEL", "INFO")
+loglevel = os.getenv("HEALTHCHECK_LOG_LEVEL", "WARNING")
 
 
 def _init_logger(level: str, name=__name__) -> logging.Logger:
