@@ -352,9 +352,9 @@ const syncAndWaitForFailure = async () => {
 
 const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
-    await modalPage.getModalDetails();
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
     await modalPage.checkModalHasClosed();
+    shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
     console.error('Reload modal not showed up');
