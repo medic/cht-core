@@ -29,7 +29,6 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { AuthService } from '@mm-services/auth.service';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
-import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -52,7 +51,6 @@ describe('Contacts content component', () => {
   let contactMutedService;
   let fastActionButtonService;
   let mutingTransition;
-  let performanceService;
   let settings;
 
   beforeEach(waitForAsync(() => {
@@ -90,7 +88,6 @@ describe('Contacts content component', () => {
       updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar'),
       unsetSelected: sinon.spy(GlobalActions.prototype, 'unsetSelected'),
     };
-    performanceService = { track: sinon.stub() };
     mutingTransition = { isUnmuteForm: sinon.stub() };
     contactMutedService = { getMuted: sinon.stub() };
     fastActionButtonService = { getContactRightSideActions: sinon.stub() };
@@ -146,7 +143,6 @@ describe('Contacts content component', () => {
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ContactMutedService, useValue: contactMutedService },
           { provide: MutingTransition, useValue: mutingTransition },
-          { provide: PerformanceService, useValue: performanceService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: AuthService, useValue: { has: sinon.stub() } },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },

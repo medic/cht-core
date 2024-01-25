@@ -9,7 +9,6 @@ import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
-import { PerformanceService } from '@mm-services/performance.service';
 
 export const TRAINING_FORM_ID_PREFIX: string = 'form:training:';
 export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
@@ -32,7 +31,6 @@ export class XmlFormsService {
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
     private parseProvider:ParseProvider,
-    private performanceService:PerformanceService,
     private ngZone:NgZone,
   ) {
     this.init = this.getForms();
@@ -52,7 +50,6 @@ export class XmlFormsService {
   }
 
   private getForms() {
-    const trackPerformance = this.performanceService.track('forms_by_type:fetch');
     const options = {
       include_docs: true,
       key: ['form']
@@ -67,9 +64,6 @@ export class XmlFormsService {
         return res.rows
           .filter(row => this.findXFormAttachmentName(row.doc))
           .map(row => row.doc);
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 
@@ -322,14 +316,10 @@ export class XmlFormsService {
       if (error) {
         return callback(error);
       }
-      const trackPerformance = this.performanceService.track('forms_by_type:filter');
       return this
         .filterAll(forms, options)
         .then(results => callback(null, results))
-        .catch(err => callback(err))
-        .finally(() => {
-          trackPerformance?.stop();
-        });
+        .catch(err => callback(err));
     };
     this.init.then(forms => cb({ forms, error: undefined }));
     return this.observable.subscribe(cb);

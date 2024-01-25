@@ -117,7 +117,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.subscription.add(changesSubscription);
 
-    const trackPerformance = this.performanceService.track(this.getTrackName('initial_load'));
+    const trackPerformance = this.performanceService.track('contact_list:initial_load');
     Promise
       .all([
         this.getUserHomePlaceSummary(),
@@ -208,7 +208,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getUserHomePlaceSummary() {
-    const trackPerformance = this.performanceService.track(this.getTrackName('initial_load:fetch_user_place_summary'));
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
@@ -222,9 +221,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           summary.home = true;
         }
         return summary;
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 
@@ -236,9 +232,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.authService.has('can_view_last_visited_date');
   }
 
-  private formatContacts(contacts) { //NOSONAR
-    const trackPerformance = this.performanceService.track(this.getTrackName('query:format_contacts'));
-    const formattedContacts = contacts.map(updatedContact => { //NOSONAR
+  private formatContacts(contacts) {
+    return contacts.map(updatedContact => {
       const contact = { ...updatedContact };
       const typeId = this.contactTypesService.getTypeId(contact);
       const type = this.contactTypesService.getTypeById(this.contactTypes, typeId);
@@ -285,12 +280,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
       return contact;
     });
-    trackPerformance?.stop();
-    return formattedContacts;
   }
 
   private getChildren() {
-    const trackPerformance = this.performanceService.track(this.getTrackName('initial_load:fetch_children'));
     const filterChildPlaces = (children) => children.filter(child => !child.person);
 
     if (this.usersHomePlace) {
@@ -298,19 +290,13 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       const homeType = this.contactTypesService.getTypeId(this.usersHomePlace);
       return this.contactTypesService
         .getChildren(homeType)
-        .then(filterChildPlaces)
-        .finally(() => {
-          trackPerformance?.stop();
-        });
+        .then(filterChildPlaces);
     }
 
     if (this.isOnlineOnly) {
       return this.contactTypesService
         .getChildren()
-        .then(filterChildPlaces)
-        .finally(() => {
-          trackPerformance?.stop();
-        });
+        .then(filterChildPlaces);
     }
 
     return Promise.resolve([]);
@@ -331,7 +317,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
-    const trackPerformance = this.performanceService.track(this.getTrackName('query:execute_search'));
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
       options.limit = this.PAGE_SIZE;
@@ -418,9 +403,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.error = true;
         this.loading = false;
         console.error('Error loading contacts', err);
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 
@@ -479,10 +461,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.exportService.export('contacts', this.filters, { humanReadable: true });
   }
 
-  private getTrackName(processName) {
-    return `contact_list:${processName}`;
-  }
-
   private subscribeToAllContactXmlForms() {
     const subscription = this.xmlFormsService.subscribe(
       'ContactForms',
@@ -493,11 +471,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
 
-        const trackPerformance = this.performanceService.track(this.getTrackName('display_contact_forms'));
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
         this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
         this.updateFastActions();
-        trackPerformance?.stop();
       }
     );
     this.subscription.add(subscription);

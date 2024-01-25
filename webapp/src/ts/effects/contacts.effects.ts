@@ -107,13 +107,7 @@ export class ContactsEffects {
     this.globalActions.setTitle(this.translateService.instant(title));
   }
 
-  private getPerformanceTrackName(processName) {
-    return `${this.selectContactTrack}:${processName}`;
-  }
-
   private loadContact(id) {
-    const trackProcessName = 'load_contact_data';
-    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName(trackProcessName));
     this.contactsActions.setContactIdToLoad(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
@@ -125,10 +119,6 @@ export class ContactsEffects {
             this.globalActions.settingSelected();
             this.contactsActions.setSelectedContact(model);
           });
-      })
-      .finally(() => {
-        trackPerformance?.setName(this.getPerformanceTrackName(trackProcessName));
-        trackPerformance?.stop();
       });
   }
 
@@ -137,7 +127,6 @@ export class ContactsEffects {
   }
 
   private loadChildren(contactId, userFacilityId) {
-    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_children'));
     const getChildPlaces = userFacilityId !== contactId;
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
@@ -145,56 +134,40 @@ export class ContactsEffects {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactChildren(children));
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 
   private loadReports(contactId, forms) {
-    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_reports'));
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
       .then(reports => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactReports(reports));
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 
   private loadTargetDoc(contactId) {
-    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_targets'));
     return this.targetAggregateService
       .getCurrentTargetDoc(this.selectedContact)
       .then(targetDoc => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc));
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 
   private loadTasks(contactId) {
-    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_tasks'));
     return this.tasksForContactService
       .get(this.selectedContact)
       .then(tasks => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.updateSelectedContactsTasks(tasks));
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 
   private loadContactSummary(contactId) {
-    const trackPerformance = this.performanceService.track(this.getPerformanceTrackName('load_contact_summary'));
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
@@ -205,9 +178,6 @@ export class ContactsEffects {
             this.contactsActions.setContactsLoadingSummary(false);
             return this.contactsActions.updateSelectedContactSummary(summary);
           });
-      })
-      .finally(() => {
-        trackPerformance?.stop();
       });
   }
 }
