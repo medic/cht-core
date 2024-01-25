@@ -8,12 +8,16 @@ import { AuthService } from '@mm-services/auth.service';
   providedIn: 'root'
 })
 export class PerformanceService {
-  private trackPerformance = true;
+  private trackPerformance = false;
   private readonly CAN_TRACK_PERFORMANCE = 'track_performance';
-  private readonly TELEMETRY_PERFORMANCE_PREFIX = 'perf:';
-  private readonly TELEMETRY_APDEX_SUBFIX = ':apdex';
-  private readonly APXDEX_T = 3 * 1000;
-  private readonly APXDEX_TOLERANCE = 4; // 4xT
+  private readonly PERFORMANCE_PREFIX = 'perf:';
+  private readonly APDEX_SUBFIX = ':apdex';
+  private readonly APDEX_SATISFIED = ':satisfied';
+  private readonly APDEX_TOLERATING = ':tolerable';
+  private readonly APDEX_FRUSTRATED = ':frustrated';
+  private readonly APDEX_AGGREGATE = ':aggregate';
+  private readonly APDEX_T = 3 * 1000;
+  private readonly APDEX_TOLERANCE = 4; // 4xT
 
   constructor(
     private telemetryService: TelemetryService,
@@ -43,30 +47,36 @@ export class PerformanceService {
     }
 
     const time = this.document.defaultView.performance.now() - startTime;
-    await this.telemetryService.record(this.TELEMETRY_PERFORMANCE_PREFIX + name, time);
+    await this.telemetryService.record(this.PERFORMANCE_PREFIX + name, time);
 
     if (recordApdex) {
-      await this.recordApDex(name, time);
+      const { component, aggregate } = this.getApdexLabels(name, time);
+      await this.telemetryService.record(component, time);
+      await this.telemetryService.record(aggregate, time);
     }
   }
+  
+  private getApdexLabels(name: string, time: number) {
+    const component = this.PERFORMANCE_PREFIX + name + this.APDEX_SUBFIX;
+    const aggregate = this.PERFORMANCE_PREFIX + 'app' + this.APDEX_SUBFIX + this.APDEX_AGGREGATE;
 
-  private async recordApDex(name: string, time: number) {
-    if (time <= this.APXDEX_T) {
-      await this.telemetryService.record(
-        this.TELEMETRY_PERFORMANCE_PREFIX + name + this.TELEMETRY_APDEX_SUBFIX + ':satisfied'
-      );
-      return;
+    if (time <= this.APDEX_T) {
+      return {
+        component: component + this.APDEX_SATISFIED,
+        aggregate: aggregate + this.APDEX_SATISFIED,
+      };
+    }
+    
+    if (time <= (this.APDEX_TOLERANCE * this.APDEX_T)) {
+      return {
+        component: component + this.APDEX_TOLERATING,
+        aggregate: aggregate + this.APDEX_TOLERATING,
+      };
     }
 
-    if (time <= (this.APXDEX_TOLERANCE * this.APXDEX_T)) {
-      await this.telemetryService.record(
-        this.TELEMETRY_PERFORMANCE_PREFIX + name + this.TELEMETRY_APDEX_SUBFIX + ':tolerating'
-      );
-      return;
-    }
-
-    await this.telemetryService.record(
-      this.TELEMETRY_PERFORMANCE_PREFIX + name + this.TELEMETRY_APDEX_SUBFIX + ':frustrated'
-    );
+    return {
+      component: component + this.APDEX_FRUSTRATED,
+      aggregate: aggregate + this.APDEX_FRUSTRATED,
+    };
   }
 }
