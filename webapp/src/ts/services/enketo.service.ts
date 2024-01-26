@@ -463,6 +463,7 @@ export class EnketoService {
 
     const files = FileManager.getCurrentFiles();
     for (const file of files) {
+      console.log('~~~~ adding user file: ', file.name);
       this.attachmentService.add(doc, 'user-file-' + file.name, file, file.type, false);
     }
 
@@ -475,6 +476,7 @@ export class EnketoService {
           const name = `binary-${idx}`;
           const type = 'image/png';
           $element.text(name);
+          console.log('~~~~ adding binary file: ', name);
           this.attachmentService.add(doc, 'user-file-' + name, file, type, true);
         }
       });
