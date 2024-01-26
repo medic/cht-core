@@ -369,8 +369,8 @@ const getContactSummaryCardFields = async () => {
   const card = await header.parentElement();
   const results = [];
   for await (const cell of card.$$('.row .cell')) {
-    const label = (await cell.$('label')).getText();
-    const value = (await cell.$('p')).getText();
+    const label = await (await cell.$('div label')).getText();
+    const value = await (await cell.$('div p')).getText();
     results.push({ label, value });
   }
   return results;
