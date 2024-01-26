@@ -1,6 +1,4 @@
 const _ = require('lodash/core');
-_.partial = require('lodash/partial');
-_.partial.placeholder = _;
 const moment = require('moment');
 
 const END_OF_ALPHABET = '\ufff0';
@@ -10,7 +8,7 @@ const getKeysArray = (keys) => keys.map(t => [ t ]);
 
 // filter = { selected: [...], options: [...]}
 const getRequestForMultidropdown = (view, filter, mapKeysFunc) => {
-  if (!filter || !filter.selected) {
+  if (!filter?.selected) {
     return;
   }
 
@@ -203,13 +201,37 @@ const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   };
 
   if (result.union) {
-    result.paramSets =
-      typeRequests.params.keys.map(_.partial(makeCombinedParams, freetextRequest, _));
+    result.paramSets = typeRequests.params.keys.map(typeRequest => {
+      return makeCombinedParams(freetextRequest, typeRequest);
+    });
     return result;
   }
 
   result.params = makeCombinedParams(freetextRequest, typeRequests.params.keys[0]);
   return result;
+};
+
+const getCombinedContactsRequests = (freetextRequests, contactsByParentRequest, typeRequest) => {
+  const combinedRequests = freetextRequests.map(freetextRequest => {
+    return getContactsByTypeAndFreetextRequest(typeRequest, freetextRequest);
+  });
+  if (contactsByParentRequest) {
+    combinedRequests.unshift(contactsByParentRequest);
+  }
+  return combinedRequests;
+};
+
+const setDefaultContactsRequests = (requests, shouldSortByLastVisitedDate) => {
+  if (!requests.length) {
+    requests.push(defaultContactRequest());
+  }
+
+  if (shouldSortByLastVisitedDate) {
+    // Always push this last, search:getIntersection uses the last request's result, we'll need it later for sorting.
+    requests.push(sortByLastVisitedDate());
+  }
+
+  return requests;
 };
 
 const requestBuilders = {
@@ -244,24 +266,11 @@ const requestBuilders = {
     }
 
     if (hasTypeRequest && freetextRequests?.length) {
-      const combinedRequests = freetextRequests.map(_.partial(getContactsByTypeAndFreetextRequest, typeRequest, _));
-      if (contactsByParentRequest) {
-        combinedRequests.unshift(contactsByParentRequest);
-      }
-      return combinedRequests;
+      return getCombinedContactsRequests(freetextRequests, contactsByParentRequest, typeRequest);
     }
 
     const requests = _.compact(_.flatten([ freetextRequests, typeRequest, contactsByParentRequest ]));
-    if (!requests.length) {
-      requests.push(defaultContactRequest());
-    }
-
-    if (shouldSortByLastVisitedDate) {
-      // Always push this last, search:getIntersection uses the last request's result, we'll need it later for sorting.
-      requests.push(sortByLastVisitedDate());
-    }
-
-    return requests;
+    return setDefaultContactsRequests(requests, shouldSortByLastVisitedDate);
   }
 };
 
