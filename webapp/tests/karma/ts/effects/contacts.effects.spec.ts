@@ -29,6 +29,7 @@ describe('Contacts effects', () => {
   let targetAggregateService;
   let tasksForContactService;
   let performanceService;
+  let stopPerformanceTrackStub;
   let routeSnapshotService;
 
   beforeEach(async() => {
@@ -44,7 +45,8 @@ describe('Contacts effects', () => {
       loadChildren: sinon.stub().resolves([]),
       loadReports: sinon.stub().resolves([]),
     };
-    performanceService = { track: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     translateService = { instant: sinon.stub().returnsArg(0) };
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getCurrentTargetDoc: sinon.stub().resolves() };
@@ -168,6 +170,12 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
+      expect(performanceService.track.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'select_contact:contact:load',
+        recordApdex: true,
+      });
     });
 
     it('should load the contact when silent', async () => {
@@ -190,6 +198,12 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
+      expect(performanceService.track.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'select_contact:contact:load',
+        recordApdex: true,
+      });
     });
 
     it('should handle missing contacts', fakeAsync(() => {
