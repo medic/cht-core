@@ -31,7 +31,7 @@ jobs:
         sudo apt-get install -y bats
 
     - name: Login to Docker Hub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -48,13 +48,13 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         mask-password: 'true'
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
     - name: Couch Start
@@ -88,9 +88,9 @@ jobs:
         cmd: ['test-config-default']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
     - run: npm ci
@@ -102,9 +102,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: sudo apt-get install -y xsltproc
@@ -149,7 +149,7 @@ jobs:
             chrome-version: 90
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -166,15 +166,15 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         mask-password: 'true'
 
     - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Download docker images artifacts
       uses: actions/download-artifact@v3
       with:
@@ -197,7 +197,7 @@ jobs:
       run:  npm install -g cht-conf
     - run: npm ci
     - name: Fetch allure history
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: 'medic/build-history-data'
         path: 'build-history-data'
@@ -217,7 +217,7 @@ jobs:
 
     - name: Fetch allure history
       if: always()
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: 'medic/build-history-data'
         path: 'build-history-data-new'
@@ -238,7 +238,7 @@ jobs:
         force: true
     - name: Fetch report repo
       if: always()
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: 'medic/build-history'
         path: 'build-history'
@@ -291,7 +291,7 @@ jobs:
     - name: Login to Amazon ECR
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         mask-password: 'true'
 
@@ -305,12 +305,12 @@ jobs:
     - name: Login to Public Amazon ECR
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr-public
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         registry-type: public
         mask-password: 'true'
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Publish
       run: |
         cd scripts/ci
@@ -335,11 +335,11 @@ jobs:
       - name: Login to Public Amazon ECR
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
         id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: public
           mask-password: 'true'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
