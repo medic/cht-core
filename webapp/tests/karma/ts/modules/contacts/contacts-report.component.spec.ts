@@ -12,7 +12,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { FormService } from '@mm-services/form.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { Selectors } from '@mm-selectors/index';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -25,7 +25,8 @@ describe('contacts report component', () => {
   let formService;
   let geolocationService;
   let geoHandle;
-  let telemetryService;
+  let stopPerformanceTrackStub;
+  let performanceService;
   let xmlFormsService;
   let translateFromService;
   let router;
@@ -42,7 +43,8 @@ describe('contacts report component', () => {
     xmlFormsService = { get: sinon.stub().resolves({ title: 'formTitle' }) };
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
-    telemetryService = { record: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     translateFromService = { get: sinon.stub() };
     router = { navigate: sinon.stub() };
     routeSnapshot = {
@@ -81,7 +83,7 @@ describe('contacts report component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: FormService, useValue: formService },
           { provide: GeolocationService, useValue: geolocationService },
-          { provide: TelemetryService, useValue: telemetryService },
+          { provide: PerformanceService, useValue: performanceService },
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: TranslateFromService, useValue: translateFromService },
           { provide: ActivatedRoute, useValue: route },
@@ -241,8 +243,18 @@ describe('contacts report component', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0][0][0]).to.equal('/contacts');
       expect(router.navigate.args[0][0][1]).to.equal('random-contact');
-      expect(telemetryService.record.callCount).to.equal(3);
-      expect(telemetryService.record.args[2][0]).to.equal('enketo:contacts:pregnancy_danger_sign:add:save');
+      expect(performanceService.track.calledThrice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'enketo:contacts:pregnancy_danger_sign:add:render',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'enketo:contacts:pregnancy_danger_sign:add:user_edit_time',
+      });
+      expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
+        name: 'enketo:contacts:pregnancy_danger_sign:add:save',
+      });
       expect(setEnketoError.callCount).to.equal(0);
       expect(setSnackbarContent.callCount).to.equal(1);
     }));
