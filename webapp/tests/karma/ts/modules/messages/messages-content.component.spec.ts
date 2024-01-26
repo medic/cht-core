@@ -149,7 +149,10 @@ describe('MessagesContentComponent', () => {
       expect(updateSelectedConversationSpy.getCall(0).args[0].contact.doc.phone).to.equal(phone);
       expect(performanceService.track.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.calledOnce).to.be.true;
-      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'select_conversation:load', recordApdex: true });
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'select_conversation:load',
+        recordApdex: true,
+      });
     });
 
     it('should not fail when no contact and no conversation', () => {
