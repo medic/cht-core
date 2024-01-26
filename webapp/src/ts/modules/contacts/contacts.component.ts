@@ -94,6 +94,11 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.contactsActions.removeContactFromList({ _id: change.id });
           this.hasContacts = this.contactsList.length;
         }
+        if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
+          this.getDataRecordsService.get(change.id).then(updatedHomePlace => {
+            this.usersHomePlace = updatedHomePlace;
+          });
+        }
         const withIds =
           this.isSortedByLastVisited() &&
           !!this.isRelevantVisitReport(change.doc) &&
@@ -310,52 +315,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.sortDirection === 'last_visited_date';
   }
 
-  private getContactsDocIds(contactsList, usersHomePlace): string[] {
-    const docIds = contactsList.map((item) => item._id);
-    if (usersHomePlace && !docIds.includes(usersHomePlace._id)) {
-      docIds.push(usersHomePlace._id);
-    }
-    return docIds;
-  }
-
-  private findHomeIndex(updatedContacts: any[]): number {
-    return _findIndex(updatedContacts, contact => contact._id === this.usersHomePlace._id);
-  }
-
-  private checkAdditionalListItem(homeIndex: number) {
-    this.additionalListItem =
-      !this.filters.search &&
-      (this.additionalListItem || !this.appending) &&
-      homeIndex === -1;
-  }
-
-  private moveUserHomePlaceToTop(updatedContacts: any[], homeIndex: number) {
-    if (homeIndex < 0) {
-      return updatedContacts;
-    }
-    this.usersHomePlace = updatedContacts[homeIndex];
-
-    if (!this.appending) {
-      return [this.usersHomePlace, ...updatedContacts.slice(1)];
-    }
-    
-    if (this.additionalListItem) {
-      return [this.usersHomePlace, ...updatedContacts];
-    }
-    return updatedContacts;
-  }
-
-  private setUsersHomePlace(updatedContacts) {
-    if (!this.usersHomePlace) {
-      return updatedContacts;
-    }
-
-    const homeIndex = this.findHomeIndex(updatedContacts);
-
-    this.checkAdditionalListItem(homeIndex);
-    return this.moveUserHomePlaceToTop(updatedContacts, homeIndex);
-  }
-
   private query(opts?) {
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
@@ -387,7 +346,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       searchFilters = this.filters;
     }
 
-    const extensions:any = {};
+    const extensions: any = {};
     if (this.lastVisitedDateExtras) {
       extensions.displayLastVisitedDate = true;
       extensions.visitCountSettings = this.visitCountSettings;
@@ -396,13 +355,36 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       extensions.sortByLastVisitedDate = true;
     }
 
-    const docIds = this.getContactsDocIds(this.contactsList, this.usersHomePlace);
+    let docIds;
+    if (options.withIds) {
+      docIds = this.contactsList.map((item) => {
+        return item._id;
+      });
+    }
 
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
-        updatedContacts = this.setUsersHomePlace(updatedContacts);
+        if (this.usersHomePlace) {
+          const homeIndex = _findIndex(updatedContacts, (contact: any) => {
+            return contact._id === this.usersHomePlace._id;
+          });
+          this.additionalListItem =
+            !this.filters.search &&
+            (this.additionalListItem || !this.appending) &&
+            homeIndex === -1;
+
+          if (!this.appending) {
+            if (homeIndex !== -1) {
+              // move it to the top
+              updatedContacts.splice(homeIndex, 1);
+              updatedContacts.unshift(this.usersHomePlace);
+            } else if (!this.filters.search) {
+              updatedContacts.unshift(this.usersHomePlace);
+            }
+          }
+        }
 
         updatedContacts = this.formatContacts(updatedContacts);
         this.contactsActions.updateContactsList(updatedContacts);
