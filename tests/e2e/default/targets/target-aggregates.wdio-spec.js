@@ -367,9 +367,9 @@ describe('Target aggregates', () => {
       expect(await contactsPage.getContactInfoName()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-      validateCardField('Last updated', 'yesterday Clarissa');
-      validateCardField('what a target!', '40');
-      validateCardField('the most target', '50%');
+      await validateCardField('Last updated', 'yesterday Clarissa');
+      await validateCardField('what a target!', '40');
+      await validateCardField('the most target', '50%');
 
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[0]);
@@ -382,9 +382,9 @@ describe('Target aggregates', () => {
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-      validateCardField('Last updated', 'yesterday Prometheus');
-      validateCardField('what a target!', '18');
-      validateCardField('the most target', '15%');
+      await validateCardField('Last updated', 'yesterday Prometheus');
+      await validateCardField('what a target!', '18');
+      await validateCardField('the most target', '15%');
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[1]);
     });
