@@ -284,14 +284,13 @@ describe('Contacts component', () => {
 
   describe('Search', () => {
     it('Puts the home place at the top of the list', fakeAsync(() => {
-      component.usersHomePlace = { _id: 'district-id' };
       searchResults = [
         {
           _id: 'search-result',
         },
       ];
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchService.search.resolves(searchResults);
       component.ngOnInit();
       flush();
       const contacts = component.contactsActions.updateContactsList.args[0][0];
@@ -302,11 +301,10 @@ describe('Contacts component', () => {
     }));
 
     it('should search for homeplace children of the correct type', fakeAsync(() => {
-      component.usersHomePlace = { _id: 'district-id' };
       sinon.resetHistory();
       searchResults = [ { _id: 'search-result' } ];
 
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchService.search.resolves(searchResults);
       const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');
       district.contact_type = 'whatever';
       contactTypesService.getTypeId.returns('some type');
@@ -327,10 +325,13 @@ describe('Contacts component', () => {
         {
           _id: 'search-result',
         },
+        {
+          _id: 'district-id',
+        },
       ];
 
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchService.search.resolves(searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
@@ -392,7 +393,7 @@ describe('Contacts component', () => {
     it('when paginating, does modify skip for non-admins #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -434,7 +435,7 @@ describe('Contacts component', () => {
     it('when refreshing list as non-admin, does modify limit #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -450,10 +451,9 @@ describe('Contacts component', () => {
     }));
 
     it('resets limit/skip modifier when filtering #4085', fakeAsync(() => {
-      component.usersHomePlace = { _id: 'district-id' };
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -490,7 +490,8 @@ describe('Contacts component', () => {
     it('when paginating, does not modify the skip when it finds homeplace #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(49).fill(searchResult);
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchResults.push({ _id: 'district-id' });
+      searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -503,7 +504,7 @@ describe('Contacts component', () => {
       expect(searchService.search.args[1][2]).to.deep.equal({
         limit: 50,
         paginating: true,
-        skip: 49,
+        skip: 50,
       });
     }));
 
@@ -516,7 +517,7 @@ describe('Contacts component', () => {
         return result;
       };
       searchResults = mockResults(50);
-      searchService.search.resolves([component.usersHomePlace, ...searchResults]);
+      searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       searchService.search.resetHistory();
@@ -638,7 +639,7 @@ describe('Contacts component', () => {
           { types: { selected: ['childType'] } },
           { limit: 50 },
           {},
-          ['district-id'],
+          undefined,
         ]
       );
     });
@@ -664,7 +665,7 @@ describe('Contacts component', () => {
             displayLastVisitedDate: true,
             visitCountSettings: {},
           },
-          ['district-id'],
+          undefined,
         ]
       );
     }));
@@ -703,7 +704,7 @@ describe('Contacts component', () => {
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
           },
-          ['district-id'],
+          undefined,
         ]
       );
     }));
@@ -742,7 +743,7 @@ describe('Contacts component', () => {
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
           },
-          ['district-id'],
+          undefined,
         ]
       );
       component.sortDirection = 'somethingElse';
@@ -786,7 +787,7 @@ describe('Contacts component', () => {
             visitCountSettings: { monthStartDate: 25, visitCountGoal: 125 },
             sortByLastVisitedDate: true,
           },
-          ['district-id'],
+          undefined,
         ]
       );
       component.sortDirection = 'somethingElse';
@@ -928,15 +929,13 @@ describe('Contacts component', () => {
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             const searchResult = { _id: 'search-result' };
-            searchResults = Array(59).fill(searchResult);
-            const usersHomePlace = 'district-id';
+            searchResults = Array(60).fill(searchResult);
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             searchService.search.resetHistory();
             component.ngOnInit();
             flush();
             const changesCallback = changesService.subscribe.args[1][0].callback;
-            const docIds = Array(59).fill('search-result').concat(usersHomePlace);
 
             return Promise.all([
               changesCallback({ doc: relevantVisitReport }),
@@ -948,16 +947,15 @@ describe('Contacts component', () => {
               expect(searchService.search.callCount).to.equal(6);
 
               for (let i = 1; i < 6; i++) {
-                const actualArgs = searchService.search.args[i];
-                const expectedArgs = [
-                  'contacts',
-                  { types: { selected: ['childType'] } },
-                  { limit: 58, withIds: false, silent: true },
-                  { displayLastVisitedDate: true, visitCountSettings: {} },
-                  docIds,
-                ];
-
-                expect(JSON.stringify(actualArgs)).to.equal(JSON.stringify(expectedArgs));
+                expect(searchService.search.args[i]).to.deep.equal(
+                  [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 60, withIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {} },
+                    undefined,
+                  ]
+                );
               }
             });
           }));
@@ -992,7 +990,7 @@ describe('Contacts component', () => {
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
                   },
-                  [0, 1, 2, 3, 4, 'district-id'],
+                  ['district-id', 0, 1, 2, 3, 4],
                 ]);
 
                 for (let i = 2; i < 6; i++) {
@@ -1005,7 +1003,7 @@ describe('Contacts component', () => {
                       visitCountSettings: {},
                       sortByLastVisitedDate: true,
                     },
-                    [0, 1, 2, 3, 4, 'district-id'],
+                    undefined,
                   ]);
                 }
               });
@@ -1044,7 +1042,7 @@ describe('Contacts component', () => {
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
                   },
-                  [0, 1, 2, 3, 4, 'district-id'],
+                  undefined,
                 ]);
               }
             });
@@ -1082,7 +1080,7 @@ describe('Contacts component', () => {
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
                   },
-                  [ 0, 1, 2, 3, 4, 'district-id'],
+                  ['district-id', 0, 1, 2, 3, 4],
                 ]);
 
                 for (let i = 2; i < 6; i++) {
@@ -1095,7 +1093,7 @@ describe('Contacts component', () => {
                       visitCountSettings: {},
                       sortByLastVisitedDate: true,
                     },
-                    [0, 1, 2, 3, 4, 'district-id'],
+                    undefined,
                   ]);
                 }
               });
@@ -1133,7 +1131,7 @@ describe('Contacts component', () => {
                   { types: { selected: ['childType'] } },
                   { limit: 49, withIds: false, silent: true },
                   {},
-                  [0, 1, 2, 3, 4, 'district-id'],
+                  undefined,
                 ]);
               }
             });
@@ -1175,7 +1173,7 @@ describe('Contacts component', () => {
                       { types: { selected: ['childType'] } },
                       { limit: 49, withIds: false, silent: true },
                       {},
-                      [0, 1, 2, 3, 4, 'district-id'],
+                      undefined,
                     ]);
                   }
                 });
@@ -1202,7 +1200,7 @@ describe('Contacts component', () => {
             { types: { selected: ['childType'] } },
             { limit: 50 },
             {},
-            ['district-id'],
+            undefined,
           ]);
         }));
       });
