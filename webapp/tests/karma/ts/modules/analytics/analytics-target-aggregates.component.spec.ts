@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
+import { Store } from '@ngrx/store';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -7,13 +8,15 @@ import sinon from 'sinon';
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
-import { Store } from '@ngrx/store';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
   let fixture: ComponentFixture<AnalyticsTargetAggregatesComponent>;
   let targetAggregatesService;
   let targetAggregatesActions;
+  let stopPerformanceTrackStub;
+  let performanceService;
 
   beforeEach(waitForAsync(() => {
     targetAggregatesService = {
@@ -25,6 +28,8 @@ describe('Analytics Target Aggregates Component', () => {
       setTargetAggregatesError: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregatesError'),
       setTargetAggregatesLoaded: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregatesLoaded')
     };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     const mockedSelectors = [
       { selector: 'getSelectedTargetAggregate', value: null },
       { selector: 'getTargetAggregates', value: null },
@@ -40,6 +45,7 @@ describe('Analytics Target Aggregates Component', () => {
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: TargetAggregatesService, useValue: targetAggregatesService },
+          { provide: PerformanceService, useValue: performanceService },
         ]
       })
       .compileComponents()
@@ -62,7 +68,8 @@ describe('Analytics Target Aggregates Component', () => {
 
     const newComponent = new AnalyticsTargetAggregatesComponent(
       sinon.createStubInstance(Store),
-      sinon.createStubInstance(TargetAggregatesService)
+      sinon.createStubInstance(TargetAggregatesService),
+      sinon.createStubInstance(PerformanceService),
     );
 
     expect(newComponent.loading).to.equal(true);

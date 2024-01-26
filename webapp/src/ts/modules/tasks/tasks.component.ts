@@ -36,6 +36,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   subscription = new Subscription();
   private tasksActions;
   private globalActions;
+  private trackPerformance;
 
   tasksList;
   selectedTask;
@@ -94,6 +95,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.trackPerformance = this.performanceService.track();
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
@@ -135,8 +137,6 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private async refreshTasks() {
     try {
-      const track = this.performanceService.track();
-
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
@@ -158,18 +158,17 @@ export class TasksComponent implements OnInit, OnDestroy {
       if (!this.tasksLoaded) {
         this.tasksActions.setTasksLoaded(true);
       }
-
-      track?.stop({
-        name: this.tasksLoaded ? 'tasks:refresh' : 'tasks:load',
-        recordApdex: !this.tasksLoaded,
-      });
-
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
       this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
+    } finally {
+      this.trackPerformance?.stop({
+        name: this.tasksLoaded ? 'tasks:refresh' : 'tasks:load',
+        recordApdex: !this.tasksLoaded,
+      });
     }
   }
 
