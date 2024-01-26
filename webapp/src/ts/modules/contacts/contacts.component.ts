@@ -84,6 +84,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    const trackPerformance = this.performanceService.track();
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
     this.globalActions.clearFilters(); // clear any global filters first
     this.subscribeToStore();
@@ -117,7 +118,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.subscription.add(changesSubscription);
 
-    const trackPerformance = this.performanceService.track();
     Promise
       .all([
         this.getUserHomePlaceSummary(),
@@ -154,7 +154,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .finally(() => {
         trackPerformance?.stop({
-          name: 'contact_list:initial_load',
+          name: 'contact_list:load',
           recordApdex: true,
         });
       });

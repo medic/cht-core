@@ -23,6 +23,7 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { ModalService } from '@mm-services/modal.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
@@ -39,6 +40,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroyed: boolean;
   private isOnlineOnly = false;
   private canDefaultFilter = false;
+  private trackPerformance;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -82,12 +84,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private modalService:ModalService,
     private fastActionButtonService:FastActionButtonService,
     private xmlFormsService:XmlFormsService,
+    private performanceService: PerformanceService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
   }
 
   ngOnInit() {
+    this.trackPerformance = this.performanceService.track();
     this.isOnlineOnly = this.authService.online(true);
     this.subscribeToStore();
     this.subscribeToXmlFormsService();
@@ -312,7 +316,16 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.errorSyntax = true;
         }
         console.error('Error loading messages', err);
-      });
+      })
+      .finally(() => this.recordPerformance());
+  }
+
+  private async recordPerformance() {
+    if (!this.trackPerformance) {
+      return;
+    }
+    await this.trackPerformance.stop({ name: 'report_list:load', recordApdex: true });
+    this.trackPerformance = null;
   }
 
   private initScroll() {

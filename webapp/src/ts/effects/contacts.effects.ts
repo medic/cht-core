@@ -95,7 +95,7 @@ export class ContactsEffects {
               name: [
                 'select_contact',
                 selectedContact?.doc?.contact_type || 'contact',
-                'load_everything'
+                'load'
               ].join(':'),
             });
           });

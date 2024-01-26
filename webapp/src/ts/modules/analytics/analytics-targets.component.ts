@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './analytics-targets.component.html'
@@ -11,15 +11,14 @@ export class AnalyticsTargetsComponent implements OnInit {
   loading = true;
   targetsDisabled = false;
   errorStack;
-  telemetryData: { start: number; end?: number } = {
-    start: Date.now(),
-    end: undefined
-  };
+  trackPerformance;
 
   constructor(
     private rulesEngineService: RulesEngineService,
-    private telemetryService: TelemetryService
-  ) { }
+    private performanceService: PerformanceService
+  ) {
+    this.trackPerformance = this.performanceService.track();
+  }
 
   ngOnInit(): void {
     this.getTargets();
@@ -40,8 +39,10 @@ export class AnalyticsTargetsComponent implements OnInit {
       .then((targets: any[] = []) => {
         this.loading = false;
         this.targets = targets.filter(target => target.visible !== false);
-        this.telemetryData.end = Date.now();
-        this.telemetryService.record(`analytics:targets:load`, this.telemetryData.end - this.telemetryData.start);
+        this.trackPerformance.stop({
+          name: 'analytics:targets:load',
+          recordApdex: true,
+        });
       });
   }
 }
