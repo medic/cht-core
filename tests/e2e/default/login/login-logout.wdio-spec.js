@@ -128,8 +128,8 @@ describe('Login page funcionality tests', () => {
       await browser.deleteCookies('AuthSession');
       await commonPage.goToReports();
 
-      const description = await (await modalPage.body()).getText();
-      expect(description).to.equal('Your session has expired and you have been logged out. Please login to continue.');
+      const { body } = await modalPage.getModalDetails();
+      expect(body).to.equal('Your session has expired and you have been logged out. Please login to continue.');
       await modalPage.submit();
       expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
     });

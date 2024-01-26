@@ -10,6 +10,7 @@ const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 const semver = require('semver');
 const moment = require('moment');
+
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
@@ -17,6 +18,9 @@ const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+PouchDB.plugin(require('@medic/pouchdb-http-auth-session'));
+
+const cookieJar = rpn.jar();
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
@@ -124,12 +128,42 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
+const getSession = async () => {
+  if (cookieJar.getCookies(constants.BASE_URL).length) {
+    return;
+  }
+
+  const options = {
+    method: 'POST',
+    uri: `${constants.BASE_URL}/_session`,
+    json: true,
+    body: { name: auth.username, password: auth.password},
+    auth,
+    resolveWithFullResponse: true,
+  };
+  const response = await rpn(options);
+  const setCookie = response.headers?.['set-cookie'];
+  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
+  if (header) {
+    try {
+      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+};
+
+const isLoginRequest = options => {
+  return options.path === '/medic/login' && options.body.user !== auth.username;
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug } = {}) => { //NOSONAR
+const request = async (options, { debug } = {}) => { //NOSONAR
   options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth) {
-    options.auth = options.auth || auth;
+  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
+    await getSession();
+    options.jar = cookieJar;
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
@@ -154,11 +188,13 @@ const request = (options, { debug } = {}) => { //NOSONAR
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  return rpn(options).catch(err => {
+  try {
+    return await rpn(options);
+  } catch (err) {
     err.responseBody = err?.response?.body;
     console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
     throw err;
-  });
+  }
 };
 
 const requestOnTestDb = (options, debug) => {
@@ -609,12 +645,12 @@ const revertDb = async (except, ignoreRefresh) => { //NOSONAR
   await revertTranslations();
   await deleteLocalDocs();
 
-  // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
+  // only refresh if the settings were changed or modal was already present, and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
     watcher?.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise; // NOSONAR
+    watcher && await watcher.promise; // NOSONAR
   } else {
     watcher?.cancel();
   }
@@ -632,8 +668,14 @@ const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
 const getLoggedInUser = async () => {
   try {
+    if (typeof browser === 'undefined') {
+      return;
+    }
     const cookies = await browser.getCookies('userCtx');
-    const userCtx = JSON.parse(cookies?.[0]);
+    if (!cookies.length) {
+      return;
+    }
+    const userCtx = JSON.parse(decodeURIComponent(cookies?.[0]?.value));
     return userCtx.name;
   } catch (err) {
     console.warn('Error getting userCtx', err.message);
@@ -700,7 +742,6 @@ const createUsers = async (users, meta = false) => {
   const createUserOpts = {
     path: '/api/v1/users',
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
   };
 
   for (const user of users) {

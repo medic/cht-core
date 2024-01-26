@@ -13,6 +13,7 @@
     "node/no-extraneous-require": ["error",
       {
         "allowModules": [
+          "@medic/pouchdb-http-auth-session",
           "@medic/bulk-docs-utils",
           "@medic/cht-script-api",
           "@medic/contact-types-utils",
