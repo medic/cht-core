@@ -364,7 +364,8 @@ const exportContacts = async () => {
 };
 
 const getContactSummaryCardFields = async () => {
-  const header = await(await contactCardTitle()).waitForDisplayed();
+  const header = await contactCardTitle();
+  await header.waitForDisplayed();
   const card = await header.parentElement();
   const results = [];
   for await (const cell of card.$$('.cell')) {
