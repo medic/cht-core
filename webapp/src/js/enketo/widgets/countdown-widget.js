@@ -26,25 +26,40 @@ const DEFAULT_TIME = 60;
  * Countdown timer.
  *
  * @extends Widget
+// Remove this when we no longer support countdown timer appearance on notes
+const deprecated = {
+  selector: '.or-appearance-countdown-timer input',
+  getDefaultValue: $el => parseInt($el.val()),
+};
+/**
+ * Countdown timer.
+ *
+ * @extends Widget
  */
+
+const deprecated = {
+  selector: '.or-appearance-countdown-timer input',
+  getDefaultValue: $el => parseInt($el.val()),
+};
+
 class Timerwidget extends Widget {
   static get selector() {
-    return '.or-appearance-countdown-timer input';
+    return `.or-appearance-countdown-timer .option-wrapper input, ${deprecated.selector}`;
   }
 
   _init() {
     const $el = $( this.element );
-    const $label = $el.parent();
-
+    const $wrapper = $el.closest('.or-appearance-countdown-timer');
     const canvas = $('<canvas width="%s" height="%s">'.replace(/%s/g, DIM));
-    $label.append(canvas);
-    new TimerAnimation(canvas[0], DIM, DIM, parseInt($el.val()) || DEFAULT_TIME);
+    $wrapper.append(canvas);
+    const duration = parseInt($wrapper.attr('data-cht-duration')) || deprecated.getDefaultValue($el) || DEFAULT_TIME;
+    new TimerAnimation(canvas[0], DIM, DIM, duration, $el);
   }
 }
 
 module.exports = Timerwidget;
 
-const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
+const TimerAnimation = function(canvas, canvasW, canvasH, duration, $el) {
   const pi = Math.PI;
   const LIM = duration * 500; // Half of the time the animation should take in milliseconds
   const ctx = canvas.getContext('2d');
@@ -65,6 +80,10 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
     const cached = new Audio('/audio/alert.mp3');
     return { play: () => cached.play() };
   }());
+  
+  const setTimerCompleted = () => {
+    $el.prop('checked', true).trigger('change'); // Mark the hidden OK radio button as checked
+  };
 
   //> UTILS
   const drawCircle = (ctx, c) => {
@@ -119,6 +138,7 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
     } else {
       drawBackgroundCircle(inactiveBgColor);
       running = false;
+      setTimerCompleted();
       if ($(canvas).closest('body').length > 0) {
         // only beep if the canvas is still attached to the DOM
         audio.play();
