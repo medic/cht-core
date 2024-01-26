@@ -22,6 +22,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { SenderComponent } from '@mm-components/sender/sender.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
@@ -37,8 +38,12 @@ describe('MessagesContentComponent', () => {
   let changesCallback;
   let activatedRoute;
   let activatedRouteParams;
+  let performanceService;
+  let stopPerformanceTrackStub;
 
   beforeEach(waitForAsync(() => {
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     messageContactService = {
       getConversation: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
@@ -87,7 +92,8 @@ describe('MessagesContentComponent', () => {
           { provide: MarkReadService, useValue: markReadService },
           { provide: SendMessageService, useValue: sendMessageService },
           { provide: ModalService, useValue: modalService },
-          { provide: ActivatedRoute, useValue: activatedRoute }
+          { provide: ActivatedRoute, useValue: activatedRoute },
+          { provide: PerformanceService, useValue: performanceService },
         ]
       })
       .compileComponents()
@@ -141,6 +147,9 @@ describe('MessagesContentComponent', () => {
       expect(updateSelectedConversationSpy.callCount).to.equal(1);
       expect(updateSelectedConversationSpy.getCall(0).args[0].contact.doc.name).to.equal('');
       expect(updateSelectedConversationSpy.getCall(0).args[0].contact.doc.phone).to.equal(phone);
+      expect(performanceService.track.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'select_conversation:load', recordApdex: true });
     });
 
     it('should not fail when no contact and no conversation', () => {

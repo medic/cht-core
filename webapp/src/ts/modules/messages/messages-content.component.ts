@@ -22,6 +22,7 @@ import { MarkReadService } from '@mm-services/mark-read.service';
 import { SendMessageService } from '@mm-services/send-message.service';
 import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 /**
 *  In this context the URL parameter "id", can be:
@@ -47,6 +48,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   textAreaFocused = false;
   isAddRecipientBtnActive = false;
   allLoaded = false;
+  trackPerformance;
 
   private urlParameters = { type: '', id: '' };
   private hasToScroll = false;
@@ -63,10 +65,12 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     private markReadService: MarkReadService,
     private sendMessageService: SendMessageService,
     private modalService: ModalService,
+    private performanceService: PerformanceService,
     private ngZone:NgZone,
   ) { }
 
   ngOnInit(): void {
+    this.trackPerformance = this.performanceService.track();
     const selectorsSubscription = combineLatest(
       this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getLoadingContent)),
@@ -240,6 +244,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();
         this.hasToScroll = true; // Indication to scroll to unread message.
+        this.trackPerformance?.stop({ name: 'select_conversation:load', recordApdex: true });
       })
       .catch((err) => {
         this.globalActions.setLoadingContent(false);
