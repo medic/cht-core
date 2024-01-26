@@ -1,6 +1,5 @@
 const MODAL_CONTAINER = 'mm-modal-layout';
 const MODAL_FOOTER = '.modal-footer';
-const OVERLAY_CONTAINER = '.cdk-overlay-backdrop';
 
 const modal = () => $(MODAL_CONTAINER);
 const header = () => $(`${MODAL_CONTAINER} .panel-header-title`);
