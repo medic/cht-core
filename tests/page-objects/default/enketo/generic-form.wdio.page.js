@@ -41,11 +41,13 @@ const selectContact = async (contactName) => {
   });
 };
 
-const submitForm = async () => {
+const submitForm = async (waitForPageLoaded = true) => {
   await waitForValidationErrorsToDisappear();
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
-  await commonPage.waitForPageLoaded();
+  if (waitForPageLoaded) {
+    await commonPage.waitForPageLoaded();
+  }
 };
 
 const cancelForm = async () => {
@@ -95,7 +97,6 @@ const getDBObjectWidgetValues = async (field) => {
 module.exports = {
   getFormTitle,
   getErrorMessage,
-  submitButton,
   cancelButton,
   nextPage,
   nameField,

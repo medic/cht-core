@@ -292,8 +292,7 @@ describe('Create user for contacts', () => {
 
         await commonPage.goToPeople(originalContactId);
         await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await (await genericForm.submitButton()).waitForDisplayed();
-        await (await genericForm.submitButton()).click();
+        await genericForm.submitForm(false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -499,8 +498,7 @@ describe('Create user for contacts', () => {
 
         await commonPage.goToPeople(originalContactId);
         await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await (await genericForm.submitButton()).waitForDisplayed();
-        await (await genericForm.submitButton()).click();
+        await genericForm.submitForm(false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();

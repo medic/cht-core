@@ -122,7 +122,7 @@ describe('Submit Enketo form', () => {
     await commonEnketoPage.setInputValue('Person name', 'Jones');
 
     // submit form
-    await (await genericForm.submitButton()).click();
+    await genericForm.submitForm();
 
     // check the submitted name
     await (await reportsPage.firstReportDetailField()).waitForDisplayed();
