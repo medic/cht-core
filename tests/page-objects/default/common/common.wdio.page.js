@@ -329,6 +329,7 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
 };
 
 const sync = async (expectReload, timeout) => {
+  await modalPage.hideOverlay();
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
