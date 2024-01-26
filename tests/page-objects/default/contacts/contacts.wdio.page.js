@@ -363,11 +363,16 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
-const getCardFieldInfo = async (label) => {
-  return {
-    label: await (await $(`.cell.${label} label`)).getText(),
-    value: await (await $(`.cell.${label} p`)).getText(),
-  };
+const getContactSummaryCardFields = async () => {
+  const header = await contactCardTitle().waitForDisplayed();
+  const card = await header.parentElement();
+  const results = [];
+  for await (const cell of card.$$('.cell')) {
+    const label = await cell.$('label').getText();
+    const value = await cell.$('p').getText();
+    results.push({ label, value });
+  }
+  return results;
 };
 
 const getCurrentContactId = async () => {
@@ -427,6 +432,7 @@ module.exports = {
   editPersonName,
   exportContacts,
   getContactSummaryField,
+  getContactSummaryCardFields,
   getAllRHSReportsNames,
   rhsReportListElement,
   getAllRHSTaskNames,
@@ -456,7 +462,6 @@ module.exports = {
   contactMuted,
   openFormWithWarning,
   getContactListLoadingStatus,
-  getCardFieldInfo,
   getCurrentContactId,
   pregnancyLabel,
   visitLabel,

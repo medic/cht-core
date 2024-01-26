@@ -62,10 +62,15 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
   await commonPage.goToBase();
 };
 
-const validateCardField = async (label, value) => {
-  const card = await contactsPage.getCardFieldInfo(label);
-  expect(card.label).to.equal(label);
-  expect(card.value).to.equal(value);
+const validateCardFields = async (lastUpdated, firstTarget, secondTarget) => {
+  const fields = await contactsPage.getContactSummaryCardFields();
+  expect(fields.length).to.equal(3);
+  expect(fields[0].label).to.equal('Last updated');
+  expect(fields[0].value).to.equal(lastUpdated);
+  expect(fields[1].label).to.equal('what a target!');
+  expect(fields[1].value).to.equal(firstTarget);
+  expect(fields[2].label).to.equal('the most target');
+  expect(fields[2].value).to.equal(secondTarget);
 };
 
 describe('Target aggregates', () => {
@@ -367,9 +372,8 @@ describe('Target aggregates', () => {
       expect(await contactsPage.getContactInfoName()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-      await validateCardField('Last updated', 'yesterday Clarissa');
-      await validateCardField('what a target!', '40');
-      await validateCardField('the most target', '50%');
+
+      await validateCardFields('yesterday Clarissa', '40', '50%');
 
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[0]);
@@ -382,9 +386,8 @@ describe('Target aggregates', () => {
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-      await validateCardField('Last updated', 'yesterday Prometheus');
-      await validateCardField('what a target!', '18');
-      await validateCardField('the most target', '15%');
+      await validateCardFields('yesterday Prometheus', '18', '15%');
+
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[1]);
     });
