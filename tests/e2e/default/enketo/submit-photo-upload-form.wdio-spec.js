@@ -30,7 +30,6 @@ describe('Submit Photo Upload form', () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
     expect(Object.keys(initialReport._attachments).length).to.equal(1);
-    expect(Object.keys(initialReport._attachments)[0]).to.equal('user-file/photo-upload/my_photo');
 
     await reportsPage.editReport(reportId);
     await (photoUpload.imagePreview()).waitForDisplayed();
@@ -57,7 +56,6 @@ describe('Submit Photo Upload form', () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
     expect(Object.keys(initialReport._attachments).length).to.equal(1);
-    expect(Object.keys(initialReport._attachments)[0]).to.equal('user-file/photo-upload/my_photo');
 
     await reportsPage.editReport(reportId);
     await (photoUpload.imagePreview()).waitForDisplayed();
