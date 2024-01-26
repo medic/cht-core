@@ -190,6 +190,7 @@ describe('ongoing replication', function() {
       nbrPersons: 1,
       nbrClinics: 1,
     });
+
     await chtDbUtils.createDocs([...docs.clinics, ...docs.persons, ...docs.reports]);
 
     await commonPage.sync();
