@@ -9,6 +9,7 @@ const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy Visit', () => {
   const places = placeFactory.generateHierarchy();
@@ -23,14 +24,15 @@ describe('Pregnancy Visit', () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
-    await commonPage.goToPeople(pregnantWoman._id);
-    await commonPage.openFastActionReport('pregnancy');
-    await pregnancyForm.submitDefaultPregnancy();
   });
 
   it('should submit a pregnancy visit and validate that the report was created successfully.', async () => {
-    const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
+    // Create a pregnancy
+    await commonPage.goToPeople(pregnantWoman._id);
+    await commonPage.openFastActionReport('pregnancy');
+    await pregnancyForm.submitDefaultPregnancy();
 
+    // Create a pregnancy visit
     await commonPage.openFastActionReport('pregnancy_home_visit');
     await pregnancyVisitForm.submitDefaultPregnancyVisit();
 
