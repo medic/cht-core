@@ -2,7 +2,9 @@ const _ = require('lodash/core');
 _.partial = require('lodash/partial');
 _.partial.placeholder = _;
 const moment = require('moment');
+
 const END_OF_ALPHABET = '\ufff0';
+const MINIMUM_SEARCH_TERM_LENGTH = 3;
 
 const getKeysArray = function(keys) {
   return keys.map(function(t) {
@@ -98,13 +100,16 @@ const placeRequest = function(filters) {
 const freetextRequest = function(filters, view) {
   if (filters.search) {
     const words = filters.search.trim().toLowerCase().split(/\s+/);
-    return words.map(function(word) {
+    return _.compact(words.map(function(word) {
       const params = {};
       if (word.indexOf(':') !== -1) {
         // use exact match
         params.key = [ word ];
       } else {
         // use starts with
+        if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
+          return;
+        }
         params.startkey = [ word ];
         params.endkey = [ word + END_OF_ALPHABET ];
       }
@@ -112,7 +117,7 @@ const freetextRequest = function(filters, view) {
         view: view,
         params: params
       };
-    });
+    }));
   }
 };
 

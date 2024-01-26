@@ -280,6 +280,27 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
+    it('reports ignores short words - #7288', function() {
+      const result = service('reports', { search: 'a be' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('medic-client/reports_by_date'); // default
+    });
+
+    it('reports ignores short words but keeps long ones - #7288', function() {
+      const result = service('reports', { search: 'a be see d elephant' });
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'see' ],
+        endkey: [ 'see\ufff0' ],
+      });
+      chai.expect(result[1].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'elephant' ],
+        endkey: [ 'elephant\ufff0' ],
+      });
+    });
+
     it('reports starts with', function() {
       const result = service('reports', { search: 'someth' });
       chai.expect(result.length).to.equal(1);
@@ -346,6 +367,34 @@ describe('GenerateSearchRequests service', function() {
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'clinic', 'someth' ],
         endkey: [ 'clinic', 'someth\ufff0' ],
+      });
+    });
+
+    it('reports ignores short words - #7288', function() {
+      const result = service('contacts', { search: 'a be' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type'); // default
+    });
+
+    it('contacts ignores short words but keeps long ones - #7288', function() {
+      const filters = {
+        search: 'a be see d elephant',
+        types: {
+          selected: [ 'clinic' ],
+          options: [ 'person', 'clinic', 'district_hospital' ]
+        }
+      };
+      const result = service('contacts', filters);
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'clinic', 'see' ],
+        endkey: [ 'clinic', 'see\ufff0' ],
+      });
+      chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'clinic', 'elephant' ],
+        endkey: [ 'clinic', 'elephant\ufff0' ],
       });
     });
 
