@@ -298,6 +298,7 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
+
 const waitForAngularLoaded = async (timeout = 40000) => {
   await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
 };
