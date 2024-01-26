@@ -29,7 +29,12 @@ describe('Pregnancy registration', () => {
     await loginPage.login(offlineUser);
   });
 
-  it('Should submit a new pregnancy', async () => {
+  it('should submit a new pregnancy, ' +
+    'validate that the pregnancy card was displayed with the correct information, ' +
+    'validate that all tasks related with the high risk pregnancy were created, ' +
+    'validate that the report related the pregnancy was created, and ' +
+    'validate that the counters for the active pregnancies and the new pregnancies were updated.', async () => {
+
     const edd = moment().add(8, 'days');
     const nextANCVisit = moment().add(2, 'day');
 
@@ -63,22 +68,19 @@ describe('Pregnancy registration', () => {
     ];
 
     await commonEnketoPage.validateSummaryReport(summaryTexts);
-
     await genericForm.submitForm();
 
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
 
+    // Validate pregnancy card and its information
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
     expect(pregnancyCardInfo.weeksPregnant).to.equal('38');
     expect(Date.parse(pregnancyCardInfo.deliveryDate)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(pregnancyCardInfo.risk).to.equal('High risk');
     expect(Date.parse(pregnancyCardInfo.ancVisit)).to.equal(Date.parse(nextANCVisit.format('D MMM, YYYY')));
 
-  });
-
-  it('Should verify that all tasks related with the high risk pregnancy were created', async () => {
+    // Validate the created tasks
     const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Delivery'];
-
     await commonPage.goToTasks();
     const tasks = await tasksPage.getTasks();
     expect(tasks.length).to.equal(3);
@@ -89,17 +91,14 @@ describe('Pregnancy registration', () => {
       expect(tasksTitles).to.include(taskInfo.formTitle);
       tasksTitles.splice(tasksTitles.indexOf(taskInfo.formTitle), 1);
     }
-  });
 
-  it('Should verify that the report related the pregnancy was created', async () => {
+    // Validate the created report
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
-
     expect(firstReport.heading).to.equal(pregnantWoman.name);
     expect(firstReport.form).to.equal('Pregnancy registration');
-  });
 
-  it('Should verify that the counters for the active pregnancies and the new pregnancies were updated.', async () => {
+    // Validate targets information
     await commonPage.goToAnalytics();
     const targets = await analyticsPage.getTargets();
 
@@ -113,5 +112,7 @@ describe('Pregnancy registration', () => {
       { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR  }
     ]);
+
   });
+
 });
