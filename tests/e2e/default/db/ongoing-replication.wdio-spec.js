@@ -148,7 +148,7 @@ describe('ongoing replication', function() {
 
   it('should handle deletes', async () => {
     await commonPage.sync();
-    await browser.throttle('offline');
+    // await browser.throttle('offline');
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     const docIdsToDelete = [
       'form:dummy',
@@ -160,7 +160,7 @@ describe('ongoing replication', function() {
     await sentinelUtils.waitForSentinel();
     await waitForServiceWorker.promise;
 
-    await browser.throttle('online');
+    // await browser.throttle('online');
     await commonPage.sync(true);
     const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localDocsPostSync);
@@ -169,16 +169,17 @@ describe('ongoing replication', function() {
   });
 
   it('should download settings updates', async () => {
-    await browser.throttle('offline');
+    // await browser.throttle('offline');
+    await commonPage.sync();
     await utils.updateSettings({ test: true }, 'api');
-    await browser.throttle('online');
+    // await browser.throttle('online');
     await commonPage.sync(true);
     const [settings] = await chtDbUtils.getDocs(['settings']);
     expect(settings.settings.test).to.equal(true);
 
-    await browser.throttle('offline');
+    // await browser.throttle('offline');
     await utils.revertSettings(true);
-    await browser.throttle('online');
+    // await browser.throttle('online');
     await commonPage.sync(true);
   });
 
