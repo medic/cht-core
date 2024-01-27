@@ -1,6 +1,16 @@
 resolver 127.0.0.11 valid=10s; # 127.0.0.11 is from default /etc/resolv.conf
 set $upstream_endpoint http://${API_HOST}:${API_PORT};
 
+# mrjones hack attempt at trying out plugins - see https://github.com/medic/cht-user-management/tree/mrjones-in-cht-docker-hack  
+location ~* /plugin/user-management {
+  proxy_pass              http://cht-user-management-cht-user-management-1:3000;
+  proxy_set_header        Host            $host;
+  proxy_set_header        X-Real-IP       $remote_addr;
+  proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header        X-Forwarded-Proto https;
+  proxy_set_header        X-Forwarded-Host $server_name;
+}
+
 location / {
   proxy_pass              $upstream_endpoint;
   proxy_set_header        Host            $host;
