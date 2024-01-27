@@ -33,13 +33,12 @@ const cancel = async (timeout) => {
 };
 
 const hideOverlay = () => {
-  // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
-  // for example when filling a form, or creating a contact
-  // and intercepts all clicks in the actionbar
+  // hides the modal overlay, so it doesn't intercept all clicks
   // this action is temporary, and will be undone with a refresh
   return browser.execute(() => {
-    // eslint-disable-next-line no-undef
-    window.jQuery('.cdk-overlay-backdrop').hide();
+    const style = document.createElement('style');
+    style.innerHTML = '.cdk-overlay-backdrop { display: none; }';
+    document.head.appendChild(style);
   });
 };
 
