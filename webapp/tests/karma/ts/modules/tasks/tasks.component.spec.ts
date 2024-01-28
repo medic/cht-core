@@ -260,7 +260,7 @@ describe('TasksComponent', () => {
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
     expect(performanceService.track.calledOnce).to.be.true;
-    expect(stopPerformanceTrackStub.calledOnceWith({ name: 'tasks:load', recordApdex: true }));
+    expect(stopPerformanceTrackStub.calledOnceWith({ name: 'tasks:load', recordApdex: true })).to.be.true;
   });
 
   it('should should record telemetry on refresh', fakeAsync(async () => {
