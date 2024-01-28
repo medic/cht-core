@@ -282,8 +282,7 @@
     ],
     "can_view_old_filter_and_search": [],
     "can_view_old_action_bar": [],
-    "can_default_facility_filter": [],
-    "track_performance": []
+    "can_default_facility_filter": []
   },
   "uhc": {
     "contacts_default_sort": "",

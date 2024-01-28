@@ -3,43 +3,27 @@ import { expect } from 'chai';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { AuthService } from '@mm-services/auth.service';
 import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Performance Service', () => {
   let performanceService;
   let telemetryService;
-  let authService;
   let performanceNowStub;
 
   beforeEach(() => {
     telemetryService = { record: sinon.stub() };
-    authService = { has: sinon.stub() };
     performanceNowStub = sinon.stub(performance, 'now');
 
     TestBed.configureTestingModule({
       providers: [
         { provide: TelemetryService, useValue: telemetryService },
-        { provide: AuthService, useValue: authService },
       ]
     });
   });
 
   afterEach(() => sinon.restore());
 
-  it('should not start tracking if permission not given', fakeAsync(() => {
-    authService.has.resolves(false);
-    performanceService = TestBed.inject(PerformanceService);
-    flush();
-
-    const track = performanceService.track();
-
-    expect(track).to.be.undefined;
-    expect(telemetryService.record.notCalled).to.be.true;
-  }));
-
   it('should not record tracking if name not set', fakeAsync(() => {
-    authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);
     flush();
 
@@ -51,7 +35,6 @@ describe('Performance Service', () => {
   }));
 
   it('should track but no record Apdex', fakeAsync(() => {
-    authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);
     flush();
 
@@ -71,7 +54,6 @@ describe('Performance Service', () => {
   }));
 
   it('should track and record "satisfied" Apdex when time is less than T', fakeAsync(() => {
-    authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);
     flush();
 
@@ -94,7 +76,6 @@ describe('Performance Service', () => {
   }));
 
   it('should track and record "satisfied" Apdex when time is same as T', fakeAsync(() => {
-    authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);
     flush();
 
@@ -117,7 +98,6 @@ describe('Performance Service', () => {
   }));
 
   it('should track and record "tolerated" Apdex when time is more than T but less than 4xT', fakeAsync(() => {
-    authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);
     flush();
 
@@ -140,7 +120,6 @@ describe('Performance Service', () => {
   }));
 
   it('should track and record "tolerated" Apdex when time is same as 4xT', fakeAsync(() => {
-    authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);
     flush();
 
@@ -163,7 +142,6 @@ describe('Performance Service', () => {
   }));
 
   it('should track and record "frustrated" Apdex when time is more than 4xT', fakeAsync(() => {
-    authService.has.resolves(true);
     performanceService = TestBed.inject(PerformanceService);
     flush();
 

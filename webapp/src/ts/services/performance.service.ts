@@ -2,14 +2,11 @@ import { Inject, Injectable } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { AuthService } from '@mm-services/auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PerformanceService {
-  private trackPerformance = false;
-  private readonly CAN_TRACK_PERFORMANCE = 'track_performance';
   private readonly APDEX_LABEL = 'apdex';
   private readonly APDEX_SATISFIED = 'satisfied';
   private readonly APDEX_TOLERABLE = 'tolerable';
@@ -19,19 +16,13 @@ export class PerformanceService {
 
   constructor(
     private telemetryService: TelemetryService,
-    private authService: AuthService,
     @Inject(DOCUMENT) private document: Document,
-  ) {
-    this.authService
-      .has(this.CAN_TRACK_PERFORMANCE)
-      .then(result => this.trackPerformance = result);
-  }
+  ) { }
 
   track() {
-    if (!this.trackPerformance || !this.document?.defaultView) {
+    if (!this.document?.defaultView) {
       return;
     }
-
     const startTime = this.document.defaultView.performance.now();
     return {
       stop: (options: Options) => this.recordPerformance(startTime, options),
@@ -46,7 +37,7 @@ export class PerformanceService {
    * @private
    */
   private async recordPerformance(startTime:number, { name, recordApdex = false }:Options) {
-    if (!this.trackPerformance || !name || !this.document?.defaultView) {
+    if (!name || !this.document?.defaultView) {
       return;
     }
 
