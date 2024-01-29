@@ -320,6 +320,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
+    const trackPerformance = this.performanceService.track();
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
       options.limit = this.PAGE_SIZE;
@@ -406,6 +407,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.error = true;
         this.loading = false;
         console.error('Error loading contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: 'contact_list:query' });
       });
   }
 
