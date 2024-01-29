@@ -8,6 +8,8 @@ import { DateFilterComponent } from '@mm-components/filters/date-filter/date-fil
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
+type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
+
 @Component({
   selector: 'mm-reports-sidebar-filter',
   templateUrl: './reports-sidebar-filter.component.html'
@@ -16,23 +18,14 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
-  @ViewChild(FormTypeFilterComponent)
-  formTypeFilter: FormTypeFilterComponent;
-
-  @ViewChild(FacilityFilterComponent)
-  facilityFilter: FacilityFilterComponent;
-
-  @ViewChild('fromDate')
-  fromDateFilter: DateFilterComponent;
-
-  @ViewChild('toDate')
-  toDateFilter: DateFilterComponent;
-
-  @ViewChild(StatusFilterComponent)
-  statusFilter: StatusFilterComponent;
+  @ViewChild(FormTypeFilterComponent) formTypeFilter: FormTypeFilterComponent;
+  @ViewChild(FacilityFilterComponent) facilityFilter: FacilityFilterComponent;
+  @ViewChild('fromDate') fromDateFilter: DateFilterComponent;
+  @ViewChild('toDate') toDateFilter: DateFilterComponent;
+  @ViewChild(StatusFilterComponent) statusFilter: StatusFilterComponent;
 
   private globalActions;
-  private filters = [];
+  private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
   filterCount:any = { };
@@ -104,6 +97,10 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
 
   showDateFilterError(error) {
     this.dateFilterError = error || '';
+  }
+
+  setDefaultFacilityFilter(filters) {
+    this.facilityFilter?.setDefault(filters?.facility);
   }
 
   ngOnDestroy() {

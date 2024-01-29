@@ -1,25 +1,35 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
-/**
- * Material color's override
- */
-.mat-primary {
-  background-color: @mm-mat-primary !important;
+html, body {
+  &:not(mat-icon),
+  *:not(mat-icon) {
+    font-family: @font-family-main;
+  }
 }
 
-.mat-accent {
-  background-color: @button-background-inverse-color !important;
-  color: @mm-mat-primary !important;
+.mat-mdc-button,
+.mat-mdc-unelevated-button {
+  font-size: @font-medium;
 }
 
-.mat-warn {
-  background-color: @error-color !important;
+.mat-mdc-button:not(:disabled).mat-primary {
+  color: @mm-mat-primary;
+  --mat-mdc-button-persistent-ripple-color: @mm-mat-primary;
+  --mdc-text-button-label-text-color: @mm-mat-primary;
 }
 
-.mat-button-toggle-disabled,
-.mat-mdc-button[disabled][disabled] {
-  background-color: @inactive-color !important;
-  color: @button-text-inverse-color !important;
+.mat-mdc-button:not(:disabled).mat-warn {
+  color: @error-color;
+}
+
+.mat-mdc-unelevated-button:not(:disabled).mat-primary,
+.mat-mdc-fab.mat-primary {
+  background-color: @mm-mat-primary;
+}
+
+.mat-mdc-unelevated-button:not(:disabled).mat-warn,
+.mat-mdc-fab.mat-warn {
+  background-color: @error-color;
 }
 
 .mat-icon.fa {

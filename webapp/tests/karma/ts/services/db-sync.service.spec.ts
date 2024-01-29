@@ -12,13 +12,12 @@ import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { PurgeService } from '@mm-services/purge.service';
 import { MigrationsService } from '@mm-services/migrations.service';
+import { ReplicationService } from '@mm-services/replication.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
   let to;
-  let from;
   let isOnlineOnly;
   let userCtx;
 
@@ -28,17 +27,15 @@ describe('DBSync service', () => {
   let metaFromResult;
   let hasAuth;
   let recursiveOnTo;
-  let recursiveOnFrom;
   let replicationResultTo;
-  let replicationResultFrom;
   let getItem;
   let dbSyncRetry;
   let rulesEngine;
   let checkDateService;
   let telemetryService;
   let translateService;
-  let purgeService;
   let migrationService;
+  let replicationService;
   let store;
 
   let localMedicDb;
@@ -53,8 +50,8 @@ describe('DBSync service', () => {
   const nextTick = () => new Promise<void>(resolve => realSetTimeout(resolve));
 
   const expectSyncCall = (numCalls) => {
-    expect(from.callCount).to.equal(numCalls);
     expect(to.callCount).to.equal(numCalls);
+    expect(replicationService.replicateFrom.callCount).to.equal(numCalls);
   };
   const expectSyncMetaCall = (numCalls) => {
     expect(db.withArgs({ meta: true }).callCount).to.equal(numCalls);
@@ -64,8 +61,7 @@ describe('DBSync service', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
 
-    replicationResultTo = Promise.resolve();
-    replicationResultFrom = Promise.resolve();
+    replicationResultTo = Promise.resolve({ last_seq: 99 });
 
     to = sinon.stub();
     to.events = {};
@@ -77,16 +73,7 @@ describe('DBSync service', () => {
       return promise;
     });
     to.returns({ on: recursiveOnTo });
-    from = sinon.stub();
-    from.events = {};
-    recursiveOnFrom = sinon.stub();
-    recursiveOnFrom.callsFake((event, fn) => {
-      from.events[event] = fn;
-      const promise = replicationResultFrom;
-      promise.on = recursiveOnFrom;
-      return promise;
-    });
-    from.returns({ on: recursiveOnFrom });
+
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
 
@@ -103,8 +90,9 @@ describe('DBSync service', () => {
     store = { dispatch: sinon.stub() };
 
     localMedicDb = {
-      replicate: { to: to, from: from },
+      replicate: { to: to },
       info: sinon.stub().resolves({ update_seq: 99 }),
+      allDocs: sinon.stub(),
     };
     localMetaDb = {
       replicate: { to: metaTo, from: metaFrom },
@@ -114,7 +102,6 @@ describe('DBSync service', () => {
     };
     remoteMetaDb = {};
     remoteMedicDb = {};
-    purgeService = { updateDocsToPurge: sinon.stub().resolves() };
 
     db = sinon.stub().returns(localMedicDb);
     db.withArgs({ remote: true }).returns(remoteMedicDb);
@@ -125,6 +112,7 @@ describe('DBSync service', () => {
     sinon.stub(window.localStorage, 'setItem');
     checkDateService = { check: sinon.stub().resolves() };
     migrationService = { runMigrations: sinon.stub().resolves() };
+    replicationService = { replicateFrom: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -137,8 +125,8 @@ describe('DBSync service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: Store, useValue: store },
         { provide: CheckDateService, useValue: checkDateService },
-        { provide: PurgeService, useValue: purgeService },
         { provide: MigrationsService, useValue: migrationService },
+        { provide: ReplicationService, useValue: replicationService },
       ]
     });
 
@@ -160,6 +148,7 @@ describe('DBSync service', () => {
     });
 
     it('starts bi-direction replication for non-admin', () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
@@ -168,14 +157,11 @@ describe('DBSync service', () => {
         expect(hasAuth.args[0][0]).to.equal('can_edit');
         expect(migrationService.runMigrations.callCount).to.equal(1);
         expectSyncCall(1);
-        expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
-        expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.args[0][1]).to.have.keys('filter', 'batch_size');
         expect(to.args[0][1]).to.not.have.keys('checkpoint');
         expect(checkDateService.check.callCount).to.equal(1);
         expect(checkDateService.check.args[0]).to.deep.equal([]);
         expectSyncMetaCall(1);
-        expect(purgeService.updateDocsToPurge.callCount).to.equal(1);
       });
     });
 
@@ -188,6 +174,7 @@ describe('DBSync service', () => {
     });
 
     it('should run migrations on subsequent syncs', async () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
@@ -202,6 +189,7 @@ describe('DBSync service', () => {
     it('should record telemetry for bi-directional replication', async () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       getItem.withArgs('medic-last-replicated-date').returns(100);
       clock.tick(500);
 
@@ -209,29 +197,31 @@ describe('DBSync service', () => {
       metaToResult.docs_read = 5;
       let fromResolve;
       let toResolve;
-      replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+      const replicationResultFrom = new Promise(resolve => fromResolve = resolve);
       replicationResultTo = new Promise(resolve => toResolve = resolve);
-
+      replicationService.replicateFrom.returns(replicationResultFrom);
 
       const syncResult = service.sync();
-      await nextTick();
 
-      clock.tick(1000);
-      fromResolve({ docs_read: 45 });
       await nextTick();
 
       clock.tick(500);
       toResolve({ docs_read: 63 });
+
+      await nextTick();
+
+      clock.tick(1000);
+      fromResolve({ docs_read: 45 });
 
       return syncResult.then(() => {
         expectSyncCall(1);
         expect(telemetryService.record.callCount).to.equal(8);
         expect(telemetryService.record.args).to.have.deep.members([
           ['replication:medic:from:success', 1000],
-          ['replication:medic:from:ms-since-last-replicated-date', 400],
+          ['replication:medic:from:ms-since-last-replicated-date', 900],
           ['replication:medic:from:docs', 45],
 
-          ['replication:medic:to:success', 1500],
+          ['replication:medic:to:success', 500],
           ['replication:medic:to:ms-since-last-replicated-date', 400],
           ['replication:medic:to:docs', 63],
 
@@ -242,6 +232,7 @@ describe('DBSync service', () => {
     });
 
     it('syncs automatically after interval', async () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
@@ -264,17 +255,19 @@ describe('DBSync service', () => {
       });
     });
 
-    it('multiple calls to sync yield one attempt', () => {
+    it('multiple calls to sync yield one attempt', async () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
       service.sync();
-      return service.sync().then(() => {
-        expectSyncCall(1);
-      });
+      await service.sync();
+      await nextTick();
+      expectSyncCall(1);
     });
 
     it('force sync while offline still syncs', () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
@@ -290,7 +283,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResultTo = replicationResultFrom = Promise.reject('error');
+      replicationResultTo = Promise.reject('error');
       const onUpdate = sinon.stub();
       service.subscribe(onUpdate);
       localMedicDb.info.resolves({ update_seq: 100 });
@@ -300,18 +293,17 @@ describe('DBSync service', () => {
         expect(onUpdate.callCount).to.eq(2);
         expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
         expect(onUpdate.args[1][0]).to.deep.eq({ state: 'unknown' });
-        expect(consoleErrorMock.callCount).to.equal(2);
+        expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Error replicating to remote server');
-        expect(consoleErrorMock.args[1][0]).to.equal('Error replicating from remote server');
       });
     });
 
-    it('error in replication results in "required" status', () => {
+    it('error in replication results in "required" status, it triggers 2 more successive syncs', () => {
       const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
-
-      replicationResultTo = replicationResultFrom = Promise.reject('error');
+      const expectedError = new Error('some error');
+      replicationResultTo = Promise.reject(expectedError);
       const onUpdate = sinon.stub();
       service.subscribe(onUpdate);
 
@@ -319,17 +311,19 @@ describe('DBSync service', () => {
         expect(onUpdate.callCount).to.eq(2);
         expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
         expect(onUpdate.args[1][0]).to.deep.eq({ to: 'required', from: 'required' });
-        expect(consoleErrorMock.callCount).to.equal(2);
-        expect(consoleErrorMock.args[0][0]).to.equal('Error replicating to remote server');
-        expect(consoleErrorMock.args[1][0]).to.equal('Error replicating from remote server');
+        expect(consoleErrorMock.callCount).to.equal(3);
+        expect(consoleErrorMock.args).to.have.deep.members(
+          Array(3).fill([ 'Error replicating to remote server', expectedError ])
+        );
       });
     });
 
     it('completed replication results in "success" status', () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResultFrom = Promise.resolve({ some: 'info' });
+      replicationService.replicateFrom.resolves({ some: 'info' });
       const onUpdate = sinon.stub();
       service.subscribe(onUpdate);
 
@@ -341,6 +335,7 @@ describe('DBSync service', () => {
     });
 
     it('sync scenarios based on connectivity state', async() => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
@@ -359,6 +354,7 @@ describe('DBSync service', () => {
 
       // wait for the inprogress sync to complete before continuing the test
       await service.sync();
+      await nextTick();
       expectSyncCall(2);
 
       // don't sync if you quickly lose and regain connectivity
@@ -374,6 +370,7 @@ describe('DBSync service', () => {
     });
 
     it('does not sync to remote if user lacks "can_edit" permission', () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(0);
       isOnlineOnly.returns(false);
       hasAuth.resolves(false);
       const onUpdate = sinon.stub();
@@ -382,9 +379,8 @@ describe('DBSync service', () => {
       return service.sync().then(() => {
         expect(hasAuth.callCount).to.equal(1);
         expect(hasAuth.args[0][0]).to.equal('can_edit');
-        expect(from.callCount).to.equal(1);
-        expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(0);
+        expect(replicationService.replicateFrom.callCount).to.equal(1);
 
         expect(onUpdate.callCount).to.eq(2);
         expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
@@ -396,12 +392,14 @@ describe('DBSync service', () => {
       it('when from fails and maybe server is offline', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(200);
         clock.tick(1000);
 
         let fromReject;
         let toResolve;
-        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        const replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise(resolve => toResolve = resolve);
         metaFromResult.docs_read = 13;
         metaToResult.docs_read = 12;
@@ -409,14 +407,14 @@ describe('DBSync service', () => {
         const syncResult = service.sync();
         await nextTick();
 
+        clock.tick(1000);
+        toResolve({ docs_read: 32 });
+        await nextTick();
+
         clock.tick(2000);
         const error = { message: 'Failed to fetch', result: { docs_read: 22 } };
         fromReject(error);
-        from.events.error(error);
-        await nextTick();
 
-        clock.tick(1000);
-        toResolve({ docs_read: 32 });
 
         return syncResult.then(() => {
           expectSyncCall(1);
@@ -424,11 +422,11 @@ describe('DBSync service', () => {
           expect(telemetryService.record.args).to.have.deep.members([
 
             ['replication:medic:from:failure', 2000],
-            ['replication:medic:from:ms-since-last-replicated-date', 800],
+            ['replication:medic:from:ms-since-last-replicated-date', 1800],
             ['replication:medic:from:docs', 22],
             ['replication:medic:from:failure:reason:offline:server'],
 
-            ['replication:medic:to:success', 3000],
+            ['replication:medic:to:success', 1000],
             ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 32],
 
@@ -441,12 +439,14 @@ describe('DBSync service', () => {
       it('when from fails and maybe server is offline and returns 502 and HTML', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(200);
         clock.tick(1000);
 
         let fromReject;
         let toResolve;
-        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        const replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise(resolve => toResolve = resolve);
         metaFromResult.docs_read = 10;
         metaToResult.docs_read = 10;
@@ -454,14 +454,13 @@ describe('DBSync service', () => {
         const syncResult = service.sync();
         await nextTick();
 
+        clock.tick(1000);
+        toResolve({ docs_read: 32 });
+
+        await nextTick();
         clock.tick(2000);
         const error = { message: 'Unexpected token S in JSON at position 0', result: { docs_read: 22 } };
         fromReject(error);
-        from.events.error(error);
-        await nextTick();
-
-        clock.tick(1000);
-        toResolve({ docs_read: 32 });
 
         return syncResult.then(() => {
           expectSyncCall(1);
@@ -469,11 +468,11 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:failure', 2000],
-            ['replication:medic:from:ms-since-last-replicated-date', 800],
+            ['replication:medic:from:ms-since-last-replicated-date', 1800],
             ['replication:medic:from:docs', 22],
             ['replication:medic:from:failure:reason:offline:server'],
 
-            ['replication:medic:to:success', 3000],
+            ['replication:medic:to:success', 1000],
             ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 32],
 
@@ -486,13 +485,15 @@ describe('DBSync service', () => {
       it('when from fails and client is offline', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(300);
         clock.tick(1000);
         service.setOnlineStatus(false);
 
         let fromReject;
         let toResolve;
-        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        const replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise(resolve => toResolve = resolve);
         metaFromResult.docs_read = 0;
         metaToResult.docs_read = 0;
@@ -503,7 +504,6 @@ describe('DBSync service', () => {
         clock.tick(500);
         const error = { message: 'Failed to fetch', result: { docs_read: 12 } };
         fromReject(error);
-        from.events.error(error);
         await nextTick();
 
         clock.tick(500);
@@ -515,8 +515,8 @@ describe('DBSync service', () => {
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:user-initiated'],
 
-            ['replication:medic:from:failure', 500],
-            ['replication:medic:from:ms-since-last-replicated-date', 700],
+            ['replication:medic:from:failure', 0],
+            ['replication:medic:from:ms-since-last-replicated-date', 1700],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:offline:client'],
 
@@ -533,12 +533,14 @@ describe('DBSync service', () => {
       it('when from fails from another error', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(300);
         clock.tick(1000);
 
         let fromReject;
         let toResolve;
-        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        const replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise(resolve => toResolve = resolve);
 
         const syncResult = service.sync();
@@ -547,7 +549,6 @@ describe('DBSync service', () => {
         clock.tick(500);
         const error = { message: 'BOOM', result: { docs_read: 12 } };
         fromReject(error);
-        from.events.error(error);
         await nextTick();
 
         clock.tick(500);
@@ -557,8 +558,8 @@ describe('DBSync service', () => {
           expectSyncCall(1);
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
-            ['replication:medic:from:failure', 500],
-            ['replication:medic:from:ms-since-last-replicated-date', 700],
+            ['replication:medic:from:failure', 0],
+            ['replication:medic:from:ms-since-last-replicated-date', 1700],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:error'],
 
@@ -575,12 +576,14 @@ describe('DBSync service', () => {
       it('when to fails and maybe server is offline', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(200);
         clock.tick(1000);
 
         let fromResolve;
         let toReject;
-        replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        const replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise((resolve, reject) => toReject = reject);
 
         const syncResult = service.sync();
@@ -599,8 +602,8 @@ describe('DBSync service', () => {
           expectSyncCall(1);
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
-            ['replication:medic:from:success', 3000],
-            ['replication:medic:from:ms-since-last-replicated-date', 800],
+            ['replication:medic:from:success', 1000],
+            ['replication:medic:from:ms-since-last-replicated-date', 2800],
             ['replication:medic:from:docs', 32],
 
             ['replication:medic:to:failure', 2000],
@@ -617,13 +620,15 @@ describe('DBSync service', () => {
       it('when to fails and client is offline', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(200);
         service.setOnlineStatus(false);
         clock.tick(300);
 
         let fromResolve;
         let toReject;
-        replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        const replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise((resolve, reject) => toReject = reject);
 
         const syncResult = service.sync(true);
@@ -644,8 +649,8 @@ describe('DBSync service', () => {
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:user-initiated'],
 
-            ['replication:medic:from:success', 8000],
-            ['replication:medic:from:ms-since-last-replicated-date', 100],
+            ['replication:medic:from:success', 7000],
+            ['replication:medic:from:ms-since-last-replicated-date', 1100],
             ['replication:medic:from:docs', 500],
 
             ['replication:medic:to:failure', 1000],
@@ -662,12 +667,14 @@ describe('DBSync service', () => {
       it('when to fails from other error', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(200);
         clock.tick(300);
 
         let fromResolve;
         let toReject;
-        replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        const replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise((resolve, reject) => toReject = reject);
 
         const syncResult = service.sync(true);
@@ -685,8 +692,8 @@ describe('DBSync service', () => {
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:user-initiated'],
 
-            ['replication:medic:from:success', 700],
-            ['replication:medic:from:ms-since-last-replicated-date', 100],
+            ['replication:medic:from:success', 0],
+            ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 400],
 
             ['replication:medic:to:failure', 700],
@@ -703,12 +710,14 @@ describe('DBSync service', () => {
       it('when both fail', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         getItem.withArgs('medic-last-replicated-date').returns(200);
         clock.tick(300);
 
         let fromReject;
         let toReject;
-        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        const replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationService.replicateFrom.returns(replicationResultFrom);
         replicationResultTo = new Promise((resolve, reject) => toReject = reject);
 
         const syncResult = service.sync(true);
@@ -720,10 +729,9 @@ describe('DBSync service', () => {
         to.events.error(errorTo);
         await nextTick();
 
-        clock.tick(100);
+        clock.tick(200);
         const errorFrom = { message: 'Not failed to fetch', result: { docs_read: 12 } };
         fromReject(errorFrom);
-        from.events.error(errorFrom);
 
         return syncResult.then(() => {
           expectSyncCall(1);
@@ -737,7 +745,7 @@ describe('DBSync service', () => {
             ['replication:medic:to:failure:reason:error'],
 
             ['replication:medic:from:failure', 200],
-            ['replication:medic:from:ms-since-last-replicated-date', 100],
+            ['replication:medic:from:ms-since-last-replicated-date', 200],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:error'],
 
@@ -775,11 +783,12 @@ describe('DBSync service', () => {
       });
 
       it('if request too large', () => {
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         const consoleWarnMock = sinon.stub(console, 'warn');
         retries = 3;
         return service.sync().then(() => {
           expect(hasAuth.callCount).to.equal(1);
-          expect(from.callCount).to.equal(1);
+          expect(replicationService.replicateFrom.callCount).to.equal(1);
           expect(to.callCount).to.equal(4);
           expect(consoleWarnMock.callCount).to.equal(3);
           expect(to.args[0][1].batch_size).to.equal(100);
@@ -793,11 +802,12 @@ describe('DBSync service', () => {
       });
 
       it('gives up once batch size is 1', () => {
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         const consoleErrorMock = sinon.stub(console, 'error');
         const consoleWarnMock = sinon.stub(console, 'warn');
         retries = 100; // should not get this far...
         return service.sync().then(() => {
-          expect(from.callCount).to.equal(1);
+          expect(replicationService.replicateFrom.callCount).to.equal(1);
           expect(to.callCount).to.equal(7);
           expect(consoleWarnMock.callCount).to.equal(6);
           expect(to.args[0][1].batch_size).to.equal(100);
@@ -822,6 +832,7 @@ describe('DBSync service', () => {
 
     describe('give user feedback when manually syncing', () => {
       it('doesn\'t give feedback when sync happens automatically in the background', async () => {
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
 
@@ -831,6 +842,7 @@ describe('DBSync service', () => {
       });
 
       it('displays a snackbar when the sync begins and when it succeeds', async () => {
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
 
@@ -844,10 +856,11 @@ describe('DBSync service', () => {
       });
 
       it('displays a snackbar when the sync fails', async () => {
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
 
-        replicationResultTo = replicationResultFrom = Promise.reject('error');
+        replicationResultTo = Promise.reject('error');
         await service.sync(true);
         expectSyncCall(1);
         expect(store.dispatch.callCount).to.equal(2);
@@ -861,23 +874,30 @@ describe('DBSync service', () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
 
-        replicationResultTo = replicationResultFrom = Promise.reject('error');
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
+        replicationResultTo = Promise.reject('error');
         await service.sync(true);
+
+        expectSyncCall(1);
+        expect(store.dispatch.callCount).to.equal(2);
+        expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[0][0].payload.message).to.equal('sync.status.in_progress');
+
+        const snackBarStore = store.dispatch.args[1][0];
+        expect(snackBarStore.type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(snackBarStore.payload.message).to.equal('sync.feedback.failure.unknown');
+
+        sinon.resetHistory();
+        replicationResultTo = Promise.resolve();
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
+        await snackBarStore.payload.action.onClick();
+
         expectSyncCall(1);
         expect(store.dispatch.callCount).to.equal(2);
         expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
         expect(store.dispatch.args[0][0].payload.message).to.equal('sync.status.in_progress');
         expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.feedback.failure.unknown');
-
-        replicationResultTo = replicationResultFrom = Promise.resolve();
-        await store.dispatch.args[1][0].payload.action.onClick();
-        expectSyncCall(2);
-        expect(store.dispatch.callCount).to.equal(4);
-        expect(store.dispatch.args[2][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[2][0].payload.message).to.equal('sync.status.in_progress');
-        expect(store.dispatch.args[3][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[3][0].payload.message).to.equal('sync.status.not_required');
+        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.status.not_required');
       });
     });
   });
@@ -888,30 +908,11 @@ describe('DBSync service', () => {
       hasAuth.resolves(true);
       return service.sync().then(() => {
         expect(to.events.denied).to.be.a('function');
-        expect(from.events.denied).to.be.a('function');
-      });
-    });
-
-    it('"denied" from handle does nothing', () => {
-      const onUpdate = sinon.stub();
-      service.subscribe(onUpdate);
-      const consoleErrorMock = sinon.stub(console, 'error');
-      isOnlineOnly.returns(false);
-      hasAuth.resolves(true);
-      return service.sync().then(() => {
-        from.events.denied();
-        expect(dbSyncRetry.callCount).to.equal(0);
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0][0]).to.equal('Denied replicating from remote server');
-        expect(telemetryService.record.args).to.include.deep.members([['replication:medic:from:denied']]);
-        expect(telemetryService.record.args).to.not.include.deep.members([['replication:medic:to:denied']]);
-        expect(onUpdate.callCount).to.eq(2);
-        expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
-        expect(onUpdate.args[1][0]).to.deep.eq({ from: 'success', to: 'success' });
       });
     });
 
     it('"denied" to handle calls DBSyncRetry', () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
       const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
@@ -929,36 +930,6 @@ describe('DBSync service', () => {
   });
 
   describe('on change', () => {
-    it('should have "change" handles for the "from" and "to" direction', () => {
-      isOnlineOnly.returns(false);
-      hasAuth.resolves(true);
-      return service.sync().then(() => {
-        expect(to.events.change).to.be.a('function');
-        expect(from.events.change).to.be.a('function');
-      });
-    });
-
-    it('"changes" to handle does nothing', () => {
-      isOnlineOnly.returns(false);
-      hasAuth.resolves(true);
-      return service.sync().then(() => {
-        to.events.change({});
-        expect(rulesEngine.monitorExternalChanges.callCount).to.equal(0);
-      });
-    });
-
-    it('"changes" from handle calls RulesEngine.monitorExternalChanges', () => {
-      isOnlineOnly.returns(false);
-      hasAuth.resolves(true);
-      const replicationResult = { this: 'is', a: 'replication result' };
-      return service.sync().then(() => {
-        from.events.change(replicationResult);
-        expect(rulesEngine.monitorExternalChanges.callCount).to.equal(1);
-        expect(rulesEngine.monitorExternalChanges.args[0]).to.deep.equal([replicationResult]);
-        expectSyncCall(1);
-      });
-    });
-
     describe('replicate meta', () => {
       beforeEach(() => {
         hasAuth.resolves(true);
@@ -1009,7 +980,18 @@ describe('DBSync service', () => {
         });
       });
 
+      it('should not update the current seq in the purge log when sync fails', () => {
+        localMetaDb.info.resolves({ update_seq: 100 });
+        localMetaDb.replicate.to.rejects('some error');
+        return service.sync().then(() => {
+          expect(localMetaDb.info.calledOnce).to.be.true;
+          expect(localMetaDb.get.notCalled).to.be.true;
+          expect(localMetaDb.put.notCalled).to.be.true;
+        });
+      });
+
       it('should record telemetry when successful', async () => {
+        getItem.withArgs('medic-last-replicated-seq').returns(99);
         let metaToResolve;
         let metaFromResolve;
         metaTo.callsFake(() => new Promise(resolve => metaToResolve = resolve));
@@ -1027,11 +1009,13 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:medic:to:success', 0],
+          ['replication:medic:to:docs', undefined],
+
+          ['replication:medic:from:success', 0],
+
           ['replication:meta:sync:success', 1000],
           ['replication:meta:sync:docs', 132],
-
-          ['replication:medic:to:success', 0],
-          ['replication:medic:from:success', 0],
         ]);
       });
 
@@ -1053,12 +1037,21 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:medic:to:success', 0],
+          ['replication:medic:to:docs', undefined],
+          ['replication:medic:from:success', 0],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:to:docs', undefined],
+          ['replication:medic:from:success', 0],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:to:docs', undefined],
+          ['replication:medic:from:success', 0],
+
           ['replication:meta:sync:failure', 1000],
           ['replication:meta:sync:docs', 0],
           ['replication:meta:sync:failure:reason:offline:server'],
-
-          ['replication:medic:to:success', 0],
-          ['replication:medic:from:success', 0],
         ]);
       });
 
@@ -1083,6 +1076,15 @@ describe('DBSync service', () => {
         expect(telemetryService.record.args).to.have.deep.members([
           ['replication:user-initiated'],
           ['replication:medic:to:success', 0],
+          ['replication:medic:to:docs', undefined],
+          ['replication:medic:from:success', 0],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:to:docs', undefined],
+          ['replication:medic:from:success', 0],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:to:docs', undefined],
           ['replication:medic:from:success', 0],
 
           ['replication:meta:sync:failure', 1312321],
@@ -1102,7 +1104,7 @@ describe('DBSync service', () => {
       hasAuth.resolves(true);
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
       localMedicDb.info.resolves({ update_seq: -99 });
-      from.returns({ on: recursiveOnFrom });
+      getItem.withArgs('medic-last-replicated-seq').returns(-99);
       return service.sync().then(() => {
         expect(to.callCount).to.equal(1);
         filterFunction = to.args[0][1].filter;

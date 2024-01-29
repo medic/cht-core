@@ -1,14 +1,13 @@
 import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
 import * as passwordTester from 'simple-password-tester';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { MatDialogRef } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
 
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdatePasswordService } from '@mm-services/update-password.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -17,8 +16,12 @@ const PASSWORD_MINIMUM_SCORE = 50;
   selector: 'update-password',
   templateUrl: './update-password.component.html'
 })
-export class UpdatePasswordComponent extends MmModalAbstract {
+export class UpdatePasswordComponent {
+  static id = 'update-password-modal';
+  private globalActions: GlobalActions;
 
+  processing = false;
+  errors: any;
   editUserModel: {
     username?;
     currentPassword?;
@@ -26,29 +29,21 @@ export class UpdatePasswordComponent extends MmModalAbstract {
     passwordConfirm?;
   } = {};
 
-  errors: {
-    currentPassword?;
-    password?;
-  } = {};
-
-  static id = 'update-password-modal';
-
   constructor(
-    bsModalRef: BsModalRef,
+    private store: Store,
     private userSettingsService: UserSettingsService,
     private updatePasswordService: UpdatePasswordService,
     private userLoginService: UserLoginService,
-    private translateService:TranslateService,
-    private modalService: ModalService,
+    private translateService: TranslateService,
+    private matDialogRef: MatDialogRef<UpdatePasswordComponent>,
   ) {
-    super(bsModalRef);
+    this.globalActions = new GlobalActions(this.store);
   }
 
   async updatePassword() {
     this.errors = {};
-    this.setProcessing();
+    this.processing = true;
     if (!await this.validatePasswordFields()) {
-      this.setError();
       return;
     }
     const newPassword = this.editUserModel.password;
@@ -59,53 +54,56 @@ export class UpdatePasswordComponent extends MmModalAbstract {
       await this.updatePasswordService.update(username, currentPassword, newPassword);
       try {
         await this.userLoginService.login(username, newPassword);
-      } catch(err) {
+      } catch (err) {
         if (err.status === 302) {
-          this.setFinished();
           this.close();
-          this.modalService
-            .show(ConfirmPasswordUpdatedComponent)
-            .catch(() => {})
-            .finally(() => this.windowReload());
+          const snackText = await this.translateService.get('password.updated');
+          this.globalActions.setSnackbarContent(snackText);
         } else {
-          this.windowReload();
+          window.location.reload();
         }
       }
-    } catch(err) {
-      if (err.status === 0) { // offline status
+    } catch (error) {
+      if (error.status === 0) { // Offline status
         const message = await this.translateService.get('online.action.message');
-        this.errors.currentPassword = message;
-        this.setError(err, message);
+        this.setError(ErrorType.SUBMIT, message);
         return;
       }
-      if (err.status === 401) {
+      if (error.status === 401) {
         const message = await this.translateService.get('password.incorrect');
-        this.errors.currentPassword = message;
-        this.setError(err, message);
+        this.setError(ErrorType.CURRENT_PASSWORD, message);
         return;
       }
-      this.setError(err, 'Error updating user');
+
+      console.error('Error updating user password', error);
+      this.setError(ErrorType.SUBMIT, 'Error updating user');
     }
   }
 
-  private windowReload() {
-    window.location.reload();
+  private setError(type: ErrorType, message: string) {
+    this.errors[type] = message;
+    this.processing = false;
+  }
+
+  close() {
+    this.processing = false;
+    this.matDialogRef.close();
   }
 
   private async validatePasswordFields() {
-    return await this.validateRequired('password', 'Password') &&
-      await this.validateRequired('currentPassword', 'Current Password') &&
+    return await this.validateRequired('password', 'Password', ErrorType.PASSWORD) &&
+      await this.validateRequired('currentPassword', 'Current Password', ErrorType.CURRENT_PASSWORD) &&
       await this.validatePasswordStrength() &&
       await this.validateConfirmPasswordMatches();
   }
 
-  private async validateRequired(fieldName, fieldDisplayName) {
+  private async validateRequired(fieldName, fieldDisplayName, errorType) {
     if (this.editUserModel[fieldName]) {
       return true;
     }
     try {
       const value = await this.translateService.fieldIsRequired(fieldDisplayName);
-      this.errors[fieldName] = value;
+      this.setError(errorType, value);
     } catch (err) {
       console.error(`Error translating field display name '${fieldDisplayName}'`, err);
     }
@@ -116,12 +114,12 @@ export class UpdatePasswordComponent extends MmModalAbstract {
     const password = this.editUserModel.password || '';
     if (password.length < PASSWORD_MINIMUM_LENGTH) {
       const value = await this.translateService.get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH });
-      this.errors.password = value;
+      this.setError(ErrorType.PASSWORD, value);
       return false;
     }
     if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
       const value = await this.translateService.get('password.weak');
-      this.errors.password = value;
+      this.setError(ErrorType.PASSWORD, value);
       return false;
     }
     return true;
@@ -130,9 +128,15 @@ export class UpdatePasswordComponent extends MmModalAbstract {
   private async validateConfirmPasswordMatches() {
     if (this.editUserModel.password !== this.editUserModel.passwordConfirm) {
       const value = await this.translateService.get('Passwords must match');
-      this.errors.password = value;
+      this.setError(ErrorType.PASSWORD, value);
       return false;
     }
     return true;
   }
+}
+
+enum ErrorType {
+  PASSWORD = 'password',
+  CURRENT_PASSWORD = 'currentPassword',
+  SUBMIT = 'submit',
 }

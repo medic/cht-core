@@ -14,7 +14,7 @@ const getApiSmsChanges = (messages) => {
     const timeout = setTimeout(() => {
       listener.cancel();
       reject('timer expired');
-    }, 5000);
+    }, 10000);
     listener.on('change', change => {
       if (change.doc.sms_message) {
         if (ids.includes(change.id)) {

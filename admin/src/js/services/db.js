@@ -86,5 +86,4 @@ angular.module('inboxServices').factory('DB',
     }
 
     return get;
-  }
-);
+  });

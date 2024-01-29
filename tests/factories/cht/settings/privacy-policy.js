@@ -37,11 +37,10 @@ const privacyPolicy = () => {
     .option('attachments', attachments)
     .attr('_attachments', ['attachments'], (attachments) => {
       const builtAttachments = {};
-      attachments.forEach((attachment) =>
-        builtAttachments[attachment.key] = {
-          content_type: 'text/html',
-          data: Buffer.from(attachment.text).toString('base64'),
-        });
+      attachments.forEach((attachment) => builtAttachments[attachment.key] = {
+        content_type: 'text/html',
+        data: Buffer.from(attachment.text).toString('base64'),
+      });
       return builtAttachments;
     });
 };

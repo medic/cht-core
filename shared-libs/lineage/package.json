@@ -4,12 +4,12 @@
   "description": "Lineage and hydration library",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha ./test --require test/setup.js"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test --require test/setup.js"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
-    "lodash": "4.17.19"
+    "lodash": "^4.17.21"
   }
 }

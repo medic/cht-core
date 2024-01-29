@@ -1,3 +1,4 @@
+const environment = require('../environment');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 
@@ -40,7 +41,7 @@ const upgradeInProgress = (req, res) => {
       service.indexerProgress(),
     ]))
     .then(([upgradeDoc, indexers]) => {
-      res.json({ upgradeDoc, indexers });
+      res.json({ upgradeDoc, indexers, buildsUrl: environment.buildsUrl });
     })
     .catch(err => {
       if (err && err.error && err.error.code === 'ECONNREFUSED') {

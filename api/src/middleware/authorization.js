@@ -74,7 +74,7 @@ module.exports = {
   // online users requests pass through to the next route, skipping other middleware in the stack
   // saves offline user-settings doc in the request object
   // used for audited endpoints
-  onlineUserPassThrough:(req, res, next) => {
+  onlineUserPassThrough: (req, res, next) => {
     if (auth.isOnlineOnly(req.userCtx)) {
       return next('route');
     }

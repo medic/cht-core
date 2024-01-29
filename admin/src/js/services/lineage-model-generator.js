@@ -105,5 +105,4 @@ angular.module('inboxServices').factory('LineageModelGenerator',
       }
     };
 
-  }
-);
+  });

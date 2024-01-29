@@ -204,7 +204,7 @@ export class TargetAggregatesService {
     return targetDoc;
   }
 
-  private searchForContacts(homePlaceSummary, filters, skip = 0, contacts = []) {
+  private searchForContacts(homePlaceSummary, filters, skip = 0, contacts: any[] = []) {
     const limit = 100;
 
     return this.searchService

@@ -5,7 +5,7 @@ const IV_LENGTH = 16;
 const KEY_LENGTH = 32;
 const CRYPTO_ALGO = 'aes-256-cbc';
 
-const getCredentialId = id => `credential:${id}`;
+const getCredentialId = id => `credential:${encodeURIComponent(id)}`;
 
 const getCouchUrl = () => {
   const couchUrl = process.env.COUCH_URL;
@@ -128,47 +128,8 @@ const getCouchConfig = (param, nodeName) => {
   }
 };
 
-const getCouchNodes = async () => {
-  const serverUrl = getServerUrl();
-  const membership = await request.get({ url: `${serverUrl}/_membership`, json: true });
-  return membership.cluster_nodes;
-};
-
-const getPasswordHash = (password) => {
-  const encoding = 'hex';
-  const iterations = 10;
-  const keylen = 20;
-
-  const salt = crypto.randomBytes(keylen).toString(encoding);
-  return new Promise((resolve, reject) => {
-    crypto.pbkdf2(password, salt, iterations, keylen, 'SHA1', (err, buffer) => {
-      if (err) {
-        return reject(err);
-      }
-      const derivedKey = buffer.toString(encoding);
-      const raw = `-pbkdf2-${derivedKey},${salt},${iterations}`;
-      return resolve(raw);
-    });
-  });
-};
-
-const updateAdminPassword = async (userName, password) => {
-
-  try {
-    const hash = await getPasswordHash(password);
-    const nodes = await getCouchNodes();
-    for (const nodeName of nodes) {
-      const couchConfigUrl = getCouchConfigUrl(nodeName);
-      await request.put({ url: `${couchConfigUrl}/admins/${userName}?raw=true`, body: `"${hash}"` });
-    }
-  } catch (error) {
-    return Promise.reject(error);
-  }
-};
-
 module.exports = {
   getCredentials,
   setCredentials,
   getCouchConfig,
-  updateAdminPassword,
 };

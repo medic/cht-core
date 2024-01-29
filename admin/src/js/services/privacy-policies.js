@@ -144,5 +144,4 @@ angular.module('inboxServices').factory('PrivacyPolicies',
       getPrivacyPolicy,
       decodeUnicode,
     };
-  }
-);
+  });

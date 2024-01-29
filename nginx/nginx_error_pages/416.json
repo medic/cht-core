@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "416 Requested Range Not Satisfiable",
+  "server": "nginx"
+}

@@ -67,5 +67,4 @@ angular.module('inboxServices').factory('GetDataRecords',
           return response;
         });
     };
-  }
-);
+  });

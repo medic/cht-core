@@ -28,5 +28,4 @@ angular.module('inboxServices').factory('ServicesActions',
         setLastChangedDoc
       };
     };
-  }
-);
+  });

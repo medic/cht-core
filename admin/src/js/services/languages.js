@@ -16,5 +16,4 @@ angular.module('inboxServices').factory('Languages',
           return _.map(result.rows, 'value');
         });
     };
-  }
-);
+  });

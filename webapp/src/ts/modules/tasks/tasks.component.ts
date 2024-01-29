@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
 import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
 
@@ -26,7 +25,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     private contactTypesService: ContactTypesService,
     private rulesEngineService: RulesEngineService,
     private telemetryService: TelemetryService,
-    private route: ActivatedRoute,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private userContactService: UserContactService,
     private sessionService: SessionService,
@@ -41,7 +39,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   tasksList;
   selectedTask;
-  error;
+  errorStack;
   hasTasks;
   loading;
   tasksDisabled;
@@ -100,8 +98,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeToChanges();
     this.subscribeToRulesEngine();
-
-    this.error = false;
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
@@ -171,7 +167,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
-      this.error = true;
+      this.errorStack = exception.stack;
       this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);

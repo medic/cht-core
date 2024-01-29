@@ -5,12 +5,11 @@ module.exports = (url) => {
   opts.url = url;
   return {
     send: async (msg) => {
-      if(url && url.length) {
+      if (url && url.length) {
         opts.json.text = msg;
         return await post(opts);
-      } else {
-        console.log('Slack channel not defined (.env). Unable to notify.');
       }
+      console.log('Slack channel not defined (.env). Unable to notify.');
     }
   };
 };

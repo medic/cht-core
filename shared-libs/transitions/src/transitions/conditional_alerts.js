@@ -9,7 +9,7 @@ const NAME = 'conditional_alerts';
 const runCondition = (condition, context) => {
   try {
     return Promise.resolve(utils.evalExpression(condition, context));
-  } catch(e) {
+  } catch (e) {
     return Promise.reject(e.message);
   }
 };

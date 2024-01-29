@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
 
@@ -17,11 +16,7 @@ export class AnalyticsModulesService {
       id: 'targets',
       label: 'analytics.targets',
       route: ['/', 'analytics', 'targets'],
-      available: () => {
-        return settings.tasks &&
-          settings.tasks.targets &&
-          settings.tasks.targets.enabled;
-      }
+      available: () => !!(settings.tasks && settings.tasks.targets)
     };
   }
 
@@ -30,12 +25,7 @@ export class AnalyticsModulesService {
       id: 'target-aggregates',
       label: 'analytics.target.aggregates',
       route: ['/', 'analytics', 'target-aggregates'],
-      available: () => {
-        return settings.tasks &&
-          settings.tasks.targets &&
-          settings.tasks.targets.enabled &&
-          canAggregateTargets;
-      }
+      available: () => !!(settings.tasks && settings.tasks.targets && canAggregateTargets)
     };
   }
 

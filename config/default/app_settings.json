@@ -62,6 +62,9 @@
   "synthetic_date": "",
   "contact_display_short": "clinic.name",
   "roles": {
+    "national_admin": {
+      "name": "usertype.national_admin"
+    },
     "data_entry": {
       "name": "usertype.data-entry"
     },
@@ -278,7 +281,8 @@
       "program_officer"
     ],
     "can_view_old_filter_and_search": [],
-    "can_view_old_action_bar": []
+    "can_view_old_action_bar": [],
+    "can_default_facility_filter": []
   },
   "uhc": {
     "contacts_default_sort": "",

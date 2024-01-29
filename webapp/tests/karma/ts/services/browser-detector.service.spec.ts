@@ -20,11 +20,12 @@ const spoofUserAgent = (userAgent: string) => {
 
 const restoreUserAgent = () => spoofUserAgent(baseUserAgent);
 
-const getChtAndroidUserAgent = (androidAppVersion: string, webviewVersion = '80.0.3987') =>
-  'Mozilla/5.0 (Linux; Android 5.1.1; One S Build/LMY49J; wv) ' +
-  'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 ' +
-  `Chrome/${webviewVersion} Mobile Safari/537.36 ` +
-  `org.medicmobile.webapp.mobile/${androidAppVersion}`;
+const getChtAndroidUserAgent = (androidAppVersion: string, webviewVersion = '90.0.3987') => {
+  return 'Mozilla/5.0 (Linux; Android 5.1.1; One S Build/LMY49J; wv) ' +
+         'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 ' +
+         `Chrome/${webviewVersion} Mobile Safari/537.36 ` +
+         `org.medicmobile.webapp.mobile/${androidAppVersion}`;
+};
 
 describe('Browser Detector Service', () => {
   let service: BrowserDetectorService;
@@ -92,5 +93,13 @@ describe('Browser Detector Service', () => {
     expect(service.isUsingSupportedBrowser()).to.be.true;
     expect(service.isUsingChtAndroid()).to.be.false;
     expect(service.isUsingChtAndroidV1()).to.be.false;
+  });
+
+  it('runs with outdated Browser version', () => {
+    const chtAndroidVersion = 'v1.0.1-alpha.1';
+    spoofUserAgent(getChtAndroidUserAgent(chtAndroidVersion, '76.0.2743.116'));
+    androidAppVersion.next(chtAndroidVersion);
+
+    expect(service.isUsingOutdatedBrowser()).to.be.true;
   });
 });

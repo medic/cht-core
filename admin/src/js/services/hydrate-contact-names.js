@@ -67,5 +67,4 @@ angular.module('inboxServices').factory('HydrateContactNames',
           return replaceContactIdsWithNames(summaries, response);
         });
     };
-  }
-);
+  });

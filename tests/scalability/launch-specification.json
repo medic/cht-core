@@ -10,8 +10,8 @@
     }
   ],
   "SecurityGroupIds": ["sg-0fa20cd785acec256"],
-  "ImageId": "ami-065ba2b6b298ed80f",
+  "ImageId": "ami-0a24ca1ef53e3d20f",
   "InstanceType": "c5.2xlarge",
-  "KeyName": "qa-scalability", 
+  "KeyName": "qa-scalability",
   "UserData": "IyEvYmluL2Jhc2gKc3VkbyBta2ZzIC10IGV4dDQgL2Rldi9udm1lMG4xOwpzdWRvIG1vdW50IC9kZXYvbnZtZTBuMSAvc3J2OwpzdWRvIGNobW9kIDc3NyAvc3J2OwpjZCAvc3J2OwpnaXQgY2xvbmUgaHR0cHM6Ly9naXRodWIuY29tL21lZGljL2NodC1pbmZyYXN0cnVjdHVyZS5naXQ7CmNkIGNodC1pbmZyYXN0cnVjdHVyZS9zZWxmLWhvc3RpbmcvcHJlcGFyZS1zeXN0ZW0vdWJ1bnR1LzsKbWtkaXIgLXAgL2hvbWUvbWVkaWMvc2VsZi1ob3N0aW5nL21haW4vCmVjaG8gRE9DS0VSX0NPVUNIREJfQURNSU5fUEFTU1dPUkQ9bWVkaWNTY2FsYWJpbGl0eSA+PiAvaG9tZS9tZWRpYy9zZWxmLWhvc3RpbmcvLmVudgplY2hvIEhBX1BBU1NXT1JEPW1lZGljU2NhbGFiaWxpdHkgPj4gL2hvbWUvbWVkaWMvc2VsZi1ob3N0aW5nLy5lbnYKLi9wcmVwYXJlLnNo"
 }

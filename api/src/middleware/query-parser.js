@@ -7,7 +7,7 @@ module.exports = {
     Object.keys(req.query).forEach(key => {
       try {
         req.query[key] = JSON.parse(req.query[key]);
-      } catch(e) {
+      } catch (e) {
         // no change
       }
     });

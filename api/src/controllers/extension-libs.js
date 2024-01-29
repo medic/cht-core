@@ -6,7 +6,7 @@ module.exports = {
     try {
       const libs = await extensionLibs.getAll();
       res.json(libs.map(lib => lib.name));
-    } catch(e) {
+    } catch (e) {
       serverUtils.serverError(e, req, res);
     }
   },
@@ -23,7 +23,7 @@ module.exports = {
       } else {
         serverUtils.error({ message: 'Not found', status: 404 }, req, res);
       }
-    } catch(e) {
+    } catch (e) {
       serverUtils.serverError(e, req, res);
     }
   }

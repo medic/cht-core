@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "415 Unsupported Media Type",
+  "server": "nginx"
+}

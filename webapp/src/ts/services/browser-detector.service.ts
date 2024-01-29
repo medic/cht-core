@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import * as Bowser from 'bowser';
 import { Store } from '@ngrx/store';
 import { Selectors } from '@mm-selectors/index';
+const OUTDATED_BROWSER_VERSION_MIN = '74';
+const OUTDATED_BROWSER_VERSION_MAX = '90';
 
 type VersionSuffix = `` | `-${string}`;
 type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
@@ -34,9 +36,16 @@ export class BrowserDetectorService {
 
   public isUsingSupportedBrowser() {
     return this.parser.satisfies({
-      chrome: '>=80', // Chrome 80 was released on February 4, 2020; for desktop and Android.
-      firefox: '>=98', // Firefox 93 was released on October 5, 2021; for desktop and Android.
+      chrome: '>=90', // Chrome 90 was released on April 14, 2021; for desktop and Android.
+      firefox: '>=98', // Firefox 98 was released on March 8, 2022; for desktop and Android.
     });
+  }
+
+  public isUsingOutdatedBrowser() {
+    return (
+      this.parser.satisfies({ chrome: `>${OUTDATED_BROWSER_VERSION_MIN}` }) &&
+      this.parser.satisfies({ chrome: `<${OUTDATED_BROWSER_VERSION_MAX}` })
+    );
   }
 
   public isUsingChtAndroid() {
@@ -48,6 +57,6 @@ export class BrowserDetectorService {
       return false;
     }
 
-    return this.androidAppVersion.startsWith('v1.');
+    return this.androidAppVersion?.startsWith('v1.');
   }
 }

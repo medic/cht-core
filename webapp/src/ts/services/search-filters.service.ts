@@ -6,7 +6,7 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
   providedIn: 'root'
 })
 export class SearchFiltersService {
-  freetextFilter:FreetextFilterComponent;
+  freetextFilter:FreetextFilterComponent | null;
 
   constructor() {
   }

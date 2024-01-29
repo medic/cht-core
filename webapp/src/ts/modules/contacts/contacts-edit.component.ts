@@ -5,13 +5,13 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
-import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { ContactsActions } from '@mm-actions/contacts';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
 
 
@@ -24,20 +24,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private route:ActivatedRoute,
     private router:Router,
     private lineageModelGeneratorService:LineageModelGeneratorService,
-    private enketoService:EnketoService,
+    private formService:FormService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
-    private contactSaveService:ContactSaveService,
+    private telemetryService:TelemetryService,
     private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.contactsActions = new ContactsActions(store);
   }
 
   subscription = new Subscription();
   translationsLoadedSubscription;
   private globalActions;
-  private contactsActions;
   private xmlVersion;
 
   enketoStatus;
@@ -53,6 +51,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoContact;
 
   private routeSnapshot;
+  private telemetryData: any = {
+    preRender: Date.now()
+  };
 
   ngOnInit() {
     this.subscribeToStore();
@@ -137,7 +138,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.translationsLoadedSubscription?.unsubscribe();
     this.globalActions.setTitle();
     if (this.enketoContact?.formInstance) {
-      this.enketoService.unload(this.enketoContact.formInstance);
+      this.formService.unload(this.enketoContact.formInstance);
     }
     this.globalActions.clearNavigation();
     this.globalActions.clearEnketoStatus();
@@ -242,21 +243,25 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async renderForm(formId: string, titleKey: string) {
     const formDoc = await this.dbService.get().get(formId);
     this.xmlVersion = formDoc.xmlVersion;
-    const instanceData = this.getFormInstanceData();
-    const markFormEdited = this.markFormEdited.bind(this);
-    const resetFormError = this.resetFormError.bind(this);
-    const formContext: EnketoFormContext = {
-      selector: '#contact-form',
-      formDoc,
-      instanceData,
-      editedListener: markFormEdited,
-      valuechangeListener: resetFormError,
-      titleKey,
-    };
 
     this.globalActions.setEnketoEditedStatus(false);
 
-    return this.enketoService.renderContactForm(formContext);
+    const formContext = new EnketoFormContext('#contact-form', 'contact', formDoc, this.getFormInstanceData());
+    formContext.editedListener = this.markFormEdited.bind(this);
+    formContext.valuechangeListener = this.resetFormError.bind(this);
+    formContext.titleKey = titleKey;
+
+    const formInstance = await this.formService.render(formContext);
+    this.telemetryData.postRender = Date.now();
+    this.telemetryData.form = formId;
+    this.telemetryData.action = 'edit';
+
+    await this.telemetryService.record(
+      `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+      this.telemetryData.postRender - this.telemetryData.preRender
+    );
+
+    return formInstance;
   }
 
   private setEnketoContact(formInstance) {
@@ -273,6 +278,12 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    this.telemetryData.preSave = Date.now();
+    this.telemetryService.record(
+      `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
+
     const form = this.enketoContact.formInstance;
     const docId = this.enketoContact.docId;
     this.globalActions.setEnketoSavingStatus(true);
@@ -281,20 +292,26 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     return Promise
       .resolve(form.validate())
       .then((valid) => {
-        if(!valid) {
+        if (!valid) {
           throw new Error('Validation failed.');
         }
 
         // Updating fields before save. Ref: #6670.
         $('form.or').trigger('beforesave');
 
-        return this.contactSaveService
-          .save(form, docId, this.enketoContact.type, this.xmlVersion)
+        return this.formService
+          .saveContact(form, docId, this.enketoContact.type, this.xmlVersion)
           .then((result) => {
             console.debug('saved contact', result);
 
             this.globalActions.setEnketoSavingStatus(false);
             this.globalActions.setEnketoEditedStatus(false);
+
+            this.telemetryData.postSave = Date.now();
+            this.telemetryService.record(
+              `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:save`,
+              this.telemetryData.postSave - this.telemetryData.preSave
+            );
 
             this.translateService
               .get(docId ? 'contact.updated' : 'contact.created')

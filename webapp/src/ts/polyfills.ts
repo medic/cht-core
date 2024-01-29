@@ -91,7 +91,6 @@ declare global {
   interface JQuery {
     daterangepicker(options?: any, callback?: Function) : any;
     select2(event?:any, options?:any):any;
-    tooltip(options:any):any;
   }
   interface Node {
     _couchId: any;

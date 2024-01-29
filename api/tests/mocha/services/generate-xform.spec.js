@@ -96,7 +96,7 @@ describe('generate-xform service', () => {
 
     it('should replace multimedia src elements', () => runTest('multimedia', spawned));
 
-    it('should correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
+    it('should correctly replace models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
 
     it('should replace markdown syntax', () => runTest('markdown', spawned));
 
@@ -132,7 +132,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -155,7 +156,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -178,7 +180,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -201,7 +204,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -223,7 +227,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unknown Error: An error occurred when executing \'xsltproc\' command');
+          'Unknown Error: An error occurred when executing \'xsltproc\' command'
+        );
       }
     });
 
@@ -244,7 +249,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unknown Error: An error occurred when executing \'xsltproc\' command');
+          'Unknown Error: An error occurred when executing \'xsltproc\' command'
+        );
       }
     });
 
@@ -346,28 +352,28 @@ describe('generate-xform service', () => {
 
     it('should handle no forms', () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
-      sinon.stub(db.medic, 'bulkDocs');
+      sinon.stub(db, 'saveDocs');
       return service.updateAll().then(() => {
         expect(db.medic.allDocs.callCount).to.equal(1);
-        expect(db.medic.bulkDocs.callCount).to.equal(0);
+        expect(db.saveDocs.callCount).to.equal(0);
       });
     });
 
     it('should ignore json forms', () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [ JSON_FORM_ROW ] });
-      sinon.stub(db.medic, 'bulkDocs');
+      sinon.stub(db, 'saveDocs');
       return service.updateAll().then(() => {
         expect(db.medic.allDocs.callCount).to.equal(1);
-        expect(db.medic.bulkDocs.callCount).to.equal(0);
+        expect(db.saveDocs.callCount).to.equal(0);
       });
     });
 
     it('should ignore collect forms', () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [ COLLECT_FORM_ROW ] });
-      sinon.stub(db.medic, 'bulkDocs');
+      sinon.stub(db, 'saveDocs');
       return service.updateAll().then(() => {
         expect(db.medic.allDocs.callCount).to.equal(1);
-        expect(db.medic.bulkDocs.callCount).to.equal(0);
+        expect(db.saveDocs.callCount).to.equal(0);
       });
     });
 
@@ -386,14 +392,14 @@ describe('generate-xform service', () => {
         }
       } ] });
       sinon.stub(service, 'generate').resolves({ form: currentForm, model: currentModel });
-      sinon.stub(db.medic, 'bulkDocs');
+      sinon.stub(db, 'saveDocs');
       return service.updateAll().then(() => {
         expect(db.medic.allDocs.callCount).to.equal(1);
-        expect(db.medic.bulkDocs.callCount).to.equal(0);
+        expect(db.saveDocs.callCount).to.equal(0);
       });
     });
 
-    it('should throw when not all updated successfully', done => {
+    it('should throw when not all updated successfully', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
@@ -413,12 +419,12 @@ describe('generate-xform service', () => {
         }
       ] });
       sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
-      sinon.stub(db.medic, 'bulkDocs').resolves([ { error: 'some error' } ]);
-      service.updateAll()
-        .then(() => done(new Error('expected error to be thrown')))
+      sinon.stub(db, 'saveDocs').resolves([ { error: 'some error' } ]);
+      return service
+        .updateAll()
+        .then(() => expect.fail('Should have thrown'))
         .catch(err => {
           expect(err.message).to.equal('Failed to save updated xforms to the database');
-          done();
         });
     });
 
@@ -457,13 +463,14 @@ describe('generate-xform service', () => {
       sinon.stub(service, 'generate')
         .onCall(0).resolves({ form: currentForm, model: currentModel })
         .onCall(1).resolves({ form: newForm, model: newModel });
-      sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: true } ]);
+      sinon.stub(db, 'saveDocs').resolves([ { ok: true } ]);
       return service.updateAll().then(() => {
         expect(db.medic.allDocs.callCount).to.equal(1);
-        expect(db.medic.bulkDocs.callCount).to.equal(1);
-        expect(db.medic.bulkDocs.args[0][0].length).to.equal(1);
-        expect(db.medic.bulkDocs.args[0][0][0]._id).to.equal('d');
-        expectAttachments(db.medic.bulkDocs.args[0][0][0], newForm, newModel);
+        expect(db.saveDocs.callCount).to.equal(1);
+        expect(db.saveDocs.args[0][0]).to.equal(db.medic);
+        expect(db.saveDocs.args[0][1].length).to.equal(1);
+        expect(db.saveDocs.args[0][1][0]._id).to.equal('d');
+        expectAttachments(db.saveDocs.args[0][1][0], newForm, newModel);
       });
     });
 

@@ -16,7 +16,7 @@ describe('messages pipe', () => {
 
   let fixture;
 
-  const override = async(template, { forms=undefined, message=undefined }={}) => {
+  const override = async(template, { forms, message }: { forms?; message? } = {}) => {
     TestBed.overrideTemplate(TestComponent, template);
     fixture = TestBed.createComponent(TestComponent);
     fixture.componentInstance.forms = forms;

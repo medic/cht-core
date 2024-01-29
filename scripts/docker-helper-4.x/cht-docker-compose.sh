@@ -111,6 +111,8 @@ get_lan_ip() {
 
   # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
   # getting localhost's IP.  Otherwise use MacOS style command
+  # HOWEVER!! "ip" doesn't exist on windows git BASH, so check for that before going into the first if (and
+  # skip it on the second elif because windows won't have "system_profiler"
   if [ -n "$(required_apps_installed "system_profiler")" ];then
     # todo - some of these calls fail when there's no network connectivity - output stuff it shouldn't:
     #       Device "" does not exist.
@@ -430,11 +432,11 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	((i++))
 	sleep 1
 
-	if [[ $nginxContainerId = "" ]]; then
-		nginxContainerId=$(get_nginx_container_id)
-	fi
+  if [[ $nginxContainerId = "" ]]; then
+    nginxContainerId=$(get_nginx_container_id)
+  fi
 
-	isNginxRunning=$(get_is_container_running "$nginxContainerId")
+  isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null

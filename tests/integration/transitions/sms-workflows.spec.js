@@ -402,7 +402,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const[ patientChw6, patientChw3, patientChw4 ] = await processReportsAndSettings(reports, settings);
+      const [ patientChw6, patientChw3, patientChw4 ] = await processReportsAndSettings(reports, settings);
       expectTasks(patientChw6, [
         // clinic.contact._id === chw2
         { messages: [{ to: 'phone1',  message: 'to clinic' }] },
@@ -495,7 +495,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const[ clinicReport, healthCenterReport, districtReport ] = await processReportsAndSettings(reports, settings);
+      const [ clinicReport, healthCenterReport, districtReport ] = await processReportsAndSettings(reports, settings);
 
       expectTasks(clinicReport, [
         // clinic.contact._id === chw1

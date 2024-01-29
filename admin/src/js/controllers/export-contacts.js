@@ -48,5 +48,4 @@ angular.module('controllers').controller('ExportContactsCtrl',
         });
     };
 
-  }
-);
+  });

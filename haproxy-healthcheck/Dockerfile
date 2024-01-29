@@ -1,9 +1,13 @@
-FROM python:3.10.5-slim
+ARG PYTHON_VERSION=3.10.13
+FROM python:${PYTHON_VERSION}-alpine
 
-COPY check-entrypoint.sh /app/check-entrypoint.sh
+WORKDIR /app
 
-COPY check.py /app/check.py
+COPY requirements/base-freeze.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
 
-RUN chmod +x /app/check-entrypoint.sh
+COPY *.py /app/
 
-ENTRYPOINT "/app/check-entrypoint.sh"
+USER nobody
+
+CMD "/app/check.py"

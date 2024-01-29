@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha test/*.spec.js test/**/*.spec.js",
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha test/*.spec.js test/**/*.spec.js",
     "tz": "TZ=Canada/Pacific npm test && TZ=Africa/Monrovia npm test && TZ=Pacific/Auckland npm test"
   },
   "repository": {
@@ -20,9 +20,9 @@
   "dependencies": {
     "@medic/calendar-interval": "file:../calendar-interval",
     "@medic/registration-utils": "file:../registration-utils",
-    "lodash": "4.17.19",
-    "md5": "^2.3.0",
     "cht-nootils": "^4.0.2",
+    "lodash": "^4.17.21",
+    "md5": "^2.3.0",
     "nools": "^0.4.4"
   }
 }

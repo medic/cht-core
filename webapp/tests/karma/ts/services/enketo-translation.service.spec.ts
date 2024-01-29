@@ -717,7 +717,7 @@ describe('EnketoTranslation service', () => {
               }
             },
             {
-              one:'baz2one',
+              one: 'baz2one',
               two: 'baz2two',
               three: {
                 four: [
@@ -727,7 +727,7 @@ describe('EnketoTranslation service', () => {
               }
             },
             {
-              one:'baz3one',
+              one: 'baz3one',
               two: 'baz3two',
               three: {
                 four: 'baz3four1'

@@ -40,7 +40,7 @@ export class SendMessageService {
       form: null,
       from: user && user.phone,
       reported_date: Date.now(),
-      tasks: [],
+      tasks: [] as any[],
       kujua_message: true,
       type: 'data_record',
       sent_by: (user && user.name) || 'unknown',
@@ -90,9 +90,8 @@ export class SendMessageService {
           return this
             .hydrate(primaryContacts)
             .then(primaries => _flattenDeep([ this.mapDescendants(contacts), primaries ]));
-        } else {
-          return this.mapDescendants(contacts);
         }
+        return this.mapDescendants(contacts);
       });
   }
 

@@ -80,9 +80,7 @@
   };
 
   const hasFullDataAccess = function(userCtx) {
-    return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           hasRole(userCtx, ONLINE_ROLE);
+    return hasRole(userCtx, '_admin') || hasRole(userCtx, ONLINE_ROLE);
   };
 
   /* pouch db set up function */
@@ -134,18 +132,6 @@
         }
       })
       .then(() => {
-        const purgeStarted = performance.now();
-        return purger
-          .purgeMain(localDb, userCtx)
-          .on('start', () => setUiStatus('PURGE_INIT'))
-          .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-          .on('done', () => window.startupTimes.purge = performance.now() - purgeStarted)
-          .catch(err => {
-            console.error('Error attempting to purge main db - continuing', err);
-            window.startupTimes.purgingFailed = err.message;
-          });
-      })
-      .then(() => {
         const purgeMetaStarted = performance.now();
         return purger
           .purgeMeta(localMetaDb)
@@ -170,7 +156,7 @@
             return redirectToLogin(dbInfo);
           }
           setUiError(err);
-          throw(err);
+          throw (err);
         }
       });
 

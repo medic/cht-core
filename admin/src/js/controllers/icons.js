@@ -93,5 +93,4 @@ angular.module('controllers').controller('IconsCtrl',
       addAttachment(files[0]);
     };
 
-  }
-);
+  });

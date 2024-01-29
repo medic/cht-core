@@ -7,10 +7,11 @@ import { TelemetryService } from '@mm-services/telemetry.service';
   templateUrl: './analytics-targets.component.html'
 })
 export class AnalyticsTargetsComponent implements OnInit {
-  targets = [];
+  targets: any[] = [];
   loading = true;
   targetsDisabled = false;
-  telemetryData = {
+  errorStack;
+  telemetryData: { start: number; end?: number } = {
     start: Date.now(),
     end: undefined
   };
@@ -33,9 +34,10 @@ export class AnalyticsTargetsComponent implements OnInit {
       })
       .catch(err => {
         console.error('Error getting targets', err);
+        this.errorStack = err.stack;
         return [];
       })
-      .then((targets = []) => {
+      .then((targets: any[] = []) => {
         this.loading = false;
         this.targets = targets.filter(target => target.visible !== false);
         this.telemetryData.end = Date.now();

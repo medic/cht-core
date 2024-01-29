@@ -70,8 +70,7 @@ angular.module('services').factory('ImportProperties',
           return mergeTranslations(parsed, doc);
         });
     };
-  }
-);
+  });
 
 angular.module('services').factory('ExportProperties',
   function() {
@@ -84,5 +83,4 @@ angular.module('services').factory('ExportProperties',
       });
       return properties.stringify(stringifier);
     };
-  }
-);
+  });

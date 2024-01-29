@@ -23,8 +23,7 @@ describe('ids', () => {
   afterEach(() => sinon.restore());
 
   it('generates an id of the given length', () => {
-    [5, 6, 7, 8, 9, 10, 11, 12, 13].forEach(l =>
-      assert.equal(ids._generate(l).length, l));
+    [5, 6, 7, 8, 9, 10, 11, 12, 13].forEach(l => assert.equal(ids._generate(l).length, l));
   });
 
   it('ids can start with 0, will be correct length', () => {
@@ -35,7 +34,8 @@ describe('ids', () => {
 
   it('ids are "always" the length they should be', () => {
     assert(
-      jsc.checkForall(jsc.integer(5, 13), i => ids._generate(i).length === i));
+      jsc.checkForall(jsc.integer(5, 13), i => ids._generate(i).length === i)
+    );
   });
 
   it('id generator returns ids not already used in the DB', () => {

@@ -1,0 +1,11 @@
+HTTP/1.1 408 Request Time-out
+Content-length: 127
+Connection: Close
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "408 Request Time-out",
+  "reason": "Your browser didn't send a complete request in time",
+  "server": "haproxy"
+}

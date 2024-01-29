@@ -1,6 +1,6 @@
 {
   "parserOptions": {
-    "ecmaVersion": 9
+    "ecmaVersion": 2020
   },
   "env": {
     "jasmine": true,
@@ -29,6 +29,8 @@
   "globals": {
     "$": true,
     "$$": true,
-    "document": true
+    "document": true,
+    "caches": true,
+    "navigator": true
   }
 }

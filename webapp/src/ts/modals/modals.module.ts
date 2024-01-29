@@ -2,9 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
-import { AccordionModule } from 'ngx-bootstrap/accordion';
+import { MatButtonModule } from '@angular/material/button';
 
-import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { ComponentsModule } from '@mm-components/components.module';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
@@ -13,7 +12,6 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
-import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
@@ -25,18 +23,17 @@ import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-me
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
+import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 
 
 @NgModule({
   declarations: [
-    MmModal,
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
     SendMessageComponent,
     DeleteDocConfirmComponent,
     UpdatePasswordComponent,
-    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TrainingCardsComponent,
@@ -48,13 +45,14 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     SessionExpiredComponent,
     DatabaseClosedComponent,
     ContactsMutedComponent,
+    BrowserCompatibilityComponent,
   ],
   imports: [
     CommonModule,
     ComponentsModule,
     TranslateModule,
     FormsModule,
-    AccordionModule,
+    MatButtonModule,
     PipesModule,
   ],
   exports: [
@@ -62,7 +60,6 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     LogoutConfirmComponent,
     FeedbackComponent,
     UpdatePasswordComponent,
-    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TrainingCardsComponent,
@@ -72,6 +69,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     CheckDateComponent,
     EditMessageGroupComponent,
     SessionExpiredComponent,
+    BrowserCompatibilityComponent,
   ]
 })
 export class ModalsModule { }

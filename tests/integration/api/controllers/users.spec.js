@@ -8,6 +8,13 @@ chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('@utils/sentinel');
 
 const getUserId = n => `org.couchdb.user:${n}`;
+const password = 'passwordSUP3RS3CR37!';
+const parentPlace = {
+  _id: 'PARENT_PLACE',
+  type: 'district_hospital',
+  name: 'Big Parent Hospital'
+};
+
 
 describe('Users API', () => {
 
@@ -158,83 +165,93 @@ describe('Users API', () => {
       await utils.revertDb([], true);
     });
 
-    it('Allows for admin users to modify someone', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        body: {
-          place: newPlaceId
-        }
-      })
+    it('Allows for admin users to modify someone', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          body: {
+            place: newPlaceId
+          }
+        })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
           chai.expect(doc.facility_id).to.equal(newPlaceId);
-        }));
+        });
+    });
 
-    it('401s if a user without the right permissions attempts to modify someone else', () =>
-      utils.request({
-        path: '/api/v1/users/admin',
-        method: 'POST',
-        body: {
-          place: newPlaceId
-        },
-        auth: { username, password },
-      })
+    it('401s if a user without the right permissions attempts to modify someone else', () => {
+      return utils
+        .request({
+          path: '/api/v1/users/admin',
+          method: 'POST',
+          body: {
+            place: newPlaceId
+          },
+          auth: { username, password },
+        })
         .then(() => fail('You should get a 401 in this situation'))
         .catch(err => {
           chai.expect(err.responseBody.error).to.equal('You do not have permissions to modify this person');
-        }));
+        });
+    });
 
-    it('Errors if a user edits themselves but attempts to change their roles', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        body: {
-          type: 'national-manager'
-        },
-        auth: { username, password },
-      })
+    it('Errors if a user edits themselves but attempts to change their roles', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          body: {
+            type: 'national-manager'
+          },
+          auth: { username, password },
+        })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
           chai.expect(err.responseBody.error).to.equal('unauthorized');
-        }));
+        });
+    });
 
-    it('Allows for users to modify themselves with a cookie', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        headers: {
-          'Cookie': cookie
-        },
-        body: {
-          fullname: 'Awesome Guy'
-        },
-        auth: { username, password},
-      })
+    it('Allows for users to modify themselves with a cookie', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          headers: {
+            'Cookie': cookie
+          },
+          body: {
+            fullname: 'Awesome Guy'
+          },
+          auth: { username, password},
+        })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
           chai.expect(doc.fullname).to.equal('Awesome Guy');
-        }));
+        });
+    });
 
-    it('Does not allow users to update their password with only a cookie', () =>
-      utils.request({
-        path: `/api/v1/users/${username}`,
-        method: 'POST',
-        headers: {
-          'Cookie': cookie
-        },
-        body: {
-          password: 'swizzlesticks'
-        },
-        noAuth: true
-      })
+    it('Does not allow users to update their password with only a cookie', () => {
+      return utils
+        .request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          headers: {
+            'Cookie': cookie
+          },
+          body: {
+            password: 'swizzlesticks'
+          },
+          noAuth: true
+        })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
           chai.expect(err.responseBody.error).to.equal('You must authenticate with Basic Auth to modify your password');
-        }));
+        });
+    });
 
-    it('Does allow users to update their password with a cookie and also basic auth', () =>
-      utils.request({
+    it('allows users to update their password with a cookie and also basic auth', async () => {
+      const response = await utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
@@ -245,11 +262,12 @@ describe('Users API', () => {
           // our code can't know it's the same!
         },
         auth: { username, password }
-      })
-        .catch(() => fail('This should not result in an error')));
+      });
+      expect(response).to.deep.nested.include({ 'user.id': getUserId(username) });
+    });
 
-    it('Does allow users to update their password with just basic auth', () =>
-      utils.request({
+    it('allows users to update their password with just basic auth', async () => {
+      const response = await utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         body: {
@@ -257,8 +275,9 @@ describe('Users API', () => {
           // our code can't know it's the same!
         },
         auth: { username, password }
-      })
-        .catch(() => fail('This should not result in an error')));
+      });
+      expect(response).to.deep.nested.include({ 'user.id': getUserId(username) });
+    });
 
     it('should work with enabled transitions', () => {
       const parentPlace = {
@@ -325,59 +344,9 @@ describe('Users API', () => {
 
     });
 
-    it('should allow to update the admin password and login successfully', async () => {
-      const newPassword = 'medic.456';
-      const otherAdmin = {
-        username: 'admin2',
-        password: 'medic.123',
-        roles: [ 'admin' ],
-        contact: { name: 'Philip' },
-        place: newPlaceId,
-      };
-      await utils.createUsers([ otherAdmin ]);
-      // Set admin user's password in CouchDB config.
-      const membership = await utils.request({ path: '/_membership' });
-      const nodes = membership.all_nodes;
-      for (const nodeName of nodes) {
-        await utils.request({
-          method: 'PUT',
-          path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
-          body: `"${otherAdmin.password}"`,
-        });
-      }
-
-      // Update password with new value.
-      const userResponse = await utils
-        .request({
-          path: `/api/v1/users/${otherAdmin.username}`,
-          method: 'POST',
-          body: { password: newPassword }
-        })
-        .catch((err) => {
-          chai.assert.fail(err);
-        });
-
-      chai.expect(userResponse.user).to.not.be.undefined;
-      chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
-      chai.expect(userResponse['user-settings']).to.not.be.undefined;
-      chai.expect(userResponse['user-settings'].id).to.equal('org.couchdb.user:admin2');
-      // Old password shouldn't work.
-      await expectPasswordLoginToFail(otherAdmin);
-      await expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
-    });
-
   });
 
   describe('/api/v1/users-info', () => {
-
-    const password = 'passwordSUP3RS3CR37!';
-
-    const parentPlace = {
-      _id: 'PARENT_PLACE',
-      type: 'district_hospital',
-      name: 'Big Parent Hospital'
-    };
-
     const users = [
       {
         username: 'offline',
@@ -567,7 +536,7 @@ describe('Users API', () => {
 
     it('should throw error when requesting for online roles', () => {
       const params = {
-        role: 'national_admin',
+        role: JSON.stringify(['national_admin', 'mm-online']),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -582,7 +551,7 @@ describe('Users API', () => {
 
     it('should throw error for array roles of online user', () => {
       const params = {
-        role: JSON.stringify(['random', 'national_admin', 'random']),
+        role: JSON.stringify(['random', 'national_admin', 'mm-online']),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -611,7 +580,6 @@ describe('Users API', () => {
 
   describe('token-login', () => {
     let user;
-    const password = 'passwordSUP3RS3CR37!';
 
     const getUser = (user) => {
       const opts = { path: `/_users/${getUserId(user.username)}` };
@@ -1045,8 +1013,6 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
-        await utils.delayPromise(1000);
-
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
           const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
@@ -1156,8 +1122,6 @@ describe('Users API', () => {
           });
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
-
-        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1335,7 +1299,6 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
-          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1414,7 +1377,6 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
-          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1450,7 +1412,6 @@ describe('Users API', () => {
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
-            return utils.delayPromise(1000);
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1612,6 +1573,49 @@ describe('Users API', () => {
             },
           });
         });
+    });
+  });
+
+  describe('POST/GET api/v2/users', () => {
+    before(async () => {
+      await utils.saveDoc(parentPlace);
+    });
+
+    after(async () => {
+      await utils.revertDb([], true);
+    });
+
+    it('should create and get users', async () => {
+      const users = Array.from({ length: 10 }).map(() => ({
+        username: uuid(),
+        password: password,
+        place: {
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          name: 'OnlineUser'
+        },
+        roles: ['district_admin', 'mm-online']
+      }));
+
+      const createUserOpts = { path: '/api/v2/users', method: 'POST' };
+      for (const user of users) {
+        await utils.request({ ...createUserOpts, body: user });
+      }
+
+      const savedUsers = await utils.request({ path: '/api/v2/users' });
+      for (const user of users) {
+        const savedUser = savedUsers.find(savedUser => savedUser.username === user.username);
+        expect(savedUser).to.deep.nested.include({
+          id: `org.couchdb.user:${user.username}`,
+          'place.type': user.place.type,
+          'place.name': user.place.name,
+          'place.parent._id': parentPlace._id,
+          'contact.name': user.contact.name,
+        });
+      }
     });
   });
 });

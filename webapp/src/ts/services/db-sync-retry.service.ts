@@ -94,7 +94,7 @@ export class DbSyncRetryService {
         return this.saveMedicDoc(doc).then(result => result && result.ok && this.saveLocalDoc(local));
       })
       .catch(err => {
-        console.error(`Error when retrying replication for forbidden doc`, err);
+        console.error('Error when retrying replication for forbidden doc', err);
       });
   }
 }

@@ -66,8 +66,8 @@ export class FormatDataRecordService {
     }
 
     const fields = {
-      headers: [],
-      data: [],
+      headers: [] as { head: any }[],
+      data: [] as any[],
     };
 
     _.forEach(keys, (key) => {
@@ -137,7 +137,7 @@ export class FormatDataRecordService {
     };
 
     const hashToArray = (hash) => {
-      const array = [];
+      const array: (string | any[])[] = [];
 
       _.forEach(hash, (value, key) => {
         if (typeof value === 'string') {
@@ -175,15 +175,14 @@ export class FormatDataRecordService {
     // still haven't found a proper label; then titleize
     if (key === label) {
       return this.titleize(key);
-    } else {
-      return label;
     }
+    return label;
   }
 
   // returns the deepest array from `key`
   private unrollKey(array) {
-    let target = [].concat(array);
-    const root = [];
+    let target: any[] = [].concat(array);
+    const root: any[] = [];
 
     while (_.isArray(_.last(target))) {
       root.push(_.first(target));
@@ -387,7 +386,7 @@ export class FormatDataRecordService {
 
     return _.reduce(
       keys,
-      (memo, key) => {
+      (memo: any[], key) => {
         const field = fields && fields[key];
 
         if (_.isString(key)) {
@@ -414,11 +413,10 @@ export class FormatDataRecordService {
       if (value.translations) {
         const translation = _.find(value.translations, { locale: locale });
         return translation && translation.content;
-      } else {
-        // fallback to old translation definition to support
-        // backwards compatibility with existing forms
-        return value[locale];
       }
+      // fallback to old translation definition to support
+      // backwards compatibility with existing forms
+      return value[locale];
     };
 
     if (!_.isObject(value)) {
@@ -449,7 +447,7 @@ export class FormatDataRecordService {
         anyValue.translations[0] &&
         anyValue.translations[0].content) ||
       // 5) Look for the first value
-      value[_.first(_.keys(value))];
+      value[_.first(_.keys(value))!];
 
     if (test) {
       result = '-' + result + '-';
@@ -615,8 +613,14 @@ export class FormatDataRecordService {
   *  ]
   */
   private formatOutgoingMessages(doc) {
-    const outgoing_messages = [];
-    const outgoing_messages_recipients = [];
+    const outgoing_messages: {
+      recipients: any[];
+      sent_by: any;
+      from: any;
+      state: any;
+      message: any;
+    }[] = [];
+    const outgoing_messages_recipients: Record<string, any>[] = [];
     doc.tasks.forEach((task) => {
       task.messages.forEach((msg) => {
         const recipient = {

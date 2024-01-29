@@ -162,6 +162,7 @@ const getGroupTasksNamesAndTitles = async () => {
 };
 
 const expectTasksGroupLeaveModal = async () => {
+  await (await modalPage.body()).waitForClickable();
   expect(await (await modalPage.body()).getText()).to.equal(
     'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
   );
@@ -251,15 +252,15 @@ describe('Tasks group landing page', () => {
       await expectTasksGroupLeaveModal();
 
       // cancelling keeps you on the same page
-      await (await modalPage.cancel()).click();
-      await (await modalPage.body()).waitForDisplayed({ reverse: true });
+      await modalPage.cancel();
+      await modalPage.checkModalHasClosed();
 
       await tasksPage.waitForTasksGroupLoaded();
 
       // submitting the modal takes us to the other task
       await taskFromOtherGroup.click();
       await expectTasksGroupLeaveModal();
-      await (await modalPage.confirm()).click();
+      await modalPage.submit();
 
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
       await tasksPage.submitTask();
@@ -285,7 +286,7 @@ describe('Tasks group landing page', () => {
       // clicking on another page displays the modal
       await commonPage.goToPeople('', false);
       await expectTasksGroupLeaveModal();
-      await (await modalPage.confirm()).click();
+      await modalPage.submit();
       await (await contactsPage.contactList()).waitForDisplayed();
       await (await commonPage.waitForPageLoaded());
     });

@@ -23,9 +23,8 @@ describe('Translations Loader provider', () => {
     DBGet.rejects(expected);
     provider.getTranslation('err').subscribe(
       () => assert.fail('expected error to be thrown'),
-      (actual) => {
-        expect(actual).to.deep.equal(expected);
-      });
+      (actual) => expect(actual).to.deep.equal(expected)
+    );
   }));
 
   it('should return empty when no translation document', waitForAsync(() => {

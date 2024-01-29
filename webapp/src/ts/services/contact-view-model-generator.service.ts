@@ -303,13 +303,13 @@ export class ContactViewModelGeneratorService {
   }
 
   private getReports(contactDocs) {
-    const subjectIds = [];
+    const subjectIds: any[] = [];
     contactDocs.forEach((doc) => {
       subjectIds.push(registrationUtils.getSubjectIds(doc));
     });
-    const searchOptions = { subjectIds: _flattenDeep(subjectIds) };
+    const filter = { subjectIds: _flattenDeep(subjectIds) };
     return this.searchService
-      .search('reports', searchOptions, { include_docs: true })
+      .search('reports', filter, { include_docs: true })
       .then((reports) => {
         reports.forEach((report) => {
           report.valid = !report.errors || !report.errors.length;

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
-import { first } from 'rxjs/operators';
+import { first, take } from 'rxjs/operators';
 import * as moment from 'moment';
 import { groupBy as _groupBy } from 'lodash-es';
 
@@ -16,7 +16,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -47,7 +47,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   tasksTimeWindowWeeks;
   userSettings;
   private settings;
-  private childTypesBySelectedContact = [];
+  private childTypesBySelectedContact: Record<string, any>[] = [];
   private filters;
   canDeleteContact = false; // this disables the "Delete" button until children load
   fastActionList: FastAction[];
@@ -203,12 +203,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
-
-        $('.tooltip').remove();
-      } else {
-        this.contactsActions.clearSelection();
-        this.globalActions.unsetSelected();
+        return;
       }
+      this.contactsActions.clearSelection();
+      this.globalActions.unsetSelected();
     });
     this.subscription.add(routeSubscription);
   }
@@ -276,7 +274,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     });
   }
 
-  private addPermissionToContactType(allowedChildTypes = []) {
+  private addPermissionToContactType(allowedChildTypes: Record<string, any>[] = []) {
     return allowedChildTypes.map(childType => ({
       ...childType,
       permission: childType.type?.person ? 'can_create_people' : 'can_create_places',
@@ -403,7 +401,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(this.subscriptionSelectedContactForms);
   }
 
-  private filterAllowedChildType(forms, childTypes) {
+  private filterAllowedChildType(forms, childTypes: Record<string, any>[]) {
     if (!childTypes) {
       return;
     }
@@ -415,7 +413,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   private getModelsFromChildTypes(childTypes) {
     const grouped = _groupBy(childTypes, type => type.person ? 'persons' : 'places');
-    const models = [];
+    const models: {
+      menu_key: string;
+      menu_icon: string;
+      permission: string;
+      types: any[];
+    }[] = [];
 
     if (grouped.places) {
       models.push({
@@ -445,13 +448,16 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
     this.modalService
       .show(ContactsMutedComponent)
-      .then(() => this.router.navigate(['/contacts', this.selectedContact?._id, 'report', form.code]))
-      .catch(() => {});
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe(navigate => {
+        if (navigate) {
+          this.router.navigate(['/contacts', this.selectedContact?._id, 'report', form.code]);
+        }
+      });
   }
 
   private openSendMessageModal(sendTo) {
-    this.modalService
-      .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-      .catch(() => {});
+    this.modalService.show(SendMessageComponent, { data: { to: sendTo } });
   }
 }

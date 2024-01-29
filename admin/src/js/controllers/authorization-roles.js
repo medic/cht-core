@@ -90,5 +90,4 @@ angular.module('controllers').controller('AuthorizationRolesCtrl',
       });
     };
 
-  }
-);
+  });

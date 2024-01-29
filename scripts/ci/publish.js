@@ -36,13 +36,13 @@ const prepare = doc => {
   return stagingDb
     .get(stagingDocId)
     .then(current => {
-      console.log(`Exising release found - updating...`);
+      console.log(`Existing release found - updating...`);
       doc._rev = current._rev;
       return doc;
     })
     .catch(err => {
       if (err.status === 404) {
-        console.log(`No exising release found - creating...`);
+        console.log(`No existing release found - creating...`);
         return doc;
       }
       throw err;

@@ -1,0 +1,4 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,is_name_generated,name,contact:person WHERE reference_id=COL_VAL,reported_date:timestamp
+area_1,hf_1,false,Andra Anderson's Area,person_4,1544031155715
+area_2,hf_1,false,Brinda Bush's Area,person_5,1544031155715
+area_3,hf_1,false,Charlie Coste's Area,person_6,1544031155715

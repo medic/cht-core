@@ -1,0 +1,13 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,name,sex,date_of_birth,patient_id,reported_date:timestamp
+person_71,hh_1,Adriana Akiyama,female,1985-01-01,10071,1544031155715
+person_72,hh_1,Adelia Akiyama,female,2000-01-01,10072,1544031155715
+person_73,hh_1,Aurelia Akiyama,female,2002-01-01,10073,1544031155715
+person_74,hh_1,Anthony Akiyama,male,2008-01-01,10074,1544031155715
+person_81,hh_2,Becky Backlund,female,1987-01-01,10081,1544031155715
+person_82,hh_2,Buck Backlund,male,1986-01-01,10082,1544031155715
+person_83,hh_2,Brandon Backlund,male,2003-01-01,10083,1544031155715
+person_84,hh_2,Brianna Backlund,female,2005-01-01,10084,1544031155715
+person_91,hh_3,Chelsea Crane,female,1987-01-01,10091,1544031155715
+person_92,hh_3,Carmelita Crane,female,2002-01-01,10092,1544031155715
+person_93,hh_3,Carson Crane,male,2004-01-01,10093,1544031155715
+person_94,hh_3,Chloe Crane,male,2006-01-01,10094,1544031155715

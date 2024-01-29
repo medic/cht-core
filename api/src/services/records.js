@@ -72,10 +72,9 @@ const parseSentTimestamp = ts => {
   if (typeof ts === 'string') {
     if (ts.match(DATE_NUMBER_STRING)) {
       return Number(ts);
-    } else {
-      // see if moment can make sense of it
-      return moment(ts).valueOf();
     }
+    // see if moment can make sense of it
+    return moment(ts).valueOf();
   }
 };
 

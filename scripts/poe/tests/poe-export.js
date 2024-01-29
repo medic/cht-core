@@ -46,6 +46,7 @@ describe('poe', () => {
 
   test('successful download', async () => {
     expect(console.log).toHaveBeenCalledWith(
-      '\ten saved to /Users/simon/poe/translations/messages-en.properties');
+      '\ten saved to /Users/simon/poe/translations/messages-en.properties'
+    );
   });
 });

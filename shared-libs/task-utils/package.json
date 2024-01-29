@@ -4,7 +4,7 @@
   "description": "Common task utility functions",
   "main": "src/task-utils.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0"

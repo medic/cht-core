@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -10,7 +10,7 @@ import { MessagesActions } from '@mm-actions/messages';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
 import { ExportService } from '@mm-services/export.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -29,12 +29,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
   fastActionList: FastAction[];
   loading = true;
   loadingContent = false;
-  conversations = [];
+  conversations: Record<string, any>[] = [];
   error = false;
   currentLevel;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private store: Store,
     private changesService: ChangesService,
@@ -95,7 +94,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(conversations$);
   }
 
-  private displayFirstConversation(conversations = []) {
+  private displayFirstConversation(conversations: Record<string, any>[] = []) {
     if (this.responsiveService.isMobile()) {
       return;
     }
@@ -141,7 +140,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     this.fastActionList = await this.fastActionButtonService.getMessageActions({
-      callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent).catch(() => {})
+      callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent),
     });
   }
 
@@ -157,12 +156,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
-    modalService
-      .show(SendMessageComponent)
-      .catch(() => {});
+    modalService.show(SendMessageComponent);
   }
 
-  private setConversations(conversations = [], {merge = false} = {}) {
+  private setConversations(conversations: Record<string, any>[] = [], {merge = false} = {}) {
     if (merge) {
       this.removeDeleted(this.conversations, conversations);
       this.mergeUpdated(this.conversations, conversations);
@@ -194,7 +191,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
       });
   }
 
-  private removeDeleted(currentConversations = [], updatedConversations = []) {
+  private removeDeleted(
+    currentConversations: Record<string, any>[] = [],
+    updatedConversations: Record<string, any>[] = []
+  ) {
     for (let i = currentConversations.length - 1; i >= 0; i--) {
       if (!updatedConversations.some(changed => currentConversations[i].key === changed.key)) {
         currentConversations.splice(i, 1);
@@ -202,7 +202,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private mergeUpdated(currentConversations = [], updatedConversations = []) {
+  private mergeUpdated(
+    currentConversations: Record<string, any>[] = [],
+    updatedConversations: Record<string, any>[] = []
+  ) {
     updatedConversations.forEach(updated => {
       const match = _find(currentConversations, existing => existing.key === updated.key);
 

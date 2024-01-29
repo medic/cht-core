@@ -7,6 +7,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const requireNodeXml = fs.readFileSync(`${__dirname}/forms/required-note.xml`, 'utf8');
 
 describe('Submit Enketo form', () => {
@@ -27,7 +28,7 @@ describe('Submit Enketo form', () => {
     </h:head>
     <h:body>
       <input ref="/data/name">
-        <label>person.field.name</label>
+        <label>Person name:</label>
       </input>
     </h:body>
   </h:html>`;
@@ -118,7 +119,7 @@ describe('Submit Enketo form', () => {
     await commonElements.openFastActionReport(assessmentForm.internalId, false);
 
     // enter name
-    await (await genericForm.nameField()).setValue('Jones');
+    await commonEnketoPage.setInputValue('Person name', 'Jones');
 
     // submit form
     await (await genericForm.submitButton()).click();
@@ -153,11 +154,10 @@ describe('Submit Enketo form', () => {
     await commonElements.goToReports();
     const originalReportsText = await reportsPage.getAllReportsText();
     await commonElements.openFastActionReport(assessmentForm.internalId, false);
-    await (await genericForm.nameField()).setValue('Jones');
+    await commonEnketoPage.setInputValue('Person name', 'Jones');
     await (await genericForm.cancelButton()).click();
 
-    await (await modalPage.submit()).waitForDisplayed();
-    await (await modalPage.submit()).click();
+    await modalPage.submit();
 
     await commonElements.waitForPageLoaded();
     await (await reportsPage.noReportSelectedLabel()).waitForDisplayed();

@@ -482,7 +482,7 @@ describe('LineageModelGenerator service', () => {
             patient: {
               _id: 'new_patient',
               name: 'new patient',
-              parent:  {
+              parent: {
                 _id: 'new_place',
                 name: 'new place',
                 parent: {

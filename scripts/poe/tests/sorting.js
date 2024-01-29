@@ -12,7 +12,7 @@ afterEach(() => {
 
 describe('save', () => {
   test('sorting', async () => {
-    get.mockResolvedValueOnce({body : 'yesterday:yes\ntoday:no'});
+    get.mockResolvedValueOnce({body: 'yesterday:yes\ntoday:no'});
     await save('http://poe', fPath);
     const content = fs.readFileSync(fPath).toString();
     const lines = content.split('\n');

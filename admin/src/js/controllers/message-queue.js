@@ -102,5 +102,4 @@ angular.module('controllers').controller('MessageQueueCtrl',
       });
 
     this.getSetupPromiseForTesting = () => setupPromise;
-  }
-);
+  });

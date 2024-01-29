@@ -7,10 +7,18 @@ sed -i '4s~^~'BUILD=$MARKET_URL_READ/$STAGING_SERVER/medic:medic:$TAG'\n\n~' pre
 
 echo Triggering EC2 Run Instance Command and getting Instance ID
 
+waitForBuildAvailable() {
+  until [ "$(curl -s -w '%{http_code}' -o /dev/null "$MARKET_URL_READ/$STAGING_SERVER/medic:medic:$TAG")" -eq 200 ]
+  do
+    echo Waiting for CHT build to be available. Sleeping for 30.
+    sleep 30
+  done
+}
+
 runInstance () {
   # --profile CA \ # for local runs
   echo $(aws ec2 run-instances \
-    --image-id ami-0c3d8c5445511bd1d \
+    --image-id ami-0a24ca1ef53e3d20f \
     --instance-type c5.2xlarge \
     --block-device-mappings file://block-device-mapping.json \
     --user-data file://$1 \
@@ -96,6 +104,7 @@ getInstanceUrl () {
   fi
 }
 
+waitForBuildAvailable
 instanceResponse=$(runInstance "prepare-ec2.sh")
 instanceID=$(getInstanceId "$instanceResponse")
 echo Instance id is "$instanceID"

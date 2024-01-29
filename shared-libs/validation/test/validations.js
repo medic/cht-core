@@ -248,6 +248,184 @@ describe('validations', () => {
     });
   });
 
+  it('unique phone validation should fail if db query for phone returns doc', () => {
+    sinon.stub(db.medic, 'query').resolves({
+      rows: [
+        {
+          id: 'original',
+          phone: '+9779841111111'
+        }
+      ]
+    });
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'uniquePhone("phone_number")',
+        message: [
+          {
+            content: 'Duplicate phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'duplicate',
+      xyz: '+9779841111111',
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 1);
+    });
+  });
+
+
+  it('phone validation should fail if invalid phone is provided', () => {
+    const config = require('../../transitions/src/config');
+    
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '+977984111'}
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 1);
+    });
+  });
+
+  it('phone validation should pass if valid phone is provided', () => {
+    const config = require('../../transitions/src/config');
+
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '9841134532' }
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
+  it('phone validation should pass if valid phone with country code is provided', () => {
+    const config = require('../../transitions/src/config');
+
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '+9779841134532' }
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
+  it('phone validation should fail if alphabets in phone number', () => {
+    const config = require('../../transitions/src/config');
+
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '+97798A1134532' }
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 1);
+    });
+  });
+
+  it('unique phone validation should pass if db query for phone does not return any doc', () => {
+    sinon.stub(db.medic, 'query').resolves({ undefined });
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'uniquePhone("phone_number")',
+        message: [
+          {
+            content: 'unique phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'unique',
+      xyz: '+9779841111111',
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
   it('pass uniqueWithin validation on old doc', () => {
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({
@@ -532,7 +710,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 4, days: 1 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -548,9 +726,9 @@ describe('validations', () => {
       },
     ];
     const doc = {
-      _id: 'same',      
+      _id: 'same',
       fields: {
-        lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf()
+        lmp_date: moment().subtract({ weeks: 4, days: 1 }).valueOf()
       },
       reported_date: moment().valueOf()
     };
@@ -568,7 +746,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 4}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 4 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -591,7 +769,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 3, days: 6 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -647,7 +825,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 3, days: 6 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -669,7 +847,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 39, days: 6}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 39, days: 6 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -686,7 +864,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 40}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 40 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -709,7 +887,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 40, days: 1}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 40, days: 1 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {

@@ -115,10 +115,10 @@ describe('RelativeDate Service', () => {
 
       service.updateRelativeDates();
 
-      expect(document.getElementById('spanNoData').innerHTML).to.equal('sometext');
-      expect(document.getElementById('spanEmptyData').innerHTML).to.equal('sometext');
-      expect(document.getElementById('spanBadData').innerHTML).to.equal('sometext');
-      expect(document.getElementById('spanBadDate').innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanNoData')!.innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanEmptyData')!.innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanBadData')!.innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanBadDate')!.innerHTML).to.equal('sometext');
 
       expect(formatDateRelativeTime.callCount).to.equal(0);
       expect(formatDateAge.callCount).to.equal(0);
@@ -141,8 +141,8 @@ describe('RelativeDate Service', () => {
 
       service.updateRelativeDates();
 
-      expect(document.getElementById('spanAge').innerHTML).to.equal('someage');
-      expect(document.getElementById('spanNoAge').innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanAge')!.innerHTML).to.equal('someage');
+      expect(document.getElementById('spanNoAge')!.innerHTML).to.equal('somerelativetime');
 
       expect(formatDateRelativeTime.callCount).to.equal(1);
       expect(formatDateAge.callCount).to.equal(1);
@@ -162,8 +162,8 @@ describe('RelativeDate Service', () => {
       document.body.appendChild(spanNoWithoutTime);
 
       service.updateRelativeDates();
-      expect(document.getElementById('spanWithoutTime').innerHTML).to.equal('somerelativeday');
-      expect(document.getElementById('spanNoWithoutTime').innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanWithoutTime')!.innerHTML).to.equal('somerelativeday');
+      expect(document.getElementById('spanNoWithoutTime')!.innerHTML).to.equal('somerelativetime');
 
       expect(formatDateRelativeTime.callCount).to.equal(1);
       expect(formatDateRelativeDay.callCount).to.equal(1);
@@ -206,11 +206,11 @@ describe('RelativeDate Service', () => {
       document.body.appendChild(spanTodayAbsoluteWitoutTime);
 
       service.updateRelativeDates();
-      expect(document.getElementById('spanTodayNoAbsolute').innerHTML).to.equal('somerelativetime');
-      expect(document.getElementById('spanTodayAbsolute').innerHTML).to.equal('someabsolutetime');
-      expect(document.getElementById('spanOtherDayNoAbsolute').innerHTML).to.equal('somerelativetime');
-      expect(document.getElementById('spanOtherDayAbsolute').innerHTML).to.equal('somerelativetime');
-      expect(document.getElementById('spanTodayAbsoluteWitoutTime').innerHTML).to.equal('somerelativeday');
+      expect(document.getElementById('spanTodayNoAbsolute')!.innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanTodayAbsolute')!.innerHTML).to.equal('someabsolutetime');
+      expect(document.getElementById('spanOtherDayNoAbsolute')!.innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanOtherDayAbsolute')!.innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanTodayAbsoluteWitoutTime')!.innerHTML).to.equal('somerelativeday');
 
       expect(formatDateRelativeTime.callCount).to.equal(3);
       expect(formatDateTime.callCount).to.equal(1);

@@ -38,8 +38,8 @@ export const Actions = {
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
-  setUserFacilityId:createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
-  setTrainingCardFormId:createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
+  setUserFacilityId: createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
+  setTrainingCardFormId: createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
 };
 
 export class GlobalActions {

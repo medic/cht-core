@@ -1,10 +1,10 @@
-<mm-modal
+<mm-modal-layout
   id="session-expired"
   [titleKey]="'SESSION_EXPIRED_TITLE' | bootstrapTranslate"
   [submitKey]="'LOGIN' | bootstrapTranslate"
-  [cancelKey]="false"
-  (onCancel)="cancel()"
+  [hideCancelButton]="true"
+  (onCancel)="close()"
   (onSubmit)="submit()"
 >
   <p>{{'SESSION_EXPIRED_DESCRIPTION' | bootstrapTranslate}}</p>
-</mm-modal>
+</mm-modal-layout>

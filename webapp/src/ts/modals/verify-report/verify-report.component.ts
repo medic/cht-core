@@ -1,20 +1,23 @@
-import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
-
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { Component, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'verify-report',
   templateUrl: './verify-report.component.html'
 })
-export class VerifyReportComponent extends MmModalAbstract {
+export class VerifyReportComponent {
   static id = 'verify-report-modal';
 
-  model = { proposedVerificationState: undefined };
+  proposedVerificationState;
 
   constructor(
-    bsModalRef: BsModalRef,
+    private matDialogRef: MatDialogRef<VerifyReportComponent>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, boolean>,
   ) {
-    super(bsModalRef);
+    this.proposedVerificationState = this.matDialogData?.proposedVerificationState;
+  }
+
+  close(result) {
+    this.matDialogRef.close(result);
   }
 }

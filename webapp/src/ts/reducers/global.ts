@@ -37,7 +37,7 @@ const initialState = {
   title: null,
   unreadCount: {},
   version: null,
-  snackbarContent: null,
+  snackbarContent: null as any,
   translationsLoaded: false,
   userFacilityId: null,
   trainingCardFormId: null,

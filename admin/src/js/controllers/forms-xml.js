@@ -176,5 +176,4 @@ angular.module('controllers').controller('FormsXmlCtrl',
       .catch(err => {
         $log.error('Error fetching XForms for form config page.', err);
       });
-  }
-);
+  });

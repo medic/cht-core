@@ -4,7 +4,7 @@
     <a class="fa fa-chevron-left search-bar-clear" *ngIf="showClearIcon()" (click)="clear()"></a>
   </div>
 
-  <mm-freetext-filter class="filter" (search)="search.emit($event)" [disabled]="disabled"></mm-freetext-filter>
+  <mm-freetext-filter class="filter" (search)="search.emit()" [disabled]="disabled"></mm-freetext-filter>
 
   <mm-sort-filter
     *ngIf="showSort"

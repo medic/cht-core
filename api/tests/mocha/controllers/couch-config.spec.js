@@ -47,7 +47,7 @@ describe('DB config Controller', () => {
   it('should respond with the config when user has the required permissions', () => {
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
     auth.isDbAdmin.returns(true);
-    const attachmentsConfig = {'compressible_types':'text/*, application/*', 'compression_level':'8'};
+    const attachmentsConfig = {'compressible_types': 'text/*, application/*', 'compression_level': '8'};
     secureSettings.getCouchConfig.resolves(attachmentsConfig);
     return controller.getAttachments(req, res).then(() => {
       chai.expect(auth.isDbAdmin.callCount).to.equal(1);

@@ -87,9 +87,8 @@ const migrateIncoming = doc => {
 const migrate = doc => {
   if (doc.sms_message) {
     return migrateIncoming(doc);
-  } else {
-    return migrateOutgoing(doc);
   }
+  return migrateOutgoing(doc);
 };
 
 const save = docs => {

@@ -1,4 +1,4 @@
-const utils = require('../utils');
+const utils = require('@utils');
 
 const sendSms = async (phone, message = 'testing sms') => {
   await utils.request({

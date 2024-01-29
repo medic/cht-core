@@ -18,9 +18,8 @@ const ensureViewDdocExists = function(auditDb, callback) {
     if (err && err.status === 404) {
       logger.info(`${DDOC_NAME} audit ddoc does not exist, creating`);
       return auditDb.put(DDOC, callback);
-    } else {
-      return callback();
     }
+    return callback();
   });
 };
 
@@ -86,7 +85,8 @@ module.exports = {
         function(cb) {
           return cb(null, lastLength > 0);
         },
-        closeCallback);
+        closeCallback
+      );
     });
   })
 };

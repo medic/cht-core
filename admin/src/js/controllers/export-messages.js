@@ -11,5 +11,4 @@ angular.module('controllers').controller('ExportMessagesCtrl',
       Export('messages', {}, { humanReadable: true });
     };
 
-  }
-);
+  });

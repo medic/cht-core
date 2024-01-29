@@ -111,5 +111,4 @@ angular.module('controllers').controller('EditTranslationCtrl',
       }
     };
 
-  }
-);
+  });

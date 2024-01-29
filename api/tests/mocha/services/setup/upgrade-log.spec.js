@@ -143,6 +143,7 @@ describe('UpgradeLog service', () => {
       expect(db.medicLogs.allDocs.callCount).to.equal(1);
       expect(db.medicLogs.allDocs.args[0]).to.deep.equal([{
         startkey: `upgrade_log:1500:`,
+        endkey: `upgrade_log:0:`,
         descending: true,
         limit: 1,
         include_docs: true
@@ -167,6 +168,7 @@ describe('UpgradeLog service', () => {
       expect(db.medicLogs.allDocs.callCount).to.equal(1);
       expect(db.medicLogs.allDocs.args[0]).to.deep.equal([{
         startkey: `upgrade_log:5984:`,
+        endkey: `upgrade_log:0:`,
         descending: true,
         limit: 1,
         include_docs: true
@@ -191,6 +193,7 @@ describe('UpgradeLog service', () => {
       expect(db.medicLogs.allDocs.callCount).to.equal(1);
       expect(db.medicLogs.allDocs.args[0]).to.deep.equal([{
         startkey: `upgrade_log:89451321:`,
+        endkey: `upgrade_log:0:`,
         descending: true,
         limit: 1,
         include_docs: true

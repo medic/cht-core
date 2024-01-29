@@ -2,6 +2,8 @@ const _ = require('lodash/core');
 const moment = require('moment');
 const pupil = require('./pupil/src/pupil');
 const messages = require('@medic/message-utils');
+const config = require('../../transitions/src/config');
+const phoneNumberParser = require('@medic/phone-number');
 
 let db;
 let logger = console;
@@ -26,8 +28,7 @@ const _executeExistsRequest = (options) => {
   return db.medic.query('medic-client/reports_by_freetext', options);
 };
 
-const lowerCaseString = obj =>
-  typeof obj === 'string' ? obj.toLowerCase() : obj;
+const lowerCaseString = obj => typeof obj === 'string' ? obj.toLowerCase() : obj;
 
 const _exists = (doc, fields, options = {}) => {
   if (!fields.length) {
@@ -163,6 +164,16 @@ module.exports = {
         })
         .then(result => !result);
     },
+    uniquePhone: (doc, validation) => {
+      return db.medic
+        .query('medic-client/contacts_by_phone', { key: doc[validation.field] })
+        .then(results => !(results && results.rows && results.rows.length));
+    },
+    validPhone: (doc, validation) => {
+      const appSettings = config.getAll();
+      const validPhone = phoneNumberParser.validate(appSettings, doc[validation.field]);
+      return Promise.resolve(validPhone);
+    },
     uniqueWithin: (doc, validation) => {
       const fields = [...validation.funcArgs];
       const duration = _parseDuration(fields.pop());
@@ -196,13 +207,13 @@ module.exports = {
 
       const year = yearFieldName ? doc[yearFieldName] : new Date().getFullYear();
       const isValidISOWeek =
-          /^\d{1,2}$/.test(doc[weekFieldName]) &&
-          /^\d{4}$/.test(year) &&
-          doc[weekFieldName] >= 1 &&
-          doc[weekFieldName] <=
-            moment()
-              .year(year)
-              .isoWeeksInYear();
+        /^\d{1,2}$/.test(doc[weekFieldName]) &&
+        /^\d{4}$/.test(year) &&
+        doc[weekFieldName] >= 1 &&
+        doc[weekFieldName] <=
+        moment()
+          .year(year)
+          .isoWeeksInYear();
       if (isValidISOWeek) {
         return Promise.resolve(true);
       }
@@ -259,7 +270,7 @@ module.exports = {
    * @param {String[]} [ignores=[]] Keys of doc that is always considered valid
    * @returns {Promise} Array of errors if validation failed, empty array otherwise.
    */
-  validate: (doc, validations=[], ignores=[]) => {
+  validate: (doc, validations = [], ignores = []) => {
     if (!inited) {
       throw new Error('Validation module not initialized');
     }

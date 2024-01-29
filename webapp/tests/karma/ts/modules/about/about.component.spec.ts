@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { MatCardModule } from '@angular/material/card';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -51,7 +52,8 @@ describe('About Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
+          RouterTestingModule,
+          MatCardModule,
         ],
         declarations: [
           AboutComponent,

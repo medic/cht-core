@@ -2,14 +2,14 @@
   <div class="inner">
     <reports-filters
       *ngIf="!useSidebarFilter && !selectMode"
-      (search)="search($event)"
+      (search)="search()"
       [disabled]="selectMode && selectedReports?.length">
     </reports-filters>
     <mm-navigation></mm-navigation>
     <mm-search-bar
       *ngIf="useSidebarFilter && !selectMode"
       (toggleFilter)="toggleFilter()"
-      (search)="search($event)"
+      (search)="search()"
       [disabled]="selectMode && selectedReports?.length"
       [showFilter]="true">
     </mm-search-bar>
@@ -103,7 +103,7 @@
       <mm-reports-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
         *ngIf="useSidebarFilter"
-        (search)="search($event)"
+        (search)="search()"
         [disabled]="selectMode && selectedReports?.length">
       </mm-reports-sidebar-filter>
     </div>

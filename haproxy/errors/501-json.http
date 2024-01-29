@@ -1,0 +1,10 @@
+HTTP/1.1 501 Not Implemented
+Content-length: 152
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "501 Not Implemented",
+  "reason": "The server does not support the functionality required to fulfill the request",
+  "server": "haproxy"
+}

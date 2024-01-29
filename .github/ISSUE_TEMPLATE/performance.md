@@ -8,21 +8,23 @@ assignees: ''
 ---
 
 **Describe the performance issue**
-A clear and concise description of what the problem is. Ex. It is slow when I [...]
+<!-- A clear and concise description of what the problem is. Ex. It is slow when I [...] -->
 
 **Describe the improvement you'd like**
-A clear and concise description of what you want to happen.
+<!-- A clear and concise description of what you want to happen. -->
 
 **Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+<!-- A clear and concise description of any alternative solutions or features you've considered. -->
 
 **To Reproduce**
+<!--
 Steps to record the performance metrics:
 1. Go to '...'
 2. Click on '....'
+-->
 
 **Measurements**
-Record at least one measurement that you think should be improved. Ex. 5 seconds, 200MB memory usage, etc
+<!-- Record at least one measurement that you think should be improved. Ex. 5 seconds, 200MB memory usage, etc -->
 
 **Environment**
 - Instance: (eg: alpha.dev.medicmobile.org, etc)
@@ -32,4 +34,4 @@ Record at least one measurement that you think should be improved. Ex. 5 seconds
 - Version: (eg: 2.15.0, 3.0.0, etc)
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+<!-- Add any other context or screenshots about the feature request here. -->

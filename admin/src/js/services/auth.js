@@ -88,5 +88,4 @@ angular.module('inboxServices').factory('Auth',
       has,
       online,
     };
-  }
-);
+  });

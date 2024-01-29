@@ -76,5 +76,4 @@ angular.module('controllers').controller('DisplayDateTimeCtrl',
         $log.error('Error loading settings', err);
       });
 
-  }
-);
+  });

@@ -15,8 +15,7 @@ const moment = require('moment');
         ipCookie(localeCookieKey, value, { expires: 365, path: '/' });
         return value;
       };
-    }
-  );
+    });
 
   angular.module('inboxServices').factory('SetLanguage',
     function(
@@ -32,8 +31,7 @@ const moment = require('moment');
           SetLanguageCookie(code);
         }
       };
-    }
-  );
+    });
 
   angular.module('inboxServices').factory('Language',
     function(
@@ -66,7 +64,6 @@ const moment = require('moment');
         }
         return fetchLocale().then(SetLanguageCookie);
       };
-    }
-  );
+    });
 
 }());

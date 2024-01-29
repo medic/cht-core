@@ -73,17 +73,16 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-docs handler', () => {
-  before(() => {
-    return utils
-      .saveDoc(parentPlace)
-      .then(() => sUtils.waitForSentinel())
-      .then(() => utils.createUsers(users));
+  before(async () => {
+    await utils.saveDoc(parentPlace);
+    await sUtils.waitForSentinel();
+    await utils.createUsers(users);
   });
 
-  after(() =>
-    utils
-      .revertDb([], true)
-      .then(() => utils.deleteUsers(users)));
+  after(async () => {
+    await utils.revertDb([], true);
+    await utils.deleteUsers(users);
+  });
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
@@ -924,8 +923,7 @@ describe('bulk-docs handler', () => {
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs(existentDocs))
-      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
         return utils.requestOnMedicDb(offlineRequestOptions);
@@ -1073,8 +1071,7 @@ describe('bulk-docs handler', () => {
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs(existentDocs))
-      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
         return utils.requestOnMedicDb(offlineRequestOptions);
@@ -1221,8 +1218,7 @@ describe('bulk-docs handler', () => {
     const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
     return utils
       .updateSettings(settings, true)
-      .then(() => utils.saveDocs(existentDocs))
-      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
         return utils.requestOnMedicDb(offlineRequestOptions);

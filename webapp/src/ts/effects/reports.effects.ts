@@ -3,7 +3,6 @@ import { Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { exhaustMap, filter, withLatestFrom, concatMap, tap } from 'rxjs/operators';
-import { Router } from '@angular/router';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -11,9 +10,8 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { DbService } from '@mm-services/db.service';
-import { SearchService } from '@mm-services/search.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { ServicesActions } from '@mm-actions/services';
@@ -32,8 +30,6 @@ export class ReportsEffects {
     private reportViewModelGeneratorService:ReportViewModelGeneratorService,
     private markReadService:MarkReadService,
     private dbService:DbService,
-    private router:Router,
-    private searchService:SearchService,
     private modalService:ModalService,
     private translateService:TranslateService,
     private authService:AuthService,
@@ -196,12 +192,7 @@ export class ReportsEffects {
         model.verified = doc.verified;
         model.type = doc.content_type;
         model.verifyingReport = verifyingReport;
-        const openSendMessageModal = (modalService:ModalService, sendTo) => {
-          modalService
-            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-            .catch(() => {});
-        };
-        model.openSendMessageModal = openSendMessageModal.bind({}, this.modalService);
+        model.openSendMessageModal = sendTo => this.modalService.show(SendMessageComponent, { data: { to: sendTo } });
 
         if (!doc.contact?._id) {
           return this.globalActions.setRightActionBar(model);
@@ -222,9 +213,7 @@ export class ReportsEffects {
       ofType(ReportActionList.launchEditFacilityDialog),
       withLatestFrom(this.store.select(Selectors.getSelectedReport)),
       tap(([, selectedReport]) => {
-        this.modalService
-          .show(EditReportComponent, { initialState: { model: { report: selectedReport?.doc } } })
-          .catch(() => {});
+        this.modalService.show(EditReportComponent, { data: { report: selectedReport?.doc } });
       }),
     );
   }, { dispatch: false });
@@ -250,9 +239,9 @@ export class ReportsEffects {
           const verificationTranslationKey = verified ? 'reports.verify.valid' : 'reports.verify.invalid';
           const proposedVerificationState = this.translateService.instant(verificationTranslationKey);
           return this.modalService
-            .show(VerifyReportComponent, { initialState: { model: { proposedVerificationState } } })
-            .then(() => true)
-            .catch(() => false);
+            .show(VerifyReportComponent, { data: { proposedVerificationState } })
+            .afterClosed()
+            .toPromise();
         };
 
         const shouldReportBeVerified = canUserEdit => {

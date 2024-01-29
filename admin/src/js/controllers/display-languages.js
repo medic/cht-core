@@ -189,5 +189,4 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
         $log.error('Error loading language settings', err);
       });
 
-  }
-);
+  });

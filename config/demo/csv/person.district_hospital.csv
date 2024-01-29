@@ -1,0 +1,2 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,name,sex,date_of_birth,phone,reported_date:timestamp
+person_1,hf_1,Andrew Artisan,male,1984-01-01,+9779841128674,1544031155715

@@ -1,4 +1,5 @@
 const commonPage = require('../common/common.wdio.page');
+const modalPage = require('../common/modal.wdio.page');
 
 const MESSAGES_LIST = '#message-list';
 const MESSAGE_HEADER = '#message-header';
@@ -9,8 +10,8 @@ const MESSAGE_FOOTER = '#message-footer';
 const messageInList = identifier => $(`${MESSAGES_LIST} li[test-id="${identifier}"]`);
 const messagesListLeftPanel = () => $$(`${MESSAGES_LIST} li.content-row`);
 const messagesLoadingStatus = () => $(`${MESSAGES_LIST} .loading-status`);
+const sendMessageModal = () => $(SEND_MESSAGE_MODAL);
 const messageText = () => $(`${SEND_MESSAGE_MODAL} textarea[name="message"]`);
-const sendMessageModalSubmit = () => $(`${SEND_MESSAGE_MODAL} a.btn.submit:not(.ng-hide)`);
 const recipientField = () => $(`${SEND_MESSAGE_MODAL} input.select2-search__field`);
 const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-messages"]');
 const replyMessage = () => $(`${MESSAGE_FOOTER} textarea[name="message"]`);
@@ -40,8 +41,14 @@ const getMessageHeader = async () => {
   return {
     name: await $(`${MESSAGE_HEADER} .name`).getText(),
     phone: await $(`${MESSAGE_HEADER} .phone`).getText(),
-    lineage: await $(`${MESSAGE_HEADER} .horizontal.lineage`).getText()
+    lineage: await $(`${MESSAGE_HEADER} .horizontal.lineage`).getText(),
   };
+};
+
+const navigateFromConversationToContact = async () => {
+  await $(`${MESSAGE_HEADER} a.name`).waitForClickable();
+  await $(`${MESSAGE_HEADER} a.name`).click();
+  await commonPage.waitForPageLoaded();
 };
 
 const getMessageContent = async  (index = 1) => {
@@ -56,33 +63,31 @@ const getMessageContent = async  (index = 1) => {
 
 const searchSelect = async (recipient, option) => {
   await (await recipientField()).setValue(recipient);
-  const recipientOption = await (await $('.select2-results__options')).$(`//*[text()='${option}']`);
-  await recipientOption.waitForClickable();
-  await (await recipientOption).click();
-};
-
-const clickModalSubmit = async () => {
-  await (await sendMessageModalSubmit()).waitForClickable();
-  await (await sendMessageModalSubmit()).click();
-  await $(SEND_MESSAGE_MODAL).waitForDisplayed({ reverse: true });
+  await (await $('.loading-results')).waitForDisplayed({ reverse: true });
+  const selection = await (await $('.select2-results__options')).$(`.*=${option}`);
+  await selection.click();
+  await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
 };
 
 const sendMessage = async (message, recipient, entryText) => {
   await commonPage.clickFastActionFlat({ waitForList: false });
-  await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
+  await (await sendMessageModal()).waitForDisplayed();
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
-  await clickModalSubmit();
+  await modalPage.submit();
+  await modalPage.checkModalHasClosed();
 };
 
 const sendReplyNewRecipient = async (recipient, entryText) => {
   await searchSelect(recipient, entryText);
-  await clickModalSubmit();
+  await modalPage.submit();
+  await modalPage.checkModalHasClosed();
 };
 
 const sendMessageToContact = async (message) => {
   await (await messageText()).setValue(message);
-  await clickModalSubmit();
+  await modalPage.submit();
+  await modalPage.checkModalHasClosed();
 };
 
 const exportMessages = async () => {
@@ -97,10 +102,12 @@ const getMessageLoadingStatus = async () => {
 };
 
 const sendReply = async (message) => {
+  const numberOfMessages = await getAmountOfMessagesByPhone();
   await (await replyMessage()).setValue(message);
   await (await replyMessageActions()).waitForExist();
   await (await submitReplyBtn()).waitForClickable();
   await (await submitReplyBtn()).click();
+  await browser.waitUntil(async () => await getAmountOfMessagesByPhone() > numberOfMessages);
 };
 
 const replyAddRecipients = async (message) => {
@@ -108,7 +115,7 @@ const replyAddRecipients = async (message) => {
   await (await replyMessageActions()).waitForExist();
   await (await addRecipient()).waitForClickable();
   await (await addRecipient()).click();
-  await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
+  await (await sendMessageModal()).waitForDisplayed();
 };
 
 const getAmountOfMessagesByPhone = async () => {
@@ -118,7 +125,7 @@ const getAmountOfMessagesByPhone = async () => {
 };
 
 const getMessagesModalDetails = async () => {
-  await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
+  await (await sendMessageModal()).waitForDisplayed();
   return {
     recipient: await $(`${SEND_MESSAGE_MODAL} .select2-selection__choice`).getText(),
     message: await messageText().getValue(),
@@ -139,5 +146,6 @@ module.exports = {
   sendReply,
   replyAddRecipients,
   getAmountOfMessagesByPhone,
+  navigateFromConversationToContact,
   getMessagesModalDetails,
 };

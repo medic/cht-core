@@ -274,7 +274,7 @@ describe('Setup utils', () => {
           await utils.getDdocDefinitions();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.match(/Unexpected token d in JSON at position 0/);
+          expect(err.message).to.match(/Unexpected token/);
           expect(db.builds.get.callCount).to.equal(0);
           expect(fs.promises.readFile.args).to.deep.equal([
             ['localDdocs/medic.json', 'utf-8'],
@@ -811,6 +811,17 @@ describe('Setup utils', () => {
         _id: 'upgrade_log',
         action: 'stage',
         state: 'indexed',
+      });
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
+    });
+
+    it('should not change state if stage is completing', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({
+        _id: 'upgrade_log',
+        state: 'completing',
       });
 
       await utils.interruptPreviousUpgrade();

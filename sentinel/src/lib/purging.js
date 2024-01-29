@@ -1,6 +1,5 @@
 const config = require('../config');
 const registrationUtils = require('@medic/registration-utils');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const serverSidePurgeUtils = require('@medic/purging-utils');
 const chtScriptApi = require('@medic/cht-script-api');
 const logger = require('./logger');
@@ -194,31 +193,17 @@ const assignContactToGroups = (row, groups, subjectIds) => {
     messages: [],
     ids: []
   };
-  let key;
   const contact = row.doc;
-  if (tombstoneUtils.isTombstoneId(row.id)) {
-    // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
-    // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
-    key =  tombstoneUtils.extractStub(row.id).id;
-    group.contact = { _deleted: true };
-    group.subjectIds = registrationUtils.getSubjectIds(row.doc.tombstone);
-  } else {
-    key = row.id;
-    group.contact = row.doc;
-    group.subjectIds = registrationUtils.getSubjectIds(contact);
-    group.ids.push(row.id);
-  }
+  group.contact = row.doc;
+  group.subjectIds = registrationUtils.getSubjectIds(contact);
+  group.ids.push(row.id);
 
-  groups[key] = group;
+  groups[row.id] = group;
   subjectIds.push(...group.subjectIds);
 };
 
 const isRelevantRecordEmission = (row, groups) => {
   if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
-    return false;
-  }
-
-  if (tombstoneUtils.isTombstoneId(row.id)) { // we don't purge tombstones
     return false;
   }
 

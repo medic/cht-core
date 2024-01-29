@@ -4,10 +4,10 @@ import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { SettingsService } from '@mm-services/settings.service';
-import { HeaderTabsService } from '@mm-services/header-tabs.service';
+import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
 import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
@@ -26,7 +26,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   replicationStatus;
   currentTab;
   unreadCount = {};
-  permittedTabs = [];
+  permittedTabs: HeaderTab[] = [];
 
   private globalActions;
 
@@ -80,15 +80,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openFeedback() {
-    this.modalService
-      .show(FeedbackComponent)
-      .catch(() => {});
+    this.modalService.show(FeedbackComponent);
   }
 
   logout() {
-    this.modalService
-      .show(LogoutConfirmComponent)
-      .catch(() => {});
+    this.modalService.show(LogoutConfirmComponent);
   }
 
   replicate() {

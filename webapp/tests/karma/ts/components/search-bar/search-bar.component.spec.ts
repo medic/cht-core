@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -8,25 +9,28 @@ import { SearchBarComponent } from '@mm-components/search-bar/search-bar.compone
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { SearchFiltersService } from '@mm-services/search-filters.service';
 
 describe('Search Bar Component', () => {
   let component: SearchBarComponent;
   let fixture: ComponentFixture<SearchBarComponent>;
   let store: MockStore;
   let responsiveService;
+  let searchFiltersService;
 
   beforeEach(() => {
     const mockedSelectors = [
       { selector: Selectors.getSidebarFilter, value: { filterCount: { total: 5 } } },
       { selector: Selectors.getFilters, value: undefined },
     ];
-
+    searchFiltersService = { init: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FormsModule
         ],
         declarations: [
           SearchBarComponent,
@@ -35,6 +39,7 @@ describe('Search Bar Component', () => {
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ResponsiveService, useValue: responsiveService },
+          { provide: SearchFiltersService, useValue: searchFiltersService },
         ]
       })
       .compileComponents()
@@ -50,6 +55,14 @@ describe('Search Bar Component', () => {
     flush();
     expect(component).to.exist;
     expect(component.activeFilters).to.equal(5);
+  }));
+
+  it('should init search filter service', fakeAsync(() => {
+    sinon.resetHistory();
+
+    component.ngAfterViewInit();
+
+    expect(searchFiltersService.init.calledOnce).to.be.true;
   }));
 
   it('should unsubscribe from observables on component destroy', () => {

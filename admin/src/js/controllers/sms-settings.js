@@ -116,5 +116,4 @@ angular.module('controllers').controller('SmsSettingsCtrl',
       })
       .catch(err => $log.error('Error loading settings', err));
 
-  }
-);
+  });

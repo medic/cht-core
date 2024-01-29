@@ -27,18 +27,35 @@ const getLogs = async () => {
   const containerName = (await runDockerCommand('docker-compose', ['ps', '-q', '-a']))[0];
   const logs = await runDockerCommand('docker', ['logs', containerName]);
   try {
-    return logs && logs.filter(log => log).map(log => JSON.parse(log));
+    return logs?.filter(log => log).map(log => JSON.parse(log));
   } catch (err) {
     console.log(logs);
     throw err;
   }
 };
 
-describe('accessing couch_httpd', () => {
-  it('should not be available to the host', async () => {
+const expectCorrectMetadata = (metadata) => {
+  expect(metadata._id).to.equal(constants.DB_NAME);
+  // 12 shards, evenly distributed across 3 nodes
+  expect(Object.keys(metadata.by_range).length).to.equal(12);
+  expect(metadata.by_node).to.have.keys([
+    'couchdb@couchdb-1.local', 'couchdb@couchdb-2.local', 'couchdb@couchdb-3.local'
+  ]);
+  expect(metadata.by_node['couchdb@couchdb-1.local'].length).to.equal(4);
+  expect(metadata.by_node['couchdb@couchdb-2.local'].length).to.equal(4);
+  expect(metadata.by_node['couchdb@couchdb-3.local'].length).to.equal(4);
+};
+
+describe('accessing couch clustering endpoint', () => {
+  it('should block unauthenticated access through the host network', async () => {
     await expect(
-      utils.request({ uri: `https://localhost:5986/_dbs/${constants.DB_NAME}` })
-    ).to.be.rejectedWith('Error: connect ECONNREFUSED 127.0.0.1:5986');
+      utils.request({ uri: `https://localhost/_node/_local/_dbs/${constants.DB_NAME}`, noAuth: true })
+    ).to.be.rejectedWith(Error, 'unauthorized');
+  });
+
+  it('should allow authenticated access through host network', async () => {
+    const metadata = await utils.request({ path: `/_node/_local/_dbs/${constants.DB_NAME}` });
+    expectCorrectMetadata(metadata);
   });
 
   it('should block unauthenticated access through docker network', async () => {
@@ -53,14 +70,7 @@ describe('accessing couch_httpd', () => {
     const logs = await getLogs();
     expect(logs.length).to.equal(1);
     const metadata = logs[0];
-    expect(metadata._id).to.equal(constants.DB_NAME);
-    // 12 shards, evenly distributed across 3 nodes
-    expect(Object.keys(metadata.by_range).length).to.equal(12);
-    expect(metadata.by_node).to.have.keys([
-      'couchdb@couchdb-1.local', 'couchdb@couchdb-2.local', 'couchdb@couchdb-3.local'
-    ]);
-    expect(metadata.by_node['couchdb@couchdb-1.local'].length).to.equal(4);
-    expect(metadata.by_node['couchdb@couchdb-2.local'].length).to.equal(4);
-    expect(metadata.by_node['couchdb@couchdb-3.local'].length).to.equal(4);
+    expectCorrectMetadata(metadata);
   });
 });
+

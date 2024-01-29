@@ -11,7 +11,7 @@ export class HydrateMessagesService {
   constructor(private lineageModelGenerator: LineageModelGeneratorService) { }
 
   private buildMessageModel(doc, key, date, report) {
-    let contact = null;
+    let contact: any = null;
     let phone = null;
     let message = null;
     let outgoing = false;
@@ -72,7 +72,7 @@ export class HydrateMessagesService {
     }
 
     const rowsObject = {};
-    const contactIds = [];
+    const contactIds: any[] = [];
 
     rows.forEach((row) => {
       rowsObject[row.key[0]] = row;

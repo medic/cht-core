@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 
+export const REPORT_ATTACHMENT_NAME = 'content';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,9 +14,6 @@ export class GetReportContentService {
     private fileReaderService:FileReaderService,
   ) {
   }
-
-  readonly REPORT_ATTACHMENT_NAME = 'content';
-
 
   getReportContent(doc?) {
     // creating a new doc - no content
@@ -30,10 +29,10 @@ export class GetReportContentService {
     }
 
     // old style report content
-    if (doc._attachments && doc._attachments[this.REPORT_ATTACHMENT_NAME]) {
+    if (doc._attachments && doc._attachments[REPORT_ATTACHMENT_NAME]) {
       return this.dbService
         .get()
-        .getAttachment(doc._id, this.REPORT_ATTACHMENT_NAME)
+        .getAttachment(doc._id, REPORT_ATTACHMENT_NAME)
         .then(content => this.fileReaderService.utf8(content));
     }
 

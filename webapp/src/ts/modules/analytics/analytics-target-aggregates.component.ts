@@ -15,7 +15,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
   loading = true;
   enabled = false;
-  aggregates = null;
+  aggregates: any = null;
   selected = null;
   error = null;
 

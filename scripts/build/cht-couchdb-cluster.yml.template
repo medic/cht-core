@@ -13,7 +13,7 @@ services:
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC1_NAME:-couchdb-1.local}"
       - "CLUSTER_PEER_IPS=${CLUSTER_PEER_IPS:-couchdb-2.local,couchdb-3.local}"
-      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
     logging:
       driver: "local"
       options:
@@ -33,7 +33,7 @@ services:
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC2_NAME:-couchdb-2.local}"
-      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
       - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb-1.local}"
     logging:
       driver: "local"
@@ -54,7 +54,7 @@ services:
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC3_NAME:-couchdb-3.local}"
-      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
       - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb-1.local}"
     logging:
       driver: "local"

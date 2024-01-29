@@ -17,8 +17,8 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   private targetAggregatesActions: TargetAggregatesActions;
   private globalActions: GlobalActions;
   subscriptions: Subscription = new Subscription();
-  selected = null;
-  error = null;
+  selected: any = null;
+  error: any = null;
   private aggregates = null;
   private viewInited = new Subject();
 

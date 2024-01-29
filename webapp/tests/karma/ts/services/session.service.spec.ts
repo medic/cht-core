@@ -161,10 +161,10 @@ describe('Session service', () => {
       expect(actual).to.equal(true);
     });
 
-    it('returns true for national_admin', () => {
+    it('returns false for national_admin', () => {
       cookieGet.returns(JSON.stringify({ roles: [ 'national_admin', 'some_other_role' ] }));
       const actual = service.isAdmin();
-      expect(actual).to.equal(true);
+      expect(actual).to.equal(false);
     });
 
     it('returns false for everyone else', () => {
@@ -173,26 +173,5 @@ describe('Session service', () => {
       expect(actual).to.equal(false);
     });
 
-  });
-
-  describe('isDbAdmin', () => {
-    it('should return false if not logged in', () => {
-      cookieGet.returns(JSON.stringify({}));
-      expect(service.isDbAdmin()).to.equal(false);
-    });
-
-    it('returns true for _admin', () => {
-      cookieGet.returns(JSON.stringify({ roles: [ '_admin' ] }));
-      expect(service.isDbAdmin()).to.equal(true);
-      expect(service.isDbAdmin({ roles: ['_admin', 'aaaa'] })).to.equal(true);
-    });
-
-    it('returns false for everyone else', () => {
-      cookieGet.returns(JSON.stringify({ roles: [ 'district_admin', 'some_other_role' ] }));
-      expect(service.isDbAdmin()).to.equal(false);
-      cookieGet.returns(JSON.stringify({ roles: [ 'national_admin', 'some_other_role' ] }));
-      expect(service.isDbAdmin()).to.equal(false);
-      expect(service.isDbAdmin({ roles: ['role1', 'national_admin'] })).to.equal(false);
-    });
   });
 });

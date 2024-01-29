@@ -17,7 +17,7 @@ const getPlace = id => {
     })
     .catch(err => {
       if (err.status === 404) {
-        err.message  = 'Failed to find place.';
+        err.message = 'Failed to find place.';
       }
       throw err;
     });
@@ -75,6 +75,12 @@ const validatePlace = place => {
     if (!_.isString(place.contact) && !_.isObject(place.contact)) {
       return err(`Property "contact" on place ${placeId} must be an object or string.`);
     }
+    if (_.isObject(place.contact)) {
+      const errStr = people._validatePerson(place.contact);
+      if (errStr) {
+        return err(errStr);
+      }
+    }
   }
   if (place.parent && !_.isEmpty(place.parent)) {
     // validate parents
@@ -83,23 +89,31 @@ const validatePlace = place => {
   return Promise.resolve();
 };
 
-const createPlace = place => {
-  const self = module.exports;
-  return self._validatePlace(place)
-    .then(() => {
-      const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
-      place.reported_date = date.valueOf();
-      if (place.parent) {
-        place.parent = lineage.minifyLineage(place.parent);
-      }
-      if (place.contact) {
-        // also validates contact if creating
-        return people.getOrCreatePerson(place.contact).then(person => {
-          place.contact = lineage.minifyLineage(person);
-        });
-      }
-    })
-    .then(() => db.medic.post(place));
+const createPlace = async (place) => {
+  if (place.contact && !place.contact.type) {
+    place.contact.type = people._getDefaultPersonType();
+  }
+  await module.exports._validatePlace(place);
+
+  const contact = place.contact;
+  delete place.contact;
+
+  const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
+  place.reported_date = date.valueOf();
+  if (place.parent) {
+    place.parent = lineage.minifyLineage(place.parent);
+  }
+
+  const response = await db.medic.post(place);
+  if (!contact) {
+    return response;
+  }
+  const placeUUID = response.id;
+
+  contact.place = placeUUID;
+  const person = await people.getOrCreatePerson(contact);
+  const result = await updatePlace(placeUUID, { contact: person._id });
+  return { ...result, contact: { id: person._id } };
 };
 
 /*
@@ -124,10 +138,9 @@ const createPlaces = place => {
         place.parent = body.id;
         return self._createPlaces(place);
       });
-  } else {
-    // create place when all parents are resolved
-    return self._createPlace(place);
   }
+  // create place when all parents are resolved
+  return self._createPlace(place);
 };
 
 /*
@@ -189,16 +202,17 @@ const getOrCreatePlace = place => {
   if (_.isString(place)) {
     // fetch place
     return self.getPlace(place);
-  } else if (_.isObject(place) && !place._rev) {
+  }
+
+  if (_.isObject(place) && !place._rev) {
     // create and return place
     return self._createPlaces(place)
       .then(resp => self.getPlace(resp.id));
-  } else {
-    return Promise.reject({
-      code:400,
-      message: 'Place must be a new object or string identifier (UUID).'
-    });
   }
+  return Promise.reject({
+    code: 400,
+    message: 'Place must be a new object or string identifier (UUID).'
+  });
 };
 
 module.exports = {

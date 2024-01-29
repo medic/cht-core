@@ -32,7 +32,6 @@ describe('Settings Shared Library', () => {
         });
     });
 
-
     it('should throw error from request', () => {
       sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
 
@@ -52,6 +51,17 @@ describe('Settings Shared Library', () => {
         .getCredentials('mykey')
         .then(actual => {
           expect(actual).to.be.undefined;
+        });
+    });
+
+    it('should encode credential id', () => {
+      sinon.stub(request, 'get').resolves({});
+      return lib
+        .getCredentials('/../../some-other-db')
+        .then(() => {
+          expect(request.get.callCount).to.equal(1);
+          expect(request.get.args[0][0])
+            .to.equal('http://user:pass@server.com/medic-vault/credential:%2F..%2F..%2Fsome-other-db');
         });
     });
 
@@ -128,6 +138,24 @@ describe('Settings Shared Library', () => {
           expect(request.get.callCount).to.equal(2);
           expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
           expect(err.message).to.equal('down');
+        });
+    });
+
+    it('should encode credential id', () => {
+      sinon.stub(request, 'get')
+        .onCall(0).rejects({ message: 'missing', statusCode: 404 })
+        .onCall(1).resolves('mysecret');
+      sinon.stub(request, 'put').resolves();
+      return lib
+        .setCredentials('/../../some-other-db', 'mypass')
+        .then(() => {
+          expect(request.get.callCount).to.equal(2);
+          expect(request.put.callCount).to.equal(1);
+          expect(request.put.args[0][0]).to.equal('http://server.com/medic-vault/credential:%2F..%2F..%2Fsome-other-db');
+          expect(request.put.args[0][1].body).to.deep.equal({
+            _id: 'credential:%2F..%2F..%2Fsome-other-db',
+            password: 'myiv:' + Buffer.from('startend').toString('hex')
+          });
         });
     });
 
@@ -294,42 +322,4 @@ describe('Settings Shared Library', () => {
 
   });
 
-  describe('updateAdminPassword', () => {
-
-    it('should save password', () => {
-      const salt = Buffer.from('randomBytes');
-      const derivedKey = Buffer.from('encrypted');
-      environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
-      sinon.stub(request, 'put').resolves('-pbkdf2-8266a0adb');
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['a', 'b', 'c'] });
-      sinon.stub(crypto, 'randomBytes').returns(salt);
-      sinon.stub(crypto, 'pbkdf2').callsArgWith(5, null, derivedKey);
-
-      const expectedPassword = `-pbkdf2-${derivedKey.toString('hex')},${salt.toString('hex')},10`;
-
-      return lib
-        .updateAdminPassword('admin1', 'pass1234')
-        .then(() => {
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.deep.equal({
-            url: 'http://user:pass@localhost:6929/_membership',
-            json: true,
-          });
-          expect(request.put.callCount).to.equal(3);
-          expect(request.put.args[0][0]).to.deep.equal({
-            body: `"${expectedPassword}"`,
-            url: 'http://user:pass@localhost:6929/_node/a/_config/admins/admin1?raw=true',
-          });
-          expect(request.put.args[1][0]).to.deep.equal({
-            body: `"${expectedPassword}"`,
-            url: 'http://user:pass@localhost:6929/_node/b/_config/admins/admin1?raw=true',
-          });
-          expect(request.put.args[2][0]).to.deep.equal({
-            body: `"${expectedPassword}"`,
-            url: 'http://user:pass@localhost:6929/_node/c/_config/admins/admin1?raw=true',
-          });
-        });
-    });
-
-  });
 });

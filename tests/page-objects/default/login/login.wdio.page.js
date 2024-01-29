@@ -4,14 +4,20 @@ const commonPage = require('../common/common.wdio.page');
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
+const passwordToggleButton = () => $('#password-toggle');
 const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
+const getErrorMessage = async () => {
+  await (await errorMessageField()).waitForDisplayed();
+  return await (await errorMessageField()).getText();
+};
+
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+  await setPasswordValue(password);
   await (await userField()).setValue(username);
-  await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
 
@@ -45,6 +51,7 @@ const cookieLogin = async (options = {}) => {
   const resp = await utils.request(opts);
   const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
 
+  await browser.url('/');
   await browser.setCookies(cookieArray);
   if (createUser) {
     await utils.setupUserDoc(username);
@@ -102,6 +109,22 @@ const getToLoginLinkText = async () => {
   return await message.getText();
 };
 
+const togglePassword = async () => {
+  await (await passwordField()).waitForDisplayed();
+  await (await passwordToggleButton()).waitForClickable();
+  await (await passwordToggleButton()).click();
+
+  return {
+    type: await (await passwordField()).getAttribute('type'),
+    value: await (await passwordField()).getValue(),
+  };
+};
+
+const setPasswordValue = async (password) => {
+  await (await passwordField()).waitForDisplayed();
+  await (await passwordField()).setValue(password);
+};
+
 module.exports = {
   login,
   cookieLogin,
@@ -113,5 +136,8 @@ module.exports = {
   returnToLoginButtonExists,
   getTokenError,
   getToLoginLinkText,
-  getCurrentLanguage
+  getCurrentLanguage,
+  getErrorMessage,
+  togglePassword,
+  setPasswordValue,
 };

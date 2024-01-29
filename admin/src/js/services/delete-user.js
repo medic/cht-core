@@ -30,5 +30,4 @@ angular.module('services').factory('DeleteUser',
         }
       });
     };
-  }
-);
+  });

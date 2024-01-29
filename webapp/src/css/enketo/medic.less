@@ -18,11 +18,26 @@
     #form-languages {
       display: none;
     }
-    .option-wrapper {
+
+    .dropdown-menu .option-wrapper {
+      padding: 3px;
       .option-label {
-        white-space: normal;
-        word-break: normal;
+        width: calc(100% - 34px);
       }
+    }
+
+    .question:not(.or-appearance-likert):not(.or-appearance-columns) .option-wrapper {
+      .option-label.active {
+        white-space: normal;
+        word-break: break-word;
+        margin: 0;
+        display: inline;
+      }
+    }
+
+    .question.non-select .question-label ul li {
+      list-style: inside;
+      padding-left: 2px;
     }
   }
 
@@ -263,7 +278,7 @@
   }
 
   .option-wrapper > label:not(.filler) {
-    margin-right: 10px;
+    margin: 0;
     padding-top: 8px;
     padding-bottom: 8px;
     border-radius: @radius-size-small;
@@ -296,7 +311,7 @@
     }
 
     label .question-label {
-      display: block;
+      display: inline;
     }
 
     .or-appearance-h1:not(.disabled) {
@@ -434,8 +449,6 @@
     .option-wrapper > label:not(.filler) {
       padding-top: 9px;
       padding-bottom: 9px;
-      margin-top: 1px;
-      margin-bottom: 1px;
 
       &:hover {
         background-color: inherit;

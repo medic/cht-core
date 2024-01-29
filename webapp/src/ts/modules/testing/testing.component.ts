@@ -2,19 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { CookieService } from 'ngx-cookie-service';
 
-import * as Purger from '../../../js/bootstrapper/purger';
 import { DebugService } from '@mm-services/debug.service';
 import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
-import { PurgeService } from '@mm-services/purge.service';
 
 @Component({
   templateUrl: './testing.component.html',
 })
 export class TestingComponent implements OnInit {
   amountFeedbackDocs:any = 5000;
-  debugEnabled = false;
+  debugEnabled: boolean | null = false;
   purging = false;
   generatingFeedback = false;
   wiping = false;
@@ -25,7 +23,6 @@ export class TestingComponent implements OnInit {
     private feedbackService: FeedbackService,
     private sessionService: SessionService,
     private cookieService: CookieService,
-    private purgeService: PurgeService,
   ) { }
 
   ngOnInit(): void {
@@ -75,25 +72,6 @@ export class TestingComponent implements OnInit {
 
   disableDebug() {
     this.setDebug(false);
-  }
-
-  purge() {
-    if (this.sessionService.isOnlineOnly()) {
-      console.debug('Purge feature is not available for Admin or online users.');
-      return;
-    }
-
-    this.purging = true;
-
-    this.purgeService.updateDocsToPurge()
-      .then(() => {
-        const localDb = this.dbService.get({ remote: false });
-        const userCtx = this.sessionService.userCtx();
-        return Purger.purgeMain(localDb, userCtx)
-          .on('progress', progress => console.info('Purge progress', progress));
-      })
-      .catch(err => console.error('Error attempting to purge:', err))
-      .then(() => this.purging = false);
   }
 
   generateFeedback() {

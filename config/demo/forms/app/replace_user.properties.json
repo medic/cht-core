@@ -1,0 +1,9 @@
+{
+    "icon": "icon-death-general",
+    "title": "Replace User",
+    "context": {
+        "person": true,
+        "place": false,
+        "expression": "user._id === contact._id && ['chw', 'chw_supervisor'].includes(user.role) && (!contact.user_for_contact || !contact.user_for_contact.replace)"
+    }
+}

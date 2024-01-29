@@ -17,7 +17,7 @@ let instance_url_obj;
 if (process.env.COUCH_URL) {
   instance_url_obj = url.parse(process.env.COUCH_URL);
   instance_url = instance_url_obj.protocol + '//' + instance_url_obj.auth + '@' + instance_url_obj.host;
-  if(instance_url_obj.protocol === 'https'){
+  if (instance_url_obj.protocol === 'https'){
     httpHandler = https;
   } else {
     httpHandler = http;
@@ -44,7 +44,7 @@ httpHandler.get(all_users_url, (res) => {
       const rev_value = medic_user.value.rev;
       const user_id = medic_user.id;
 
-      if(user_id === 'org.couchdb.user:admin' || user_id === '_design/_auth'){
+      if (user_id === 'org.couchdb.user:admin' || user_id === '_design/_auth'){
         console.log('Skipping', user_id);
       } else {
         const del_url = users_db + '/' + user_id + '?rev=' + rev_value;

@@ -8,6 +8,8 @@ const config = require('./config');
 const db = require('./db');
 const path = require('path');
 const auth = require('./auth');
+const prometheusMiddleware = require('prometheus-api-metrics');
+const rateLimiterMiddleware = require('./middleware/rate-limiter');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
 const target = 'http://' + environment.host + ':' + environment.port;
@@ -40,7 +42,6 @@ const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
-const purgedDocsController = require('./controllers/purged-docs');
 const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
@@ -62,7 +63,7 @@ const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
-const initialReplication = require('./controllers/initial-replication');
+const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -86,9 +87,8 @@ const handleJsonRequest = (method, path, callback) => {
         req,
         res
       );
-    } else {
-      callback(req, res, next);
     }
+    callback(req, res, next);
   });
 };
 
@@ -110,6 +110,19 @@ app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback)
 app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
+
+app.use(prometheusMiddleware({
+  metricsPath: '/api/v1/express-metrics',
+  metricsPrefix: 'cht_api',
+  // based on one-month analysed period of production traffic
+  durationBuckets: [
+    0.004, 0.007, 0.013, 0.025, 0.05,
+    0.1, 0.25, 0.5, 1, 2,
+    3, 5, 7.5, 10, 25,
+    45, 90, 180, 360, 600,
+    1200, 1800, 3600
+  ],
+}));
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
@@ -139,15 +152,17 @@ app.use(getLocale);
 morgan.token('id', req => req.id);
 
 app.use(
-  morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
+  morgan(':date REQ: :id :remote-addr :remote-user :method :url HTTP/:http-version', {
     immediate: true,
   })
 );
 app.use(
   morgan(
-    'RES :id :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] :response-time ms'
+    ':date RES: :id :remote-addr :remote-user :method :url HTTP/:http-version :status ' +
+    ':res[content-length] :response-time ms'
   )
 );
+app.use(rateLimiterMiddleware);
 
 app.use(
   helmet({
@@ -163,7 +178,7 @@ app.use(
           environment.buildsUrl + '/',
           'maps.googleapis.com' // used for enketo geopoint widget
         ],
-        childSrc:  [`'self'`],
+        childSrc: [`'self'`],
         formAction: [`'self'`],
         imgSrc: [
           `'self'`,
@@ -276,9 +291,9 @@ const ONLINE_ONLY_ENDPOINTS = [
 ];
 
 // block offline users from accessing some unaudited CouchDB endpoints
-ONLINE_ONLY_ENDPOINTS.forEach(url =>
-  app.all(routePrefix + url, authorization.handleAuthErrors, authorization.offlineUserFirewall)
-);
+ONLINE_ONLY_ENDPOINTS.forEach(url => {
+  return app.all(routePrefix + url, authorization.handleAuthErrors, authorization.offlineUserFirewall);
+});
 
 // allow anyone to access their session
 app.all('/_session', connectedUserLog, function(req, res) {
@@ -362,20 +377,6 @@ app.get('/api/deploy-info', async (req, res) => {
 
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
 app.get('/api/v2/monitoring', monitoring.getV2);
-
-app.get('/api/auth/:path', function(req, res) {
-  auth.checkUrl(req)
-    .then(status => {
-      if (status && status >= 400 && status < 500) {
-        res.status(403).send('Forbidden');
-      } else {
-        res.json({ status: status });
-      }
-    })
-    .catch(err => {
-      serverUtils.serverError(err, req, res);
-    });
-});
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
@@ -501,25 +502,6 @@ app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
-
-app.get(
-  '/purging',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.info
-);
-app.get(
-  '/purging/changes',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.getPurgedDocs
-);
-app.get(
-  '/purging/checkpoint',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.checkpoint
-);
 
 app.put(
   '/api/v1/credentials/:key',
@@ -663,7 +645,20 @@ app.get(
   '/api/v1/initial-replication/get-ids',
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough,
-  initialReplication.getDocIds,
+  replication.getDocIds,
+);
+app.get(
+  '/api/v1/replication/get-ids',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getDocIds,
+);
+app.post(
+  '/api/v1/replication/get-deletes',
+  jsonParser,
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getDocIdsToDelete,
 );
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;

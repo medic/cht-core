@@ -340,7 +340,7 @@ describe('TargetAggregatesService', () => {
       const genContact = (id) => ({ _id: id, name: randomString() });
       // at least one place will be discarded
       const places = Array.from({ length: 265 }).map((a, i) => i && genPlace(i) || oneDifferentPlace);
-      const contacts = [];
+      const contacts: { _id: any; name: string }[] = [];
       getDataRecordsService.get.withArgs(sinon.match.array).callsFake(contactIds => {
         const responseContacts = contactIds.map(genContact);
         contacts.push(...responseContacts);
@@ -533,7 +533,7 @@ describe('TargetAggregatesService', () => {
         isPercent: false,
         progressBar: false,
         heading: 'target1',
-        aggregateValue: { pass:0, total: 0, hasGoal: false, summary: 0 },
+        aggregateValue: { pass: 0, total: 0, hasGoal: false, summary: 0 },
       });
       expect(result[1]).to.deep.equal({
         id: 'target3',
@@ -547,7 +547,7 @@ describe('TargetAggregatesService', () => {
         progressBar: true,
         heading: 'target3',
         // goalMet is true because 0 out of 0 chws have achieved the goal
-        aggregateValue: { pass:0, total: 0, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
+        aggregateValue: { pass: 0, total: 0, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
       });
       expect(result[2]).to.deep.equal({
         id: 'target4',
@@ -560,7 +560,7 @@ describe('TargetAggregatesService', () => {
         isPercent: true,
         progressBar: true,
         heading: 'target4',
-        aggregateValue: { pass:0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
+        aggregateValue: { pass: 0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
       });
       expect(result[3]).to.deep.equal({
         id: 'target5',
@@ -573,7 +573,7 @@ describe('TargetAggregatesService', () => {
         isPercent: true,
         progressBar: true,
         heading: 'target5',
-        aggregateValue: { pass:0, total: 0, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
+        aggregateValue: { pass: 0, total: 0, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
       });
     });
 

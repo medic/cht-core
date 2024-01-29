@@ -5,7 +5,6 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
-const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Delete Contacts', () => {
   const places = placeFactory.generateHierarchy();
@@ -19,9 +18,7 @@ describe('Delete Contacts', () => {
     patientDocs = await utils.saveDocs([ patient ]);
     await utils.createUsers([ onlineUser ]);
     await loginPage.login(onlineUser);
-    await commonElements.waitForPageLoaded();
     await commonElements.goToPeople();
-    await commonPage.waitForPageLoaded();
   });
 
   it('Should delete contact', async () => {

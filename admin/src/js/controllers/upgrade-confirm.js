@@ -33,5 +33,4 @@ angular.module('controllers').controller('UpgradeConfirmCtrl',
           });
         });
     };
-  }
-);
+  });

@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router, ActivationEnd } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -15,7 +16,7 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -34,7 +35,9 @@ import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
+import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
@@ -48,6 +51,7 @@ describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let store;
   let clock;
+  let router;
 
   // Services
   let dbSyncService;
@@ -71,6 +75,7 @@ describe('AppComponent', () => {
   let setLanguageService;
   let translateService;
   let modalService;
+  let browserDetectorService;
   let databaseConnectionMonitorService;
   let translateLocaleService;
   let telemetryService;
@@ -100,7 +105,7 @@ describe('AppComponent', () => {
     locationService = { path: 'localhost' };
     checkDateService = { check: sinon.stub() };
     countMessageService = { init: sinon.stub() };
-    feedbackService = { init: sinon.stub() };
+    feedbackService = { init: sinon.stub(), submit: sinon.stub().returns({}) };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
@@ -113,6 +118,7 @@ describe('AppComponent', () => {
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
+    browserDetectorService = { isUsingOutdatedBrowser: sinon.stub().returns(false) };
     chtScriptApiService = { isInitialized: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
     databaseConnectionMonitorService = {
@@ -128,8 +134,7 @@ describe('AppComponent', () => {
     };
     sessionService = {
       init: sinon.stub().resolves(),
-      isAdmin: sinon.stub().returns(true),
-      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
     };
@@ -142,6 +147,8 @@ describe('AppComponent', () => {
     };
     translateLocaleService = { reloadLang: sinon.stub() };
     transitionsService = { init: sinon.stub() };
+
+    router = { navigate: sinon.stub(), events: of(ActivationEnd) };
 
     globalActions = {
       updateReplicationStatus: sinon.stub(GlobalActions.prototype, 'updateReplicationStatus'),
@@ -188,6 +195,7 @@ describe('AppComponent', () => {
           { provide: UpdateServiceWorkerService, useValue: {} },
           { provide: LocationService, useValue: locationService },
           { provide: ModalService, useValue: modalService },
+          { provide: BrowserDetectorService, useValue: browserDetectorService},
           { provide: FeedbackService, useValue: feedbackService },
           { provide: FormatDateService, useValue: formatDateService },
           { provide: XmlFormsService, useValue: xmlFormsService },
@@ -208,6 +216,7 @@ describe('AppComponent', () => {
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
+          { provide: Router, useValue: router  },
         ]
       })
       .compileComponents();
@@ -251,6 +260,15 @@ describe('AppComponent', () => {
     expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
     expect(component.isSidebarFilterOpen).to.be.false;
+  });
+
+  it('should display browser compatibility modal if using outdated chrome browser', async () => {
+    browserDetectorService.isUsingOutdatedBrowser.returns(true);
+    await getComponent();
+    await component.translationsLoaded;
+
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
   });
 
   it('should set isSidebarFilterOpen true when filter state is open', fakeAsync(async () => {
@@ -622,6 +640,21 @@ describe('AppComponent', () => {
       ]);
       expect(analyticsModulesService.get.callCount).to.equal(1);
       expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
+    }));
+
+    it('should redirect to the error page when there is an exception', fakeAsync(async () => {
+      chtScriptApiService.isInitialized.throws({ error: 'some error'});
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(1);
+      expect(consoleErrorStub.args[0]).to.deep.equal([
+        'Error during initialisation',
+        { error: 'some error' }
+      ]);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/error', '503' ]]);
     }));
   });
 });
