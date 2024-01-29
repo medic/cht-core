@@ -4,7 +4,7 @@ const moment = require('moment');
 const END_OF_ALPHABET = '\ufff0';
 const MINIMUM_SEARCH_TERM_LENGTH = 3;
 
-const getKeysArray = (keys) => keys.map(t => [ t ]);
+const getKeysArray = (keys) => keys.map(key => [ key ]);
 
 // filter = { selected: [...], options: [...]}
 const getRequestForMultidropdown = (view, filter, mapKeysFunc) => {
@@ -101,17 +101,18 @@ const freetextRequestParams = (word) => {
 };
 
 const freetextRequest = (filters, view) => {
-  if (filters.search) {
-    const words = filters.search
-      .trim()
-      .toLowerCase()
-      .split(/\s+/);
-    const requests = words.map((word) => {
-      const params = freetextRequestParams(word);
-      return params && { view, params };
-    });
-    return _.compact(requests);
+  if (!filters.search) {
+    return;
   }
+  const words = filters.search
+    .trim()
+    .toLowerCase()
+    .split(/\s+/);
+  const requests = words.map((word) => {
+    const params = freetextRequestParams(word);
+    return params && { view, params };
+  });
+  return _.compact(requests);
 };
 
 const subjectRequest = (filters) => {
