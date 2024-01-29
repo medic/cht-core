@@ -165,26 +165,26 @@ get_is_container_running() {
 }
 
 service_has_image_downloaded(){
-	service=$1
+  service=$1
   if [ "$service" == "cht-upgrade-service" ]; then
     compose_path="${homeDir}/upgrade-service.yml"
-	elif [ "$service" == "couchdb" ]; then
+  elif [ "$service" == "couchdb" ]; then
     compose_path="${homeDir}/compose/couchdb.yml"
-	else
+  else
     compose_path="${homeDir}/compose/cht-core.yml"
-	fi
-	image=$(grep "${service}:" ${compose_path} | grep image | cut -f2,3 -d":" | xargs)
+  fi
+  image=$(grep "${service}:" ${compose_path} | grep image | cut -f2,3 -d":" | xargs)
 
   imageDownloadName=$(docker image ls  --format {{.Repository}}:{{.Tag}} -f "reference=${image}" 2>/dev/null)
-	if [ $imageDownloadName ];then
-	  echo ${imageDownloadName}
+  if [ $imageDownloadName ];then
+    echo ${imageDownloadName}
   else
     echo "NA"
   fi
 }
 
 service_has_container(){
-	service=$1
+  service=$1
   container_name=$(docker ps -af "name=^${projectName}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | grep ${service} 2>/dev/null)
   if [ $container_name ];then
     echo ${container_name}
@@ -194,8 +194,8 @@ service_has_container(){
 }
 
 container_status(){
-	contianer=$1
-	status=$(docker inspect --format="{{.State.Status}}" "$contianer" 2>/dev/null)
+  contianer=$1
+  status=$(docker inspect --format="{{.State.Status}}" "$contianer" 2>/dev/null)
   if [ $status ];then
     echo ${status}
   else
@@ -231,7 +231,6 @@ get_system_and_docker_info(){
     image=$(service_has_image_downloaded ${service})
     container=$(service_has_container ${service})
     status=$(container_status ${container})
-#    echo "${service}: image=${image} container=${container} status=${status}"
     info="${info}"$'\n'"${service} ${status} ${container} ${image}"
   done
   echo
