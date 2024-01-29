@@ -100,7 +100,10 @@ const freetextRequestParams = (word) => {
 
 const freetextRequest = (filters, view) => {
   if (filters.search) {
-    const words = filters.search.trim().toLowerCase().split(/\s+/);
+    const words = filters.search
+      .trim()
+      .toLowerCase()
+      .split(/\s+/);
     const requests = words.map((word) => {
       const params = freetextRequestParams(word);
       return params && { view, params };
