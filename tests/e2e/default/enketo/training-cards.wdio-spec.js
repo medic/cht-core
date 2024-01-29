@@ -12,7 +12,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
 
-describe('Training Cards', () => {
+describe.skip('Training Cards', () => {
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
   const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
   const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });

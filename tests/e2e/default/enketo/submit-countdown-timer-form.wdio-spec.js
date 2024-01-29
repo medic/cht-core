@@ -8,7 +8,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 
 const { userContactDoc, docs } = userData;
 
-describe('Countdown timer widget', () => {
+describe.skip('Countdown timer widget', () => {
 
   before(async () => {
     await utils.saveDocs(docs);

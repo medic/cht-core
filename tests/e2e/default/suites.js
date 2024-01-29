@@ -29,7 +29,7 @@ const SUITES = {
     './logging/**/*.wdio-spec.js'
   ],
   enketo: [
-    './enketo/**/pregnancy-visit.wdio-spec.js',
+    './enketo/**/*.wdio-spec.js',
   ]
 };
 

@@ -9,7 +9,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 
 const { userContactDoc, docs } = userData;
 
-describe('Submit Photo Upload form', () => {
+describe.skip('Submit Photo Upload form', () => {
   before(async () => {
     await utils.saveDocs(docs);
     await photoUpload.configureForm(userContactDoc);

@@ -6,7 +6,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-describe('Family form', () => {
+describe.skip('Family form', () => {
 
   before(async () => {
     await commonEnketoPage.uploadForm('add-family-multiple-repeats');

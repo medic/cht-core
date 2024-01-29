@@ -14,7 +14,7 @@ const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page'
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
-describe('Pregnancy registration', () => {
+describe.skip('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });

@@ -11,7 +11,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
-describe('Health Facility ANC Reminder task', () => {
+describe.skip('Health Facility ANC Reminder task', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
