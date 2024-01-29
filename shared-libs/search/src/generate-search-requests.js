@@ -87,14 +87,16 @@ const freetextRequestParams = (word) => {
   if (word.indexOf(':') !== -1) {
     // use exact match
     params.key = [ word ];
-  } else {
-    // use starts with
-    if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
-      return;
-    }
-    params.startkey = [ word ];
-    params.endkey = [ word + END_OF_ALPHABET ];
+    return params;
   }
+  
+  // use starts with
+  if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
+    return;
+  }
+  
+  params.startkey = [ word ];
+  params.endkey = [ word + END_OF_ALPHABET ];
   return params;
 };
 
