@@ -364,13 +364,13 @@ const exportContacts = async () => {
 };
 
 const getContactSummaryCardFields = async () => {
-  const conditionCard = $$('.meta .card')[1];
+  const conditionCard = $$('.meta .card')[1].$('.row');
   await conditionCard.waitForDisplayed();
-  const cells = await conditionCard.$$('.row .cell');
+  const cells = await conditionCard.$$('.col');
   const results = [];
   for await (const cell of cells) {
-    const label = await (await cell.$('div label')).getText();
-    const value = await (await cell.$('div p')).getText();
+    const label = await (await cell.$('label')).getText();
+    const value = await (await cell.$('p')).getText();
     results.push({ label, value });
   }
   return results;
