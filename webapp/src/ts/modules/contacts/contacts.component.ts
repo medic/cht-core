@@ -217,9 +217,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then((summary) => {
         if (summary) {
           summary.home = true;
-          if (homePlaceId) {
-            this.usersHomePlace = summary;
-          }
+          this.usersHomePlace = summary;
         }
         return summary;
       });
