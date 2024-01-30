@@ -135,7 +135,6 @@ const request = (options, { debug } = {}) => { //NOSONAR
   options.json = options.json === undefined ? true : options.json;
 
   console.log({debug, loglevel: process.env.LOGLEVEL});
-  
   console.log('DEBUGGING');
   console.log('SENDING REQUEST');
   console.log(JSON.stringify(options, null, 2));
