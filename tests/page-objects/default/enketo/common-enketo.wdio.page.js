@@ -84,6 +84,13 @@ const uploadForm = async (formName) => {
   await utils.saveDoc(formDoc);
 };
 
+const getInputValue = async (question) => {
+  return await (await getCurrentPageSection())
+    .$(`label*=${question}`)
+    .$('input')
+    .getValue();
+};
+
 module.exports = {
   isElementDisplayed,
   selectRadioButton,
@@ -93,4 +100,5 @@ module.exports = {
   setTextareaValue,
   validateSummaryReport,
   uploadForm,
+  getInputValue,
 };

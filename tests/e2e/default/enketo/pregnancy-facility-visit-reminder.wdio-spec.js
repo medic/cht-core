@@ -48,6 +48,7 @@ describe.skip('Health Facility ANC Reminder task', () => {
 
     await commonEnketoPage.selectRadioButton('Did you remind the client in-person or by phone?', 'In person');
     await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.firstReport());
