@@ -115,7 +115,6 @@ jobs:
     env:
       NODE: 16.x
       CHROME_VERSION: ${{ matrix.chrome-version }}
-      DEBUG: true
 
     strategy:
       fail-fast: false
