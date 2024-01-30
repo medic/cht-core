@@ -41,7 +41,7 @@ export class PerformanceService {
       return;
     }
 
-    const duration = this.document.defaultView.performance.now() - startTime;
+    const duration = Math.round(this.document.defaultView.performance.now() - startTime);
     await this.telemetryService.record(name, duration);
 
     if (recordApdex) {
