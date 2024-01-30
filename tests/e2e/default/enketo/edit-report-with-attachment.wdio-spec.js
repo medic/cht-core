@@ -8,7 +8,7 @@ const fs = require('fs');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
-describe.skip('Edit report with attachment', () => {
+describe('Edit report with attachment', () => {
 
   const instanceID = uuid();
   const reportModelXml = `

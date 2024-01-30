@@ -7,7 +7,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
-describe.skip('Pregnancy danger sign follow-up form', () => {
+describe('Pregnancy danger sign follow-up form', () => {
   before(async () => {
     await utils.seedTestData(userData.userContactDoc, userData.docs);
     await loginPage.cookieLogin();

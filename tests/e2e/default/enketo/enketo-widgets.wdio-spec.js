@@ -11,7 +11,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 
-describe.skip('Enketo Widgets', () => {
+describe('Enketo Widgets', () => {
   const PLACES = {
     usa: 'United States',
     nl: 'The Netherlands',

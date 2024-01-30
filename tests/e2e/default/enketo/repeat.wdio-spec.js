@@ -5,7 +5,7 @@ const hierarchyFactory = require('@factories/cht/generate');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
-describe.skip('RepeatForm', () => {
+describe('RepeatForm', () => {
   const hierarchy = hierarchyFactory.createHierarchy({ name: 'test', user: true, nbrClinics: 1, nbrPersons: 1 });
 
   const assertLabels = async ({ selector, count, labelText }) => {

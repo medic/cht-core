@@ -16,7 +16,7 @@ const setPatient = async (sex, height, weight, age) => {
 
 };
 
-describe.skip('Submit Z-Score form', () => {
+describe('Submit Z-Score form', () => {
   before(async () => {
     await ZScoreForm.configureForm(userData.userContactDoc);
     await loginPage.cookieLogin();

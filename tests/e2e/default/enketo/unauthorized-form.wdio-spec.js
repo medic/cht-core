@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const customTypeFactory = require('@factories/cht/contacts/custom_type');
 const utils = require('@utils');
 
-describe.skip('Unauthorized form', () => {
+describe('Unauthorized form', () => {
 
   const updateSettings = async (customPlaceType, permissions = {}) => {
     const settings = await utils.getSettings();

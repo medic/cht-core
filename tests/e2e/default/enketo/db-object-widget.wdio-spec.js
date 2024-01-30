@@ -8,7 +8,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-describe.skip('DB Object Widget', () => {
+describe('DB Object Widget', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
   const area1 = places.get('health_center');

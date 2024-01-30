@@ -12,7 +12,7 @@ const deathReportForm = require('@page-objects/default/enketo/death-report.page'
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
-describe.skip('Submit an undo death report', () => {
+describe('Submit an undo death report', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
