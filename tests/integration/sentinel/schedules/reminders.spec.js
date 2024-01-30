@@ -158,11 +158,13 @@ const getReminderLogs = (expectedLogs) => {
     endkey: 'reminderlog:\ufff0',
     include_docs: true
   };
+  console.log('-----------inside getReminderLogs 0 ----------------------------');
   return utils.sentinelDb.allDocs(opts).then(result => {
     if (result.rows.length >= expectedLogs) {
+      console.log('-----------inside getReminderLogs result.rows.length >= expectedLogs----------------------------');
       return result;
     }
-
+    console.log('----------------------------inside getReminderLogs 2----------------------------');
     return new Promise(resolve => setTimeout(resolve, 200)).then(() => getReminderLogs(expectedLogs));
   });
 };
@@ -432,7 +434,7 @@ describe('reminders', () => {
           message: 'something do should leaf1'
         });
       }).catch(e => {
-        console.log({ code: e.cause, message: e.message });
+        console.log({ message: e.message });
         throw new Error(e);
       });
   });
