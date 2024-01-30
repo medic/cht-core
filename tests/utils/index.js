@@ -22,7 +22,7 @@ process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
-const DEBUG = process.env.DEBUG || process.env.LOGLEVEL === "debug";
+const DEBUG = process.env.DEBUG;
 
 let originalSettings;
 let dockerVersion;
@@ -135,7 +135,6 @@ const request = (options, { debug } = {}) => { //NOSONAR
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
-    console.log('DEBUGGING');
     console.log('SENDING REQUEST');
     console.log(JSON.stringify(options, null, 2));
   }
@@ -158,11 +157,6 @@ const request = (options, { debug } = {}) => { //NOSONAR
   return rpn(options).catch(err => {
     err.responseBody = err?.response?.body;
     console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
-    if (debug) {
-      console.log('DEBUGGING');
-      const { name = null, statusCode = null, message = null, options = null, response = null } = err
-      console.log("Response Error", { name, statusCode, message, options, response })
-    }
     throw err;
   });
 };
