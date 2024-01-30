@@ -95,9 +95,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.hasContacts = this.contactsList.length;
         }
         if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
-          this.getDataRecordsService.get(change.id).then(updatedHomePlace => {
-            this.usersHomePlace = updatedHomePlace;
-          });
+          this.getUserHomePlaceSummary(change.id);
         }
         const withIds =
           this.isSortedByLastVisited() &&
@@ -206,18 +204,22 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private getUserHomePlaceSummary() {
+  private getUserHomePlaceSummary(homePlaceId?: string) {
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        if (userSettings.facility_id) {
-          this.globalActions.setUserFacilityId(userSettings.facility_id);
-          return this.getDataRecordsService.get(userSettings.facility_id);
+        const facilityId = homePlaceId || userSettings.facility_id;
+        if (facilityId) {
+          this.globalActions.setUserFacilityId(facilityId);
+          return this.getDataRecordsService.get(facilityId);
         }
       })
       .then((summary) => {
         if (summary) {
           summary.home = true;
+          if (homePlaceId) {
+            this.usersHomePlace = summary;
+          }
         }
         return summary;
       });
