@@ -364,11 +364,11 @@ const exportContacts = async () => {
 };
 
 const getContactSummaryCardFields = async () => {
-  const header = await contactCardTitle();
-  await header.waitForDisplayed();
-  const card = await header.parentElement();
+  const conditionCard = $$('.meta .card')[1];
+  await conditionCard.waitForDisplayed();
+  const cells = await conditionCard.$$('.row .cell');
   const results = [];
-  for await (const cell of card.$$('.row .cell')) {
+  for await (const cell of cells) {
     const label = await (await cell.$('div label')).getText();
     const value = await (await cell.$('div p')).getText();
     results.push({ label, value });
