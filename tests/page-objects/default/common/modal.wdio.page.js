@@ -32,21 +32,10 @@ const cancel = async (timeout) => {
   await checkModalHasClosed();
 };
 
-const hideOverlay = () => {
-  // hides the modal overlay, so it doesn't intercept all clicks
-  // this action is temporary, and will be undone with a refresh
-  return browser.execute(() => {
-    const style = document.createElement('style');
-    style.innerHTML = '.cdk-overlay-backdrop { display: none; }';
-    document.head.appendChild(style);
-  });
-};
-
 module.exports = {
   body,
   submit,
   cancel,
   getModalDetails,
   checkModalHasClosed,
-  hideOverlay,
 };
