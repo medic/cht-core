@@ -211,12 +211,12 @@ describe('reminders', () => {
 
   after(() => utils.revertDb([], true));
 
-  it('should create reminders', () => {
+  it('should create reminders', async () => {
     let reminder1Date;
     let reminder2Date;
     let reminder2Date2;
     let reminder2Date3;
-    return restartSentinel()
+    await restartSentinel()
       .then(() => getReminderLogs(2))
       .then(({ rows: reminderLogs }) => {
         chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.be.true;
@@ -412,6 +412,9 @@ describe('reminders', () => {
           place: leaf1,
           message: 'something do should leaf1'
         });
+      }).catch(e => {
+        console.log({code: e.cause, message: e.message});
+        throw new Error(e);
       });
   });
 });
