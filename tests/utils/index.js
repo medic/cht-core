@@ -48,6 +48,7 @@ const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
+console.log(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`);
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
@@ -408,6 +409,7 @@ const deleteAllDocs = (except) => { //NOSONAR
         module.exports.sentinelDb
           .allDocs({ keys: infoIds })
           .then(results => {
+            console.log('module.exports.sentinelDb', { results });
             const deletes = results.rows
               .filter(row => row.value) // Not already deleted
               .map(({ id, value }) => ({
