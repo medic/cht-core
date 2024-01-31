@@ -8,13 +8,13 @@ const runDockerCommand = (command, params, env=process.env) => {
   return new Promise((resolve, reject) => {
     const cmd = spawn(command, params, { cwd: path.join(__dirname, 'couch_httpd_script'), env });
     const output = [];
-    const log = (data) => output.push(data.toString().replace(/\n/g, ''));
-    // const log = (data) => {
-    //   const lines = data.toString().split('\n');
-    //   for (const line of lines) {
-    //     output.push(line);
-    //   }
-    // };
+    // const log = (data) => output.push(data.toString().replace(/\n/g, ''));
+    const log = (data) => {
+      const lines = data.toString().split('\n');
+      for (const line of lines) {
+        output.push(line);
+      }
+    };
     cmd.on('error', reject);
     cmd.stdout.on('data', log);
     cmd.stderr.on('data', log);
@@ -30,8 +30,8 @@ const startContainer = async (useAuthentication) => {
   return await runDockerCommand('docker', ['compose', 'up', '--build', '--force-recreate'], env);
 };
 const getLogs = async () => {
-  // const containerName = (await runDockerCommand('docker', ['compose', 'ls', '-q', '-a']))[0];
-  const logs = await runDockerCommand('docker', ['compose', 'logs', 'couch_httpd_script']);
+  const containerName = (await runDockerCommand('docker', ['compose', 'ls', '-q', '-a']))[0];
+  const logs = await runDockerCommand('docker', ['compose', 'logs', containerName]);
   try {
     return logs?.filter(log => log).map(log => JSON.parse(log));
   } catch (err) {
