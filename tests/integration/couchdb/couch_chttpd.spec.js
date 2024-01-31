@@ -13,7 +13,7 @@ const runDockerCommand = (command, params, env=process.env) => {
       for (const line of lines) {
         output.push(line);
       }
-    }
+    };
     cmd.on('error', reject);
     cmd.stdout.on('data', log);
     cmd.stderr.on('data', log);
