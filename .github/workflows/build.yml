@@ -71,6 +71,11 @@ jobs:
         name: cht-images
         path: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Search-Replace PR Body
+      if: ${{ env.INTERNAL_CONTRIBUTOR && github.event_name == 'pull_request' }}
+      uses: ./.github/actions/update-staging-url-placeholders
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
   config-tests:
     needs: build
