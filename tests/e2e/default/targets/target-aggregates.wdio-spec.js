@@ -64,7 +64,6 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
 
 const validateCardFields = async (lastUpdated, firstTarget, secondTarget) => {
   const fields = await contactsPage.getContactSummaryCardFields();
-  console.log(JSON.stringify(fields, null, 2));
   expect(fields.length).to.equal(3);
   expect(fields[0].label).to.equal('Last updated');
   expect(fields[0].value).to.equal(lastUpdated);
