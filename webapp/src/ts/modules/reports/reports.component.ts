@@ -40,7 +40,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroyed: boolean;
   private isOnlineOnly = false;
   private canDefaultFilter = false;
-  private trackPerformance;
+  private trackInitialLoadPerformance;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -91,7 +91,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.trackPerformance = this.performanceService.track();
+    this.trackInitialLoadPerformance = this.performanceService.track();
     this.isOnlineOnly = this.authService.online(true);
     this.subscribeToStore();
     this.subscribeToXmlFormsService();
@@ -266,6 +266,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
+    const queryPerformance = this.performanceService.track();
     const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
     if (options.limit < PAGE_SIZE) {
       options.limit = PAGE_SIZE;
@@ -317,15 +318,18 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         console.error('Error loading messages', err);
       })
-      .finally(() => this.recordPerformance());
+      .finally(() => {
+        queryPerformance?.stop({ name: 'report_list:query', recordApdex: true });
+        this.recordInitialLoadPerformance();
+      });
   }
 
-  private async recordPerformance() {
-    if (!this.trackPerformance) {
+  private async recordInitialLoadPerformance() {
+    if (!this.trackInitialLoadPerformance) {
       return;
     }
-    await this.trackPerformance.stop({ name: 'report_list:load', recordApdex: true });
-    this.trackPerformance = null;
+    await this.trackInitialLoadPerformance.stop({ name: 'report_list:load', recordApdex: true });
+    this.trackInitialLoadPerformance = null;
   }
 
   private initScroll() {

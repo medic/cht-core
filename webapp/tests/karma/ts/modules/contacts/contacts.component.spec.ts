@@ -55,6 +55,7 @@ describe('Contacts component', () => {
   let xmlFormsService;
   let fastActionButtonService;
   let performanceService;
+  let stopPerformanceTrackStub;
   let globalActions;
   let district;
 
@@ -105,7 +106,8 @@ describe('Contacts component', () => {
       getContactLeftSideActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
     };
-    performanceService = { track: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     contactListContains = sinon.stub();
     const selectedContact =  {
       type: { person: true },
@@ -287,6 +289,7 @@ describe('Contacts component', () => {
 
   describe('Search', () => {
     it('Puts the home place at the top of the list', fakeAsync(() => {
+      sinon.resetHistory();
       searchResults = [
         {
           _id: 'search-result',
@@ -301,6 +304,15 @@ describe('Contacts component', () => {
       expect(contacts.length).to.equal(2);
       expect(contacts[0]._id).to.equal('district-id');
       expect(contacts[1]._id).to.equal('search-result');
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('should search for homeplace children of the correct type', fakeAsync(() => {
@@ -321,6 +333,15 @@ describe('Contacts component', () => {
       expect(contactTypesService.getTypeId.args[2]).to.deep.equal([updateContactsList.args[0][0][1]]);
       expect(contactTypesService.getChildren.callCount).to.equal(1);
       expect(contactTypesService.getChildren.args[0]).to.deep.equal(['some type']);
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('Only displays the home place once', fakeAsync(() => {
@@ -346,6 +367,7 @@ describe('Contacts component', () => {
     }));
 
     it('Only searches for top-level places as an admin', fakeAsync(() => {
+      sinon.resetHistory();
       sessionService.isOnlineOnly.returns(true);
       userSettingsService.get.resolves({ facility_id: undefined });
       getDataRecordsService.get.resolves({});
@@ -370,9 +392,19 @@ describe('Contacts component', () => {
       );
       const contacts = component.contactsActions.updateContactsList.args[0][0];
       expect(contacts.length).to.equal(1);
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
+      sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
@@ -391,9 +423,19 @@ describe('Contacts component', () => {
         limit: 50,
         skip: 50,
       });
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('when paginating, does modify skip for non-admins #4085', fakeAsync(() => {
+      sinon.resetHistory();
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -411,9 +453,19 @@ describe('Contacts component', () => {
         limit: 50,
         skip: 50,
       });
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('when refreshing list as admin, does not modify limit #4085', fakeAsync(() => {
+      sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
@@ -432,6 +484,15 @@ describe('Contacts component', () => {
         limit: 60,
         silent: true,
         withIds: false,
+      });
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
       });
     }));
 
