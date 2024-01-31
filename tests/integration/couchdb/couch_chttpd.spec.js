@@ -30,8 +30,8 @@ const startContainer = async (useAuthentication) => {
   return await runDockerCommand('docker', ['compose', 'up', '--build', '--force-recreate'], env);
 };
 const getLogs = async () => {
-  const containerName = (await runDockerCommand('docker', ['compose', 'ls', '-q', '-a']))[0];
-  const logs = await runDockerCommand('docker', ['compose', 'logs', containerName]);
+  // const containerName = (await runDockerCommand('docker', ['compose', 'ls', '-q', '-a']))[0];
+  const logs = await runDockerCommand('docker', ['compose', 'logs', 'couch_httpd_script']);
   try {
     return logs?.filter(log => log).map(log => JSON.parse(log));
   } catch (err) {
@@ -65,7 +65,8 @@ describe('accessing couch clustering endpoint', () => {
   });
 
   it('should block unauthenticated access through docker network', async () => {
-    await startContainer();
+    const runlogs = await startContainer();
+    console.log('~~~~~~~~~~~~~~', runlogs);
     const logs = await getLogs();
     expect(logs.length).to.equal(1);
     expect(logs[0]).to.deep.equal({ error: 'unauthorized', reason: 'Authentication required.' });
