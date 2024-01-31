@@ -21,6 +21,7 @@ describe('Pregnancy Visit', () => {
   });
 
   before(async () => {
+    await browser.pause(5000);
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
