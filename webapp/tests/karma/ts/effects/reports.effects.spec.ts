@@ -433,11 +433,7 @@ describe('Reports effects', () => {
       expect(setRightActionBar.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
-      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
-      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
-        name: 'select_report:report:load',
-        recordApdex: true,
-      });
+      expect(stopPerformanceTrackStub.notCalled).to.be.true;
     });
   });
 
