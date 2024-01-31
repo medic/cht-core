@@ -58,10 +58,17 @@ export class ReportsEffects {
         this.reportActions.setTitle(model);
         this.reportActions.markReportRead(model?.doc?._id);
         this.globalActions.settingSelected();
-        this.trackOpenReport?.stop({
-          name: [ 'select_report', model?.doc?.form || 'report', 'load' ].join(':'),
-          recordApdex: true,
-        });
+
+        if (model?.doc?.form) {
+          // The openReportContent is called:
+          //   1. after loading an app form, the performance is recorded in ReportsAddComponent
+          //   2. when opening an already saved report, the performance is recorded here
+          this.trackOpenReport?.stop({
+            name: [ 'select_report', model?.doc?.form, 'load' ].join(':'),
+            recordApdex: true,
+          });
+        }
+
         return of(this.reportActions.setRightActionBar());
       }),
     );

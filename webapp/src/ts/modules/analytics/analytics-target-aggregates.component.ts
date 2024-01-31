@@ -82,7 +82,10 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       })
       .finally(() => {
         this.loading = false;
-        this.trackPerformance?.stop({ name: 'analytics:target_aggregates:load', recordApdex: true });
+        this.trackPerformance?.stop({
+          name: [ 'analytics', 'target_aggregates', 'load' ].join(':'),
+          recordApdex: true,
+        });
       });
   }
 }

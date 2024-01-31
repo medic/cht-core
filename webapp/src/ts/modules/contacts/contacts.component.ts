@@ -409,7 +409,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error loading contacts', err);
       })
       .finally(() => {
-        trackPerformance?.stop({ name: 'contact_list:query' });
+        trackPerformance?.stop({ name: 'contact_list:query', recordApdex: true });
       });
   }
 

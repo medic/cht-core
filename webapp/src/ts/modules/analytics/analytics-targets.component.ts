@@ -40,7 +40,7 @@ export class AnalyticsTargetsComponent implements OnInit {
         this.loading = false;
         this.targets = targets.filter(target => target.visible !== false);
         this.trackPerformance?.stop({
-          name: 'analytics:targets:load',
+          name: [ 'analytics', 'targets', 'load' ].join(':'),
           recordApdex: true,
         });
       });

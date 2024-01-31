@@ -319,7 +319,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error loading messages', err);
       })
       .finally(() => {
-        queryPerformance?.stop({ name: 'report_list:query' });
+        queryPerformance?.stop({ name: 'report_list:query', recordApdex: true });
         this.recordInitialLoadPerformance();
       });
   }
