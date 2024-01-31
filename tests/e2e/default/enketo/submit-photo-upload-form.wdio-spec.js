@@ -7,9 +7,9 @@ const path = require('path');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
-const { userContactDoc, docs } = userData;
-
 describe('Submit Photo Upload form', () => {
+  const { userContactDoc, docs } = userData;
+
   before(async () => {
     await utils.saveDocs(docs);
     await photoUpload.configureForm(userContactDoc);

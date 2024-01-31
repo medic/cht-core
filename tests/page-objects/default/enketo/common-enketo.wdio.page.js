@@ -67,7 +67,7 @@ const validateSummaryReport = async (textArray) => {
   }
 };
 
-const uploadForm = async (formName) => {
+const uploadForm = async (formName, saveDoc = true) => {
   const formXML = fs.readFileSync(`${__dirname}/../../../e2e/default/enketo/forms/${formName}.xml`, 'utf8');
   const formDoc = {
     _id: `form:${formName}`,
@@ -81,7 +81,10 @@ const uploadForm = async (formName) => {
       },
     },
   };
-  await utils.saveDoc(formDoc);
+  if (saveDoc) {
+    await utils.saveDoc(formDoc);
+  }
+  return formDoc;
 };
 
 const getInputValue = async (question) => {
