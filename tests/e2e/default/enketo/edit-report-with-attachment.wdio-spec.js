@@ -6,7 +6,6 @@ const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
 const fs = require('fs');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
-const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
 describe('Edit report with attachment', () => {
 
@@ -20,6 +19,7 @@ describe('Edit report with attachment', () => {
   </meta>
 </one_text_form>`;
 
+  const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
   const { userContactDoc, docs } = userData;
   const formDoc = {
     _id: 'form:one_text_form',
