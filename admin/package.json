@@ -2,10 +2,6 @@
   "name": "medic-admin",
   "private": true,
   "version": "0.1.0",
-  "engines": {
-    "node": ">=20.11.0",
-    "npm": ">=10.2.4"
-  },
   "dependencies": {
     "@uirouter/angularjs": "^1.0.29",
     "angular": "^1.8.3",

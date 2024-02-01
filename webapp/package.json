@@ -12,10 +12,6 @@
     "path": false,
     "os": false
   },
-  "engines": {
-    "node": ">=20.11.0",
-    "npm": ">=10.2.4"
-  },
   "scripts": {
     "postinstall": "patch-package",
     "unit": "UNIT_TEST_ENV=1 ng test webapp",
