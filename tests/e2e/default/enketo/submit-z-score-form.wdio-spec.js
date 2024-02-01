@@ -1,4 +1,3 @@
-const userData = require('@page-objects/default/users/user.data');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -72,14 +71,12 @@ describe('Submit Z-Score form', () => {
   };
 
   before(async () => {
-    const docs = [
-      await commonEnketoPage.uploadForm('z-score', false),
-      {
-        _id: 'zscore-charts',
-        charts: charts
-      }
-    ];
-    await utils.seedTestData(userData.userContactDoc, docs);
+    const chartsDoc = {
+      _id: 'zscore-charts',
+      charts: charts
+    };
+    await commonEnketoPage.uploadForm('z-score');
+    await utils.saveDoc(chartsDoc);
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });

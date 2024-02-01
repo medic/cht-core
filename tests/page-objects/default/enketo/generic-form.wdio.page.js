@@ -42,6 +42,7 @@ const selectContact = async (contactName) => {
 };
 
 const submitForm = async (waitForPageLoaded = true) => {
+  await formTitle().click();
   await waitForValidationErrorsToDisappear();
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();

@@ -3,9 +3,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const uuid = require('uuid').v4;
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
-const userData = require('@page-objects/default/users/user.data');
-const fs = require('fs');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Edit report with attachment', () => {
 
@@ -19,30 +18,14 @@ describe('Edit report with attachment', () => {
   </meta>
 </one_text_form>`;
 
-  const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
-  const { userContactDoc, docs } = userData;
-  const formDoc = {
-    _id: 'form:one_text_form',
-    internalId: 'one_text_form',
-    title: 'One text form',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(oneTextForm).toString('base64'),
-      }
-    },
-    context: {
-      expression: 'summary.alive',
-    }
-  };
+
   const reportDoc ={
     _id: uuid(),
-    form: formDoc.internalId,
+    form: 'one-text-form',
     type: 'data_record',
     reported_date: Date.now(),
     content_type: 'xml',
-    contact: userContactDoc,
+    //contact: userContactDoc,
     hidden_fields: ['meta'],
     fields: {
       // to prove that when xml attachment exists, it is used to populate edit form instead of fields
@@ -61,7 +44,11 @@ describe('Edit report with attachment', () => {
   };
 
   before(async () => {
-    await utils.seedTestData(userContactDoc, [...docs, formDoc]);
+    const formDoc = await commonEnketoPage.uploadForm('one-text-form', false);
+    formDoc.context = {
+      expression: 'summary.alive',
+    };
+    await utils.saveDoc(formDoc);
     await loginPage.cookieLogin();
     await commonElements.waitForPageLoaded();
     await commonElements.hideSnackbar();
@@ -98,7 +85,7 @@ describe('Edit report with attachment', () => {
     await commonElements.goToReports();
     await reportsPage.openReport(reportDoc._id);
     await reportsPage.editReport();
-    await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' updated');
+    await commonEnketoPage.setInputValue('Enter text', 'initial text updated');
     await genericForm.submitForm();
 
     const editedReport = await utils.getDoc(reportDoc._id);
@@ -107,7 +94,7 @@ describe('Edit report with attachment', () => {
 
     await reportsPage.openReport(reportDoc._id);
     await reportsPage.editReport();
-    await (await genericForm.fieldByName(formDoc.internalId, 'intro')).addValue(' twice');
+    await commonEnketoPage.setInputValue('Enter text', 'initial text updated twice');
     await genericForm.submitForm();
 
     const twiceEditedReport = await utils.getDoc(reportDoc._id);
