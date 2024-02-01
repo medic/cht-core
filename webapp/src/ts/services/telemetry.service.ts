@@ -357,7 +357,9 @@ export class TelemetryService {
       const nameNoPrefix = dbName?.replace(this.POUCH_PREFIX, '') || '';
 
       // Skips new Telemetry DB, then matches malformed or the old deprecated Telemetry DB.
-      if (!this.isValidTelemetryDBName(nameNoPrefix) && nameNoPrefix.includes(this.TELEMETRY_PREFIX)) {
+      if (!this.isValidTelemetryDBName(nameNoPrefix)
+        && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
+        && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
         this.windowRef?.indexedDB.deleteDatabase(dbName);
       }
     });
