@@ -21,13 +21,13 @@ describe('Pregnancy Visit', () => {
   });
 
   before(async () => {
-    await browser.pause(5000);
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
 
   it('should submit a pregnancy visit and validate that the report was created successfully.', async () => {
+    await browser.pause(5000);
     // Create a pregnancy
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy');
