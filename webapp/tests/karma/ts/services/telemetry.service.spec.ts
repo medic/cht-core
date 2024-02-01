@@ -109,7 +109,7 @@ describe('TelemetryService', () => {
     sessionService = { userCtx: sinon.stub().returns({ name: 'greg' }) };
     windowMock = {
       PouchDB: sinon.stub().returns(telemetryDb),
-      indexedDB: { databases: sinon.stub() },
+      indexedDB: { databases: sinon.stub(), deleteDatabase: sinon.stub() },
       localStorage: { getItem: sinon.stub(), setItem: sinon.stub() },
     };
     const documentMock = {
@@ -140,8 +140,24 @@ describe('TelemetryService', () => {
     it('should record a piece of telemetry', async () => {
       medicDb.query.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
+      const oldTelemetryDBNames = [
+        '_pouch_medic-user-koko-telemetry-98y7c3a1-5a1a-4d3f-a076-d86ec38b1d87',
+        '_pouch_medic-user-greg-telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32',
+      ];
+      const wrongDBNames = [
+        '_pouch_telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32',
+        '_pouch_telemetry-2018-greg',
+        '_pouch_telemetry-2018-01-greg',
+        '_pouch_telemetry-11-10-greg',
+        '_pouch_telemetry-10-greg',
+        '_pouch_telemetry-greg',
+        '_pouch_telemetry',
+        undefined,
+      ];
       indexedDbService.getDatabaseNames.resolves([
+        ...oldTelemetryDBNames,
         '_pouch_telemetry-2018-11-10-greg',
+        ...wrongDBNames,
         '_pouch_some-other-db',
         '_pouch_telemetry-2018-11-09-greg',
       ]);
@@ -149,6 +165,18 @@ describe('TelemetryService', () => {
       await service.record('test', 100);
 
       expect(consoleErrorSpy.notCalled).to.be.true;
+      expect(windowMock.indexedDB.deleteDatabase.callCount).to.equal(9);
+      expect(windowMock.indexedDB.deleteDatabase.args).to.have.deep.members([
+        [ '_pouch_medic-user-koko-telemetry-98y7c3a1-5a1a-4d3f-a076-d86ec38b1d87' ],
+        [ '_pouch_medic-user-greg-telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32' ],
+        [ '_pouch_telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32' ],
+        [ '_pouch_telemetry-2018-greg' ],
+        [ '_pouch_telemetry-2018-01-greg' ],
+        [ '_pouch_telemetry-11-10-greg' ],
+        [ '_pouch_telemetry-10-greg' ],
+        [ '_pouch_telemetry-greg' ],
+        [ '_pouch_telemetry' ],
+      ]);
       expect(telemetryDb.post.calledOnce).to.be.true;
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
       expect(telemetryDb.post.args[0][0].date_recorded).to.be.above(0);

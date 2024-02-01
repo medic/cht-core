@@ -119,10 +119,15 @@ export class TelemetryService {
     };
   }
 
+  private isValidTelemetryDBName(dbName): boolean {
+    const expression = new RegExp(`^${this.TELEMETRY_PREFIX}-[0-9]{4}-[0-2][0-9]-[0-3][0-9].*`, 'g');
+    return expression.test(dbName);
+  }
+
   private async getTelemetryDBs(databaseNames): Promise<undefined|string[]> {
     return databaseNames
       ?.map(dbName => dbName?.replace(this.POUCH_PREFIX, '') || '')
-      .filter(dbName => dbName?.startsWith(this.TELEMETRY_PREFIX));
+      .filter(dbName => this.isValidTelemetryDBName(dbName));
   }
 
   /**
@@ -345,10 +350,8 @@ export class TelemetryService {
     databaseNames?.forEach(dbName => {
       const nameNoPrefix = dbName?.replace(this.POUCH_PREFIX, '') || '';
 
-      // Skips new Telemetry DB, then matches the old deprecated Telemetry DB.
-      if (!nameNoPrefix.startsWith(this.TELEMETRY_PREFIX)
-        && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
-        && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
+      // Skips new Telemetry DB, then matches malformed or the old deprecated Telemetry DB.
+      if (!this.isValidTelemetryDBName(nameNoPrefix) && nameNoPrefix.includes(this.TELEMETRY_PREFIX)) {
         this.windowRef?.indexedDB.deleteDatabase(dbName);
       }
     });
