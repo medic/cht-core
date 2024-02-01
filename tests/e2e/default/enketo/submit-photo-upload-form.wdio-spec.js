@@ -2,24 +2,22 @@ const photoUpload = require('@page-objects/default/enketo/photo-upload.wdio.page
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
-const userData = require('@page-objects/default/users/user.data');
 const path = require('path');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Submit Photo Upload form', () => {
-  const { userContactDoc, docs } = userData;
 
   before(async () => {
-    await utils.saveDocs(docs);
-    await photoUpload.configureForm(userContactDoc);
+    await commonEnketoPage.uploadForm('photo-upload');
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });
 
   beforeEach(async () => {
     await commonPage.goToReports();
-    await commonPage.openFastActionReport(photoUpload.docs[0].internalId, false);
+    await commonPage.openFastActionReport('photo-upload', false);
     await photoUpload.selectImage(path.join(__dirname, '/images/photo-for-upload-form.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
     await genericForm.submitForm();
