@@ -42,7 +42,6 @@ describe('Pregnancy Visit', () => {
     expect(heading).to.equal(pregnantWoman.name);
     expect(form).to.equal('Pregnancy home visit');
 
-    await browser.pause(5000);
     // Verify that the target tile was updated for pregnancies with 1+ visits
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
@@ -58,6 +57,7 @@ describe('Pregnancy Visit', () => {
       {title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR}
     ]);
 
+    await browser.pause(5000);
     // Adding 3 more pregnancy home visits to verify the target tile updated for pregnancies with 4+ visits
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy_home_visit');
