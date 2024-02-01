@@ -145,11 +145,17 @@ export class TelemetryService {
 
   private getDBDate(dbName) {
     const parts = dbName.split(this.NAME_DIVIDER);
-    return {
+    const dbDate = {
       year: Number(parts[1]),
       month: Number(parts[2]),
       date: Number(parts[3]),
     };
+
+    if (isNaN(dbDate.year) || isNaN(dbDate.month) || isNaN(dbDate.date)) {
+      throw new Error(`Cannot extract date from the Telemetry's DB name. Name: ${dbName}`);
+    }
+
+    return dbDate;
   }
 
   /**
