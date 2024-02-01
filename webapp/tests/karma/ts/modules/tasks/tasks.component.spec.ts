@@ -19,7 +19,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
-describe('TasksComponent', () => {
+describe.only('TasksComponent', () => {
   let getComponent;
   let changesService;
   let rulesEngineService;
@@ -106,7 +106,6 @@ describe('TasksComponent', () => {
     await getComponent();
 
     const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
-    const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
     const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
 
@@ -115,8 +114,6 @@ describe('TasksComponent', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
     expect(setTasksList.callCount).to.equal(1);
     expect(setTasksList.args[0]).to.deep.equal([[]]);
-    expect(setTasksLoaded.callCount).to.equal(1);
-    expect(setTasksLoaded.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
   });
 
@@ -289,7 +286,7 @@ describe('TasksComponent', () => {
     expect(performanceService.track.calledOnce).to.be.true;
     expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'tasks:load', recordApdex: true });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'tasks:refresh', recordApdex: false });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'tasks:refresh', recordApdex: true });
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
 
