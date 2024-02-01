@@ -19,7 +19,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
-describe.only('TasksComponent', () => {
+describe('TasksComponent', () => {
   let getComponent;
   let changesService;
   let rulesEngineService;
