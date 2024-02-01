@@ -1,15 +1,24 @@
 const utils = require('@utils');
-const userData = require('@page-objects/default/users/user.data');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
+const personFactory = require('@factories/cht/contacts/person');
 
 describe('Pregnancy danger sign follow-up form', () => {
+  const person = personFactory.build();
+
+  const fillPregnancyDangerSignFollowUpForm = async (attendToVisit, hasDangerSigns) => {
+    await genericForm.selectContact(person.name);
+    await genericForm.nextPage();
+    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', attendToVisit);
+    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', hasDangerSigns);
+  };
+
   before(async () => {
-    await utils.seedTestData(userData.userContactDoc, userData.docs);
+    await utils.saveDoc(person);
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });
@@ -20,20 +29,13 @@ describe('Pregnancy danger sign follow-up form', () => {
   });
 
   it('Submit and validate Pregnancy danger sign follow-up form and keeps the report minified', async () => {
-    await genericForm.selectContact('jack');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
-    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
+    await fillPregnancyDangerSignFollowUpForm('Yes', 'No');
     await genericForm.submitForm();
-
     await reportsPage.verifyReport();
   });
 
   it('should submit and edit Pregnancy danger sign follow-up form (no changes)', async () => {
-    await genericForm.selectContact('jill');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
-    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
+    await fillPregnancyDangerSignFollowUpForm('Yes', 'No');
     await genericForm.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
@@ -52,10 +54,7 @@ describe('Pregnancy danger sign follow-up form', () => {
   });
 
   it('should submit and edit Pregnancy danger sign follow-up form with changes', async () => {
-    await genericForm.selectContact('jill');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'Yes');
-    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'No');
+    await fillPregnancyDangerSignFollowUpForm('Yes', 'No');
     await genericForm.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
@@ -65,20 +64,14 @@ describe('Pregnancy danger sign follow-up form', () => {
 
     await reportsPage.openReport(reportId);
     await reportsPage.editReport();
-    await genericForm.selectContact('jack');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
-    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
+    await fillPregnancyDangerSignFollowUpForm('No', 'Yes');
     await dangerSignPage.selectAllDangerSignsPregnancy();
     await genericForm.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);
 
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
-    await genericForm.selectContact('jack');
-    await genericForm.nextPage();
-    await commonEnketoPage.selectRadioButton('Did the woman visit the health facility as recommended?', 'No');
-    await commonEnketoPage.selectRadioButton('Is she still experiencing any danger signs?', 'Yes');
+    await fillPregnancyDangerSignFollowUpForm('No', 'Yes');
     await dangerSignPage.selectAllDangerSignsPregnancy();
     await genericForm.submitForm();
 
