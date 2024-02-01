@@ -163,7 +163,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
       this.trackPerformance?.stop({
         name: performanceName,
-        recordApdex: !this.tasksLoaded,
+        recordApdex: true,
       });
       if (!this.tasksLoaded) {
         this.tasksActions.setTasksLoaded(true);
