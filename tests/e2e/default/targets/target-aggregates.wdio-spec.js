@@ -66,7 +66,7 @@ const validateCardFields = async (values) => {
   const conditionCard = $$('.meta .card')[1].$('.row');
   await conditionCard.waitForDisplayed();
   for (const value of values) {
-    expect(await (await conditionCard.$(`=${value}`)).isDisplayed()).to.be.true;
+    expect(await (await conditionCard.$(`p=${value}`)).isDisplayed()).to.be.true;
   }
 };
 
