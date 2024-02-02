@@ -363,19 +363,6 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
-const getContactSummaryCardFields = async () => {
-  const conditionCard = $$('.meta .card')[1].$('.row');
-  await conditionCard.waitForDisplayed();
-  const cells = await conditionCard.$$('.col');
-  const results = [];
-  for await (const cell of cells) {
-    const label = await (await cell.$('label')).getText();
-    const value = await (await cell.$('p')).getText();
-    results.push({ label, value });
-  }
-  return results;
-};
-
 const getCurrentContactId = async () => {
   const currentUrl = await browser.getUrl();
   const contactBaseUrl = utils.getBaseUrl() + 'contacts/';
@@ -433,7 +420,6 @@ module.exports = {
   editPersonName,
   exportContacts,
   getContactSummaryField,
-  getContactSummaryCardFields,
   getAllRHSReportsNames,
   rhsReportListElement,
   getAllRHSTaskNames,

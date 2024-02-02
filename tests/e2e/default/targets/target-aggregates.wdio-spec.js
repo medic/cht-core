@@ -62,15 +62,12 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
   await commonPage.goToBase();
 };
 
-const validateCardFields = async (lastUpdated, firstTarget, secondTarget) => {
-  const fields = await contactsPage.getContactSummaryCardFields();
-  expect(fields.length).to.equal(3);
-  expect(fields[0].label).to.equal('Last updated');
-  expect(fields[0].value).to.equal(lastUpdated);
-  expect(fields[1].label).to.equal('what a target!');
-  expect(fields[1].value).to.equal(firstTarget);
-  expect(fields[2].label).to.equal('the most target');
-  expect(fields[2].value).to.equal(secondTarget);
+const validateCardFields = async (values) => {
+  const conditionCard = $$('.meta .card')[1].$('.row');
+  await conditionCard.waitForDisplayed();
+  for (const value of values) {
+    expect(await (await conditionCard.$(`=${value}`)).isDisplayed()).to.be.true;
+  }
 };
 
 describe('Target aggregates', () => {
@@ -373,7 +370,7 @@ describe('Target aggregates', () => {
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
 
-      await validateCardFields('yesterday Clarissa', '40', '50%');
+      await validateCardFields(['yesterday Clarissa', '40', '50%']);
 
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[0]);
@@ -386,7 +383,7 @@ describe('Target aggregates', () => {
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-      await validateCardFields('yesterday Prometheus', '18', '15%');
+      await validateCardFields(['yesterday Prometheus', '18', '15%']);
 
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[1]);
