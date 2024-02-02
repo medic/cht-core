@@ -88,14 +88,14 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
-      callback: (change) => {
+      callback: async (change) => {
         const limit = this.contactsList.length;
         if (change.deleted) {
           this.contactsActions.removeContactFromList({ _id: change.id });
           this.hasContacts = this.contactsList.length;
         }
         if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
-          this.getUserHomePlaceSummary(change.id);
+          this.usersHomePlace = await this.getUserHomePlaceSummary(change.id);
         }
         const withIds =
           this.isSortedByLastVisited() &&
@@ -217,7 +217,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then((summary) => {
         if (summary) {
           summary.home = true;
-          this.usersHomePlace = summary;
         }
         return summary;
       });
