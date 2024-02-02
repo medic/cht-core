@@ -22,7 +22,6 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     // it looses the mobile view and switches back to desktop.
     // Adding to the comment above, it loses the mobile view when a test fails.
     // It may be better to use beforeHook instead of beforeSuite so it can set the capability before each test.
-    // eslint-disable-next-line no-undef
     await browser.emulateDevice({
       viewport: {
         width: 600,
@@ -33,6 +32,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
         `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`
     });
+    // eslint-disable-next-line no-undef
     const currentUserAgent = await browser.execute(() => navigator.userAgent);
     console.log('Current User Agent:', currentUserAgent);
   }
