@@ -50,7 +50,7 @@ const options = {
 const generatePassword = async () => {
   const CHAR_COUNT = 4;
 
-  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const LOWER_CHARS = CHARS.toLowerCase();
   const NUMS = '0123456789';
   const rando = (chars) => {
