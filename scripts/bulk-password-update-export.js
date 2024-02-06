@@ -53,10 +53,7 @@ const generatePassword = async () => {
   const randoChar = () => CHARS.charAt(
     randomInt(CHARS.length - 1)
   );
-  const INTS = '12345689';
-  const randoInt = () => INTS.charAt(
-    randomInt(INTS.length - 1)
-  );
+  const randoInt = () => randomInt(10);
 
   // CHT requires 8 minimum sp we'll do 3 upper, 3 lower, 3-4 int
   return Array(CHAR_COUNT).fill('').map(randoChar).join('') +
