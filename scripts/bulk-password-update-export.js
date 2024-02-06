@@ -86,12 +86,7 @@ const loadUsers = async () => {
 };
 
 const execute = async () => {
-  let users = [];
-  try {
-    users = await loadUsers();
-  } catch (e) {
-    console.log('An error while getting the list of users - ', e.message);
-  }
+  const users = await loadUsers();
   
   for (const user of users) {
     const trimmedUser = user.trim();
