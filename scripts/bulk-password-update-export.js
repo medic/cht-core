@@ -3,6 +3,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED=0;
 const rpn = require('request-promise-native');
 const minimist = require('minimist');
 const {promises: fsPromises} = require('fs');
+const { randomInt } = require('crypto');
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -47,16 +48,20 @@ const options = {
 
 const generatePassword = async () => {
   const CHAR_COUNT = 4;
-  const CHARS =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const randoChar = () => CHARS.charAt(
-    Math.floor(Math.random() * CHARS.length)
+    randomInt(0, CHARS.length - 1)
   );
+  const INTS = '12345689';
+  const randoInt = () => INTS.charAt(
+    randomInt(0, INTS.length - 1)
+  );
+
   // CHT requires 8 minimum sp we'll do 3 upper, 3 lower, 3-4 int
   const characters = Array(CHAR_COUNT).fill('').map(randoChar).join('') +
-    Array(CHAR_COUNT).fill('').map(randoChar).join('').toLowerCase() +
-    Math.floor(Math.random() * (1000 - 9999));
+    Array(CHAR_COUNT).fill('').map(randoChar).join('').toLowerCase() + '-' +
+    Array(CHAR_COUNT).fill('').map(randoInt).join('');
   return characters;
 };
 
