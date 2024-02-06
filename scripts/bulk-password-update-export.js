@@ -78,7 +78,8 @@ const generatePassword = async () => {
 const loadUsers = async () => {
   try {
     const contents = await fsPromises.readFile('user-password-change.txt', 'utf-8');
-    return contents.split(/\r?\n/);
+    const lines = contents.split(/\r?\n/);
+    return lines.map(line => line.trim()).filter(line => line.length > 0);
   } catch (err) {
     console.log(err);
     process.exit(0);
