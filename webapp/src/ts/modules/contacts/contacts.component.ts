@@ -88,11 +88,14 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
-      callback: (change) => {
+      callback: async (change) => {
         const limit = this.contactsList.length;
         if (change.deleted) {
           this.contactsActions.removeContactFromList({ _id: change.id });
           this.hasContacts = this.contactsList.length;
+        }
+        if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
+          this.usersHomePlace = await this.getUserHomePlaceSummary(change.id);
         }
         const withIds =
           this.isSortedByLastVisited() &&
@@ -201,13 +204,14 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private getUserHomePlaceSummary() {
+  private getUserHomePlaceSummary(homePlaceId?: string) {
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        if (userSettings.facility_id) {
-          this.globalActions.setUserFacilityId(userSettings.facility_id);
-          return this.getDataRecordsService.get(userSettings.facility_id);
+        const facilityId = homePlaceId ?? userSettings.facility_id;
+        if (facilityId) {
+          this.globalActions.setUserFacilityId(facilityId);
+          return this.getDataRecordsService.get(facilityId);
         }
       })
       .then((summary) => {
@@ -341,7 +345,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       searchFilters = this.filters;
     }
 
-    const extensions:any = {};
+    const extensions: any = {};
     if (this.lastVisitedDateExtras) {
       extensions.displayLastVisitedDate = true;
       extensions.visitCountSettings = this.visitCountSettings;
@@ -362,7 +366,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
         if (this.usersHomePlace) {
-          const homeIndex = _findIndex(updatedContacts, (contact:any) => {
+          const homeIndex = _findIndex(updatedContacts, (contact: any) => {
             return contact._id === this.usersHomePlace._id;
           });
           this.additionalListItem =
