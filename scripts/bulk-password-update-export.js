@@ -51,18 +51,17 @@ const generatePassword = async () => {
 
   const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const randoChar = () => CHARS.charAt(
-    randomInt(0, CHARS.length - 1)
+    randomInt(CHARS.length - 1)
   );
   const INTS = '12345689';
   const randoInt = () => INTS.charAt(
-    randomInt(0, INTS.length - 1)
+    randomInt(INTS.length - 1)
   );
 
   // CHT requires 8 minimum sp we'll do 3 upper, 3 lower, 3-4 int
-  const characters = Array(CHAR_COUNT).fill('').map(randoChar).join('') +
+  return Array(CHAR_COUNT).fill('').map(randoChar).join('') +
     Array(CHAR_COUNT).fill('').map(randoChar).join('').toLowerCase() + '-' +
     Array(CHAR_COUNT).fill('').map(randoInt).join('');
-  return characters;
 };
 
 // thanks https://bobbyhadz.com/blog/javascript-read-file-into-array !
