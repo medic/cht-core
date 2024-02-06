@@ -265,17 +265,17 @@ const allContactsList = async () => {
   }));
 };
 
-const editDistrict = async (districtName, editedName) => {
-  await selectLHSRowByText(districtName, true);
+const editPlace = async (currentName, editedName, placeType) => {
+  await selectLHSRowByText(currentName, true);
   await waitForContactLoaded();
 
   await commonPage.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
-  await (await nameField('district_hospital')).setValue(editedName);
+  await (await nameField(placeType)).setValue(editedName);
   // blur field to trigger Enketo validation
-  await (await notes('district_hospital')).click();
+  await (await notes(placeType)).click();
   await genericForm.submitForm();
 };
 
@@ -356,13 +356,6 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
-const getCardFieldInfo = async (label) => {
-  return {
-    label: await (await $(`.cell.${label} label`)).getText(),
-    value: await (await $(`.cell.${label} p`)).getText(),
-  };
-};
-
 const getCurrentContactId = async () => {
   const currentUrl = await browser.getUrl();
   const contactBaseUrl = utils.getBaseUrl() + 'contacts/';
@@ -418,6 +411,7 @@ module.exports = {
   contactCard,
   editPerson,
   editPersonName,
+  editPlace,
   exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
@@ -426,7 +420,6 @@ module.exports = {
   rhsTaskListElement,
   deletePerson,
   allContactsList,
-  editDistrict,
   childrenCards,
   openReport,
   getContactCardTitle,
@@ -448,7 +441,6 @@ module.exports = {
   contactMuted,
   openFormWithWarning,
   getContactListLoadingStatus,
-  getCardFieldInfo,
   getCurrentContactId,
   pregnancyLabel,
   visitLabel,
