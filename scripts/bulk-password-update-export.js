@@ -33,6 +33,7 @@ try {
   url = new URL('/api/v1/users', argv.url);
 } catch (e) {
   console.log('Error while creating url', e.message);
+  process.exit(0);
 }
 
 const user = argv.user;
