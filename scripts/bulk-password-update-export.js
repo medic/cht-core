@@ -46,6 +46,7 @@ const options = {
 };
 
 const generatePassword = async () => {
+  const CHAR_COUNT = 4;
   const CHARS =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -53,10 +54,9 @@ const generatePassword = async () => {
     Math.floor(Math.random() * CHARS.length)
   );
   // CHT requires 8 minimum sp we'll do 3 upper, 3 lower, 3-4 int
-  const characters = Array(4).fill('').map(randoChar).join('') +
-    Array(4).fill('').map(randoChar).join('').toLowerCase() +
-    Math.floor(Math.random() * (1000 - 9999)) +
-    '';
+  const characters = Array(CHAR_COUNT).fill('').map(randoChar).join('') +
+    Array(CHAR_COUNT).fill('').map(randoChar).join('').toLowerCase() +
+    Math.floor(Math.random() * (1000 - 9999));
   return characters;
 };
 
@@ -89,10 +89,9 @@ const execute = async () => {
       postOptions.uri = `${options.uri}/${user}`;
       try {
         await rpn.post(postOptions);
+        console.log('SUCCESS', trimmedUser, newPass);
       } catch (e) {
         console.log('ERROR', trimmedUser, e.message);
-      } finally {
-        console.log('SUCCESS', trimmedUser, newPass);
       }
     }
   }
