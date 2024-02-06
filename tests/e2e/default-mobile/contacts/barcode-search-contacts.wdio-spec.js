@@ -20,9 +20,6 @@ const invalidBarcodeImagePath = path.join(__dirname, '/images/invalid-barcode.jp
 
 describe('Test Contact Search with Barcode Scanner', async () => {
   before(async () => {
-    // eslint-disable-next-line no-undef
-    const currentUserAgent = await browser.execute(() => navigator.userAgent);
-    console.log('Barcode Scanner Current User Agent:', currentUserAgent);
     await utils.saveDocs([...places.values(), person]);
     await utils.createUsers([offlineUser]);
     const canUseBarcodeScannerPermission = ['can_use_barcode_scanner'];

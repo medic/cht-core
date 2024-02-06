@@ -27,13 +27,10 @@ exports.config = Object.assign(wdioBaseConfig.config, {
         width: 600,
         height: 960,
         isMobile: true,
-        hasTouch: true,
+        hasTouch: true
       },
       userAgent: `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
         `Chrome/${MOBILE_CHROME_VERSION} Mobile Safari/537.36`
     });
-    // eslint-disable-next-line no-undef
-    const currentUserAgent = await browser.execute(() => navigator.userAgent);
-    console.log('Current User Agent:', currentUserAgent);
   }
 });
