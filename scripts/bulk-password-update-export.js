@@ -81,6 +81,7 @@ const loadUsers = async () => {
     return contents.split(/\r?\n/);
   } catch (err) {
     console.log(err);
+    process.exit(0);
   }
 };
 
