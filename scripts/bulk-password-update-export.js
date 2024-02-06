@@ -60,8 +60,18 @@ const generatePassword = async () => {
       .join('');
   };
 
-  // CHT requires 8 minimum sp we'll do 3 upper, 3 lower, 3-4 int
-  return rando(CHARS) + rando(LOWER_CHARS) + '-' + rando(NUMS);
+  // thanks https://stackoverflow.com/a/3943985 & https://stackoverflow.com/a/6274381
+  const randoShuffle = function (orderedString) {
+    const unorderedArray = orderedString.split('');
+    const stringLength = (orderedString.length - 1);
+    for (let i = stringLength; i > 0; i--) {
+      const j = Math.floor(randomInt(2) * (i + 1));
+      [unorderedArray[i], unorderedArray[j]] = [unorderedArray[j], unorderedArray[i]];
+    }
+    return unorderedArray.join('');
+  };
+  // CHT requires 8 minimum so we'll do 4 upper, 4 lower, 4 int
+  return randoShuffle(rando(CHARS) + rando(LOWER_CHARS) + '-' + rando(NUMS));
 };
 
 // thanks https://bobbyhadz.com/blog/javascript-read-file-into-array !
