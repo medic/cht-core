@@ -95,7 +95,7 @@ const execute = async () => {
       const postOptions = {...options};
       const newPass = await generatePassword();
       postOptions.body = {
-        'password': newPass
+        password: newPass
       };
       postOptions.uri = `${options.uri}/${user}`;
       try {
