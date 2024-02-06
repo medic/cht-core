@@ -32,7 +32,7 @@ describe('Test Contact Search with Barcode Scanner', async () => {
   });
 
   it('Search should display correct results, clear search should display all contacts', async () => {
-    await commonElements.sync(true);
+    await commonPage.sync(true);
     await browser.refresh();
     await waitForContactLoaded(true);
     await commonPage.goToPeople();
