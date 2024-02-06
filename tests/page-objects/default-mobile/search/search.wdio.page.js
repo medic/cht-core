@@ -11,8 +11,8 @@ const performSearch = async (term) => {
 };
 
 const performBarcodeSearch = async (barcodeImagePath) => {
-  await $('.mm-search-bar-container .fa.fa-qrcode').waitForDisplayed();
-  //await $('.barcode-scanner-input').waitForExist();
+  await $('.barcode-scanner-input').waitForExist();
+  //await $('.mm-search-bar-container .fa.fa-qrcode').waitForDisplayed();
   // In this case the upload file button is hidden,
   // then we need to manipulate the DOM of the respective element to make it interactable.
   await browser.execute(function () {

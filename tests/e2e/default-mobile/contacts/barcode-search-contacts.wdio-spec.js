@@ -32,9 +32,13 @@ describe('Test Contact Search with Barcode Scanner', async () => {
   });
 
   it('Search should display correct results, clear search should display all contacts', async () => {
+    await commonElements.sync(true);
+    await browser.refresh();
+    await waitForContactLoaded(true);
     await commonPage.goToPeople();
     await browser.refresh();
     await searchPage.performBarcodeSearch(barcodeImagePath);
+    await commonPage.waitForLoaders();
     expect(await contactPage.getAllLHSContactsNames()).to.have.members([
       person.name
     ]);
