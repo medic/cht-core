@@ -90,20 +90,17 @@ const execute = async () => {
   const users = await loadUsers();
   
   for (const user of users) {
-    const trimmedUser = user.trim();
-    if (trimmedUser !== '') {
-      const postOptions = {...options};
-      const newPass = await generatePassword();
-      postOptions.body = {
-        password: newPass
-      };
-      postOptions.uri = `${options.uri}/${user}`;
-      try {
-        await rpn.post(postOptions);
-        console.log('SUCCESS', trimmedUser, newPass);
-      } catch (e) {
-        console.log('ERROR', trimmedUser, e.message);
-      }
+    const postOptions = {...options};
+    const newPass = await generatePassword();
+    postOptions.body = {
+      password: newPass
+    };
+    postOptions.uri = `${options.uri}/${user}`;
+    try {
+      await rpn.post(postOptions);
+      console.log('SUCCESS', user, newPass);
+    } catch (e) {
+      console.log('ERROR', user, e.message);
     }
   }
 };
