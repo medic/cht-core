@@ -4,6 +4,7 @@ const rpn = require('request-promise-native');
 const minimist = require('minimist');
 const {promises: fsPromises} = require('fs');
 const { randomInt } = require('crypto');
+const readline = require('readline');
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -47,6 +48,23 @@ const options = {
   }
 };
 
+// thanks https://stackoverflow.com/a/50890409 !
+const areYouSure = async (userCount) => {
+  const NOTE = ' ****** WARNING ****** \n\nContinuing will log '
+    + userCount
+    + ' users out of the CHT until you provide them with their updated password. \n\n'
+    + 'Do you want to continue? [y/N]\n';
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise(resolve => rl.question(NOTE, ans => {
+    rl.close();
+    resolve(ans);
+  }));
+};
+
 const generatePassword = async () => {
   const CHAR_COUNT = 4;
 
@@ -88,7 +106,11 @@ const loadUsers = async () => {
 
 const execute = async () => {
   const users = await loadUsers();
-  
+  const input = await areYouSure(users.length);
+  if (input.toLowerCase() !== 'y') {
+    process.exit(0);
+  }
+
   for (const user of users) {
     const postOptions = {...options};
     const newPass = await generatePassword();
