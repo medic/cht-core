@@ -118,7 +118,7 @@ export class TelemetryService {
   }
 
   private isValidTelemetryDBName(dbName): boolean {
-    const expression = new RegExp(`^${this.TELEMETRY_PREFIX}-[0-9]{4}-[0-2][0-9]-[0-3][0-9].*`, 'g');
+    const expression = new RegExp(`^${this.TELEMETRY_PREFIX}-[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9].*`, 'g');
     return expression.test(dbName);
   }
 

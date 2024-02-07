@@ -161,9 +161,12 @@ describe('TelemetryService', () => {
       indexedDbService.getDatabaseNames.resolves([
         ...oldTelemetryDBNames,
         '_pouch_telemetry-2018-11-10-greg',
+        '_pouch_telemetry-2018-12-31-greg',
         ...wrongDBNames,
+        '_pouch_telemetry-2019-1-1-greg',
+        '_pouch_telemetry-2019-1-22-greg',
         '_pouch_some-other-db',
-        '_pouch_telemetry-2018-11-09-greg',
+        '_pouch_telemetry-2018-10-09-greg',
       ]);
 
       await service.record('test', 100);
@@ -193,10 +196,15 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
       expect(telemetryDb.post.args[0][0].date_recorded).to.be.above(0);
       expect(indexedDbService.getDatabaseNames.calledOnce).to.be.true;
-      expect(windowMock.PouchDB.calledTwice).to.be.true;
-      expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-09-greg' ]);
-      expect(windowMock.PouchDB.args[1]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
-      expect(telemetryDb.destroy.calledOnce).to.be.true;
+      expect(windowMock.PouchDB.callCount).to.equal(5);
+      expect(windowMock.PouchDB.args).to.have.deep.members([
+        [ 'telemetry-2018-12-31-greg' ],
+        [ 'telemetry-2019-1-1-greg' ],
+        [ 'telemetry-2018-10-09-greg' ],
+        [ 'telemetry-2019-1-22-greg' ],
+        [ 'telemetry-2018-11-10-greg' ],
+      ]);
+      expect(telemetryDb.destroy.callCount).to.equal(4);
     });
 
     it('should default the value to 1 if not passed', async () => {
