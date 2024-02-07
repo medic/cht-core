@@ -102,7 +102,7 @@ const loadUsers = async () => {
     return lines.map(line => line.trim()).filter(line => line.length > 0);
   } catch (err) {
     console.log(err);
-    process.exit(0);
+    process.exit(1);
   }
 };
 
