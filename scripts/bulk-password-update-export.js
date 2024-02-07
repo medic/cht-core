@@ -104,6 +104,20 @@ const loadUsers = async () => {
   }
 };
 
+const changeUserPass = async (user, postOptions) => {
+  const newPass = await generatePassword();
+  postOptions.body = {
+    password: newPass
+  };
+  postOptions.uri = `${options.uri}/${user}`;
+  try {
+    await rpn.post(postOptions);
+    console.log('SUCCESS', user, newPass);
+  } catch (e) {
+    console.log('ERROR', user, e.message);
+  }
+};
+
 const execute = async () => {
   const users = await loadUsers();
   const input = await areYouSure(users.length);
@@ -111,19 +125,9 @@ const execute = async () => {
     process.exit(0);
   }
 
+  const postOptions = {...options};
   for (const user of users) {
-    const postOptions = {...options};
-    const newPass = await generatePassword();
-    postOptions.body = {
-      password: newPass
-    };
-    postOptions.uri = `${options.uri}/${user}`;
-    try {
-      await rpn.post(postOptions);
-      console.log('SUCCESS', user, newPass);
-    } catch (e) {
-      console.log('ERROR', user, e.message);
-    }
+    await changeUserPass(user, postOptions);
   }
 };
 
