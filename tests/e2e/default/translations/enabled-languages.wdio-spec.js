@@ -20,6 +20,11 @@ const settings = {
 };
 
 describe('Enabling/disabling languages', () => {
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
+
   it('should disable a language and enable another', async () => {
     await utils.updateSettings(settings, true);
     await browser.reloadSession();
