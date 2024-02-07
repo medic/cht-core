@@ -21,6 +21,6 @@ angular.module('inboxServices').factory('Export',
       }
       const params = '?' + $.param({ filters, options });
       const url = '/api/v2/export/' + type + params;
-      ajaxDownload.download(url);
+      return ajaxDownload.download(url);
     };
   });
