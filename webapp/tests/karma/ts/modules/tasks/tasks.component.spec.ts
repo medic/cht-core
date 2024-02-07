@@ -106,6 +106,7 @@ describe('TasksComponent', () => {
     await getComponent();
 
     const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
+    const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
     const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
 
@@ -114,6 +115,8 @@ describe('TasksComponent', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
     expect(setTasksList.callCount).to.equal(1);
     expect(setTasksList.args[0]).to.deep.equal([[]]);
+    expect(setTasksLoaded.callCount).to.equal(1);
+    expect(setTasksLoaded.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
   });
 
