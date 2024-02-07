@@ -10,12 +10,12 @@
       return DEFAULT_FILE_NAME;
     }
 
-    const filename = contentDisposition.split('filename=')[1];
-    if (!filename) {
+    const fileName = contentDisposition.split('filename=')[1];
+    if (!fileName) {
       return DEFAULT_FILE_NAME;
     }
 
-    return filename;
+    return fileName;
   };
 
   /**
