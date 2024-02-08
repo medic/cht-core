@@ -64,7 +64,7 @@ export class ReportsEffects {
           //   1. after loading an app form, the performance is recorded in ReportsAddComponent
           //   2. when opening an already saved report, the performance is recorded here
           this.trackOpenReport?.stop({
-            name: [ 'select_report', model?.doc?.form, 'load' ].join(':'),
+            name: [ 'report_detail', model?.doc?.form, 'load' ].join(':'),
             recordApdex: true,
           });
         }

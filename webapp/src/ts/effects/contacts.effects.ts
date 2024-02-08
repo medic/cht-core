@@ -97,7 +97,14 @@ export class ContactsEffects {
             return of(this.contactsActions.clearSelection());
           })
           .finally(() => {
-            trackPerformance?.stop({ recordApdex: true, name: trackName.join(':') });
+            trackPerformance?.stop({
+              recordApdex: true,
+              name: [
+                'contact_detail',
+                selectedContact?.doc?.contact_type || 'contact',
+                'load'
+              ].join(':'),
+            });
           });
 
         return of(loadContact);
