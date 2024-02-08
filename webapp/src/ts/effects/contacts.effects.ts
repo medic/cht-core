@@ -93,7 +93,7 @@ export class ContactsEffects {
             trackPerformance?.stop({
               recordApdex: true,
               name: [
-                'select_contact',
+                'contact_detail',
                 selectedContact?.doc?.contact_type || 'contact',
                 'load'
               ].join(':'),

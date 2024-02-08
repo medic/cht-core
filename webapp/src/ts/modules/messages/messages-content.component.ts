@@ -244,7 +244,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();
         this.hasToScroll = true; // Indication to scroll to unread message.
-        this.trackPerformance?.stop({ name: 'select_conversation:load', recordApdex: true });
+        this.trackPerformance?.stop({ name: 'messages_detail:load', recordApdex: true });
       })
       .catch((err) => {
         this.globalActions.setLoadingContent(false);

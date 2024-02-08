@@ -173,7 +173,7 @@ describe('Contacts effects', () => {
       expect(performanceService.track.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
-        name: 'select_contact:contact:load',
+        name: 'contact_detail:contact:load',
         recordApdex: true,
       });
     });
@@ -201,7 +201,7 @@ describe('Contacts effects', () => {
       expect(performanceService.track.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
-        name: 'select_contact:contact:load',
+        name: 'contact_detail:contact:load',
         recordApdex: true,
       });
     });
