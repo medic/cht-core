@@ -309,6 +309,11 @@ describe('Export Data Service', () => {
   });
 
   describe('Export users devices', () => {
+    it('depends on the right permission', async () => {
+      const permission = 'can_export_devices_details';
+      service.permission('user-devices').should.equal(permission);
+    });
+
     it('handles empty db', async () => {
       sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
       const actual = await service.exportObject('user-devices');
