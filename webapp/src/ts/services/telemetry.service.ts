@@ -1,7 +1,6 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
-import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -14,7 +13,6 @@ export class TelemetryService {
   private readonly TELEMETRY_PREFIX = 'telemetry';
   private readonly POUCH_PREFIX = '_pouch_';
   private readonly NAME_DIVIDER = '-';
-  private readonly DATE_FORMAT = 'YYYY-MM-DD';
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private isAggregationRunning = false;
@@ -145,17 +143,11 @@ export class TelemetryService {
 
   private getDBDate(dbName) {
     const parts = dbName.split(this.NAME_DIVIDER);
-    const dbDate = {
+    return {
       year: Number(parts[1]),
       month: Number(parts[2]),
       date: Number(parts[3]),
     };
-
-    if (isNaN(dbDate.year) || isNaN(dbDate.month) || isNaN(dbDate.date)) {
-      throw new Error(`Cannot extract date from the Telemetry's DB name. Name: ${dbName}`);
-    }
-
-    return dbDate;
   }
 
   /**
@@ -214,10 +206,10 @@ export class TelemetryService {
    * Moment when the aggregation starts (i.e. the beginning of the current day)
    */
   private getToday(): TodayMoment {
-    const today = moment().startOf('day');
+    const today = new Date();
     return {
       today,
-      formatted: today.format(this.DATE_FORMAT),
+      formatted: `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`,
     };
   }
 
@@ -360,6 +352,7 @@ export class TelemetryService {
       if (!this.isValidTelemetryDBName(nameNoPrefix)
         && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
         && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
+        console.warn(`Invalid telemetry database name, deleting database. Name: ${nameNoPrefix}`);
         this.windowRef?.indexedDB.deleteDatabase(dbName);
       }
     });
