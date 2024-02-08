@@ -19,6 +19,7 @@ describe('TelemetryService', () => {
   let clock;
   let telemetryDb;
   let consoleErrorSpy;
+  let consoleWarnSpy;
   let windowMock;
 
   const windowScreenOriginal = {
@@ -92,6 +93,7 @@ describe('TelemetryService', () => {
     getStub.returns(medicDb);
     dbService = { get: getStub };
     consoleErrorSpy = sinon.spy(console, 'error');
+    consoleWarnSpy = sinon.spy(console, 'warn');
     telemetryDb = {
       post: sinon.stub().resolves(),
       close: sinon.stub(),
@@ -109,7 +111,7 @@ describe('TelemetryService', () => {
     sessionService = { userCtx: sinon.stub().returns({ name: 'greg' }) };
     windowMock = {
       PouchDB: sinon.stub().returns(telemetryDb),
-      indexedDB: { databases: sinon.stub() },
+      indexedDB: { databases: sinon.stub(), deleteDatabase: sinon.stub() },
       localStorage: { getItem: sinon.stub(), setItem: sinon.stub() },
     };
     const documentMock = {
@@ -140,23 +142,69 @@ describe('TelemetryService', () => {
     it('should record a piece of telemetry', async () => {
       medicDb.query.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
+      const invalidDBNameWarning = 'Invalid telemetry database name, deleting database. Name:';
+      const oldTelemetryDBNames = [
+        '_pouch_medic-user-koko-telemetry-98y7c3a1-5a1a-4d3f-a076-d86ec38b1d87',
+        '_pouch_medic-user-greg-telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32',
+      ];
+      const wrongDBNames = [
+        '_pouch_telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32',
+        '_pouch_telemetry-2018-greg',
+        '_pouch_telemetry-2018-01-greg',
+        '_pouch_telemetry-11-10-greg',
+        '_pouch_telemetry-10-greg',
+        '_pouch_telemetry-greg',
+        '_pouch_telemetry-२०२४-०२-०९-greg',
+        '_pouch_telemetry',
+        undefined,
+      ];
       indexedDbService.getDatabaseNames.resolves([
+        ...oldTelemetryDBNames,
         '_pouch_telemetry-2018-11-10-greg',
+        '_pouch_telemetry-2018-12-31-greg',
+        ...wrongDBNames,
+        '_pouch_telemetry-2019-1-1-greg',
+        '_pouch_telemetry-2019-1-22-greg',
         '_pouch_some-other-db',
-        '_pouch_telemetry-2018-11-09-greg',
+        '_pouch_telemetry-2018-10-09-greg',
       ]);
 
       await service.record('test', 100);
 
       expect(consoleErrorSpy.notCalled).to.be.true;
+      expect(consoleWarnSpy.callCount).to.equal(7);
+      expect(consoleWarnSpy.args).to.have.deep.members([
+        [ `${invalidDBNameWarning} medic-user-greg-telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32` ],
+        [ `${invalidDBNameWarning} telemetry-2018-greg` ],
+        [ `${invalidDBNameWarning} telemetry-2018-01-greg` ],
+        [ `${invalidDBNameWarning} telemetry-11-10-greg` ],
+        [ `${invalidDBNameWarning} telemetry-10-greg` ],
+        [ `${invalidDBNameWarning} telemetry-greg` ],
+        [ `${invalidDBNameWarning} telemetry-२०२४-०२-०९-greg` ],
+      ]);
+      expect(windowMock.indexedDB.deleteDatabase.callCount).to.equal(7);
+      expect(windowMock.indexedDB.deleteDatabase.args).to.have.deep.members([
+        [ '_pouch_medic-user-greg-telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32' ],
+        [ '_pouch_telemetry-2018-greg' ],
+        [ '_pouch_telemetry-2018-01-greg' ],
+        [ '_pouch_telemetry-11-10-greg' ],
+        [ '_pouch_telemetry-10-greg' ],
+        [ '_pouch_telemetry-greg' ],
+        [ '_pouch_telemetry-२०२४-०२-०९-greg' ],
+      ]);
       expect(telemetryDb.post.calledOnce).to.be.true;
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
       expect(telemetryDb.post.args[0][0].date_recorded).to.be.above(0);
       expect(indexedDbService.getDatabaseNames.calledOnce).to.be.true;
-      expect(windowMock.PouchDB.calledTwice).to.be.true;
-      expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-09-greg' ]);
-      expect(windowMock.PouchDB.args[1]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
-      expect(telemetryDb.destroy.calledOnce).to.be.true;
+      expect(windowMock.PouchDB.callCount).to.equal(5);
+      expect(windowMock.PouchDB.args).to.have.deep.members([
+        [ 'telemetry-2018-12-31-greg' ],
+        [ 'telemetry-2019-1-1-greg' ],
+        [ 'telemetry-2018-10-09-greg' ],
+        [ 'telemetry-2019-1-22-greg' ],
+        [ 'telemetry-2018-11-10-greg' ],
+      ]);
+      expect(telemetryDb.destroy.callCount).to.equal(4);
     });
 
     it('should default the value to 1 if not passed', async () => {
