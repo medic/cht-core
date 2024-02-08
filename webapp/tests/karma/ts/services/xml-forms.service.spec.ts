@@ -14,7 +14,6 @@ import { ParseProvider } from '@mm-providers/parse.provider';
 import { PipesService } from '@mm-services/pipes.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { PerformanceService } from '@mm-services/performance.service';
 
 describe('XmlForms service', () => {
   let dbGet;
@@ -30,7 +29,6 @@ describe('XmlForms service', () => {
   let error;
   let warn;
   let fileReaderService;
-  let performanceService;
   let feedbackService;
 
   const mockEnketoDoc = (formInternalId?, docId?) => {
@@ -66,7 +64,7 @@ describe('XmlForms service', () => {
     contextUtils = {};
     error = sinon.stub(console, 'error');
     warn = sinon.stub(console, 'warn');
-    performanceService = { track: sinon.stub() };
+
     pipesService = {
       transform: sinon.stub().returnsArg(1),
       getPipeNameVsIsPureMap: sinon.stub().returns(new Map()),
@@ -87,7 +85,6 @@ describe('XmlForms service', () => {
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
         { provide: FileReaderService, useValue: { utf8: fileReaderService } },
-        { provide: PerformanceService, useValue: performanceService },
         { provide: FeedbackService, useValue: feedbackService },
       ],
     });

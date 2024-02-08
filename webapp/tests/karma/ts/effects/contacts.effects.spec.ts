@@ -170,8 +170,8 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.callCount).to.equal(7);
-      expect(stopPerformanceTrackStub.callCount).to.equal(7);
+      expect(performanceService.track.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
         name: 'contact_detail:contact:load',
         recordApdex: true,
@@ -198,8 +198,8 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.callCount).to.equal(7);
-      expect(stopPerformanceTrackStub.callCount).to.equal(7);
+      expect(performanceService.track.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
         name: 'contact_detail:contact:load',
         recordApdex: true,
