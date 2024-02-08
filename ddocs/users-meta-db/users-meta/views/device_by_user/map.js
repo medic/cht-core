@@ -1,7 +1,7 @@
 function(doc) {
   if (doc.type === 'telemetry') {
     emit(doc.metadata.user, {
-      date: `${doc.metadata.year}-${doc.metadata.month}-${doc.metadata.day}`,
+      date: new Date(doc.metadata.year, doc.metadata.month - 1, doc.metadata.day),
       id: doc._id,
       device: {
         deviceId: doc.metadata.deviceId,
