@@ -313,7 +313,7 @@ export class TelemetryService {
    * It was decided to not aggregate the DB content.
    * @private
    */
-  private async deleteDeprecatedTelemetryDB(databases) {
+  private async deleteDeprecatedTelemetryDB(databases) { // NOSONAR
     if (this.hasTransitionFinished) {
       return;
     }
