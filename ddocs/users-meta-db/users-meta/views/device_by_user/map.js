@@ -1,5 +1,14 @@
 function(doc) {
-  if (doc.type === 'telemetry') {
+  if (
+    doc.type === 'telemetry' &&
+    doc.metadata &&
+    doc.metadata.user &&
+    doc.metadata.year &&
+    doc.metadata.month &&
+    doc.metadata.day &&
+    doc.metadata.versions &&
+    doc.device
+  ) {
     emit(doc.metadata.user, {
       date: doc.metadata.year + '-' +
         doc.metadata.month.toString().padStart(2, '0') + '-' +
