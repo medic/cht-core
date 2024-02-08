@@ -58,7 +58,7 @@ export class ContactsEffects {
           return of(this.contactsActions.clearSelection());
         }
 
-        let trackName = [ 'select_contact', 'contact', 'load' ];
+        let trackName = [ 'contact_detail', 'contact', 'load' ];
         const trackPerformance = this.performanceService.track();
 
         if (!silent) {

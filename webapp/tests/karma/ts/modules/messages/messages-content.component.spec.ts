@@ -150,7 +150,7 @@ describe('MessagesContentComponent', () => {
       expect(performanceService.track.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
-        name: 'select_conversation:load',
+        name: 'messages_detail:load',
         recordApdex: true,
       });
     });

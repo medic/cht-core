@@ -1,10 +1,10 @@
-FROM alpine:3.15 AS base_build
+FROM alpine:3.19 AS base_build
 
 RUN apk add --update --no-cache \
   build-base \
   curl \
-  nodejs~=16 \
-  npm~=8 \
+  nodejs~=20 \
+  npm~=10 \
   tzdata \
   bash \
   jq

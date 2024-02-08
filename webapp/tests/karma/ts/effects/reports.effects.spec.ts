@@ -402,7 +402,7 @@ describe('Reports effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(stopPerformanceTrackStub.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
-        name: 'select_report:a-form:load',
+        name: 'report_detail:a-form:load',
         recordApdex: true,
       });
     });

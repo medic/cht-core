@@ -1,0 +1,28 @@
+[project]
+name = "haproxy-healthcheck"
+version = "1.0.0"
+dependencies = [
+    "httpx<1",
+]
+
+[project.optional-dependencies]
+test = [
+    "isort",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mypy",
+    "pytest-ruff",
+]
+
+[tool.ruff]
+select = [
+    # "ALL"
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+fixable = ["ALL"]
+
