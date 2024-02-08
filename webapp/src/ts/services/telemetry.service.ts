@@ -1,10 +1,10 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
-import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import { IndexedDbService } from '@mm-services/indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,6 @@ export class TelemetryService {
   private readonly TELEMETRY_PREFIX = 'telemetry';
   private readonly POUCH_PREFIX = '_pouch_';
   private readonly NAME_DIVIDER = '-';
-  private readonly DATE_FORMAT = 'YYYY-MM-DD';
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private isAggregationRunning = false;
@@ -24,6 +23,7 @@ export class TelemetryService {
     private dbService:DbService,
     private sessionService:SessionService,
     private ngZone:NgZone,
+    private indexedDbService:IndexedDbService,
     @Inject(DOCUMENT) private document:Document,
   ) {
     this.windowRef = this.document.defaultView;
@@ -117,10 +117,15 @@ export class TelemetryService {
     };
   }
 
-  private async getTelemetryDBs(databases): Promise<undefined|string[]> {
-    return databases
-      ?.map(db => db.name?.replace(this.POUCH_PREFIX, '') || '')
-      .filter(dbName => dbName?.startsWith(this.TELEMETRY_PREFIX));
+  private isValidTelemetryDBName(dbName): boolean {
+    const expression = new RegExp(`^${this.TELEMETRY_PREFIX}-[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9].*`, 'g');
+    return expression.test(dbName);
+  }
+
+  private async getTelemetryDBs(databaseNames): Promise<undefined|string[]> {
+    return databaseNames
+      ?.map(dbName => dbName?.replace(this.POUCH_PREFIX, '') || '')
+      .filter(dbName => this.isValidTelemetryDBName(dbName));
   }
 
   /**
@@ -145,16 +150,35 @@ export class TelemetryService {
     };
   }
 
+  /**
+   * Emit the value of the doc.
+   * Skip over values that aren't numeric because they will cause an Error in the "_stats" reduce function.
+   * Exposed for unit testing.
+   * @param doc The db doc to map.
+   * @param emit A function called with the key and value to map the doc to.
+   */
+  _aggregateMap(doc, emit) {
+    const val = doc.value;
+    if (typeof val === 'number' && !Number.isNaN(val)) {
+      emit(doc.key, val);
+    }
+  }
+
+  private aggregateMapReduce(db) {
+    return db.query(
+      {
+        map: this._aggregateMap,
+        reduce: '_stats',
+      },
+      { group: true }
+    );
+  }
+
   private async aggregate(db, dbName) {
     const [ metadata, dbInfo, reduceResult ] = await Promise.all([
       this.generateMetadataSection(dbName),
-      this.dbService
-        .get()
-        .info(),
-      db.query(
-        { reduce: '_stats', map: (doc, emit) => emit(doc.key, doc.value) },
-        { group: true },
-      )
+      this.dbService.get().info(),
+      this.aggregateMapReduce(db),
     ]);
 
     const aggregateDoc = {
@@ -182,10 +206,10 @@ export class TelemetryService {
    * Moment when the aggregation starts (i.e. the beginning of the current day)
    */
   private getToday(): TodayMoment {
-    const today = moment().startOf('day');
+    const today = new Date();
     return {
       today,
-      formatted: today.format(this.DATE_FORMAT),
+      formatted: `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`,
     };
   }
 
@@ -196,6 +220,7 @@ export class TelemetryService {
       currentDB = this.generateTelemetryDBName(today);
     }
 
+    await this.indexedDbService.saveDatabaseName(currentDB); // Firefox support.
     return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
   }
 
@@ -225,6 +250,7 @@ export class TelemetryService {
         const db = this.windowRef.PouchDB(dbName);
         await this.aggregate(db, dbName);
         await db.destroy();
+        await this.indexedDbService.deleteDatabaseName(dbName); // Firefox support.
       } catch (error) {
         console.error('Error when aggregating the telemetry records', error);
       } finally {
@@ -287,12 +313,16 @@ export class TelemetryService {
     if (value === undefined) {
       value = 1;
     }
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      console.error(new Error(`Invalid telemetry value "${value}" for key "${key}"`));
+      return;
+    }
 
     try {
       const today = this.getToday();
-      const databases = await this.windowRef?.indexedDB?.databases();
-      await this.deleteDeprecatedTelemetryDB(databases);
-      const telemetryDBs = await this.getTelemetryDBs(databases);
+      const databaseNames = await this.indexedDbService.getDatabaseNames();
+      await this.deleteDeprecatedTelemetryDB(databaseNames);
+      const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
       await this
@@ -310,19 +340,20 @@ export class TelemetryService {
    * It was decided to not aggregate the DB content.
    * @private
    */
-  private async deleteDeprecatedTelemetryDB(databases) {
+  private async deleteDeprecatedTelemetryDB(databaseNames) { //NOSONAR
     if (this.hasTransitionFinished) {
       return;
     }
 
-    databases?.forEach(db => {
-      const nameNoPrefix = db.name?.replace(this.POUCH_PREFIX, '') || '';
+    databaseNames?.forEach(dbName => {
+      const nameNoPrefix = dbName?.replace(this.POUCH_PREFIX, '') || '';
 
-      // Skips new Telemetry DB, then matches the old deprecated Telemetry DB.
-      if (!nameNoPrefix.startsWith(this.TELEMETRY_PREFIX)
+      // Skips new Telemetry DB, then matches malformed or the old deprecated Telemetry DB.
+      if (!this.isValidTelemetryDBName(nameNoPrefix)
         && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
         && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
-        this.windowRef?.indexedDB.deleteDatabase(db.name);
+        console.warn(`Invalid telemetry database name, deleting database. Name: ${nameNoPrefix}`);
+        this.windowRef?.indexedDB.deleteDatabase(dbName);
       }
     });
 
