@@ -105,7 +105,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
 
     this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
-
     this.refreshTasks();
   }
 
@@ -155,9 +154,6 @@ export class TasksComponent implements OnInit, OnDestroy {
 
       this.tasksActions.setTasksList(hydratedTasks);
 
-      if (!this.tasksLoaded) {
-        this.tasksActions.setTasksLoaded(true);
-      }
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
@@ -165,10 +161,14 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
+      const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
       this.trackPerformance?.stop({
-        name: this.tasksLoaded ? 'tasks:refresh' : 'tasks:load',
-        recordApdex: !this.tasksLoaded,
+        name: performanceName,
+        recordApdex: true,
       });
+      if (!this.tasksLoaded) {
+        this.tasksActions.setTasksLoaded(true);
+      }
     }
   }
 
