@@ -1,4 +1,4 @@
-const photoUpload = require('@page-objects/default/enketo/photo-upload.wdio.page');
+const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
@@ -18,10 +18,10 @@ describe('Submit Photo Upload form', () => {
   beforeEach(async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('photo-upload', false);
-    await photoUpload.selectImage(path.join(__dirname, '/images/photo-for-upload-form.png'));
-    await (photoUpload.imagePreview()).waitForDisplayed();
+    await enketoWidgetsPage.selectImage('photo-upload', path.join(__dirname, '/images/photo-for-upload-form.png'));
+    await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
-    await (await photoUpload.reportImagePreview()).waitForDisplayed();
+    await (await enketoWidgetsPage.reportImagePreview()).waitForDisplayed();
   });
 
   it('submit and edit (no changes)', async () => {
@@ -31,10 +31,10 @@ describe('Submit Photo Upload form', () => {
 
     await reportsPage.openReport(reportId);
     await reportsPage.editReport();
-    await (photoUpload.imagePreview()).waitForDisplayed();
+    await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
 
-    await (await photoUpload.reportImagePreview()).waitForDisplayed();
+    await (await enketoWidgetsPage.reportImagePreview()).waitForDisplayed();
     const updatedReport = await utils.getDoc(reportId);
     expect(updatedReport.fields).excludingEvery(['instanceID', 'meta']).to.deep.equal(initialReport.fields);
     expect(updatedReport._attachments).excludingEvery('revpos').to.deep.equal(initialReport._attachments);
@@ -48,12 +48,12 @@ describe('Submit Photo Upload form', () => {
 
     await reportsPage.openReport(reportId);
     await reportsPage.editReport();
-    await (photoUpload.imagePreview()).waitForDisplayed();
-    await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/layers.png'));
-    await (photoUpload.imagePreview()).waitForDisplayed();
+    await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
+    await enketoWidgetsPage.selectImage('photo-upload', path.join(__dirname, '../../../../webapp/src/img/layers.png'));
+    await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
 
-    await (await photoUpload.reportImagePreview()).waitForDisplayed();
+    await (await enketoWidgetsPage.reportImagePreview()).waitForDisplayed();
     const updatedReport = await utils.getDoc(reportId);
     expect(updatedReport.fields).excludingEvery(['instanceID', 'meta']).not.to.deep.equal(initialReport.fields);
     expect(updatedReport._attachments).excludingEvery('revpos').not.to.deep.equal(initialReport._attachments);

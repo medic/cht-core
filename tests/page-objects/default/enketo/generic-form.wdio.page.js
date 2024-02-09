@@ -66,13 +66,6 @@ const getFormTitle = async () => {
   return await (await formTitle()).getText();
 };
 
-const selectYesNoOption = async (selector, value = 'yes') => {
-  const element = await $(`${selector}[value="${value}"]`);
-  await element.waitForDisplayed();
-  await element.click();
-  return value === 'yes';
-};
-
 const getDBObjectWidgetValues = async (field) => {
   const widget = $(`[data-contains-ref-target="${field}"] .selection`);
   await (await widget).waitForClickable();
@@ -107,6 +100,5 @@ module.exports = {
   submitForm,
   currentFormView,
   formTitle,
-  selectYesNoOption,
   getDBObjectWidgetValues,
 };
