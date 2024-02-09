@@ -147,10 +147,11 @@ const localDockerComposeFiles = () => {
 };
 
 const saveServiceTags = () => {
-  const tags = [...versions.SERVICES, ...versions.INFRASTRUCTURE].map(service => ({
-    container_name: `cht-${service}`,
-    image: versions.getImageTag(service, true),
-  }));
+  const tags = [...versions.SERVICES, ...versions.MULTIPLATFORM_INFRASTRUCTURE, ...versions.INFRASTRUCTURE]
+    .map(service => ({
+      container_name: `cht-${service}`,
+      image: versions.getImageTag(service, true),
+    }));
   const tagsFilePath = path.resolve(stagingPath, 'tags.json');
   fs.writeFileSync(tagsFilePath, JSON.stringify(tags));
 };
@@ -228,8 +229,17 @@ const buildImages = async () => {
   }
 };
 
+const buildMultiPlatformImages = async () => {
+  for (const service of versions.MULTIPLATFORM_INFRASTRUCTURE) {
+    console.log(`\n\nBuilding multiplatform docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['buildx', 'build', '--platform=linux/amd64,linux/arm64',
+      '-f', `./Dockerfile`, '--tag', tag, '.'], { cwd: service });
+  }
+};
+
 const saveServiceImages = async () => {
-  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
+  for (const service of [...versions.SERVICES, ...versions.MULTIPLATFORM_INFRASTRUCTURE, ...versions.INFRASTRUCTURE]) {
     console.log(`\n\nSaving docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('docker', ['save', tag, '-o', `images/${service}.tar`]);
@@ -237,7 +247,7 @@ const saveServiceImages = async () => {
 };
 
 const pushServiceImages = async () => {
-  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
+  for (const service of [...versions.SERVICES, ...versions.MULTIPLATFORM_INFRASTRUCTURE, ...versions.INFRASTRUCTURE]) {
     console.log(`\n\nPushing docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('docker', ['push', tag]);
@@ -265,6 +275,7 @@ module.exports = {
   updateServiceWorker,
   buildServiceImages,
   buildImages,
+  buildMultiPlatformImages,
   saveServiceImages,
   pushServiceImages,
   publishServiceImages

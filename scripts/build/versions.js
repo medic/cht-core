@@ -58,5 +58,6 @@ module.exports = {
   getVersion,
   getRepo,
   SERVICES: ['api', 'sentinel'],
-  INFRASTRUCTURE: ['couchdb', 'haproxy', 'haproxy-healthcheck', 'nginx'],
+  MULTIPLATFORM_INFRASTRUCTURE: ['couchdb'],
+  INFRASTRUCTURE: ['haproxy', 'haproxy-healthcheck', 'nginx'],
 };
