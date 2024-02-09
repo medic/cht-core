@@ -705,6 +705,7 @@ describe('TasksContentComponent', () => {
       });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
         name: 'enketo:tasks:the form id:add:save',
+        recordApdex: true,
       });
     });
   });

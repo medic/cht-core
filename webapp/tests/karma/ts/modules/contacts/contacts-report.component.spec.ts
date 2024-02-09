@@ -254,6 +254,7 @@ describe('contacts report component', () => {
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
         name: 'enketo:contacts:pregnancy_danger_sign:add:save',
+        recordApdex: true,
       });
       expect(setEnketoError.callCount).to.equal(0);
       expect(setSnackbarContent.callCount).to.equal(1);

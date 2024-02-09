@@ -310,6 +310,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
             this.trackSave?.stop({
               name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
+              recordApdex: true,
             });
 
             this.translateService
