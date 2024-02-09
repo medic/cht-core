@@ -64,6 +64,10 @@ jobs:
     - run: npm ci
     - name: Compile
       run: npm run ci-compile
+    - name: Setup QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Setup Buildx
+      uses: docker/setup-buildx-action@v3
     - name: Publish for testing
       run: npm run publish-for-testing
     - name: Upload docker images as artifacts
