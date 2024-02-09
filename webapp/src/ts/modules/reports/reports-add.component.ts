@@ -306,6 +306,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       .then(() => {
         this.trackSave?.stop({
           name: [ 'enketo', 'reports', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
+          recordApdex: true,
         });
       })
       .catch((err) => {

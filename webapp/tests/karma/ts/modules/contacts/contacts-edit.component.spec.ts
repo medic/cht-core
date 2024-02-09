@@ -662,6 +662,7 @@ describe('ContactsEdit component', () => {
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
         name: 'enketo:contacts:clinic_create_form_id:add:save',
+        recordApdex: true,
       });
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
@@ -716,6 +717,7 @@ describe('ContactsEdit component', () => {
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
         name: 'enketo:contacts:person_edit_form_id:edit:save',
+        recordApdex: true,
       });
     });
 
@@ -763,6 +765,7 @@ describe('ContactsEdit component', () => {
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
         name: 'enketo:contacts:patient_create_form_id:edit:save',
+        recordApdex: true,
       });
     });
   });

@@ -25,23 +25,33 @@ export class PerformanceService {
     }
     const startTime = this.document.defaultView.performance.now();
     return {
-      stop: (options: Options) => this.recordPerformance(startTime, options),
+      stop: (options: Options) => this.stopTracking(startTime, options),
     };
   }
 
-  /**
-   * Records Telemetry entry
-   * @param startTime   Process start time in milliseconds
-   * @param name        Telemetry entry's name
-   * @param recordApdex If true, record the Apdex as additional Telemetry entry
-   * @private
-   */
-  private async recordPerformance(startTime:number, { name, recordApdex = false }:Options) {
-    if (!name || !this.document?.defaultView) {
+  private async stopTracking(startTime: number, options: Options) {
+    if (!this.document?.defaultView) {
       return;
     }
 
     const duration = Math.round(this.document.defaultView.performance.now() - startTime);
+    await this.recordPerformance(options, duration);
+  }
+
+  /**
+   * Records Telemetry entry
+   * Prefer using the track() function. Only use recordPerformance() in cases where the track()
+   * can't be called, for example: bootstrap times because these are recorded before Angular has initiated.
+   * @param name        Telemetry entry's name
+   * @param recordApdex If true, record the Apdex as additional Telemetry entry
+   * @param duration    Time in milliseconds that the process took to complete.
+   * @private
+   */
+  async recordPerformance({ name, recordApdex = false }: Options, duration = 0) {
+    if (!name) {
+      return;
+    }
+
     await this.telemetryService.record(name, duration);
 
     if (recordApdex) {

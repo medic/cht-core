@@ -338,6 +338,7 @@ describe('Reports Add Component', () => {
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
         name: 'enketo:reports:a_form:add:save',
+        recordApdex: true,
       });
     }));
 

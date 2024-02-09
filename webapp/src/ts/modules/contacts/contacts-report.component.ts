@@ -229,6 +229,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         this.globalActions.setEnketoEditedStatus(false);
         this.trackSave?.stop({
           name: [ 'enketo', 'contacts', this.trackMetadata.form, 'add', 'save' ].join(':'),
+          recordApdex: true,
         });
 
         this.router.navigate(['/contacts', this.routeSnapshot.params.id]);

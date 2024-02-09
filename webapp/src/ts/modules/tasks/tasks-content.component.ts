@@ -339,6 +339,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       .then(() => {
         this.trackSave?.stop({
           name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'save' ].join(':'),
+          recordApdex: true,
         });
       })
       .catch((err) => {
