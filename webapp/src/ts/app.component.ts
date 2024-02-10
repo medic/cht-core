@@ -679,7 +679,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.telemetryService.record('boot_time:purging_meta_failed');
     } else {
       // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
-      this.telemetryService.record(`boot_time:purging_meta:${window.startupTimes.purgingMeta}`);
+      this.telemetryService.record(`boot_time:purging_meta:${!!window.startupTimes.purgingMeta}`);
     }
 
     if (window.startupTimes.purgeMeta) {
