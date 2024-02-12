@@ -185,6 +185,7 @@ describe('routing', () => {
 
         const { BRANCH, TAG } = process.env;
         const isBranchBuild = BRANCH && !TAG;
+
         const deployInfo = {
           ...ddoc.deploy_info,
           ...ddoc.build_info,
