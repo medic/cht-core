@@ -234,12 +234,12 @@ const buildMultiPlatformImages = async () => {
     console.log(`\n\nBuilding multiplatform docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('docker', ['buildx', 'build', '--platform=linux/amd64,linux/arm64',
-      '-f', `./Dockerfile`, '--tag', tag, '.'], { cwd: service });
+      '-f', `./Dockerfile`, '--tag', tag, '--push', '.'], { cwd: service });
   }
 };
 
 const saveServiceImages = async () => {
-  for (const service of [...versions.SERVICES, ...versions.MULTIPLATFORM_INFRASTRUCTURE, ...versions.INFRASTRUCTURE]) {
+  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
     console.log(`\n\nSaving docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('docker', ['save', tag, '-o', `images/${service}.tar`]);
@@ -247,7 +247,7 @@ const saveServiceImages = async () => {
 };
 
 const pushServiceImages = async () => {
-  for (const service of [...versions.SERVICES, ...versions.MULTIPLATFORM_INFRASTRUCTURE, ...versions.INFRASTRUCTURE]) {
+  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
     console.log(`\n\nPushing docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('docker', ['push', tag]);
