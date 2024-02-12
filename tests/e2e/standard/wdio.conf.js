@@ -11,7 +11,6 @@ chai.use(require('chai-exclude'));
 const standardConfig = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
-      './**/*.wdio-spec.js'
     ]
   },
 

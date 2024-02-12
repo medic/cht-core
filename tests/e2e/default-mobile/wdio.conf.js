@@ -9,12 +9,7 @@ const MOBILE_CHROME_VERSION = '118.0.5993.112';
 exports.config = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
-      './**/*.wdio-spec.js',
-      [
-        '../default/login/login-logout.wdio-spec.js',
-        '../default/navigation/navigation.wdio-spec.js',
-        '../default/navigation/hamburger-menu.wdio-spec.js',
-      ],
+      'contacts/barcode-search-contacts.wdio-spec.js',
     ]
   },
   beforeSuite: async () => {

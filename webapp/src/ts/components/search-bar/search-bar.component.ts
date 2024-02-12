@@ -160,17 +160,21 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   }
 
   private async canShowBarcodeScanner() {
+    console.info('TESTING!!!!!- !this.showBarcodeScanner', !this.showBarcodeScanner);
     if (!this.showBarcodeScanner) {
       return false;
     }
 
     const canUseBarcodeScanner = !this.sessionService.isAdmin() && await this.authService.has(CAN_USE_BARCODE_SCANNER);
+    console.info('TESTING!!!!!- !canUseBarcodeScanner', canUseBarcodeScanner);
     if (!canUseBarcodeScanner) {
       return false;
     }
 
     this.barcodeTypes = await this.windowRef.BarcodeDetector?.getSupportedFormats();
-
+    console.info('TESTING!!!!!- !(\'BarcodeDetector\' in this.windowRef)', !('BarcodeDetector' in this.windowRef));
+    console.info('TESTING!!!!!- !this.barcodeTypes?.length', !this.barcodeTypes?.length);
+    console.info('TESTING!!!!!- isDesktopUserAgent', this.browserDetectorService.isDesktopUserAgent());
     if (
       !('BarcodeDetector' in this.windowRef)
       || !this.barcodeTypes?.length

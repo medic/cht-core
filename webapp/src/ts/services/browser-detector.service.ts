@@ -53,6 +53,7 @@ export class BrowserDetectorService {
   }
 
   isDesktopUserAgent() {
+    console.info('TESTING!!!!!- isDesktopUserAgent', this.parser.getPlatformType(true));
     return this.parser.getPlatformType(true) === 'desktop';
   }
 }
