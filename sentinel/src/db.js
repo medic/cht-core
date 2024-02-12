@@ -1,6 +1,5 @@
 const logger = require('../src/lib/logger');
 const request = require('request-promise-native');
-const PouchDB = require("pouchdb-core");
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
