@@ -1,5 +1,6 @@
 const logger = require('../src/lib/logger');
 const request = require('request-promise-native');
+const PouchDB = require("pouchdb-core");
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
@@ -54,6 +55,7 @@ if (UNIT_TEST_ENV) {
 } else if (COUCH_URL) {
   const PouchDB = require('pouchdb-core');
   PouchDB.plugin(require('pouchdb-adapter-http'));
+  PouchDB.plugin(require('pouchdb-session-authentication'));
   PouchDB.plugin(require('pouchdb-mapreduce'));
   PouchDB.plugin(require('pouchdb-replication'));
 
