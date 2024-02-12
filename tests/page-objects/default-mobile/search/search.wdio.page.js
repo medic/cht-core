@@ -16,7 +16,14 @@ const performBarcodeSearch = async (barcodeImagePath) => {
   // then we need to manipulate the DOM of the respective element to make it interactable.
   await browser.pause(2000);
   await browser.execute(function () {
-    document.getElementsByClassName('barcode-scanner-input')[0].style.display = 'block';
+    const elements = document.getElementsByClassName('barcode-scanner-input');
+    if (elements[0]?.style?.display) {
+      console.warn('TESTING!!!!!- input found');
+      elements[0].style.display = 'block';
+    } else {
+      console.warn('TESTING!!!!!- input not found');
+    }
+
   });
   await (await barcodeSearchInput()).setValue(barcodeImagePath);
   // await browser.pause(2000);
