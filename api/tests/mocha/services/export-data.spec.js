@@ -359,7 +359,10 @@ describe('Export Data Service', () => {
           user: 'admin-central-2',
           deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
           date: '2022-11-21',
-          webview: '107.0',
+          browser: {
+            name: 'Chrome',
+            version: '107.0.0.0',
+          },
           apk: undefined,
           android: undefined,
           cht: 'unknown',
@@ -369,7 +372,10 @@ describe('Export Data Service', () => {
           user: 'chw1',
           deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
           date: '2022-11-29',
-          webview: '88.0',
+          browser: {
+            name: 'Chrome',
+            version: '88.0.4324.181',
+          },
           apk: 'v1.0.4-4',
           android: '10',
           cht: 'unknown',
