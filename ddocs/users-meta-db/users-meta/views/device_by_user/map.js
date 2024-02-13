@@ -9,10 +9,9 @@ function(doc) {
     doc.metadata.versions &&
     doc.device
   ) {
+    const pad = number => number.toString().padStart(2, '0');
     emit(doc.metadata.user, {
-      date: doc.metadata.year + '-' +
-        doc.metadata.month.toString().padStart(2, '0') + '-' +
-        doc.metadata.day.toString().padStart(2, '0'),
+      date: `${doc.metadata.year}-${pad(doc.metadata.month)}-${pad(doc.metadata.day)}`,
       id: doc._id,
       device: {
         deviceId: doc.metadata.deviceId,
