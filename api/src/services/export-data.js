@@ -8,7 +8,7 @@ const MAPPERS = {
   contacts: require('./export/contact-mapper'),
   messages: require('./export/message-mapper'),
   feedback: require('./export/feedback-mapper'),
-  'user-devices': require('./export/user-devices-mapper'),
+  'user-devices': require('./export/user-devices'),
 };
 
 const joinLine = (csvLine) => csvLine.join(',') + '\n';
