@@ -183,11 +183,13 @@ describe('routing', () => {
           `"${deployInfoOffline.version}" is not valid semver`,
         ).to.be.ok;
 
-        const { BRANCH } = process.env;
+        const { BRANCH, TAG } = process.env;
+        const isBranchBuild = BRANCH && !TAG;
+
         const deployInfo = {
           ...ddoc.deploy_info,
           ...ddoc.build_info,
-          version: BRANCH ? ddoc.build_info.build : ddoc.build_info.version
+          version: isBranchBuild ? ddoc.build_info.build : ddoc.build_info.version
         };
         // for historical reasons, for a branch the version in the ddoc is the branch name.
         expect(deployInfoOnline).to.deep.equal(deployInfo);
