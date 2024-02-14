@@ -115,7 +115,7 @@ const changeUserPass = async (user, postOptions) => {
   };
   postOptions.uri = `${options.uri}/${user}`;
   try {
-    if(admins.includes(user)){
+    if (admins.includes(user)) {
       throw adminError;
     }
     await rpn.post(postOptions);
