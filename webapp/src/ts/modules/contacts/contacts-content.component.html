@@ -50,7 +50,7 @@
 
         <ng-container *ngIf="selectedContact?.summary">
           <div *ngFor="let card of selectedContact?.summary?.cards">
-            <div class="card" [attr.test-id]="card.label">
+            <div class="compact-card" [attr.test-id]="card.label">
               <div class="action-header cell">
                 <h3>{{card.label | translate}}</h3>
               </div>
