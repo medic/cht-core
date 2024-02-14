@@ -72,7 +72,7 @@
         </ng-container>
       </div>
 
-      <div class="card children" [ngClass]="group?.type?.person ? 'persons' : 'places'" *ngFor="let group of selectedContact?.children">
+      <div class="compact-card children" [ngClass]="group?.type?.person ? 'persons' : 'places'" *ngFor="let group of selectedContact?.children">
         <div class="action-header cell">
           <div class="col-xs-10">
             <h3>{{group?.type?.group_key | translate}}</h3>
@@ -107,7 +107,7 @@
       </div>
 
       <div *ngIf="selectedContact?.tasks" mmAuth="can_view_tasks">
-        <div class="card tasks">
+        <div class="compact-card tasks">
           <div class="action-header cell">
             <h3>{{'Tasks' | translate}}</h3>
             <span class="table-filter">
@@ -139,7 +139,7 @@
       </div>
 
       <div mmAuth="can_view_reports">
-        <div class="card reports">
+        <div class="compact-card reports">
           <div class="action-header cell">
             <h3>{{'Reports' | translate}}</h3>
             <span class="table-filter">

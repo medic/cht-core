@@ -92,7 +92,8 @@ mm-panel-header {
 }
 
 .material {
-  .card {
+  .card,
+  .compact-card {
     border: 1px solid @separator-color;
     background-color: white;
     margin-bottom: 16px;
@@ -271,6 +272,11 @@ mm-panel-header {
       border-left: 0;
       border-right: 0;
     }
+    .compact-card {
+      margin-left: 10px;
+      margin-right: 10px;
+      border-radius: @radius-size-small;
+    }
     .heading img {
       float: left;
     }
@@ -284,6 +290,7 @@ mm-panel-header {
       margin-right: 0;
     }
   }
+
   #snackbar .snackbar-content {
     width: 100%;
     min-width: 100%;
