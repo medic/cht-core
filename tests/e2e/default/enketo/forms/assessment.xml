@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <h:head>
+        <model>
+            <instance>
+                <data id="person" version="1">
+                    <name/>
+                    <today/>
+                    <meta><instanceID/></meta>
+                </data>
+            </instance>
+            <bind nodeset="/data/name" type="string"/>
+            <!-- Calculate with value that changes - https://github.com/medic/cht-core/issues/7910 -->
+            <bind nodeset="/data/today" type="string" calculate="now()"/>
+        </model>
+    </h:head>
+    <h:body>
+        <input ref="/data/name">
+            <label>Person name:</label>
+        </input>
+    </h:body>
+</h:html>

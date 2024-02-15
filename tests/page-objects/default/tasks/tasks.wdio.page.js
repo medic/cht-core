@@ -78,13 +78,9 @@ const waitForTaskContentLoaded = async (name) => {
   }, { timeout: 2000 });
 };
 
-const submitTask = async () => {
+const getOpenTaskElement = async () => {
   const emissionId = (await browser.getUrl()).split('/').slice(-1)[0];
-  const taskLi = await getTaskById(emissionId);
-  const submitButton = await $(`${taskFormSelector} button.btn.submit`);
-  await submitButton.waitForDisplayed();
-  await submitButton.click();
-  await taskLi.waitForDisplayed({ reverse: true });
+  return getTaskById(emissionId);
 };
 
 const waitForTasksGroupLoaded = async () => {
@@ -112,7 +108,7 @@ module.exports = {
   waitForTaskContentLoaded,
   getTaskInfo,
   getTasksListInfos,
-  submitTask,
+  getOpenTaskElement,
   waitForTasksGroupLoaded,
   getTasksInGroup,
   noSelectedTask,
