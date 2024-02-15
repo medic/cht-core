@@ -5,9 +5,7 @@ function(doc) {
     doc.metadata.user &&
     doc.metadata.year &&
     doc.metadata.month &&
-    doc.metadata.day &&
-    doc.metadata.versions &&
-    doc.device
+    doc.metadata.day
   ) {
     const pad = number => number.toString().padStart(2, '0');
     emit(doc.metadata.user, {
@@ -15,12 +13,15 @@ function(doc) {
       id: doc._id,
       device: {
         deviceId: doc.metadata.deviceId,
-        userAgent: doc.device.userAgent,
+        userAgent: doc.device && doc.device.userAgent,
         versions: {
-          apk: doc.device.deviceInfo.app ? doc.device.deviceInfo.app.version : undefined,
-          android: doc.device.deviceInfo.software ? doc.device.deviceInfo.software.androidVersion : undefined,
-          cht: doc.metadata.versions.app,
-          settings: doc.metadata.versions.settings,
+          apk: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.app && doc.device.deviceInfo.app.version,
+          android: doc.device
+            && doc.device.deviceInfo
+            && doc.device.deviceInfo.software
+            && doc.device.deviceInfo.software.androidVersion,
+          cht: doc.metadata.versions && doc.metadata.versions.app,
+          settings: doc.metadata.versions && doc.metadata.versions.settings,
         },
       },
     });
