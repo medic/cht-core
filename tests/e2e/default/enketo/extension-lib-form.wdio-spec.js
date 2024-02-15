@@ -21,7 +21,7 @@ describe('Extension lib xpath function', () => {
     await loginPage.cookieLogin();
     await commonPage.goToReports();
 
-    await commonPage.openFastActionReport(/*extensionLibsPage.INTERNAL_ID*/'extension-lib-average-calculator', false);
+    await commonPage.openFastActionReport('extension-lib-average-calculator', false);
 
     await commonEnketoPage.setInputValue('first', 5);
     await commonEnketoPage.setInputValue('second', 8);
