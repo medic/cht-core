@@ -43,7 +43,6 @@ describe('Contact Delivery Form', () => {
   });
 
   const prepareDeliveryScenarios = async (pregnantWomanId) => {
-    console.log('***** PREGNANT WOMAN ID: '+pregnantWomanId);
     await commonPage.goToPeople(pregnantWomanId);
     await commonPage.openFastActionReport('pregnancy');
     await pregnancyForm.submitDefaultPregnancy();
