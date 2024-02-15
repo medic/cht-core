@@ -1,6 +1,7 @@
 require('chai').should();
 
 const db = require('../../../src/db');
+const logger = require('../../../src/logger');
 const service = require('../../../src/services/export-data');
 const sinon = require('sinon');
 
@@ -351,6 +352,23 @@ describe('Export Data Service', () => {
             },
           },
         },
+        {
+          key: 'min-data',
+          value: {
+            date: '2022-11-29',
+            id: 'telemetry-1970-01-01-min-data-b1c172d8-82b0-42fd-8401-313796b8c801',
+            device: {
+              deviceId: undefined,
+              userAgent: undefined,
+              versions: {
+                apk: undefined,
+                android: undefined,
+                cht: undefined,
+                settings: undefined,
+              },
+            },
+          },
+        },
       ];
       sinon.stub(db.medicUsersMeta, 'query').resolves({ rows });
       const actual = await service.exportObject('user-devices');
@@ -380,9 +398,90 @@ describe('Export Data Service', () => {
           android: '10',
           cht: 'unknown',
           settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+        },
+        {
+          android: undefined,
+          apk: undefined,
+          browser: {
+            name: undefined,
+            version: undefined
+          },
+          cht: undefined,
+          date: '2022-11-29',
+          deviceId: undefined,
+          settings: undefined,
+          user: 'min-data'
         }
       ]);
     });
+  });
+
+  it('handles invalid user agents', async () => {
+    const rows = [
+      {
+        key: 'admin-central-2',
+        value: {
+          date: '2022-11-21',
+          id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
+          device: {
+            deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
+            userAgent: 'Not a real user agent',
+            versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
+          },
+        },
+      },
+      {
+        key: 'chw1',
+        value: {
+          date: '2022-11-29',
+          id: 'telemetry-2022-11-29-chw1-b1c172d8-82b0-42fd-8401-313796b8c801',
+          device: {
+            deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
+            userAgent: { will: 'cause an error' },
+            versions: {
+              apk: 'v1.0.4-4',
+              android: '10',
+              cht: 'unknown',
+              settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+            },
+          },
+        },
+      },
+    ];
+    sinon.stub(db.medicUsersMeta, 'query').resolves({ rows });
+    sinon.spy(logger, 'error');
+    const actual = await service.exportObject('user-devices');
+    actual.should.deep.equal([
+      {
+        user: 'admin-central-2',
+        deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
+        date: '2022-11-21',
+        browser: {
+          name: undefined,
+          version: undefined,
+        },
+        apk: undefined,
+        android: undefined,
+        cht: 'unknown',
+        settings: '4-83c8561a13479b245b295e97401f2f55'
+      },
+      {
+        user: 'chw1',
+        deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
+        date: '2022-11-29',
+        browser: {
+          name: undefined,
+          version: undefined,
+        },
+        apk: 'v1.0.4-4',
+        android: '10',
+        cht: 'unknown',
+        settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+      }
+    ]);
+    logger.error.callCount.should.equal(1);
+    logger.error.args[0][0].should
+      .satisfy(msg => msg.startsWith('Error parsing user agent "{"will":"cause an error"}":'));
   });
 
   describe('Handle error', () => {
