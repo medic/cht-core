@@ -11,7 +11,7 @@ welcome_message(){
 
 main(){
   welcome_message
-  node /service/api/server.js
+  node --inspect=0.0.0.0:9229 --expose-gc /service/api/server.js
 }
 
 "$@"

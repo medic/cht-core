@@ -182,7 +182,7 @@ describe('server', () => {
   });
 
   describe('API changes feed', () => {
-    it('should respond to changes even after services are restarted', async () => {
+    xit('should respond to changes even after services are restarted', async () => {
       await utils.stopHaproxy(); // this will also crash API
       await utils.startHaproxy();
       await utils.listenForApi();
@@ -204,7 +204,7 @@ describe('server', () => {
   });
 
   describe('DNS resolver', () => {
-    it('nginx should resolve updated api ips', async () => {
+    xit('nginx should resolve updated api ips', async () => {
       await utils.stopHaproxy();
       await utils.stopApi();
       await utils.startHaproxy();

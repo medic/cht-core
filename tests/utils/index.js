@@ -1019,6 +1019,7 @@ const prepServices = async (defaultSettings) => {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+  await request('/memory');
 };
 
 const saveBrowserLogs = () => {
@@ -1069,8 +1070,14 @@ const saveLogs = async () => {
 
 const tearDownServices = async () => {
   await saveLogs();
+  try {
+    await request('/memory');
+  } catch (err) {
+    console.warn(err);
+  }
+
   if (!DEBUG) {
-    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+    //await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
   }
 };
 

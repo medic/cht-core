@@ -688,8 +688,8 @@ export class FormatDataRecordService {
   }
 
   private _format(doc) {
-    const patientId = doc.patient_id || doc.fields?.patient_id;
-    const placeId = doc.place_id || doc.fields?.place_id;
+    const patientId = (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) || doc.patient_id;
+    const placeId = (doc.fields && doc.fields.place_id) || doc.place_id;
 
     return Promise
       .all([

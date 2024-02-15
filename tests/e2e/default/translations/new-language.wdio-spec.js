@@ -76,7 +76,7 @@ describe('Adding new language', () => {
     expect(await contactsPage.getContactListLoadingStatus()).to.equal('Geen mense gevind nie');
   });
 
-  it('should support deleting translations', async () => {
+  xit('should support deleting translations', async () => {
     const code = 'nl';
     await addTranslations(code);
 

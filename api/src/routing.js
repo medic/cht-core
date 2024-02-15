@@ -244,6 +244,33 @@ app.get('/dbinfo', connectedUserLog, (req, res) => {
   proxy.web(req, res);
 });
 
+const inspector = require('node:inspector');
+const fs = require('node:fs');
+
+app.get('/memory', async (req, res) => {
+  global.gc()
+  const session = new inspector.Session();
+  const fd = fs.openSync(`profile.${Date.now()}.heapsnapshot`, 'w');
+
+  session.connect();
+
+  session.on('HeapProfiler.addHeapSnapshotChunk', (m) => {
+    fs.writeSync(fd, m.params.chunk);
+  });
+
+
+  session.post('HeapProfiler.takeHeapSnapshot', null, (err, r) => {
+    if (err) {
+      throw err;
+    }
+    console.log('HeapProfiler.takeHeapSnapshot done:', r);
+    session.disconnect();
+    fs.closeSync(fd);
+    res.send('HeapProfiler.takeHeapSnapshot done');
+  });
+
+});
+
 app.get(
   [`/medic/_design/medic/_rewrite/`, appPrefix],
   (req, res) => res.sendFile(path.join(environment.webappPath, 'appcache-upgrade.html'))
