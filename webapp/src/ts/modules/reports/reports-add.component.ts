@@ -168,13 +168,14 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private renderAttachmentPreviews(model) {
+    // TO REVIEWER: Does the Promise.resolve() do anything here?
     return Promise
       .resolve()
       .then(() => Promise
         .all($('#report-form input[type=file]')
           .map((idx, element) => {
             const $element = $(element);
-            const attachmentName = 'user-file' + $element.attr('name');
+            const attachmentName = 'user-file-' + $element.data('loaded-file-name'); // TODO need to also check the legacy file name
 
             return this.dbService
               .get()
@@ -190,7 +191,14 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
                 const $preview = $picker.find('.file-preview');
                 $preview.empty();
                 $preview.append('<img src="data:' + base64 + '">');
-              });
+              })
+              .catch(e => {
+                if (e.status === 404) {
+                  console.error('Attachment not found');
+                } else {
+                  throw e;
+                }
+              })
           })));
   }
 
