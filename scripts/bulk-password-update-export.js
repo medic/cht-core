@@ -1,6 +1,5 @@
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0;
-const rpn = require('request-promise-native');
 const minimist = require('minimist');
 const {promises: fsPromises} = require('fs');
 const { areYouSure, changeUserPass, generatePassword } = require('./bulk-password-functions.js');
