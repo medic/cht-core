@@ -129,8 +129,8 @@ const loadUsers = async () => {
 
 
 // Thanks https://stackoverflow.com/a/40672956
-String.prototype.splitCSV = function() {
-  let matches = this.match(/(\s*"[^"]+"\s*|\s*[^,]+|,)(?=,|$)/g);
+const splitCSV = async (string) => {
+  let matches = string.match(/(\s*"[^"]+"\s*|\s*[^,]+|,)(?=,|$)/g);
   for (let n = 0; n < matches.length; ++n) {
     matches[n] = matches[n].trim();
     if (matches[n] === ',') matches[n] = '';
@@ -142,7 +142,7 @@ const getUserAndPassword = async (user) => {
   let newPass;
   let newUser = user;
   if ( argv.use_passes === 'true') {
-    const user_array = user.splitCSV();
+    const user_array = await splitCSV(user);
     if ( user_array[0] && user_array[1] ){
       newUser = user_array[0].toString().trim();
       // regexp removes quotes only from first and last chars
