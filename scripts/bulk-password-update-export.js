@@ -71,7 +71,6 @@ Do you want to continue? [y/N]
 
 const changeUserPass = async (user, password, options) => {
   const admins = ['admin', 'medic'];
-  const adminError = new Error('403 - Cannot change password for "medic" or "admin" users.');
   const postOptions = {...options};
   postOptions.body = {
     'password': password
@@ -79,7 +78,7 @@ const changeUserPass = async (user, password, options) => {
   postOptions.uri = `${options.uri}/${user}`;
   try {
     if (admins.includes(user)) {
-      throw adminError;
+      throw new Error('403 - Cannot change password for "medic" or "admin" users.');
     }
     await rpn.post(postOptions);
     console.log('SUCCESS', user, password);
@@ -96,9 +95,9 @@ const generatePassword = async () => {
   const NUMS = '0123456789';
   const rando = (chars) => {
     return Array(CHAR_COUNT)
-        .fill('')
-        .map(() => chars.charAt(randomInt(chars.length - 1)))
-        .join('');
+      .fill('')
+      .map(() => chars.charAt(randomInt(chars.length - 1)))
+      .join('');
   };
 
   // thanks https://stackoverflow.com/a/3943985 & https://stackoverflow.com/a/6274381
