@@ -175,7 +175,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         .all($('#report-form input[type=file]')
           .map((idx, element) => {
             const $element = $(element);
-            const attachmentName = 'user-file-' + $element.data('loaded-file-name'); // TODO need to also check the legacy file name
+            // TODO need to also check the legacy file name
+            const attachmentName = 'user-file-' + $element.data('loaded-file-name');
 
             return this.dbService
               .get()
@@ -198,7 +199,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
                 } else {
                   throw e;
                 }
-              })
+              });
           })));
   }
 
