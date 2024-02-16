@@ -233,7 +233,7 @@ const buildMultiPlatformImages = async () => {
   for (const service of versions.MULTIPLATFORM_INFRASTRUCTURE) {
     console.log(`\n\nBuilding multiplatform docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
-    await exec('docker', ['buildx', 'build', '--platform=linux/amd64,linux/arm64',
+    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=linux/amd64,linux/arm64',
       '-f', `./Dockerfile`, '--tag', tag, '--push', '.'], { cwd: service });
   }
 };
