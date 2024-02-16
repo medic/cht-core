@@ -11,8 +11,8 @@ const argv = minimist(process.argv.slice(2), {
   }
 });
 
-if (argv.h|| !argv.url || !argv.user || !argv.password) {
-  console.log(`Change passwords of users in user-password-change.txt to random value, show results on screen 
+if (argv.h|| !argv.url || !argv.user || !argv.password || !argv.use_passes) {
+  console.log(`Change passwords of users in user-password-change.txt, show results on screen 
 
 Usage:
       node bulk-password-update-export.js -h | --help
@@ -23,6 +23,9 @@ Options:
     --url         The url for the instance being changed
     --user        The admin user this operation is run as
     --password    The password for the admin user 
+    --use_passes  The passwords are in user-password-change.txt in or not. 
+                  "true" - yes they're there in USER, PASSWORD format
+                  "false" - no, no password, just usernames, one per line. Generate a random password for me.
 
 `);
   process.exit(0);
@@ -68,8 +71,17 @@ const execute = async () => {
   }
 
   const postOptions = {...options};
-  for (const user of users) {
-    const newPass = await generatePassword();
+  for (let user of users) {
+    let newPass;
+    if ( argv.use_passes === 'true') {
+      const user_array = user.toString().split(',');
+      if ( user_array[0] && user_array[1] ){
+        user = user_array[0].toString().trim();
+        newPass = user_array[1].toString().trim();
+      }
+    } else {
+      newPass = await generatePassword();
+    }
     await changeUserPass(user, newPass, postOptions);
   }
 };
