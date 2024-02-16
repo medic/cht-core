@@ -70,18 +70,20 @@ const execute = async () => {
   }
 
   const postOptions = {...options};
-  for (let user of users) {
+  for (const user of users) {
     let newPass;
+    let newUser;
     if ( argv.use_passes === 'true') {
       const user_array = user.toString().split(',');
       if ( user_array[0] && user_array[1] ){
-        user = user_array[0].toString().trim();
+        newUser = user_array[0].toString().trim();
         newPass = user_array[1].toString().trim();
       }
     } else {
       newPass = await generatePassword();
+      newUser = user;
     }
-    await changeUserPass(user, newPass, postOptions);
+    await changeUserPass(newUser, newPass, postOptions);
   }
 };
 
