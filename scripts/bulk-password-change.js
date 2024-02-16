@@ -1,7 +1,7 @@
 const rpn = require('request-promise-native');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0;
 const minimist = require('minimist');
-const readline = require('readline');
+const { areYouSure, changeUserPass } = require('./bulk-password-functions.js');
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -44,48 +44,9 @@ const options = {
   }   
 };
 
-// thanks https://stackoverflow.com/a/50890409 !
-const areYouSure = async () => {
-  const NOTE = ` ****** WARNING ******\
-
-Continuing will log ALL users out of the CHT until you provide them with the password. 
-
-They will ALL have the same password "Secret_1"
-
-Do you want to continue? [y/N]
-`;
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise(resolve => rl.question(NOTE, ans => {
-    rl.close();
-    resolve(ans);
-  }));
-};
-
-const changeUserPass = async (user, options) => {
-  const admins = ['admin', 'medic'];
-  const adminError = new Error('403 - Cannot change password for "medic" or "admin" users.');
-  const postOptions = {...options};
-  postOptions.body = {
-    'password': 'Secret_1'
-  };
-  postOptions.uri = `${options.uri}/${user}`;
-  try {
-    if (admins.includes(user)) {
-      throw adminError;
-    }
-    await rpn.post(postOptions);
-    console.log('SUCCESS', user);
-  } catch (e) {
-    console.log('ERROR', user, e.message);
-  }
-};
-
 const execute = async () => {
-  const input = await areYouSure();
+  const extraWarning = '\nThey will ALL have the same password "Secret_1"\n';
+  const input = await areYouSure('ALL', extraWarning);
   if (input.toLowerCase() !== 'y') {
     process.exit(0);
   }
@@ -97,7 +58,7 @@ const execute = async () => {
   }
 
   users.forEach(async (user) => {
-    await changeUserPass(user.username, options);
+    await changeUserPass(user.username, 'Secret_1',  options);
   });
 };
 
