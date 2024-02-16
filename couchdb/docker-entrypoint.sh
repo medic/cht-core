@@ -35,6 +35,7 @@ setSecret() {
     COUCHDB_SECRET=$(cat /proc/sys/kernel/random/uuid)
   fi
   # Set secret only if not already present
+  printf "set secret"
   if [ -z $(grep -Pzor "\[couch_httpd_auth\]\nsecret =" $CLUSTER_CREDENTIALS) ]; then
     printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >> $CLUSTER_CREDENTIALS
   fi

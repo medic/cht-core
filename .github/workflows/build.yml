@@ -279,6 +279,9 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
+    - name: Install regctl
+      uses: regclient/actions/regctl-installer@main
+      
     - name: Delete image artifacts
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
       uses: geekyeggo/delete-artifact@v1
