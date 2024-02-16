@@ -40,6 +40,7 @@ try {
   process.exit(0);
 }
 
+const admins = ['admin', 'medic'];
 const user = argv.user;
 const password = argv.password;
 
@@ -70,7 +71,6 @@ Do you want to continue? [y/N]
 };
 
 const changeUserPass = async (user, password, options) => {
-  const admins = ['admin', 'medic'];
   const postOptions = {...options};
   postOptions.body = {
     'password': password
