@@ -120,7 +120,7 @@ const loadUsers = async () => {
   try {
     const contents = await fsPromises.readFile('user-password-change.txt', 'utf-8');
     const users = csvSync.parse(contents, {
-      columns: [ 'user', 'pass' ],
+      columns: [ 'name', 'pass' ],
       trim: true,
       skip_empty_lines: true
     });
