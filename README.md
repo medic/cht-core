@@ -63,4 +63,3 @@ Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>
 
 The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.
 
-CI Trigger
