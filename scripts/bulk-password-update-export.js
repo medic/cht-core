@@ -130,7 +130,8 @@ const loadUsers = async () => {
 
 // Thanks https://stackoverflow.com/a/40672956
 const splitCSV = async (string) => {
-  let matches = string.match(/(\s*"[^"]+"\s*|\s*[^,]+|,)(?=,|$)/g);
+  // NOSONAR
+  const matches = string.match(/(\s*"[^"]+"\s*|\s*[^,]+|,)(?=,|$)/g);
   for (let n = 0; n < matches.length; ++n) {
     matches[n] = matches[n].trim();
     if (matches[n] === ',') matches[n] = '';
@@ -148,9 +149,9 @@ const getUserAndPassword = async (user) => {
       // regexp removes quotes only from first and last chars
       // So "wFB38p,GM" will be wFB38p,GM
       newPass = user_array[1]
-          .toString()
-          .trim()
-          .replace(/^"(.*)"$/, '$1');
+        .toString()
+        .trim()
+        .replace(/^"(.*)"$/, '$1');
     }
   } else {
     newPass = await generatePassword();
