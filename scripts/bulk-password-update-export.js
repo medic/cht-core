@@ -5,7 +5,7 @@ const {promises: fsPromises} = require('fs');
 const readline = require('readline');
 const rpn = require('request-promise-native');
 const {randomInt} = require('crypto');
-const csv = require('csv');
+const csvSync = require('csv-parse/sync');
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -42,7 +42,6 @@ try {
 }
 
 const admins = ['admin', 'medic'];
-const parser = csv.parse();
 const user = argv.user;
 const password = argv.password;
 
@@ -72,24 +71,24 @@ Do you want to continue? [y/N]
   }));
 };
 
-const changeUserPass = async (user, password, options) => {
+const changeUserPass = async (user, options) => {
   const postOptions = {...options};
   postOptions.body = {
-    'password': password
+    'password': user.pass
   };
-  postOptions.uri = `${options.uri}/${user}`;
+  postOptions.uri = `${options.uri}/${user.name}`;
   try {
-    if (admins.includes(user)) {
-      throw new Error('403 - Password change for "' + user + '" not allowed .');
+    if (admins.includes(user.name)) {
+      throw new Error(`403 - Password change for "${user.name}" not allowed .`);
     }
     await rpn.post(postOptions);
-    console.log('SUCCESS', user, password);
+    console.log('SUCCESS', user.name, user.pass);
   } catch (e) {
-    console.log('ERROR', user, e.message);
+    console.log('ERROR', user.name, e.message);
   }
 };
 
-const generatePassword = async () => {
+const generatePassword = () => {
   const CHAR_COUNT = 4;
 
   const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -120,33 +119,16 @@ const generatePassword = async () => {
 const loadUsers = async () => {
   try {
     const contents = await fsPromises.readFile('user-password-change.txt', 'utf-8');
-    const lines = contents.split(/\r?\n/);
-    return lines.map(line => line.trim()).filter(line => line.length > 0);
+    const users = csvSync.parse(contents, {
+      columns: [ 'user', 'pass' ],
+      trim: true,
+      skip_empty_lines: true
+    });
+    return users;
   } catch (err) {
     console.log(err);
     process.exit(1);
   }
-};
-
-const getUserAndPassword = async (user) => {
-  let newPass;
-  let newUser = user;
-  if ( argv.use_passes === 'true') {
-    // todo - get this to actually work :/
-    const user_array = parser(user);
-    if ( user_array[0] && user_array[1] ){
-      newUser = user_array[0].toString().trim();
-      // regexp removes quotes only from first and last chars
-      // So "wFB38p,GM" will be wFB38p,GM
-      newPass = user_array[1]
-        .toString()
-        .trim()
-        .replace(/^"(.*)"$/, '$1');
-    }
-  } else {
-    newPass = await generatePassword();
-  }
-  return { newUser, newPass };
 };
 
 const execute = async () => {
@@ -159,8 +141,10 @@ const execute = async () => {
 
   const postOptions = {...options};
   for (const user of users) {
-    const { newUser, newPass } = await getUserAndPassword(user);
-    await changeUserPass(newUser, newPass, postOptions);
+    if (argv.use_passes !== 'true') {
+      user.pass = generatePassword();
+    }
+    await changeUserPass(user, postOptions);
   }
 };
 
