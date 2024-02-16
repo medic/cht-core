@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -8,8 +8,8 @@
     "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
-    "node": ">=16.12.0",
-    "npm": ">=8.3.1"
+    "node": ">=20.11.0",
+    "npm": ">=10.2.4"
   },
   "workspaces": [
     "./shared-libs/*"

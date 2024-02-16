@@ -614,7 +614,7 @@ const revertDb = async (except, ignoreRefresh) => { //NOSONAR
     watcher?.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise; // NOSONAR
+    watcher && await watcher.promise;
   } else {
     watcher?.cancel();
   }
@@ -632,8 +632,15 @@ const getAdminBaseUrl = () => `${constants.BASE_URL}/admin/#/`;
 
 const getLoggedInUser = async () => {
   try {
+    if (typeof browser === 'undefined') {
+      return;
+    }
     const cookies = await browser.getCookies('userCtx');
-    const userCtx = JSON.parse(cookies?.[0]);
+    if (!cookies.length) {
+      return;
+    }
+
+    const userCtx = JSON.parse(decodeURIComponent(cookies?.[0]?.value));
     return userCtx.name;
   } catch (err) {
     console.warn('Error getting userCtx', err.message);

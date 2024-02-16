@@ -1,6 +1,21 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
+const SEARCH_TERM = '<!-- COMPOSE URLS GO HERE - DO NOT CHANGE -->';
+
+const generateReplacement = (branch) => {
+  const url = `https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${branch}/docker-compose`;
+  return `
+
+# Compose URLs
+If Build CI hasn't passed, these may 404:
+
+* [Core](${url}/cht-core.yml)
+* [CouchDB Single](${url}/cht-couchdb.yml)
+* [CouchDB Cluster](${url}/cht-couchdb-clustered.yml)
+`;
+};
+
 const main = async () => {
   try {
 
@@ -16,27 +31,8 @@ const main = async () => {
       pull_number,
     });
 
-    const branch = pr.head.ref;
-    let body = pr.body;
-
-    const search_replace = {
-      __CHT_CORE_COMPOSE_URL__: '[Core](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:'
-        + branch + '/docker-compose/cht-core.yml)',
-      __COUCH_SINGLE_COMPOSE_URL__: '[CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:'
-        + branch + '/docker-compose/cht-couchdb.yml)',
-      __COUCH_CLUSTER_COMPOSE_URL__: '[CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:'
-        + branch + '/docker-compose/cht-couchdb-clustered.yml)',
-    }
-
-    let search;
-    for (search in search_replace) {
-      if (body.includes(search)) {
-        const replacer = new RegExp(search, 'g');
-        body = body.replace(replacer, search_replace[search]);
-        console.log("Found  : ", search, "will replace with", search_replace[search]);
-      }
-    }
-
+    const replacement = generateReplacement(pr.head.ref);
+    const body = pr.body.replace(SEARCH_TERM, replacement);
     const updateme = { owner, repo, pull_number, body };
 
     await octokit.rest.pulls.update(updateme);
@@ -47,5 +43,3 @@ const main = async () => {
 }
 
 main();
-
-

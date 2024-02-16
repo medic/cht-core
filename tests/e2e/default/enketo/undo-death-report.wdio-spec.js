@@ -29,7 +29,11 @@ describe('Submit an undo death report', () => {
     await commonPage.sync(true);
   });
 
-  it('Should submit an undo death report', async () => {
+  it('should submit an undo death report, ' +
+    'verify that it was registered successfully and ' +
+    'verify that the counter for the Deaths, in the targets section, was set to 0.', async () => {
+
+    // Submit an Undo death report
     await commonPage.openFastActionReport('undo_death_report');
     await commonEnketoPage.selectRadioButton(
       'Submitting this form will undo the death report of ' +
@@ -42,17 +46,14 @@ describe('Submit an undo death report', () => {
     await commonPage.sync(true);
 
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.false;
-  });
 
-  it('Should verify that the undo death report was created', async () => {
+    // Verify that the report was created successfully
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
-
     expect(firstReport.heading).to.equal(person.name);
     expect(firstReport.form).to.equal('Undo death report');
-  });
 
-  it('Should verify that the counter for the Deaths was set to 0.', async () => {
+    // Verify that the counter for the Deaths, in the targets section, was set to 0.
     await commonPage.goToAnalytics();
     const targets = await analyticsPage.getTargets();
 
@@ -66,5 +67,6 @@ describe('Submit an undo death report', () => {
       { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR },
     ]);
+
   });
 });

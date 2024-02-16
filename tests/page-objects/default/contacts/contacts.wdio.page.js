@@ -130,12 +130,6 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const submitForm = async (waitForLoad = true) => {
-  await (await genericForm.submitButton()).waitForClickable();
-  await (await genericForm.submitButton()).click();
-  waitForLoad && await waitForContactLoaded();
-};
-
 const addPlace = async ({
   type: typeValue = 'district_hospital',
   placeName: placeNameValue = 'District Test',
@@ -165,8 +159,7 @@ rightSideAction = true,) => {
   await (await customPlaceNameField()).setValue(placeNameValue);
   await (await externalIdField(typeValue)).setValue(externalIDValue);
   await (await notes(typeValue)).setValue(notesValue);
-  await (await genericForm.submitButton()).waitForClickable();
-  await (await genericForm.submitButton()).click();
+  await genericForm.submitForm(false);
   const dashedType = typeValue.replace('_', '-');
   await waitForContactLoaded(dashedType);
 };
@@ -190,7 +183,7 @@ const addPerson = async ({
   await (await roleField(type, roleValue)).click();
   await (await externalIdField(type)).addValue(externalIDValue);
   await (await notes(type)).addValue(notesValue);
-  await submitForm();
+  await genericForm.submitForm();
   if (waitForSentinel) {
     await sentinelUtils.waitForSentinel();
   }
@@ -216,8 +209,8 @@ const editPerson = async (currentName, { name, phone, dob }) => {
   if (dob !== undefined) {
     await (await dateOfBirthField()).setValue(dob);
   }
-
-  await submitForm();
+  await genericForm.formTitle().click();
+  await genericForm.submitForm();
 };
 
 const editPersonName = async (name, updatedName) => {
@@ -272,18 +265,18 @@ const allContactsList = async () => {
   }));
 };
 
-const editDistrict = async (districtName, editedName) => {
-  await selectLHSRowByText(districtName, true);
+const editPlace = async (currentName, editedName, placeType) => {
+  await selectLHSRowByText(currentName, true);
   await waitForContactLoaded();
 
   await commonPage.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
-  await (await nameField('district_hospital')).setValue(editedName);
+  await (await nameField(placeType)).setValue(editedName);
   // blur field to trigger Enketo validation
-  await (await notes('district_hospital')).click();
-  await submitForm();
+  await (await notes(placeType)).click();
+  await genericForm.submitForm();
 };
 
 const openFormWithWarning = async (formId) => {
@@ -363,13 +356,6 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
-const getCardFieldInfo = async (label) => {
-  return {
-    label: await (await $(`.cell.${label} label`)).getText(),
-    value: await (await $(`.cell.${label} p`)).getText(),
-  };
-};
-
 const getCurrentContactId = async () => {
   const currentUrl = await browser.getUrl();
   const contactBaseUrl = utils.getBaseUrl() + 'contacts/';
@@ -425,6 +411,7 @@ module.exports = {
   contactCard,
   editPerson,
   editPersonName,
+  editPlace,
   exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
@@ -433,9 +420,7 @@ module.exports = {
   rhsTaskListElement,
   deletePerson,
   allContactsList,
-  editDistrict,
   childrenCards,
-  submitForm,
   openReport,
   getContactCardTitle,
   getContactInfoName,
@@ -456,7 +441,6 @@ module.exports = {
   contactMuted,
   openFormWithWarning,
   getContactListLoadingStatus,
-  getCardFieldInfo,
   getCurrentContactId,
   pregnancyLabel,
   visitLabel,

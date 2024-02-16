@@ -6,7 +6,7 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 describe('cht-form web component - Enketo Widgets', () => {
 
   it('should submit the Enketo Widgets form', async () => {
-    await mockConfig.loadForm('default', 'test', 'enketo_widgets');
+    await mockConfig.loadForm('default', 'test', 'enketo_widgets_test');
 
     const title  = await genericForm.getFormTitle();
     expect(title).to.equal('Enketo Widgets');
@@ -31,7 +31,7 @@ describe('cht-form web component - Enketo Widgets', () => {
     await commonEnketoPage.setInputValue('Phone Number', '+4076');
     await genericForm.nextPage(1, false);
     expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
-      .to.equal('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg');
+      .to.equal('/enketo_widgets_test/enketo_test_select/phone:jr:constraintMsg');
 
     // finally set a valid phone number and continue
     await commonEnketoPage.setInputValue('Phone Number', '+40766565656');
@@ -86,7 +86,7 @@ describe('cht-form web component - Enketo Widgets', () => {
   });
 
   it('should verify the cancel button', async () => {
-    await mockConfig.loadForm('default', 'test', 'enketo_widgets');
+    await mockConfig.loadForm('default', 'test', 'enketo_widgets_test');
     expect(await genericForm.getFormTitle()).to.equal('Enketo Widgets');
 
     const cancelResult = await browser.executeAsync((resolve) => {
