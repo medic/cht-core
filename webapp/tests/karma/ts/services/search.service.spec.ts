@@ -87,7 +87,7 @@ describe('Search service', () => {
         .onSecondCall().resolves([ { id: 'b' } ]);
 
       let firstReturned = false;
-      const filters = { foo: 'bar' };
+      const filters = { search: 'bar' };
       service
         .search('reports', filters)
         .then((actual) => {
@@ -96,7 +96,7 @@ describe('Search service', () => {
         })
         .catch(err => assert.fail(err));
 
-      filters.foo = 'test';
+      filters.search = 'test';
       service
         .search('reports', filters)
         .then((actual) => {
@@ -112,7 +112,7 @@ describe('Search service', () => {
         .onSecondCall().resolves([ { id: 'b' } ]);
       let firstReturned = false;
       service
-        .search('reports', { freetext: 'first' })
+        .search('reports', { search: 'first' })
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
@@ -120,7 +120,7 @@ describe('Search service', () => {
         .catch(err => assert.fail(err));
 
       service
-        .search('reports', { freetext: 'second' })
+        .search('reports', { search: 'second' })
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'b' } ]);
           expect(firstReturned).to.equal(true);

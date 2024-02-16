@@ -122,11 +122,11 @@ export class SearchService {
       });
   }
 
-  search(type, filters, options:any = {}, extensions:any = {}, docIds = undefined) {
+  search(type, filters: Filter, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
     return this.ngZone.runOutsideAngular(() => this._search(type, filters, options, extensions, docIds));
   }
 
-  private _search(type, filters, options:any = {}, extensions:any = {}, docIds = undefined) {
+  private _search(type, filters, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
     console.debug('Doing Search', type, filters, options, extensions);
 
     _.defaults(options, {
@@ -200,4 +200,11 @@ export class SearchService {
         throw err;
       });
   }
+}
+
+export interface Filter {
+  types?: { selected: string };
+  search?: string;
+  parent?: string;
+  subjectIds?: string[];
 }

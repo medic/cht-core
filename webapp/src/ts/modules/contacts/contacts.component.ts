@@ -15,11 +15,10 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { Selectors } from '@mm-selectors/index';
-import { SearchService } from '@mm-services/search.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
-import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -45,8 +44,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   error;
   appending: boolean;
   hasContacts = true;
-  filters:any = {};
-  defaultFilters:any = {};
+  filters: Filter = {};
+  defaultFilters: Filter = {};
   moreItems;
   usersHomePlace;
   contactTypes;
@@ -77,7 +76,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private UHCSettings: UHCSettingsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
-    private tourService: TourService,
     private router: Router,
     private exportService: ExportService,
     private xmlFormsService: XmlFormsService,
@@ -155,12 +153,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.appending = false;
         console.error('Error searching for contacts', err);
       });
-
-    this.tourService.startIfNeeded(this.route.snapshot);
   }
 
   async ngAfterViewInit() {
-    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSearchNewDesign = !isDisabled;
   }
 
@@ -227,7 +223,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private canViewLastVisitedDate() {
-    if (this.sessionService.isDbAdmin()) {
+    if (this.sessionService.isAdmin()) {
     // disable UHC for DB admins
       return Promise.resolve(false);
     }
@@ -378,7 +374,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
-          if(!this.appending) {
+          if (!this.appending) {
             if (homeIndex !== -1) {
               // move it to the top
               updatedContacts.splice(homeIndex, 1);

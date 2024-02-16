@@ -9,8 +9,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ServicesActions } from '@mm-actions/services';
 import { ChangesService } from '@mm-services/changes.service';
-import { SearchService } from '@mm-services/search.service';
-import { TourService } from '@mm-services/tour.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
@@ -22,11 +21,13 @@ import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filte
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
+// import { ModalService } from '@mm-services/modal.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 const PAGE_SIZE = 50;
+const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
 
 @Component({
   templateUrl: './reports.component.html'
@@ -39,6 +40,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private servicesActions: ServicesActions;
   private listContains;
   private destroyed: boolean;
+  private isOnlineOnly = false;
+  private canDefaultFilter = false;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -50,7 +53,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
   appending = false;
   moreItems: boolean;
-  filters:any = {};
+  filters: Filter = {};
   hasReports: boolean;
   selectMode = false;
   selectModeAvailable = false;
@@ -59,7 +62,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
   isExporting = false;
-  currentLevel;
+  userParentPlace;
   fastActionList: FastAction[];
 
   LIMIT_SELECT_ALL_REPORTS = 500;
@@ -72,7 +75,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
-    private tourService:TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
@@ -90,6 +92,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.isOnlineOnly = this.authService.online(true);
     this.subscribeToStore();
     this.subscribeToXmlFormsService();
     this.watchReportList();
@@ -98,16 +101,15 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.error = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-    this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
-
-    this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
   }
 
   async ngAfterViewInit() {
-    this.checkPermissions();
+    this.userParentPlace = await this.getUserParentPlace();
+    await this.checkPermissions();
     this.search();
     this.subscribeSidebarFilter();
+    // this.doInitialSearch();
   }
 
   ngOnDestroy() {
@@ -123,8 +125,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async checkPermissions() {
     this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
-    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    const isAdmin = this.sessionService.isAdmin();
+    const isDisabled = !isAdmin && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSidebarFilter = !isDisabled;
+    this.canDefaultFilter = !isAdmin && this.isOnlineOnly && await this.authService.has(CAN_DEFAULT_FACILITY_FILTER);
   }
 
   private subscribeToStore() {
@@ -202,7 +206,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         }));
 
         this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });
-      });
+      }
+    );
   }
 
   private watchReportList() {
@@ -237,9 +242,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private async prepareReports(reports, isContent=false) {
-    const userLineageLevel = await this.currentLevel;
-
+  private prepareReports(reports, isContent=false) {
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
       const subTitle = form ? form.title : report.form;
@@ -250,11 +253,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
 
-      // remove the lineage level that belongs to the offline logged-in user
-      if (userLineageLevel && report?.lineage?.length) {
+      // Remove the lineage level that belongs to the offline logged-in user
+      if (!this.isOnlineOnly && this.userParentPlace?.name && report?.lineage?.length) {
         report.lineage = report.lineage.filter(level => level);
         const item = report.lineage[report.lineage.length -1];
-        if (item === userLineageLevel) {
+        if (item === this.userParentPlace.name) {
           report.lineage.pop();
         }
       }
@@ -263,7 +266,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private query(opts) {
+  private query(opts?) {
     const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
     if (options.limit < PAGE_SIZE) {
       options.limit = PAGE_SIZE;
@@ -327,6 +330,25 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.scrollLoaderProvider.init(scrollCallback);
   }
 
+  private async getUserParentPlace() {
+    try {
+      const userContact = await this.userContactService.get();
+      return userContact?.parent;
+    } catch (error) {
+      console.error(error.message, error);
+    }
+  }
+
+  // private doInitialSearch() {
+  //   if (this.canDefaultFilter && this.userParentPlace?._id) {
+  //     // The facility filter will trigger the search.
+  //     this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace });
+  //     return;
+  //   }
+
+  //   this.search();
+  // }
+
   search(force = false) {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
@@ -339,7 +361,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.loading = true;
-
     return this.query(force);
   }
 
@@ -445,7 +466,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 
-    } catch(error) {
+    } catch (error) {
       console.error('Error selecting all', error);
     }
   }
@@ -472,9 +493,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     const docs = this.selectedReports
       .map(report => report.doc || report.summary)
       .filter(report => !!report);
-    this.modalService
-      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs, type: 'reports' } } })
-      .catch(() => {});
+    this.modalService.show(BulkDeleteConfirmComponent, { data: { docs, type: 'reports' } });
   }
 
   /**
@@ -496,10 +515,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
     return isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
-  }
-
-  private getCurrentLineageLevel() {
-    return this.userContactService.get().then(user => user?.parent?.name);
   }
 
   getFastActionButtonType() {

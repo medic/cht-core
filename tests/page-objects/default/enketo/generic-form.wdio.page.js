@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const commonPage = require('../common/common.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 
@@ -6,12 +6,28 @@ const submitButton = () => $('.enketo .submit');
 const cancelButton = () => $('.enketo .cancel');
 const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
+const errorContainer = () => $('.empty-selection');
+const formTitle = () => $('.enketo form #form-title');
 
-const nextPage = async (numberOfPages = 1) => {
+const currentFormView = () => $('.enketo form .current');
+
+const validationErrors = () => $$('.invalid-required');
+const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
+
+const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
+  if (waitForLoad) {
+    if ((await validationErrors()).length) {
+      await (await formTitle()).click(); // focus out to trigger re-validation
+      await waitForValidationErrorsToDisappear();
+    }
+  }
+
   for (let i = 0; i < numberOfPages; i++) {
+    const currentPageId = (await currentFormView()).elementId;
     await (await nextButton()).waitForDisplayed();
     await (await nextButton()).waitForClickable();
     await (await nextButton()).click();
+    waitForLoad && await browser.waitUntil(async () => (await currentFormView()).elementId !== currentPageId);
   }
 };
 
@@ -37,9 +53,9 @@ const selectContact = async (inputName, contactName) => {
   const contact = await $('.name');
   await contact.waitForDisplayed();
   await contact.click();
-  await browser.waitUntil(async () =>
-    (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase())
-  );
+  await browser.waitUntil(async () => {
+    return (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase());
+  });
 };
 const editForm = async () => {
   await commonPage.openMoreOptionsMenu();
@@ -63,13 +79,59 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
-const submitForm = () => submitButton().click();
+const submitForm = async () => {
+  await waitForValidationErrorsToDisappear();
+  await (await submitButton()).waitForClickable();
+  await (await submitButton()).click();
+};
 
 const cancelForm = async () => {
+  await (await cancelButton()).waitForClickable();
   await (await cancelButton()).click();
 };
 
+const getErrorMessage = async () => {
+  await (await errorContainer()).waitForDisplayed();
+  return await (await errorContainer()).getText();
+};
+
+const getFormTitle = async () => {
+  await (await formTitle()).waitForDisplayed();
+  return await (await formTitle()).getText();
+};
+
+const selectYesNoOption = async (selector, value = 'yes') => {
+  const element = await $(`${selector}[value="${value}"]`);
+  await element.waitForDisplayed();
+  await element.click();
+  return value === 'yes';
+};
+
+const getDBObjectWidgetValues = async (field) => {
+  const widget = $(`[data-contains-ref-target="${field}"] .selection`);
+  await (await widget).waitForClickable();
+  await (await widget).click();
+
+  const dropdown = $('.select2-dropdown--below');
+  await (await dropdown).waitForDisplayed();
+  const firstElement = $('.select2-results__options > li');
+  await (await firstElement).waitForClickable();
+
+  const list = await $$('.select2-results__options > li');
+  const contacts = [];
+  for (const item of list) {
+    contacts.push({
+      name: await (item.$('.name').getText()),
+      click: () => item.click(),
+    });
+  }
+
+  return contacts;
+};
+
 module.exports = {
+  getFormTitle,
+  getErrorMessage,
   submitButton,
   cancelButton,
   nextPage,
@@ -82,4 +144,8 @@ module.exports = {
   editForm,
   cancelForm,
   submitForm,
+  currentFormView,
+  formTitle,
+  selectYesNoOption,
+  getDBObjectWidgetValues,
 };
