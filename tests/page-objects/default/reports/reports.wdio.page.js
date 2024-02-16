@@ -59,8 +59,6 @@ const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
 
 const unreadCount = () => $('#reports-tab .mm-badge');
-const formTitle = () => $('#report-form #form-title');
-const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
 const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
@@ -99,7 +97,6 @@ const setDateInput = async (name, date) => {
   const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
-  await (await formTitle()).click();
 };
 
 const setBikDateInput = async (name, date) => {
@@ -109,7 +106,6 @@ const setBikDateInput = async (name, date) => {
   await (await dateWidget.$('.dropdown-toggle')).click();
   await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
-  await (await formTitle()).click();
 };
 
 const getSummaryField = async (name) => {
@@ -120,13 +116,8 @@ const getSummaryField = async (name) => {
 
 const getFieldValue = async (name) => {
   const input = await $(`input[name="${name}"]`);
+  await input.click();
   return input.getValue();
-};
-
-const submitForm = async () => {
-  await (await submitButton()).waitForDisplayed();
-  await (await submitButton()).click();
-  await (await reportBodyDetails()).waitForDisplayed();
 };
 
 const getElementText = async (element) => {
@@ -373,13 +364,10 @@ const openReport = async (reportId) => {
   await reportBodyDetails().waitForDisplayed();
 };
 
-const editReport = async (reportId) => {
-  await commonElements.goToReports();
-  await openReport(reportId);
+const editReport = async () => {
   await commonElements.openMoreOptionsMenu();
   await (await editReportButton()).waitForClickable();
   await (await editReportButton()).click();
-  await (await formTitle()).waitForDisplayed();
 };
 
 const fieldByIndex = async (index) => {
@@ -430,6 +418,34 @@ const getReportListLoadingStatus = async () => {
   return await (await reportListLoadingStatus()).getText();
 };
 
+const invalidateReport = async () => {
+  await openReviewAndSelectOption('invalid-option');
+  await commonElements.waitForPageLoaded();
+  expect(await getSelectedReviewOption()).to.equal('Has errors');
+};
+
+const validateReport = async () => {
+  await openReviewAndSelectOption('valid-option');
+  await commonElements.waitForPageLoaded();
+  expect(await getSelectedReviewOption()).to.equal('Correct');
+};
+
+const verifyReport = async () => {
+  const reportId = await getCurrentReportId();
+  const initialReport = await utils.getDoc(reportId);
+  expect(initialReport.verified).to.be.undefined;
+
+  await invalidateReport();
+  const invalidatedReport = await utils.getDoc(reportId);
+  expect(invalidatedReport.verified).to.be.false;
+  expect(invalidatedReport.patient).to.be.undefined;
+
+  await validateReport();
+  const validatedReport = await utils.getDoc(reportId);
+  expect(validatedReport.verified).to.be.true;
+  expect(validatedReport.patient).to.be.undefined;
+};
+
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
@@ -444,7 +460,6 @@ module.exports = {
   goToReportById,
   sentTask,
   getTaskDetails,
-  formTitle,
   openSidebarFilter,
   openSidebarFilterDateAccordion,
   setSidebarFilterFromDate,
@@ -453,7 +468,6 @@ module.exports = {
   getFieldValue,
   setBikDateInput,
   getSummaryField,
-  submitForm,
   reportsListDetails,
   selectAll,
   deselectAll,
@@ -480,9 +494,9 @@ module.exports = {
   getListReportInfo,
   resetFilter,
   openReport,
+  editReport,
   reportTasks,
   editReportButton,
-  editReport,
   deleteReport,
   exportReports,
   openReviewAndSelectOption,
@@ -492,4 +506,7 @@ module.exports = {
   clickOnCaseId,
   getReportListLoadingStatus,
   openSelectedReport,
+  invalidateReport,
+  validateReport,
+  verifyReport,
 };

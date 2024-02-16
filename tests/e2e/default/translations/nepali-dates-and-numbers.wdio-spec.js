@@ -10,6 +10,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const gatewayApiUtils = require('@utils/gateway-api');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const NEPALI_LOCALE_CODE = 'ne';
 
@@ -136,7 +137,7 @@ describe('Bikram Sambat date display', () => {
     expect(await reportsPage.getFieldValue('/bikram-sambat-dates/data/date2_text')).to.equal(dateBk2);
     expect(await reportsPage.getSummaryField('/bikram-sambat-dates/summary/field2')).to.equal(`date2 = ${dateBk2}`);
 
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
   });
 
   it('enketo xpath extension function should display correct values when Nepali is selected', async () => {
@@ -159,7 +160,7 @@ describe('Bikram Sambat date display', () => {
     expect(await reportsPage.getFieldValue('/bikram-sambat-dates/data/date2_text')).to.equal(dateBk2);
     expect(await reportsPage.getSummaryField('/bikram-sambat-dates/summary/field2')).to.equal(`date2 = ${dateBk2}`);
 
-    await reportsPage.submitForm();
+    await genericForm.submitForm();
   });
 
   it('should display report list dates converted to bikram sambat', async () => {

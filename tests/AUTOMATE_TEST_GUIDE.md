@@ -17,13 +17,10 @@ Right now the automated tests cover different [CHT Configs](/config), consider t
 * Page-object file. (`../tests/page-objects/../enketo/<name>.wdio.page.js`)
     We are leveraging the [page object model](https://www.thoughtworks.com/insights/blog/using-page-objects-overcome-protractors-shortcomings) for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that perform actions to the page within the page object. Keep expects outside of page objects. The tests should be self-documenting.
 
-* Data file. There are two different ways:
+* Data file.
   * Create test data using the [`place factory`](factories/cht/contacts/place.js), the [`user factory`](factories/cht/users/users.js) or the [`person factory`](factories/cht/contacts/person.js) files.
   
     Using the "factories" will allow you to create hierarchies, contacts and patients that are associated with specific places and with their specific attributes and information. It can create offline or online users that can be used to login with different roles. **Everything can be customised depending on the test requirements**.
-  * Use pre-existing test data with [`user.data.js`](page-objects/default/users/user.data.js).  
-  
-    This file contains all the information about a _"dummy"_ contact that can be used for testing. All the attributes from this contact can be updated as required in test's execution code.
 
 * e2e testing file. Use the correct name convention when working with the following configs:
     - default: (`../tests/e2e/default/*/<name>.wdio-spec.js`) 

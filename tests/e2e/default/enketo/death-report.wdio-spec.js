@@ -25,10 +25,11 @@ describe('Submit a death report', () => {
     await loginPage.login(offlineUser);
   });
 
-  it('Should submit a death report', async () => {
+  it('should create and edit a death, verify the report created and the tile from the Targets section.', async () => {
     const deathDate = moment();
     const deathNote = 'Test note';
 
+    // Create a death
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('death_report');
     await commonEnketoPage.selectRadioButton('Place of death', 'Health facility');
@@ -42,40 +43,35 @@ describe('Submit a death report', () => {
       deathDate.format('YYYY-MM-DD'),
       deathNote
     ];
-
     await commonEnketoPage.validateSummaryReport(summaryTexts);
-
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
     await commonPage.sync();
     await sentinelUtils.waitForSentinel();
     await commonPage.sync();
 
+    // Verify the patient's card information
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;
-
     const deathCardInfo = await contactPage.getDeathCardInfo();
     expect(Date.parse(deathCardInfo.deathDate)).to.equal(Date.parse(deathDate.format('D MMM, YYYY')));
     expect(deathCardInfo.deathPlace).to.equal('Health facility');
-  });
 
-  it('should edit the report', async () => {
+    // Verify that the report was created
     await commonPage.goToReports();
-    const reportId = await reportsPage.getLastSubmittedReportId();
-    await reportsPage.editReport(reportId);
+    const firstReportInfo = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    await reportsPage.openReport(firstReportInfo.dataId);
+    expect(firstReportInfo.heading).to.equal(person.name);
+    expect(firstReportInfo.form).to.equal('Death report');
+    expect((await reportsPage.getDetailReportRowContent('place_of_death')).rowValues[0]).to.equal('health_facility');
+
+    // Edit the report created
+    await reportsPage.editReport();
+    await commonEnketoPage.selectRadioButton('Place of death', 'Home');
     await genericForm.nextPage();
-    await reportsPage.submitForm();
-  });
+    await genericForm.submitForm();
+    expect((await reportsPage.getDetailReportRowContent('place_of_death')).rowValues[0]).to.equal('home');
 
-  it('Should verify that the report related to the death was created', async () => {
-    await commonPage.goToReports();
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
-
-    expect(firstReport.heading).to.equal(person.name);
-    expect(firstReport.form).to.equal('Death report');
-  });
-
-  it('Should verify that the counter for the Deaths was updated.', async () => {
+    // Verify the tile in the Target section
     await commonPage.goToAnalytics();
     const targets = await analyticsPage.getTargets();
 
