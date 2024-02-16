@@ -78,7 +78,7 @@ const changeUserPass = async (user, password, options) => {
   postOptions.uri = `${options.uri}/${user}`;
   try {
     if (admins.includes(user)) {
-      throw new Error('403 - Cannot change password for "medic" or "admin" users.');
+      throw new Error('403 - Password change for "' + user + '" not allowed .');
     }
     await rpn.post(postOptions);
     console.log('SUCCESS', user, password);
