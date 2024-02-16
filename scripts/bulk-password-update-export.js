@@ -5,6 +5,7 @@ const {promises: fsPromises} = require('fs');
 const readline = require('readline');
 const rpn = require('request-promise-native');
 const {randomInt} = require('crypto');
+const csv = require('csv');
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -41,6 +42,7 @@ try {
 }
 
 const admins = ['admin', 'medic'];
+const parser = csv.parse();
 const user = argv.user;
 const password = argv.password;
 
@@ -126,23 +128,12 @@ const loadUsers = async () => {
   }
 };
 
-
-// Thanks https://stackoverflow.com/a/40672956
-const splitCSV = async (string) => {
-  // NOSONAR
-  const matches = string.match(/(\s*"[^"]+"\s*|\s*[^,]+|,)(?=,|$)/g);
-  for (let n = 0; n < matches.length; ++n) {
-    matches[n] = matches[n].trim();
-    if (matches[n] === ',') matches[n] = '';
-  }
-  return matches;
-}
-
 const getUserAndPassword = async (user) => {
   let newPass;
   let newUser = user;
   if ( argv.use_passes === 'true') {
-    const user_array = await splitCSV(user);
+    // todo - get this to actually work :/
+    const user_array = parser(user);
     if ( user_array[0] && user_array[1] ){
       newUser = user_array[0].toString().trim();
       // regexp removes quotes only from first and last chars
