@@ -61,6 +61,21 @@ const loadUsers = async () => {
   }
 };
 
+const getUserAndPassword = async (user) => {
+  let newPass;
+  let newUser = user;
+  if ( argv.use_passes === 'true') {
+    const user_array = user.toString().split(',');
+    if ( user_array[0] && user_array[1] ){
+      newUser = user_array[0].toString().trim();
+      newPass = user_array[1].toString().trim();
+    }
+  } else {
+    newPass = await generatePassword();
+  }
+  return { newUser, newPass };
+};
+
 const execute = async () => {
   const users = await loadUsers();
   const extraWarning = '\nThey will each get a random password which will be printed below.\n';
@@ -71,18 +86,7 @@ const execute = async () => {
 
   const postOptions = {...options};
   for (const user of users) {
-    let newPass;
-    let newUser;
-    if ( argv.use_passes === 'true') {
-      const user_array = user.toString().split(',');
-      if ( user_array[0] && user_array[1] ){
-        newUser = user_array[0].toString().trim();
-        newPass = user_array[1].toString().trim();
-      }
-    } else {
-      newPass = await generatePassword();
-      newUser = user;
-    }
+    const { newUser, newPass } = await getUserAndPassword(user);
     await changeUserPass(newUser, newPass, postOptions);
   }
 };
