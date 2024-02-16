@@ -116,24 +116,32 @@ const generatePassword = () => {
 };
 
 // thanks https://bobbyhadz.com/blog/javascript-read-file-into-array !
-const loadUsers = async () => {
+const loadUsers = async (use_passes) => {
   try {
-    const contents = await fsPromises.readFile('user-password-change.txt', 'utf-8');
-    const users = csvSync.parse(contents, {
-      columns: [ 'name', 'pass' ],
+    const contents = await fsPromises.readFile('user-password-change.csv', 'utf-8');
+    let columns = ['name'];
+    if ( use_passes ){
+      columns = ['name', 'pass'];
+    }
+    return csvSync.parse(contents, {
+      columns: columns,
       trim: true,
       skip_empty_lines: true
     });
-    return users;
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
     process.exit(1);
   }
 };
 
 const execute = async () => {
-  const users = await loadUsers();
-  const extraWarning = '\nThey will each get a random password which will be printed below.\n';
+  let use_passes = false;
+  let extraWarning = '\nThey will each get a random password which will be printed below.\n';
+  if (argv.use_passes === 'true') {
+    use_passes = true;
+    extraWarning = '\nThey will have their password updated to the one in "user-password-change.csv".\n';
+  }
+  const users = await loadUsers(use_passes);
   const input = await areYouSure(users.length, extraWarning);
   if (input.toLowerCase() !== 'y') {
     process.exit(0);
@@ -141,7 +149,7 @@ const execute = async () => {
 
   const postOptions = {...options};
   for (const user of users) {
-    if (argv.use_passes !== 'true') {
+    if (!use_passes) {
       user.pass = generatePassword();
     }
     await changeUserPass(user, postOptions);
