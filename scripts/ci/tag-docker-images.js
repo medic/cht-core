@@ -17,8 +17,8 @@ const dockerCmd = (...params) => new Promise((resolve, reject) => {
 });
 
 const regctlCmd = (...params) => new Promise((resolve, reject) => {
-  console.log('retctl', ...params);
-  const proc = spawn('regct', params);
+  console.log('regctl', ...params);
+  const proc = spawn('regctl', params);
   proc.on('error', (err) => {
     console.error('Error while running regctl command', err);
     reject(err);
