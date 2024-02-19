@@ -417,7 +417,8 @@ const openAppManagement = async () => {
 };
 
 const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
+  const elems = await elements();
+  return elems.map(elem => elem.getText());s
 };
 
 const getAllButtonLabelsNames = async () => {

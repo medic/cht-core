@@ -1279,7 +1279,7 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
-const isMinimumChromeVersion = () => process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
+const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
 
 module.exports = {
   db,
@@ -1337,7 +1337,7 @@ module.exports = {
   enableLanguages,
   getSettings,
   prepServices,
-  saveBrowserLogs,
+  // saveBrowserLogs,
   tearDownServices,
   waitForApiLogs,
   waitForSentinelLogs,
