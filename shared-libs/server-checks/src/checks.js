@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const MIN_MAJOR = 16;
 
 /* eslint-disable no-console */

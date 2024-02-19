@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 let db;
 let couchUrl;

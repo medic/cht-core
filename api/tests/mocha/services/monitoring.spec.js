@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const _ = require('lodash');
 
 const db = require('../../../src/db');

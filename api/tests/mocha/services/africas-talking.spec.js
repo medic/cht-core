@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const secureSettings = require('@medic/settings');
 const config = require('../../../src/config');
 const service = require('../../../src/services/africas-talking');

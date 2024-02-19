@@ -3,7 +3,6 @@ const _ = require('lodash');
 const fs = require('fs');
 const chai = require('chai');
 const sinon = require('sinon');
-const request = require('request-promise-native');
 
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
@@ -15,6 +14,7 @@ const translations = require('../../../src/translations');
 const privacyPolicy = require('../../../src/services/privacy-policy');
 const config = require('../../../src/config');
 const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
+const request = require('@medic/couch-request');
 const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
 

@@ -1,4 +1,4 @@
-const rpn = require('request-promise-native');
+const request = require('request-promise-native');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0;
 const minimist = require('minimist');
 
@@ -46,7 +46,7 @@ const options = {
 const execute = async () => {
   let users = [];
   try {
-    users = await rpn.get(options);
+    users = await request.get(options);
   } catch (e) {
     console.log('An error while getting the list of users - ', e.message);
   }
@@ -58,7 +58,7 @@ const execute = async () => {
     };
     postOptions.uri = `${options.uri}/${user.username}`;
     try {
-      await rpn.post(postOptions);
+      await request.post(postOptions);
     } catch (e) {
       console.log('An error while updating the password - ', e.message);
     }

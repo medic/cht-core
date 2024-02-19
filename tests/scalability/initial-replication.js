@@ -4,13 +4,13 @@ const config = require('./config.json');
 const user = config.users[threadId % config.users.length];
 
 const rewire = require('rewire');
-const rpn = require('request-promise-native');
+const request = require('request-promise-native');
 
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 const fetchJSON = async (url) => {
-  return await rpn.get({
+  return await request.get({
     url: `${config.url}${url}`,
     auth: { username: user.name, password: user.pass },
     json: true,
