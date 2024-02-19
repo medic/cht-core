@@ -266,10 +266,15 @@ mm-panel-header {
 
 @media (max-width: @media-mobile) {
   .material {
-    .card {
+    .card:not(.compact-card) {
       border-radius: 0;
       border-left: 0;
       border-right: 0;
+    }
+    .compact-card {
+      margin-left: 10px;
+      margin-right: 10px;
+      border-radius: @radius-size-small;
     }
     .heading img {
       float: left;
@@ -284,6 +289,7 @@ mm-panel-header {
       margin-right: 0;
     }
   }
+
   #snackbar .snackbar-content {
     width: 100%;
     min-width: 100%;
