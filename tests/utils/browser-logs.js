@@ -5,8 +5,8 @@ const logEntries = [];
 const saveBrowserLogs = async (logLevels, browserLogPath) => {
   try {
     await browser.url('/');
-    await browser.cdp('Log', 'enable');
-    await browser.cdp('Runtime', 'enable');
+    // await browser.cdp('Log', 'enable');
+    // await browser.cdp('Runtime', 'enable');
     const writeToFile = browserLogPath === undefined ? false : true;
     browser.on('Runtime.consoleAPICalled', (data) => {
       if (data && logLevels.indexOf(data.type) >= 0) {
