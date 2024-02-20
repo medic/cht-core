@@ -112,12 +112,12 @@ const selectRHSRowById = async (id) => {
 
 const getReportFiltersText = async () => {
   await (await reportFilter()).waitForDisplayed();
-  return Promise.all((await reportFilters()).map(filter => filter.getText()));
+  return (await reportFilters()).map(filter => filter.getText());
 };
 
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
-  return await Promise.all((await taskFilters()).map(filter => filter.getText()));
+  return await (await taskFilters()).map(filter => filter.getText());
 };
 
 const waitForContactLoaded = async (type) => {
@@ -264,11 +264,10 @@ const getAllRHSTaskNames = async () => {
 
 const allContactsList = async () => {
   const parentCards = await contactCards();
-  return Promise.all(parentCards.map(async (parent) => {
-    return {
-      heading: await (await parent.$('h3')).getText(),
-      contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
-    };
+
+  return parentCards.map(async (parent) => ({
+    heading: await (await parent.$('h3')).getText(),
+    contactNames: await (await parent.$$('.children h4 span')).map(filter => filter.getText())
   }));
 };
 
