@@ -61,7 +61,6 @@ describe('Mute/Unmute contacts using a specific form.', () => {
       'Yes'
     );
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
     await commonPage.sync();
 
     expect(await (await contactPage.contactMuted()).isDisplayed()).to.be.false;

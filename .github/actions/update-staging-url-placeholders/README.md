@@ -1,10 +1,6 @@
 # PR Search for tokens, replace with URLs
 
-Search and replace in the body of a PR, currently hard coded for these strings. Will use the `branch` from the current PR:
-
-* `CHT_CORE_COMPOSE_URL` --> `[Core](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-core.yml)`
-* `COUCH_SINGLE_COMPOSE_URL` --> `[CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb.yml)`
-* `COUCH_CLUSTER_COMPOSE_URL` --> `[CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb-clustered.yml)`
+Search and replace in the body of a PR, currently hard coded for `<!-- COMPOSE URLS GO HERE - DO NOT CHANGE -->`.
 
 ## Example workflow:
 
@@ -37,11 +33,7 @@ jobs:
 
 ### Before
 
-```markdown
-* __CHT_CORE_COMPOSE_URL__
-* __COUCH_SINGLE_COMPOSE_URL__
-* __COUCH_CLUSTER_COMPOSE_URL__
-```
+`<!-- COMPOSE URLS GO HERE - DO NOT CHANGE -->`
 
 ### After
 

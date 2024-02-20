@@ -37,7 +37,6 @@ const submitAddChwForm = async ({
   await setChwName(nameValue);
   await setChwPhone(phoneValue);
   await genericForm.submitForm();
-  await commonPage.waitForPageLoaded();
 };
 
 const district = utils.deepFreeze(

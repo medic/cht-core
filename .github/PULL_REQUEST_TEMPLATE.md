@@ -31,13 +31,7 @@ https://docs.communityhealthtoolkit.org/contribute/code/workflow/#commit-message
 - [ ] Internationalised: All user facing text
 - [ ] Backwards compatible: Works with existing data and configuration or includes a migration. Any breaking changes documented in the release notes.
 
-# Compose URLs
-<!-- Do not change these!  CI will automatically update these to be the deep URLs -->
-If Build CI hasn't passed, these may 404:
-
-* __CHT_CORE_COMPOSE_URL__
-* __COUCH_SINGLE_COMPOSE_URL__
-* __COUCH_CLUSTER_COMPOSE_URL__
+<!-- COMPOSE URLS GO HERE - DO NOT CHANGE -->
 
 # License
 

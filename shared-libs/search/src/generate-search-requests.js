@@ -1,18 +1,14 @@
 const _ = require('lodash/core');
-_.partial = require('lodash/partial');
-_.partial.placeholder = _;
 const moment = require('moment');
-const END_OF_ALPHABET = '\ufff0';
 
-const getKeysArray = function(keys) {
-  return keys.map(function(t) {
-    return [ t ];
-  });
-};
+const END_OF_ALPHABET = '\ufff0';
+const MINIMUM_SEARCH_TERM_LENGTH = 3;
+
+const getKeysArray = (keys) => keys.map(key => [ key ]);
 
 // filter = { selected: [...], options: [...]}
-const getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
-  if (!filter || !filter.selected) {
+const getRequestForMultidropdown = (view, filter, mapKeysFunc) => {
+  if (!filter?.selected) {
     return;
   }
 
@@ -24,7 +20,7 @@ const getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
   return getRequestWithMappedKeys(view, filter.selected, mapKeysFunc);
 };
 
-const getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
+const getRequestWithMappedKeys = (view, keys, mapKeysFunc) => {
   if (!keys || keys.length === 0) {
     return;
   }
@@ -37,19 +33,19 @@ const getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
   };
 };
 
-const getRequestForBooleanKey = function(view, key) {
+const getRequestForBooleanKey = (view, key) => {
   if (!_.isBoolean(key)) {
     return;
   }
   return {
-    view: view,
+    view,
     params: {
       key: [ key ]
     }
   };
 };
 
-const reportedDateRequest = function(filters) {
+const reportedDateRequest = (filters) => {
   const dateRange = filters.date;
   if (!dateRange || (!dateRange.to && !dateRange.from)) {
     return;
@@ -65,63 +61,66 @@ const reportedDateRequest = function(filters) {
   };
 };
 
-const formRequest = function(filters) {
-  const req = getRequestForMultidropdown(
-    'medic-client/reports_by_form',
-    filters.forms,
-    function(forms) {
-      return forms.map(function(form) {
-        return [ form.code ];
-      });
-    }
-  );
-
+const formRequest = (filters) => {
+  const mapKeysFunc = forms => forms.map(form => [ form.code ]);
+  const req = getRequestForMultidropdown('medic-client/reports_by_form', filters.forms, mapKeysFunc);
   if (req) {
     req.params.reduce = false;
   }
-
   return req;
 };
 
-const validityRequest = function(filters) {
+const validityRequest = (filters) => {
   return getRequestForBooleanKey('medic-client/reports_by_validity', filters.valid);
 };
 
-const verificationRequest = function(filters) {
+const verificationRequest = (filters) => {
   return getRequestWithMappedKeys('medic-client/reports_by_verification', filters.verified, getKeysArray);
 };
 
-const placeRequest = function(filters) {
+const placeRequest = (filters) => {
   return getRequestForMultidropdown('medic-client/reports_by_place', filters.facilities, getKeysArray);
 };
 
-const freetextRequest = function(filters, view) {
-  if (filters.search) {
-    const words = filters.search.trim().toLowerCase().split(/\s+/);
-    return words.map(function(word) {
-      const params = {};
-      if (word.indexOf(':') !== -1) {
-        // use exact match
-        params.key = [ word ];
-      } else {
-        // use starts with
-        params.startkey = [ word ];
-        params.endkey = [ word + END_OF_ALPHABET ];
-      }
-      return {
-        view: view,
-        params: params
-      };
-    });
+const freetextRequestParams = (word) => {
+  const params = {};
+  if (word.indexOf(':') !== -1) {
+    // use exact match
+    params.key = [ word ];
+    return params;
   }
+  
+  // use starts with
+  if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
+    return;
+  }
+  
+  params.startkey = [ word ];
+  params.endkey = [ word + END_OF_ALPHABET ];
+  return params;
 };
 
-const subjectRequest = function(filters) {
+const freetextRequest = (filters, view) => {
+  if (!filters.search) {
+    return;
+  }
+  const words = filters.search
+    .trim()
+    .toLowerCase()
+    .split(/\s+/);
+  const requests = words.map((word) => {
+    const params = freetextRequestParams(word);
+    return params && { view, params };
+  });
+  return _.compact(requests);
+};
+
+const subjectRequest = (filters) => {
   const subjectIds = filters.subjectIds;
   return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds);
 };
 
-const getContactsByParentRequest = function(filters) {
+const getContactsByParentRequest = (filters) => {
   if (!filters.parent) {
     return;
   }
@@ -135,7 +134,7 @@ const getContactsByParentRequest = function(filters) {
   };
 };
 
-const contactTypeRequest = function(filters, sortByLastVisitedDate) {
+const contactTypeRequest = (filters, sortByLastVisitedDate) => {
   if (!filters.types) {
     return;
   }
@@ -144,7 +143,7 @@ const contactTypeRequest = function(filters, sortByLastVisitedDate) {
   if (filters.types.selected && filters.types.options) {
     request = getRequestForMultidropdown(view, filters.types, getKeysArray);
   } else {
-    // Used by select2search.
+    // Used by select2search
     request = getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
   }
 
@@ -159,7 +158,7 @@ const contactTypeRequest = function(filters, sortByLastVisitedDate) {
   return request;
 };
 
-const defaultReportRequest = function() {
+const defaultReportRequest = () => {
   return {
     view: 'medic-client/reports_by_date',
     ordered: true,
@@ -167,17 +166,17 @@ const defaultReportRequest = function() {
   };
 };
 
-const defaultContactRequest = function() {
+const defaultContactRequest = () => {
   return {
     view: 'medic-client/contacts_by_type',
     ordered: true
   };
 };
 
-const sortByLastVisitedDate = function() {
+const sortByLastVisitedDate = () => {
   return {
     view: 'medic-client/contacts_by_last_visited',
-    map: function(row) {
+    map: (row) => {
       row.id = row.key;
       row.value = row.value.max;
       return row;
@@ -189,7 +188,7 @@ const sortByLastVisitedDate = function() {
   };
 };
 
-const makeCombinedParams = function(freetextRequest, typeKey) {
+const makeCombinedParams = (freetextRequest, typeKey) => {
   const type = typeKey[0];
   const params = {};
   if (freetextRequest.key) {
@@ -201,15 +200,16 @@ const makeCombinedParams = function(freetextRequest, typeKey) {
   return params;
 };
 
-const getContactsByTypeAndFreetextRequest = function(typeRequests, freetextRequest) {
+const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   const result = {
     view: 'medic-client/contacts_by_type_freetext',
     union: typeRequests.params.keys.length > 1
   };
 
   if (result.union) {
-    result.paramSets =
-      typeRequests.params.keys.map(_.partial(makeCombinedParams, freetextRequest, _));
+    result.paramSets = typeRequests.params.keys.map(typeRequest => {
+      return makeCombinedParams(freetextRequest, typeRequest);
+    });
     return result;
   }
 
@@ -217,8 +217,31 @@ const getContactsByTypeAndFreetextRequest = function(typeRequests, freetextReque
   return result;
 };
 
+const getCombinedContactsRequests = (freetextRequests, contactsByParentRequest, typeRequest) => {
+  const combinedRequests = freetextRequests.map(freetextRequest => {
+    return getContactsByTypeAndFreetextRequest(typeRequest, freetextRequest);
+  });
+  if (contactsByParentRequest) {
+    combinedRequests.unshift(contactsByParentRequest);
+  }
+  return combinedRequests;
+};
+
+const setDefaultContactsRequests = (requests, shouldSortByLastVisitedDate) => {
+  if (!requests.length) {
+    requests.push(defaultContactRequest());
+  }
+
+  if (shouldSortByLastVisitedDate) {
+    // Always push this last, search:getIntersection uses the last request's result, we'll need it later for sorting.
+    requests.push(sortByLastVisitedDate());
+  }
+
+  return requests;
+};
+
 const requestBuilders = {
-  reports: function(filters) {
+  reports: (filters) => {
     let requests = [
       reportedDateRequest(filters),
       formRequest(filters),
@@ -235,7 +258,7 @@ const requestBuilders = {
     }
     return requests;
   },
-  contacts: function(filters, extensions) {
+  contacts: (filters, extensions) => {
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
     const freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
@@ -249,24 +272,11 @@ const requestBuilders = {
     }
 
     if (hasTypeRequest && freetextRequests?.length) {
-      const combinedRequests = freetextRequests.map(_.partial(getContactsByTypeAndFreetextRequest, typeRequest, _));
-      if (contactsByParentRequest) {
-        combinedRequests.unshift(contactsByParentRequest);
-      }
-      return combinedRequests;
+      return getCombinedContactsRequests(freetextRequests, contactsByParentRequest, typeRequest);
     }
 
     const requests = _.compact(_.flatten([ freetextRequests, typeRequest, contactsByParentRequest ]));
-    if (!requests.length) {
-      requests.push(defaultContactRequest());
-    }
-
-    if (shouldSortByLastVisitedDate) {
-      // Always push this last, search:getIntersection uses the last request's result, we'll need it later for sorting.
-      requests.push(sortByLastVisitedDate());
-    }
-
-    return requests;
+    return setDefaultContactsRequests(requests, shouldSortByLastVisitedDate);
   }
 };
 
@@ -303,14 +313,14 @@ const requestBuilders = {
 //
 // NB: options is not required: it is an optimisation shortcut
 module.exports = {
-  generate: function(type, filters, extensions) {
+  generate: (type, filters, extensions) => {
     const builder = requestBuilders[type];
     if (!builder) {
       throw new Error('Unknown type: ' + type);
     }
     return builder(filters, extensions);
   },
-  shouldSortByLastVisitedDate: function(extensions) {
-    return Boolean(extensions && extensions.sortByLastVisitedDate);
+  shouldSortByLastVisitedDate: (extensions) => {
+    return Boolean(extensions?.sortByLastVisitedDate);
   }
 };

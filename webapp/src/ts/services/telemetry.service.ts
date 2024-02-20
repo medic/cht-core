@@ -1,7 +1,6 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
-import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -14,7 +13,6 @@ export class TelemetryService {
   private readonly TELEMETRY_PREFIX = 'telemetry';
   private readonly POUCH_PREFIX = '_pouch_';
   private readonly NAME_DIVIDER = '-';
-  private readonly DATE_FORMAT = 'YYYY-MM-DD';
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private isAggregationRunning = false;
@@ -90,6 +88,7 @@ export class TelemetryService {
           year: date.year,
           month: date.month,
           day: date.date,
+          aggregate_date: new Date().toISOString(),
           user: this.sessionService.userCtx().name,
           deviceId: this.getUniqueDeviceId(),
           versions: {
@@ -119,10 +118,15 @@ export class TelemetryService {
     };
   }
 
+  private isValidTelemetryDBName(dbName): boolean {
+    const expression = new RegExp(`^${this.TELEMETRY_PREFIX}-[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9].*`, 'g');
+    return expression.test(dbName);
+  }
+
   private async getTelemetryDBs(databaseNames): Promise<undefined|string[]> {
     return databaseNames
       ?.map(dbName => dbName?.replace(this.POUCH_PREFIX, '') || '')
-      .filter(dbName => dbName?.startsWith(this.TELEMETRY_PREFIX));
+      .filter(dbName => this.isValidTelemetryDBName(dbName));
   }
 
   /**
@@ -203,10 +207,10 @@ export class TelemetryService {
    * Moment when the aggregation starts (i.e. the beginning of the current day)
    */
   private getToday(): TodayMoment {
-    const today = moment().startOf('day');
+    const today = new Date();
     return {
       today,
-      formatted: today.format(this.DATE_FORMAT),
+      formatted: `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`,
     };
   }
 
@@ -345,10 +349,11 @@ export class TelemetryService {
     databaseNames?.forEach(dbName => {
       const nameNoPrefix = dbName?.replace(this.POUCH_PREFIX, '') || '';
 
-      // Skips new Telemetry DB, then matches the old deprecated Telemetry DB.
-      if (!nameNoPrefix.startsWith(this.TELEMETRY_PREFIX)
+      // Skips new Telemetry DB, then matches malformed or the old deprecated Telemetry DB.
+      if (!this.isValidTelemetryDBName(nameNoPrefix)
         && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
         && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
+        console.warn(`Invalid telemetry database name, deleting database. Name: ${nameNoPrefix}`);
         this.windowRef?.indexedDB.deleteDatabase(dbName);
       }
     });
