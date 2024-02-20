@@ -14,7 +14,7 @@ const argv = minimist(process.argv.slice(2), {
 });
 
 if (argv.h|| !argv.url || !argv.user || !argv.password || !argv.use_passes) {
-  console.log(`Change passwords of users in user-password-change.txt, show results on screen 
+  console.log(`Change passwords of users in user-password-change.csv, show results on screen 
 
 Usage:
       node bulk-password-update-export.js -h | --help
@@ -25,7 +25,7 @@ Options:
     --url         The url for the instance being changed
     --user        The admin user this operation is run as
     --password    The password for the admin user 
-    --use_passes  The passwords are in user-password-change.txt in or not. 
+    --use_passes  The passwords are in user-password-change.csv in or not. 
                   "true" - yes they're there in USER, PASSWORD format
                   "false" - no, no password, just usernames, one per line. Generate a random password for me.
 
