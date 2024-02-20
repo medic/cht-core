@@ -1,4 +1,4 @@
-describe('Export service', () => {
+describe.only('Export service', () => {
   'use strict';
 
   const { expect } = chai;
@@ -127,18 +127,21 @@ describe('Export service', () => {
   });
 
   [
-
-  ].forEach(() => {
+    ['attachment; filename=user-devices-202402201907.csv', 'user-devices-202402201907.csv'],
+    ['attachment; name="fieldName"; filename="myFile.csv"', 'myFile.csv'],
+    ['attachment;filename="  myFile.csv  ";name="fieldName"', 'myFile.csv'],
+    ['attachment; filename=myFile.csv; name=fieldName', 'myFile.csv'],
+  ].forEach(([contentDisposition, expectedFilename]) => {
     it('uses the filename from the content-disposition header', async () => {
       const type = 'user-devices';
-      fetchResponse.headers.get.returns('form-data; name="fieldName"');
+      fetchResponse.headers.get.returns(contentDisposition);
 
       await service(type);
 
       expect(log.error.called).to.be.false;
       expect(fetch.calledOnce).to.be.true;
       expect(link.setAttribute.calledOnce).to.be.true;
-      expect(link.setAttribute.args[0]).to.deep.equal(['download', 'download']);
+      expect(link.setAttribute.args[0]).to.deep.equal(['download', expectedFilename]);
     });
   });
 });

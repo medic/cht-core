@@ -2,20 +2,12 @@
 
   'use strict';
 
+  const DEFAULT_FILE_NAME = 'download';
+
   const getFileName = (headers) => {
-    const DEFAULT_FILE_NAME = 'download';
-
     const contentDisposition = headers.get('content-disposition');
-    if (!contentDisposition) {
-      return DEFAULT_FILE_NAME;
-    }
-
-    const fileName = contentDisposition.split('filename=')[1];
-    if (!fileName) {
-      return DEFAULT_FILE_NAME;
-    }
-
-    return fileName;
+    const match = /filename=(?:"|)(.*?)(?:"|;|$)/.exec(contentDisposition);
+    return match ? match[1].trim() : DEFAULT_FILE_NAME;
   };
 
   /**
