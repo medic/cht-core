@@ -394,6 +394,187 @@ describe('Export Data V2.0', () => {
     });
   });
 
+  describe('GET|POST /api/v2/export/user-devices', () => {
+    const createTelemetryDoc = ({
+      date,
+      deviceId,
+      user,
+      browser,
+      apk,
+      android,
+      cht,
+      settings
+    }) => {
+      const [year, month, day] = date.split('-');
+      const getUserAgent = () => {
+        if (!browser.name) {
+          return undefined;
+        }
+        const platform = browser.name === 'Firefox'
+          ? `Gecko/20100101 Firefox/${browser.version}`
+          : `AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${browser.version} Safari/537.36`;
+        return `Mozilla/5.0 (X11; Linux x86_64) ${platform}`;
+      };
+      return {
+        _id: `telemetry-${date}-${user}-${deviceId}`,
+        type: 'telemetry',
+        metadata: {
+          year,
+          month,
+          day,
+          user,
+          deviceId,
+          versions: {
+            app: cht,
+            settings
+          }
+        },
+        device: {
+          userAgent: getUserAgent(),
+          deviceInfo: {
+            app: {
+              version: apk
+            },
+            software: {
+              androidVersion: android
+            }
+          }
+        }
+      };
+    };
+
+    const otherDocs = [
+      {
+        _id: `telemetry-2012-12-12-harambe-microsoft_kin`,
+        type: 'faketelemetry',
+        metadata: {
+          year: 2012,
+          month: 12,
+          day: 12,
+          user: 'harambe',
+          deviceId: 'microsoft_kin',
+        },
+        device: {
+          userAgent: 'Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/47.0'
+        }
+      },
+      { _id: uuid(), type: 'feedback', form: 'a-form', fields: {} },
+      { _id: uuid(), type: 'telemetry' },
+      {
+        _id: `telemetry-2012-11-00-harambe-microsoft_kin`,
+        type: 'telemetry',
+        metadata: {
+          year: 2011,
+          month: 11,
+          day: undefined,
+          user: 'harambe',
+        },
+      },
+    ];
+
+    const deleteAllUsersMetaDocs = async () => {
+      const getResults = await utils.request({
+        path: '/medic-test-users-meta/_all_docs',
+        method: 'GET'
+      });
+      const docs = getResults.rows
+        .filter(row => !row.id.startsWith('_design'))
+        .map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+      const postResults = await utils.request({
+        path: '/medic-test-users-meta/_bulk_docs',
+        method: 'POST',
+        body: { docs }
+      });
+      if (postResults.find(r => !r.ok)) {
+        throw Error(JSON.stringify(postResults, null, 2));
+      }
+    };
+
+    const saveUsersMetaDocs = async (docs) => {
+      const results = await utils.request({
+        path: '/medic-test-users-meta/_bulk_docs',
+        method: 'POST',
+        body: { docs }
+      });
+      if (results.find(r => !r.ok)) {
+        throw Error(JSON.stringify(results, null, 2));
+      }
+      return results;
+    };
+
+    before(async () => {
+      await deleteAllUsersMetaDocs();
+    });
+
+    afterEach(async () => {
+      await deleteAllUsersMetaDocs();
+    });
+
+    it('Returns device data for all users', async () => {
+      const expectedData = [
+        {
+          user: 'max_data',
+          deviceId: uuid(),
+          date: '2011-11-11',
+          browser: {
+            name: 'Firefox',
+            version: '47.0',
+          },
+          apk: 'v1.0.1',
+          android: '5.1',
+          cht: `4.6.0`,
+          settings: uuid()
+        },
+        {
+          user: 'min_data',
+          deviceId: uuid(),
+          date: '2011-11-11',
+          browser: {}
+        }
+      ];
+      await saveUsersMetaDocs([...otherDocs, ...expectedData.map(createTelemetryDoc)]);
+
+      const result = await utils.request({ path: '/api/v2/export/user-devices' });
+
+      expect(result).to.deep.equal(expectedData);
+    });
+
+    it('Only returns latest device data for all user', async () => {
+      const userData0 = {
+        user: 'chw1',
+        deviceId: 'my_device',
+        date: '1969-12-12',
+        browser: {
+          name: 'Firefox',
+          version: '47.0',
+        },
+      };
+      const userData1 = {
+        user: 'chw1',
+        deviceId: 'my_device',
+        date: '2011-11-10',
+        browser: {
+          name: 'Firefox',
+          version: '48.0',
+        },
+      };
+      const userDataLatest = {
+        user: 'chw1',
+        deviceId: 'my_device',
+        date: '2011-11-11',
+        browser: {
+          name: 'Chrome',
+          version: '121.0.6167.184',
+        },
+      };
+      await saveUsersMetaDocs([userData0, userData1, userDataLatest].map(createTelemetryDoc));
+
+      const result = await utils.request({ path: '/api/v2/export/user-devices' });
+
+      expect(result).to.deep.equal([userDataLatest]);
+    });
+  });
+
   describe('Weird data', () => {
     before(() => utils.saveDoc({
       _id: 'export-data-2-test-doc-4',
