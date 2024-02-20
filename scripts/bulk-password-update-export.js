@@ -81,6 +81,9 @@ const changeUserPass = async (user, options) => {
     if (admins.includes(user.name)) {
       throw new Error(`403 - Password change for "${user.name}" not allowed .`);
     }
+    if (user.name.toString().trim() === "") {
+      throw new Error(`404 - Username is blank - check CSV and run again.`);
+    }
     await rpn.post(postOptions);
     console.log('SUCCESS', user.name, user.pass);
   } catch (e) {
