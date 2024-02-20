@@ -1,4 +1,4 @@
-describe.only('Export service', () => {
+describe('Export service', () => {
   'use strict';
 
   const { expect } = chai;
