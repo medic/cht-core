@@ -11,7 +11,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-set -e
+set -e -o pipefail
 CLUSTER_CREDENTIALS="/opt/couchdb/etc/local.d/cluster-credentials.ini"
 if [[ "$COUCHDB_SYNC_ADMINS_NODE" || "$CLUSTER_PEER_IPS" ]]; then
 	IS_CLUSTER=true
@@ -35,7 +35,7 @@ setSecret() {
 		COUCHDB_SECRET=$(cat /proc/sys/kernel/random/uuid)
 	fi
 	# Set secret only if not already present
-	if [ -z $(grep -Pzor "\[couch_httpd_auth\]\nsecret =" $CLUSTER_CREDENTIALS) ]; then
+	if ! grep -Pzq "\[couch_httpd_auth\]\nsecret =" $CLUSTER_CREDENTIALS; then
 		printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >>$CLUSTER_CREDENTIALS
 	fi
 }
@@ -45,7 +45,7 @@ setUuid() {
 		COUCHDB_UUID=$(cat /proc/sys/kernel/random/uuid)
 	fi
 	# Set uuid only if not already present
-	if [ -z $(grep -Pzor "\[couchdb\]\nuuid =" $CLUSTER_CREDENTIALS) ]; then
+	if ! grep -Pzq "\[couchdb\]\nuuid =" $CLUSTER_CREDENTIALS; then
 		printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >>$CLUSTER_CREDENTIALS
 	fi
 }
@@ -80,7 +80,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 
 	if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ] && [ -z "$COUCHDB_SYNC_ADMINS_NODE" ]; then
 		# Create admin only if not already present
-		if ! grep -Pzoqr "\[admins\]\n$COUCHDB_USER =" $CLUSTER_CREDENTIALS; then
+		if ! grep -Pzq "\[admins\]\n$COUCHDB_USER =" $CLUSTER_CREDENTIALS; then
 			printf "\n[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >>$CLUSTER_CREDENTIALS
 		fi
 	fi
@@ -94,7 +94,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 	fi
 
 	if [ "$COUCHDB_LOG_LEVEL" ]; then
-		if ! grep -Pzoqr "\[log\]\nlevel =" $CLUSTER_CREDENTIALS; then
+		if ! grep -Pzq "\[log\]\nlevel =" $CLUSTER_CREDENTIALS; then
 			printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >>$CLUSTER_CREDENTIALS
 		else
 			sed -i "s/level = .*/level = $COUCHDB_LOG_LEVEL/g" $CLUSTER_CREDENTIALS
@@ -109,17 +109,17 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 	if [ "$COUCHDB_SYNC_ADMINS_NODE" ]; then
 		# Wait until couchdb1 node is ready and then retrieve salted password. We need to use same
 		# hashed password across all nodes so that session cookies can be reused.
-		/bin/bash /opt/couchdb/etc/set-up-cluster.sh check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984
-		COUCHDB_HASHED_PASSWORD=$(curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/admins/$COUCHDB_USER | sed "s/^\([\"]\)\(.*\)\$/\2/g")
+		/bin/bash /opt/couchdb/etc/set-up-cluster.sh check_if_couchdb_is_ready "http://$COUCHDB_SYNC_ADMINS_NODE:5984"
+		COUCHDB_HASHED_PASSWORD=$(curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" "http://$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/admins/$COUCHDB_USER" | sed "s/^\([\"]\)\(.*\)\1\$/\2/g")
 
-		if ! grep -Pzoqr "$COUCHDB_USER = $COUCHDB_HASHED_PASSWORD" $CLUSTER_CREDENTIALS; then
+		if ! grep -Pzq "$COUCHDB_USER = $COUCHDB_HASHED_PASSWORD" $CLUSTER_CREDENTIALS; then
 			printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD" >>$CLUSTER_CREDENTIALS
 		fi
 
-		COUCHDB_SECRET=$(curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/couch_httpd_auth/secret | sed "s/^\([\"]\)\(.*\)\$/\2/g")
+		COUCHDB_SECRET=$(curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" "http://$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/couch_httpd_auth/secret" | sed "s/^\([\"]\)\(.*\)\1\$/\2/g")
 		setSecret
 
-		COUCHDB_UUID=$(curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/couchdb/uuid | sed "s/^\([\"]\)\(.*\)\$/\2/g")
+		COUCHDB_UUID=$(curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" "http://$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/couchdb/uuid" | sed "s/^\([\"]\)\(.*\)\1\$/\2/g")
 		setUuid
 	fi
 
@@ -129,6 +129,6 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 	chown -f couchdb:couchdb $CLUSTER_CREDENTIALS || true
 
 	su -c "ulimit -n 100000 && exec $@" couchdb
+else
+	exec "$@"
 fi
-
-exec "$@"
