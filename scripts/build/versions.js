@@ -53,7 +53,7 @@ const getImageTag = (service, release = false) => {
   return service ? `${getRepo(repo)}/cht-${service}:${tag}` : tag;
 };
 
-const escapeVersion = (version) => version.replace(/[\/\|_]/g, '-');
+const escapeVersion = (version) => version.replace(/[/|_]/g, '-');
 
 module.exports = {
   getImageTag,
