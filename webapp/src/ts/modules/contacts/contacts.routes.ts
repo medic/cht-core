@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
@@ -8,12 +9,10 @@ import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.compon
 import { ContactRouteGuardProvider } from '@mm-modules/contacts/contact-route.guard.provider';
 import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.component';
 
-export const routes: Routes = [
+const routes: Routes = [
   {
-    path: 'contacts',
+    path: '',
     component: ContactsComponent,
-    data: {permissions: ['can_view_contacts'], tab: 'contacts'},
-    canActivate: [AppRouteGuardProvider],
     children: [
       {
         path: '',
@@ -61,3 +60,9 @@ export const routes: Routes = [
     ],
   },
 ];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class ContactsRoutingModule { }

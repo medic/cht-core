@@ -22,7 +22,6 @@ import {
 import {
   MultiDropdownFilterComponent
 } from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
-import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
@@ -37,13 +36,6 @@ import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
-import {
-  AnalyticsTargetsProgressComponent
-} from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
-import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
-import {
-  AnalyticsTargetsDetailsComponent
-} from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
@@ -57,7 +49,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
     MultiDropdownFilterComponent,
-    DateFilterComponent,
     FacilityFilterComponent,
     FormTypeFilterComponent,
     StatusFilterComponent,
@@ -72,9 +63,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     NavigationComponent,
     ActionbarComponent,
     EnketoComponent,
-    AnalyticsTargetsProgressComponent,
-    AnalyticsFilterComponent,
-    AnalyticsTargetsDetailsComponent,
     MobileDetectionComponent,
     ErrorLogComponent,
     ModalLayoutComponent,
@@ -100,7 +88,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     ContentRowListItemComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
-    DateFilterComponent,
     FacilityFilterComponent,
     FormTypeFilterComponent,
     FastActionButtonComponent,
@@ -115,10 +102,7 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     NavigationComponent,
     ActionbarComponent,
     EnketoComponent,
-    AnalyticsTargetsProgressComponent,
     ErrorLogComponent,
-    AnalyticsFilterComponent,
-    AnalyticsTargetsDetailsComponent,
     ModalLayoutComponent,
     PanelHeaderComponent,
   ]

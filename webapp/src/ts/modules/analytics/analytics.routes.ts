@@ -1,21 +1,17 @@
-import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
-import { AppRouteGuardProvider } from '../../app-route.guard.provider';
-import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
-import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
-import { AnalyticsModulesComponent } from '@mm-modules/analytics/analytics-modules.component';
-import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
-import {
-  AnalyticsTargetAggregatesDetailComponent
-} from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
-import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
+import { AnalyticsComponent } from './analytics.component';
+import { AnalyticsTargetsComponent } from './analytics-targets.component';
+import { AnalyticsModulesComponent } from './analytics-modules.component';
+import { AnalyticsTargetAggregatesComponent } from './analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesDetailComponent } from './analytics-target-aggregates-detail.component';
+import { AnalyticsRouteGuardProvider } from './analytics-route.guard.provider';
 
-export const routes:Routes = [
+const routes:Routes = [
   {
-    path: 'analytics',
+    path: '',
     component: AnalyticsComponent,
-    data: { permissions: [ 'can_view_analytics' ], tab: 'analytics' },
-    canActivate: [ AppRouteGuardProvider ],
     canActivateChild: [ AnalyticsRouteGuardProvider ],
     children: [
       {
@@ -45,3 +41,9 @@ export const routes:Routes = [
     ]
   },
 ];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class AnalyticsRoutingModule { }

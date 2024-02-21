@@ -20,7 +20,6 @@ import { EffectsModule } from '@ngrx/effects';
 import * as _ from 'lodash-es';
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppRouteGuardProvider } from './app-route.guard.provider';
 import { AppComponent } from './app.component';
@@ -37,8 +36,6 @@ import { TranslationLoaderProvider } from '@mm-providers/translation-loader.prov
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { GlobalEffects } from '@mm-effects/global.effects';
-import { ReportsEffects } from '@mm-effects/reports.effects';
-import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { reducers } from '@mm-reducers/index';
 
 const logger = reducer => {
@@ -88,7 +85,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
-    EffectsModule.forRoot([ GlobalEffects, ReportsEffects, ContactsEffects ]),
+    EffectsModule.forRoot([ GlobalEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },

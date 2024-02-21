@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
@@ -11,10 +12,8 @@ import {
 
 export const routes:Routes = [
   {
-    path: 'reports',
+    path: '',
     component: ReportsComponent,
-    data: { permissions: ['can_view_reports'], tab: 'reports' },
-    canActivate: [AppRouteGuardProvider],
     children: [
       {
         path: '',
@@ -44,3 +43,9 @@ export const routes:Routes = [
     ]
   },
 ];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class ReportsRoutingModule { }

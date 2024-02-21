@@ -11,26 +11,31 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
+import { EffectsModule } from '@ngrx/effects';
 
 import { PipesModule } from '@mm-pipes/pipes.module';
-import { HomeComponent } from '@mm-modules/home/home.component';
-import { AboutComponent } from '@mm-modules/about/about.component';
-import { ConfigurationUserComponent } from '@mm-modules/configuration-user/configuration-user.component';
-import { ErrorComponent } from '@mm-modules/error/error.component';
 import { ComponentsModule } from '@mm-components/components.module';
-import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
-
-import { TestingComponent } from '@mm-modules/testing/testing.component';
 import { DirectivesModule } from '@mm-directives/directives.module';
+
+import { ReportsComponent } from './reports.component';
+import { ReportsContentComponent } from './reports-content.component';
+import { ReportsAddComponent } from './reports-add.component';
+import { ReportsFiltersComponent } from './reports-filters.component';
+import { ReportsSidebarFilterComponent } from './reports-sidebar-filter.component';
+import { ReportsMoreMenuComponent } from './reports-more-menu.component';
+import { ReportsEffects } from '@mm-effects/reports.effects';
+import { ReportsRoutingModule } from './reports.routes';
+import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 
 @NgModule({
   declarations: [
-    HomeComponent,
-    AboutComponent,
-    ConfigurationUserComponent,
-    ErrorComponent,
-    PrivacyPolicyComponent,
-    TestingComponent,
+    ReportsComponent,
+    ReportsAddComponent,
+    ReportsContentComponent,
+    ReportsFiltersComponent,
+    ReportsSidebarFilterComponent,
+    ReportsMoreMenuComponent,
+    DateFilterComponent,
   ],
   imports: [
     CommonModule,
@@ -48,13 +53,11 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     MatDialogModule,
     MatExpansionModule,
     MatMenuModule,
+    ReportsRoutingModule,
+    EffectsModule.forFeature([ ReportsEffects ]),
   ],
   exports: [
-    HomeComponent,
-    AboutComponent,
-    ConfigurationUserComponent,
-    ErrorComponent,
-    PrivacyPolicyComponent,
+    ReportsComponent,
   ]
 })
-export class ModulesModule { }
+export class ReportsModule { }

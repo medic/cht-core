@@ -13,24 +13,19 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 
 import { PipesModule } from '@mm-pipes/pipes.module';
-import { HomeComponent } from '@mm-modules/home/home.component';
-import { AboutComponent } from '@mm-modules/about/about.component';
-import { ConfigurationUserComponent } from '@mm-modules/configuration-user/configuration-user.component';
-import { ErrorComponent } from '@mm-modules/error/error.component';
 import { ComponentsModule } from '@mm-components/components.module';
-import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
-
-import { TestingComponent } from '@mm-modules/testing/testing.component';
 import { DirectivesModule } from '@mm-directives/directives.module';
+
+import { MessagesRoutingModule } from './messages.routes';
+import { MessagesComponent } from './messages.component';
+import { MessagesContentComponent } from './messages-content.component';
+import { MessagesMoreMenuComponent } from './messages-more-menu.component';
 
 @NgModule({
   declarations: [
-    HomeComponent,
-    AboutComponent,
-    ConfigurationUserComponent,
-    ErrorComponent,
-    PrivacyPolicyComponent,
-    TestingComponent,
+    MessagesComponent,
+    MessagesContentComponent,
+    MessagesMoreMenuComponent,
   ],
   imports: [
     CommonModule,
@@ -48,13 +43,10 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     MatDialogModule,
     MatExpansionModule,
     MatMenuModule,
+    MessagesRoutingModule,
   ],
   exports: [
-    HomeComponent,
-    AboutComponent,
-    ConfigurationUserComponent,
-    ErrorComponent,
-    PrivacyPolicyComponent,
+    MessagesComponent,
   ]
 })
-export class ModulesModule { }
+export class MessagesModule { }

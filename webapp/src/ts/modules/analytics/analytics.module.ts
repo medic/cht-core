@@ -13,24 +13,29 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 
 import { PipesModule } from '@mm-pipes/pipes.module';
-import { HomeComponent } from '@mm-modules/home/home.component';
-import { AboutComponent } from '@mm-modules/about/about.component';
-import { ConfigurationUserComponent } from '@mm-modules/configuration-user/configuration-user.component';
-import { ErrorComponent } from '@mm-modules/error/error.component';
 import { ComponentsModule } from '@mm-components/components.module';
-import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
-
-import { TestingComponent } from '@mm-modules/testing/testing.component';
 import { DirectivesModule } from '@mm-directives/directives.module';
+
+import { AnalyticsComponent } from './analytics.component';
+import { AnalyticsTargetsComponent } from './analytics-targets.component';
+import { AnalyticsModulesComponent } from './analytics-modules.component';
+import { AnalyticsTargetAggregatesComponent } from './analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesDetailComponent } from './analytics-target-aggregates-detail.component';
+import { AnalyticsRoutingModule } from './analytics.routes';
+import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
+import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
+import { AnalyticsTargetsDetailsComponent } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 
 @NgModule({
   declarations: [
-    HomeComponent,
-    AboutComponent,
-    ConfigurationUserComponent,
-    ErrorComponent,
-    PrivacyPolicyComponent,
-    TestingComponent,
+    AnalyticsComponent,
+    AnalyticsTargetsComponent,
+    AnalyticsModulesComponent,
+    AnalyticsTargetAggregatesComponent,
+    AnalyticsTargetAggregatesDetailComponent,
+    AnalyticsTargetsProgressComponent,
+    AnalyticsFilterComponent,
+    AnalyticsTargetsDetailsComponent,
   ],
   imports: [
     CommonModule,
@@ -48,13 +53,10 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     MatDialogModule,
     MatExpansionModule,
     MatMenuModule,
+    AnalyticsRoutingModule,
   ],
   exports: [
-    HomeComponent,
-    AboutComponent,
-    ConfigurationUserComponent,
-    ErrorComponent,
-    PrivacyPolicyComponent,
+    AnalyticsComponent,
   ]
 })
-export class ModulesModule { }
+export class AnalyticsModule { }

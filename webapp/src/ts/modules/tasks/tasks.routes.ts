@@ -1,20 +1,19 @@
-import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
-import { TasksComponent } from '@mm-modules/tasks/tasks.component';
-import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
+import { TasksComponent } from './tasks.component';
+import { TasksContentComponent } from './tasks-content.component';
 import {
   TasksContentRouteGuardProvider,
   TasksGroupRouteGuardProvider
-} from '@mm-modules/tasks/tasks-route.guard.provider';
-import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
+} from './tasks-route.guard.provider';
+import { TasksGroupComponent } from './tasks-group.component';
 
-export const routes:Routes = [
+const routes:Routes = [
   {
-    path: 'tasks',
+    path: '',
     component: TasksComponent,
-    data: { permissions: ['can_edit', 'can_view_tasks'], tab: 'tasks' },
-    canActivate: [AppRouteGuardProvider],
     children: [
       {
         path: '',
@@ -37,3 +36,9 @@ export const routes:Routes = [
     ]
   },
 ];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class TasksRoutingModule { }
