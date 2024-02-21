@@ -159,9 +159,16 @@ get_nginx_container_id() {
   docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet  2>/dev/null
 }
 
-get_is_container_running() {
+nginx_is_running() {
   containerId=$1
   docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
+  containerStarted=docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
+#  if [ $containerStarted ] {
+#    curl -o /dev/null -s -w "%{http_code}\n" http://localhost
+#  }
+#  docker rm -f 8612_no_tls_1st_start_nginx_1; docker volume rm -f 8612_no_tls_1st_start_cht-ssl;docker kill $(docker ps -q);./cht-docker-compose.sh 8612_no_tls_1st_start.env
+#  watch -n.5 'docker exec -it 8612_no_tls_1st_start_nginx_1 bash -c "curl -o /dev/null -s -w \"%{http_code}\" http://localhost"'
+#  curl -o /dev/null -s -w "%{http_code}" http://localhost
 }
 
 service_has_image_downloaded(){
@@ -408,11 +415,11 @@ set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 
 nginxContainerId=$(get_nginx_container_id)
-isNginxRunning=$(get_is_container_running "$nginxContainerId")
+running=$(nginx_is_running "$nginxContainerId")
 i=0
 
 if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
-while [[ "$isNginxRunning" != "true" ]]; do
+while [[ "$running" != "true" ]]; do
   if [[ $i -gt 300 ]]; then
     echo ""
     echo ""
@@ -435,9 +442,11 @@ while [[ "$isNginxRunning" != "true" ]]; do
     nginxContainerId=$(get_nginx_container_id)
   fi
 
-  isNginxRunning=$(get_is_container_running "$nginxContainerId")
+  running=$(nginx_is_running "$nginxContainerId")
 done
 
+echo "sleeping for 5 then fetching certs";
+#sleep 5;
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
 docker exec -it $nginxContainerId bash -c "nginx -s reload"  2>/dev/null
