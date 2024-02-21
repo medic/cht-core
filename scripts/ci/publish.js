@@ -9,7 +9,8 @@ const {
   TAG,
   BRANCH
 } = process.env;
-const releaseName = TAG || BRANCH;
+const versions = require('../build/versions');
+const releaseName = TAG || versions.escapeVersion(BRANCH);
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 

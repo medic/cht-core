@@ -57,6 +57,7 @@ describe('Webapp after upgrade', () => {
 
   it('should display correct version on the about page', async () => {
     await common.goToAboutPage();
-    expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
+    const escapedBranch = BRANCH.replace(/[/|_]/g, '-');
+    expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${escapedBranch} (`);
   });
 });
