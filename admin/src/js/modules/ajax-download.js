@@ -15,16 +15,16 @@
    */
   exports.download = function(url) {
     return fetch(url)
-      .then(response => response.blob())
-      .then(blob => {
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.style.display = 'none';
-        link.href = blobUrl;
-        link.setAttribute('download', getFileName(response.headers));
-        document.body.appendChild(link);
-        link.click();
-        URL.revokeObjectURL(blobUrl);
-      }));
+      .then(response => response.blob()
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.style.display = 'none';
+          link.href = blobUrl;
+          link.setAttribute('download', getFileName(response.headers));
+          document.body.appendChild(link);
+          link.click();
+          URL.revokeObjectURL(blobUrl);
+        }));
   };
 }());
