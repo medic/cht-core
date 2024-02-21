@@ -10,8 +10,10 @@ const {
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
+const getBranch = () => BRANCH === 'master' ? 'alpha' : escapeVersion(BRANCH);
+
 const getBranchVersion = (release) => {
-  const base = BRANCH === 'master' ? `${packageJson.version}-alpha` : `${packageJson.version}-${BRANCH}`;
+  const base = getBranch();
   return release ? base : `${base}.${BUILD_NUMBER}`;
 };
 
@@ -49,8 +51,7 @@ const getVersion = (release) => {
 const getImageTag = (service, release = false) => {
   const version = getVersion(release);
   const repo = release ? ECR_PUBLIC_REPO : ECR_REPO;
-  const tag = escapeVersion(version);
-  return service ? `${getRepo(repo)}/cht-${service}:${tag}` : tag;
+  return service ? `${getRepo(repo)}/cht-${service}:${version}` : version;
 };
 
 const escapeVersion = (version) => version.replace(/[/|_]/g, '-');
