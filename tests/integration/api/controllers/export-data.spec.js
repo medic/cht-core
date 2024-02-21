@@ -539,7 +539,7 @@ describe('Export Data V2.0', () => {
       expect(result).to.deep.equal(expectedData);
     });
 
-    it('Only returns latest device data for all user', async () => {
+    it('Only returns latest data for each user device', async () => {
       const userData0 = {
         user: 'chw1',
         deviceId: 'my_device',
@@ -567,11 +567,20 @@ describe('Export Data V2.0', () => {
           version: '121.0.6167.184',
         },
       };
-      await saveUsersMetaDocs([userData0, userData1, userDataLatest].map(createTelemetryDoc));
+      const userDataDifferentDevice = {
+        user: 'chw1',
+        deviceId: 'different_device',
+        date: '2012-12-12',
+        browser: {
+          name: 'Firefox',
+          version: '122.0.1',
+        },
+      };
+      await saveUsersMetaDocs([userData0, userData1, userDataLatest, userDataDifferentDevice].map(createTelemetryDoc));
 
       const result = await utils.request({ path: '/api/v2/export/user-devices' });
 
-      expect(result).to.deep.equal([userDataLatest]);
+      expect(result).to.deep.equal([userDataDifferentDevice, userDataLatest]);
     });
   });
 

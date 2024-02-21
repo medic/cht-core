@@ -15,9 +15,8 @@ const getBrowser = (userAgent) => {
 module.exports = async () => {
   const { rows } = await db.medicUsersMeta.query('users-meta/device_by_user', { group: true });
   return rows.map(doc => {
-    const user = doc.key;
+    const [user, deviceId] = doc.key;
     const date = doc.value.date;
-    const deviceId = doc.value.device.deviceId;
     const browser = doc.value.device.userAgent && getBrowser(doc.value.device.userAgent);
     const { apk, android, cht, settings } = doc.value.device.versions;
     return {

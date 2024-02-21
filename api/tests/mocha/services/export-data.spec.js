@@ -324,24 +324,22 @@ describe('Export Data Service', () => {
     it('works', async () => {
       const rows = [
         {
-          key: 'admin-central-2',
+          key: ['admin-central-2', 'd26e2875-53af-4e9b-b695-c82faf0db5d8'],
           value: {
             date: '2022-11-21',
             id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
             device: {
-              deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
               userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36', // eslint-disable-line max-len
               versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
             },
           },
         },
         {
-          key: 'chw1',
+          key: ['chw1', 'b1c172d8-82b0-42fd-8401-313796b8c801'],
           value: {
             date: '2022-11-29',
             id: 'telemetry-2022-11-29-chw1-b1c172d8-82b0-42fd-8401-313796b8c801',
             device: {
-              deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
               userAgent: 'Mozilla/5.0 (Linux; Android 10; 8094X Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/88.0.4324.181 Mobile Safari/537.36 org.medicmobile.webapp.mobile.moh_mali_chw_training_2/v1.0.4-4', // eslint-disable-line max-len
               versions: {
                 apk: 'v1.0.4-4',
@@ -353,12 +351,11 @@ describe('Export Data Service', () => {
           },
         },
         {
-          key: 'min-data',
+          key: ['min-data', 'b1c172d8-82b0-42fd-8401-313796b8c802'],
           value: {
             date: '2022-11-29',
             id: 'telemetry-1970-01-01-min-data-b1c172d8-82b0-42fd-8401-313796b8c801',
             device: {
-              deviceId: undefined,
               userAgent: undefined,
               versions: {
                 apk: undefined,
@@ -408,7 +405,7 @@ describe('Export Data Service', () => {
           },
           cht: undefined,
           date: '2022-11-29',
-          deviceId: undefined,
+          deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c802',
           settings: undefined,
           user: 'min-data'
         }
@@ -419,24 +416,22 @@ describe('Export Data Service', () => {
   it('handles invalid user agents', async () => {
     const rows = [
       {
-        key: 'admin-central-2',
+        key: ['admin-central-2', 'd26e2875-53af-4e9b-b695-c82faf0db5d8'],
         value: {
           date: '2022-11-21',
           id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
           device: {
-            deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
             userAgent: 'Not a real user agent',
             versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
           },
         },
       },
       {
-        key: 'chw1',
+        key: ['chw1', 'b1c172d8-82b0-42fd-8401-313796b8c801'],
         value: {
           date: '2022-11-29',
           id: 'telemetry-2022-11-29-chw1-b1c172d8-82b0-42fd-8401-313796b8c801',
           device: {
-            deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
             userAgent: { will: 'cause an error' },
             versions: {
               apk: 'v1.0.4-4',
