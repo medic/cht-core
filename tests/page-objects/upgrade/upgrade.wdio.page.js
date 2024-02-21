@@ -6,6 +6,7 @@ const deploymentInProgress = () => $('legend*=Deployment in progress');
 const deploymentComplete = () => $('div*=Deployment complete');
 
 const getInstallButton = async (branch, tag) => {
+  branch = branch.replace(/[/|_]/g, '-');
   let selector = `span*=${branch} (`;
   if (tag) {
     selector = tag.includes('beta') ? `span*=${tag}` : `span=${tag}`;
