@@ -10,10 +10,9 @@ const {
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
-const getBranch = () => BRANCH === 'master' ? 'alpha' : escapeVersion(BRANCH);
-
 const getBranchVersion = (release) => {
-  const base = getBranch();
+  const branch = BRANCH === 'master' ? 'alpha' : escapeVersion(BRANCH);
+  const base = `${packageJson.version}-${branch}`;
   return release ? base : `${base}.${BUILD_NUMBER}`;
 };
 
