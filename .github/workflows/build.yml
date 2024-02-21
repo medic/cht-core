@@ -276,7 +276,7 @@ jobs:
     steps:
     - name: Delete image artifacts
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@v4
       with:
         name: cht-images
 
