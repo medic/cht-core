@@ -1,4 +1,6 @@
 describe('User devices export controller', () => {
+  'use strict';
+  
   const { expect } = chai;
 
   let scope;
