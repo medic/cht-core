@@ -26,7 +26,7 @@ spec:
               /var/lib/{{ $.Values.namespace }}-couchdb{{ $nodeNumber }}
             {{- end }}
           {{- else }}
-            /var/lib/{{ $.Values.namespace }}-couchdb{{ $nodeNumber }}
+            /tmp/
           {{- end }}
   {{- end }}
   nodeAffinity:
