@@ -395,6 +395,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setSelectMode() {
+    console.log('SETTING SELECT MODE', !this.selectMode, this.selectedReports?.length >= 1);
     if (this.selectMode && !this.selectedReports?.length) {
       this.globalActions.setSelectMode(false);
       return;

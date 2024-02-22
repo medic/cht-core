@@ -37,6 +37,7 @@ import { FastActionButtonService } from '@mm-services/fast-action-button.service
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -82,6 +83,7 @@ describe('Reports Component', () => {
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getSidebarFilter, value: {} },
+      { selector: Selectors.getSelectMode, value: false },
     ];
     (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
@@ -125,7 +127,7 @@ describe('Reports Component', () => {
           ComponentsModule,
           BrowserAnimationsModule,
           BsDropdownModule.forRoot(),
-          MatExpansionModule
+          MatExpansionModule,
         ],
         declarations: [
           ReportsComponent,
@@ -135,6 +137,7 @@ describe('Reports Component', () => {
           ReportsContentComponent,
           ReportsMoreMenuComponent,
           NavigationComponent,
+          DateFilterComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

@@ -6,7 +6,7 @@ import { MessagesContentComponent } from './messages-content.component';
 
 const routes: Routes = [
   {
-    path: 'messages',
+    path: '',
     component: MessagesComponent,
     children: [
       {
