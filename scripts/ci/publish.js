@@ -10,15 +10,15 @@ const {
   BRANCH
 } = process.env;
 const versions = require('../build/versions');
-const releaseName = TAG || versions.escapeVersion(BRANCH);
-const PouchDB = require('pouchdb-core');
-PouchDB.plugin(require('pouchdb-adapter-http'));
 
+const releaseName = TAG || versions.escapeBranchName(BRANCH);
 if (!releaseName) {
   console.log('Not a tag or a branch so not publishing. Most likely this is a PR build which is merged with master');
   process.exit(0);
 }
 
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
 const testingDb = new PouchDB(`${MARKET_URL}/${BUILDS_SERVER}`);
 const stagingDb = new PouchDB(`${MARKET_URL}/${STAGING_SERVER}`);
 

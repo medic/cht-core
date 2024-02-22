@@ -79,7 +79,7 @@ describe('Telemetry', () => {
       'metadata.versions.app': clientDdoc.build_info.version,
     });
 
-    const version = (TAG || BRANCH || clientDdoc.build_info.base_version || '').replace(/[/|_]/g, '-');
+    const version = TAG || utils.escapeBranchName(BRANCH) || clientDdoc.build_info.base_version || '';
     expect(clientDdoc.build_info.version).to.include(version);
   });
 });

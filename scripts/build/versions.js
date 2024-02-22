@@ -10,8 +10,10 @@ const {
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
+const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
+
 const getBranchVersion = (release) => {
-  const branch = BRANCH === 'master' ? 'alpha' : escapeVersion(BRANCH);
+  const branch = BRANCH === 'master' ? 'alpha' : escapeBranchName(BRANCH);
   const base = `${packageJson.version}-${branch}`;
   return release ? base : `${base}.${BUILD_NUMBER}`;
 };
@@ -53,13 +55,11 @@ const getImageTag = (service, release = false) => {
   return service ? `${getRepo(repo)}/cht-${service}:${version}` : version;
 };
 
-const escapeVersion = (version) => version.replace(/[/|_]/g, '-');
-
 module.exports = {
   getImageTag,
   getVersion,
   getRepo,
-  escapeVersion,
+  escapeBranchName,
   SERVICES: ['api', 'sentinel'],
   INFRASTRUCTURE: ['couchdb', 'haproxy', 'haproxy-healthcheck', 'nginx'],
 };
