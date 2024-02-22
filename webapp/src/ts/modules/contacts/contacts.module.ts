@@ -19,6 +19,7 @@ import { ContactsMoreMenuComponent } from './contacts-more-menu.component';
 import { ContactsRoutingModule } from './contacts.routes';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { MatButtonModule } from '@angular/material/button';
+import { DirectivesModule } from '@mm-directives/directives.module';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule,
     MatMenuModule,
     ContactsRoutingModule,
+    DirectivesModule,
     EffectsModule.forFeature([ ContactsEffects ]),
   ],
   exports: [

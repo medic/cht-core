@@ -21,6 +21,7 @@ import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ReportsRoutingModule } from './reports.routes';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { MatButtonModule } from '@angular/material/button';
+import { DirectivesModule } from '@mm-directives/directives.module';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatMenuModule,
     MatButtonModule,
     ReportsRoutingModule,
+    DirectivesModule,
     EffectsModule.forFeature([ ReportsEffects ]),
   ],
   exports: [

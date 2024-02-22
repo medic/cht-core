@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
 
 import { PrivacyPolicyComponent } from './privacy-policy.component';
 import { PrivacyPolicyRoutingModule } from './privacy-policy.routes';
@@ -9,6 +10,7 @@ import { PrivacyPolicyRoutingModule } from './privacy-policy.routes';
     PrivacyPolicyComponent,
   ],
   imports: [
+    CommonModule,
     TranslateModule,
     PrivacyPolicyRoutingModule,
   ],

@@ -13,6 +13,8 @@ import { MessagesComponent } from './messages.component';
 import { MessagesRoutingModule } from './messages.routes';
 import { MessagesContentComponent } from './messages-content.component';
 import { MessagesMoreMenuComponent } from './messages-more-menu.component';
+import { DirectivesModule } from '@mm-directives/directives.module';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -29,6 +31,8 @@ import { MessagesMoreMenuComponent } from './messages-more-menu.component';
     FormsModule,
     MatIconModule,
     MatMenuModule,
+    MatButtonModule,
+    DirectivesModule,
     MessagesRoutingModule,
   ],
   exports: [

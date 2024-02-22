@@ -17,6 +17,7 @@ import { AnalyticsTargetsProgressComponent }
   from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 import { AnalyticsTargetsDetailsComponent } from
   '@mm-components/analytics-targets-details/analytics-targets-details.component';
+import { DirectivesModule } from '@mm-directives/directives.module';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { AnalyticsTargetsDetailsComponent } from
     PipesModule,
     RouterModule,
     ComponentsModule,
+    DirectivesModule,
     AnalyticsRoutingModule,
   ],
   exports: [

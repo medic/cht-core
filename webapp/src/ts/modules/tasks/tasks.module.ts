@@ -10,6 +10,7 @@ import { TasksComponent } from './tasks.component';
 import { TasksRoutingModule } from './tasks.routes';
 import { TasksContentComponent } from './tasks-content.component';
 import { TasksGroupComponent } from './tasks-group.component';
+import { DirectivesModule } from '@mm-directives/directives.module';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { TasksGroupComponent } from './tasks-group.component';
     PipesModule,
     RouterModule,
     ComponentsModule,
+    DirectivesModule,
     TasksRoutingModule,
   ],
   exports: [
