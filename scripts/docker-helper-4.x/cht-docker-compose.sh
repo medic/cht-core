@@ -161,14 +161,21 @@ get_nginx_container_id() {
 
 nginx_is_running() {
   containerId=$1
-  docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
-  containerStarted=docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
-#  if [ $containerStarted ] {
-#    curl -o /dev/null -s -w "%{http_code}\n" http://localhost
-#  }
-#  docker rm -f 8612_no_tls_1st_start_nginx_1; docker volume rm -f 8612_no_tls_1st_start_cht-ssl;docker kill $(docker ps -q);./cht-docker-compose.sh 8612_no_tls_1st_start.env
-#  watch -n.5 'docker exec -it 8612_no_tls_1st_start_nginx_1 bash -c "curl -o /dev/null -s -w \"%{http_code}\" http://localhost"'
-#  curl -o /dev/null -s -w "%{http_code}" http://localhost
+
+  # first check if container has State.Running == "true"
+  containerStarted=$(docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null)
+
+  if [[ "$containerStarted" == "true" ]]; then
+
+    # now confirm that nginx returns a 301 http code to curl, meaning it's ready to serve requests
+    # and also ready to have the TLS cert installed
+    http_code=$(docker exec -it  "$containerId" bash -c "curl -o /dev/null -s -w \"%{http_code}\" http://localhost")
+    if [[ "$http_code" == "301" ]]; then
+      echo "true"
+      return 0
+    fi
+  fi
+  echo "false"
 }
 
 service_has_image_downloaded(){
@@ -445,8 +452,6 @@ while [[ "$running" != "true" ]]; do
   running=$(nginx_is_running "$nginxContainerId")
 done
 
-echo "sleeping for 5 then fetching certs";
-#sleep 5;
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
 docker exec -it $nginxContainerId bash -c "nginx -s reload"  2>/dev/null
