@@ -2,17 +2,23 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AppRouteGuardProvider } from './app-route.guard.provider';
 
-import { routes as homeRoutes } from '@mm-modules/home/home.routes';
-import { routes as aboutRoutes } from '@mm-modules/about/about.routes';
-import { routes as confUserRoutes } from '@mm-modules/configuration-user/configuration-user.routes';
-import { routes as errorRoutes } from '@mm-modules/error/error.routes';
-import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policy/privacy-policy.routes';
-import { routes as testingRoutes } from '@mm-modules/testing/testing.routes';
-
 const routes: Routes = [
-  ...homeRoutes,
-  ...aboutRoutes,
-  ...confUserRoutes,
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  {
+    path: 'home',
+    loadChildren: () => import('@mm-modules/home/home.module').then(m => m.HomeModule)
+  },
+  {
+    path: 'about',
+    data: { tab: 'about' },
+    loadChildren: () => import('@mm-modules/about/about.module').then(m => m.AboutModule)
+  },
+  {
+    path: 'user',
+    data: { tab: 'user' },
+    loadChildren: () => import('@mm-modules/configuration-user/configuration-user.module')
+      .then(m => m.ConfigurationUserModule)
+  },
   {
     path: 'analytics',
     data: { permissions: [ 'can_view_analytics' ], tab: 'analytics' },
@@ -37,15 +43,28 @@ const routes: Routes = [
     canActivate: [ AppRouteGuardProvider ],
     loadChildren: () => import('@mm-modules/contacts/contacts.module').then(m => m.ContactsModule)
   },
-  ...privacyPolicyRoutes,
+  {
+    path: 'privacy-policy',
+    data: { tab: 'privacy-policy' },
+    loadChildren: () => import('@mm-modules/privacy-policy/privacy-policy.module').then(m => m.PrivacyPolicyModule)
+  },
   {
     path: 'tasks',
     data: { permissions: ['can_edit', 'can_view_tasks'], tab: 'tasks' },
     canActivate: [ AppRouteGuardProvider ],
     loadChildren: () => import('@mm-modules/tasks/tasks.module').then(m => m.TasksModule)
   },
-  ...testingRoutes,
-  ...errorRoutes,
+  {
+    path: 'testing',
+    data: { tab: 'testing' },
+    loadChildren: () => import('@mm-modules/testing/testing.module').then(m => m.TestingModule)
+  },
+  {
+    path: 'error/:code',
+    data: { name: 'error', tab: 'error' },
+    loadChildren: () => import('@mm-modules/error/error.module').then(m => m.ErrorModule)
+  },
+  { path: '**', redirectTo: 'error/404' },
 ];
 
 @NgModule({

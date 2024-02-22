@@ -1,11 +1,17 @@
-import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 import { ConfigurationUserComponent } from '@mm-modules/configuration-user/configuration-user.component';
 
-export const routes:Routes = [
+const routes:Routes = [
   {
-    path: 'user',
-    component: ConfigurationUserComponent,
-    data: { tab: 'user'},
+    path: '',
+    component: ConfigurationUserComponent
   }
 ];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class ConfigurationUserRoutingModule { }

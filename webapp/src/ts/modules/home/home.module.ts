@@ -16,29 +16,14 @@ import { PipesModule } from '@mm-pipes/pipes.module';
 import { ComponentsModule } from '@mm-components/components.module';
 import { DirectivesModule } from '@mm-directives/directives.module';
 
-import { AnalyticsComponent } from './analytics.component';
-import { AnalyticsTargetsComponent } from './analytics-targets.component';
-import { AnalyticsModulesComponent } from './analytics-modules.component';
-import { AnalyticsTargetAggregatesComponent } from './analytics-target-aggregates.component';
-import { AnalyticsTargetAggregatesDetailComponent } from './analytics-target-aggregates-detail.component';
-import { AnalyticsRoutingModule } from './analytics.routes';
-import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
-import { AnalyticsTargetsProgressComponent }
-  from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
-import { AnalyticsTargetsDetailsComponent } from
-  '@mm-components/analytics-targets-details/analytics-targets-details.component';
+import { HomeComponent } from './home.component';
+import { HomeRoutingModule } from './home.routes';
 
 @NgModule({
   declarations: [
-    AnalyticsComponent,
-    AnalyticsTargetsComponent,
-    AnalyticsModulesComponent,
-    AnalyticsTargetAggregatesComponent,
-    AnalyticsTargetAggregatesDetailComponent,
-    AnalyticsTargetsProgressComponent,
-    AnalyticsFilterComponent,
-    AnalyticsTargetsDetailsComponent,
+    HomeComponent,
   ],
+  // TODO we don't need this many imports - work out how to reduce
   imports: [
     CommonModule,
     TranslateModule,
@@ -55,10 +40,10 @@ import { AnalyticsTargetsDetailsComponent } from
     MatDialogModule,
     MatExpansionModule,
     MatMenuModule,
-    AnalyticsRoutingModule,
+    HomeRoutingModule,
   ],
   exports: [
-    AnalyticsComponent,
+    HomeComponent,
   ]
 })
-export class AnalyticsModule { }
+export class HomeModule { }

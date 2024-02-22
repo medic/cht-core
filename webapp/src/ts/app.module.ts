@@ -23,12 +23,12 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 import { AppRoutingModule } from './app-routing.module';
 import { AppRouteGuardProvider } from './app-route.guard.provider';
 import { AppComponent } from './app.component';
-import { ModulesModule } from '@mm-modules/modules.module';
 import { environment } from '@mm-environments/environment';
 import { ComponentsModule } from '@mm-components/components.module';
 import { ModalsModule } from '@mm-modals/modals.module';
 import { DirectivesModule } from '@mm-directives/directives.module';
 import { PipesModule } from '@mm-pipes/pipes.module';
+import { PrivacyPolicyModule } from '@mm-modules/privacy-policy/privacy-policy.module';
 import { DbService } from '@mm-services/db.service';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
@@ -61,7 +61,6 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     AppRoutingModule,
     ComponentsModule,
     ModalsModule,
-    ModulesModule,
     DirectivesModule,
     PipesModule,
     RouterModule,
@@ -85,6 +84,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
+    PrivacyPolicyModule,
     EffectsModule.forRoot([ GlobalEffects ]),
   ],
   providers: [

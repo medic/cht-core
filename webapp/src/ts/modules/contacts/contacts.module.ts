@@ -15,7 +15,6 @@ import { EffectsModule } from '@ngrx/effects';
 
 import { ComponentsModule } from '@mm-components/components.module';
 import { PipesModule } from '@mm-pipes/pipes.module';
-import { GarethModule } from '../gareth/gareth.module';
 
 import { ContactsComponent } from './contacts.component';
 import { ContactsContentComponent } from './contacts-content.component';
@@ -53,7 +52,6 @@ import { ContactsRoutingModule } from './contacts.routes';
     MatExpansionModule,
     MatMenuModule,
     ContactsRoutingModule,
-    GarethModule,
     EffectsModule.forFeature([ ContactsEffects ]),
   ],
   exports: [

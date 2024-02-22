@@ -1,7 +1,17 @@
-import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 import { AboutComponent } from '@mm-modules/about/about.component';
 
-export const routes:Routes = [
-  { path: 'about', component: AboutComponent, data: { tab: 'about' } },
+const routes:Routes = [
+  {
+    path: '',
+    component: AboutComponent
+  },
 ];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class AboutRoutingModule { }

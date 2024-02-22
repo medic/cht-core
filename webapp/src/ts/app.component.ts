@@ -71,7 +71,6 @@ const SYNC_STATUS = {
   }
 };
 
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
