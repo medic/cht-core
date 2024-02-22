@@ -285,6 +285,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ env.INTERNAL_CONTRIBUTOR && github.event_name != 'pull_request' }}
 
+    steps:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
