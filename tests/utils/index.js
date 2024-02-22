@@ -1260,6 +1260,8 @@ const logFeedbackDocs = async (test) => {
 
 const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
 
+const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
+
 module.exports = {
   db,
   sentinelDb,
@@ -1330,4 +1332,5 @@ module.exports = {
   getSentinelDate,
   logFeedbackDocs,
   isMinimumChromeVersion,
+  escapeBranchName,
 };
