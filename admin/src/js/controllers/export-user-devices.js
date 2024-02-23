@@ -1,4 +1,4 @@
-angular.module('controllers').controller('ExportReportsCtrl',
+angular.module('controllers').controller('ExportUserDevicesCtrl',
   function (
     $scope,
     Export
@@ -13,7 +13,7 @@ angular.module('controllers').controller('ExportReportsCtrl',
       }
 
       $scope.exporting = true;
-      Export('reports', {}, { humanReadable: true })
+      Export('user-devices', {}, {})
         .finally(() => {
           $scope.exporting = false;
           $scope.$apply();
