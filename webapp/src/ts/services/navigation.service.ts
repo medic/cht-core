@@ -35,6 +35,18 @@ export class NavigationService {
       .then(tab => this.primaryTab = tab);
   }
 
+  private getPathToParent(routeSnapshot) {
+    const path = routeSnapshot.parent?.pathFromRoot?.map(route => route?.routeConfig?.path);
+
+    if (!path) {
+      return;
+    }
+
+    const filtered = path.filter(fragment => !!fragment);
+    filtered.unshift('/');
+    return filtered;
+  }
+
   /**
    * Navigates back.
    * @returns {boolean} Returns true if it navigated, returns false if it didn't navigated.
@@ -53,14 +65,14 @@ export class NavigationService {
     }
 
     if (routeSnapshot.params?.id || routeSnapshot.params?.type_id) {
-      const path = routeSnapshot.parent?.pathFromRoot?.map(route => route?.routeConfig?.path);
+      const path = this.getPathToParent(routeSnapshot);
 
       if (!path) {
         console.error('NavigationService :: Cannot determine path to navigate back');
         return false;
       }
 
-      this.router.navigate(path.filter(fragment => !!fragment));
+      this.router.navigate(path);
       return true;
     }
 
