@@ -53,14 +53,14 @@ export class NavigationService {
     }
 
     if (routeSnapshot.params?.id || routeSnapshot.params?.type_id) {
-      const path = routeSnapshot.parent?.pathFromRoot?.map(route => route?.routeConfig?.path || '/');
+      const path = routeSnapshot.parent?.pathFromRoot?.map(route => route?.routeConfig?.path);
 
       if (!path) {
         console.error('NavigationService :: Cannot determine path to navigate back');
         return false;
       }
 
-      this.router.navigate(path);
+      this.router.navigate(path.filter(fragment => !!fragment));
       return true;
     }
 
