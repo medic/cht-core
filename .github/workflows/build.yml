@@ -176,7 +176,7 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
     - uses: actions/checkout@v4
     - name: Download docker images artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cht-images
         path: images/
@@ -275,12 +275,6 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
-    - name: Delete image artifacts
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-      uses: geekyeggo/delete-artifact@v1
-      with:
-        name: cht-images
-
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: aws-actions/configure-aws-credentials@v4
@@ -312,6 +306,7 @@ jobs:
 
     - uses: actions/checkout@v4
     - name: Publish
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       run: |
         cd scripts/ci
         npm ci
@@ -347,6 +342,7 @@ jobs:
       - name: Create logs directory
         run: mkdir tests/logs
       - name: Upgrade
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
         run: npm run upgrade-wdio
       - name: Archive Results
         uses: actions/upload-artifact@v4
