@@ -109,9 +109,9 @@ describe('Contacts component', () => {
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     contactListContains = sinon.stub();
-    const selectedContact =  {
+    const selectedContact = {
       type: { person: true },
-      doc: { phone: '123'},
+      doc: { phone: '123' },
     };
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
@@ -317,7 +317,7 @@ describe('Contacts component', () => {
 
     it('should search for homeplace children of the correct type', fakeAsync(() => {
       sinon.resetHistory();
-      searchResults = [ { _id: 'search-result' } ];
+      searchResults = [{ _id: 'search-result' }];
 
       searchService.search.resolves(searchResults);
       const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');

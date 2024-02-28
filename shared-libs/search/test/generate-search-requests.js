@@ -2,14 +2,14 @@ const chai = require('chai');
 const GenerateSeachRequests = require('../src/generate-search-requests');
 const service = GenerateSeachRequests.generate;
 
-describe('GenerateSearchRequests service', function() {
+describe('GenerateSearchRequests service', () => {
 
   'use strict';
 
   const date20130208 = 1360321199999;
   const date20130612 = 1371038399999;
 
-  it('creates unfiltered request for no filter', function() {
+  it('creates unfiltered request for no filter', () => {
     const result = service('reports', {});
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
@@ -21,9 +21,9 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  describe('form filter', function() {
+  describe('form filter', () => {
 
-    it('all selected executes the unfiltered search', function() {
+    it('all selected executes the unfiltered search', () => {
       const filters = {
         forms: {
           selected: [ { code: 'P' }, { code: 'R' } ],
@@ -41,7 +41,7 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('some selected', function() {
+    it('some selected', () => {
       const filters = {
         forms: {
           selected: [ { code: 'P' }, { code: 'R' } ],
@@ -59,9 +59,9 @@ describe('GenerateSearchRequests service', function() {
 
   });
 
-  describe('validity filter', function() {
+  describe('validity filter', () => {
 
-    it('true', function() {
+    it('true', () => {
       const result = service('reports', { valid: true });
       chai.expect(result.length).to.equal(1);
       chai.expect(result[0].view).to.equal('medic-client/reports_by_validity');
@@ -70,7 +70,7 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('false', function() {
+    it('false', () => {
       const result = service('reports', { valid: false });
       chai.expect(result.length).to.equal(1);
       chai.expect(result[0].view).to.equal('medic-client/reports_by_validity');
@@ -81,9 +81,9 @@ describe('GenerateSearchRequests service', function() {
 
   });
 
-  describe('verification filter', function() {
+  describe('verification filter', () => {
 
-    it('queries', function() {
+    it('queries', () => {
       const verifiedValues = [[true], [false], [undefined], [false, undefined]];
       verifiedValues.forEach((value) => {
         const result = service('reports', { verified: value });
@@ -97,7 +97,7 @@ describe('GenerateSearchRequests service', function() {
 
   });
 
-  it('creates requests for reports with places filter', function() {
+  it('creates requests for reports with places filter', () => {
     const filters = {
       facilities: {
         selected: [ 'a', 'b', 'c' ],
@@ -112,7 +112,7 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates requests for reports with subjectIds filter', function() {
+  it('creates requests for reports with subjectIds filter', () => {
     const filters = {
       subjectIds: [ 'a', 'b', 'c' ]
     };
@@ -124,7 +124,7 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates requests for reports with date filter', function() {
+  it('creates requests for reports with date filter', () => {
     const filters = {
       date: {
         from: date20130208,
@@ -138,7 +138,7 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result[0].params.endkey[0]).to.equal(1371038399999);
   });
 
-  const assertUnfilteredContactRequest = function(result) {
+  const assertUnfilteredContactRequest = (result) => {
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
       ordered: true,
@@ -146,12 +146,12 @@ describe('GenerateSearchRequests service', function() {
     });
   };
 
-  it('creates unfiltered contacts request for no filter', function() {
+  it('creates unfiltered contacts request for no filter', () => {
     const result = service('contacts', {});
     assertUnfilteredContactRequest(result);
   });
 
-  it('creates contacts type request for types filter', function() {
+  it('creates contacts type request for types filter', () => {
     const filters = {
       types: {
         selected: [ 'person', 'clinic' ],
@@ -168,7 +168,7 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates request to filter contacts by parent when contact ID and types are provided', function() {
+  it('creates request to filter contacts by parent when contact ID and types are provided', () => {
     const filters = {
       types: {
         selected: [ 'person' ],
@@ -187,7 +187,7 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates request to filter contacts by parent and freetext', function() {
+  it('creates request to filter contacts by parent and freetext', () => {
     const filters = {
       types: { selected: [ 'person' ] },
       search: 'someth',
@@ -213,7 +213,7 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates request to filter contacts by parent when types are not provided', function() {
+  it('creates request to filter contacts by parent when types are not provided', () => {
     const filters = { parent: 'S-123' };
 
     const result = service('contacts', filters);
@@ -225,7 +225,7 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates unfiltered contacts request for types filter when all options are selected', function() {
+  it('creates unfiltered contacts request for types filter when all options are selected', () => {
     const filters = {
       types: {
         selected: [ 'person', 'clinic', 'district_hospital' ],
@@ -236,7 +236,7 @@ describe('GenerateSearchRequests service', function() {
     assertUnfilteredContactRequest(result);
   });
 
-  it('creates unfiltered contacts request for types filter when no options are selected', function() {
+  it('creates unfiltered contacts request for types filter when no options are selected', () => {
     const filters = {
       types: {
         selected: [],
@@ -248,7 +248,7 @@ describe('GenerateSearchRequests service', function() {
   });
 
   // format used by select2search
-  it('creates contacts type request for type filter without options', function() {
+  it('creates contacts type request for type filter without options', () => {
     const filters = {
       types: {
         selected: [ 'person', 'clinic' ]
@@ -265,9 +265,9 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  describe('freetext filter', function() {
+  describe('freetext filter', () => {
 
-    it('reports with exact matching', function() {
+    it('reports with exact matching', () => {
       const result = service('reports', { search: 'patient_id:123 form:D' });
       chai.expect(result.length).to.equal(2);
       chai.expect(result[0].view).to.equal('medic-client/reports_by_freetext');
@@ -280,7 +280,28 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('reports starts with', function() {
+    it('reports ignores short words - #7288', () => {
+      const result = service('reports', { search: 'a be' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('medic-client/reports_by_date'); // default
+    });
+
+    it('reports ignores short words but keeps long ones - #7288', () => {
+      const result = service('reports', { search: 'a be see d elephant' });
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'see' ],
+        endkey: [ 'see\ufff0' ],
+      });
+      chai.expect(result[1].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'elephant' ],
+        endkey: [ 'elephant\ufff0' ],
+      });
+    });
+
+    it('reports starts with', () => {
       const result = service('reports', { search: 'someth' });
       chai.expect(result.length).to.equal(1);
       chai.expect(result[0].view).to.equal('medic-client/reports_by_freetext');
@@ -290,7 +311,7 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('contacts starts with', function() {
+    it('contacts starts with', () => {
       const result = service('contacts', { search: 'someth' });
       chai.expect(result.length).to.equal(1);
       chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
@@ -300,7 +321,7 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('contacts multiple words', function() {
+    it('contacts multiple words', () => {
       const result = service('contacts', { search: 'some thing' });
       chai.expect(result.length).to.equal(2);
       chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
@@ -315,7 +336,7 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('mixing starts with and exact matching', function() {
+    it('mixing starts with and exact matching', () => {
       const result = service('contacts', { search: 'patient_id:123 visit' });
       chai.expect(result.length).to.equal(2);
       chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
@@ -332,7 +353,7 @@ describe('GenerateSearchRequests service', function() {
     /*
       this is a very common use case so we have a custom view for handling it
     */
-    it('contacts freetext with a single document type - #2445', function() {
+    it('contacts freetext with a single document type - #2445', () => {
       const filters = {
         search: 'someth',
         types: {
@@ -349,7 +370,35 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('contacts multiple word freetext with a single document type', function() {
+    it('reports ignores short words - #7288', () => {
+      const result = service('contacts', { search: 'a be' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type'); // default
+    });
+
+    it('contacts ignores short words but keeps long ones - #7288', () => {
+      const filters = {
+        search: 'a be see d elephant',
+        types: {
+          selected: [ 'clinic' ],
+          options: [ 'person', 'clinic', 'district_hospital' ]
+        }
+      };
+      const result = service('contacts', filters);
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'clinic', 'see' ],
+        endkey: [ 'clinic', 'see\ufff0' ],
+      });
+      chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'clinic', 'elephant' ],
+        endkey: [ 'clinic', 'elephant\ufff0' ],
+      });
+    });
+
+    it('contacts multiple word freetext with a single document type', () => {
       const filters = {
         search: 'some thing',
         types: {
@@ -371,7 +420,7 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    it('contacts multiple word freetext with multiple document types', function() {
+    it('contacts multiple word freetext with multiple document types', () => {
       const filters = {
         search: 'some thing',
         types: {
@@ -407,7 +456,7 @@ describe('GenerateSearchRequests service', function() {
       ]);
     });
 
-    it('trim whitespace from search query - #2769', function() {
+    it('trim whitespace from search query - #2769', () => {
       const result = service('contacts', { search: '\t  some     thing    ' });
       chai.expect(result.length).to.equal(2);
       chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
@@ -424,21 +473,21 @@ describe('GenerateSearchRequests service', function() {
 
   });
 
-  describe('shouldSortByLastVisitedDate', function() {
-    it('should return false for falsy or empty inputs', function() {
+  describe('shouldSortByLastVisitedDate', () => {
+    it('should return false for falsy or empty inputs', () => {
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate()).to.equal(false);
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate(false)).to.equal(false);
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({})).to.equal(false);
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate([])).to.equal(false);
     });
 
-    it('should return false when not sorting by last visited date', function() {
+    it('should return false when not sorting by last visited date', () => {
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ a: 1 })).to.equal(false);
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: false })).to.equal(false);
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: null })).to.equal(false);
     });
 
-    it('should return true when sorting by last visited date', function() {
+    it('should return true when sorting by last visited date', () => {
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: true })).to.equal(true);
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: 'aaa' })).to.equal(true);
     });

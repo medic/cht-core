@@ -328,7 +328,18 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
   await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
+const hideModalOverlay = () => {
+  // hides the modal overlay, so it doesn't intercept all clicks
+  // this action is temporary, and will be undone with a refresh
+  return browser.execute(() => {
+    const style = document.createElement('style');
+    style.innerHTML = '.cdk-overlay-backdrop { display: none; }';
+    document.head.appendChild(style);
+  });
+};
+
 const sync = async (expectReload, timeout) => {
+  await hideModalOverlay();
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
@@ -354,6 +365,7 @@ const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
     await modalPage.checkModalHasClosed();
+    shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
     console.error('Reload modal not showed up');
