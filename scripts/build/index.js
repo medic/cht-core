@@ -226,7 +226,7 @@ const buildSinglePlatformServiceImages = async () => {
 
 const buildMultiPlatformServiceImages = async () => {
   for (const service of versions.SERVICES) {
-    console.log(`\n\nBuilding multiplatform docker image for ${service}\n\n`);
+    console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('npm', ['ci', '--omit=dev'], { cwd: service });
     await exec('npm', ['dedupe'], { cwd: service });
