@@ -26,7 +26,6 @@ const DEBUG = process.env.DEBUG;
 
 let originalSettings;
 let dockerVersion;
-let browserLogStream;
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
@@ -1021,26 +1020,6 @@ const prepServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
-const saveBrowserLogs = () => {
-  // wdio also writes in this file
-  if (!browserLogStream) {
-    browserLogStream = fs.createWriteStream(path.join(__dirname, '..', 'logs/browser.console.log'));
-  }
-
-  return browser
-    .manage()
-    .logs()
-    .get('browser')
-    .then(logs => {
-      const currentSpec = jasmine.currentSpec.fullName;
-      browserLogStream.write(`\n~~~~~~~~~~~ ${currentSpec} ~~~~~~~~~~~~~~~~~~~~~\n\n`);
-      logs
-        .map(log => `[${log.level.name_}] ${log.message}\n`)
-        .forEach(log => browserLogStream.write(log));
-      browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
-    });
-};
-
 const getDockerLogs = (container) => {
   const logFile = path.resolve(__dirname, '../logs', `${container}.log`);
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
@@ -1279,7 +1258,9 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
-const isMinimumChromeVersion = () => process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
+const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
+
+const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
 
 module.exports = {
   db,
@@ -1337,7 +1318,6 @@ module.exports = {
   enableLanguages,
   getSettings,
   prepServices,
-  saveBrowserLogs,
   tearDownServices,
   waitForApiLogs,
   waitForSentinelLogs,
@@ -1352,4 +1332,5 @@ module.exports = {
   getSentinelDate,
   logFeedbackDocs,
   isMinimumChromeVersion,
+  escapeBranchName,
 };

@@ -1,6 +1,4 @@
-const utils = require('@utils');
-const commonPage = require('../common/common.wdio.page');
-const reportsPage = require('../reports/reports.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const submitButton = () => $('.enketo .submit');
 const cancelButton = () => $('.enketo .cancel');
@@ -8,11 +6,10 @@ const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
 const errorContainer = () => $('.empty-selection');
 const formTitle = () => $('.enketo form #form-title');
-
 const currentFormView = () => $('.enketo form .current');
-
 const validationErrors = () => $$('.invalid-required');
 const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
+const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
 
 const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   if (waitForLoad) {
@@ -31,20 +28,6 @@ const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   }
 };
 
-const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
-
-const invalidateReport = async () => {
-  await reportsPage.openReviewAndSelectOption('invalid-option');
-  await commonPage.waitForPageLoaded();
-  expect(await reportsPage.getSelectedReviewOption()).to.equal('Has errors');
-};
-
-const validateReport = async () => {
-  await reportsPage.openReviewAndSelectOption('valid-option');
-  await commonPage.waitForPageLoaded();
-  expect(await reportsPage.getSelectedReviewOption()).to.equal('Correct');
-};
-
 const selectContact = async (contactName) => {
   const select2Selection = () => $('label*=What is the patient\'s name?').$('.select2-selection');
   await (await select2Selection()).click();
@@ -57,32 +40,15 @@ const selectContact = async (contactName) => {
     return (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase());
   });
 };
-const editForm = async () => {
-  await commonPage.openMoreOptionsMenu();
-  await (await reportsPage.editReportButton()).waitForClickable();
-  await (await reportsPage.editReportButton()).click();
-};
 
-const verifyReport = async () => {
-  const reportId = await reportsPage.getCurrentReportId();
-  const initialReport = await utils.getDoc(reportId);
-  expect(initialReport.verified).to.be.undefined;
-
-  await invalidateReport();
-  const invalidatedReport = await utils.getDoc(reportId);
-  expect(invalidatedReport.verified).to.be.false;
-  expect(invalidatedReport.patient).to.be.undefined;
-
-  await validateReport();
-  const validatedReport = await utils.getDoc(reportId);
-  expect(validatedReport.verified).to.be.true;
-  expect(validatedReport.patient).to.be.undefined;
-};
-
-const submitForm = async () => {
+const submitForm = async (waitForPageLoaded = true) => {
+  await formTitle().click();
   await waitForValidationErrorsToDisappear();
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
+  if (waitForPageLoaded) {
+    await commonPage.waitForPageLoaded();
+  }
 };
 
 const cancelForm = async () => {
@@ -98,13 +64,6 @@ const getErrorMessage = async () => {
 const getFormTitle = async () => {
   await (await formTitle()).waitForDisplayed();
   return await (await formTitle()).getText();
-};
-
-const selectYesNoOption = async (selector, value = 'yes') => {
-  const element = await $(`${selector}[value="${value}"]`);
-  await element.waitForDisplayed();
-  await element.click();
-  return value === 'yes';
 };
 
 const getDBObjectWidgetValues = async (field) => {
@@ -132,20 +91,14 @@ const getDBObjectWidgetValues = async (field) => {
 module.exports = {
   getFormTitle,
   getErrorMessage,
-  submitButton,
   cancelButton,
   nextPage,
-  invalidateReport,
-  validateReport,
   nameField,
   fieldByName,
   selectContact,
-  verifyReport,
-  editForm,
   cancelForm,
   submitForm,
   currentFormView,
   formTitle,
-  selectYesNoOption,
   getDBObjectWidgetValues,
 };
