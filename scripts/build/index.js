@@ -6,6 +6,7 @@ const mustache = require('mustache');
 
 const packageJson = require('../../package.json');
 const versions = require('./versions');
+const BUILD_PLATFORMS = ['linux/amd64', 'linux/arm64'];
 
 const {
   TAG,
@@ -147,7 +148,7 @@ const localDockerComposeFiles = () => {
 };
 
 const saveServiceTags = () => {
-  const tags = [...versions.SERVICES, ...versions.MULTIPLATFORM_INFRASTRUCTURE, ...versions.INFRASTRUCTURE]
+  const tags = [...versions.SERVICES, ...versions.INFRASTRUCTURE]
     .map(service => ({
       container_name: `cht-${service}`,
       image: versions.getImageTag(service, true),
@@ -229,11 +230,19 @@ const buildImages = async () => {
   }
 };
 
+const buildInfrastructureImages = async () => {
+  if (INTERNAL_CONTRIBUTOR){
+    await buildMultiPlatformImages();
+  } else {
+    await buildImages();
+  }
+};
+
 const buildMultiPlatformImages = async () => {
-  for (const service of versions.MULTIPLATFORM_INFRASTRUCTURE) {
-    console.log(`\n\nBuilding multiplatform docker image for ${service}\n\n`);
+  for (const service of versions.INFRASTRUCTURE) {
+    console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
-    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=linux/amd64,linux/arm64',
+    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform='+BUILD_PLATFORMS.join(','),
       '-f', `./Dockerfile`, '--tag', tag, '--push', '.'], { cwd: service });
   }
 };
@@ -247,7 +256,7 @@ const saveServiceImages = async () => {
 };
 
 const pushServiceImages = async () => {
-  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
+  for (const service of [...versions.SERVICES]) {
     console.log(`\n\nPushing docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('docker', ['push', tag]);
@@ -275,7 +284,7 @@ module.exports = {
   updateServiceWorker,
   buildServiceImages,
   buildImages,
-  buildMultiPlatformImages,
+  buildInfrastructureImages,
   saveServiceImages,
   pushServiceImages,
   publishServiceImages
