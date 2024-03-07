@@ -32,7 +32,7 @@ const regctlCmd = (...params) => new Promise((resolve, reject) => {
 
 (async () => {
   for (const service of 
-    [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]) {
+    [...buildVersions.SERVICES]) {
     const existentTag = buildVersions.getImageTag(service);
     const releaseTag = buildVersions.getImageTag(service, true);
 
@@ -42,7 +42,7 @@ const regctlCmd = (...params) => new Promise((resolve, reject) => {
   }
 
   for (const service of 
-    [...buildVersions.MULTIPLATFORM_INFRASTRUCTURE]) {
+    [...buildVersions.INFRASTRUCTURE]) {
     const existentTag = buildVersions.getImageTag(service);
     const releaseTag = buildVersions.getImageTag(service, true);
     await regctlCmd('image', 'copy', existentTag, releaseTag);
