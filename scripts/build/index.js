@@ -280,7 +280,9 @@ const publishServiceImages = async () => {
   if (!BUILD_NUMBER) {
     return;
   }
-  return await saveServiceImages();
+  if (!INTERNAL_CONTRIBUTOR){
+    return await saveServiceImages();
+  }
 };
 
 module.exports = {
