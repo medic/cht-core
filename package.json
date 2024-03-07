@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -8,8 +8,8 @@
     "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
-    "node": ">=16.12.0",
-    "npm": ">=8.3.1"
+    "node": ">=20.11.0",
+    "npm": ">=10.2.4"
   },
   "workspaces": [
     "./shared-libs/*"
@@ -44,12 +44,13 @@
     "unit-webapp-continuous": "cd webapp && npm run unit -- --watch=true",
     "unit-nginx": "cd nginx/tests && make test",
     "unit-haproxy": "cd haproxy/tests && make test",
+    "unit-haproxy-healthcheck": "cd haproxy-healthcheck && make test",
     "wdio-cht-form": "wdio run ./tests/e2e/cht-form/wdio.conf.js",
     "wdio-default-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default/wdio.conf.js",
     "-- CI SCRIPTS ": "-----------------------------------------------------------------------------------------------",
     "build": "./scripts/build/build-ci.sh",
-    "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run build && npm run integration-api && npm run unit && npm run unit-nginx && npm run unit-haproxy",
+    "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run build && npm run integration-api && npm run unit && npm run unit-nginx && npm run unit-haproxy && npm run unit-haproxy-healthcheck",
     "ci-integration-all": "mocha --config tests/integration/.mocharc-all.js",
     "ci-integration-sentinel": "mocha --config tests/integration/.mocharc-sentinel.js",
     "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
@@ -84,11 +85,11 @@
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "@wdio/allure-reporter": "^8.20.0",
-    "@wdio/cli": "^8.20.2",
-    "@wdio/devtools-service": "^8.20.0",
-    "@wdio/local-runner": "^8.20.0",
-    "@wdio/mocha-framework": "^8.3.0",
-    "@wdio/spec-reporter": "^8.3.0",
+    "@wdio/cli": "^8.32.2",
+    "@wdio/devtools-service": "^8.32.2",
+    "@wdio/local-runner": "^8.32.2",
+    "@wdio/mocha-framework": "^8.32.2",
+    "@wdio/spec-reporter": "^8.32.2",
     "allure-commandline": "^2.24.0",
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.8.3",

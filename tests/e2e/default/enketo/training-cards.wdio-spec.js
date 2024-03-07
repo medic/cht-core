@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -11,38 +9,30 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Training Cards', () => {
-  const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
-  const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
-  const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
-  const formDoc = {
-    _id: 'form:training:text_only',
-    internalId: 'training:text_only',
-    title: 'Text Only Training',
-    type: 'form',
-    context: {
-      start_date: new Date().getTime(),
-      user_roles: [ 'nurse' ],
-      duration: 5,
-    },
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer
-          .from(fs.readFileSync(`${__dirname}/forms/training-cards-text-only.xml`, 'utf8'))
-          .toString('base64'),
-      },
-    },
-  };
 
   const expectedConfirmMessage = 'This training is not finished. ' +
     'If you leave now, you will lose your progress and be prompted again later to complete it.';
 
-  let savedFormDoc;
+  const formDocId = 'training:training-cards-text-only';
+
   before(async () => {
+    const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+    const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
+    const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
+    const formDoc = await commonEnketoPage.uploadForm('training-cards-text-only', false);
+    formDoc._id = `form:${formDocId}`;
+    formDoc.internalId = formDocId;
+    formDoc.context = {
+      start_date: new Date().getTime(),
+      user_roles: [ 'nurse' ],
+      duration: 5,
+    };
+
     await utils.saveDocs([ parent, patient ]);
-    savedFormDoc = await utils.saveDoc(formDoc);
+    await utils.saveDoc(formDoc);
     await utils.createUsers([ user ]);
     await loginPage.login(user);
     await commonElements.waitForPageLoaded();
@@ -66,7 +56,7 @@ describe('Training Cards', () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
     // Unfinished trainings should appear again after reload.
-    browser.refresh();
+    await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
 
     const confirmMessage = await trainingCardsPage.quitTraining();
@@ -74,13 +64,13 @@ describe('Training Cards', () => {
     await trainingCardsPage.confirmQuitTraining();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
-    const trainingForm = await utils.getDoc(savedFormDoc.id);
+    const trainingForm = await utils.getDoc(`form:${formDocId}`);
     expect(trainingForm.context.duration).to.equal(5);
     trainingForm.context.duration = 10;
     await utils.saveDocs([ trainingForm ]);
 
     await commonPage.syncAndNotWaitForSuccess();
-    const updatedTrainingForm = await utils.getDoc(savedFormDoc.id);
+    const updatedTrainingForm = await utils.getDoc(`form:${formDocId}`);
     expect(updatedTrainingForm.context.duration).to.equal(10);
 
     await trainingCardsPage.waitForTrainingCards();
@@ -108,7 +98,7 @@ describe('Training Cards', () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
     // Unfinished trainings should appear again after reload.
-    browser.refresh();
+    await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
 
     const context = 'training_cards_text_only';
@@ -129,14 +119,14 @@ describe('Training Cards', () => {
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal('OfflineUser');
-    expect(firstReport.form).to.equal('training:text_only');
+    expect(firstReport.form).to.equal(formDocId);
   });
 
   it('should not display completed training', async () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
     // Completed trainings should not appear again after reload.
-    browser.refresh();
+    await browser.refresh();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
   });
 });

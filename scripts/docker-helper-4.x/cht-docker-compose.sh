@@ -156,12 +156,104 @@ required_apps_installed(){
 }
 
 get_nginx_container_id() {
-  docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
+  docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet  2>/dev/null
 }
 
-get_is_container_running() {
+is_nginx_running() {
   containerId=$1
-  docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
+
+  # first check if container has State.Running == "true"
+  containerStarted=$(docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null)
+
+  if [[ "$containerStarted" == "true" ]]; then
+
+    # now confirm that nginx returns a 301 http code to curl, meaning it's ready to serve requests
+    # and also ready to have the TLS cert installed
+    http_code=$(docker exec "$containerId" bash -c "curl -o /dev/null -s -w \"%{http_code}\" http://localhost")
+    if [[ "$http_code" == "301" ]]; then
+      echo "true"
+      return 0
+    fi
+  fi
+  echo "false"
+}
+
+service_has_image_downloaded(){
+  service=$1
+  if [ "$service" == "cht-upgrade-service" ]; then
+    compose_path="${homeDir}/upgrade-service.yml"
+  elif [ "$service" == "couchdb" ]; then
+    compose_path="${homeDir}/compose/couchdb.yml"
+  else
+    compose_path="${homeDir}/compose/cht-core.yml"
+  fi
+  image=$(grep "${service}:" ${compose_path} | grep image | cut -f2,3 -d":" | xargs)
+
+  imageDownloadName=$(docker image ls  --format {{.Repository}}:{{.Tag}} -f "reference=${image}" 2>/dev/null)
+  if [ $imageDownloadName ];then
+    echo ${imageDownloadName}
+  else
+    echo "NA"
+  fi
+}
+
+service_has_container(){
+  service=$1
+  container_name=$(docker ps -af "name=^${projectName}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | grep ${service} 2>/dev/null)
+  if [ $container_name ];then
+    echo ${container_name}
+  else
+    echo "NA"
+  fi
+}
+
+container_status(){
+  contianer=$1
+  status=$(docker inspect --format="{{.State.Status}}" "$contianer" 2>/dev/null)
+  if [ $status ];then
+    echo ${status}
+  else
+    echo "NA"
+  fi
+}
+
+get_load_avg() {
+  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
+  # load avg.  Otherwise use MacOS style command
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
+    awk '{print  $1 " " $2 " " $3 }' < /proc/loadavg
+  else
+    avg=$(sysctl -n vm.loadavg)
+    # replace { and } in the output to match linux's output
+    echo "${avg//[\}\{]/}"
+  fi
+}
+
+get_running_container_count(){
+  docker ps -qf "name=^${projectName}[-_]+.*[-_]+[0-9]" | wc -l
+}
+
+get_global_running_container_count(){
+  docker ps --format '{{.Names}}' | wc -l
+}
+
+get_system_and_docker_info(){
+  info='Service Status Container Image'
+  services="cht-upgrade-service haproxy healthcheck api sentinel nginx couchdb"
+  IFS=' ' read -ra servicesArray <<<"$services"
+  for service in "${servicesArray[@]}"; do
+    image=$(service_has_image_downloaded ${service})
+    container=$(service_has_container ${service})
+    status=$(container_status ${container})
+    info="${info}"$'\n'"${service} ${status} ${container} ${image}"
+  done
+  echo
+  echo "---DEBUG INFO---"
+  echo "Load: $(get_load_avg)"
+  echo "CHT Containers: $(get_running_container_count)"
+  echo "Global Containers $(get_global_running_container_count)"
+  echo
+  echo $"$info" | column -t
 }
 
 if [ -n "$(required_apps_installed "docker-compose")" ];then
@@ -320,39 +412,49 @@ fi
 source "./$projectFile"
 
 projectURL=$(get_local_ip_url "$(get_lan_ip)")
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 
-echo ""
+echo "";echo "homedir: $homeDir"
 docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 
 nginxContainerId=$(get_nginx_container_id)
-isNginxRunning=$(get_is_container_running "$nginxContainerId")
+running=$(is_nginx_running "$nginxContainerId")
 i=0
-while [[ "$isNginxRunning" != "true" ]]; do
+
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
+while [[ "$running" != "true" ]]; do
   if [[ $i -gt 300 ]]; then
     echo ""
     echo ""
-    echo "${red}Failed to start - check docker logs for errors and try again.${noColor}"
+    echo -e "${red}Failed to start - check docker logs for errors and try again.${noColor}"
+		echo ""
+		get_system_and_docker_info
     echo ""
     exit 1
   fi
 
-  echo '.' | tr -d '\n'
-  ((i++))
-  sleep 1
+  if [ ! -z ${DEBUG+x} ];then
+    clear;get_system_and_docker_info
+  else
+  	echo '.' | tr -d '\n'
+	fi
+	((i++))
+	sleep 1
 
   if [[ $nginxContainerId = "" ]]; then
     nginxContainerId=$(get_nginx_container_id)
   fi
 
-  isNginxRunning=$(get_is_container_running "$nginxContainerId")
+  running=$(is_nginx_running "$nginxContainerId")
 done
 
-docker exec $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
-docker exec $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
-docker exec $nginxContainerId bash -c "nginx -s reload"
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
+docker exec -it $nginxContainerId bash -c "nginx -s reload"  2>/dev/null
 
 echo ""
 echo ""
@@ -372,4 +474,5 @@ echo ""
 echo -e "${green} Have a great day!${noColor} "
 echo ""
 
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 set -e

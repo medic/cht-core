@@ -63,6 +63,10 @@ angular.module('controllers').controller('ExportDhisCtrl',
     });
 
     $scope.export = () => {
+      if ($scope.exporting) {
+        return;
+      }
+
       const { dataSet, period, place } = $scope.selected;
       const filters = {
         dataSet,
@@ -75,6 +79,11 @@ angular.module('controllers').controller('ExportDhisCtrl',
         filters.orgUnit = place;
       }
 
-      Export('dhis', filters, {});
+      $scope.exporting = true;
+      Export('dhis', filters, {})
+        .finally(() => {
+          $scope.exporting = false;
+          $scope.$apply();
+        });
     };
   });
