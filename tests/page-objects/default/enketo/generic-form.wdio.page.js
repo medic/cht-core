@@ -13,6 +13,7 @@ const currentFormView = () => $('.enketo form .current');
 
 const validationErrors = () => $$('.invalid-required');
 const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
+const waitForValidationErrors = () => browser.waitUntil(async () => (await validationErrors()).length);
 
 const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   if (waitForLoad) {
@@ -134,6 +135,8 @@ module.exports = {
   getErrorMessage,
   submitButton,
   cancelButton,
+  waitForValidationErrors,
+  waitForValidationErrorsToDisappear,
   nextPage,
   invalidateReport,
   validateReport,
