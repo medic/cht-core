@@ -8,7 +8,7 @@ const TimerAnimation = require('../../../../../src/js/enketo/lib/timer-animation
 const testId = 'countdown-widget-test';
 const buildHtml = (html: string) => document.body.insertAdjacentHTML('afterbegin', `<div id="${testId}">${html}</div>`);
 
-describe.only('Countdown Timer Widget', () => {
+describe('Countdown Timer Widget', () => {
   const DEFAULT_DURATION = 60;
   let animate;
   let settingsService;
