@@ -20,11 +20,13 @@ describe('Countdown timer widget', () => {
     await commonPage.openFastActionReport('countdown-timer', false);
     await enketoWidgetsPage.clickTimer('countdown'); // start
     await enketoWidgetsPage.clickTimer('countdown'); // stop
-    await genericForm.submitForm();
-
-    await commonPage.openFastActionReport('countdown-timer', false);
-    await enketoWidgetsPage.clickTimer('countdown'); // start
-    await enketoWidgetsPage.clickTimer('countdown'); // stop
+    await genericForm.nextPage();
+    await (await genericForm.submitButton()).click();
+    // Triggers error because timer is required
+    await genericForm.waitForValidationErrors();
+    await enketoWidgetsPage.clickTimer('countdown');
+    // Errors disappear once timer completes
+    await genericForm.waitForValidationErrorsToDisappear();
     await genericForm.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();

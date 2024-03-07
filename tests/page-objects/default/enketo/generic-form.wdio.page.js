@@ -93,6 +93,7 @@ module.exports = {
   getFormTitle,
   getErrorMessage,
   cancelButton,
+  submitButton,
   waitForValidationErrors,
   waitForValidationErrorsToDisappear,
   nextPage,
