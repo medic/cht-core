@@ -6,7 +6,7 @@ const mustache = require('mustache');
 
 const packageJson = require('../../package.json');
 const versions = require('./versions');
-const BUILD_PLATFORMS = ['linux/amd64', 'linux/arm64'];
+const BUILD_PLATFORMS = ['linux/amd64', 'linux/arm64/v8'];
 
 const {
   TAG,
