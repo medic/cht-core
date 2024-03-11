@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const rpn = require('request-promise-native');
 const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
@@ -6,10 +6,13 @@ const config = require('./config');
 const { roles, users } = require('@medic/user-management')(config, db);
 
 const get = (path, headers) => {
+  const getHeaders = { ...headers };
+  delete getHeaders['content-length'];
+  delete getHeaders['Content-Length'];
   const url = new URL(path, environment.serverUrlNoAuth);
-  return request.get({
+  return rpn.get({
     url: url.toString(),
-    headers: headers,
+    headers: getHeaders,
     json: true
   });
 };
@@ -95,7 +98,7 @@ module.exports = {
     const authUrl = new URL(environment.serverUrlNoAuth);
     authUrl.username = username;
     authUrl.password = password;
-    return request.head({
+    return rpn.head({
       uri: authUrl.toString(),
       resolveWithFullResponse: true
     })
