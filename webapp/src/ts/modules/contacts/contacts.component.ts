@@ -236,46 +236,51 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private formatContact(updatedContact) {
     const contact = { ...updatedContact };
-    const typeId = this.contactTypesService.getTypeId(contact);
-    const type = this.contactTypesService.getTypeById(this.contactTypes, typeId);
-    this.getContactDetails(contact, type);
-    this.getVisitDetails(contact, type);
+    const type = this.getContactType(contact);
+    this.populateContactDetails(contact, type);
+    this.setVisitDetails(contact, type);
     return contact;
   }
 
-  private getContactDetails(contact, type) {
+  private getContactType(contact) {
+    const typeId = this.contactTypesService.getTypeId(contact);
+    return this.contactTypesService.getTypeById(this.contactTypes, typeId);
+  }
+
+  private populateContactDetails(contact, type) {
     contact.route = 'contacts';
-    contact.icon = type && type.icon;
+    contact.icon = type?.icon;
     contact.valid = true;
     contact.summary = null;
     contact.primary = contact.home;
     contact.dod = contact.date_of_death;
   }
 
-  private getVisitDetails(contact, type) {
-    if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
-      this.setVisitOverdue(contact);
-      this.getVisitCountDetails(contact);
-      this.evaluateVisitGoal(contact);
+  private setVisitDetails(contact, type) {
+    if (!type?.count_visits || !Number.isInteger(contact.lastVisitedDate)) {
+      return;
     }
+    this.setVisitOverdue(contact);
+    this.setVisitCountDetails(contact);
+    this.evaluateVisitGoal(contact);
   }
 
   private setVisitOverdue(contact) {
     if (contact.lastVisitedDate === 0) {
       contact.overdue = true;
       contact.summary = this.translateService.instant('contact.last.visit.unknown');
-    } else {
-      const now = new Date().getTime();
-      const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
-      contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
-      contact.summary = this.translateService.instant(
-        'contact.last.visited.date',
-        { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
-      );
+      return;
     }
+    const now = new Date().getTime();
+    const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+    contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
+    contact.summary = this.translateService.instant(
+      'contact.last.visited.date',
+      { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
+    );
   }
 
-  private getVisitCountDetails(contact) {
+  private setVisitCountDetails(contact) {
     const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
     contact.visits = {
       count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
@@ -287,15 +292,21 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private evaluateVisitGoal(contact) {
-    if (contact.visitCountGoal) {
-      if (!contact.visitCount) {
-        contact.visits.status = 'pending';
-      } else if (contact.visitCount < contact.visitCountGoal) {
-        contact.visits.status = 'started';
-      } else {
-        contact.visits.status = 'done';
-      }
+    const { visitCountGoal, visitCount } = contact;
+    if (!visitCountGoal) {
+      return;
     }
+    contact.visits.status = this.setVisitStatus(visitCount, visitCountGoal);
+  }
+
+  private setVisitStatus(visitCount, visitCountGoal) {
+    if (!visitCount) {
+      return 'pending';
+    }
+    if (visitCount < visitCountGoal) {
+      return 'started';
+    }
+    return 'done';
   }
 
   private getChildren() {
