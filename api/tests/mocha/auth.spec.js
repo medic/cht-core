@@ -167,7 +167,7 @@ describe('Auth', () => {
     it('should throw a custom 401 error', async () => {
       sinon.stub(rpn, 'get').rejects({ statusCode: 401, error: 'not logged in' });
 
-      await expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
+      await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         code: 401,
         message: 'Not logged in',
         err: { statusCode: 401, error: 'not logged in' }
@@ -179,7 +179,7 @@ describe('Auth', () => {
     it('should throw non-401 errors', async () => {
       sinon.stub(rpn, 'get').rejects({ statusCode: 400, error: 'invalid' });
 
-      await expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
+      await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         statusCode: 400,
         error: 'invalid'
       });
@@ -190,7 +190,7 @@ describe('Auth', () => {
     it('should throw 500 when auth is invalid', async () => {
       sinon.stub(rpn, 'get').resolves({ userCtx: { invalid: 'userctx' }});
 
-      await expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
+      await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         code: 500,
         message: 'Failed to authenticate'
       });
