@@ -5,9 +5,11 @@ const environment = require('./environment');
 const config = require('./config');
 const { roles, users } = require('@medic/user-management')(config, db);
 
+const contentLengthRegex = /^content-length$/i;
+
 const get = (path, headers) => {
   const getHeaders = { ...headers };
-  const contentLengthHeaders = Object.keys(getHeaders).filter(header => /^content-length$/i.test(header));
+  const contentLengthHeaders = Object.keys(getHeaders).filter(header => contentLengthRegex.test(header));
   contentLengthHeaders.forEach(header => delete getHeaders[header]);
   const url = new URL(path, environment.serverUrlNoAuth);
   return rpn.get({
