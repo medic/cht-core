@@ -190,7 +190,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(reduxSubscription);
   }
 
-  private isRelevantVisitReport(doc) {
+  private isRelevantVisitReport (doc) {
     const isRelevantDelete = doc && doc._deleted && this.isSortedByLastVisited();
     return (
       doc &&
@@ -207,7 +207,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private getUserHomePlaceSummary(homePlaceId?: string) {
     return this.userSettingsService
       .get()
-      .then((userSettings: any) => {
+      .then((userSettings:any) => {
         const facilityId = homePlaceId ?? userSettings.facility_id;
         if (facilityId) {
           this.globalActions.setUserFacilityId(facilityId);
@@ -224,7 +224,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private canViewLastVisitedDate() {
     if (this.sessionService.isAdmin()) {
-      // disable UHC for DB admins
+    // disable UHC for DB admins
       return Promise.resolve(false);
     }
     return this.authService.has('can_view_last_visited_date');
@@ -375,7 +375,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       searchFilters = this.filters;
     }
 
-    const extensions: any = {};
+    const extensions:any = {};
     if (this.lastVisitedDateExtras) {
       extensions.displayLastVisitedDate = true;
       extensions.visitCountSettings = this.visitCountSettings;
@@ -396,7 +396,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
         if (this.usersHomePlace) {
-          const homeIndex = _findIndex(updatedContacts, (contact: any) => {
+          const homeIndex = _findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
           });
           this.additionalListItem =
