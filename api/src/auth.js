@@ -9,8 +9,11 @@ const contentLengthRegex = /^content-length$/i;
 
 const get = (path, headers) => {
   const getHeaders = { ...headers };
-  const contentLengthHeaders = Object.keys(getHeaders).filter(header => contentLengthRegex.test(header));
-  contentLengthHeaders.forEach(header => delete getHeaders[header]);
+  Object
+    .keys(getHeaders)
+    .filter(header => contentLengthRegex.test(header))
+    .forEach(header => delete getHeaders[header]);
+
   const url = new URL(path, environment.serverUrlNoAuth);
   return rpn.get({
     url: url.toString(),
