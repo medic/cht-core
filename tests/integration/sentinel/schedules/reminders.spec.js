@@ -159,11 +159,12 @@ const getReminderLogs = (expectedLogs) => {
     include_docs: true
   };
   return utils.sentinelDb.allDocs(opts).then(result => {
+    console.log('-----------inside getReminderLogs result----------------------------', { result });
     if (result.rows.length >= expectedLogs) {
+      console.log('-----------inside getReminderLogs result.rows.length >= expectedLogs----------------------------');
       return result;
     }
-
-    return new Promise(resolve => setTimeout(resolve, 200)).then(() => getReminderLogs(expectedLogs));
+    return new Promise(resolve => setTimeout(resolve, 2000)).then(() => getReminderLogs(expectedLogs));
   });
 };
 
@@ -211,14 +212,19 @@ describe('reminders', () => {
 
   after(() => utils.revertDb([], true));
 
-  it('should create reminders', () => {
+  it('should create reminders', async () => {
     let reminder1Date;
     let reminder2Date;
     let reminder2Date2;
     let reminder2Date3;
-    return restartSentinel()
-      .then(() => getReminderLogs(2))
+    console.log('----------------------------minus1----------------------------');
+    await restartSentinel()
+      .then(() => {
+        console.log('----------------------------1----------------------------');
+        return getReminderLogs(2);
+      })
       .then(({ rows: reminderLogs }) => {
+        console.log('----------------------------3----------------------------');
         chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.be.true;
         chai.expect(reminderLogs[0].doc.reminder).to.deep.equal(remindersConfig[0]);
         chai.expect(reminderLogs[1].id.startsWith('reminderlog:FORM2:')).to.be.true;
@@ -227,8 +233,11 @@ describe('reminders', () => {
         reminder1Date = reminderLogs[0].id.split(':')[2];
         reminder2Date = reminderLogs[1].id.split(':')[2];
       })
-      .then(() => getReminderDocs())
-      .then(result => {
+      .then(() => {
+        console.log('----------------------------3----------------------------');
+        return getReminderDocs();
+      }).then(result => {
+        console.log('----------------------------4----------------------------');
         const reminderDocs = result.rows.map(row => row.doc);
         const reminderDocIds = reminderDocs.map(doc => doc._id);
 
@@ -269,6 +278,7 @@ describe('reminders', () => {
       })
       .then(() => utils.revertSettings(true))
       .then(() => {
+        console.log('----------------------------5----------------------------');
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(3, 'minute'));
         return utils.updateSettings(
           { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
@@ -278,6 +288,7 @@ describe('reminders', () => {
       .then(() => restartSentinel())
       .then(() => getReminderLogs(3))
       .then(({ rows: reminderLogs }) => {
+        console.log('----------------------------7----------------------------');
         // Only the 2nd reminder ran. Because reminders are executed in a series, we know that 1st reminder was skipped
         // once we get a log for the 2nd reminder. It's just a hack because we have no way of knowing that the
         // "scheduler" code has completed.
@@ -291,8 +302,10 @@ describe('reminders', () => {
         chai.expect(reminderLogs[2].doc.reminder).to.deep.equal(remindersConfig[1]);
         reminder2Date2 = reminderLogs[2].id.split(':')[2];
       })
-      .then(() => getReminderDocs())
-      .then(result => {
+      .then(() => {
+        console.log('----------------------------8----------------------------');
+        return getReminderDocs();
+      }).then(result => {
         const reminderDocs = result.rows.map(row => row.doc);
         const reminderDocIds = reminderDocs.map(doc => doc._id);
 
@@ -326,6 +339,7 @@ describe('reminders', () => {
       })
       .then(() => utils.request({ path: '/api/sms', method: 'POST', headers: { 'Content-Type': 'application/json' } }))
       .then(smsMessages => {
+        console.log('----------------------------9----------------------------');
         // 6 reminders have 6 messages
         chai.expect(smsMessages.messages).to.have.lengthOf(6);
         const messagesByPhone = {};
@@ -344,8 +358,10 @@ describe('reminders', () => {
           ]);
         });
       })
-      .then(() => getReminderDocs())
-      .then(result => {
+      .then(() => {
+        console.log('----------------------------10----------------------------');
+        return getReminderDocs();
+      }).then(result => {
         const reminderDocs = result.rows.map(row => row.doc);
         // every doc should still have exactly one task
         reminderDocs.forEach(reminderDoc => {
@@ -356,6 +372,7 @@ describe('reminders', () => {
         });
       })
       .then(() => {
+        console.log('----------------------------11----------------------------');
         // submit a "form" that would silence one of the contacts for next reminder
         const leaf3Contact = contacts.find(c => c._id === leaf3.contact._id);
         const message = {
@@ -372,6 +389,7 @@ describe('reminders', () => {
       })
       .then(() => utils.revertSettings(true))
       .then(() => {
+        console.log('----------------------------12----------------------------');
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(1, 'minute'));
         return utils.updateSettings(
           { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
@@ -381,6 +399,7 @@ describe('reminders', () => {
       .then(() => restartSentinel())
       .then(() => getReminderLogs(4))
       .then(({ rows: reminderLogs }) => {
+        console.log('----------------------------13----------------------------');
         chai.expect(reminderLogs).to.have.lengthOf(4);
         reminderLogs.forEach(log => chai.expect(log.doc._rev.startsWith('1-')).to.be.true);
         chai.expect(reminderLogs.filter(log => log.id.startsWith('reminderlog:FORM2:'))).to.have.lengthOf(3);
@@ -389,6 +408,7 @@ describe('reminders', () => {
       })
       .then(() => getReminderDocs())
       .then(result => {
+        console.log('----------------------------14----------------------------');
         // we expect only one new reminder, since leaf3 has a sent_form for FORM2
         const reminderDocs = result.rows.map(row => row.doc);
         const reminderDocIds = reminderDocs.map(doc => doc._id);
@@ -412,6 +432,9 @@ describe('reminders', () => {
           place: leaf1,
           message: 'something do should leaf1'
         });
+      }).catch(e => {
+        console.log({ message: e.message });
+        throw new Error(e);
       });
   });
 });

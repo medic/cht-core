@@ -1,9 +1,10 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
 const { roles, users } = require('@medic/user-management')(config, db);
+
 
 const get = (path, headers) => {
   const url = new URL(path, environment.serverUrlNoAuth);

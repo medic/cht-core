@@ -53,7 +53,8 @@
     "semi-spacing": ["error", { "before": false, "after": true }],
     "semi-style": ["error", "last"],
     "template-curly-spacing": "error",
-    "unicode-bom": ["error", "never"]
+    "unicode-bom": ["error", "never"],
+    "eqeqeq": ["error", "always", { "null": "ignore" }] // foo != null is a convenient way to check for null or undefined.
   },
   "overrides": [
     {

@@ -1,4 +1,4 @@
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const _ = require('lodash');
 
 const upgradeLogService = require('./upgrade-log');
@@ -62,7 +62,7 @@ const getViewsToIndex = async () => {
 const indexView = async (dbName, ddocId, viewName) => {
   do {
     try {
-      return await rpn.get({
+      return await request.get({
         uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
         json: true,
         qs: { limit: 1 },

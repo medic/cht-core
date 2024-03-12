@@ -1,7 +1,7 @@
 const later = require('later');
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const rewire = require('rewire');
 
 const db = require('../../../src/db');
@@ -203,7 +203,7 @@ describe('replications', () => {
         source.changes.callsFake(() => Promise.resolve(changes.splice(0, 1)[0]));
         // presume all docs are already replicated
         target.changes.callsFake(({ doc_ids }) => Promise.resolve({ results: doc_ids.map(id => ({ id })) }));
-        sinon.stub(rpn, 'post').resolves();
+        sinon.stub(request, 'post').resolves();
 
         return replications.replicateDbs(['source'], 'target').then(() => {
           assert.equal(source.get.callCount, 1);
@@ -214,8 +214,8 @@ describe('replications', () => {
           assert.deepEqual(source.changes.args[2], [{ since: 200, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[3], [{ since: 300, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[4], [{ since: 400, limit: 100, batch_size: 100 }]);
-          assert.equal(rpn.post.callCount, 3);
-          assert.deepEqual(rpn.post.args[0], [{
+          assert.equal(request.post.callCount, 3);
+          assert.deepEqual(request.post.args[0], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -223,7 +223,7 @@ describe('replications', () => {
               'feedback-1': ['4'],
             }
           }]);
-          assert.deepEqual(rpn.post.args[1], [{
+          assert.deepEqual(request.post.args[1], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -232,7 +232,7 @@ describe('replications', () => {
               'telemetry-3': ['1'],
             }
           }]);
-          assert.deepEqual(rpn.post.args[2], [{
+          assert.deepEqual(request.post.args[2], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -325,7 +325,7 @@ describe('replications', () => {
         source.changes.callsFake(() => Promise.resolve(changes.splice(0, 1)[0]));
         // presume all docs are already replicated
         target.changes.callsFake(({ doc_ids }) => Promise.resolve({ results: doc_ids.map(id => ({ id })) }));
-        sinon.stub(rpn, 'post').resolves();
+        sinon.stub(request, 'post').resolves();
 
         return replications.replicateDbs(['source'], 'target').then(() => {
           assert.equal(source.get.callCount, 1);
@@ -336,8 +336,8 @@ describe('replications', () => {
           assert.deepEqual(source.changes.args[2], [{ since: 300, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[3], [{ since: 400, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[4], [{ since: 500, limit: 100, batch_size: 100 }]);
-          assert.equal(rpn.post.callCount, 3);
-          assert.deepEqual(rpn.post.args[0], [{
+          assert.equal(request.post.callCount, 3);
+          assert.deepEqual(request.post.args[0], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -345,7 +345,7 @@ describe('replications', () => {
               'feedback-1': ['4'],
             }
           }]);
-          assert.deepEqual(rpn.post.args[1], [{
+          assert.deepEqual(request.post.args[1], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -354,7 +354,7 @@ describe('replications', () => {
               'telemetry-3': ['1'],
             }
           }]);
-          assert.deepEqual(rpn.post.args[2], [{
+          assert.deepEqual(request.post.args[2], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -414,7 +414,7 @@ describe('replications', () => {
         const replicatedIds = ['telemetry-1', 'feedback-1', 'feedback-2'];
         target.changes.callsFake(({ doc_ids }) => (
           Promise.resolve({ results: doc_ids.filter(id => replicatedIds.includes(id)).map(id => ({ id })) })));
-        sinon.stub(rpn, 'post').resolves();
+        sinon.stub(request, 'post').resolves();
 
         return replications.replicateDbs(['source'], 'target').then(() => {
           assert.equal(source.get.callCount, 1);
@@ -424,8 +424,8 @@ describe('replications', () => {
           assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[2], [{ since: 200, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[3], [{ since: 220, limit: 100, batch_size: 100 }]);
-          assert.equal(rpn.post.callCount, 2);
-          assert.deepEqual(rpn.post.args[0], [{
+          assert.equal(request.post.callCount, 2);
+          assert.deepEqual(request.post.args[0], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -433,7 +433,7 @@ describe('replications', () => {
               'feedback-1': ['4'],
             }
           }]);
-          assert.deepEqual(rpn.post.args[1], [{
+          assert.deepEqual(request.post.args[1], [{
             uri: `${db.serverUrl}/source/_purge`,
             json: true,
             body: {
@@ -501,7 +501,7 @@ describe('replications', () => {
         source.changes.callsFake(() => Promise.resolve(changes.splice(0, 1)[0]));
         // presume all docs are already replicated
         target.changes.callsFake(({ doc_ids }) => Promise.resolve({ results: doc_ids.map(id => ({ id })) }));
-        sinon.stub(rpn, 'post').onCall(0).resolves().onCall(1).rejects({ some: 'error' });
+        sinon.stub(request, 'post').onCall(0).resolves().onCall(1).rejects({ some: 'error' });
 
         return replications
           .replicateDbs(['source'], 'target')
@@ -513,8 +513,8 @@ describe('replications', () => {
             assert.equal(source.changes.callCount, 2);
             assert.deepEqual(source.changes.args[0], [{ since: 0, limit: 100, batch_size: 100 }]);
             assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100, batch_size: 100 }]);
-            assert.equal(rpn.post.callCount, 2);
-            assert.deepEqual(rpn.post.args[0], [{
+            assert.equal(request.post.callCount, 2);
+            assert.deepEqual(request.post.args[0], [{
               uri: `${db.serverUrl}/source/_purge`,
               json: true,
               body: {
@@ -522,7 +522,7 @@ describe('replications', () => {
                 'feedback-1': ['4'],
               }
             }]);
-            assert.deepEqual(rpn.post.args[1], [{
+            assert.deepEqual(request.post.args[1], [{
               uri: `${db.serverUrl}/source/_purge`,
               json: true,
               body: {

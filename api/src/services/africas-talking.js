@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const secureSettings = require('@medic/settings');
 const logger = require('../logger');
 const config = require('../config');

@@ -1,7 +1,7 @@
 const { performance } = require('perf_hooks');
 const _ = require('lodash');
 const moment = require('moment');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 const config = require('../config');
 const db = require('../db');
@@ -276,6 +276,8 @@ const createReminderLog = (reminder, scheduledDate, start) => {
     reported_date: moment().valueOf(),
     type: 'reminderlog',
   };
+  //eslint-disable-next-line
+  console.log('Creating reminder log:', reminderLog);
   logger.debug('Reminder %o succesfully completed in %d seconds', reminder, duration / 1000);
   return db.sentinel.put(reminderLog);
 };

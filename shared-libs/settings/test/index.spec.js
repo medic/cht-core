@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const crypto = require('crypto');
 
 const sinon = require('sinon');

@@ -5,7 +5,7 @@ const utils = require('../lib/utils');
 const date = require('../date');
 const config = require('../config');
 const db = require('../db');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
@@ -97,7 +97,7 @@ const getBatch = (query, startKey, startKeyDocId) => {
   let nextKey;
   let nextKeyDocId;
 
-  return rpn
+  return request
     .get(options)
     .then(result => {
       if (!result.rows || !result.rows.length) {

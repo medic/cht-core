@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const url = require('url');
 const environment = require('../environment');
 

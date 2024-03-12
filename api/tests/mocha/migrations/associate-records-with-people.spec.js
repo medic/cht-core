@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const db = require('../../../src/db');
 const migration = require('../../../src/migrations/associate-records-with-people');
 

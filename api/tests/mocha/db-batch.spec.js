@@ -1,6 +1,6 @@
 const lib = require('../../src/db-batch');
 const chai = require('chai');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const sinon = require('sinon');
 const environment = require('../../src/environment');
 const viewName = 'myddoc/myview';
