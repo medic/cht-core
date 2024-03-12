@@ -145,13 +145,15 @@ describe('Auth', () => {
     });
 
     it('should clean content-length headers before forwarding', async () => {
-      sinon.stub(rpn, 'get').resolves({ userCtx: { name: 'user', roles: ['userrole'] }});
+      sinon.stub(rpn, 'get').resolves({ userCtx: { name: 'theuser', roles: ['userrole'] }});
 
       req.headers['content-length'] = 100;
       req.headers['Content-Length'] = 22;
+      req.headers['Content-length'] = 44;
+      req.headers['content-Length'] = 82;
 
       const result = await auth.getUserCtx(req);
-      chai.expect(result).to.deep.equal({ name: 'user', roles: ['userrole'] });
+      chai.expect(result).to.deep.equal({ name: 'theuser', roles: ['userrole'] });
       chai.expect(rpn.get.args).to.deep.equal([[{
         url: 'http://abc.com/_session',
         json: true,

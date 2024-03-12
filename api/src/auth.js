@@ -7,8 +7,8 @@ const { roles, users } = require('@medic/user-management')(config, db);
 
 const get = (path, headers) => {
   const getHeaders = { ...headers };
-  delete getHeaders['content-length'];
-  delete getHeaders['Content-Length'];
+  const contentLengthHeaders = Object.keys(getHeaders).filter(header => /^content-length$/i.test(header));
+  contentLengthHeaders.forEach(header => delete getHeaders[header]);
   const url = new URL(path, environment.serverUrlNoAuth);
   return rpn.get({
     url: url.toString(),
