@@ -36,7 +36,7 @@ describe('Login page funcionality tests', () => {
     const frTranslations = {
       user: `Nom d'utilisateur`,
       pass: 'Mot de passe',
-      error: `Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer`
+      error: `Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer.`
     };
 
     const esTranslations = {
