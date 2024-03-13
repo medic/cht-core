@@ -110,8 +110,8 @@ const getAllowedDocsCounts = async (userCtx) => {
 // In express4, req.host strips off the port number: https://expressjs.com/en/guide/migrating-5.html#req.host
 const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
-const getUserList = async () => {
-  return await users.getList();
+const getUserList = async (filters = {}) => {
+  return await users.getList(filters);
 };
 
 const getType = user => {
@@ -234,7 +234,11 @@ module.exports = {
     get: async (req, res) => {
       try {
         await auth.check(req, 'can_view_users');
-        const body = await getUserList();
+        const filters = _.chain(req.query)
+          .pick(['facility_id', 'contact_id'])
+          .mapKeys((value, key) => _.camelCase(key))
+          .value();
+        const body = await getUserList(filters);
         res.json(body);
       } catch (err) {
         serverUtils.error(err, req, res);

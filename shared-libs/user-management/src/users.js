@@ -114,9 +114,17 @@ const getAllUserSettings = () => {
     .then(result => result.rows.map(row => row.doc));
 };
 
-const getAllUsers = () => {
-  return db.users.allDocs({ include_docs: true })
-    .then(result => result.rows);
+const getAllUsers = ({ facilityId }) => {
+  if (!facilityId) {
+    return db.users.allDocs({ include_docs: true })
+      .then(result => result.rows.map(({ doc }) => doc));
+  }
+
+  return db.users.find({
+    selector: {
+      facility_id: facilityId,
+    },
+  }).then(result => result.docs);
 };
 
 const validateContact = (id, placeID) => {
@@ -335,21 +343,21 @@ const hasParent = (facility, id) => {
 const mapUsers = (users, settings, facilities) => {
   users = users || [];
   return users
-    .filter(user => user.id.indexOf(USER_PREFIX) === 0)
+    .filter(user => user._id.indexOf(USER_PREFIX) === 0)
     .map(user => {
-      const setting = getDoc(user.id, settings) || {};
+      const setting = getDoc(user._id, settings) || {};
       return {
-        id: user.id,
-        rev: user.doc._rev,
-        username: user.doc.name,
+        id: user._id,
+        rev: user._rev,
+        username: user.name,
         fullname: setting.fullname,
         email: setting.email,
         phone: setting.phone,
-        place: getDoc(user.doc.facility_id, facilities),
-        roles: user.doc.roles,
+        place: getDoc(user.facility_id, facilities),
+        roles: user.roles,
         contact: getDoc(setting.contact_id, facilities),
         external_id: setting.external_id,
-        known: user.doc.known
+        known: user.known
       };
     });
 };
@@ -770,8 +778,8 @@ const getUserSettings = async({ name }) => {
  */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
-  getList: async () => {
-    const [ users, settings ] = await Promise.all([ getAllUsers(), getAllUserSettings() ]);
+  getList: async (filters) => {
+    const [ users, settings ] = await Promise.all([ getAllUsers(filters), getAllUserSettings() ]);
     const facilities = await facility.list(users, settings);
     return mapUsers(users, settings, facilities);
   },
