@@ -45,7 +45,7 @@ export class Form2smsService {
   private getFormModel(form) {
     return this.dbService
       .get()
-      .getAttachment(form, 'model')
+      .getAttachment(`form:${form}`, 'model.xml')
       .then(blob => this.fileReaderService.utf8(blob));
   }
 
