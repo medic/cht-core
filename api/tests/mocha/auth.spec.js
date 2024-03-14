@@ -151,6 +151,7 @@ describe('Auth', () => {
       req.headers['Content-Length'] = 22;
       req.headers['Content-length'] = 44;
       req.headers['content-Length'] = 82;
+      req.headers['CONTENT-LENGTH'] = 240;
 
       const result = await auth.getUserCtx(req);
       chai.expect(result).to.deep.equal({ name: 'theuser', roles: ['userrole'] });
