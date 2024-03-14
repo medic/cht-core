@@ -64,7 +64,7 @@
         </ul>
         <p *ngIf="error" class="alert alert-danger" role="alert">{{'Error fetching contacts' | translate}}</p>
         <p class="loading-status" *ngIf="!error && !loading && !hasContacts">{{'No contacts found' | translate}}</p>
-        <p class="loading-status" *ngIf="!error && !loading && hasContacts && !moreItems">{{'No more contacts' | translate}}</p>
+        <p class="loading-status" *ngIf="!error && contactsReady && !loading && hasContacts && !moreItems">{{'No more contacts' | translate}}</p>
         <div class="loader" *ngIf="loading"></div>
         <div class="padding"></div>
       </div>
