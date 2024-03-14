@@ -105,10 +105,15 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = () => {
+const getAllUserSettings = ({ facilityId }) => {
+  const key = ['user-settings'];
+  if (facilityId) {
+    key.push(facilityId);
+  }
+
   const opts = {
     include_docs: true,
-    key: ['user-settings']
+    key,
   };
   return db.medic.query('medic-client/doc_by_type', opts)
     .then(result => result.rows.map(row => row.doc));
@@ -779,7 +784,9 @@ const getUserSettings = async({ name }) => {
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
   getList: async (filters) => {
-    const [ users, settings ] = await Promise.all([ getAllUsers(filters), getAllUserSettings() ]);
+    const [ users, settings ] = await Promise.all([ getAllUsers(filters), getAllUserSettings(filters) ]);
+    console.log("users", users);
+    console.log("settings", settings);
     const facilities = await facility.list(users, settings);
     return mapUsers(users, settings, facilities);
   },

@@ -6,5 +6,10 @@ function(doc) {
     });
     return;
   }
+  if (doc.type === 'user-settings') {
+    emit([ doc.type ]);
+    emit([ doc.type, doc.facility_id ]);
+    return;
+  }
   emit([ doc.type ]);
 }
