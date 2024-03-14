@@ -170,9 +170,27 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.calledOnce).to.be.true;
-      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(performanceService.track.callCount).to.equal(7);
+      expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:contact_data',
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_children',
+      });
+      expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_reports',
+      });
+      expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_targets',
+      });
+      expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_contact_summary',
+      });
+      expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_tasks',
+      });
+      expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({
         name: 'contact_detail:contact:load',
         recordApdex: true,
       });
@@ -198,9 +216,27 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.calledOnce).to.be.true;
-      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(performanceService.track.callCount).to.equal(7);
+      expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:contact_data',
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_children',
+      });
+      expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_reports',
+      });
+      expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_targets',
+      });
+      expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_contact_summary',
+      });
+      expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_tasks',
+      });
+      expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({
         name: 'contact_detail:contact:load',
         recordApdex: true,
       });
