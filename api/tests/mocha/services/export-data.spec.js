@@ -1,6 +1,7 @@
 require('chai').should();
 
 const db = require('../../../src/db');
+const logger = require('../../../src/logger');
 const service = require('../../../src/services/export-data');
 const sinon = require('sinon');
 
@@ -306,6 +307,176 @@ describe('Export Data Service', () => {
 
     });
 
+  });
+
+  describe('Export users devices', () => {
+    it('depends on the right permission', async () => {
+      const permission = 'can_export_devices_details';
+      service.permission('user-devices').should.equal(permission);
+    });
+
+    it('handles empty db', async () => {
+      sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
+      const actual = await service.exportObject('user-devices');
+      actual.should.deep.equal([]);
+    });
+
+    it('works', async () => {
+      const rows = [
+        {
+          key: ['admin-central-2', 'd26e2875-53af-4e9b-b695-c82faf0db5d8'],
+          value: {
+            date: '2022-11-21',
+            id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
+            device: {
+              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36', // eslint-disable-line max-len
+              versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
+            },
+          },
+        },
+        {
+          key: ['chw1', 'b1c172d8-82b0-42fd-8401-313796b8c801'],
+          value: {
+            date: '2022-11-29',
+            id: 'telemetry-2022-11-29-chw1-b1c172d8-82b0-42fd-8401-313796b8c801',
+            device: {
+              userAgent: 'Mozilla/5.0 (Linux; Android 10; 8094X Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/88.0.4324.181 Mobile Safari/537.36 org.medicmobile.webapp.mobile.moh_mali_chw_training_2/v1.0.4-4', // eslint-disable-line max-len
+              versions: {
+                apk: 'v1.0.4-4',
+                android: '10',
+                cht: 'unknown',
+                settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+              },
+            },
+          },
+        },
+        {
+          key: ['min-data', 'b1c172d8-82b0-42fd-8401-313796b8c802'],
+          value: {
+            date: '2022-11-29',
+            id: 'telemetry-1970-01-01-min-data-b1c172d8-82b0-42fd-8401-313796b8c801',
+            device: {
+              userAgent: undefined,
+              versions: {
+                apk: undefined,
+                android: undefined,
+                cht: undefined,
+                settings: undefined,
+              },
+            },
+          },
+        },
+      ];
+      sinon.stub(db.medicUsersMeta, 'query').resolves({ rows });
+      const actual = await service.exportObject('user-devices');
+      actual.should.deep.equal([
+        {
+          user: 'admin-central-2',
+          deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
+          date: '2022-11-21',
+          browser: {
+            name: 'Chrome',
+            version: '107.0.0.0',
+          },
+          apk: undefined,
+          android: undefined,
+          cht: 'unknown',
+          settings: '4-83c8561a13479b245b295e97401f2f55'
+        },
+        {
+          user: 'chw1',
+          deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
+          date: '2022-11-29',
+          browser: {
+            name: 'Chrome',
+            version: '88.0.4324.181',
+          },
+          apk: 'v1.0.4-4',
+          android: '10',
+          cht: 'unknown',
+          settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+        },
+        {
+          android: undefined,
+          apk: undefined,
+          browser: {
+            name: undefined,
+            version: undefined
+          },
+          cht: undefined,
+          date: '2022-11-29',
+          deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c802',
+          settings: undefined,
+          user: 'min-data'
+        }
+      ]);
+    });
+  });
+
+  it('handles invalid user agents', async () => {
+    const rows = [
+      {
+        key: ['admin-central-2', 'd26e2875-53af-4e9b-b695-c82faf0db5d8'],
+        value: {
+          date: '2022-11-21',
+          id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
+          device: {
+            userAgent: 'Not a real user agent',
+            versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
+          },
+        },
+      },
+      {
+        key: ['chw1', 'b1c172d8-82b0-42fd-8401-313796b8c801'],
+        value: {
+          date: '2022-11-29',
+          id: 'telemetry-2022-11-29-chw1-b1c172d8-82b0-42fd-8401-313796b8c801',
+          device: {
+            userAgent: { will: 'cause an error' },
+            versions: {
+              apk: 'v1.0.4-4',
+              android: '10',
+              cht: 'unknown',
+              settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+            },
+          },
+        },
+      },
+    ];
+    sinon.stub(db.medicUsersMeta, 'query').resolves({ rows });
+    sinon.spy(logger, 'error');
+    const actual = await service.exportObject('user-devices');
+    actual.should.deep.equal([
+      {
+        user: 'admin-central-2',
+        deviceId: 'd26e2875-53af-4e9b-b695-c82faf0db5d8',
+        date: '2022-11-21',
+        browser: {
+          name: undefined,
+          version: undefined,
+        },
+        apk: undefined,
+        android: undefined,
+        cht: 'unknown',
+        settings: '4-83c8561a13479b245b295e97401f2f55'
+      },
+      {
+        user: 'chw1',
+        deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c801',
+        date: '2022-11-29',
+        browser: {
+          name: undefined,
+          version: undefined,
+        },
+        apk: 'v1.0.4-4',
+        android: '10',
+        cht: 'unknown',
+        settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+      }
+    ]);
+    logger.error.callCount.should.equal(1);
+    logger.error.args[0][0].should
+      .satisfy(msg => msg.startsWith('Error parsing user agent "{"will":"cause an error"}":'));
   });
 
   describe('Handle error', () => {

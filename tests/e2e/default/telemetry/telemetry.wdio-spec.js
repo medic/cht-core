@@ -78,7 +78,8 @@ describe('Telemetry', () => {
       'metadata.user': user.username,
       'metadata.versions.app': clientDdoc.build_info.version,
     });
-    const ciBuild = TAG || BRANCH;
-    expect(clientDdoc.build_info.version).to.include(ciBuild || clientDdoc.build_info.base_version);
+
+    const version = TAG || utils.escapeBranchName(BRANCH) || clientDdoc.build_info.base_version;
+    expect(clientDdoc.build_info.version).to.include(version);
   });
 });

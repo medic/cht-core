@@ -8,6 +8,7 @@ const MAPPERS = {
   contacts: require('./export/contact-mapper'),
   messages: require('./export/message-mapper'),
   feedback: require('./export/feedback-mapper'),
+  'user-devices': require('./export/user-devices'),
 };
 
 const joinLine = (csvLine) => csvLine.join(',') + '\n';
@@ -81,7 +82,7 @@ class SearchResultReader extends Readable {
   }
 }
 
-const format = type => type === 'dhis' ? 'json' : 'csv';
+const format = type => ['dhis', 'user-devices'].includes(type) ? 'json' : 'csv';
 
 module.exports = {
   exportStream: (type, filters, options) => new SearchResultReader(type, filters, options),
@@ -94,6 +95,7 @@ module.exports = {
       feedback: 'can_export_feedback',
       messages: 'can_export_messages',
       reports: 'can_export_messages',
+      'user-devices': 'can_export_devices_details',
     };
 
     const permission = typeToPermissionMap[type];
