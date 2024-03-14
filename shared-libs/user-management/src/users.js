@@ -105,10 +105,13 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = ({ facilityId }) => {
+const getAllUserSettings = ({ facilityId, contactId }) => {
   const key = ['user-settings'];
   if (facilityId) {
     key.push(facilityId);
+  }
+  if (contactId) {
+    key.push(contactId);
   }
 
   const opts = {
@@ -119,7 +122,8 @@ const getAllUserSettings = ({ facilityId }) => {
     .then(result => result.rows.map(row => row.doc));
 };
 
-const getAllUsers = ({ facilityId }) => {
+const getAllUsers = ({ facilityId, /*contactId*/ }) => {
+  // TODO: ? do something with contactId
   if (!facilityId) {
     return db.users.allDocs({ include_docs: true })
       .then(result => result.rows.map(({ doc }) => doc));
