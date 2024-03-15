@@ -18,7 +18,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { PerformanceService } from '@mm-services/performance.service';
-
+testing
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
   let actions$;
