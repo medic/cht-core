@@ -143,7 +143,7 @@ export class ContactsEffects {
           .then(() => this.contactsActions.receiveSelectedContactChildren(children));
       })
       .finally(() => {
-        trackPerformance?.stop({ name: [ ...trackName, 'load_children' ].join(':') });
+        trackPerformance?.stop({ name: [ ...trackName, 'load_descendants' ].join(':') });
       });
   }
 

@@ -176,7 +176,7 @@ describe('Contacts effects', () => {
         name: 'contact_detail:contact:load:contact_data',
       });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_children',
+        name: 'contact_detail:contact:load:load_descendants',
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
         name: 'contact_detail:contact:load:load_reports',
@@ -222,7 +222,7 @@ describe('Contacts effects', () => {
         name: 'contact_detail:contact:load:contact_data',
       });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_children',
+        name: 'contact_detail:contact:load:load_descendants',
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
         name: 'contact_detail:contact:load:load_reports',
