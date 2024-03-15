@@ -125,7 +125,7 @@ export class DBSyncService {
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(info => {
-        console.debug(`Replication to successful`, info);
+        console.log(`Replication to successful`, info);
         this.setLastReplicatedSeq(info?.last_seq);
         telemetryEntry.recordSuccess(info);
       })
