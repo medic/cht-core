@@ -6,6 +6,7 @@ const mustache = require('mustache');
 
 const packageJson = require('../../package.json');
 const versions = require('./versions');
+const BUILD_PLATFORMS = ['linux/amd64', 'linux/arm64/v8'];
 
 const {
   TAG,
@@ -66,7 +67,7 @@ const setBuildInfo = () => {
 };
 
 const mkdirSync = (dirPath) => {
-  if (!fs.existsSync(dirPath)){
+  if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath);
   }
 };
@@ -147,10 +148,11 @@ const localDockerComposeFiles = () => {
 };
 
 const saveServiceTags = () => {
-  const tags = [...versions.SERVICES, ...versions.INFRASTRUCTURE].map(service => ({
-    container_name: `cht-${service}`,
-    image: versions.getImageTag(service, true),
-  }));
+  const tags = [...versions.SERVICES, ...versions.INFRASTRUCTURE]
+    .map(service => ({
+      container_name: `cht-${service}`,
+      image: versions.getImageTag(service, true),
+    }));
   const tagsFilePath = path.resolve(stagingPath, 'tags.json');
   fs.writeFileSync(tagsFilePath, JSON.stringify(tags));
 };
@@ -190,7 +192,7 @@ const setDdocsVersion = () => {
   });
 };
 
-const exec = async (command, args, options=({})) => {
+const exec = async (command, args, options = ({})) => {
   options.stdio = 'inherit';
   const ci = spawn(command, args, options);
   await new Promise((resolve, reject) => {
@@ -210,7 +212,9 @@ const npmCiModules = async () => {
   }
 };
 
-const buildServiceImages = async () => {
+
+
+const buildSinglePlatformServiceImages = async () => {
   for (const service of versions.SERVICES) {
     console.log(`\n\nBuilding docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
@@ -220,11 +224,47 @@ const buildServiceImages = async () => {
   }
 };
 
-const buildImages = async () => {
+const buildMultiPlatformServiceImages = async () => {
+  for (const service of versions.SERVICES) {
+    console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('npm', ['ci', '--omit=dev'], { cwd: service });
+    await exec('npm', ['dedupe'], { cwd: service });
+    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
+      '-f', `./${service}/Dockerfile`, '--tag', tag, '--push', '.']);
+  }
+};
+
+const buildServiceImages = async () => {
+  if (INTERNAL_CONTRIBUTOR) {
+    await buildMultiPlatformServiceImages();
+  } else {
+    await buildSinglePlatformServiceImages();
+  }
+};
+
+const buildSinglePlatformImages = async () => {
   for (const service of versions.INFRASTRUCTURE) {
     console.log(`\n\nBuilding docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
     await exec('docker', ['build', '-f', `./Dockerfile`, '--tag', tag, '.'], { cwd: service });
+  }
+};
+
+const buildInfrastructureImages = async () => {
+  if (INTERNAL_CONTRIBUTOR) {
+    await buildMultiPlatformImages();
+  } else {
+    await buildSinglePlatformImages();
+  }
+};
+
+const buildMultiPlatformImages = async () => {
+  for (const service of versions.INFRASTRUCTURE) {
+    console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
+      '-f', `./Dockerfile`, '--tag', tag, '--push', '.'], { cwd: service });
   }
 };
 
@@ -236,23 +276,13 @@ const saveServiceImages = async () => {
   }
 };
 
-const pushServiceImages = async () => {
-  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
-    console.log(`\n\nPushing docker image for ${service}\n\n`);
-    const tag = versions.getImageTag(service);
-    await exec('docker', ['push', tag]);
-  }
-};
-
 const publishServiceImages = async () => {
   if (!BUILD_NUMBER) {
     return;
   }
-
-  if (INTERNAL_CONTRIBUTOR) {
-    return await pushServiceImages();
+  if (!INTERNAL_CONTRIBUTOR){
+    return await saveServiceImages();
   }
-  return await saveServiceImages();
 };
 
 module.exports = {
@@ -264,8 +294,7 @@ module.exports = {
   setDdocsVersion,
   updateServiceWorker,
   buildServiceImages,
-  buildImages,
+  buildInfrastructureImages,
   saveServiceImages,
-  pushServiceImages,
   publishServiceImages
 };
