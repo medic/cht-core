@@ -159,9 +159,23 @@ get_nginx_container_id() {
   docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet  2>/dev/null
 }
 
-get_is_container_running() {
+is_nginx_running() {
   containerId=$1
-  docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
+
+  # first check if container has State.Running == "true"
+  containerStarted=$(docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null)
+
+  if [[ "$containerStarted" == "true" ]]; then
+
+    # now confirm that nginx returns a 301 http code to curl, meaning it's ready to serve requests
+    # and also ready to have the TLS cert installed
+    http_code=$(docker exec "$containerId" bash -c "curl -o /dev/null -s -w \"%{http_code}\" http://localhost")
+    if [[ "$http_code" == "301" ]]; then
+      echo "true"
+      return 0
+    fi
+  fi
+  echo "false"
 }
 
 service_has_image_downloaded(){
@@ -408,11 +422,11 @@ set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 
 nginxContainerId=$(get_nginx_container_id)
-isNginxRunning=$(get_is_container_running "$nginxContainerId")
+running=$(is_nginx_running "$nginxContainerId")
 i=0
 
 if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
-while [[ "$isNginxRunning" != "true" ]]; do
+while [[ "$running" != "true" ]]; do
   if [[ $i -gt 300 ]]; then
     echo ""
     echo ""
@@ -435,7 +449,7 @@ while [[ "$isNginxRunning" != "true" ]]; do
     nginxContainerId=$(get_nginx_container_id)
   fi
 
-  isNginxRunning=$(get_is_container_running "$nginxContainerId")
+  running=$(is_nginx_running "$nginxContainerId")
 done
 
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null

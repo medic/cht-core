@@ -124,7 +124,8 @@ describe('Performing an upgrade', () => {
     await browser.refresh();
     await commonPage.waitForPageLoaded();
     await commonPage.goToAboutPage();
-    expect(await aboutPage.getVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
+    const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
+    expect(await aboutPage.getVersion()).to.include(expected);
     await commonPage.logout();
   });
 

@@ -62,6 +62,15 @@ angular
       });
 
     $scope.export = function() {
-      Export('feedback');
+      if ($scope.exporting) {
+        return;
+      }
+
+      $scope.exporting = true;
+      Export('feedback')
+        .finally(() => {
+          $scope.exporting = false;
+          $scope.$apply();
+        });
     };
   });
