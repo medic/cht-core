@@ -48,6 +48,7 @@ import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filte
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -127,6 +128,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
     private translateLocaleService:TranslateLocaleService,
     private telemetryService:TelemetryService,
+    private performanceService:PerformanceService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
@@ -138,8 +140,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
 
-    matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
-    matIconRegistry.setDefaultFontSetClass('fa');
+    this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
+    this.matIconRegistry.setDefaultFontSetClass('fa');
     moment.locale(['en']);
 
     this.formatDateService.init();
@@ -660,13 +662,16 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   private recordStartupTelemetry() {
     window.startupTimes.angularBootstrapped = performance.now();
-    this.telemetryService.record(
-      'boot_time:1:to_first_code_execution',
+    this.performanceService.recordPerformance(
+      { name: 'boot_time:1:to_first_code_execution' },
       window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
 
     if (window.startupTimes.replication) {
-      this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
+      this.performanceService.recordPerformance(
+        { name: 'boot_time:2_1:to_replication' },
+        window.startupTimes.replication,
+      );
     }
 
     if (window.startupTimes.purgingMetaFailed) {
@@ -674,23 +679,30 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.telemetryService.record('boot_time:purging_meta_failed');
     } else {
       // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
-      this.telemetryService.record(`boot_time:purging_meta:${window.startupTimes.purgingMeta}`);
+      this.telemetryService.record(`boot_time:purging_meta:${!!window.startupTimes.purgingMeta}`);
     }
+
     if (window.startupTimes.purgeMeta) {
-      this.telemetryService.record('boot_time:2_3:to_purge_meta', window.startupTimes.purgeMeta);
+      this.performanceService.recordPerformance(
+        { name: 'boot_time:2_3:to_purge_meta' },
+        window.startupTimes.purgeMeta,
+      );
     }
 
-    this.telemetryService.record(
-      'boot_time:2:to_bootstrap',
-      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
+    this.performanceService.recordPerformance(
+      { name: 'boot_time:2:to_bootstrap' },
+      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution,
     );
 
-    this.telemetryService.record(
-      'boot_time:3:to_angular_bootstrap',
-      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
+    this.performanceService.recordPerformance(
+      { name: 'boot_time:3:to_angular_bootstrap' },
+      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped,
     );
 
-    this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
+    this.performanceService.recordPerformance(
+      { name: 'boot_time', recordApdex: true },
+      window.startupTimes.angularBootstrapped - window.startupTimes.start
+    );
   }
 
   @HostListener('window:beforeunload')

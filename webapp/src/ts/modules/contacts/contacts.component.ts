@@ -23,6 +23,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -75,6 +76,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private relativeDateService: RelativeDateService,
     private router: Router,
     private exportService: ExportService,
+    private performanceService: PerformanceService,
     private xmlFormsService: XmlFormsService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -82,6 +84,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    const trackPerformance = this.performanceService.track();
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
     this.globalActions.clearFilters(); // clear any global filters first
     this.subscribeToStore();
@@ -151,6 +154,12 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = false;
         this.appending = false;
         console.error('Error searching for contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop({
+          name: 'contact_list:load',
+          recordApdex: true,
+        });
       });
   }
 
@@ -345,6 +354,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
+    const trackPerformance = this.performanceService.track();
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
       options.limit = this.PAGE_SIZE;
@@ -431,6 +441,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.error = true;
         this.loading = false;
         console.error('Error loading contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: 'contact_list:query', recordApdex: true });
       });
   }
 
