@@ -105,7 +105,7 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = ({ facilityId, contactId }) => {
+const getAllUserSettings = ({ facilityId, contactId } = {}) => {
   const key = ['user-settings'];
   if (facilityId) {
     key.push(facilityId);
@@ -791,7 +791,7 @@ module.exports = {
     let settings;
 
     if (_.isEmpty(filters)) {
-      [users, settings] = await Promise.all([getAllUsers(filters), getAllUserSettings(filters)]);
+      [users, settings] = await Promise.all([getAllUsers(), getAllUserSettings()]);
     } else {
       settings = await getAllUserSettings(filters);
       const ids = settings.map(({ _id }) => _id);
