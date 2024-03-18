@@ -193,20 +193,16 @@ describe('Users service', () => {
     it('collects user infos', () => {
       const allUsers = [
         {
-          id: 'org.couchdb.user:x',
-          doc: {
-            name: 'lucas',
-            facility_id: 'c',
-            roles: [ 'national-admin', 'data-entry' ]
-          }
+          _id: 'org.couchdb.user:x',
+          name: 'lucas',
+          facility_id: 'c',
+          roles: ['national-admin', 'data-entry']
         },
         {
-          id: 'org.couchdb.user:y',
-          doc: {
-            name: 'milan',
-            facility_id: 'b',
-            roles: [ 'district-admin' ]
-          }
+          _id: 'org.couchdb.user:y',
+          name: 'milan',
+          facility_id: 'b',
+          roles: ['district-admin']
         }
       ];
       const allUsersSettings = [
@@ -253,26 +249,22 @@ describe('Users service', () => {
     it('filters out non-users', () => {
       const allUsers = [
         {
-          id: 'x',
-          doc: {
-            name: 'lucas',
-            facility_id: 'c',
-            fullname: 'Lucas M',
-            email: 'l@m.com',
-            phone: '123456789',
-            roles: [ 'national-admin', 'data-entry' ]
-          }
+          _id: 'x',
+          name: 'lucas',
+          facility_id: 'c',
+          fullname: 'Lucas M',
+          email: 'l@m.com',
+          phone: '123456789',
+          roles: ['national-admin', 'data-entry']
         },
         {
-          id: 'org.couchdb.user:y',
-          doc: {
-            name: 'milan',
-            facility_id: 'b',
-            fullname: 'Milan A',
-            email: 'm@a.com',
-            phone: '987654321',
-            roles: [ 'district-admin' ]
-          }
+          _id: 'org.couchdb.user:y',
+          name: 'milan',
+          facility_id: 'b',
+          fullname: 'Milan A',
+          email: 'm@a.com',
+          phone: '987654321',
+          roles: ['district-admin']
         }
       ];
       const allUserSettings = [
@@ -311,10 +303,8 @@ describe('Users service', () => {
     it('handles minimal users', () => {
       const allUsers = [
         {
-          id: 'org.couchdb.user:x',
-          doc: {
-            name: 'lucas'
-          }
+          _id: 'org.couchdb.user:x',
+          name: 'lucas'
         }
       ];
       service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
@@ -343,7 +333,7 @@ describe('Users service', () => {
     it('returns errors from facilities service', () => {
       const allUsers = [
         {
-          id: 'x',
+          _id: 'x',
           doc: {
             name: 'lucas',
             facility_id: 'c',
@@ -354,7 +344,7 @@ describe('Users service', () => {
           }
         },
         {
-          id: 'org.couchdb.user:y',
+          _id: 'org.couchdb.user:y',
           doc: {
             name: 'milan',
             facility_id: 'b',
