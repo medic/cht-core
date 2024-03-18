@@ -154,6 +154,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       }
 
       this.tasksActions.setTasksList(hydratedTasks);
+      this.tasksReady = true;
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
