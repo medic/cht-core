@@ -30,7 +30,7 @@ describe('Users Controller', () => {
   });
   afterEach(() => sinon.restore());
 
-  describe.only('get users list', () => {
+  describe('get users list', () => {
     let userList;
 
     beforeEach(() => {
