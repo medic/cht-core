@@ -42,6 +42,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   selectedTask;
   errorStack;
   hasTasks;
+  tasksReady;
   loading;
   tasksDisabled;
   currentLevel;
