@@ -78,8 +78,8 @@ const SYNC_STATUS = {
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  private globalActions;
-  private analyticsActions;
+  private globalActions: GlobalActions;
+  private analyticsActions: AnalyticsActions;
   setupPromise;
   translationsLoaded;
 

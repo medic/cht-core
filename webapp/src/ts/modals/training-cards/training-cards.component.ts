@@ -9,7 +9,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 
 @Component({
@@ -25,7 +25,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     private formService: FormService,
     private geolocationService: GeolocationService,
     private translateService: TranslateService,
-    private telemetryService: TelemetryService,
+    private performanceService: PerformanceService,
     private matDialogRef: MatDialogRef<TrainingCardsComponent>,
   ) {
     this.globalActions = new GlobalActions(this.store);
@@ -34,6 +34,10 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   static id = 'training-cards-modal';
   private geoHandle:any;
   private globalActions;
+  private trackRender;
+  private trackEditDuration;
+  private trackSave;
+  private trackMetadata = { action: '', form: '' };
   formNoTitle = false;
   form;
   trainingCardFormId;
@@ -46,12 +50,11 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   enketoError;
   enketoStatus;
   enketoSaving;
-  telemetryData;
   showConfirmExit;
   subscription: Subscription = new Subscription();
 
   ngOnInit() {
-    this.telemetryData = { preRender: Date.now() };
+    this.trackRender = this.performanceService.track();
     this.reset();
     this.subscribeToStore();
   }
@@ -97,7 +100,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.form = await this.formService.render(formContext);
       this.formNoTitle = !formDoc?.title;
       this.loadingContent = false;
-      this.recordTelemetryPostRender();
+      this.recordPerformancePostRender();
     } catch (error) {
       this.setError(error);
       console.error('Training Cards :: Error rendering form.', error);
@@ -161,7 +164,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.recordTelemetryPreSave();
+    this.recordPerformancePreSave();
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
 
@@ -172,7 +175,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.globalActions.setSnackbarContent(snackText);
       this.globalActions.setEnketoSavingStatus(false);
       this.formService.unload(this.form);
-      this.recordTelemetryPostSave();
+      this.recordPerformancePostSave();
       this.close();
 
     } catch (error) {
@@ -183,39 +186,32 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private recordTelemetryPostRender() {
-    this.telemetryData.postRender = Date.now();
-    this.telemetryData.action = 'add';
-    this.telemetryData.form = this.trainingCardFormId;
-
-    this.telemetryService.record(
-      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-      this.telemetryData.postRender - this.telemetryData.preRender
-    );
+  private recordPerformancePostRender() {
+    this.trackMetadata.action = 'add';
+    this.trackMetadata.form =  this.trainingCardFormId;
+    this.trackRender?.stop({
+      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'render' ].join(':')
+    });
+    this.trackEditDuration = this.performanceService.track();
   }
 
-  private recordTelemetryPreSave() {
-    this.telemetryData.preSave = Date.now();
-    this.telemetryService.record(
-      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender
-    );
+  private recordPerformancePreSave() {
+    this.trackEditDuration?.stop({
+      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+    });
+    this.trackSave = this.performanceService.track();
   }
 
-  private recordTelemetryPostSave() {
-    this.telemetryData.postSave = Date.now();
-    this.telemetryService.record(
-      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-      this.telemetryData.postSave - this.telemetryData.preSave
-    );
+  private recordPerformancePostSave() {
+    this.trackSave?.stop({
+      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
+    });
   }
 
-  private recordTelemetryQuitTraining() {
-    this.telemetryData.postQuit = Date.now();
-    this.telemetryService.record(
-      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:quit`,
-      this.telemetryData.postQuit - this.telemetryData.postRender
-    );
+  private recordPerformanceQuitTraining() {
+    this.trackEditDuration?.stop({
+      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'quit' ].join(':'),
+    });
   }
 
   confirmExit(confirm) {
@@ -227,7 +223,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   quitTraining() {
-    this.recordTelemetryQuitTraining();
+    this.recordPerformanceQuitTraining();
     this.close();
   }
 }
