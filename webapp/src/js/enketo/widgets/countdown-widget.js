@@ -27,17 +27,9 @@ const DEFAULT_TIME = 60;
  * Countdown timer.
  *
  * @extends Widget
-// Remove this when we no longer support countdown timer appearance on notes
-const deprecated = {
-  selector: '.or-appearance-countdown-timer input',
-  getDefaultValue: $el => parseInt($el.val()),
-};
-/**
- * Countdown timer.
- *
- * @extends Widget
  */
 
+// Remove this when we no longer support countdown timer appearance on notes
 const deprecated = {
   selector: '.or-appearance-countdown-timer input',
   getDefaultValue: $el => parseInt($el.val()),

@@ -42,9 +42,11 @@ const selectContact = async (contactName) => {
   });
 };
 
-const submitForm = async (waitForPageLoaded = true) => {
+const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = false } = {}) => {
   await formTitle().click();
-  await waitForValidationErrorsToDisappear();
+  if (!ignoreValidationErrors) {
+    await waitForValidationErrorsToDisappear();
+  }
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
   if (waitForPageLoaded) {
@@ -93,7 +95,6 @@ module.exports = {
   getFormTitle,
   getErrorMessage,
   cancelButton,
-  submitButton,
   waitForValidationErrors,
   waitForValidationErrorsToDisappear,
   nextPage,

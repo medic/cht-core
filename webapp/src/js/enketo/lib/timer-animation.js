@@ -37,7 +37,13 @@ const setupAudio = () => {
   return new Audio('/audio/alert.mp3');
 };
 
-const audio = setupAudio();
+let audio;
+const getAudio = () => {
+  if (!audio) {
+    audio = setupAudio();
+  }
+  return audio;
+};
 
 const animate = function(canvas, duration, onComplete) {
   const lim = duration * 500; // Half of the time the animation should take in milliseconds
@@ -55,26 +61,30 @@ const animate = function(canvas, duration, onComplete) {
     running = false;
     drawBackgroundCircle(ctx, circle, INACTIVE_BG_COLOR);
   };
+
   const startTimer = () => {
     running = true;
     setTimeout(() => animateFrame(Date.now()), 0);
   };
+
   const animateFrame = (start) => {
     if (!running) {
       return;
     }
+
     const offset = Date.now() - start;
     if (offset < lim * 2) {
       drawAnimation(ctx, circle, offset, lim);
       requestAnimationFrame(() => animateFrame(start));
-    } else {
-      resetTimer();
-      if ($(canvas).closest('body').length > 0) {
-        // only beep if the canvas is still attached to the DOM
-        audio.play();
-      }
-      onComplete();
+      return;
     }
+
+    resetTimer();
+    if ($(canvas).closest('body').length > 0) {
+      // only beep if the canvas is still attached to the DOM
+      getAudio().play();
+    }
+    onComplete();
   };
 
   // set up initial state
@@ -83,9 +93,9 @@ const animate = function(canvas, duration, onComplete) {
   canvas.addEventListener('click', () => {
     if (running) {
       resetTimer();
-    } else {
-      startTimer();
+      return;
     }
+    startTimer();
   });
 };
 
