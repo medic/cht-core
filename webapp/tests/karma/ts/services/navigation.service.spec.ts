@@ -17,6 +17,7 @@ describe('NavigationService', () => {
 
   beforeEach(() => {
     router = {
+      events: { pipe: sinon.stub().returns({ subscribe: sinon.stub() }) },
       navigate: sinon.stub(),
       routerState: {
         root: { snapshot: { } }

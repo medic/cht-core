@@ -2,14 +2,19 @@
 
 <div class="inner">
   <div *ngIf="translationsLoaded" class="col-sm-12 page help">
-    <h3>{{error.title | translate}}</h3>
-    <p>{{error.description | translate}}</p>
+    <h3>{{ error.title | translate }}</h3>
+    <p>{{ error.description | translate }}</p>
+    <br>
+    <a (click)="exit()">{{ (error.showReloadLink ? 'reload.app' : 'Back') | translate }}</a>
   </div>
   <div *ngIf="!translationsLoaded" class="col-sm-12 page help">
     <div class="loader inline small" *ngIf="!timeoutElapsed"></div>
     <div *ngIf="timeoutElapsed">
       <h3>Error</h3>
       <p>Error loading. Check your internet connection and try again or check with an administrator.</p>
+      <br>
+      <a (click)="exit()">Back</a>
     </div>
   </div>
 </div>
+

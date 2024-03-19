@@ -1,31 +1,33 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription, timer } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
-
-const errors = {
-  403: {
-    title: 'error.403.title',
-    description: 'error.403.description'
-  },
-  404: {
-    title: 'error.404.title',
-    description: 'error.404.description'
-  },
-  503: {
-    title: 'error.503.description',
-    description: 'error.503.description'
-  },
-};
-const timeoutDuration = 5000; // 5 seconds
+import { NavigationService } from '@mm-services/navigation.service';
 
 @Component({
   templateUrl: './error.component.html'
 })
 export class ErrorComponent implements OnInit, OnDestroy {
+  private readonly TIMEOUT_DURATION = 5 * 1000;
+  private readonly ERRORS = {
+    403: {
+      title: 'error.403.title',
+      description: 'error.403.description',
+      showReloadLink: true,
+    },
+    404: {
+      title: 'error.404.title',
+      description: 'error.404.description'
+    },
+    503: {
+      title: 'error.503.description',
+      description: 'error.503.description'
+    },
+  };
+
   error;
   translationsLoaded = false;
   timeoutElapsed = false;
@@ -35,10 +37,12 @@ export class ErrorComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private translateService: TranslateService,
     private store: Store,
+    private router: Router,
+    private navigationService: NavigationService,
   ) {}
 
   ngOnInit(): void {
-    this.error = errors[this.route.snapshot.params.code] || errors['404'];
+    this.error = this.ERRORS[this.route.snapshot.params.code] || this.ERRORS['404'];
     this.translationsLoaded = this.translateService.instant('error.403.description') !== 'error.403.description';
 
     const subscription = this.store
@@ -61,9 +65,20 @@ export class ErrorComponent implements OnInit, OnDestroy {
   }
 
   private startTimeout(): void {
-    const timeoutTimer = timer(timeoutDuration).subscribe(() => {
-      this.timeoutElapsed = true;
-    });
+    const timeoutTimer = timer(this.TIMEOUT_DURATION).subscribe(() => this.timeoutElapsed = true);
     this.subscriptions.add(timeoutTimer);
+  }
+
+  async exit() {
+    const prevUrl = this.navigationService.getPreviousUrl();
+    const HOME = '/home';
+
+    if ([ undefined, '/', HOME ].find(item => prevUrl === item)) {
+      await this.router.navigate([ HOME ]);
+      window.location.reload();
+      return;
+    }
+
+    await this.router.navigateByUrl(prevUrl);
   }
 }

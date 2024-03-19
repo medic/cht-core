@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { filter } from 'rxjs/operators';
 
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { Selectors } from '@mm-selectors/index';
@@ -12,6 +13,8 @@ import { HeaderTabsService } from '@mm-services/header-tabs.service';
 export class NavigationService {
   private primaryTab;
   private currentTab;
+  private prevUrlNotErrorPage;
+  private currentUrl;
 
   constructor(
     private router: Router,
@@ -20,7 +23,20 @@ export class NavigationService {
     private store: Store,
   ) {
     this.subscribeToStore();
+    this.subscribeToRouter();
     this.getPrimaryTab();
+  }
+
+  private subscribeToRouter() {
+    this.currentUrl = this.router.url;
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (!this.currentUrl.startsWith('/error/')) {
+          this.prevUrlNotErrorPage = this.currentUrl;
+        }
+        this.currentUrl = event.url;
+      });
   }
 
   private subscribeToStore() {
@@ -83,5 +99,9 @@ export class NavigationService {
 
     this.router.navigate([ this.primaryTab.route ]);
     return true;
+  }
+
+  getPreviousUrl(){
+    return this.prevUrlNotErrorPage;
   }
 }
