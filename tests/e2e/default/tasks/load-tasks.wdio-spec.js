@@ -68,12 +68,19 @@ describe('Load tasks ', () => {
     await utils.revertSettings(true);
   });
 
-  it('should load and display 400 tasks without displaying "No more Tasks"', async () => {
+  it('should load and display 300 tasks before displaying "No more Tasks"', async () => {
     await updateSettings();
 
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
-    expect(infos.length).to.equal(200);
+    expect(infos.length).to.equal(300);
+    expect(infos[0]).to.eql({
+      contactName: 'Bob',
+      formTitle: 'person_create_0',
+      dueDateText: 'Due today',
+      overdue: true,
+      lineage: '',
+    });
   });
 });

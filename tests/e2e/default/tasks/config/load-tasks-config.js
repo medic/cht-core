@@ -32,7 +32,7 @@ const createTask = function (name, dueDays) {
 
 const tasks = [];
 
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < 300; i++) {
   const dueDays = (i % 10) - 5;
   tasks.push(createTask(`person_create_${i}`, dueDays));
 }
