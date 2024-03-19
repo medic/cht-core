@@ -89,8 +89,17 @@
   }
   &::after {
     content: '';
-    flex-grow: 999999999;
+    width: 296px;
+    margin: 10px 12px;
+    flex: 0 0 auto;
+    visibility: hidden;
   }
+}
+
+.targets:nth-last-child(1):nth-child(3n)::after,
+.targets:nth-last-child(2):nth-child(3n-1)::after,
+.targets:nth-last-child(3):nth-child(3n-2)::after {
+  content: none;
 }
 
 .target {
