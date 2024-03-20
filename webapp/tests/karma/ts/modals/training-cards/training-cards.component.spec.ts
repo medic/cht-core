@@ -12,7 +12,7 @@ import { FormService } from '@mm-services/form.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
@@ -29,9 +29,10 @@ describe('TrainingCardsComponent', () => {
   let translateService;
   let formService;
   let globalActions;
-  let telemetryService;
   let feedbackService;
   let consoleErrorMock;
+  let performanceService;
+  let stopPerformanceTrackStub;
 
   beforeEach(() => {
     consoleErrorMock = sinon.stub(console, 'error');
@@ -48,7 +49,6 @@ describe('TrainingCardsComponent', () => {
       save: sinon.stub(),
       render: sinon.stub().resolves(),
     };
-    telemetryService = { record: sinon.stub() };
     feedbackService = { submit: sinon.stub() };
     const mockedSelectors = [
       { selector: Selectors.getEnketoStatus, value: {} },
@@ -62,6 +62,8 @@ describe('TrainingCardsComponent', () => {
       setEnketoError: sinon.stub(GlobalActions.prototype, 'setEnketoError'),
       setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent'),
     };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 
     return TestBed
       .configureTestingModule({
@@ -80,7 +82,7 @@ describe('TrainingCardsComponent', () => {
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: TranslateService, useValue: translateService },
           { provide: FormService, useValue: formService },
-          { provide: TelemetryService, useValue: telemetryService },
+          { provide: PerformanceService, useValue: performanceService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: MatDialogRef, useValue: matDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: {} },
@@ -144,9 +146,9 @@ describe('TrainingCardsComponent', () => {
     expect(component.form).to.equal(renderedForm);
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
-    expect(telemetryService.record.callCount).to.equal(2);
-    expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
-    expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:quit');
+    expect(stopPerformanceTrackStub.callCount).to.equal(2);
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:render' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:quit' });
   }));
 
   describe('onInit', () => {
@@ -243,10 +245,11 @@ describe('TrainingCardsComponent', () => {
       expect(globalActions.setEnketoSavingStatus.args).to.deep.equal([[ true ], [ false ]]);
       expect(globalActions.setSnackbarContent.calledOnce).to.be.true;
       expect(globalActions.setSnackbarContent.args[0]).to.deep.equal([ 'training_cards.form.saved' ]);
-      expect(telemetryService.record.callCount).to.equal(3);
-      expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
-      expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:user_edit_time');
-      expect(telemetryService.record.args[2][0]).to.equal('enketo:training:a_form_id:add:save');
+      expect(stopPerformanceTrackStub.callCount).to.equal(3);
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:render' });
+      expect(stopPerformanceTrackStub.args[1][0])
+        .to.deep.equal({ name: 'enketo:training:a_form_id:add:user_edit_time' });
+      expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:save' });
       expect(globalActions.setEnketoError.notCalled).to.be.true;
       expect(matDialogRef.close.calledOnce).to.be.true;
     }));
@@ -302,8 +305,8 @@ describe('TrainingCardsComponent', () => {
       expect(component.form).to.equal(renderedForm);
       expect(consoleErrorMock.notCalled).to.be.true;
       expect(feedbackService.submit.notCalled).to.be.true;
-      expect(telemetryService.record.calledOnce).to.be.true;
-      expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:render' });
 
       const resetFormError = formService.render.args[0][0].valuechangeListener;
       resetFormError();
