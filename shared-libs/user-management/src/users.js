@@ -768,7 +768,7 @@ const hydrateUserSettings = (userSettings) => {
 
 const getUserDoc = (username, dbName) => {
   return db[dbName]
-    .get(`org.couchdb.user:${username}`)
+    .get(createID(username))
     .catch(err => {
       err.db = dbName;
       throw err;
@@ -801,6 +801,11 @@ const getUserSettings = async({ name }) => {
  */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
+  getUser: async (username) => {
+    const [user, setting] = await getUserDocsByName(username);
+    const facilities = await facility.list([user], [setting]);
+    return mapUsers([user], [setting], facilities);
+  },
   getList: async (filters) => {
     const [users, settings] = await getUsersAndSettings(filters);
     const facilities = await facility.list(users);

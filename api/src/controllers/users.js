@@ -7,9 +7,9 @@ const logger = require('../logger');
 const serverUtils = require('../server-utils');
 const replication = require('../services/replication');
 
-const hasFullPermission = req => {
+const hasPermissions = (req, permissions) => {
   return auth
-    .check(req, ['can_edit', 'can_update_users'])
+    .check(req, permissions)
     .then(() => true)
     .catch(err => {
       if (err.code === 403) {
@@ -18,6 +18,8 @@ const hasFullPermission = req => {
       throw err;
     });
 };
+
+const hasFullPermission = req => hasPermissions(req, ['can_edit', 'can_update_users']);
 
 const isUpdatingSelf = (req, credentials, username) => {
   return auth.getUserCtx(req).then(userCtx => {
@@ -173,7 +175,7 @@ module.exports = {
         ]) => {
           if (basic === false) {
             // If you're passing basic auth we're going to validate it, even if we
-            // technicaly don't need to (because you already have a valid cookie and
+            // technically don't need to (because you already have a valid cookie and
             // full permission).
             // This is to maintain consistency in the personal change password UI:
             // we want to validate the password you pass regardless of your permissions
@@ -236,6 +238,36 @@ module.exports = {
 
   v2: {
     get: async (req, res) => {
+      if (req.params.username) {
+        try {
+          const username = req.params.username;
+          const credentials = auth.basicAuthCredentials(req);
+          const [hasPermission, isGettingSelf] = await Promise.all([
+            hasPermissions(req, 'can_view_users'),
+            isUpdatingSelf(req, credentials, username),
+          ]).catch(error => {
+            if (error.statusCode === 401) {
+              throw { code: 401, message: 'Not logged in', err: error };
+            }
+
+            throw error;
+          });
+
+          if (!hasPermission && !isGettingSelf) {
+            throw {
+              message: 'You do not have permissions to fetch this person',
+              code: 403,
+            };
+          }
+
+          const body = await users.getUser(username);
+          res.json(body);
+        } catch (error) {
+          serverUtils.error(error, req, res);
+        }
+        return;
+      }
+
       try {
         const body = await getUserList(req);
         res.json(body);
