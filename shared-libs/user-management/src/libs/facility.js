@@ -3,7 +3,7 @@ const db = require('./db');
 const list = async (users, settings) => {
   const ids = new Set();
   for (const user of users) {
-    ids.add(user?.doc?.facility_id);
+    ids.add(user?.facility_id);
   }
   for (const setting of settings) {
     ids.add(setting?.contact_id);
