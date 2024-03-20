@@ -1603,6 +1603,7 @@ describe('Users API', () => {
       const createUserOpts = { path: '/api/v2/users', method: 'POST' };
       await utils.request({ ...createUserOpts, body: users });
 
+      // GET without filters
       const savedUsers = await utils.request({ path: '/api/v2/users' });
       for (const user of users) {
         const savedUser = savedUsers.find(savedUser => savedUser.username === user.username);
@@ -1614,6 +1615,35 @@ describe('Users API', () => {
           'contact.name': user.contact.name,
         });
       }
+
+      await Promise.all(savedUsers.map(async (savedUser) => {
+        // GET with facility_id filter
+        let filteredUsers = await utils.request({
+          path: `/api/v2/users`,
+          qs: { facility_id: savedUser.place._id },
+        });
+        expect(filteredUsers.length).to.equal(1);
+        expect(filteredUsers[0]).to.deep.equal(savedUser);
+
+        // GET with contact_id filter
+        filteredUsers = await utils.request({
+          path: `/api/v2/users`,
+          qs: { contact_id: savedUser.contact._id },
+        });
+        expect(filteredUsers.length).to.equal(1);
+        expect(filteredUsers[0]).to.deep.equal(savedUser);
+
+        // GET with facility_id AND contact_id filters
+        filteredUsers = await utils.request({
+          path: `/api/v2/users`,
+          qs: {
+            facility_id: savedUser.place._id,
+            contact_id: savedUser.contact._id,
+          },
+        });
+        expect(filteredUsers.length).to.equal(1);
+        expect(filteredUsers[0]).to.deep.equal(savedUser);
+      }));
     });
   });
 });
