@@ -1,7 +1,7 @@
 .targets {
   display: grid;
   grid-template-columns: repeat(3, 296px);
-  gap: 0 24px;
+  gap: 0 @targets-column-gap;
   justify-content: center;
   padding: 35px 0;
 
@@ -227,7 +227,7 @@
     padding: 0;
     grid-template-columns: 1fr;
     .target {
-      width: calc(100% - 24px);
+      width: calc(100% - @targets-column-gap);
       margin: 10px 12px 0 12px;
     }
     .target:last-child {
@@ -241,7 +241,7 @@
     padding: 0;
     grid-template-columns: 1fr;
     .target {
-      width: calc(100% - 24px);
+      width: calc(100% - @targets-column-gap);
       margin: 10px 12px 0 12px;
     }
     .target:last-child {
