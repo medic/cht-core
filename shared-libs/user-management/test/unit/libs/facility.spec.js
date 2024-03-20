@@ -6,8 +6,8 @@ const db = require('../../../src/libs/db');
 
 describe('facility', () => {
 
-  const userA = { doc: { facility_id: 'a' } };
-  const userB = { doc: { facility_id: 'b' } };
+  const userA = { facility_id: 'a' };
+  const userB = { facility_id: 'b' };
 
   const settingA = { contact_id: 'a' };
   const settingB = { contact_id: 'e' };
