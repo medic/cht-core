@@ -1601,9 +1601,7 @@ describe('Users API', () => {
       }));
 
       const createUserOpts = { path: '/api/v2/users', method: 'POST' };
-      for (const user of users) {
-        await utils.request({ ...createUserOpts, body: user });
-      }
+      await utils.request({ ...createUserOpts, body: users });
 
       const savedUsers = await utils.request({ path: '/api/v2/users' });
       for (const user of users) {
