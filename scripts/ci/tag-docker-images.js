@@ -2,11 +2,11 @@ const { spawn } = require('child_process');
 
 const buildVersions = require('../build/versions');
 
-const dockerCmd = (...params) => new Promise((resolve, reject) => {
-  console.log('docker', ...params);
-  const proc = spawn('docker', params);
+const regctlCmd = (...params) => new Promise((resolve, reject) => {
+  console.log('regctl', ...params);
+  const proc = spawn('regctl', params);
   proc.on('error', (err) => {
-    console.error('Error while running docker command', err);
+    console.error('Error while running regctl command', err);
     reject(err);
   });
   const log = data => console.log(data.toString());
@@ -17,12 +17,10 @@ const dockerCmd = (...params) => new Promise((resolve, reject) => {
 });
 
 (async () => {
-  for (const service of [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]) {
+  for (const service of 
+    [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]) {
     const existentTag = buildVersions.getImageTag(service);
     const releaseTag = buildVersions.getImageTag(service, true);
-
-    await dockerCmd('pull', existentTag);
-    await dockerCmd('image', 'tag', existentTag, releaseTag);
-    await dockerCmd('push', releaseTag);
+    await regctlCmd('image', 'copy', existentTag, releaseTag);
   }
 })();

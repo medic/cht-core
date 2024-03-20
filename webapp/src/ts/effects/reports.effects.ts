@@ -17,12 +17,14 @@ import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.co
 import { ServicesActions } from '@mm-actions/services';
 import { AuthService } from '@mm-services/auth.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Injectable()
 export class ReportsEffects {
   private reportActions: ReportsActions;
   private globalActions: GlobalActions;
   private servicesActions: ServicesActions;
+  trackOpenReport;
 
   constructor(
     private actions$:Actions,
@@ -33,6 +35,7 @@ export class ReportsEffects {
     private modalService:ModalService,
     private translateService:TranslateService,
     private authService:AuthService,
+    private performanceService:PerformanceService,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -55,6 +58,17 @@ export class ReportsEffects {
         this.reportActions.setTitle(model);
         this.reportActions.markReportRead(model?.doc?._id);
         this.globalActions.settingSelected();
+
+        if (model?.doc?.form) {
+          // The openReportContent is called:
+          //   1. after loading an app form, the performance is recorded in ReportsAddComponent
+          //   2. when opening an already saved report, the performance is recorded here
+          this.trackOpenReport?.stop({
+            name: [ 'report_detail', model?.doc?.form, 'load' ].join(':'),
+            recordApdex: true,
+          });
+        }
+
         return of(this.reportActions.setRightActionBar());
       }),
     );
@@ -65,6 +79,7 @@ export class ReportsEffects {
       ofType(ReportActionList.selectReportToOpen),
       filter(({ payload: { reportId } }) => !!reportId),
       exhaustMap(({ payload: { reportId, silent } }) => {
+        this.trackOpenReport = this.performanceService.track();
         if (!silent) {
           this.globalActions.setLoadingShowContent(reportId);
         }
