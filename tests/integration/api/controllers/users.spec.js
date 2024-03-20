@@ -1616,7 +1616,8 @@ describe('Users API', () => {
         });
       }
 
-      await Promise.all(savedUsers.map(async (savedUser) => {
+      const before = Date.now();
+      for (const savedUser of savedUsers) {
         // GET with facility_id filter
         let filteredUsers = await utils.request({
           path: `/api/v2/users`,
@@ -1643,7 +1644,8 @@ describe('Users API', () => {
         });
         expect(filteredUsers.length).to.equal(1);
         expect(filteredUsers[0]).to.deep.equal(savedUser);
-      }));
+      }
+      console.log(`took ${(Date.now() - before)}ms`);
     });
   });
 });
