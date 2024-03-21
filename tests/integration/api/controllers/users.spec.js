@@ -1618,7 +1618,7 @@ describe('Users API', () => {
 
       const before = Date.now();
       for (const savedUser of savedUsers) {
-        console.log("savedUser", JSON.stringify(savedUser, null, 4));
+        console.log('savedUser', JSON.stringify(savedUser, null, 4));
         // GET with facility_id filter
         let filteredUsers = await utils.request({
           path: `/api/v2/users`,
