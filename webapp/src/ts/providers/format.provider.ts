@@ -55,16 +55,16 @@ export class FormatProvider {
 
   sender(options) {
     const parts: string[] = [];
-    if (options.name) {
+    if (options?.name) {
       parts.push('<span class="name">' + _.escape(options.name) + '</span>');
     }
-    if (options.muted) {
+    if (options?.muted) {
       parts.push('<span class="muted">' + _.escape(this.translateService.instant('contact.muted')) + '</span>');
     }
-    if (options.phone) {
+    if (options?.phone) {
       parts.push('<span test-id="phone">' + _.escape(options.phone) + '</span>');
     }
-    const position = this.lineage(options.parent || options.lineage);
+    const position = this.lineage(options?.parent || options?.lineage);
     if (position) {
       parts.push('<div class="position">' + position + '</div>');
     }

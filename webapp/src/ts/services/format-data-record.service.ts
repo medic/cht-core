@@ -175,9 +175,8 @@ export class FormatDataRecordService {
     // still haven't found a proper label; then titleize
     if (key === label) {
       return this.titleize(key);
-    } else {
-      return label;
     }
+    return label;
   }
 
   // returns the deepest array from `key`
@@ -414,11 +413,10 @@ export class FormatDataRecordService {
       if (value.translations) {
         const translation = _.find(value.translations, { locale: locale });
         return translation && translation.content;
-      } else {
-        // fallback to old translation definition to support
-        // backwards compatibility with existing forms
-        return value[locale];
       }
+      // fallback to old translation definition to support
+      // backwards compatibility with existing forms
+      return value[locale];
     };
 
     if (!_.isObject(value)) {

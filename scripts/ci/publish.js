@@ -9,15 +9,16 @@ const {
   TAG,
   BRANCH
 } = process.env;
-const releaseName = TAG || BRANCH;
-const PouchDB = require('pouchdb-core');
-PouchDB.plugin(require('pouchdb-adapter-http'));
+const versions = require('../build/versions');
 
+const releaseName = TAG || versions.escapeBranchName(BRANCH);
 if (!releaseName) {
   console.log('Not a tag or a branch so not publishing. Most likely this is a PR build which is merged with master');
   process.exit(0);
 }
 
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
 const testingDb = new PouchDB(`${MARKET_URL}/${BUILDS_SERVER}`);
 const stagingDb = new PouchDB(`${MARKET_URL}/${STAGING_SERVER}`);
 
@@ -36,13 +37,13 @@ const prepare = doc => {
   return stagingDb
     .get(stagingDocId)
     .then(current => {
-      console.log(`Exising release found - updating...`);
+      console.log(`Existing release found - updating...`);
       doc._rev = current._rev;
       return doc;
     })
     .catch(err => {
       if (err.status === 404) {
-        console.log(`No exising release found - creating...`);
+        console.log(`No existing release found - creating...`);
         return doc;
       }
       throw err;

@@ -9,10 +9,9 @@ import { FormService } from '@mm-services/form.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
-import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { ContactsActions } from '@mm-actions/contacts';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 
 
@@ -28,17 +27,15 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private formService:FormService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
-    private contactSaveService:ContactSaveService,
+    private performanceService:PerformanceService,
     private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.contactsActions = new ContactsActions(store);
   }
 
   subscription = new Subscription();
   translationsLoadedSubscription;
   private globalActions;
-  private contactsActions;
   private xmlVersion;
 
   enketoStatus;
@@ -54,8 +51,13 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoContact;
 
   private routeSnapshot;
+  private trackRender;
+  private trackEditDuration;
+  private trackSave;
+  private trackMetadata = { action: '', form: '' };
 
   ngOnInit() {
+    this.trackRender = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeToRoute();
   }
@@ -204,7 +206,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       this.contact = contact;
       this.contactId = contact._id;
       formId = contactType.edit_form || contactType.create_form;
+      this.trackMetadata.action = 'edit';
     } else { // adding
+      this.trackMetadata.action = 'add';
       this.contact = {
         type: 'contact',
         contact_type: this.routeSnapshot.params?.type,
@@ -243,21 +247,23 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async renderForm(formId: string, titleKey: string) {
     const formDoc = await this.dbService.get().get(formId);
     this.xmlVersion = formDoc.xmlVersion;
-    const instanceData = this.getFormInstanceData();
-    const markFormEdited = this.markFormEdited.bind(this);
-    const resetFormError = this.resetFormError.bind(this);
-    const formContext: EnketoFormContext = {
-      selector: '#contact-form',
-      formDoc,
-      instanceData,
-      editedListener: markFormEdited,
-      valuechangeListener: resetFormError,
-      titleKey,
-    };
 
     this.globalActions.setEnketoEditedStatus(false);
 
-    return this.formService.renderContactForm(formContext);
+    const formContext = new EnketoFormContext('#contact-form', 'contact', formDoc, this.getFormInstanceData());
+    formContext.editedListener = this.markFormEdited.bind(this);
+    formContext.valuechangeListener = this.resetFormError.bind(this);
+    formContext.titleKey = titleKey;
+    const formInstance = await this.formService.render(formContext);
+
+    this.trackMetadata.form = formId;
+    this.trackRender?.stop({
+      name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'render' ].join(':'),
+      recordApdex: true,
+    });
+    this.trackEditDuration = this.performanceService.track();
+
+    return formInstance;
   }
 
   private setEnketoContact(formInstance) {
@@ -274,6 +280,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    this.trackEditDuration?.stop({
+      name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+    });
+    this.trackSave = this.performanceService.track();
+
     const form = this.enketoContact.formInstance;
     const docId = this.enketoContact.docId;
     this.globalActions.setEnketoSavingStatus(true);
@@ -289,13 +300,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         // Updating fields before save. Ref: #6670.
         $('form.or').trigger('beforesave');
 
-        return this.contactSaveService
-          .save(form, docId, this.enketoContact.type, this.xmlVersion)
+        return this.formService
+          .saveContact(form, docId, this.enketoContact.type, this.xmlVersion)
           .then((result) => {
             console.debug('saved contact', result);
 
             this.globalActions.setEnketoSavingStatus(false);
             this.globalActions.setEnketoEditedStatus(false);
+
+            this.trackSave?.stop({
+              name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
+              recordApdex: true,
+            });
 
             this.translateService
               .get(docId ? 'contact.updated' : 'contact.created')

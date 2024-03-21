@@ -14,8 +14,7 @@ const _hasConfig = doc => {
 
 // This is more complicated than it needs to be because JS / _ always use ===
 // for equality, complicating the use of unique tuples (i.e. [1,2] !== [1,2])
-const hasGroupAndType = (groupTypeColl, [group, type]) =>
-  groupTypeColl.find(([g, t]) => g === group && t === type);
+const hasGroupAndType = (groupTypeColl, [group, type]) => groupTypeColl.find(([g, t]) => g === group && t === type);
 
 // This should just be
 //   Object.keys(_.groupBy(tasksToClear, ({group, task}) => [group, task]))
@@ -60,25 +59,20 @@ const findToClear = (registration, reported_date, config) => {
   if (!config.silence_for) {
     // No range, all clearable tasks should be cleared
     return tasksUnderReview.filter(task => statesToClear.includes(task.state));
-  } else {
-    // Clear all tasks that are members of a group that "exists" before the
-    // silenceUntil date. e.g., they have at least one task in their group
-    // whose due date is before silenceUntil.
-    const silenceUntil = reportedDateMoment.clone();
-    silenceUntil.add(date.getDuration(config.silence_for));
-
-    const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
-      task => moment(task.due) <= silenceUntil
-    );
-    const groupTypeCombosToClear = uniqueGroupTypeCombos(
-      allTasksBeforeSilenceUntil
-    );
-
-    return tasksUnderReview.filter(({ group, type, state }) =>
-      hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
-      // only clear tasks that are in a clearable state!
-      statesToClear.includes(state));
   }
+  // Clear all tasks that are members of a group that "exists" before the
+  // silenceUntil date. e.g., they have at least one task in their group
+  // whose due date is before silenceUntil.
+  const silenceUntil = reportedDateMoment.clone();
+  silenceUntil.add(date.getDuration(config.silence_for));
+
+  const allTasksBeforeSilenceUntil = tasksUnderReview.filter(task => moment(task.due) <= silenceUntil);
+  const groupTypeCombosToClear = uniqueGroupTypeCombos(allTasksBeforeSilenceUntil);
+
+  return tasksUnderReview.filter(({ group, type, state }) => {
+    // only clear tasks that are in a clearable state!
+    return hasGroupAndType(groupTypeCombosToClear, [group, type]) && statesToClear.includes(state);
+  });
 };
 
 const getConfig = function(form) {
@@ -108,8 +102,7 @@ const _silenceReminders = (registration, report, config) => {
 
 const addRegistrationToDoc = (doc, registrations) => {
   if (registrations.length) {
-    const latest = _.maxBy(registrations, registration =>
-      moment(registration.reported_date));
+    const latest = _.maxBy(registrations, registration => moment(registration.reported_date));
     doc.registration_id = latest._id;
   }
 };
@@ -201,9 +194,8 @@ const messageRelevant = (msg, doc) => {
     const expr = msg.bool_expr;
     if (utils.isNonEmptyString(expr)) {
       return utils.evalExpression(expr, { doc: doc });
-    } else {
-      return true;
     }
+    return true;
   }
 };
 

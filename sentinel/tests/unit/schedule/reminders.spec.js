@@ -1,6 +1,7 @@
 const config = require('../../../src/config');
 config.initTransitionLib();
 
+const { performance } = require('perf_hooks');
 const moment = require('moment');
 const sinon = require('sinon');
 const assert = require('chai').assert;
@@ -119,12 +120,12 @@ describe('reminders', () => {
     });
 
     it('should return date from next schedule for cron', () => {
-      clock = sinon.useFakeTimers(moment('2021-06-17T10:48:54.000Z').valueOf());
+      clock.setSystemTime(moment('2021-06-17T10:48:54.000Z').valueOf());
       assert.equal(getSchedule({ cron: '0 * * * *' }).next().toISOString(), '2021-06-17T11:00:00.000Z');
     });
 
     it('should return date from next schedule for text_expression', () => {
-      clock = sinon.useFakeTimers(moment('2021-06-17T10:48:54.000Z').valueOf());
+      clock.setSystemTime(moment('2021-06-17T10:48:54.000Z').valueOf());
       assert.equal(getSchedule({ text_expression: 'every 5 mins' }).next().toISOString(), '2021-06-17T10:50:00.000Z');
     });
   });
@@ -139,6 +140,9 @@ describe('reminders', () => {
       const reminder = { form: 'formA', some: 'config' };
       reminders.__set__('matchReminder', sinon.stub().resolves(date));
       reminders.__set__('sendReminders', sinon.stub().resolves());
+      sinon.stub(performance, 'now')
+        .onFirstCall().returns(0)
+        .onSecondCall().returns(1);
       sinon.stub(db.sentinel, 'put').resolves();
       clock.tick(1260);
 
@@ -150,7 +154,7 @@ describe('reminders', () => {
         assert.equal(db.sentinel.put.callCount, 1);
         assert.deepEqual(
           db.sentinel.put.args[0],
-          [{ _id: 'reminderlog:formA:1230', reminder, reported_date: 1260, duration: 0, type: 'reminderlog' }]
+          [{ _id: 'reminderlog:formA:1230', reminder, reported_date: 1260, duration: 1, type: 'reminderlog' }]
         );
       });
     });

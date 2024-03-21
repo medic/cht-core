@@ -20,7 +20,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { FormService } from '@mm-services/form.service';
 import { ComponentsModule } from '@mm-components/components.module';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Reports Add Component', () => {
   let component:ReportsAddComponent;
@@ -34,6 +34,8 @@ describe('Reports Add Component', () => {
   let geoHandle;
   let formService;
   let router;
+  let stopPerformanceTrackStub;
+  let performanceService;
   let route;
 
   beforeEach(waitForAsync(() => {
@@ -54,6 +56,8 @@ describe('Reports Add Component', () => {
       params: new Subject(),
     };
     router = { navigate: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 
     const mockedSelectors = [
       { selector: Selectors.getLoadingContent, value: false },
@@ -85,7 +89,7 @@ describe('Reports Add Component', () => {
           { provide: FormService, useValue: formService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
-          { provide: TelemetryService, useValue: { record: sinon.stub() }},
+          { provide: PerformanceService, useValue: performanceService},
         ],
       })
       .compileComponents()
@@ -201,6 +205,12 @@ describe('Reports Add Component', () => {
         component.ngAfterViewInit();
         tick();
 
+        expect(performanceService.track.calledOnce).to.be.true;
+        expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+        expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+          name: 'enketo:reports:my_form:add:render',
+          recordApdex: true,
+        });
         expect(geolocationService.init.calledOnce).to.be.true;
         expect(openReportContentStub.calledOnce).to.be.true;
         expect(openReportContentStub.args[0]).to.deep.equal([{ formInternalId: 'my_form' }]);
@@ -211,12 +221,11 @@ describe('Reports Add Component', () => {
         expect(setEnketoEditedStatusStub.calledOnce).to.be.true;
         expect(setEnketoEditedStatusStub.args[0]).to.deep.equal([false]);
         expect(formService.render.calledOnce).to.be.true;
-        expect(formService.render.args[0][1]).to.deep.equal(xmlForm);
-        expect(formService.render.args[0][2]).to.equal(undefined);
+        expect(formService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
         expect(component.form).to.equal(renderedForm);
 
-        const markFormEdited = formService.render.args[0][3];
-        const resetFormError = formService.render.args[0][4];
+        const markFormEdited = formService.render.args[0][0].editedListener;
+        const resetFormError = formService.render.args[0][0].valuechangeListener;
 
         markFormEdited();
         expect(setEnketoEditedStatusStub.calledTwice).to.be.true;
@@ -318,6 +327,19 @@ describe('Reports Add Component', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/reports', 'new_report']]);
       expect(setEnketoError.callCount).to.equal(0);
+      expect(performanceService.track.calledThrice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'enketo:reports:a_form:add:render',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'enketo:reports:a_form:add:user_edit_time',
+      });
+      expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
+        name: 'enketo:reports:a_form:add:save',
+        recordApdex: true,
+      });
     }));
 
     it('should catch enketo saving error', fakeAsync(() => {

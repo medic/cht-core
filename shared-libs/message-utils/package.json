@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0",

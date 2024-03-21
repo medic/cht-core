@@ -143,18 +143,23 @@ const fixtures = [
   cancelledTaskForPlace,
 ];
 
+let clock;
+
 describe('pouchdb provider', () => {
   let db;
   beforeEach(async () => {
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
 
-    sinon.useFakeTimers(100000000);
+    clock = sinon.useFakeTimers(100000000);
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    clock.restore();
+    sinon.restore();
+  });
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev')
@@ -232,7 +237,7 @@ describe('pouchdb provider', () => {
       const ignoredUpdate = await db.get('target~2019-07~user~org.couchdb.user:username');
       expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
 
-      sinon.useFakeTimers(Date.now() + MS_IN_DAY);
+      clock.setSystemTime(Date.now() + MS_IN_DAY);
       await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag);
       expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
         _id: 'target~2019-07~user~org.couchdb.user:username',
@@ -302,6 +307,7 @@ describe('pouchdb provider', () => {
   });
 
   describe('taskDataFor', () => {
+    const defaultQueryParams = { skip: undefined, limit: undefined, group_level: undefined };
     it('no contacts yields empty', async() => expect(await pouchdbProvider(db).taskDataFor([])).to.be.empty);
     it('empty contacts yields empty', async() => expect(await pouchdbProvider(db).taskDataFor([])).to.be.empty);
     it('unrecognized contact id yields empty', async () => {
@@ -311,6 +317,10 @@ describe('pouchdb provider', () => {
         taskDocs: [],
         userSettingsId: 'org.couchdb.user:username',
       });
+      expect(db.query.args).to.deep.equal([
+        ['medic-client/reports_by_subject', { keys: ['abc'], include_docs: true, ...defaultQueryParams }],
+        ['medic-client/tasks_by_contact', { keys: ['requester-abc'], include_docs: true, ...defaultQueryParams }],
+      ]);
     });
     it('cht contact yields', async() => {
       const actual = await pouchdbProvider(db).taskDataFor([chtDocs.contact._id, 'abc'], mockUserSettingsDoc);
@@ -327,6 +337,17 @@ describe('pouchdb provider', () => {
         ],
         userSettingsId: 'org.couchdb.user:username',
       });
+
+      expect(db.query.args).to.deep.equal([
+        [
+          'medic-client/reports_by_subject',
+          { keys: [chtDocs.contact._id, 'abc', chtDocs.contact.patient_id], include_docs: true, ...defaultQueryParams },
+        ],
+        [
+          'medic-client/tasks_by_contact',
+          { keys: [`requester-${chtDocs.contact._id}`, 'requester-abc'], include_docs: true, ...defaultQueryParams }
+        ],
+      ]);
     });
 
     it('should exclude multi-subject reports who have other "primary" subjects for contact', async () => {
@@ -377,6 +398,84 @@ describe('pouchdb provider', () => {
           failedTask,
           readyTask,
           taskRequestedByChtContact
+        ],
+        userSettingsId: 'org.couchdb.user:username',
+      });
+    });
+
+    it('should use keys param when there are less than 500 contacts', async () => {
+      const contactIds = Array.from({ length: 490 }).map((_, i) => `contact${i}`);
+      contactIds.push(chtDocs.place._id, chtDocs.contact._id);
+      const tasks = await pouchdbProvider(db).taskDataFor(contactIds, mockUserSettingsDoc);
+
+      expect(db.query.args).to.deep.equal([
+        [
+          'medic-client/reports_by_subject',
+          { keys: [ ...contactIds, 'place_id', 'patient_id' ], include_docs: true, ...defaultQueryParams },
+        ],
+        [
+          'medic-client/tasks_by_contact',
+          { keys: contactIds.map(id => `requester-${id}`), include_docs: true, ...defaultQueryParams }
+        ],
+      ]);
+
+      expect(tasks).excludingEvery('_rev').to.deep.eq({
+        contactDocs: [chtDocs.place, chtDocs.contact],
+        reportDocs: [
+          reportConnectedByPatientAndPlaceUuid,
+          reportConnectedByPlaceUuid,
+          chtDocs.pregnancyReport,
+          reportConnectedByPlace,
+        ],
+        taskDocs: [
+          cancelledTaskForPlace,
+          readyTaskForPlace,
+          taskRequestedByChtPlace,
+          cancelledTask,
+          completedTask,
+          draftTask,
+          failedTask,
+          readyTask,
+          taskRequestedByChtContact
+        ],
+        userSettingsId: 'org.couchdb.user:username',
+      });
+    });
+
+    it('should not use keys param when there are more than 500 contacts', async () => {
+      const contactIds = Array.from({ length: 501 }).map((_, i) => `contact${i}`);
+      contactIds.push(chtDocs.place._id, chtDocs.contact._id);
+      const tasks = await pouchdbProvider(db).taskDataFor(contactIds, mockUserSettingsDoc);
+
+      expect(db.query.args).to.deep.equal([
+        [
+          'medic-client/reports_by_subject',
+          { include_docs: true, ...defaultQueryParams },
+        ],
+        [
+          'medic-client/tasks_by_contact',
+          { include_docs: true, ...defaultQueryParams }
+        ],
+      ]);
+
+      expect(tasks).excludingEvery('_rev').to.deep.eq({
+        contactDocs: [chtDocs.place, chtDocs.contact],
+        reportDocs: [
+          chtDocs.pregnancyReport,
+          reportConnectedByPatientAndPlaceUuid,
+          reportConnectedByPlace,
+          reportConnectedByPlaceUuid,
+        ],
+        taskDocs: [
+          cancelledTask,
+          completedTask,
+          draftTask,
+          failedTask,
+          readyTask,
+          taskRequestedByChtContact,
+          cancelledTaskForPlace,
+          readyTaskForPlace,
+          taskRequestedByChtPlace,
         ],
         userSettingsId: 'org.couchdb.user:username',
       });

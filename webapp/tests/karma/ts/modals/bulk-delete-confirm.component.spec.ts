@@ -8,6 +8,8 @@ import { expect } from 'chai';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('BulkDeleteConfirmComponent', () => {
   let component: BulkDeleteConfirmComponent;
@@ -29,7 +31,11 @@ describe('BulkDeleteConfirmComponent', () => {
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ BulkDeleteConfirmComponent ],
+        declarations: [
+          BulkDeleteConfirmComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent
+        ],
         providers: [
           { provide: DeleteDocsService, useValue: deleteDocsService },
           { provide: TelemetryService, useValue: telemetryService },

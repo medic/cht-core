@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
+    <h:head>
+        <h:title>test api() - Demo Form</h:title>
+        <model>
+            <instance>
+                <data id="test-api">
+                    <first>0</first>
+                    <second>0</second>
+                    <avg/>
+                    <meta>
+                        <instanceID/>
+                    </meta>
+                </data>
+            </instance>
+
+            <bind nodeset="/data/avg" type="string" readonly="true()"
+                  calculate="cht:extension-lib('average.js', /data/first , /data/second )"/>
+        </model>
+    </h:head>
+    <h:body>
+        <group appearance="field-list" ref="/data">
+            <input ref="/data/first">
+                <label>first</label>
+            </input>
+            <input ref="/data/second">
+                <label>second</label>
+            </input>
+            <input ref="/data/avg">
+                <label>avg</label>
+            </input>
+        </group>
+    </h:body>
+</h:html>

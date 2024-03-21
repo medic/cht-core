@@ -28,8 +28,7 @@ const _executeExistsRequest = (options) => {
   return db.medic.query('medic-client/reports_by_freetext', options);
 };
 
-const lowerCaseString = obj =>
-  typeof obj === 'string' ? obj.toLowerCase() : obj;
+const lowerCaseString = obj => typeof obj === 'string' ? obj.toLowerCase() : obj;
 
 const _exists = (doc, fields, options = {}) => {
   if (!fields.length) {

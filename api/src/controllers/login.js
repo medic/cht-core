@@ -14,6 +14,8 @@ const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
 const translations = require('../translations');
 const template = require('../services/template');
+const rateLimitService = require('../services/rate-limit');
+const serverUtils = require('../server-utils');
 
 const templates = {
   login: {
@@ -269,6 +271,24 @@ const renderLogin = (req) => {
   return render('login', req);
 };
 
+const login = async (req, res) => {
+  try {
+    const sessionRes = await createSession(req);
+    if (sessionRes.statusCode !== 200) {
+      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+    } else {
+      const redirectUrl = await setCookies(req, res, sessionRes);
+      res.status(302).send(redirectUrl);
+    }
+  } catch (e) {
+    if (e.status === 401) {
+      return res.status(401).json({ error: e.error });
+    }
+    logger.error('Error logging in: %o', e);
+    res.status(500).json({ error: 'Unexpected error logging in' });
+  }
+};
+
 module.exports = {
   renderLogin,
 
@@ -285,26 +305,12 @@ module.exports = {
       })
       .catch(next);
   },
-  post: (req, res) => {
-    return createSession(req)
-      .then(sessionRes => {
-        if (sessionRes.statusCode !== 200) {
-          res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-          return;
-        }
-        return setCookies(req, res, sessionRes)
-          .then(redirectUrl => res.status(302).send(redirectUrl))
-          .catch(err => {
-            if (err.status === 401) {
-              return res.status(err.status).json({ error: err.error });
-            }
-            throw err;
-          });
-      })
-      .catch(err => {
-        logger.error('Error logging in: %o', err);
-        res.status(500).json({ error: 'Unexpected error logging in' });
-      });
+  post: async (req, res) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+    await login(req, res);
   },
   getIdentity: (req, res) => {
     res.type('application/json');
@@ -321,17 +327,19 @@ module.exports = {
   },
 
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
-  tokenPost: (req, res, next) => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        return res.status(302).send(getRedirectUrl(userCtx));
-      })
-      .catch(err => {
-        if (err.code === 401) {
-          return loginByToken(req, res);
-        }
-        next(err);
-      });
+  tokenPost: async (req, res, next) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+    try {
+      const userCtx = await auth.getUserCtx(req);
+      return res.status(302).send(getRedirectUrl(userCtx));
+    } catch (e) {
+      if (e.code === 401) {
+        return loginByToken(req, res);
+      }
+      next(e);
+    }
   },
 };

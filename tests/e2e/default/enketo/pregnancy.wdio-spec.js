@@ -11,6 +11,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();
@@ -20,8 +22,6 @@ describe('Pregnancy registration', () => {
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
     parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
-  let countRiskFactors = 0;
-  let countDangerSigns = 0;
 
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
@@ -29,77 +29,58 @@ describe('Pregnancy registration', () => {
     await loginPage.login(offlineUser);
   });
 
-  it('Should submit a new pregnancy', async () => {
-    const edd = moment().add(30, 'days');
-    const nextANCVisit = moment().add(1, 'day');
+  it('should submit a new pregnancy, ' +
+    'validate that the pregnancy card was displayed with the correct information, ' +
+    'validate that all tasks related with the high risk pregnancy were created, ' +
+    'validate that the report related the pregnancy was created, and ' +
+    'validate that the counters for the active pregnancies and the new pregnancies were updated.', async () => {
+
+    const edd = moment().add(8, 'days');
+    const nextANCVisit = moment().add(2, 'day');
 
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy');
-    await pregnancyForm.selectGestationAge();
-    await genericForm.nextPage();
-    await pregnancyForm.setDeliveryDate(edd.format('YYYY-MM-DD'));
-    await genericForm.nextPage();
+    await pregnancyForm.submitDefaultPregnancy(false);
 
-    const confirmationDetails = await pregnancyForm.getConfirmationDetails();
-    expect(confirmationDetails.eddConfirm).to.equal(edd.format('D MMM, YYYY'));
+    const summaryTexts = [
+      pregnantWoman.name,
+      '38', //weeks pregnant
+      edd.format('D MMM, YYYY'),
+      'Previous miscarriages or stillbirths',
+      'Previous difficulties in childbirth',
+      'Has delivered four or more children',
+      'Last baby born less than one year ago',
+      'Heart condition',
+      'Asthma',
+      'High blood pressure',
+      'Diabetes',
+      'Vaginal bleeding',
+      'Fits',
+      'Severe abdominal pain',
+      'Severe headache',
+      'Very pale',
+      'Fever',
+      'Reduced or no fetal movements',
+      'Breaking of water',
+      'Getting tired easily',
+      'Swelling of face and hands',
+      'Breathlessness'
+    ];
 
-    await genericForm.nextPage();
-    await pregnancyForm.setANCVisitsPast();
-    await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.KNOWN_FUTURE_VISITS);
-    await pregnancyForm.setFutureVisitDate(nextANCVisit.format('YYYY-MM-DD'));
-    await genericForm.nextPage();
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.MISCARRIAGE);
-    await genericForm.nextPage();
-    countRiskFactors += await pregnancyForm.selectAllRiskFactors(pregnancyForm.FIRST_PREGNANCY_VALUE.no);
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.ADDITIONAL_FACTORS, 'no');
-    await genericForm.nextPage();
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.VAGINAL_BLEEDING);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.FITS);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.ABDOMINAL_PAIN);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.HEADACHE);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.VERY_PALE);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.FEVER);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.REDUCE_FETAL_MOV);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.BREAKING_OF_WATER);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.EASILY_TIRED);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.SWELLING_HANDS);
-    countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.BREATHLESSNESS);
-    await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.LLIN);
-    await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.IRON_FOLATE);
-    await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.DEWORMING_MEDICATION);
-    await genericForm.nextPage();
-    await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.HIV_TESTED);
-    await genericForm.nextPage();
-
-    const summaryDetails = await pregnancyForm.getSummaryDetails();
-    expect(summaryDetails.patientNameSumm).to.equal(pregnantWoman.name);
-    expect(summaryDetails.weeksPregnantSumm).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(summaryDetails.eddSumm).to.equal(edd.format('D MMM, YYYY'));
-    expect(summaryDetails.riskFactorsSumm).to.equal(countRiskFactors);
-    expect(summaryDetails.dangerSignsSumm).to.equal(countDangerSigns);
-
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
 
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
 
+    // Validate pregnancy card and its information
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
-    expect(pregnancyCardInfo.weeksPregnant).to.equal(confirmationDetails.weeksPregnantConfirm);
-    expect(pregnancyCardInfo.deliveryDate).to.equal(edd.format('D MMM, YYYY'));
+    expect(pregnancyCardInfo.weeksPregnant).to.equal('38');
+    expect(Date.parse(pregnancyCardInfo.deliveryDate)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(pregnancyCardInfo.risk).to.equal('High risk');
-    expect(pregnancyCardInfo.ancVisit).to.equal(nextANCVisit.format('D MMM, YYYY'));
+    expect(Date.parse(pregnancyCardInfo.ancVisit)).to.equal(Date.parse(nextANCVisit.format('D MMM, YYYY')));
 
-  });
-
-  it('Should verify that all tasks related with the high risk pregnancy were created', async () => {
-    const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
-
+    // Validate the created tasks
+    const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Delivery'];
     await commonPage.goToTasks();
     const tasks = await tasksPage.getTasks();
     expect(tasks.length).to.equal(3);
@@ -110,29 +91,28 @@ describe('Pregnancy registration', () => {
       expect(tasksTitles).to.include(taskInfo.formTitle);
       tasksTitles.splice(tasksTitles.indexOf(taskInfo.formTitle), 1);
     }
-  });
 
-  it('Should verify that the report related the pregnancy was created', async () => {
+    // Validate the created report
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
-
     expect(firstReport.heading).to.equal(pregnantWoman.name);
     expect(firstReport.form).to.equal('Pregnancy registration');
-  });
 
-  it('Should verify that the counters for the active pregnancies and the new pregnancies were updated.', async () => {
+    // Validate targets information
     await commonPage.goToAnalytics();
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0' },
-      { title: 'New pregnancies', goal: '20', count: '1' },
-      { title: 'Live births', count: '0' },
-      { title: 'Active pregnancies', count: '1' },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR },
+      { title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies', count: '1', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0' }
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR  }
     ]);
+
   });
+
 });

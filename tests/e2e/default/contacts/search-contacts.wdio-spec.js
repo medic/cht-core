@@ -51,7 +51,7 @@ const potuPerson = personFactory.build(
 
 const docs = [...places.values(), sittuHospital, sittuPerson, potuHospital, potuPerson];
 
-describe('Test Contact Search Functionality', async () => {
+describe('Test Contact Search Functionality', () => {
   before(async () => {
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();

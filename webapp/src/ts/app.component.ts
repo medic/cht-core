@@ -1,4 +1,4 @@
-import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
+import { ActivationEnd, ActivationStart, Router } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
 import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
@@ -46,6 +46,9 @@ import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
+import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -75,8 +78,8 @@ const SYNC_STATUS = {
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  private globalActions;
-  private analyticsActions;
+  private globalActions: GlobalActions;
+  private analyticsActions: AnalyticsActions;
   setupPromise;
   translationsLoaded;
 
@@ -93,6 +96,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   unreadCount = {};
   useOldActionBar = false;
   initialisationComplete = false;
+  trainingCardFormId = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -124,25 +128,27 @@ export class AppComponent implements OnInit, AfterViewInit {
     private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
     private translateLocaleService:TranslateLocaleService,
     private telemetryService:TelemetryService,
+    private performanceService:PerformanceService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
     private trainingCardsService: TrainingCardsService,
     private matIconRegistry: MatIconRegistry,
+    private browserDetectorService: BrowserDetectorService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
 
-    matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
-    matIconRegistry.setDefaultFontSetClass('fa');
+    this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
+    this.matIconRegistry.setDefaultFontSetClass('fa');
     moment.locale(['en']);
 
     this.formatDateService.init();
 
     this.adminUrl = this.locationService.adminPath;
 
-    setBootstrapTheme('bs3');
+    setBootstrapTheme('bs4');
   }
 
   private loadTranslations() {
@@ -165,7 +171,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       return tab;
     };
 
-    this.router.events.subscribe((event:RouterEvent) => {
+    this.router.events.subscribe((event:ActivationStart|ActivationEnd) => {
       // close all select2 menus on navigation
       // https://github.com/medic/cht-core/issues/2927
       if (event instanceof ActivationStart) {
@@ -269,6 +275,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.countMessageService.init();
     this.feedbackService.init();
     this.sessionService.init();
+    this.warnOutdatedChrome();
 
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = Promise.resolve()
@@ -428,28 +435,49 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private subscribeToStore() {
-    combineLatest(
+    combineLatest([
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getPrivacyPolicyAccepted),
-      this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
-    ).subscribe(([
+    ]).subscribe(([
       replicationStatus,
       androidAppVersion,
       currentTab,
-      privacyPolicyAccepted,
-      showPrivacyPolicy,
       selectMode,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
-      this.showPrivacyPolicy = showPrivacyPolicy;
-      this.privacyPolicyAccepted = privacyPolicyAccepted;
+
       this.selectMode = selectMode;
     });
+
+    combineLatest([
+      this.store.select(Selectors.getPrivacyPolicyAccepted),
+      this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getTrainingCardFormId),
+    ]).subscribe(([
+      privacyPolicyAccepted,
+      showPrivacyPolicy,
+      trainingCardFormId,
+    ]) => {
+      this.showPrivacyPolicy = showPrivacyPolicy;
+      this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.trainingCardFormId = trainingCardFormId;
+      this.displayTrainingCards();
+    });
+  }
+
+  private displayTrainingCards() {
+    if (this.showPrivacyPolicy && !this.privacyPolicyAccepted) {
+      return;
+    }
+    if (!this.trainingCardFormId) {
+      return;
+    }
+
+    this.trainingCardsService.displayTrainingCards();
   }
 
   private async subscribeToSideFilterStore() {
@@ -589,9 +617,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       .isEnabled()
       .then(isEnabled => console.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
       .catch(err => {
-        const errorMessage = 'RuleEngine failed to initialize';
-        console.error(errorMessage, err);
-        this.feedbackService.submit(errorMessage);
+        console.error('RuleEngine failed to initialize', err);
       });
   }
 
@@ -626,40 +652,57 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private async warnOutdatedChrome(): Promise<void> {
+    if (!this.browserDetectorService.isUsingOutdatedBrowser()) {
+      return;
+    }
+    await this.translationsLoaded;
+    this.modalService.show(BrowserCompatibilityComponent);
+  }
+
   private recordStartupTelemetry() {
     window.startupTimes.angularBootstrapped = performance.now();
-    this.telemetryService.record(
-      'boot_time:1:to_first_code_execution',
+    this.performanceService.recordPerformance(
+      { name: 'boot_time:1:to_first_code_execution' },
       window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
 
     if (window.startupTimes.replication) {
-      this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
+      this.performanceService.recordPerformance(
+        { name: 'boot_time:2_1:to_replication' },
+        window.startupTimes.replication,
+      );
     }
 
     if (window.startupTimes.purgingMetaFailed) {
-      const message = `Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`;
-      this.feedbackService.submit(message);
+      console.error(`Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`);
       this.telemetryService.record('boot_time:purging_meta_failed');
     } else {
       // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
-      this.telemetryService.record(`boot_time:purging_meta:${window.startupTimes.purgingMeta}`);
+      this.telemetryService.record(`boot_time:purging_meta:${!!window.startupTimes.purgingMeta}`);
     }
+
     if (window.startupTimes.purgeMeta) {
-      this.telemetryService.record('boot_time:2_3:to_purge_meta', window.startupTimes.purgeMeta);
+      this.performanceService.recordPerformance(
+        { name: 'boot_time:2_3:to_purge_meta' },
+        window.startupTimes.purgeMeta,
+      );
     }
 
-    this.telemetryService.record(
-      'boot_time:2:to_bootstrap',
-      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
+    this.performanceService.recordPerformance(
+      { name: 'boot_time:2:to_bootstrap' },
+      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution,
     );
 
-    this.telemetryService.record(
-      'boot_time:3:to_angular_bootstrap',
-      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
+    this.performanceService.recordPerformance(
+      { name: 'boot_time:3:to_angular_bootstrap' },
+      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped,
     );
 
-    this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
+    this.performanceService.recordPerformance(
+      { name: 'boot_time', recordApdex: true },
+      window.startupTimes.angularBootstrapped - window.startupTimes.start
+    );
   }
 
   @HostListener('window:beforeunload')

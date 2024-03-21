@@ -8,7 +8,7 @@ const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox
 const REPORT_BODY_DETAILS_SELECTOR = '#reports-content .report-body .details';
 const reportBodyDetails = () => $(REPORT_BODY_DETAILS_SELECTOR);
 const reportTasks = () => $(`${REPORT_BODY_DETAILS_SELECTOR} .scheduled-tasks`);
-const reportCaseIdFilter = () => $(`${REPORT_BODY_DETAILS_SELECTOR} [test-id*=".case_id"]`);
+const reportCaseIdFilter = () => $(`${REPORT_BODY_DETAILS_SELECTOR} span[test-id*=".case_id"]`);
 const REPORT_BODY = '#reports-content .report-body';
 const reportBody = () => $(REPORT_BODY);
 const noReportSelectedLabel = () => $('.empty-selection');
@@ -32,8 +32,8 @@ const reviewReportOptionById = (id) => $(`${REVIEW_REPORT_CONTAINER} button.${id
 const activeReviewOption = () => $(`${REVIEW_REPORT_CONTAINER} button.active-option`);
 const reviewReportCloseButton = () => $(`${REVIEW_REPORT_CONTAINER} .panel-header .panel-header-close`);
 
-const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
-const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion mat-expansion-panel-header');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion mat-panel-description');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
 const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
@@ -47,6 +47,10 @@ const automaticReplyMessage = () => $(`${AUTOMATIC_REPLY_SECTION} p[test-id='mes
 const automaticReplyState = () => $(`${AUTOMATIC_REPLY_SECTION} .state`);
 const automaticReplyRecipient = () => $(`${AUTOMATIC_REPLY_SECTION} .recipient`);
 
+const detailReportRowContent = (row, type) => {
+  return $$(`${REPORT_BODY_DETAILS_SELECTOR} li[test-id*='${row}'] span[test-id='${type}']`);
+};
+
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
 const bulkDeleteModal = () => $('#bulk-delete-confirm');
@@ -55,8 +59,6 @@ const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
 
 const unreadCount = () => $('#reports-tab .mm-badge');
-const formTitle = () => $('#report-form #form-title');
-const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
 const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
@@ -95,7 +97,6 @@ const setDateInput = async (name, date) => {
   const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
-  await (await formTitle()).click();
 };
 
 const setBikDateInput = async (name, date) => {
@@ -105,7 +106,6 @@ const setBikDateInput = async (name, date) => {
   await (await dateWidget.$('.dropdown-toggle')).click();
   await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
-  await (await formTitle()).click();
 };
 
 const getSummaryField = async (name) => {
@@ -116,13 +116,8 @@ const getSummaryField = async (name) => {
 
 const getFieldValue = async (name) => {
   const input = await $(`input[name="${name}"]`);
+  await input.click();
   return input.getValue();
-};
-
-const submitForm = async () => {
-  await (await submitButton()).waitForDisplayed();
-  await (await submitButton()).click();
-  await (await reportBodyDetails()).waitForDisplayed();
 };
 
 const getElementText = async (element) => {
@@ -329,6 +324,15 @@ const getAutomaticReply = async () => {
   };
 };
 
+const getDetailReportRowContent = async (row) => {
+  const labels =  await detailReportRowContent(row, 'label').map(async label => await label.getText());
+  const values =  await detailReportRowContent(row, 'value').map(async label => await label.getText());
+  return {
+    rowLabels: labels,
+    rowValues: values,
+  };
+};
+
 const getOpenReportInfo = async () => {
   return {
     patientName: await getElementText(patientName()),
@@ -355,18 +359,15 @@ const resetFilter = async () => {
 const openReport = async (reportId) => {
   await (await firstReport()).waitForDisplayed();
   const reportListItem = await reportByUUID(reportId);
-  await reportListItem.waitForDisplayed();
+  await reportListItem.waitForClickable();
   await reportListItem.click();
   await reportBodyDetails().waitForDisplayed();
 };
 
-const editReport = async (reportId) => {
-  await commonElements.goToReports();
-  await openReport(reportId);
+const editReport = async () => {
   await commonElements.openMoreOptionsMenu();
   await (await editReportButton()).waitForClickable();
   await (await editReportButton()).click();
-  await (await formTitle()).waitForDisplayed();
 };
 
 const fieldByIndex = async (index) => {
@@ -417,6 +418,34 @@ const getReportListLoadingStatus = async () => {
   return await (await reportListLoadingStatus()).getText();
 };
 
+const invalidateReport = async () => {
+  await openReviewAndSelectOption('invalid-option');
+  await commonElements.waitForPageLoaded();
+  expect(await getSelectedReviewOption()).to.equal('Has errors');
+};
+
+const validateReport = async () => {
+  await openReviewAndSelectOption('valid-option');
+  await commonElements.waitForPageLoaded();
+  expect(await getSelectedReviewOption()).to.equal('Correct');
+};
+
+const verifyReport = async () => {
+  const reportId = await getCurrentReportId();
+  const initialReport = await utils.getDoc(reportId);
+  expect(initialReport.verified).to.be.undefined;
+
+  await invalidateReport();
+  const invalidatedReport = await utils.getDoc(reportId);
+  expect(invalidatedReport.verified).to.be.false;
+  expect(invalidatedReport.patient).to.be.undefined;
+
+  await validateReport();
+  const validatedReport = await utils.getDoc(reportId);
+  expect(validatedReport.verified).to.be.true;
+  expect(validatedReport.patient).to.be.undefined;
+};
+
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
@@ -431,7 +460,6 @@ module.exports = {
   goToReportById,
   sentTask,
   getTaskDetails,
-  formTitle,
   openSidebarFilter,
   openSidebarFilterDateAccordion,
   setSidebarFilterFromDate,
@@ -440,7 +468,6 @@ module.exports = {
   getFieldValue,
   setBikDateInput,
   getSummaryField,
-  submitForm,
   reportsListDetails,
   selectAll,
   deselectAll,
@@ -462,13 +489,14 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getRawReportContent,
   getAutomaticReply,
+  getDetailReportRowContent,
   getOpenReportInfo,
   getListReportInfo,
   resetFilter,
   openReport,
+  editReport,
   reportTasks,
   editReportButton,
-  editReport,
   deleteReport,
   exportReports,
   openReviewAndSelectOption,
@@ -478,4 +506,7 @@ module.exports = {
   clickOnCaseId,
   getReportListLoadingStatus,
   openSelectedReport,
+  invalidateReport,
+  validateReport,
+  verifyReport,
 };

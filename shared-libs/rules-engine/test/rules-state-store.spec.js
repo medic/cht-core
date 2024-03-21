@@ -3,12 +3,11 @@ const { RestorableRulesStateStore } = require('./mocks');
 const sinon = require('sinon');
 const moment = require('moment');
 
-const rulesStateStore = RestorableRulesStateStore();
-const hashRulesConfig = rulesStateStore.__get__('hashRulesConfig');
+let rulesStateStore;
+let hashRulesConfig;
+let clock;
 
 const sevenDays = 7 * 24 * 60 * 60 * 1000 + 1000;
-
-let clock;
 
 const mockState = contactState => ({
   rulesConfigHash: hashRulesConfig({}),
@@ -16,8 +15,13 @@ const mockState = contactState => ({
 });
 
 describe('rules-state-store', () => {
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    rulesStateStore = RestorableRulesStateStore();
+    hashRulesConfig = rulesStateStore.__get__('hashRulesConfig');
+  });
   afterEach(() => {
-    clock && clock.restore();
+    clock.restore();
     sinon.restore();
     rulesStateStore.restore();
   });
@@ -150,7 +154,7 @@ describe('rules-state-store', () => {
   it('rewinding clock makes contacts dirty', async () => {
     await rulesStateStore.build({});
     const now = Date.now();
-    clock = sinon.useFakeTimers(now);
+    clock.setSystemTime(now);
     await rulesStateStore.markFresh(now + 1000, 'a');
     expect(rulesStateStore.stateLastUpdatedAt()).to.equal(now);
     expect(rulesStateStore.isDirty('a')).to.be.true;
@@ -162,7 +166,7 @@ describe('rules-state-store', () => {
     await rulesStateStore.build({});
     await rulesStateStore.markFresh(now, 'a');
     expect(rulesStateStore.isDirty('a')).to.be.false;
-    clock = sinon.useFakeTimers(oneMonthFromNow);
+    clock.setSystemTime(oneMonthFromNow);
     expect(rulesStateStore.isDirty('a')).to.be.true;
   });
 
@@ -199,7 +203,7 @@ describe('rules-state-store', () => {
     it('next interval exceeds expiration time', async () => {
       const today = moment('2020-03-20').valueOf();
       const nextInterval = moment('2020-04-07').valueOf();
-      clock = sinon.useFakeTimers(today);
+      clock.setSystemTime(today);
       await rulesStateStore.build({}); // default monthStartDate is 1
       await rulesStateStore.markFresh(today, 'a');
       expect(rulesStateStore.isDirty('a')).to.be.false;
@@ -210,7 +214,7 @@ describe('rules-state-store', () => {
     it('next interval does not exceed expiration time', async () => {
       const today = moment('2020-03-30').valueOf();
       const nextInterval = moment('2020-04-02').valueOf();
-      clock = sinon.useFakeTimers(today);
+      clock.setSystemTime(today);
       await rulesStateStore.build({}); // default monthStartDate is 1
       await rulesStateStore.markFresh(today, 'a');
       expect(rulesStateStore.isDirty('a')).to.be.false;
@@ -225,7 +229,7 @@ describe('rules-state-store', () => {
       const today = moment('2020-03-30').valueOf();
       const nextDate = moment('2020-04-02').valueOf();
       const pastExpiration = moment('2020-04-08').valueOf();
-      clock = sinon.useFakeTimers(today);
+      clock.setSystemTime(today);
       await rulesStateStore.build({ monthStartDate: 25 });
       await rulesStateStore.markFresh(today, 'a');
       expect(rulesStateStore.isDirty('a')).to.be.false;
@@ -238,7 +242,7 @@ describe('rules-state-store', () => {
     it('when monthStartDate is close in the future', async () => {
       const today = moment('2020-03-24').valueOf();
       const nextDate = moment('2020-03-28').valueOf();
-      clock = sinon.useFakeTimers(today);
+      clock.setSystemTime(today);
       await rulesStateStore.build({ monthStartDate: 25 });
       await rulesStateStore.markFresh(today, 'a');
       expect(rulesStateStore.isDirty('a')).to.be.false;
@@ -255,7 +259,7 @@ describe('rules-state-store', () => {
   describe('onChangeState', () => {
     it('should update calculatedAt when making any change', async () => {
       const one = moment('2020-04-12').valueOf();
-      clock = sinon.useFakeTimers(one);
+      clock.setSystemTime(one);
       await rulesStateStore.build({ monthStartDate: 25, targets: [{ id: 'target' }] });
 
       await rulesStateStore.markDirty(['a']);
@@ -295,7 +299,6 @@ describe('rules-state-store', () => {
     });
 
     it('some contacts', async () => {
-      clock = sinon.useFakeTimers();
       const now = moment();
       await rulesStateStore.build({});
       await rulesStateStore.markFresh(0, ['a', 'b', 'c', 'd']);

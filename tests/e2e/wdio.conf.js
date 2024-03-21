@@ -9,16 +9,30 @@ chai.use(require('chai-as-promised'));
 const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
-const chtDbUtils = require('@utils/cht-db');
 const browserLogsUtils = require('@utils/browser-logs');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
-const existingFeedBackDocIds = [];
 let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
 const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
+const CHROME_VERSION = process.env.CHROME_VERSION;
+const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion
+  ? [
+    'disable-gpu',
+    'deny-permission-prompts',
+    'ignore-certificate-errors',
+    'no-sandbox',
+    'window-size=1200,900'
+  ]
+  : [
+    'disable-gpu',
+    'deny-permission-prompts',
+    'ignore-certificate-errors',
+    'window-size=1200,900'
+  ];
+const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
 
 const baseConfig = {
   //
@@ -45,7 +59,7 @@ const baseConfig = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  
+
   suites: {
     all: ['**/*.wdio-spec.js']
   },
@@ -83,12 +97,17 @@ const baseConfig = {
     maxInstances: 1,
     //
     browserName: 'chrome',
+    browserVersion: utils.isMinimumChromeVersion ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']: 
-        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
+      args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
+      binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined
+    },
+    'wdio:chromedriverOptions': {
+      binary: utils.isMinimumChromeVersion
+        ? '/node_modules/chromedriver/bin/chromedriver'
+        : undefined
     }
-
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
     // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
@@ -141,8 +160,8 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: ['devtools'],
-
+  services: utils.isMinimumChromeVersion ? ['chromedriver'] : ['devtools'],
+  //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
   // see also: https://webdriver.io/docs/frameworks
@@ -238,7 +257,9 @@ const baseConfig = {
    */
   before: async function () {
     global.expect = chai.expect;
-    await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
+    if (!utils.isMinimumChromeVersion) {
+      await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
+    }
   },
   /**
    * Runs before a WebdriverIO command gets executed.
@@ -278,18 +299,15 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-    const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
-    existingFeedBackDocIds.push(feedBackDocs);
-    if (feedBackDocs) {
-      if (passed) {
-        context.test.callback(new Error('Feedback docs were generated during the test.'));
-      }
-      passed = false;
-    }
+    await utils.apiLogTestEnd(test.title);
     if (passed === false) {
       await browser.takeScreenshot();
     }
-    await utils.apiLogTestEnd(test.title);
+
+    const savedFeedbackDocs = await utils.logFeedbackDocs(test);
+    if (savedFeedbackDocs) {
+      context.test.callback(new Error('Feedback docs were generated during the test.'));
+    }
   },
 
   /**
@@ -344,7 +362,7 @@ const baseConfig = {
     await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
-    const generation = allure(['generate', 'allure-results']);
+    const generation = allure(['generate', 'allure-results', '--clean']);
 
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(

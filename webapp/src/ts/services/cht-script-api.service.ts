@@ -46,7 +46,7 @@ export class CHTScriptApiService {
         return Promise.all(extensionLibs.map(name => this.loadScript(name)));
       }
     } catch (e) {
-      console.error(`Error loading extension libs`, e);
+      console.error('Error loading extension libs', e);
     }
   }
 

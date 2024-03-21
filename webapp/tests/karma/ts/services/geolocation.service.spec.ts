@@ -281,7 +281,7 @@ describe('Geolocation service', () => {
           expect(returned).to.deep.equal(position);
           expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
           expect(consoleErrorMock.callCount).to.equal(1);
-          expect(consoleErrorMock.args[0][0].message).to.equal('error');
+          expect(consoleErrorMock.args[0][1].message).to.equal('error');
         });
       });
 

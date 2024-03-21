@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { ErrorHandler, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { APP_BASE_HREF, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -16,7 +16,6 @@ import {
   TranslateCompiler,
 } from '@ngx-translate/core';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { EffectsModule } from '@ngrx/effects';
 import * as _ from 'lodash-es';
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
@@ -36,7 +35,6 @@ import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
-import { ExceptionHandlerProvider } from '@mm-providers/exception-handler.provider';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { ReportsEffects } from '@mm-effects/reports.effects';
@@ -90,12 +88,10 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
-    AccordionModule.forRoot(),
     EffectsModule.forRoot([ GlobalEffects, ReportsEffects, ContactsEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
-    { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
     AppRouteGuardProvider,
     AnalyticsRouteGuardProvider,
     CookieService,

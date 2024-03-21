@@ -30,8 +30,9 @@ const getNewContact = (contactId) => {
  * @param {number} collisionCount the number of collisions that have occurred trying to generate this username
  * @returns {number} the number of digits to use in the suffix
  */
-const getSuffixLength = (collisionCount) =>
-  Math.floor(collisionCount / USERNAME_COLLISION_LIMIT) + USERNAME_SUFFIX_BASE_LENGTH;
+const getSuffixLength = (collisionCount) => {
+  return Math.floor(collisionCount / USERNAME_COLLISION_LIMIT) + USERNAME_SUFFIX_BASE_LENGTH;
+};
 
 const getRandomSuffix = (collisionCount) => {
   const suffixLength = getSuffixLength(collisionCount);
@@ -144,10 +145,9 @@ const addUser = async (contact) => {
   await createNewUser({ roles }, contact);
 };
 
-const isCreatingUser = ({ doc, initialProcessing }) =>
-  doc.user_for_contact
-  && doc.user_for_contact.create === 'true'
-  && initialProcessing;
+const isCreatingUser = ({ doc, initialProcessing }) => {
+  return doc.user_for_contact && doc.user_for_contact.create === 'true' && initialProcessing;
+};
 const isReplacingUser = contact => contact.user_for_contact.replace && !!Object
   .values(contact.user_for_contact.replace)
   .find(({ status }) => status === USER_CREATION_STATUS.READY);

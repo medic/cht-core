@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { sortBy as _sortBy } from 'lodash-es';
 import * as phoneNumber from '@medic/phone-number';
 
 import { FormatProvider } from '@mm-providers/format.provider';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { SearchService } from '@mm-services/search.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
@@ -16,6 +17,7 @@ import { TranslateService } from '@mm-services/translate.service';
 export class Select2SearchService {
 
   constructor(
+    private route: ActivatedRoute,
     private formatProvider: FormatProvider,
     private translateService: TranslateService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
@@ -51,18 +53,26 @@ export class Select2SearchService {
       .map(doc => ({ id: doc._id, doc: doc }));
   }
 
+  private calculateSkip(page: number,  pageSize: number): number {
+    return ((page || 1) - 1) * pageSize;
+  }
+
   private query(params, successCb, failureCb, options, types) {
     const currentQuery = params.data.q;
-    const skip = ((params.data.page || 1) - 1) * options.pageSize;
-    const filters = {
-      types: { selected: types },
-      search: params.data.q
-    };
+
     const searchOptions = {
       limit: options.pageSize,
-      skip,
+      skip: this.calculateSkip(params.data.page, options.pageSize),
       hydrateContactNames: true,
     };
+
+    const filters: Filter = {
+      types: { selected: types },
+      search: params.data.q,
+    };
+    if (options.filterByParent) {
+      filters.parent = this.getContactId();
+    }
 
     this.searchService
       .search('contacts', filters, searchOptions)
@@ -195,6 +205,15 @@ export class Select2SearchService {
     }
   }
 
+  private getContactId() {
+    let activeRoute = this.route.firstChild;
+    while (activeRoute?.firstChild) {
+      activeRoute = activeRoute.firstChild;
+    }
+    const params = activeRoute?.snapshot?.params;
+    return params?.parent_id || params?.id;
+  }
+
   async init(selectEl, _types, _options:any = {}) {
     const settings = await this.settingsService.get();
     const types = Array.isArray(_types) ? _types : [ _types ];
@@ -204,6 +223,7 @@ export class Select2SearchService {
       initialValue: _options.initialValue || selectEl.val(),
       sendMessageExtras: _options.sendMessageExtras || this.defaultSendMessageExtras,
       allowNew: _options.allowNew || false,
+      filterByParent: _options.filterByParent || false,
       pageSize: _options.pageSize || 20,
       tags: _options.tags || false,
       templateResult: _options.templateResult || this.defaultTemplateResult.bind(this)

@@ -253,7 +253,9 @@ describe('Muting', () => {
     before(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([offlineUser]);
-      await loginPage.login({username: offlineUser.username, password: offlineUser.password});      
+
+      await browser.url('/');
+      await loginPage.login({username: offlineUser.username, password: offlineUser.password});
     });
 
     after(async () => {
@@ -269,7 +271,6 @@ describe('Muting', () => {
     });
 
     it( 'should not process muting client-side if not enabled', async () => {
-
       const settingsWithDisabled = _.cloneDeep(settings);
       settingsWithDisabled.transitions.muting = { client_side: false };
 

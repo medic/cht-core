@@ -9,7 +9,6 @@ require('angular-pouchdb');
 require('angular-route');
 require('angular-sanitize');
 require('angular-translate');
-require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('@uirouter/angularjs');
 
@@ -47,6 +46,7 @@ require('./controllers/edit-translation');
 require('./controllers/edit-user');
 require('./controllers/export-contacts');
 require('./controllers/export-dhis');
+require('./controllers/export-user-devices');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
 require('./controllers/export-reports');
@@ -106,7 +106,6 @@ require('./services/db');
 require('./services/export');
 require('./services/extract-lineage');
 require('./services/file-reader');
-require('./services/format-date');
 require('./services/get-data-records');
 require('./services/get-subject-summaries');
 require('./services/get-summaries');
@@ -183,7 +182,6 @@ angular.module('adminApp').config(function(
 
   $translateProvider.useLoader('TranslationLoader', {});
   $translateProvider.useSanitizeValueStrategy('escape');
-  $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
   $translateProvider.addInterpolation('TranslationNullInterpolation');
 
   $ngReduxProvider.createStoreWith(RootReducer, []);
@@ -277,6 +275,15 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'ExportDhisCtrl',
           templateUrl: 'templates/export_dhis.html'
+        }
+      }
+    })
+    .state('export.user-devices', {
+      url: '/user-devices',
+      views: {
+        tab: {
+          controller: 'ExportUserDevicesCtrl',
+          templateUrl: 'templates/export_user-devices.html'
         }
       }
     })

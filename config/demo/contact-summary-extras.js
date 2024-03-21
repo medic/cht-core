@@ -6,7 +6,7 @@ const isReportValid = function (report) {
   return false;
 };
 
-const pregnancyForms = ['pregnancy']; 
+const pregnancyForms = ['pregnancy'];
 
 const antenatalForms = ['pregnancy_home_visit'];
 
@@ -291,8 +291,8 @@ function isReadyForNewPregnancy(thisContact, allReports) {
 }
 
 function isReadyForDelivery(thisContact, allReports) {
-  //If pregnancy registration, date of LMP should be at least 6 months ago and no more than EDD + 6 weeks. 
-  //If pregnancy registration and no LMP, make it available at registration and until 280 days + 6 weeks from the date of registration. 
+  //If pregnancy registration, date of LMP should be at least 6 months ago and no more than EDD + 6 weeks.
+  //If pregnancy registration and no LMP, make it available at registration and until 280 days + 6 weeks from the date of registration.
   //If no pregnancy registration, previous delivery date should be at least 7 months ago.
   if (thisContact.type !== 'person') { return false; }
   const latestPregnancy = getNewestReport(allReports, pregnancyForms);
@@ -312,11 +312,10 @@ function isReadyForDelivery(thisContact, allReports) {
       if (!lmpDate) {//no LMP, show until 280 days + 6 weeks from the date of registration
         return moment(latestPregnancy.reported_date).clone().startOf('day').add(280 + 6 * 7, 'days').isSameOrBefore(today);
       }
-      else {//Pregnancy registration with LMP
-        const edd = getMostRecentEDDForPregnancy(allReports, latestPregnancy);
-        //at least 6 months ago, no more than EDD + 6 weeks
-        return today.isBetween(lmpDate.clone().add(6, 'months'), edd.clone().add(6, 'weeks'));
-      }
+      //Pregnancy registration with LMP
+      const edd = getMostRecentEDDForPregnancy(allReports, latestPregnancy);
+      //at least 6 months ago, no more than EDD + 6 weeks
+      return today.isBetween(lmpDate.clone().add(6, 'months'), edd.clone().add(6, 'weeks'));
     }
   }
   return false;

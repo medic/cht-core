@@ -2,9 +2,9 @@ const sinon = require('sinon');
 require('chai').use(require('chai-as-promised'));
 const rewire = require('rewire');
 const { expect } = require('chai');
-const initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
 const utils = require('../../../src/js/bootstrapper/utils');
 
+let initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
 let localDb;
 let remoteDb;
 let userCtx;
@@ -132,7 +132,6 @@ describe('Initial replication', () => {
         get: sinon.stub().resolves({}),
       };
       userCtx = { name: 'Skagen' };
-
       await expect(initialReplication.isReplicationNeeded(localDb, userCtx)).to.be.rejectedWith(Error, 'boom');
     });
 
@@ -148,7 +147,6 @@ describe('Initial replication', () => {
         get: sinon.stub().rejects(new Error('and its gone')),
       };
       userCtx = { name: 'Skagen' };
-
       expect(await initialReplication.isReplicationNeeded(localDb, userCtx)).to.equal(false);
     });
   });
@@ -169,6 +167,7 @@ describe('Initial replication', () => {
         bulkGet: sinon.stub(),
       };
       clock = sinon.useFakeTimers();
+      initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
     });
 
     it('should perform initial replication', async () => {

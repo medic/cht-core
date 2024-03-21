@@ -48,7 +48,8 @@ describe('Send message', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), bob]);
     await utils.createUsers([offlineUser]);
-    await loginPage.login(offlineUser);    
+    await loginPage.login(offlineUser);
+    await commonPage.hideSnackbar();
   });
 
   beforeEach(async () => {
@@ -60,11 +61,10 @@ describe('Send message', () => {
     await messagesPage.sendMessage(
       smsMsg(healthCenter.name),
       healthCenter.name,
-      `${healthCenter.name} - all  contacts`
+      `${healthCenter.name} - all`
     );
 
-    const messages = await messagesPage.messagesListLeftPanel();
-    expect(messages.length).to.equal(2);
+    await browser.waitUntil(async () => (await messagesPage.messagesListLeftPanel()).length === 2);
 
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);
@@ -93,7 +93,6 @@ describe('Send message', () => {
     await messagesPage.openMessage(rawNumber);
     await verifyMessageHeader(rawNumber, '');
     await messagesPage.sendReply(smsMsg('raw', 'reply'));
-    await browser.refresh();
     await verifyLastSmsContent('raw', 'reply');
   });
 
@@ -101,7 +100,6 @@ describe('Send message', () => {
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);
     await messagesPage.sendReply(smsMsg(anne.name, 'reply'));
-    await browser.refresh();
     await verifyLastSmsContent(anne.name, 'reply');
   });
 
@@ -113,7 +111,6 @@ describe('Send message', () => {
     await messagesPage.replyAddRecipients(newMessage);
     await verifyMessageModalContent(rawNumber, newMessage);
     await messagesPage.sendReplyNewRecipient(anotherRawNumber, anotherRawNumber);
-    await browser.refresh();
     await verifyLastSmsContent('raw', 'add recipient');
 
     await messagesPage.openMessage(anotherRawNumber);
@@ -129,7 +126,6 @@ describe('Send message', () => {
     await messagesPage.replyAddRecipients(newMessage);
     await verifyMessageModalContent(anne.name, newMessage);
     await messagesPage.sendReplyNewRecipient(bob.name, bob.phone);
-    await browser.refresh();
     await verifyLastSmsContent('all', 'add recipient');
 
     await messagesPage.openMessage(bob._id);

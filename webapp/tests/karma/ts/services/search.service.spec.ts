@@ -8,7 +8,7 @@ import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SessionService } from '@mm-services/session.service';
 import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Search service', () => {
   let service:SearchService;
@@ -17,6 +17,8 @@ describe('Search service', () => {
   let db;
   let clock;
   let session;
+  let performanceService;
+  let stopPerformanceTrackStub;
 
   beforeEach(() => {
     GetDataRecords = sinon.stub();
@@ -24,6 +26,8 @@ describe('Search service', () => {
     searchStub.resolves({});
     db = { query: sinon.stub().resolves() };
     session = { isOnlineOnly: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 
     TestBed.configureTestingModule({
       providers: [
@@ -31,7 +35,7 @@ describe('Search service', () => {
         { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
         { provide: SessionService, useValue: session },
         { provide: SearchFactoryService, useValue: { get: () => searchStub } },
-        { provide: TelemetryService, useValue: { record: sinon.stub() }},
+        { provide: PerformanceService, useValue: performanceService },
       ],
     });
     service = TestBed.inject(SearchService);
@@ -87,21 +91,23 @@ describe('Search service', () => {
         .onSecondCall().resolves([ { id: 'b' } ]);
 
       let firstReturned = false;
-      const filters = { foo: 'bar' };
+      const filters = { search: 'bar' };
       service
         .search('reports', filters)
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'search:reports:search' });
         })
         .catch(err => assert.fail(err));
 
-      filters.foo = 'test';
+      filters.search = 'test';
       service
         .search('reports', filters)
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'b' } ]);
           expect(firstReturned).to.equal(true);
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'search:reports:search' });
         })
         .catch(err => assert.fail(err));
     }));
@@ -112,7 +118,7 @@ describe('Search service', () => {
         .onSecondCall().resolves([ { id: 'b' } ]);
       let firstReturned = false;
       service
-        .search('reports', { freetext: 'first' })
+        .search('reports', { search: 'first' })
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
@@ -120,7 +126,7 @@ describe('Search service', () => {
         .catch(err => assert.fail(err));
 
       service
-        .search('reports', { freetext: 'second' })
+        .search('reports', { search: 'second' })
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'b' } ]);
           expect(firstReturned).to.equal(true);

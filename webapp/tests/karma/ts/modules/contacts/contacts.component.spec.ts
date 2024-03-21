@@ -1,4 +1,6 @@
 import { TestBed, ComponentFixture, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -28,6 +30,10 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -48,6 +54,8 @@ describe('Contacts component', () => {
   let exportService;
   let xmlFormsService;
   let fastActionButtonService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let globalActions;
   let district;
 
@@ -63,7 +71,11 @@ describe('Contacts component', () => {
       isAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
-    authService = { has: sinon.stub().resolves(false) };
+    authService = {
+      has: sinon.stub().resolves(false),
+      online: sinon.stub().resolves(false),
+      any: sinon.stub().resolves(false)
+    };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: district._id })
@@ -94,11 +106,12 @@ describe('Contacts component', () => {
       getContactLeftSideActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
     };
-
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     contactListContains = sinon.stub();
-    const selectedContact =  {
+    const selectedContact = {
       type: { person: true },
-      doc: { phone: '123'},
+      doc: { phone: '123' },
     };
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
@@ -122,10 +135,13 @@ describe('Contacts component', () => {
         declarations: [
           ContactsComponent,
           ContactsFiltersComponent,
+          ContactsMoreMenuComponent,
           FreetextFilterComponent,
           NavigationComponent,
           ResetFiltersComponent,
           SortFilterComponent,
+          FastActionButtonComponent,
+          SearchBarComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -142,6 +158,9 @@ describe('Contacts component', () => {
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: NavigationService, useValue: {} },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: PerformanceService, useValue: performanceService },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents().then(() => {
@@ -270,6 +289,7 @@ describe('Contacts component', () => {
 
   describe('Search', () => {
     it('Puts the home place at the top of the list', fakeAsync(() => {
+      sinon.resetHistory();
       searchResults = [
         {
           _id: 'search-result',
@@ -284,11 +304,20 @@ describe('Contacts component', () => {
       expect(contacts.length).to.equal(2);
       expect(contacts[0]._id).to.equal('district-id');
       expect(contacts[1]._id).to.equal('search-result');
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('should search for homeplace children of the correct type', fakeAsync(() => {
       sinon.resetHistory();
-      searchResults = [ { _id: 'search-result' } ];
+      searchResults = [{ _id: 'search-result' }];
 
       searchService.search.resolves(searchResults);
       const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');
@@ -304,6 +333,15 @@ describe('Contacts component', () => {
       expect(contactTypesService.getTypeId.args[2]).to.deep.equal([updateContactsList.args[0][0][1]]);
       expect(contactTypesService.getChildren.callCount).to.equal(1);
       expect(contactTypesService.getChildren.args[0]).to.deep.equal(['some type']);
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('Only displays the home place once', fakeAsync(() => {
@@ -329,6 +367,7 @@ describe('Contacts component', () => {
     }));
 
     it('Only searches for top-level places as an admin', fakeAsync(() => {
+      sinon.resetHistory();
       sessionService.isOnlineOnly.returns(true);
       userSettingsService.get.resolves({ facility_id: undefined });
       getDataRecordsService.get.resolves({});
@@ -353,9 +392,19 @@ describe('Contacts component', () => {
       );
       const contacts = component.contactsActions.updateContactsList.args[0][0];
       expect(contacts.length).to.equal(1);
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
+      sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
@@ -374,9 +423,19 @@ describe('Contacts component', () => {
         limit: 50,
         skip: 50,
       });
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('when paginating, does modify skip for non-admins #4085', fakeAsync(() => {
+      sinon.resetHistory();
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -394,9 +453,19 @@ describe('Contacts component', () => {
         limit: 50,
         skip: 50,
       });
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
     }));
 
     it('when refreshing list as admin, does not modify limit #4085', fakeAsync(() => {
+      sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
@@ -415,6 +484,15 @@ describe('Contacts component', () => {
         limit: 60,
         silent: true,
         withIds: false,
+      });
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_list:query',
+        recordApdex: true,
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
       });
     }));
 
@@ -613,14 +691,11 @@ describe('Contacts component', () => {
 
   describe('last visited date', () => {
     it('does not enable LastVisitedDate features not allowed', () => {
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(false);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
       expect(component.defaultSortDirection).to.equal('alpha');
-      expect(userSettingsService.get.callCount).to.equal(1);
+      expect(userSettingsService.get.callCount).to.equal(2);
       expect(searchService.search.callCount).to.equal(1);
       expect(searchService.search.args[0]).to.deep.equal(
         [
@@ -639,9 +714,6 @@ describe('Contacts component', () => {
       userSettingsService.get.resetHistory();
       component.ngOnInit();
       flush();
-      expect(authService.has.callCount).equal(3);
-      expect(authService.has.args[2]).to.deep.equal(['can_view_last_visited_date']);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
@@ -956,8 +1028,7 @@ describe('Contacts component', () => {
             'does require refreshing when sorting is `last_visited_date` and visit report is received',
             fakeAsync(() => {
               searchResults = [];
-              Array.apply(null, Array(5)).forEach((k, i) =>
-                searchResults.push({ _id: i }));
+              Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               searchService.search.resetHistory();
@@ -1008,8 +1079,7 @@ describe('Contacts component', () => {
 
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             searchResults = [];
-            Array.apply(null, Array(5)).forEach((k, i) =>
-              searchResults.push({ _id: i }));
+            Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(true);
@@ -1049,8 +1119,7 @@ describe('Contacts component', () => {
                 uhc: { contacts_default_sort: 'last_visited_date' },
               });
               searchResults = [];
-              Array.apply(null, Array(5)).forEach((k, i) =>
-                searchResults.push({ _id: i }));
+              Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               authService.has.resolves(true);
@@ -1101,8 +1170,7 @@ describe('Contacts component', () => {
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             const searchResults: { _id: string }[] = [];
-            Array.apply(null, Array(5)).forEach((k, i) =>
-              searchResults.push({ _id: i }));
+            Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(false);

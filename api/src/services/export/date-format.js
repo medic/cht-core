@@ -5,11 +5,9 @@ module.exports = {
     if (date) {
       if (human_readable) {
         return moment(date).toISOString();
-      } else {
-        return moment(date).valueOf();
       }
-    } else {
-      return '';
+      return moment(date).valueOf();
     }
+    return '';
   }
 };

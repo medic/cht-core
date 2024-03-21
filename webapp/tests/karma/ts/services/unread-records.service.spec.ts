@@ -24,7 +24,7 @@ describe('UnreadRecordsService', () => {
     dbService = { get: () => dbInstance };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isOnlineOnly: sinon.stub() };
-    
+
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: dbService },
@@ -32,7 +32,7 @@ describe('UnreadRecordsService', () => {
         { provide: ChangesService, useValue: changesService }
       ]
     });
-    
+
     service = TestBed.inject(UnreadRecordsService);
   });
 

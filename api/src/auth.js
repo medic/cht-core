@@ -1,15 +1,23 @@
-const request = require('request-promise-native');
+const rpn = require('request-promise-native');
 const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
 const { roles, users } = require('@medic/user-management')(config, db);
 
+const contentLengthRegex = /^content-length$/i;
+
 const get = (path, headers) => {
+  const getHeaders = { ...headers };
+  Object
+    .keys(getHeaders)
+    .filter(header => contentLengthRegex.test(header))
+    .forEach(header => delete getHeaders[header]);
+
   const url = new URL(path, environment.serverUrlNoAuth);
-  return request.get({
+  return rpn.get({
     url: url.toString(),
-    headers: headers,
+    headers: getHeaders,
     json: true
   });
 };
@@ -78,20 +86,12 @@ module.exports = {
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       return false;
     }
-
-    let username;
-    let password;
-
     try {
-      [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+      const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+      return { username, password };
     } catch (err) {
       throw Error('Corrupted Auth header');
     }
-
-    return {
-      username: username,
-      password: password
-    };
   },
 
   /**
@@ -103,7 +103,7 @@ module.exports = {
     const authUrl = new URL(environment.serverUrlNoAuth);
     authUrl.username = username;
     authUrl.password = password;
-    return request.head({
+    return rpn.head({
       uri: authUrl.toString(),
       resolveWithFullResponse: true
     })

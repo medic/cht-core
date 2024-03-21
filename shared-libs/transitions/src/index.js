@@ -15,6 +15,8 @@ module.exports = (sourceDb, sourceConfig, sourceLogger) => {
   config.init(sourceConfig);
 
   const transitions = require('./transitions');
+  const utils = require('./lib/utils');
+
   return {
     date: require('./date'),
     dueTasks: require('./schedule/due_tasks'),
@@ -25,5 +27,6 @@ module.exports = (sourceDb, sourceConfig, sourceLogger) => {
     messages: require('./lib/messages'),
     processChange: transitions.processChange,
     processDocs: transitions.processDocs,
+    isWithinTimeFrame: utils.isWithinTimeFrame,
   };
 };

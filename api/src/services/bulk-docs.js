@@ -123,11 +123,9 @@ const deleteDocs = (
         updateAttemptCounts
       );
       // Don't send errors for docs that will be retried
-      updateStatuses = updateStatuses.filter(
-        docUpdate =>
-          !deletionFailures.includes(docUpdate.id) &&
-          !updateFailures.includes(docUpdate.id)
-      );
+      updateStatuses = updateStatuses.filter(docUpdate => {
+        return !deletionFailures.includes(docUpdate.id) && !updateFailures.includes(docUpdate.id);
+      });
       finalUpdateStatuses = finalUpdateStatuses.concat(updateStatuses);
 
       if (deletionFailures.length > 0 || updateFailures.length > 0) {
@@ -196,8 +194,7 @@ const getExistentDocs = docs => {
 
   return db.medic
     .allDocs({ keys: docIds, include_docs: true })
-    .then(result =>
-      Object.assign({}, ...result.rows.filter(row => row.doc).map(row => ({ [row.id]: row.doc }))));
+    .then(result => Object.assign({}, ...result.rows.filter(row => row.doc).map(row => ({ [row.id]: row.doc }))));
 };
 
 // Filters the list of request docs to the ones that satisfy the following conditions:

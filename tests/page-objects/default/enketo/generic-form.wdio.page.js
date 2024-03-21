@@ -1,6 +1,4 @@
-const utils = require('@utils');
-const commonPage = require('../common/common.wdio.page');
-const reportsPage = require('../reports/reports.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const submitButton = () => $('.enketo .submit');
 const cancelButton = () => $('.enketo .cancel');
@@ -8,65 +6,49 @@ const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
 const errorContainer = () => $('.empty-selection');
 const formTitle = () => $('.enketo form #form-title');
+const currentFormView = () => $('.enketo form .current');
+const validationErrors = () => $$('.invalid-required');
+const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
+const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
 
-const nextPage = async (numberOfPages = 1) => {
+const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
+  if (waitForLoad) {
+    if ((await validationErrors()).length) {
+      await (await formTitle()).click(); // focus out to trigger re-validation
+      await waitForValidationErrorsToDisappear();
+    }
+  }
+
   for (let i = 0; i < numberOfPages; i++) {
+    const currentPageId = (await currentFormView()).elementId;
     await (await nextButton()).waitForDisplayed();
     await (await nextButton()).waitForClickable();
     await (await nextButton()).click();
+    waitForLoad && await browser.waitUntil(async () => (await currentFormView()).elementId !== currentPageId);
   }
 };
 
-const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
-
-const invalidateReport = async () => {
-  await reportsPage.openReviewAndSelectOption('invalid-option');
-  await commonPage.waitForPageLoaded();
-  expect(await reportsPage.getSelectedReviewOption()).to.equal('Has errors');
-};
-
-const validateReport = async () => {
-  await reportsPage.openReviewAndSelectOption('valid-option');
-  await commonPage.waitForPageLoaded();
-  expect(await reportsPage.getSelectedReviewOption()).to.equal('Correct');
-};
-
-const selectContact = async (inputName, contactName) => {
-  const select2Selection = () => $(`section[name="${inputName}"] .select2-selection`);
+const selectContact = async (contactName) => {
+  const select2Selection = () => $('label*=What is the patient\'s name?').$('.select2-selection');
   await (await select2Selection()).click();
   const searchField = await $('.select2-search__field');
   await searchField.setValue(contactName);
   const contact = await $('.name');
   await contact.waitForDisplayed();
   await contact.click();
-  await browser.waitUntil(async () =>
-    (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase()));
-};
-const editForm = async () => {
-  await commonPage.openMoreOptionsMenu();
-  await (await reportsPage.editReportButton()).waitForClickable();
-  await (await reportsPage.editReportButton()).click();
+  await browser.waitUntil(async () => {
+    return (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase());
+  });
 };
 
-const verifyReport = async () => {
-  const reportId = await reportsPage.getCurrentReportId();
-  const initialReport = await utils.getDoc(reportId);
-  expect(initialReport.verified).to.be.undefined;
-
-  await invalidateReport();
-  const invalidatedReport = await utils.getDoc(reportId);
-  expect(invalidatedReport.verified).to.be.false;
-  expect(invalidatedReport.patient).to.be.undefined;
-
-  await validateReport();
-  const validatedReport = await utils.getDoc(reportId);
-  expect(validatedReport.verified).to.be.true;
-  expect(validatedReport.patient).to.be.undefined;
-};
-
-const submitForm = async () => {
+const submitForm = async (waitForPageLoaded = true) => {
+  await formTitle().click();
+  await waitForValidationErrorsToDisappear();
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
+  if (waitForPageLoaded) {
+    await commonPage.waitForPageLoaded();
+  }
 };
 
 const cancelForm = async () => {
@@ -84,19 +66,39 @@ const getFormTitle = async () => {
   return await (await formTitle()).getText();
 };
 
+const getDBObjectWidgetValues = async (field) => {
+  const widget = $(`[data-contains-ref-target="${field}"] .selection`);
+  await (await widget).waitForClickable();
+  await (await widget).click();
+
+  const dropdown = $('.select2-dropdown--below');
+  await (await dropdown).waitForDisplayed();
+  const firstElement = $('.select2-results__options > li');
+  await (await firstElement).waitForClickable();
+
+  const list = await $$('.select2-results__options > li');
+  const contacts = [];
+  for (const item of list) {
+    contacts.push({
+      name: await (item.$('.name').getText()),
+      click: () => item.click(),
+    });
+  }
+
+  return contacts;
+};
+
 module.exports = {
   getFormTitle,
   getErrorMessage,
-  submitButton,
   cancelButton,
   nextPage,
-  invalidateReport,
-  validateReport,
   nameField,
   fieldByName,
   selectContact,
-  verifyReport,
-  editForm,
   cancelForm,
   submitForm,
+  currentFormView,
+  formTitle,
+  getDBObjectWidgetValues,
 };

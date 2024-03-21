@@ -6,14 +6,16 @@ const transformToDoc = require('../src/transform-task-emission-to-doc');
 const updateTemporalStates = require('../src/update-temporal-states');
 
 const NOW = 1000;
+let clock;
 
 describe('update-temporal-states', () => {
   beforeEach(() => {
-    sinon.useFakeTimers(NOW);
+    clock = sinon.useFakeTimers(NOW);
   });
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
   });
 
   it('empty task docs yields empty result', () => {
@@ -29,7 +31,7 @@ describe('update-temporal-states', () => {
       'stateHistory[0].state': 'Draft',
     });
 
-    sinon.useFakeTimers(NOW + MS_IN_DAY + 10);
+    clock.setSystemTime(NOW + MS_IN_DAY + 10);
     expect(updateTemporalStates([taskDoc])).to.deep.eq([taskDoc]);
     expect(taskDoc).to.nested.include({
       state: 'Ready',
@@ -37,7 +39,7 @@ describe('update-temporal-states', () => {
       'stateHistory[1].state': 'Ready',
     });
 
-    sinon.useFakeTimers(NOW + MS_IN_DAY * 3);
+    clock.setSystemTime(NOW + MS_IN_DAY * 3);
     expect(updateTemporalStates([taskDoc])).to.deep.eq([taskDoc]);
     expect(taskDoc).to.nested.include({
       state: 'Failed',
@@ -75,7 +77,7 @@ describe('update-temporal-states', () => {
       'stateHistory[0].state': 'Failed',
     });
 
-    sinon.useFakeTimers(-MS_IN_DAY * 3);
+    clock.setSystemTime(-MS_IN_DAY * 3);
     expect(updateTemporalStates([taskDoc])).to.deep.eq([]);
   });
 });

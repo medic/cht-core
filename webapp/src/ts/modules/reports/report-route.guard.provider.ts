@@ -1,4 +1,4 @@
-import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 
@@ -11,10 +11,8 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 })
 export class ReportsAddDeactivationGuardProvider implements CanDeactivate<ReportsAddComponent> {
   private globalActions;
-  constructor(
-    private router:Router,
-    private store:Store,
-  ) {
+
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
   }
 

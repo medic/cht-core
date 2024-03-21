@@ -7,7 +7,7 @@ import * as CalendarInterval from '@medic/calendar-interval';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +30,7 @@ export class SearchService {
     private sessionService:SessionService,
     private getDataRecordsService:GetDataRecordsService,
     private searchFactoryService:SearchFactoryService,
-    private telemetryService:TelemetryService,
+    private performanceService: PerformanceService,
     private ngZone:NgZone,
   ) {
     this.searchFactory = this.searchFactoryService.get(this.dbService);
@@ -122,7 +122,7 @@ export class SearchService {
       });
   }
 
-  search(type, filters, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
+  search(type, filters: Filter, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
     return this.ngZone.runOutsideAngular(() => this._search(type, filters, options, extensions, docIds));
   }
 
@@ -137,19 +137,17 @@ export class SearchService {
     if (!options.force && this.debounce(type, filters, options)) {
       return Promise.resolve([]);
     }
-    const before = performance.now();
+    const trackPerformance = this.performanceService.track();
     return this
       .searchFactory(type, filters, options, extensions)
       .then((searchResults) => {
-        const timing = performance.now() - before;
         const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
-        const telemetryKey = ['search', type, ...filterKeys].join(':');
         // Will end up with entries like:
         //   search:reports:search                      <-- text search of reports
         //   search:reports:date:search:valid:verified  <-- maximum selected search of reports with text search
         //   search:contacts:search                     <-- text search of contacts
         //   search:contacts:types                      <-- default viewing of contact list
-        this.telemetryService.record(telemetryKey, timing);
+        trackPerformance?.stop({ name: [ 'search', type, ...filterKeys ].join(':') });
 
         if (docIds && docIds.length) {
           docIds.forEach((docId) => {
@@ -200,4 +198,11 @@ export class SearchService {
         throw err;
       });
   }
+}
+
+export interface Filter {
+  types?: { selected: string };
+  search?: string;
+  parent?: string;
+  subjectIds?: string[];
 }

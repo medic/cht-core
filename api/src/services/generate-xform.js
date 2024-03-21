@@ -232,9 +232,8 @@ module.exports = {
         if (doc) {
           logger.info(`Updating form with ID "${docId}"`);
           return db.medic.put(doc);
-        } else {
-          logger.info(`Form with ID "${docId}" does not need to be updated.`);
         }
+        logger.info(`Form with ID "${docId}" does not need to be updated.`);
       });
   },
 

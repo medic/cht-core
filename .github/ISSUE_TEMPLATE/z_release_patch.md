@@ -28,25 +28,26 @@ Once all issues have been merged into `master` then the release process can star
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`).
 - [ ] Once the CI completes successfully notify the team by writing a message in the #product-team Slack channel:
 ```
-@product_team, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
-Please let me know if there’s any final update we need to make. 
+@product_team, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag.
+Please let me know if there’s any final update we need to make.
 If all is good, then in 24h, I will start the release. Thanks!
 ```
 - [ ] Add release notes to the [Core Framework Releases](https://docs.communityhealthtoolkit.org/core/releases/) page:
     - [ ] Create a new document for the release in the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/core/releases).
-    - [ ] Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions.
-    - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format.
+    - [ ] Ensure all issues are in the GH Milestone, they have human readable descriptions, and that they're correctly labelled. In particular: they have one "Type" label, "UI/UX" if they change the UI, and "Breaking change" if appropriate.
+    - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes/index.js) to export the issues into our release note format.
     - [ ] Manually document any known migration steps and known issues.
     - [ ] Add a link to the new release page in the [Release Notes](https://docs.communityhealthtoolkit.org/core/releases/#release-notes) section.
     - [ ] Assign the PR to:
         - The Director of Technology or a developer
         - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
-- [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Ensure the release notes PR above is merged. Link to the release notes in the description of the release.
-- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds_4/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`, and change the Target dropdown to the release branch (eg: `4.4.x`). This will create the git tag automatically. Ensure the release notes PR above is merged. Link to the release notes in the description of the release.
+- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the "Product - Releases" category using this template:
 ```
 *Announcing the release of {{version}}*
 
 This release fixes {{number of bugs}}. Read the [release notes]({{url}}) for full details.
 ```
+- [ ] Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.
 - [ ] Mark this issue "done" and close the Milestone.

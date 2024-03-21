@@ -17,12 +17,14 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactSaveService } from '@mm-services/contact-save.service';
+import { reduce as _reduce } from 'lodash-es';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -36,7 +38,9 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 export class FormService {
   constructor(
     private store: Store,
+    private contactSaveService:ContactSaveService,
     private contactSummaryService: ContactSummaryService,
+    private contactTypesService:ContactTypesService,
     private dbService: DbService,
     private fileReaderService: FileReaderService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
@@ -49,7 +53,6 @@ export class FormService {
     private trainingCardsService: TrainingCardsService,
     private transitionsService: TransitionsService,
     private translateService: TranslateService,
-    private feedbackService:FeedbackService,
     private ngZone: NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private enketoService: EnketoService
@@ -61,8 +64,7 @@ export class FormService {
 
   private globalActions: GlobalActions;
   private servicesActions: ServicesActions;
-  private readonly HTML_ATTACHMENT_NAME = 'form.html';
-  private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
+
   private inited;
 
   private init() {
@@ -91,8 +93,8 @@ export class FormService {
   private transformXml(form) {
     return Promise
       .all([
-        this.getAttachment(form._id, this.HTML_ATTACHMENT_NAME),
-        this.getAttachment(form._id, this.MODEL_ATTACHMENT_NAME)
+        this.getAttachment(form._id, this.xmlFormsService.HTML_ATTACHMENT_NAME),
+        this.getAttachment(form._id, this.xmlFormsService.MODEL_ATTACHMENT_NAME)
       ])
       .then(([html, model]) => {
         const $html = $(html);
@@ -142,20 +144,20 @@ export class FormService {
       .then(([reports, lineage]) => this.contactSummaryService.get(contact, reports, lineage));
   }
 
-  private canAccessForm(formDoc, user, instanceData, contactSummary) {
+  private canAccessForm(formContext: EnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
-      formDoc,
-      user,
-      { doc: instanceData?.contact, contactSummary: contactSummary?.context },
+      formContext.formDoc,
+      formContext.userContact,
+      {
+        doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
+        contactSummary: formContext.contactSummary?.context,
+        shouldEvaluateExpression: formContext.shouldEvaluateExpression(),
+      },
     );
   }
 
   private async renderForm(formContext: EnketoFormContext) {
-    const {
-      formDoc,
-      instanceData,
-      userContact,
-    } = formContext;
+    const { formDoc, instanceData } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());
@@ -163,52 +165,28 @@ export class FormService {
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
-      const contactSummary = await this.getContactSummary(doc, instanceData);
+      formContext.contactSummary = await this.getContactSummary(doc, instanceData);
 
-      if (!await this.canAccessForm(formDoc, userContact, instanceData, contactSummary)) {
+      if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
-      return await this.enketoService.renderForm(formContext, doc, userSettings, contactSummary);
+      return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
       if (error.translationKey) {
         throw error;
       }
       const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
-      console.error(errorMessage, error.message);
-      this.feedbackService.submit(errorMessage + error.message, false);
       throw new Error(errorMessage + error.message);
     }
   }
 
-  render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal = false) {
-    return this.ngZone.runOutsideAngular(() => {
-      return this._render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal);
-    });
+  render(formContext: EnketoFormContext) {
+    return this.ngZone.runOutsideAngular(() => this._render(formContext));
   }
 
-  private _render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal) {
-    return Promise
-      .all([
-        this.inited,
-        this.getUserContact(),
-      ])
-      .then(([ , userContact]) => {
-        const formContext: EnketoFormContext = {
-          selector,
-          formDoc: form,
-          instanceData,
-          editedListener,
-          valuechangeListener,
-          isFormInModal,
-          userContact,
-        };
-        return this.renderForm(formContext);
-      });
-  }
-
-  async renderContactForm(formContext: EnketoFormContext) {
-    // Users can access contact forms even when they don't have a contact associated. So not throwing an error.
-    formContext.userContact = await this.userContactService.get();
+  private async _render(formContext: EnketoFormContext) {
+    await this.inited;
+    formContext.userContact = await this.getUserContact(formContext.requiresContact());
     return this.renderForm(formContext);
   }
 
@@ -219,8 +197,7 @@ export class FormService {
       .then((results) => {
         results.forEach((result) => {
           if (result.error) {
-            console.error('Error saving report', result);
-            throw new Error('Error saving report');
+            throw new Error('Error saving report: ' + result.error);
           }
           const idx = docs.findIndex(doc => doc._id === result.id);
           docs[idx] = { ...docs[idx], _rev: result.rev };
@@ -229,18 +206,15 @@ export class FormService {
       });
   }
 
-  private getUserContact() {
-    return this.userContactService
-      .get()
-      .then((contact) => {
-        if (!contact) {
-          const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
-            'associated contact. Talk to your administrator to correct this.');
-          err.translationKey = 'error.loading.form.no_contact';
-          throw err;
-        }
-        return contact;
-      });
+  private async getUserContact(requiresContact:boolean) {
+    const contact = await this.userContactService.get();
+    if (requiresContact && !contact) {
+      const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
+        'associated contact. Talk to your administrator to correct this.');
+      err.translationKey = 'error.loading.form.no_contact';
+      throw err;
+    }
+    return contact;
   }
 
   private saveGeo(geoHandle, docs) {
@@ -296,7 +270,7 @@ export class FormService {
       return this.enketoService.completeExistingReport(form, formDoc, docId);
     }
 
-    const contact = await this.getUserContact();
+    const contact = await this.getUserContact(true);
     return this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
   }
 
@@ -321,7 +295,50 @@ export class FormService {
       });
   }
 
+  private applyTransitions(preparedDocs) {
+    return this.transitionsService
+      .applyTransitions(preparedDocs.preparedDocs)
+      .then(updatedDocs => {
+        preparedDocs.preparedDocs = updatedDocs;
+        return preparedDocs;
+      });
+  }
+
+  private generateFailureMessage(bulkDocsResult) {
+    return _reduce(bulkDocsResult, (msg: any, result) => {
+      let newMsg = msg;
+      if (!result.ok) {
+        if (!newMsg) {
+          newMsg = 'Some documents did not save correctly: ';
+        }
+        newMsg += result.id + ' with ' + result.message + '; ';
+      }
+      return newMsg;
+    }, null);
+  }
+
+  async saveContact(form, docId, type, xmlVersion) {
+    const typeFields = this.contactTypesService.isHardcodedType(type)
+      ? { type }
+      : { type: 'contact', contact_type: type };
+
+    const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
+    const preparedDocs = await this.applyTransitions(docs);
+
+    const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+    this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
+    const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
+    const failureMessage = this.generateFailureMessage(bulkDocsResult);
+
+    if (failureMessage) {
+      throw new Error(failureMessage);
+    }
+
+    return { docId: preparedDocs.docId, bulkDocsResult };
+  }
+
   unload(form) {
     this.enketoService.unload(form);
   }
 }
+

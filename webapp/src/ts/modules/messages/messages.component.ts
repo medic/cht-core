@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -16,6 +16,7 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -31,10 +32,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
   loadingContent = false;
   conversations: Record<string, any>[] = [];
   error = false;
+  trackPerformance;
   currentLevel;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private store: Store,
     private changesService: ChangesService,
@@ -45,12 +46,14 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private responsiveService: ResponsiveService,
     private userContactService: UserContactService,
     private authService: AuthService,
+    private performanceService: PerformanceService
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
   }
 
   ngOnInit() {
+    this.trackPerformance = this.performanceService.track();
     this.subscribeToStore();
 
     this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
@@ -169,6 +172,15 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.messagesActions.setConversations(conversations);
     this.updateFastActions();
     this.updateActionBar();
+    this.recordPerformance();
+  }
+
+  private async recordPerformance() {
+    if (!this.trackPerformance) {
+      return;
+    }
+    await this.trackPerformance.stop({ name: 'message_list:load', recordApdex: true });
+    this.trackPerformance = null;
   }
 
   updateConversations({ merge = false } = {}) {

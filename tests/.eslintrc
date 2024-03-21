@@ -29,6 +29,8 @@
   "globals": {
     "$": true,
     "$$": true,
-    "document": true
+    "document": true,
+    "caches": true,
+    "navigator": true
   }
 }

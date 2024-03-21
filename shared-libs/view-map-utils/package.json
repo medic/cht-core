@@ -4,7 +4,7 @@
   "description": "Provides helper to access ddoc view map functions in API and SENTINEL",
   "main": "src/view-map-utils.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0"

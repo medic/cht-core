@@ -8,6 +8,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const places = [
   {
@@ -162,6 +163,7 @@ const getGroupTasksNamesAndTitles = async () => {
 };
 
 const expectTasksGroupLeaveModal = async () => {
+  await (await modalPage.body()).waitForClickable();
   expect(await (await modalPage.body()).getText()).to.equal(
     'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
   );
@@ -206,7 +208,9 @@ describe('Tasks group landing page', () => {
       const task = await tasksPage.getTaskByContactAndForm('Queen Victoria', 'person_create');
       await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      await tasksPage.submitTask();
+      const taskElement = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElement.waitForDisplayed({ reverse: true });
 
       // tasks group is displayed
       await tasksPage.waitForTasksGroupLoaded();
@@ -235,7 +239,9 @@ describe('Tasks group landing page', () => {
       }
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      await tasksPage.submitTask();
+      const taskElement = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElement.waitForDisplayed({ reverse: true });
       // tasks group is displayed again
       await tasksPage.waitForTasksGroupLoaded();
       const secondGroupTasks = await tasksPage.getTasksInGroup();
@@ -262,7 +268,9 @@ describe('Tasks group landing page', () => {
       await modalPage.submit();
 
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
-      await tasksPage.submitTask();
+      const taskElement = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElement.waitForDisplayed({ reverse: true });
 
       await tasksPage.waitForTasksGroupLoaded();
       const groupTasksAndTitles = await getGroupTasksNamesAndTitles();
@@ -278,7 +286,9 @@ describe('Tasks group landing page', () => {
       const task = await tasksPage.getTaskByContactAndForm('Francisco Goya', 'person_create');
       await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      await tasksPage.submitTask();
+      const taskElement = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElement.waitForDisplayed({ reverse: true });
 
       await tasksPage.waitForTasksGroupLoaded();
 
@@ -298,7 +308,9 @@ describe('Tasks group landing page', () => {
       await task.click();
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      await tasksPage.submitTask();
+      const taskElementHomeVisit = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElementHomeVisit.waitForDisplayed({ reverse: true });
 
       await tasksPage.waitForTasksGroupLoaded();
       const tasksInGroup = await tasksPage.getTasksInGroup();
@@ -308,7 +320,9 @@ describe('Tasks group landing page', () => {
       await lastTask.click();
 
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
-      await tasksPage.submitTask();
+      const taskElementPlaceHomeVisit = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElementPlaceHomeVisit.waitForDisplayed({ reverse: true });
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
@@ -320,7 +334,9 @@ describe('Tasks group landing page', () => {
       const task = await tasksPage.getTaskByContactAndForm('Bob', 'person_create');
       await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      await tasksPage.submitTask();
+      const taskElement = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElement.waitForDisplayed({ reverse: true });
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
@@ -356,7 +372,9 @@ describe('Tasks group landing page', () => {
       await task.click();
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      await tasksPage.submitTask();
+      const taskElement = await tasksPage.getOpenTaskElement();
+      await genericForm.submitForm();
+      await taskElement.waitForDisplayed({ reverse: true });
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();

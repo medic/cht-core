@@ -4,7 +4,6 @@ const registrationUtils = require('@medic/registration-utils');
 const taskUtils = require('@medic/task-utils');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-
 describe('utils util', () => {
 
   beforeEach(() => {
@@ -291,6 +290,108 @@ describe('utils util', () => {
 
       config.getAll.returns({ locale_outgoing: '', locale: '' });
       utils.getLocale(docs[5]).should.deep.equal('en');
+    });
+  });
+
+  describe('isWithinTimeFrame', () => {
+    let clock;
+    const validCases = [
+      {
+        cron: '5 * * * *',
+        time: new Date('2023-07-11T03:05:00+0000').getTime(),
+        frame: 4 * 60 * 1000, // 4 minutes
+        offset: 3 * 60 * 1000, // 3 minutes
+      },
+      {
+        cron: '20 1 * * *',
+        time: new Date('2023-07-11T01:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 1 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '20 5 1 * *',
+        time: new Date('2023-03-01T05:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 2 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '15 1 1 1 *',
+        time: new Date('2023-01-01T01:15:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 4 * 60 * 1000, // 2 minutes
+      },
+    ];
+    const invalidCases = [
+      {
+        cron: '5 * * * *',
+        time: new Date('2023-07-11T03:15:00+0000').getTime(),
+        frame: 4 * 60 * 1000,
+        offset: 3 * 60 * 1000,
+      },
+      {
+        cron: '20 1 * * *',
+        time: new Date('2023-07-11T00:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 1 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '20 5 1 * *',
+        time: new Date('2023-03-02T05:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 2 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '15 1 1 1 *',
+        time: new Date('2023-03-01T01:15:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 4 * 60 * 1000, // 2 minutes
+      },
+    ];
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(() => {
+      clock?.restore();
+    });
+
+    it('should return true for the valid time', () => {
+      validCases.forEach(({ cron, frame, time, offset}) => {
+        clock.setSystemTime(time);
+        utils.isWithinTimeFrame(cron).should.be.true;
+
+        const currentDateInMsMinusOffset = Date.now() - offset;
+        const currentDateInMsPlusOffset = Date.now() + offset;
+
+        clock.setSystemTime(currentDateInMsMinusOffset);
+        utils.isWithinTimeFrame(cron, frame).should.be.true;
+
+        clock.setSystemTime(currentDateInMsPlusOffset);
+        utils.isWithinTimeFrame(cron, frame).should.be.true;
+      });
+    });
+
+    it('should return false for invalid time', () => {
+      invalidCases.forEach(({ cron, time, frame, offset }) => {
+        clock.setSystemTime(time);
+        utils.isWithinTimeFrame(cron).should.be.false;
+
+        const currentDateInMsMinusOffset = Date.now() - offset;
+        const currentDateInMsPlusOffset = Date.now() + offset;
+
+        clock.setSystemTime(currentDateInMsMinusOffset);
+        utils.isWithinTimeFrame(cron, frame).should.be.false;
+
+        clock.setSystemTime(currentDateInMsPlusOffset);
+        utils.isWithinTimeFrame(cron, frame).should.be.false;
+      });
+    });
+
+    it('should throw an error for bad cron expression', () => {
+      const BAD_CRON_EXPRESSION = 'BAD_CRON_EXPRESSION';
+
+      expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION)).to.be.false;
+      expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, 60000)).to.be.false;
     });
   });
 });

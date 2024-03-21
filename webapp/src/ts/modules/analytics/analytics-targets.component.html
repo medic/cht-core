@@ -17,23 +17,25 @@
     <div class="target" *ngFor="let target of targets"
       [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
       attr.test-target-id="{{ target.id }}">
+      <div class="body">
+        <mm-analytics-targets-progress
+          *ngIf="target.type === 'percent'"
+          [target]="target" [value]="target.value"
+          [aggregate]="false">
+        </mm-analytics-targets-progress>
+        <div class="count" *ngIf="target.type !== 'percent'">
+          <div class="goal" *ngIf="target.goal >= 0">
+            <p>{{ 'analytics.target.monthly_goal' | translate }} {{ target.goal | localizeNumber }}</p>
+          </div>
+          <div class="number">{{ target.value?.pass | localizeNumber }}</div>
+        </div>
+      </div>
       <div class="heading">
         <div class="icon" [innerHTML]="target.icon | resourceIcon"></div>
         <div class="title">
           <h2 *ngIf="target.translation_key">{{ target.translation_key | translate }}</h2>
           <h2 *ngIf="!target.translation_key">{{ target.name | translateFrom }}</h2>
           <p *ngIf="target.subtitle_translation_key">{{ target.subtitle_translation_key | translate }}</p>
-        </div>
-      </div>
-
-      <div class="body">
-        <mm-analytics-targets-progress *ngIf="target.type === 'percent'" [target]="target" [value]="target.value" [aggregate]="false"></mm-analytics-targets-progress>
-        <div class="count" *ngIf="target.type !== 'percent'">
-          <div class="goal" *ngIf="target.goal >= 0">
-            <label>{{ 'analytics.target.monthly_goal' | translate }}</label>
-            <p>{{ target.goal | localizeNumber }}</p>
-          </div>
-          <div class="number">{{ target.value?.pass | localizeNumber }}</div>
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ describe('Form2Sms service', () => {
     GetReportContent = sinon.stub();
     getUserSettings = sinon.stub();
     const pipesService = {
-      getPipeNameVsIsPureMap: sinon.stub().returns(new Map),
+      getPipeNameVsIsPureMap: sinon.stub().returns(new Map()),
       meta: sinon.stub(),
       getInstance: sinon.stub(),
     };

@@ -216,6 +216,12 @@ module.exports = {
         additionalFactors: ['yes', 'underweight']
       };
       Object.assign(content, opts);
+
+      const pregnancyAnswers = [content.firstPregnancy];
+      if (content.firstPregnancy === 'no') {
+        pregnancyAnswers.push(content.miscarriages);
+      }
+
       return [
         ['method_lmp'],
         ['1999-08-01'],
@@ -223,7 +229,7 @@ module.exports = {
         ['1'],
         ['yes', '1999-12-15'],
         ['yes', '2000-01-15'],
-        [content.firstPregnancy, content.miscarriages],
+        pregnancyAnswers,
         [content.conditions, ...content.additionalFactors],
         ['yes', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'],
         ['no'],

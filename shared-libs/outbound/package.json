@@ -4,7 +4,7 @@
   "description": "Configurable outbound REST driver",
   "main": "src/outbound.js",
   "scripts": {
-    "test": "mocha ./test --require test/setup.js"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test --require test/setup.js"
   },
   "author": "",
   "license": "Apache-2.0",

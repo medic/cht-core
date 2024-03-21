@@ -1,57 +1,30 @@
 import { v4 as uuidV4 } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { reduce as _reduce, isObject as _isObject, defaults as _defaults } from 'lodash-es';
+import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
 
 import { DbService } from '@mm-services/db.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { ServicesActions } from '@mm-actions/services';
-import { ContactTypesService } from '@mm-services/contact-types.service';
-import { TransitionsService } from '@mm-services/transitions.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactSaveService {
-  private servicesActions;
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
 
   constructor(
-    private store:Store,
-    private contactTypesService:ContactTypesService,
     private dbService:DbService,
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
-    private transitionsService:TransitionsService,
     private ngZone:NgZone,
   ) {
-    this.servicesActions = new ServicesActions(store);
   }
 
-  private generateFailureMessage(bulkDocsResult) {
-    return _reduce(bulkDocsResult, (msg: any, result) => {
-      let newMsg = msg;
-      if (!result.ok) {
-        if (!newMsg) {
-          newMsg = 'Some documents did not save correctly: ';
-        }
-        newMsg += result.id + ' with ' + result.message + '; ';
-      }
-      return newMsg;
-    }, null);
-  }
-
-  private prepareSubmittedDocsForSave(original, submitted, type) {
+  private prepareSubmittedDocsForSave(original, submitted, typeFields) {
     if (original) {
       _defaults(submitted.doc, original);
-    } else if (this.contactTypesService.isHardcodedType(type)) {
-      // default hierarchy - maintain backwards compatibility
-      submitted.doc.type = type;
     } else {
-      // configured hierarchy
-      submitted.doc.type = 'contact';
-      submitted.doc.contact_type = type;
+      Object.assign(submitted.doc, typeFields);
     }
 
     const doc = this.prepare(submitted.doc);
@@ -173,46 +146,17 @@ export class ContactSaveService {
     return promiseChain.then(() => preparedSiblings);
   }
 
-  save(form, docId, type, xmlVersion) {
-    return this.ngZone.runOutsideAngular(() => {
-      return (docId ? this.dbService.get().get(docId) : Promise.resolve())
-        .then(original => {
-          const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
-          return this.prepareSubmittedDocsForSave(original, submitted, type);
-        })
-        .then((preparedDocs) => this.applyTransitions(preparedDocs))
-        .then((preparedDocs) => {
-          if (xmlVersion) {
-            for (const doc of preparedDocs.preparedDocs) {
-              doc.form_version = xmlVersion;
-            }
-          }
-
-          const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
-          this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
-
-          return this.dbService
-            .get()
-            .bulkDocs(preparedDocs.preparedDocs)
-            .then((bulkDocsResult) => {
-              const failureMessage = this.generateFailureMessage(bulkDocsResult);
-
-              if (failureMessage) {
-                throw new Error(failureMessage);
-              }
-
-              return { docId: preparedDocs.docId, bulkDocsResult };
-            });
-        });
+  async save(form, docId, typeFields, xmlVersion) {
+    return this.ngZone.runOutsideAngular(async () => {
+      const original = docId ? await this.dbService.get().get(docId) : null;
+      const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
+      const docData = await this.prepareSubmittedDocsForSave(original, submitted, typeFields);
+      if (xmlVersion) {
+        for (const doc of docData.preparedDocs) {
+          doc.form_version = xmlVersion;
+        }
+      }
+      return docData;
     });
-  }
-
-  private applyTransitions(preparedDocs) {
-    return this.transitionsService
-      .applyTransitions(preparedDocs.preparedDocs)
-      .then(updatedDocs => {
-        preparedDocs.preparedDocs = updatedDocs;
-        return preparedDocs;
-      });
   }
 }

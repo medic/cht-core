@@ -4,7 +4,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
 const constants = require('@constants');
 
-describe('bfcache', async () => {
+describe('bfcache', () => {
   beforeEach(async () => {
     await loginPage.login({
       username: constants.USERNAME,

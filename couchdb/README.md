@@ -11,7 +11,7 @@ Clustered CouchDB 2.3.1 Docker Image which will support 3 replicas of data store
 
 ## Requirements
 
-Below is a list of required enviroment variables that must be set for the CouchDB Cluster to work appropriately. For production deployments, please export variables before launching any docker-compose templates that contain CouchDB declarations, otherwise default admin credentials will be used.
+Below is a list of required environment variables that must be set for the CouchDB Cluster to work appropriately. For production deployments, please export variables before launching any docker-compose templates that contain CouchDB declarations, otherwise default admin credentials will be used.
 
 ### Environment Variables
 
@@ -52,7 +52,7 @@ This field ensures that the hash that CouchDB generates during bootup for saving
 
 After making your config changes, please run tests to make sure clustering setup and entrypoints are stable. For local use, tag your image and change your docker-compose template declarations to reflect your tag. For publishing a production image, open a PR with your config changes and assign an SRE to review. Currently, we will manually build and publish the image to dockerhub. There is an open issue to handle this via CI.
 
-To test that your configuration changes dont impact entrypoint and clustering setup, please run:
+To test that your configuration changes don't impact entrypoint and clustering setup, please run:
 
 
 1. Run tests for the clustered couchdb nodes scenario

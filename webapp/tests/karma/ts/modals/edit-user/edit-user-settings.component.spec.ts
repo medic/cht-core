@@ -10,6 +10,8 @@ import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settin
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { SetLanguageService, LanguageService } from '@mm-services/language.service';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('EditUserSettingsComponent', () => {
 
@@ -51,11 +53,15 @@ describe('EditUserSettingsComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        declarations: [ EditUserSettingsComponent ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           FormsModule,
+        ],
+        declarations: [
+          EditUserSettingsComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
         ],
         providers: [
           { provide: UserSettingsService, useValue: userSettingsService },

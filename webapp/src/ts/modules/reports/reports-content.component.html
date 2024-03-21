@@ -63,20 +63,20 @@
           <ng-container *ngIf="selection.formatted?.form">
             <li
               *ngFor="let field of (selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data)"
-              class="indent-{{field.depth || 0}}">
+              class="indent-{{field.depth || 0}}" [attr.test-id]="field?.label">
               <label>
-                <span *ngIf="selection.formatted.content_type === 'xml'">{{field.label | translate}}</span>
-                <span *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
+                <span [attr.test-id]="'label'" *ngIf="selection.formatted.content_type === 'xml'">{{field.label | translate}}</span>
+                <span [attr.test-id]="'label'" *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
                 <span class="fa fa-cogs" *ngIf="field.generated" title="{{'Generated report field' | translate }}"></span>
               </label>
               <p *ngIf="!field.imagePath">
                 <span *ngIf="field?.target?.filter" [attr.test-id]="field?.label" [class.disabled]="selectMode">
                   <a (click)="search(field.target.filter)">{{field.value}}</a>
                 </span>
-                <span *ngIf="field?.target?.url">
+                <span [attr.test-id]="'value'" *ngIf="field?.target?.url">
                   <a [routerLink]="field.target.url">{{field.value}}</a>
                 </span>
-                <span *ngIf="!field.target">{{field.value}}</span>
+                <span [attr.test-id]="'value'" *ngIf="!field.target">{{field.value}}</span>
               </p>
               <report-image *ngIf="field.imagePath" [report]="selection.formatted?._id" [path]="field.imagePath">
               </report-image>

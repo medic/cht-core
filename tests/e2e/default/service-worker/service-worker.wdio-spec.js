@@ -4,8 +4,7 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-/* global caches fetch Response navigator */
-
+// global caches fetch Response navigator
 const getCachedRequests = async (raw) => {
   const cacheDetails = await browser.executeAsync(async (callback) => {
     const cacheNames = await caches.keys();
@@ -117,6 +116,7 @@ describe('Service worker cache', () => {
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
+      '/img/cht-logo-light.png',
       '/img/icon.png',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',
@@ -173,6 +173,8 @@ describe('Service worker cache', () => {
   it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
+    await commonPage.sync(true);
+
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
       'User Name': 'Utilizator',
@@ -182,7 +184,6 @@ describe('Service worker cache', () => {
     await waitForLogs.promise;
 
     await commonPage.sync(true);
-    await commonPage.closeReloadModal();
     await commonPage.logout();
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');

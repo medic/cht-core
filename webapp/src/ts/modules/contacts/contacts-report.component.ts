@@ -6,10 +6,11 @@ import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { FormService } from '@mm-services/form.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -21,12 +22,13 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   private globalActions;
   private geoHandle:any;
   private routeSnapshot;
-  private telemetryData:any = {
-    preRender: Date.now()
-  };
+  private trackRender;
+  private trackEditDuration;
+  private trackSave;
+  private trackMetadata = { form: '' };
 
   subscription: Subscription = new Subscription();
-  enketoEdited
+  enketoEdited;
   enketoStatus;
   enketoSaving;
   enketoError;
@@ -40,7 +42,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     private store: Store,
     private formService: FormService,
     private geolocationService: GeolocationService,
-    private telemetryService: TelemetryService,
+    private performanceService: PerformanceService,
     private xmlFormsService: XmlFormsService,
     private translateFromService: TranslateFromService,
     private router: Router,
@@ -53,6 +55,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngOnInit() {
+    this.trackRender = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeToRoute();
 
@@ -124,36 +127,26 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
     return this
       .getContactAndForm()
-      .then(([ contact, form ]) => {
+      .then(([ contact, formDoc ]) => {
         this.globalActions.setEnketoEditedStatus(false);
-        this.globalActions.setTitle(this.translateFromService.get(form.title));
+        this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
         this.setCancelCallback();
 
-        const instanceData = {
-          source: 'contact',
-          contact,
-        };
-        const markFormEdited = this.markFormEdited.bind(this);
-        const resetFormError = this.resetFormError.bind(this);
+        const formContext = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
+        formContext.editedListener = this.markFormEdited.bind(this);
+        formContext.valuechangeListener = this.resetFormError.bind(this);
 
-        return this.formService.render(
-          '#contact-report',
-          form,
-          instanceData,
-          markFormEdited,
-          resetFormError
-        );
+        return this.formService.render(formContext);
       })
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;
-        this.telemetryData.postRender = Date.now();
-        this.telemetryData.form = this.routeSnapshot.params.formId;
-
-        this.telemetryService.record(
-          `enketo:contacts:${this.telemetryData.form}:add:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender
-        );
+        this.trackMetadata.form = this.routeSnapshot.params.formId;
+        this.trackRender?.stop({
+          name: [ 'enketo', 'contacts', this.trackMetadata.form, 'add', 'render' ].join(':'),
+          recordApdex: true,
+        });
+        this.trackEditDuration = this.performanceService.track();
       })
       .catch(err => {
         console.error('Error loading form', err);
@@ -220,11 +213,10 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
 
-    this.telemetryData.preSave = Date.now();
-    this.telemetryService.record(
-      `enketo:contacts:${this.telemetryData.form}:add:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender
-    );
+    this.trackEditDuration?.stop({
+      name: [ 'enketo', 'contacts', this.trackMetadata.form, 'add', 'user_edit_time' ].join(':'),
+    });
+    this.trackSave = this.performanceService.track();
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -235,13 +227,10 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
         this.globalActions.setEnketoEditedStatus(false);
-
-        this.telemetryData.postSave = Date.now();
-
-        this.telemetryService.record(
-          `enketo:contacts:${this.telemetryData.form}:add:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave
-        );
+        this.trackSave?.stop({
+          name: [ 'enketo', 'contacts', this.trackMetadata.form, 'add', 'save' ].join(':'),
+          recordApdex: true,
+        });
 
         this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
       })

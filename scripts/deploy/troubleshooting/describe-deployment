@@ -1,0 +1,28 @@
+#!/bin/bash
+
+function usage() {
+  echo "Usage: $0 <namespace> <deployment>"
+  echo
+  echo "This script describes a Kubernetes deployment in a given namespace."
+  echo
+  echo "Arguments:"
+  echo "  namespace   - The namespace in which the deployment resides."
+  echo "  deployment  - The name of the deployment to describe."
+  echo
+  echo "Example: $0 mynamespace mydeployment"
+  exit 1
+}
+
+if [ "$#" -ne 2 ]; then
+  usage
+fi
+
+NAMESPACE=$1
+DEPLOYMENT=$2
+
+kubectl -n $NAMESPACE describe deployment $DEPLOYMENT
+
+if [ $? -ne 0 ]; then
+  echo "An error occurred while trying to describe deployment $DEPLOYMENT in namespace $NAMESPACE. Please verify that the deployment and namespace exist and that you have permissions to view their contents."
+  exit 1
+fi

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { AccordionModule } from 'ngx-bootstrap/accordion';
 
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { ComponentsModule } from '@mm-components/components.module';
@@ -24,6 +23,7 @@ import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-me
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
+import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 
 
 @NgModule({
@@ -45,6 +45,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     SessionExpiredComponent,
     DatabaseClosedComponent,
     ContactsMutedComponent,
+    BrowserCompatibilityComponent,
   ],
   imports: [
     CommonModule,
@@ -52,7 +53,6 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     TranslateModule,
     FormsModule,
     MatButtonModule,
-    AccordionModule,
     PipesModule,
   ],
   exports: [
@@ -69,6 +69,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     CheckDateComponent,
     EditMessageGroupComponent,
     SessionExpiredComponent,
+    BrowserCompatibilityComponent,
   ]
 })
 export class ModalsModule { }

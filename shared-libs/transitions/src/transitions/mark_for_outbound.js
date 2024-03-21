@@ -9,10 +9,12 @@ const vm = require('vm');
 
 const config = require('../config');
 const db = require('../db');
+const utils = require('../lib/utils');
 const logger = require('../lib/logger');
 const outbound = require('@medic/outbound')(logger);
 const NAME = 'mark_for_outbound';
 const CONFIGURED_PUSHES = 'outbound';
+const TIME_FRAME_DURATION = 5 * 60 * 1000;
 
 const relevantTo = (doc) => {
   const pushes = config.get(CONFIGURED_PUSHES) || {};
@@ -25,6 +27,7 @@ const relevantTo = (doc) => {
     .map(key => [pushes[key], key]);
 };
 
+
 const markForOutbound = (change) => {
   // We're working out the relevant tasks to perform here and not in the exported filter function,
   // because there is no way to communicate between the filter and onMatch functions, and so because
@@ -36,6 +39,11 @@ const markForOutbound = (change) => {
   const failedKeys = [];
 
   for (const [config, configKey] of relevantConfigs) {
+    if (config.cron && !utils.isWithinTimeFrame(config.cron, TIME_FRAME_DURATION)) {
+      failedKeys.push(configKey);
+      continue;
+    }
+
     p = p.then(() => outbound.send(config, configKey, change.doc, change.info))
       .then(sent => {
         if (sent) {

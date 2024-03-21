@@ -23,8 +23,7 @@ describe('ids', () => {
   afterEach(() => sinon.restore());
 
   it('generates an id of the given length', () => {
-    [5, 6, 7, 8, 9, 10, 11, 12, 13].forEach(l =>
-      assert.equal(ids._generate(l).length, l));
+    [5, 6, 7, 8, 9, 10, 11, 12, 13].forEach(l => assert.equal(ids._generate(l).length, l));
   });
 
   it('ids can start with 0, will be correct length', () => {

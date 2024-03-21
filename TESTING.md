@@ -56,7 +56,6 @@ When debugging it can be helpful to disable the headless browser mode so that yo
 
 To run just a single test file in WebdriverIO, update the `specs` config in the `wdio.confi.js` to refer to the desired test file.
 * Default config: [`tests/e2e/default/wdio.confi.js`](tests/e2e/default/wdio.conf.js)
-* Standard config: [`tests/e2e/standard/wdio.confi.js`](tests/e2e/standard/wdio.conf.js)
 
 #### IntelliJ Based
 

@@ -1,0 +1,11 @@
+<mm-modal-layout
+  id="browser-compatibility-modal"
+  [titleKey]="'browser.compatibility.title'"
+  [submitKey]="'browser.compatibility.confirm'"
+  [isFlatButton]="true"
+  [hideCancelButton]="true"
+  (onCancel)="close()"
+  (onSubmit)="close()"
+>
+  <p>{{ 'browser.compatibility.description' | translate }}</p>
+</mm-modal-layout>

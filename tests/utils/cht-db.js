@@ -1,18 +1,47 @@
-const fs = require('fs');
-
 /* global window */
 
-const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
-  const feedBackDocs = await browser.executeAsync(feedBackDocsScript);
-  const flattened = feedBackDocs.flat();
-  const newDocIds = flattened.map(doc => existingDocIds.indexOf(doc.id) === -1);
-  if (newDocIds && newDocIds.length > 0) {
-    fs.writeFileSync(`./tests/logs/feedbackDocs-${testName}.json`, JSON.stringify(flattened, null, 2));
-    return flattened.map(doc => doc.id);
-  }
+const getFeedbackDocsByDb = async () => {
+  return await browser.executeAsync(feedbackDocsReadScript);
 };
 
-const feedBackDocsScript = async (done) => {
+const clearFeedbackDocs = async () => {
+  const feedbackDocs = await getFeedbackDocsByDb();
+  const deletes = {};
+  for (const [dbName, rows] of Object.entries(feedbackDocs)) {
+    deletes[dbName] = rows.map(row => (row.doc._deleted = true) && row.doc);
+  }
+  return await browser.executeAsync(feedbackDocDeleteScript, deletes);
+};
+
+const getFeedbackDocs = async () => {
+  const feedbackDocs = await getFeedbackDocsByDb();
+  return Object
+    .values(feedbackDocs)
+    .flat()
+    .map(row => row.doc);
+};
+
+const feedbackDocDeleteScript = async (feedbackDocs, done) => {
+  const results = {};
+  for (const [dbName, docs] of Object.entries(feedbackDocs)) {
+    // eslint-disable-next-line no-undef
+    const metaDb = new PouchDB(dbName);
+    results[dbName] = await metaDb.bulkDocs(docs);
+  }
+  done(results);
+};
+
+const addReadDocsScript = async () => {
+  const metaDb = window.CHTCore.DB.get({ meta: true });
+  const docs = Array.from({ length: 1000 }).map((_, i) => ({ _id: `read:report:${i}` }));
+  await metaDb.bulkDocs(docs);
+};
+
+const addReadDocs = async () => {
+  return await executeAsync(addReadDocsScript);
+};
+
+const feedbackDocsReadScript = async (done) => {
   // sometimes tests end when the user is _not_ on an angular page
   // eslint-disable-next-line no-undef
   if (!window.PouchDB) {
@@ -22,13 +51,15 @@ const feedBackDocsScript = async (done) => {
   // eslint-disable-next-line no-undef
   const allDbList = await indexedDB.databases();
   const metaDbList = allDbList.filter(db => db.name.includes('pouch_medic-user') && db.name.endsWith('-meta'));
-  done(Promise.all(metaDbList.map(async (db) => {
-    const nameStripped = db.name.replace('_pouch_', '');
+  const feedbackDocs = { };
+  for (const metaDbName of metaDbList) {
+    const nameStripped = metaDbName.name.replace('_pouch_', '');
     // eslint-disable-next-line no-undef
     const metaDb = new PouchDB(nameStripped);
-    const docs = await metaDb.allDocs({ include_docs: true, startkey: 'feedback-', endkey: 'feedback-\ufff0' });
-    return docs.rows;
-  })));
+    const result = await metaDb.allDocs({ include_docs: true, startkey: 'feedback-', endkey: 'feedback-\ufff0' });
+    feedbackDocs[nameStripped] = result.rows;
+  }
+  done(feedbackDocs);
 };
 
 const createDoc = async (doc) => {
@@ -129,7 +160,8 @@ const info = async () => {
 };
 
 module.exports = {
-  feedBackDocs,
+  clearFeedbackDocs,
+  getFeedbackDocs,
   createDoc,
   updateDoc,
   getDoc,
@@ -137,4 +169,5 @@ module.exports = {
   deleteDoc,
   info,
   createDocs,
+  addReadDocs,
 };

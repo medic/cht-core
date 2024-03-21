@@ -10,7 +10,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
 
-describe('Search Reports', async () => {
+describe('Search Reports', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospitalPatient = personFactory.build({ parent: places.get('district_hospital'), patient_id: '1a' });
   const healthCenterPatient = personFactory.build({ parent: places.get('health_center'), patient_id: '2a' });

@@ -9,6 +9,8 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
+const chtDbUtils = require('@utils/cht-db');
+const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');
@@ -27,7 +29,7 @@ describe('Targets', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const clinic = places.get('clinic');
-  
+
   const contact = personFactory.build({
     name: 'CHW',
     phone: '+50683333333',
@@ -60,14 +62,14 @@ describe('Targets', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0' },
-      { title: 'New pregnancies', goal: '20', count: '0' },
-      { title: 'Live births', count: '0' },
-      { title: 'Active pregnancies', count: '0' },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'New pregnancies', goal: '20', count: '0', countNumberColor: TARGET_UNMET_COLOR },
+      { title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0' },
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR },
     ]);
   });
 
@@ -112,5 +114,10 @@ describe('Targets', () => {
     expect(await (await errorStack.isDisplayed())).to.be.true;
     expect(await (await errorStack.getText())).to
       .include('TypeError: Cannot read properties of undefined (reading \'muted\')');
+
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'muted\')');
+    await chtDbUtils.clearFeedbackDocs();
   });
 });

@@ -12,6 +12,17 @@ const URL = `${MARKET_URL}/${BUILDS_SERVER}`;
     throw new Error('error parsing staging.json');
   }
   const db = new PouchDB(URL);
-  await db.put(ddoc);
+  try {
+    await db.put(ddoc);
+  } catch (err) {
+    if (err.status !== 409) {
+      throw err;
+    }
+
+    const existingDoc = await db.get(ddoc._id);
+    ddoc._rev = existingDoc._rev;
+    await db.put(ddoc);
+  }
+
   console.log('DDOC pushed to staging server');
 })();

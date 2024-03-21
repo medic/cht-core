@@ -77,9 +77,9 @@ const excludeSubjects = (authorizationContext, ...subjectIds) => {
 
 // gets the depth of a contact, relative to the user's facility
 const getContactDepth = (authorizationContext, contactsByDepth) => {
-  const depthEntry = contactsByDepth.find(entry =>
-    entry.key.length === 2 &&
-    entry.key[0] === authorizationContext.userCtx.facility_id);
+  const depthEntry = contactsByDepth.find(entry => {
+    return entry.key.length === 2 && entry.key[0] === authorizationContext.userCtx.facility_id;
+  });
   return depthEntry && depthEntry.key[1];
 };
 

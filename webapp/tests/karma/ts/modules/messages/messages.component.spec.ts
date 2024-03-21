@@ -1,4 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -17,6 +19,10 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
+import { SessionService } from '@mm-services/session.service';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -28,6 +34,9 @@ describe('Messages Component', () => {
   let userContactService;
   let fastActionButtonService;
   let authService;
+  let sessionService;
+  let performanceService;
+  let stopPerformanceTrackStub;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -40,6 +49,8 @@ describe('Messages Component', () => {
   };
 
   beforeEach(waitForAsync(() => {
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     modalService = { show: sinon.stub() };
     messageContactService = {
       getList: sinon.stub().resolves([]),
@@ -53,7 +64,12 @@ describe('Messages Component', () => {
       getMessageActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
     };
-    authService = { online: sinon.stub().returns(false) };
+    authService = {
+      online: sinon.stub().returns(false),
+      any: sinon.stub(),
+      has: sinon.stub()
+    };
+    sessionService = { isAdmin: sinon.stub() };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
       { selector: 'getLoadingContent', value: false },
@@ -70,6 +86,8 @@ describe('Messages Component', () => {
           MessagesComponent,
           RelativeDatePipe,
           NavigationComponent,
+          MessagesMoreMenuComponent,
+          FastActionButtonComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -77,11 +95,15 @@ describe('Messages Component', () => {
           { provide: MessageContactService, useValue: messageContactService },
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: exportService, useValue: {} },
+          { provide: SessionService, useValue: sessionService },
           { provide: ModalService, useValue: modalService },
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: PerformanceService, useValue: performanceService },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents()
@@ -110,6 +132,9 @@ describe('Messages Component', () => {
     expect(spyUpdateConversations.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
     expect(spySubscriptionsAdd.callCount).to.equal(3);
+    expect(performanceService.track.calledTwice).to.be.true;
+    expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'message_list:load', recordApdex: true });
   });
 
   it('listTrackBy() should return unique identifier', () => {

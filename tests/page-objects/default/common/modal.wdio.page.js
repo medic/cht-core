@@ -23,11 +23,13 @@ const checkModalHasClosed = async () => {
 const submit = async (timeout) => {
   await (await submitButton()).waitForClickable({ timeout });
   await (await submitButton()).click();
+  await checkModalHasClosed();
 };
 
 const cancel = async (timeout) => {
   await (await cancelButton()).waitForClickable({ timeout });
   await (await cancelButton()).click();
+  await checkModalHasClosed();
 };
 
 module.exports = {

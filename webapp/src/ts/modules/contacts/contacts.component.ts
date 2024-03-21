@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
-import { ServicesActions } from '@mm-actions/services';
 import { ContactsActions } from '@mm-actions/contacts';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -15,7 +14,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { Selectors } from '@mm-selectors/index';
-import { SearchService } from '@mm-services/search.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
@@ -24,6 +23,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -33,7 +33,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
   private contactsActions: ContactsActions;
-  private servicesActions: ServicesActions;
   private listContains;
   private destroyed: boolean;
   private isOnlineOnly: boolean;
@@ -44,8 +43,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   error;
   appending: boolean;
   hasContacts = true;
-  filters:any = {};
-  defaultFilters:any = {};
+  filters: Filter = {};
+  defaultFilters: Filter = {};
   moreItems;
   usersHomePlace;
   contactTypes;
@@ -62,7 +61,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private store: Store,
-    private route: ActivatedRoute,
     private changesService: ChangesService,
     private fastActionButtonService: FastActionButtonService,
     private translateService: TranslateService,
@@ -78,25 +76,29 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private relativeDateService: RelativeDateService,
     private router: Router,
     private exportService: ExportService,
+    private performanceService: PerformanceService,
     private xmlFormsService: XmlFormsService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
-    this.servicesActions = new ServicesActions(store);
   }
 
   ngOnInit() {
+    const trackPerformance = this.performanceService.track();
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
     this.globalActions.clearFilters(); // clear any global filters first
     this.subscribeToStore();
 
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
-      callback: (change) => {
+      callback: async (change) => {
         const limit = this.contactsList.length;
         if (change.deleted) {
           this.contactsActions.removeContactFromList({ _id: change.id });
           this.hasContacts = this.contactsList.length;
+        }
+        if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
+          this.usersHomePlace = await this.getUserHomePlaceSummary(change.id);
         }
         const withIds =
           this.isSortedByLastVisited() &&
@@ -152,6 +154,12 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = false;
         this.appending = false;
         console.error('Error searching for contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop({
+          name: 'contact_list:load',
+          recordApdex: true,
+        });
       });
   }
 
@@ -205,13 +213,14 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private getUserHomePlaceSummary() {
+  private getUserHomePlaceSummary(homePlaceId?: string) {
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        if (userSettings.facility_id) {
-          this.globalActions.setUserFacilityId(userSettings.facility_id);
-          return this.getDataRecordsService.get(userSettings.facility_id);
+        const facilityId = homePlaceId ?? userSettings.facility_id;
+        if (facilityId) {
+          this.globalActions.setUserFacilityId(facilityId);
+          return this.getDataRecordsService.get(facilityId);
         }
       })
       .then((summary) => {
@@ -231,53 +240,83 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private formatContacts(contacts) {
-    return contacts.map(updatedContact => {
-      const contact = { ...updatedContact };
-      const typeId = this.contactTypesService.getTypeId(contact);
-      const type = this.contactTypesService.getTypeById(this.contactTypes, typeId);
-      contact.route = 'contacts';
-      contact.icon = type && type.icon;
-      contact.heading = contact.name || '';
-      contact.valid = true;
-      contact.summary = null;
-      contact.primary = contact.home;
-      contact.dod = contact.date_of_death;
-      if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
-        if (contact.lastVisitedDate === 0) {
-          contact.overdue = true;
-          contact.summary = this.translateService.instant('contact.last.visited.unknown');
-        } else {
-          const now = new Date().getTime();
-          const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
-          contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
-          contact.summary = this.translateService.instant(
-            'contact.last.visited.date',
-            { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
-          );
-        }
+    return contacts.map(contact => this.formatContact(contact));
+  }
 
-        const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
-        contact.visits = {
-          count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
-          summary: this.translateService.instant(
-            'contacts.visits.visits',
-            { VISITS: contact.visitCount }
-          )
-        };
+  private formatContact(updatedContact) {
+    const contact = { ...updatedContact };
+    const type = this.getContactType(contact);
+    this.populateContactDetails(contact, type);
+    this.setVisitDetails(contact, type);
+    return contact;
+  }
 
-        if (contact.visitCountGoal) {
-          if (!contact.visitCount) {
-            contact.visits.status = 'pending';
-          } else if (contact.visitCount < contact.visitCountGoal) {
-            contact.visits.status = 'started';
-          } else {
-            contact.visits.status = 'done';
-          }
-        }
-      }
+  private getContactType(contact) {
+    const typeId = this.contactTypesService.getTypeId(contact);
+    return this.contactTypesService.getTypeById(this.contactTypes, typeId);
+  }
 
-      return contact;
-    });
+  private populateContactDetails(contact, type) {
+    contact.route = 'contacts';
+    contact.icon = type?.icon;
+    contact.heading = contact.name || '';
+    contact.valid = true;
+    contact.summary = null;
+    contact.primary = contact.home;
+    contact.dod = contact.date_of_death;
+  }
+
+  private setVisitDetails(contact, type) {
+    if (!type?.count_visits || !Number.isInteger(contact.lastVisitedDate)) {
+      return;
+    }
+    this.setVisitOverdue(contact);
+    this.setVisitCountDetails(contact);
+    this.evaluateVisitGoal(contact);
+  }
+
+  private setVisitOverdue(contact) {
+    if (contact.lastVisitedDate === 0) {
+      contact.overdue = true;
+      contact.summary = this.translateService.instant('contact.last.visit.unknown');
+      return;
+    }
+    const now = new Date().getTime();
+    const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+    contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
+    contact.summary = this.translateService.instant(
+      'contact.last.visited.date',
+      { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
+    );
+  }
+
+  private setVisitCountDetails(contact) {
+    const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
+    contact.visits = {
+      count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
+      summary: this.translateService.instant(
+        'contacts.visits.visits',
+        { VISITS: contact.visitCount }
+      )
+    };
+  }
+
+  private evaluateVisitGoal(contact) {
+    const { visitCountGoal, visitCount } = contact;
+    if (!visitCountGoal) {
+      return;
+    }
+    contact.visits.status = this.setVisitStatus(visitCount, visitCountGoal);
+  }
+
+  private setVisitStatus(visitCount, visitCountGoal) {
+    if (!visitCount) {
+      return 'pending';
+    }
+    if (visitCount < visitCountGoal) {
+      return 'started';
+    }
+    return 'done';
   }
 
   private getChildren() {
@@ -315,6 +354,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
+    const trackPerformance = this.performanceService.track();
     const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
     if (options.limit < this.PAGE_SIZE) {
       options.limit = this.PAGE_SIZE;
@@ -401,6 +441,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.error = true;
         this.loading = false;
         console.error('Error loading contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: 'contact_list:query', recordApdex: true });
       });
   }
 

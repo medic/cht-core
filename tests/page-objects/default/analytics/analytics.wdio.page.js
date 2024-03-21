@@ -1,3 +1,7 @@
+const TARGET_MET_COLOR = '#76b0b0';
+
+const TARGET_UNMET_COLOR = '#000000';
+
 const goToTargets = () => browser.url('/#/analytics/targets');
 
 const noSelectedTarget = () => $('.empty-selection');
@@ -12,13 +16,15 @@ const targetGoal = (targetElement) => targetElement.$('.body .count .goal');
 
 const targetCountNumber = (targetElement) => targetElement.$('.body .count .number');
 
+const targetCountNumberColor = (targetElement) => targetElement.$('.body .count .number:not(.goal-met)');
+
 const targetProgressNumber = (targetElement) => targetElement.$('.body .target-progress .number');
 
 const targetNumberPercent = (targetElement) => targetElement.$('.body .target-progress .number .value');
 
 const targetNumberPercentCount = (targetElement) => targetElement.$('.body .target-progress .number span:nth-child(2)');
 
-const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
+const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal');
 
 const errorLog = () => $(`.page error-log`);
 
@@ -45,11 +51,16 @@ const getTargetInfo = async (targetElement) => {
   };
 
   if (await (await targetGoal(targetElement)).isExisting()) {
-    target.goal = await (await targetGoalValue(targetElement)).getText();
+    const fullText = await (await targetGoalValue(targetElement)).getText();
+    target.goal = fullText.split(' ').pop();
   }
 
   if (await (await targetCountNumber(targetElement)).isExisting()) {
     target.count = await (await targetCountNumber(targetElement)).getText();
+  }
+
+  if (await (await targetCountNumberColor(targetElement)).isExisting()) {
+    target.countNumberColor = (await (await targetCountNumberColor(targetElement)).getCSSProperty('color')).parsed.hex;
   }
 
   if (await (await targetProgressNumber(targetElement)).isExisting()) {
@@ -80,5 +91,7 @@ module.exports = {
   getErrorLog,
   emptySelectionError,
   emptySelectionNoError,
+  TARGET_MET_COLOR,
+  TARGET_UNMET_COLOR
 };
 

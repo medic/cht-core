@@ -3,7 +3,6 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -28,7 +27,7 @@ describe('FastActionButtonComponent', () => {
 
   beforeEach(async () => {
     router = {
-      events: { pipe: sinon.stub().returns(new Subject()) },
+      events: { pipe: sinon.stub().returns({ subscribe: sinon.stub() }) },
     };
     authService = { has: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };

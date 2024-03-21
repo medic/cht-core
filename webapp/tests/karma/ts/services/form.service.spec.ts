@@ -1,6 +1,6 @@
 import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
 import { toBik_text } from 'bikram-sambat';
@@ -29,15 +29,22 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { cloneDeep } from 'lodash-es';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 
-describe('Enketo service', () => {
+describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
     return {
       _id: `form:${formInternalId}`,
       internalId: formInternalId,
-      _attachments: { xml: { something: true } },
+      _attachments: {
+        xml: { something: true },
+        'form.html': { something: true },
+        'model.xml': { something: true },
+      },
     };
   };
 
@@ -122,6 +129,8 @@ describe('Enketo service', () => {
       get: xmlFormGet,
       getDocAndFormAttachment: xmlFormGetWithAttachment,
       canAccessForm: sinon.stub(),
+      HTML_ATTACHMENT_NAME: 'form.html',
+      MODEL_ATTACHMENT_NAME: 'model.xml',
     };
     window.EnketoForm = EnketoForm;
     window.URL.createObjectURL = createObjectURL;
@@ -212,14 +221,16 @@ describe('Enketo service', () => {
 
   describe('render', () => {
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      sinon.stub(medicXpathExtensions, 'init');
       service = TestBed.inject(FormService);
+      await service.init();
     });
 
     it('renders error when user does not have associated contact', () => {
       UserContact.resolves();
       return service
-        .render(null, 'not-defined')
+        .render(new EnketoFormContext('#', 'report', { }))
         .then(() => {
           expect.fail('Should throw error');
         })
@@ -251,8 +262,10 @@ describe('Enketo service', () => {
       const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
       enketoInit.returns(expectedErrorDetail);
 
+      const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+
       try {
-        await service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData);
+        await service.render(formContext);
         flush();
         expect.fail('Should throw error');
       } catch (error) {
@@ -260,19 +273,20 @@ describe('Enketo service', () => {
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
           {
-            _attachments: { xml: { something: true } },
+            _attachments: {
+              xml: { something: true },
+              'model.xml': { something: true },
+              'form.html': { something: true },
+            },
             _id: 'form:myform',
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false } },
+          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorMessage);
+        expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
@@ -286,7 +300,7 @@ describe('Enketo service', () => {
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves('<xml></xml>');
-      return service.render($('<div></div>'), mockEnketoDoc('myform')).then(() => {
+      return service.render(new EnketoFormContext('#div', 'task', mockEnketoDoc('myform'))).then(() => {
         expect(UserContact.callCount).to.equal(1);
         expect(EnketoPrepopulationData.callCount).to.equal(1);
         expect(FileReader.utf8.callCount).to.equal(2);
@@ -314,7 +328,8 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
       EnketoPrepopulationData.resolves(data);
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
+      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), data);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
         expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
@@ -350,7 +365,8 @@ describe('Enketo service', () => {
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
@@ -404,7 +420,8 @@ describe('Enketo service', () => {
         }
       });
       LineageModelGenerator.contact.resolves({ lineage: [] });
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
@@ -441,7 +458,8 @@ describe('Enketo service', () => {
           name: 'sharon'
         }
       };
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external).to.equal(undefined);
         expect(ContactSummary.callCount).to.equal(0);
@@ -474,7 +492,8 @@ describe('Enketo service', () => {
       };
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
+      const formContext = new EnketoFormContext('div', 'report',  mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(ContactSummary.callCount).to.equal(1);
@@ -494,7 +513,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>first form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
 
-      await service.render($('<div id="first-form"></div>'), mockEnketoDoc('firstForm'));
+      await service.render(new EnketoFormContext('#div', 'report',  mockEnketoDoc('firstForm')));
       expect(form.resetView.notCalled).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
       expect(EnketoPrepopulationData.calledOnce).to.be.true;
@@ -512,7 +531,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>second form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
 
-      await service.render($('<div id="second-form"></div>'), mockEnketoDoc('secondForm'));
+      await service.render(new EnketoFormContext('#div', 'report', mockEnketoDoc('secondForm')));
       expect(form.resetView.calledOnce).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
       expect(EnketoPrepopulationData.calledOnce).to.be.true;
@@ -542,7 +561,7 @@ describe('Enketo service', () => {
       const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
       try {
-        await service.render($('<div></div>'), mockEnketoDoc('myform'), data);
+        await service.render(new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), data));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
@@ -550,16 +569,7 @@ describe('Enketo service', () => {
         expect(UserContact.calledOnce).to.be.true;
         expect(renderForm.notCalled).to.be.true;
         expect(enketoInit.notCalled).to.be.true;
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0]).to.deep.equal([
-          'Failed during the form "myform" rendering : ',
-          'invalid user'
-        ]);
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0]).to.deep.equal([
-          'Failed during the form "myform" rendering : invalid user',
-          false
-        ]);
+        expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
@@ -572,23 +582,27 @@ describe('Enketo service', () => {
       ContactSummary.resolves({ context: { pregnant: false } });
 
       try {
-        await service.render($('<div></div>'), mockEnketoDoc('myform'));
+        await service.render(new EnketoFormContext('div', 'report', mockEnketoDoc('myform')));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
+        expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });
         expect(UserContact.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
           {
-            _attachments: { xml: { something: true } },
+            _attachments: {
+              xml: { something: true },
+              'form.html': { something: true },
+              'model.xml': { something: true },
+            },
             _id: 'form:myform',
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: undefined, contactSummary: undefined },
+          { doc: undefined, contactSummary: undefined, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.notCalled).to.be.true;
-        expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });
         expect(consoleErrorMock.notCalled).to.be.true;
         expect(feedbackService.submit.notCalled).to.be.true;
       }
@@ -1265,6 +1279,294 @@ describe('Enketo service', () => {
             ]);
         });
       });
+    });
+  });
+
+  describe('saveContact', () => {
+    let clock;
+    let extractLineageService;
+    let enketoTranslationService;
+
+    beforeEach(() => {
+      extractLineageService = { extract: sinon.stub() };
+      enketoTranslationService = {
+        contactRecordToJs: sinon.stub(),
+      };
+
+      TestBed.configureTestingModule({
+        providers: [
+          provideMockStore(),
+          {
+            provide: DbService,
+            useValue: {
+              get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
+            }
+          },
+          { provide: ContactSummaryService, useValue: { get: ContactSummary } },
+          { provide: Form2smsService, useValue: { transform: Form2Sms } },
+          { provide: SearchService, useValue: { search: Search } },
+          { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
+          { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
+          { provide: FileReaderService, useValue: FileReader },
+          { provide: UserContactService, useValue: { get: UserContact } },
+          { provide: UserSettingsService, useValue: { getWithLanguage: UserSettings } },
+          { provide: TranslateFromService, useValue: { get: TranslateFrom } },
+          { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
+          { provide: ExtractLineageService, useValue: extractLineageService },
+          { provide: EnketoTranslationService, useValue: enketoTranslationService },
+          { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: ZScoreService, useValue: zScoreService },
+          { provide: CHTScriptApiService, useValue: chtScriptApiService },
+          { provide: TransitionsService, useValue: transitionsService },
+          { provide: TranslateService, useValue: translateService },
+          { provide: TrainingCardsService, useValue: trainingCardsService },
+          { provide: FeedbackService, useValue: feedbackService },
+        ],
+      });
+
+      service = TestBed.inject(FormService);
+    });
+
+    afterEach(() => {
+      clock?.restore();
+    });
+
+    it('fetches and binds db types and minifies string contacts', () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'main', contact: 'abc' }
+      });
+      dbBulkDocs.resolves([]);
+      dbGet.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
+      extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
+
+      return service
+        .saveContact(form, docId, type)
+        .then(() => {
+          assert.equal(dbGet.callCount, 1);
+          assert.equal(dbGet.args[0][0], 'abc');
+
+          assert.equal(dbBulkDocs.callCount, 1);
+
+          const savedDocs = dbBulkDocs.args[0][0];
+
+          assert.equal(savedDocs.length, 1);
+          assert.deepEqual(savedDocs[0].contact, {
+            _id: 'abc',
+            parent: {
+              _id: 'def'
+            }
+          });
+          assert.equal(setLastChangedDoc.callCount, 1);
+          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+        });
+    });
+
+    it('fetches and binds db types and minifies object contacts', () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
+      });
+      dbBulkDocs.resolves([]);
+      dbGet.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
+      extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
+
+      return service
+        .saveContact(form, docId, type)
+        .then(() => {
+          assert.equal(dbGet.callCount, 1);
+          assert.equal(dbGet.args[0][0], 'abc');
+
+          assert.equal(dbBulkDocs.callCount, 1);
+
+          const savedDocs = dbBulkDocs.args[0][0];
+
+          assert.equal(savedDocs.length, 1);
+          assert.deepEqual(savedDocs[0].contact, {
+            _id: 'abc',
+            parent: {
+              _id: 'def'
+            }
+          });
+          assert.equal(setLastChangedDoc.callCount, 1);
+          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+        });
+    });
+
+    it('should include parent ID in repeated children', () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'main', contact: 'NEW'},
+        siblings: {
+          contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
+        },
+        repeats: {
+          child_data: [ { _id: 'kid1', type: 'child', parent: 'PARENT', } ],
+        },
+      });
+
+      extractLineageService.extract.callsFake(contact => {
+        contact.extracted = true;
+        return contact;
+      });
+
+      dbBulkDocs.resolves([]);
+
+      return service
+        .saveContact(form, docId, type)
+        .then(() => {
+          assert.isTrue(dbBulkDocs.calledOnce);
+
+          const savedDocs = dbBulkDocs.args[0][0];
+
+          assert.equal(savedDocs[0]._id, 'main1');
+
+          assert.equal(savedDocs[1]._id, 'kid1');
+          assert.equal(savedDocs[1].parent._id, 'main1');
+          assert.equal(savedDocs[1].parent.extracted, true);
+
+          assert.equal(savedDocs[2]._id, 'sis1');
+          assert.equal(savedDocs[2].parent._id, 'main1');
+          assert.equal(savedDocs[2].parent.extracted, true);
+
+          assert.equal(extractLineageService.extract.callCount, 3);
+
+          assert.equal(setLastChangedDoc.callCount, 1);
+          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+        });
+    });
+
+    it('should copy old properties for existing contacts', () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = 'main1';
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: {
+          _id: 'main1',
+          type: 'contact',
+          contact_type: 'some-contact-type',
+          contact: { _id: 'contact', name: 'Richard' },
+          value: undefined,
+        }
+      });
+      dbBulkDocs.resolves([]);
+      dbGet
+        .withArgs('main1')
+        .resolves({
+          _id: 'main1',
+          name: 'Richard',
+          parent: { _id: 'def' },
+          value: 33,
+          some: 'additional',
+          data: 'is present',
+        })
+        .withArgs('contact')
+        .resolves({ _id: 'contact', name: 'Richard', parent: { _id: 'def' } });
+
+      extractLineageService.extract
+        .withArgs(sinon.match({ _id: 'contact' }))
+        .returns({ _id: 'contact', parent: { _id: 'def' } })
+        .withArgs(sinon.match({ _id: 'def' }))
+        .returns({ _id: 'def' });
+      clock = sinon.useFakeTimers(5000);
+
+      return service
+        .saveContact(form, docId, type)
+        .then(() => {
+          assert.equal(dbGet.callCount, 2);
+          assert.deepEqual(dbGet.args[0], ['main1']);
+          assert.deepEqual(dbGet.args[1], ['contact']);
+
+          assert.equal(dbBulkDocs.callCount, 1);
+
+          const savedDocs = dbBulkDocs.args[0][0];
+
+          assert.equal(savedDocs.length, 1);
+          assert.deepEqual(savedDocs[0], {
+            _id: 'main1',
+            type: 'contact',
+            name: 'Richard',
+            contact_type: 'some-contact-type',
+            contact: { _id: 'contact', parent: { _id: 'def' } },
+            parent: { _id: 'def' },
+            value: 33,
+            some: 'additional',
+            data: 'is present',
+            reported_date: 5000,
+          });
+
+          assert.equal(setLastChangedDoc.callCount, 1);
+          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+        });
+    });
+
+    it('should pass the contacts to transitions service before saving and save modified contacts', () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
+      });
+      dbBulkDocs.resolves([]);
+      dbGet.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
+      extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
+      transitionsService.applyTransitions.callsFake((docs) => {
+        const clonedDocs = cloneDeep(docs); // don't mutate so we can assert
+        clonedDocs[0].transitioned = true;
+        clonedDocs.push({ this: 'is a new doc' });
+        return Promise.resolve(clonedDocs);
+      });
+      clock = sinon.useFakeTimers(1000);
+
+      return service
+        .saveContact(form, docId, type)
+        .then(() => {
+          assert.equal(dbGet.callCount, 1);
+          assert.equal(dbGet.args[0][0], 'abc');
+
+          assert.equal(transitionsService.applyTransitions.callCount, 1);
+          assert.deepEqual(transitionsService.applyTransitions.args[0], [[
+            {
+              _id: 'main1',
+              contact: { _id: 'abc', parent: { _id: 'def' } },
+              contact_type: type,
+              type: 'contact',
+              parent: undefined,
+              reported_date: 1000
+            }
+          ]]);
+
+          assert.equal(dbBulkDocs.callCount, 1);
+          const savedDocs = dbBulkDocs.args[0][0];
+
+          assert.equal(savedDocs.length, 2);
+          assert.deepEqual(savedDocs, [
+            {
+              _id: 'main1',
+              contact: { _id: 'abc', parent: { _id: 'def' } },
+              contact_type: type,
+              type: 'contact',
+              parent: undefined,
+              reported_date: 1000,
+              transitioned: true,
+            },
+            { this: 'is a new doc' },
+          ]);
+          assert.equal(setLastChangedDoc.callCount, 1);
+          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+        });
     });
   });
 });

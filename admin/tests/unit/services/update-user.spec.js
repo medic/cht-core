@@ -6,8 +6,7 @@ describe('UpdateUser service', function() {
   let $http;
 
   beforeEach(function() {
-    $http = sinon.stub();
-    $http.returns(Promise.resolve());
+    $http = sinon.stub().resolves();
     module('adminApp');
     module($provide => {
       $provide.value('$http', $http);
@@ -21,39 +20,39 @@ describe('UpdateUser service', function() {
     KarmaUtils.restore($http);
   });
 
-  it('POSTs changes to the api', () =>
-    service('user', {some: 'updates'})
-      .then(() => {
-        chai.expect($http.callCount).to.equal(1);
-        chai.expect($http.args[0][0]).to.deep.equal({
-          url: '/api/v1/users/user',
-          method: 'POST',
-          data: {some: 'updates'},
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
-      }));
+  it('POSTs changes to the api', () => {
+    return service('user', {some: 'updates'}).then(() => {
+      chai.expect($http.callCount).to.equal(1);
+      chai.expect($http.args[0][0]).to.deep.equal({
+        url: '/api/v1/users/user',
+        method: 'POST',
+        data: {some: 'updates'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+    });
+  });
 
-  it('Uses Basic Auth if provided', () =>
-    service('user', {some: 'updates'}, 'user', 'pass')
-      .then(() => {
-        chai.expect($http.callCount).to.equal(1);
-        chai.expect($http.args[0][0]).to.deep.equal({
-          url: '/api/v1/users/user',
-          method: 'POST',
-          data: {some: 'updates'},
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Basic ' + btoa('user:pass')
-          }
-        });
-      }));
+  it('Uses Basic Auth if provided', () => {
+    return service('user', {some: 'updates'}, 'user', 'pass').then(() => {
+      chai.expect($http.callCount).to.equal(1);
+      chai.expect($http.args[0][0]).to.deep.equal({
+        url: '/api/v1/users/user',
+        method: 'POST',
+        data: {some: 'updates'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Basic ' + btoa('user:pass')
+        }
+      });
+    });
+  });
 });
 
-describe('CreateUser service', function() {
+describe('CreateUser service', () => {
 
   'use strict';
 
@@ -61,8 +60,7 @@ describe('CreateUser service', function() {
   let $http;
 
   beforeEach(function() {
-    $http = sinon.stub();
-    $http.returns(Promise.resolve());
+    $http = sinon.stub().resolves();
     module('adminApp');
     module($provide => {
       $provide.value('$http', $http);
@@ -77,8 +75,9 @@ describe('CreateUser service', function() {
     KarmaUtils.restore($http);
   });
 
-  it('POSTs new users via changes to the api', () =>
-    service.createSingleUser({username: 'user', some: 'updates'})
+  it('POSTs new users via changes to the api', () => {
+    return service
+      .createSingleUser({username: 'user', some: 'updates'})
       .then(() => {
         chai.expect($http.callCount).to.equal(1);
         chai.expect($http.args[0][0]).to.deep.equal({
@@ -90,19 +89,19 @@ describe('CreateUser service', function() {
             'Content-Type': 'application/json'
           }
         });
-      }));
+      });
+  });
 });
 
-describe('DeleteUser service', function() {
+describe('DeleteUser service', () => {
 
   'use strict';
 
   let service;
   let $http;
 
-  beforeEach(function() {
-    $http = sinon.stub();
-    $http.returns(Promise.resolve());
+  beforeEach(() => {
+    $http = sinon.stub().resolves();
     module('adminApp');
     module($provide => {
       $provide.value('$http', $http);
@@ -113,20 +112,20 @@ describe('DeleteUser service', function() {
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     KarmaUtils.restore($http);
   });
 
-  it('DELETEs the given user via the api', () =>
-    service('user')
-      .then(() => {
-        chai.expect($http.callCount).to.equal(1);
-        chai.expect($http.args[0][0]).to.deep.equal({
-          method: 'DELETE',
-          url: '/api/v1/users/user',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-      }));
+  it('DELETEs the given user via the api', () => {
+    return service('user').then(() => {
+      chai.expect($http.callCount).to.equal(1);
+      chai.expect($http.args[0][0]).to.deep.equal({
+        method: 'DELETE',
+        url: '/api/v1/users/user',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+    });
+  });
 });

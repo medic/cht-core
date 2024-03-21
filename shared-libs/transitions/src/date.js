@@ -60,9 +60,8 @@ module.exports = {
       /(second|minute|hour|day|week|month|year)s?/.test(unit)
     ) {
       return moment.duration(Number(value), unit);
-    } else {
-      return null;
     }
+    return null;
   },
 };
 load();

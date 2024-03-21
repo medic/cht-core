@@ -1180,7 +1180,11 @@ describe('XmlForms service', () => {
       const internalId = 'birth';
       const expected = {
         type: 'form',
-        _attachments: { xml: { stub: true } }
+        _attachments: {
+          xml: { stub: true },
+          'model.xml': { stub: true },
+          'form.html': { stub: true },
+        }
       };
       dbQuery.resolves([]);
       dbGet.resolves(expected);
@@ -1196,7 +1200,11 @@ describe('XmlForms service', () => {
       const internalId = 'birth';
       const expected = {
         type: 'form',
-        _attachments: { 'something.xml': { stub: true } }
+        _attachments: {
+          'something.xml': { stub: true },
+          'model.xml': { stub: true },
+          'form.html': { stub: true },
+        }
       };
       dbGet.resolves(expected);
       dbQuery.resolves([]);
@@ -1238,15 +1246,13 @@ describe('XmlForms service', () => {
           expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.match(new RegExp(expectedErrorTitle));
         });
     });
 
     it('returns error when cannot find xform attachment', () => {
       const internalId = 'birth';
-      const expectedErrorTitle = 'Error in XMLFormService : findXFormAttachmentName : ';
-      const expectedErrorDetail = `The form "${internalId}" doesn't have an xform attachment`;
+      const expectedErrorTitle = 'Error in XMLFormService : hasRequiredAttachments : ';
+      const expectedErrorDetail = `The form "${internalId}" doesn't have required attachments`;
       const expected = {
         type: 'form',
         _attachments: { 'something.txt': { stub: true } }
@@ -1264,8 +1270,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1273,7 +1277,11 @@ describe('XmlForms service', () => {
       const internalId = 'birth';
       const expected = {
         internalId,
-        _attachments: { 'something.xml': { stub: true } }
+        _attachments: {
+          'something.xml': { stub: true },
+          'model.xml': { stub: true },
+          'form.html': { stub: true },
+        }
       };
       dbGet.rejects({ status: 404 });
       dbQuery.resolves({
@@ -1323,8 +1331,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1351,8 +1357,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
   });
@@ -1366,7 +1370,11 @@ describe('XmlForms service', () => {
       dbQuery.resolves([]);
       dbGet.resolves({
         _id: 'form:death',
-        _attachments: { 'something.xml': { stub: true } },
+        _attachments: {
+          'something.xml': { stub: true },
+          'model.xml': { stub: true },
+          'form.html': { stub: true },
+        },
         internalId: 'birth'
       });
       dbGetAttachment.rejects({ status: 404 });
@@ -1381,8 +1389,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1393,7 +1399,11 @@ describe('XmlForms service', () => {
       dbQuery.resolves([]);
       dbGet.resolves({
         _id: 'form:death',
-        _attachments: { 'something.xml': { stub: true } },
+        _attachments: {
+          'something.xml': { stub: true },
+          'model.xml': { stub: true },
+          'form.html': { stub: true },
+        },
         internalId: 'birth'
       });
       dbGetAttachment.rejects();
@@ -1408,8 +1418,6 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal(expectedErrorTitle);
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1417,7 +1425,11 @@ describe('XmlForms service', () => {
       const internalId = 'birth';
       const formDoc = {
         _id: 'form:death',
-        _attachments: { xml: { stub: true } },
+        _attachments: {
+          xml: { stub: true },
+          'model.xml': { stub: true },
+          'form.html': { stub: true },
+        },
         internalId: 'birth'
       };
       dbQuery.resolves([]);

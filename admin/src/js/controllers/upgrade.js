@@ -1,4 +1,4 @@
-const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds_4';
+const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds_4';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
@@ -20,14 +20,15 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
     $scope.upgraded = $state.params.upgraded;
-    const buildsDb = pouchDB(BUILDS_DB);
 
     const UPGRADE_URL = '/api/v2/upgrade';
     const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
-    const UPGRADE_CONTAINER_WAIT_PERIOD = 60 * 1000; // 1 minute
+    const UPGRADE_CONTAINER_WAIT_PERIOD = 3 * 60 * 1000; // 3 minutes
+
     let containerWaitPeriodTimeout;
+    let apiBuildsUrl;
 
     const logError = (error, key) => {
       return $translate
@@ -68,7 +69,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const getCurrentUpgrade = () => {
       return $http
         .get(UPGRADE_URL)
-        .then(({ data: { upgradeDoc, indexers } }) => {
+        .then(({ data: { upgradeDoc, indexers, buildsUrl } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
             const expectedVersion = $scope.upgradeDoc.to && $scope.upgradeDoc.to.build;
             getExistingDeployment(true, expectedVersion);
@@ -76,6 +77,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
           $scope.upgradeDoc = upgradeDoc;
           $scope.indexerProgress = indexers;
+          apiBuildsUrl = buildsUrl;
 
           if (upgradeDoc) {
             $timeout(getCurrentUpgrade, UPGRADE_POLL_FREQ);
@@ -109,6 +111,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const loadBuilds = () => {
       const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
+      const buildsDb = pouchDB(apiBuildsUrl || DEFAULT_BUILDS_URL);
 
       // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
       //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
@@ -141,6 +144,11 @@ angular.module('controllers').controller('UpgradeCtrl',
         ])
         .then(([ branches, betas, releases, featureReleases ]) => {
           $scope.versions = { branches, betas, releases, featureReleases };
+          buildsDb.close();
+        })
+        .catch(err => {
+          buildsDb.close();
+          throw err;
         });
     };
 
@@ -223,9 +231,9 @@ angular.module('controllers').controller('UpgradeCtrl',
       return $http
         .post(url, { build })
         .catch(err => {
-          // todo which status do we get with nginx???
           // exclude "50x" like statuses that come from nginx
-          if (err && (!err.status || err.status === 503 || err.status === -1) && action === 'complete') {
+          const requestFailedStatuses = [-1, 502, 503];
+          if (err && (!err.status || requestFailedStatuses.includes(err.status)) && action === 'complete') {
             // refresh page after containers are back up
             return waitUntilApiStarts().then(() => reloadPage());
           }

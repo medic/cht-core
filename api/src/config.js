@@ -11,11 +11,10 @@ const getMessage = (value, locale) => {
     if (value.translations) {
       const translation = _.find(value.translations, { locale: locale });
       return translation?.content;
-    } else {
-      // fallback to old translation definition to support
-      // backwards compatibility with existing forms
-      return value[locale];
     }
+    // fallback to old translation definition to support
+    // backwards compatibility with existing forms
+    return value[locale];
   };
 
   if (!_.isObject(value)) {

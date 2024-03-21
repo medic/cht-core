@@ -2,7 +2,7 @@
 set -e
 
 shutdown -P +60
-mkdir /cht
+mkdir -p /cht
 chmod 777 /cht;
 
 # Install Docker CE
@@ -12,7 +12,7 @@ apt-get install -y \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release \
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo \
@@ -26,8 +26,8 @@ curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compo
 -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
-mkdir /cht/upgrade-service
-mkdir /cht/compose
+mkdir -p /cht/upgrade-service
+mkdir -p /cht/compose
 
 curl -s https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml \
   -o /cht/upgrade-service/docker-compose.yml

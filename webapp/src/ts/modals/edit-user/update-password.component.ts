@@ -66,21 +66,22 @@ export class UpdatePasswordComponent {
     } catch (error) {
       if (error.status === 0) { // Offline status
         const message = await this.translateService.get('online.action.message');
-        await this.setError(ErrorType.SUBMIT, message, error);
+        this.setError(ErrorType.SUBMIT, message);
         return;
       }
       if (error.status === 401) {
         const message = await this.translateService.get('password.incorrect');
-        await this.setError(ErrorType.CURRENT_PASSWORD, message, error);
+        this.setError(ErrorType.CURRENT_PASSWORD, message);
         return;
       }
-      await this.setError(ErrorType.SUBMIT, 'Error updating user', error);
+
+      console.error('Error updating user password', error);
+      this.setError(ErrorType.SUBMIT, 'Error updating user');
     }
   }
 
-  private setError(type: ErrorType, message: string, error?: Record<string, any>) {
+  private setError(type: ErrorType, message: string) {
     this.errors[type] = message;
-    console.error(message, error);
     this.processing = false;
   }
 
@@ -102,7 +103,7 @@ export class UpdatePasswordComponent {
     }
     try {
       const value = await this.translateService.fieldIsRequired(fieldDisplayName);
-      await this.setError(errorType, value);
+      this.setError(errorType, value);
     } catch (err) {
       console.error(`Error translating field display name '${fieldDisplayName}'`, err);
     }
@@ -113,12 +114,12 @@ export class UpdatePasswordComponent {
     const password = this.editUserModel.password || '';
     if (password.length < PASSWORD_MINIMUM_LENGTH) {
       const value = await this.translateService.get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH });
-      await this.setError(ErrorType.PASSWORD, value);
+      this.setError(ErrorType.PASSWORD, value);
       return false;
     }
     if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
       const value = await this.translateService.get('password.weak');
-      await this.setError(ErrorType.PASSWORD, value);
+      this.setError(ErrorType.PASSWORD, value);
       return false;
     }
     return true;
@@ -127,7 +128,7 @@ export class UpdatePasswordComponent {
   private async validateConfirmPasswordMatches() {
     if (this.editUserModel.password !== this.editUserModel.passwordConfirm) {
       const value = await this.translateService.get('Passwords must match');
-      await this.setError(ErrorType.PASSWORD, value);
+      this.setError(ErrorType.PASSWORD, value);
       return false;
     }
     return true;

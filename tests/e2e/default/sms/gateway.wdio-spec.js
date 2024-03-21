@@ -16,6 +16,7 @@ const pollSmsApi = body => {
 describe('sms-gateway api', () => {
   before(async () => {
     await loginPage.cookieLogin();
+    await commonElements.waitForPageLoaded();
   });
 
   describe('- gateway submits new WT sms messages', () => {

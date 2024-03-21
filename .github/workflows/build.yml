@@ -16,6 +16,7 @@ env:
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
+  NODE_VERSION: '20.11'
 
 jobs:
 
@@ -24,15 +25,20 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+    - name: Install bats
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bats
+
     - name: Login to Docker Hub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -42,15 +48,15 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         mask-password: 'true'
 
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
       with:
-        node-version: 16.x
+        node-version: ${{ env.NODE_VERSION }}
     - name: Couch Start
       run: ./scripts/ci/couch-start
     - name: Create logs directory
@@ -58,14 +64,25 @@ jobs:
     - run: npm ci
     - name: Compile
       run: npm run ci-compile
+    - name: Setup QEMU
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: docker/setup-qemu-action@v3
+    - name: Setup Buildx
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: docker/setup-buildx-action@v3
     - name: Publish for testing
       run: npm run publish-for-testing
     - name: Upload docker images as artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cht-images
         path: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Search-Replace PR Body
+      if: ${{ env.INTERNAL_CONTRIBUTOR && github.event_name == 'pull_request' }}
+      uses: ./.github/actions/update-staging-url-placeholders
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
   config-tests:
     needs: build
@@ -74,29 +91,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['test-config-standard', 'test-config-default']
+        cmd: ['test-config-default']
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
       with:
-        node-version: 16.x
+        node-version: ${{ env.NODE_VERSION }}
     - run: npm ci
     - name: Run Tests
       run: npm run ${{ matrix.cmd }}
 
+  test-cht-form:
+    needs: build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: sudo apt-get install -y xsltproc
+      - run: npm ci
+      - name: Build cht-form Web Component
+        run: npm run build-cht-form
+      - name: Run Tests
+        run: npm run wdio-cht-form
+
   tests:
     needs: build
-    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}
+    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
     runs-on: ubuntu-22.04
     env:
-      NODE: 16.x
+      CHROME_VERSION: ${{ matrix.chrome-version }}
 
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
+        chrome-version: ['90', 'latest']
         suite: [all]
         include:
           - cmd: ci-webdriver-default
@@ -109,17 +144,25 @@ jobs:
             suite: lowLevel
           - cmd: ci-webdriver-default
             suite: workflows
-
+        exclude: # temporary until all suites run on Chrome 90
+          - cmd: ci-integration-all
+            chrome-version: 90
+          - cmd: ci-integration-sentinel
+            chrome-version: 90
+          - cmd: ci-webdriver-default-mobile
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            chrome-version: 90
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -129,17 +172,17 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         mask-password: 'true'
 
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
       with:
-        node-version: 16.x
-    - uses: actions/checkout@v3
+        node-version: ${{ env.NODE_VERSION }}
+    - uses: actions/checkout@v4
     - name: Download docker images artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cht-images
         path: images/
@@ -150,7 +193,7 @@ jobs:
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
     - name: Set ENV
-      run: |        
+      run: |
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
@@ -160,7 +203,7 @@ jobs:
       run:  npm install -g cht-conf
     - run: npm ci
     - name: Fetch allure history
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: 'medic/build-history-data'
         path: 'build-history-data'
@@ -169,12 +212,18 @@ jobs:
       run: |
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
-    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }}
+    - name: Install Chrome 90
+      if: ${{matrix.chrome-version=='90'}}
+      run: |
+        wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i "google-chrome-stable_current_amd64.deb"
+        npm install chromedriver@^90.0.1
+    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
-    
+
     - name: Fetch allure history
       if: always()
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: 'medic/build-history-data'
         path: 'build-history-data-new'
@@ -195,7 +244,7 @@ jobs:
         force: true
     - name: Fetch report repo
       if: always()
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: 'medic/build-history'
         path: 'build-history'
@@ -215,7 +264,7 @@ jobs:
         repository: 'medic/build-history'
         force: true
     - name: Archive Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
         path: |
@@ -226,21 +275,19 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests, config-tests]
+    needs: [tests, config-tests, test-cht-form]
     name: Publish branch build
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
-    - name: Delete image artifacts
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-      uses: geekyeggo/delete-artifact@v1
-      with:
-        name: cht-images
-
+    - name: Install regctl
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: regclient/actions/regctl-installer@main
+      
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -248,13 +295,13 @@ jobs:
     - name: Login to Amazon ECR
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         mask-password: 'true'
 
     - name: Configure AWS credentials Public
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -262,13 +309,14 @@ jobs:
     - name: Login to Public Amazon ECR
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr-public
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
       with:
         registry-type: public
         mask-password: 'true'
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Publish
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       run: |
         cd scripts/ci
         npm ci
@@ -284,7 +332,7 @@ jobs:
     steps:
       - name: Configure AWS credentials Public
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -292,11 +340,11 @@ jobs:
       - name: Login to Public Amazon ECR
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
         id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: public
           mask-password: 'true'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
@@ -304,9 +352,10 @@ jobs:
       - name: Create logs directory
         run: mkdir tests/logs
       - name: Upgrade
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
         run: npm run upgrade-wdio
       - name: Archive Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Upgrade
           path: |

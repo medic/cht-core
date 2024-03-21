@@ -5,12 +5,22 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 
 const RulesEmitter = require('../src/rules-emitter');
-const refreshRulesEmissionsContact = rewire('../src/refresh-rules-emissions');
+let refreshRulesEmissionsContact;
 let clock;
+const NOW = 100000;
 
 describe('refresh-rules-emissions', () => {
+  beforeEach(() => {
+    clock = sinon.useFakeTimers(NOW);
+    refreshRulesEmissionsContact = rewire('../src/refresh-rules-emissions');
+  });
+
+  afterEach(() => {
+    clock.restore();
+    sinon.restore();
+  });
+
   describe('with mock emitter', () => {
-    const NOW = 100000;
     let rulesEmitter;
 
     beforeEach(() => {
@@ -18,7 +28,6 @@ describe('refresh-rules-emissions', () => {
         getEmissionsFor: sinon.stub(),
       };
       refreshRulesEmissionsContact.__set__('rulesEmitter', rulesEmitter);
-      clock = sinon.useFakeTimers(NOW);
     });
 
     afterEach(() => {
@@ -89,7 +98,7 @@ describe('refresh-rules-emissions', () => {
     it('user rewinds system clock', async () => {
       const contactDoc = { _id: 'contact' };
 
-      clock = sinon.useFakeTimers(moment('2000-01-01').valueOf());
+      clock.setSystemTime(moment('2000-01-01').valueOf());
       const emission = mockEmission(0);
       rulesEmitter.getEmissionsFor.resolves({ tasks: [emission], targets: [] });
       const actual = await refreshRulesEmissionsContact({ contactDocs: [contactDoc] });
@@ -97,7 +106,7 @@ describe('refresh-rules-emissions', () => {
       expect(actual.updatedTaskDocs[0].authoredOn).to.eq(Date.now());
 
       // rewind one year
-      clock = sinon.useFakeTimers(moment('1999-01-01').valueOf());
+      clock.setSystemTime(moment('1999-01-01').valueOf());
       const earlierEmission = mockEmission(0);
       rulesEmitter.getEmissionsFor.resolves({ tasks: [earlierEmission], targets: [] });
       const earlierActual = await refreshRulesEmissionsContact(
@@ -120,7 +129,7 @@ describe('refresh-rules-emissions', () => {
       });
 
       // one day later, when viewed the reports move into the time window and become "ready"
-      clock = sinon.useFakeTimers(NOW + MS_IN_DAY);
+      clock.setSystemTime(NOW + MS_IN_DAY);
       const actual = await refreshRulesEmissionsContact(
         { contactDocs: [contactDoc], taskDocs: draftStateTasks.updatedTaskDocs }
       );
@@ -147,7 +156,10 @@ describe('refresh-rules-emissions', () => {
       { emission: { _id: emissionId }, stateHistory: [] },
       augment
     );
-    const getCancellationUpdates = refreshRulesEmissionsContact.__get__('getCancellationUpdates');
+    let getCancellationUpdates;
+    beforeEach(() => {
+      getCancellationUpdates = refreshRulesEmissionsContact.__get__('getCancellationUpdates');
+    });
 
     it('same emissions yields no cancellations', () => {
       const taskDoc = mockTaskDoc('1');
@@ -180,7 +192,10 @@ describe('refresh-rules-emissions', () => {
       { emission: { _id: emissionId }, stateHistory: [], authoredOn: authoredOn || moment().valueOf() },
       augment
     );
-    const disambiguateTaskDocs = refreshRulesEmissionsContact.__get__('disambiguateTaskDocs');
+    let disambiguateTaskDocs;
+    beforeEach(() => {
+      disambiguateTaskDocs = refreshRulesEmissionsContact.__get__('disambiguateTaskDocs');
+    });
 
     it('should map tasks to emission ids when there are no duplicates', () => {
       const now = moment.valueOf();
@@ -221,7 +236,6 @@ describe('refresh-rules-emissions', () => {
     });
 
     it('should determine winners and duplicates when duplicates are present', () => {
-      clock = sinon.useFakeTimers();
       const now = moment().valueOf();
 
       const tasks = [
@@ -258,7 +272,10 @@ describe('refresh-rules-emissions', () => {
       { emission: { _id: emissionId }, stateHistory: [], authoredOn: authoredOn || moment().valueOf() },
       augment
     );
-    const getDeduplicationUpdates = refreshRulesEmissionsContact.__get__('getDeduplicationUpdates');
+    let getDeduplicationUpdates;
+    beforeEach(() => {
+      getDeduplicationUpdates = refreshRulesEmissionsContact.__get__('getDeduplicationUpdates');
+    });
 
     it('should add Canceled + duplicate state and reason', () => {
       const tasks = [
@@ -313,18 +330,16 @@ describe('refresh-rules-emissions', () => {
       const isInitialized = RulesEmitter.initialize(engineSettings(), userDoc);
       expect(isInitialized).to.be.true;
       refreshRulesEmissionsContact.__set__('rulesEmitter', RulesEmitter);
-      clock = sinon.useFakeTimers(NOW);
+      clock.setSystemTime(NOW);
     });
 
     afterEach(() => {
       RulesEmitter.shutdown();
-      clock.restore();
-      sinon.restore();
     });
 
     it('cht scenario', async () => {
       const startDate = moment('2000-01-01');
-      clock = sinon.useFakeTimers(startDate.valueOf());
+      clock.setSystemTime(startDate.valueOf());
 
       const refreshData = {
         contactDocs: [chtDocs.contact],
@@ -348,7 +363,7 @@ describe('refresh-rules-emissions', () => {
         taskDocs: firstResult.updatedTaskDocs,
       };
       firstResult.updatedTaskDocs[0]._rev = '1_';
-      clock = sinon.useFakeTimers(startDate.valueOf() + 1000);
+      clock.setSystemTime(startDate.valueOf() + 1000);
       const secondResult = await refreshRulesEmissionsContact(secondData);
       expect(secondResult.updatedTaskDocs.length).to.eq(1);
       expect(secondResult.updatedTaskDocs[0]).to.nested.include({
@@ -369,7 +384,7 @@ describe('refresh-rules-emissions', () => {
         })],
         taskDocs: secondResult.updatedTaskDocs,
       };
-      clock = sinon.useFakeTimers(startDate.clone().add(1, 'year').valueOf());
+      clock.setSystemTime(startDate.clone().add(1, 'year').valueOf());
       const thirdResult = await refreshRulesEmissionsContact(thirdData);
       expect(firstResult.updatedTaskDocs[0]._id).to.not.eq(thirdResult.updatedTaskDocs[0]._id);
       expect(thirdResult.updatedTaskDocs[0]._rev).to.be.undefined;
@@ -394,7 +409,7 @@ describe('refresh-rules-emissions', () => {
       };
 
       const startDate = moment('2000-01-01');
-      clock = sinon.useFakeTimers(startDate.valueOf());
+      clock.setSystemTime(startDate.valueOf());
 
       const refreshData = {
         contactDocs: [chtDocs.contact],
@@ -412,7 +427,7 @@ describe('refresh-rules-emissions', () => {
       });
 
       // two seconds later, we get the same task from another device
-      clock = sinon.useFakeTimers(startDate.valueOf() + 2000);
+      clock.setSystemTime(startDate.valueOf() + 2000);
 
       const externalTask1 = dupeTaskWithDifferntTimestamp(firstResult.updatedTaskDocs[0], startDate.valueOf() + 1000);
       const externalTask2 = dupeTaskWithDifferntTimestamp(firstResult.updatedTaskDocs[0], startDate.valueOf() + 200);
@@ -440,7 +455,7 @@ describe('refresh-rules-emissions', () => {
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
 
-      clock = sinon.useFakeTimers(startDate.valueOf() + 3000);
+      clock.setSystemTime(startDate.valueOf() + 3000);
       const thirdData = {
         contactDocs: [chtDocs.contact],
         reportDocs: [chtDocs.pregnancyReport],

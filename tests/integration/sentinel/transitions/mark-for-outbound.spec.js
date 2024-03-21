@@ -23,7 +23,7 @@ mockApp.post(WORKING_ENDPOINT, (req, res) => {
 
 mockApp.post(BROKEN_ENDPOINT, (req, res) => {
   brokenEndpointRequests.push(req.body);
-  res.status(500).json({error: 500, some: 'error response'}).end();
+  res.status(500).json({ error: 500, some: 'error response' }).end();
 });
 
 const startMockApp = () => {
@@ -70,7 +70,7 @@ const wipeTasks = () => getTasks()
       headers: {
         'Content-Type': 'application/json'
       },
-      body: {docs: tasks}
+      body: { docs: tasks }
     });
   });
 
@@ -80,7 +80,9 @@ describe('mark_for_outbound', () => {
 
   describe('when external server is up', () => {
     beforeEach(() => startMockApp());
-    afterEach(() => stopMockApp());
+    afterEach(() => {
+      stopMockApp();
+    });
 
     it('correctly creates and sends an outbound request immediately', () => {
       const report = makeReport();
@@ -128,6 +130,111 @@ describe('mark_for_outbound', () => {
             'completed_tasks[0].type': 'outbound',
             'completed_tasks[0].name': 'test'
           });
+        });
+    });
+
+    it('correctly creates and sends outbound request immediately with due "cron"', () => {
+      const sentinelDate = utils.getSentinelDate();
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            cron: sentinelDate.get('minute') + ' ' + sentinelDate.get('hour') + ' * * *',
+            destination: {
+              base_url: utils.hostURL(server.address().port),
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              rev: 'doc._rev'
+            }
+          }
+        }
+      };
+
+      return utils
+        .updateSettings(config, 'sentinel')
+        .then(() => utils.saveDoc(report))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          expect(tasks).to.be.empty;
+        })
+        .then(() => utils.getDoc(report._id))
+        .then(report => {
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
+          expect(workingEndpointRequests[0]).to.deep.equal({
+            id: report._id,
+            rev: report._rev
+          });
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id,
+            'completed_tasks[0].type': 'outbound',
+            'completed_tasks[0].name': 'test'
+          });
+        });
+    });
+
+    it('correctly skips outbound request immediately with not due "cron"', () => {
+      const sentinelDate = utils.getSentinelDate();
+      const minute = sentinelDate.get('minute');
+      const hour = sentinelDate.get('hour') + 1;
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            cron: minute + ' ' + hour + ' * * *',
+            destination: {
+              base_url: utils.hostURL(server.address().port),
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              rev: 'doc._rev'
+            }
+          }
+        }
+      };
+
+      return utils
+        .updateSettings(config, 'sentinel')
+        .then(() => utils.saveDoc(report))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          expect(tasks).to.have.lengthOf(1);
+          expect(tasks[0]).to.include({
+            _id: `task:outbound:${report._id}`,
+            type: 'task:outbound',
+            doc_id: report._id
+          });
+          expect(tasks[0].queue).to.deep.equal(['test']);
+        })
+        .then(() => {
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.be.empty;
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id
+          });
+          expect(infoDoc).to.not.have.property('completed_tasks');
+
         });
     });
 

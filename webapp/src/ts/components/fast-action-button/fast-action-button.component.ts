@@ -136,7 +136,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
 
   trackById: TrackByFunction<FastAction> = (idx, action: FastAction) => {
     return action.id;
-  }
+  };
 }
 
 /**

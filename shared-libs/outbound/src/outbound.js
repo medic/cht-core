@@ -131,10 +131,9 @@ const sendPayload = (payload, config) => {
               Authorization: value
             };
           });
-      } else {
-        logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
-        throw new OutboundError(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
       }
+      logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
+      throw new OutboundError(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
     }
 
     if (authConf.type.toLowerCase() === 'muso-sih') {

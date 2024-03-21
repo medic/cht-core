@@ -28,12 +28,12 @@ const shouldGenerateAssessmentSurvey = (person) => {
 
 const getAgeInYears = (subtype) => {
   if (subtype === memberChild) {
-    return Faker.faker.datatype.number({ min: 0, max: 5 });
+    return Faker.faker.number.int({ min: 0, max: 5 });
   }
   if (subtype === memberEligibleWoman || isStaff(subtype)) {
-    return Faker.faker.datatype.number({ min: 12, max: 52 });
+    return Faker.faker.number.int({ min: 12, max: 52 });
   }
-  return Faker.faker.datatype.number({ min: 6, max: 80 });
+  return Faker.faker.number.int({ min: 6, max: 80 });
 };
 
 const person = () => {
@@ -46,10 +46,10 @@ const person = () => {
       if (subtype === memberEligibleWoman) {
         return 'female';
       }
-      return Faker.faker.name.gender(true).toLowerCase();
+      return Faker.faker.person.gender(true).toLowerCase();
     })
-    .attr('name', Faker.faker.name.findName())
-    .attr('short_name', Faker.faker.name.firstName())
+    .attr('name', Faker.faker.person.firstName())
+    .attr('short_name', Faker.faker.person.firstName())
     .attr('date_of_birth_method', Faker.faker.helpers.arrayElement([approxDateOfBirthMethod, 'calendar']))
     .attr('age_years', ['subtype', 'date_of_birth_method'], (subtype, dateOfBirthMethod) => {
       if (dateOfBirthMethod === approxDateOfBirthMethod) {
@@ -58,7 +58,7 @@ const person = () => {
     })
     .attr('age_months', ['date_of_birth_method'], (dateOfBirthMethod) => {
       if (dateOfBirthMethod === approxDateOfBirthMethod) {
-        return Faker.faker.datatype.number({ min: 0, max: 12 });
+        return Faker.faker.number.int({ min: 0, max: 12 });
       }
     })
     .attr('date_of_birth',
@@ -72,16 +72,16 @@ const person = () => {
       })
     .attr('phone', ['subtype'], (subtype) => {
       if (subtype !== memberChild) {
-        return Faker.faker.phone.phoneNumber(phoneNumberFormat);
+        return Faker.faker.phone.number(phoneNumberFormat);
       }
     })
     .attr('phone_alternate', ['subtype'], (subtype) => {
       if (subtype !== memberChild) {
-        return Faker.faker.phone.phoneNumber(phoneNumberFormat);
+        return Faker.faker.phone.number(phoneNumberFormat);
       }
     })
     .attr('notes', Faker.faker.lorem.sentence())
-    .attr('patient_id', Faker.faker.datatype.number({ min: 10000, max: 99999 }))
+    .attr('patient_id', Faker.faker.number.int({ min: 10000, max: 99999 }))
     .attr('reported_date', () => Date.now())
     .attr('has_disability', Faker.faker.datatype.boolean())
     .attr('family_member_type', ['subtype'], (subtype) => {
@@ -89,7 +89,7 @@ const person = () => {
         return subtype;
       }
     })
-    .attr('other_name', Faker.faker.name.firstName())
+    .attr('other_name', Faker.faker.person.firstName())
     .attr('patient_name', ['name'], (name) => {
       return name;
     })

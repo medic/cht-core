@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
 import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
 
@@ -10,11 +9,11 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
-import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -25,8 +24,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     private changesService: ChangesService,
     private contactTypesService: ContactTypesService,
     private rulesEngineService: RulesEngineService,
-    private telemetryService: TelemetryService,
-    private route: ActivatedRoute,
+    private performanceService: PerformanceService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private userContactService: UserContactService,
     private sessionService: SessionService,
@@ -38,6 +36,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   subscription = new Subscription();
   private tasksActions;
   private globalActions;
+  private trackPerformance;
 
   tasksList;
   selectedTask;
@@ -96,6 +95,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.trackPerformance = this.performanceService.track();
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
@@ -105,7 +105,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
 
     this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
-
     this.refreshTasks();
   }
 
@@ -137,10 +136,6 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private async refreshTasks() {
     try {
-      const telemetryData: any = {
-        start: Date.now(),
-      };
-
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
@@ -159,20 +154,21 @@ export class TasksComponent implements OnInit, OnDestroy {
 
       this.tasksActions.setTasksList(hydratedTasks);
 
-      if (!this.tasksLoaded) {
-        this.tasksActions.setTasksLoaded(true);
-      }
-
-      telemetryData.end = Date.now();
-      const telemetryEntryName = !this.tasksLoaded ? `tasks:load` : `tasks:refresh`;
-      this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
-
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
       this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
+    } finally {
+      const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
+      this.trackPerformance?.stop({
+        name: performanceName,
+        recordApdex: true,
+      });
+      if (!this.tasksLoaded) {
+        this.tasksActions.setTasksLoaded(true);
+      }
     }
   }
 
@@ -185,7 +181,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [...new Set(taskDocs.map(task => task.owner))];
+    const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
     return this.lineageModelGeneratorService
       .reportSubjects(ids)
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));

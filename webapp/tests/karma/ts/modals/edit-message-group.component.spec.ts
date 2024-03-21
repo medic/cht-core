@@ -7,6 +7,8 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 describe('EditMessageGroupComponent', () => {
   let component: EditMessageGroupComponent;
@@ -28,7 +30,11 @@ describe('EditMessageGroupComponent', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ EditMessageGroupComponent ],
+        declarations: [
+          EditMessageGroupComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
         providers: [
           { provide: MatDialogRef, useValue: matDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: {} },

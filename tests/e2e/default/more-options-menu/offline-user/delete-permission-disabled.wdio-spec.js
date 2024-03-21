@@ -51,7 +51,7 @@ const smsReport = reportFactory
     { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id }, },
   );
 
-describe('- DELETE permissions disabled', async () => {
+describe('- DELETE permissions disabled', () => {
   let xmlReportId;
   let smsReportId;
   before(async () => {

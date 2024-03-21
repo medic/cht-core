@@ -90,9 +90,8 @@ export class SendMessageService {
           return this
             .hydrate(primaryContacts)
             .then(primaries => _flattenDeep([ this.mapDescendants(contacts), primaries ]));
-        } else {
-          return this.mapDescendants(contacts);
         }
+        return this.mapDescendants(contacts);
       });
   }
 

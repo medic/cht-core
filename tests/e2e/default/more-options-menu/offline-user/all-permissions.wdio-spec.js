@@ -53,7 +53,7 @@ const smsReport = reportFactory
     { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id }, },
   );
 
-describe('More Options Menu - Offline User', async () => {
+describe('More Options Menu - Offline User', () => {
   let xmlReportId;
   let smsReportId;
   before(async () => {
@@ -68,7 +68,7 @@ describe('More Options Menu - Offline User', async () => {
 
   afterEach(async () => await commonPage.goToBase());
 
-  describe('all permissions enabled', async () => {
+  describe('all permissions enabled', () => {
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await sms.sendSms('testing', contact.phone);
@@ -118,7 +118,7 @@ describe('More Options Menu - Offline User', async () => {
     });
   });
 
-  describe('all permissions disabled', async () => {
+  describe('all permissions disabled', () => {
     before(async () => {
       const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all',
         'can_export_contacts', 'can_export_messages',

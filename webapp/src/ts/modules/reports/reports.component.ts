@@ -7,9 +7,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
-import { ServicesActions } from '@mm-actions/services';
 import { ChangesService } from '@mm-services/changes.service';
-import { SearchService } from '@mm-services/search.service';
+import { Filter, SearchService } from '@mm-services/search.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
@@ -24,7 +23,7 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { ModalService } from '@mm-services/modal.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { FeedbackService } from '@mm-services/feedback.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
@@ -37,11 +36,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
-  private servicesActions: ServicesActions;
   private listContains;
   private destroyed: boolean;
   private isOnlineOnly = false;
   private canDefaultFilter = false;
+  private trackInitialLoadPerformance;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -53,7 +52,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
   appending = false;
   moreItems: boolean;
-  filters:any = {};
+  filters: Filter = {};
   hasReports: boolean;
   selectMode = false;
   selectModeAvailable = false;
@@ -79,20 +78,20 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private exportService:ExportService,
     private ngZone:NgZone,
     private userContactService:UserContactService,
-    private feedbackService:FeedbackService,
     private sessionService:SessionService,
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
     private fastActionButtonService:FastActionButtonService,
     private xmlFormsService:XmlFormsService,
+    private performanceService: PerformanceService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
-    this.servicesActions = new ServicesActions(store);
   }
 
   ngOnInit() {
+    this.trackInitialLoadPerformance = this.performanceService.track();
     this.isOnlineOnly = this.authService.online(true);
     this.subscribeToStore();
     this.subscribeToXmlFormsService();
@@ -267,6 +266,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private query(opts?) {
+    const queryPerformance = this.performanceService.track();
     const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
     if (options.limit < PAGE_SIZE) {
       options.limit = PAGE_SIZE;
@@ -317,7 +317,19 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.errorSyntax = true;
         }
         console.error('Error loading messages', err);
+      })
+      .finally(() => {
+        queryPerformance?.stop({ name: 'report_list:query', recordApdex: true });
+        this.recordInitialLoadPerformance();
       });
+  }
+
+  private async recordInitialLoadPerformance() {
+    if (!this.trackInitialLoadPerformance) {
+      return;
+    }
+    await this.trackInitialLoadPerformance.stop({ name: 'report_list:load', recordApdex: true });
+    this.trackInitialLoadPerformance = null;
   }
 
   private initScroll() {
@@ -335,14 +347,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       const userContact = await this.userContactService.get();
       return userContact?.parent;
     } catch (error) {
-      this.feedbackService.submit(error.message);
+      console.error(error.message, error);
     }
   }
 
   private doInitialSearch() {
     if (this.canDefaultFilter && this.userParentPlace?._id) {
       // The facility filter will trigger the search.
-      this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace._id });
+      this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace });
       return;
     }
 
