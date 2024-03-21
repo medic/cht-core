@@ -195,7 +195,6 @@ describe('TasksComponent', () => {
     });
 
     expect(component.loading).to.be.false;
-    expect(component.tasksReady).to.be.true;
     expect(component.tasksDisabled).to.be.false;
     expect(component.hasTasks).to.be.true;
     expect(!!component.errorStack).to.be.false;

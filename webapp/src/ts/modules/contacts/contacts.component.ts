@@ -40,7 +40,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   fastActionList: FastAction[];
   contactsList;
   loading = false;
-  contactsReady = false;
   error;
   appending: boolean;
   hasContacts = true;
@@ -431,7 +430,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.moreItems = updatedContacts.length >= options.limit;
         this.hasContacts = !!this.contactsList.length;
-        this.contactsReady = true;
         this.loading = false;
         this.appending = false;
         this.error = false;
@@ -441,7 +439,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(err => {
         this.error = true;
-        this.contactsReady = true;
         this.loading = false;
         console.error('Error loading contacts', err);
       })

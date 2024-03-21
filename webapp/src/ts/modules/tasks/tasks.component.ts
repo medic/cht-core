@@ -42,7 +42,6 @@ export class TasksComponent implements OnInit, OnDestroy {
   selectedTask;
   errorStack;
   hasTasks;
-  tasksReady;
   loading;
   tasksDisabled;
   currentLevel;
@@ -154,7 +153,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       }
 
       this.tasksActions.setTasksList(hydratedTasks);
-      this.tasksReady = true;
+      this.loading = false;
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
