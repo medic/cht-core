@@ -136,7 +136,7 @@ describe('ContactSummary service', () => {
     });
   });
 
-  it('contact summary throws an error', () => {
+  it('does crash when contact summary throws an error', () => {
     const consoleErrorMock = sinon.stub(console, 'error');
     const script = `return contact.some.field;`;
     const contact = {};

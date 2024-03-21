@@ -194,6 +194,9 @@ export class ContactsEffects {
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
+      .catch(error => {
+        return { errorStack: error.stack };
+      })
       .then(summary => {
         return this
           .verifySelectedContactNotChanged(contactId)
