@@ -1616,7 +1616,6 @@ describe('Users API', () => {
         });
       }
 
-      const before = Date.now();
       await Promise.all(savedUsers.map(async (savedUser) => {
         let filteredUsers;
 
@@ -1653,7 +1652,6 @@ describe('Users API', () => {
           expect(filteredUsers[0]).to.deep.equal(savedUser);
         }
       }));
-      console.log(`took ${(Date.now() - before)}ms`);
     });
   });
 });
