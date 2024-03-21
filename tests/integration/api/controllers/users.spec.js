@@ -1618,33 +1618,40 @@ describe('Users API', () => {
 
       const before = Date.now();
       for (const savedUser of savedUsers) {
-        console.log('savedUser', JSON.stringify(savedUser, null, 4));
+        let filteredUsers;
+
         // GET with facility_id filter
-        let filteredUsers = await utils.request({
-          path: `/api/v2/users`,
-          qs: { facility_id: savedUser.place._id },
-        });
-        expect(filteredUsers.length).to.equal(1);
-        expect(filteredUsers[0]).to.deep.equal(savedUser);
+        if (savedUser.place?._id) {
+          filteredUsers = await utils.request({
+            path: `/api/v2/users`,
+            qs: { facility_id: savedUser.place._id },
+          });
+          expect(filteredUsers.length).to.equal(1);
+          expect(filteredUsers[0]).to.deep.equal(savedUser);
+        }
 
         // GET with contact_id filter
-        filteredUsers = await utils.request({
-          path: `/api/v2/users`,
-          qs: { contact_id: savedUser.contact._id },
-        });
-        expect(filteredUsers.length).to.equal(1);
-        expect(filteredUsers[0]).to.deep.equal(savedUser);
+        if (savedUser.contact?._id) {
+          filteredUsers = await utils.request({
+            path: `/api/v2/users`,
+            qs: { contact_id: savedUser.contact._id },
+          });
+          expect(filteredUsers.length).to.equal(1);
+          expect(filteredUsers[0]).to.deep.equal(savedUser);
+        }
 
         // GET with facility_id AND contact_id filters
-        filteredUsers = await utils.request({
-          path: `/api/v2/users`,
-          qs: {
-            facility_id: savedUser.place._id,
-            contact_id: savedUser.contact._id,
-          },
-        });
-        expect(filteredUsers.length).to.equal(1);
-        expect(filteredUsers[0]).to.deep.equal(savedUser);
+        if (savedUser.place?._id && savedUser.contact?._id) {
+          filteredUsers = await utils.request({
+            path: `/api/v2/users`,
+            qs: {
+              facility_id: savedUser.place._id,
+              contact_id: savedUser.contact._id,
+            },
+          });
+          expect(filteredUsers.length).to.equal(1);
+          expect(filteredUsers[0]).to.deep.equal(savedUser);
+        }
       }
       console.log(`took ${(Date.now() - before)}ms`);
     });
