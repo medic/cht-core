@@ -235,8 +235,8 @@ module.exports = {
       try {
         await auth.check(req, 'can_view_users');
         const filters = _.chain(req.query)
-          .pick(['facility_id', 'contact_id'])
-          .mapKeys((value, key) => _.camelCase(key))
+          .pick(['facility_id', 'contact_id']) // keep only supported filtering properties
+          .mapKeys((value, key) => _.camelCase(key)) // rename them to keep consistent variable names
           .value();
         const body = await getUserList(filters);
         res.json(body);
