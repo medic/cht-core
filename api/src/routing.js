@@ -342,7 +342,7 @@ app.get('/.well-known/assetlinks.json', function(req, res) {
         namespace: 'android_app',
         package_name: 'org.medicmobile.webapp.mobile.new_brand',
         sha256_cert_fingerprints: [
-          '25:DC:55:48:8E:05:A8:6C:21:AC:F8:81:FF:75:CC:36:9D:10:E3:BA:5D:1C:2A:6C:89:BD:B7:2B:63:15:77:00'
+          'FC:7D:44:15:5D:28:FA:18:6D:F4:1E:04:07:C5:A3:70:62:90:1F:C0:61:7C:E0:02:04:94:F9:5A:CA:F1:FF:92'
         ]
       }
     }
