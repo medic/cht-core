@@ -16,6 +16,7 @@ const getErrorMessage = async () => {
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+  await browser.url('/');
   await setPasswordValue(password);
   await (await userField()).setValue(username);
   await changeLocale(locale);
