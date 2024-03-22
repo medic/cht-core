@@ -145,7 +145,7 @@ describe('Contact details page', () => {
       expect(errorMessage).to.equal('Error fetching people');
       expect(await (await errorStack.isDisplayed())).to.be.true;
       expect(await (await errorStack.getText())).to
-        .include('TypeError: Cannot read properties of undefined (reading \'patient_id\')');
+        .include('Error: Configuration error');
     });
   });
 });
