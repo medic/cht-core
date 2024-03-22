@@ -1,6 +1,7 @@
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -14,14 +15,14 @@ describe('NavigationService', () => {
   let headerTabsService;
   let store;
   let router;
+  let routerEventSubject;
 
   beforeEach(() => {
+    routerEventSubject = new Subject();
     router = {
-      events: { pipe: sinon.stub().returns({ subscribe: sinon.stub() }) },
+      events: { pipe: sinon.stub().returns(routerEventSubject) },
       navigate: sinon.stub(),
-      routerState: {
-        root: { snapshot: { } }
-      }
+      routerState: { root: { snapshot: { } } },
     };
 
     const mockedSelectors = [
@@ -300,6 +301,50 @@ describe('NavigationService', () => {
       expect(consoleErrorMock.callCount).to.equal(0);
       expect(headerTabsService.getPrimaryTab.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(0);
+    }));
+  });
+
+  describe('getPreviousUrl()', () => {
+    it('should return previous url that is root', fakeAsync(() => {
+      router.url = '/';
+      service = TestBed.inject(NavigationService);
+      routerEventSubject.next('/path/a');
+      flush();
+
+      const url = service.getPreviousUrl();
+
+      expect(url).to.equal('/');
+    }));
+
+    it('should return previous url that is not error page', fakeAsync(() => {
+      router.url = '/error/403';
+      service = TestBed.inject(NavigationService);
+      routerEventSubject.next({ url: '/path/a' });
+      flush();
+
+      let url = service.getPreviousUrl();
+      expect(url).to.be.undefined;
+
+      routerEventSubject.next({ url: '/path/b' });
+      url = service.getPreviousUrl();
+      expect(url).to.equal('/path/a');
+
+      routerEventSubject.next({ url: '/error/404' });
+      url = service.getPreviousUrl();
+      expect(url).to.equal('/path/b');
+    }));
+
+    it('should return the same url when no navigation', fakeAsync(() => {
+      router.url = '/path/a';
+      service = TestBed.inject(NavigationService);
+      routerEventSubject.next({ url: '/path/b' });
+      flush();
+
+      let url = service.getPreviousUrl();
+      expect(url).to.equal('/path/a');
+
+      url = service.getPreviousUrl();
+      expect(url).to.equal('/path/a');
     }));
   });
 });

@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription, timer } from 'rxjs';
@@ -11,6 +12,7 @@ import { NavigationService } from '@mm-services/navigation.service';
   templateUrl: './error.component.html'
 })
 export class ErrorComponent implements OnInit, OnDestroy {
+  private windowRef;
   private readonly TIMEOUT_DURATION = 5 * 1000;
   private readonly ERRORS = {
     403: {
@@ -39,7 +41,10 @@ export class ErrorComponent implements OnInit, OnDestroy {
     private store: Store,
     private router: Router,
     private navigationService: NavigationService,
-  ) {}
+    @Inject(DOCUMENT) private document: Document,
+  ) {
+    this.windowRef = this.document.defaultView;
+  }
 
   ngOnInit(): void {
     this.error = this.ERRORS[this.route.snapshot.params.code] || this.ERRORS['404'];
@@ -73,9 +78,9 @@ export class ErrorComponent implements OnInit, OnDestroy {
     const prevUrl = this.navigationService.getPreviousUrl();
     const HOME = '/home';
 
-    if ([ undefined, '/', HOME ].find(item => prevUrl === item)) {
+    if (!prevUrl || [ '/', HOME ].find(item => prevUrl === item)) {
       await this.router.navigate([ HOME ]);
-      window.location.reload();
+      this.windowRef?.location?.reload();
       return;
     }
 
