@@ -45,7 +45,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         .get('/api/deploy-info')
         .then(({ data: deployInfo }) => {
           if (expectUpgrade) {
-            if (expectedVersion === deployInfo.version) {
+            if (expectedVersion === deployInfo.build) {
               return reloadPage();
             }
             logError('instance.upgrade.error.deploy', 'instance.upgrade.error.deploy');
