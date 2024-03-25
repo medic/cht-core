@@ -459,25 +459,21 @@ describe('Users service', () => {
         const allUsers = [
           {
             _id: 'x',
-            doc: {
-              name: 'lucas',
-              facility_id: 'c',
-              fullname: 'Lucas M',
-              email: 'l@m.com',
-              phone: '123456789',
-              roles: [ 'national-admin', 'data-entry' ]
-            }
+            name: 'lucas',
+            facility_id: 'c',
+            fullname: 'Lucas M',
+            email: 'l@m.com',
+            phone: '123456789',
+            roles: [ 'national-admin', 'data-entry' ]
           },
           {
             _id: 'org.couchdb.user:y',
-            doc: {
-              name: 'milan',
-              facility_id: 'b',
-              fullname: 'Milan A',
-              email: 'm@a.com',
-              phone: '987654321',
-              roles: [ 'district-admin' ]
-            }
+            name: 'milan',
+            facility_id: 'b',
+            fullname: 'Milan A',
+            email: 'm@a.com',
+            phone: '987654321',
+            roles: [ 'district-admin' ]
           }
         ];
         service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
