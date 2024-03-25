@@ -204,7 +204,7 @@ describe('Users service', () => {
             _id: 'org.couchdb.user:x',
             name: 'lucas',
             facility_id: 'c',
-            roles: ['national-admin', 'data-entry']
+            roles: ['national-admin', 'data-entry'],
           },
         ];
         const allUsersSettings = [
@@ -213,7 +213,8 @@ describe('Users service', () => {
             name: 'lucas',
             fullname: 'Lucas M',
             email: 'l@m.com',
-            phone: '123456789'
+            phone: '123456789',
+            facility_id: 'c',
           },
         ];
         const getUsersByIds = sinon.stub().resolves(usersByIds);
@@ -336,7 +337,8 @@ describe('Users service', () => {
             name: 'lucas',
             fullname: 'Lucas M',
             email: 'l@m.com',
-            phone: '123456789'
+            phone: '123456789',
+            facility_id: 'c',
           },
           {
             _id: 'org.couchdb.user:y',
@@ -344,7 +346,8 @@ describe('Users service', () => {
             fullname: 'Milan A',
             email: 'm@a.com',
             phone: '987654321',
-            external_id: 'LTT093'
+            external_id: 'LTT093',
+            facility_id: 'b',
           }
         ];
         service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
@@ -398,14 +401,16 @@ describe('Users service', () => {
             name: 'lucas',
             fullname: 'Lucas M',
             email: 'l@m.com',
-            phone: '123456789'
+            phone: '123456789',
+            facility_id: 'c',
           },
           {
             _id: 'org.couchdb.user:y',
             name: 'milan',
             fullname: 'Milan A',
             email: 'm@a.com',
-            phone: '987654321'
+            phone: '987654321',
+            facility_id: 'b',
           }
         ];
         service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
