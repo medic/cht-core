@@ -103,7 +103,12 @@ describe('Users Controller', () => {
       it('gets the list of users with facility_id filter', async () => {
         sinon.stub(auth, 'check').resolves();
         users.getList.resolves([userList[1]]);
-        req.query = { facility_id: 'chw-facility' };
+        req.query = {
+          facility_id: 'chw-facility',
+          unsupported: 'nope',
+          contactId: 'not supported either',
+          this_wont_work: 123,
+        };
 
         await controller.v2.get(req, res);
         chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: 'chw-facility' });
