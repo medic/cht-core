@@ -131,7 +131,7 @@ const getUsersByIds = async (ids) => {
   const docs = ids.map(id => ({ id }));
   const { results } = await db.users.bulkGet({ docs });
   return results
-    .map(result => result.docs && result.docs[0] && result.docs[0].ok)
+    .map(result => result?.docs?.[0]?.ok)
     .filter(doc => doc);
 };
 
