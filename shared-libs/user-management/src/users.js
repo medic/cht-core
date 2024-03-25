@@ -361,7 +361,7 @@ const mapUsers = (users, settings, facilities) => {
         fullname: setting.fullname,
         email: setting.email,
         phone: setting.phone,
-        place: getDoc(user.facility_id, facilities),
+        place: getDoc(setting.facility_id, facilities),
         roles: user.roles,
         contact: getDoc(setting.contact_id, facilities),
         external_id: setting.external_id,
