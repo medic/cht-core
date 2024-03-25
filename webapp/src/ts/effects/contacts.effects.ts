@@ -93,7 +93,6 @@ export class ContactsEffects {
               this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
             }
             console.error('Error selecting contact', err);
-            this.contactsActions.updateSelectedContactSummary({ errorStack: err.stack });
             this.globalActions.unsetSelected();
             return of(this.contactsActions.clearSelection());
           })
@@ -195,6 +194,10 @@ export class ContactsEffects {
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
+      .catch(error => {
+        this.contactsActions.updateSelectedContactSummary({ errorStack: error.stack });
+        throw error;
+      })
       .then(summary => {
         return this
           .verifySelectedContactNotChanged(contactId)
