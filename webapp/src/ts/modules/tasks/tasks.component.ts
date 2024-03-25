@@ -141,7 +141,6 @@ export class TasksComponent implements OnInit, OnDestroy {
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
 
       this.hasTasks = taskDocs.length > 0;
-      this.loading = false;
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
@@ -153,7 +152,6 @@ export class TasksComponent implements OnInit, OnDestroy {
       }
 
       this.tasksActions.setTasksList(hydratedTasks);
-      this.loading = false;
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
@@ -162,6 +160,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
+      this.loading = false;
       const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
       this.trackPerformance?.stop({
         name: performanceName,
@@ -182,7 +181,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
+    const ids = [...new Set(taskDocs.map(task => task.owner))];
     return this.lineageModelGeneratorService
       .reportSubjects(ids)
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
