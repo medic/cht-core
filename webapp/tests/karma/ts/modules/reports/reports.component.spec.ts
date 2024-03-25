@@ -23,11 +23,12 @@ import { ComponentsModule } from '@mm-components/components.module';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { ModalService } from '@mm-services/modal.service';
@@ -54,6 +55,8 @@ describe('Reports Component', () => {
   let fastActionButtonService;
   let xmlFormsService;
   let feedbackService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let store;
   let route;
   let router;
@@ -85,6 +88,8 @@ describe('Reports Component', () => {
     ];
     (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     searchService = { search: sinon.stub().resolves([]) };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
@@ -146,8 +151,9 @@ describe('Reports Component', () => {
           // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
           // Needed because of Reports Sidebar Filter
-          { provide: TelemetryService, useValue: { record: sinon.stub() } },
+          { provide: PerformanceService, useValue: performanceService },
           { provide: SessionService, useValue: sessionService },
+          { provide: DbService, useValue: { get: sinon.stub().resolves() } },
           { provide: UserContactService, useValue: userContactService },
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },
@@ -309,6 +315,9 @@ describe('Reports Component', () => {
       expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
       expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
       expect(searchService.search.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.callCount).to.equal(2);
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'report_list:load', recordApdex: true });
     });
 
     it('should not set default facility report when it is admin user', async () => {
@@ -326,6 +335,9 @@ describe('Reports Component', () => {
       expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
       expect(searchService.search.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.callCount).to.equal(2);
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'report_list:load', recordApdex: true });
     });
 
     it('should not set default facility report when user does not have parent place', async () => {
@@ -345,6 +357,9 @@ describe('Reports Component', () => {
       expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
       expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
       expect(searchService.search.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.callCount).to.equal(2);
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'report_list:load', recordApdex: true });
     });
   });
 
@@ -978,6 +993,7 @@ describe('Reports Component', () => {
 
   describe('setSelectMode', () => {
     it('should set select mode and redirect when there are some reports selected', fakeAsync(() => {
+      sinon.resetHistory();
       const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
       const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
       store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);

@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { FormService } from '@mm-services/form.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -25,7 +25,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     private route:ActivatedRoute,
     private store:Store,
     private formService:FormService,
-    private telemetryService:TelemetryService,
+    private performanceService:PerformanceService,
     private translateFromService:TranslateFromService,
     private xmlFormsService:XmlFormsService,
     private geolocationService:GeolocationService,
@@ -53,13 +53,16 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   errorTranslationKey;
   private tasksList;
   private geoHandle;
-  private telemetryData:any;
   private enketoError;
   private enketoSaving;
+  private trackRender;
+  private trackEditDuration;
+  private trackSave;
+  private trackMetadata = { action: '' };
   private viewInited = new Subject();
 
   ngOnInit() {
-    this.telemetryData = { preRender: Date.now() };
+    this.trackRender = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeToRouteParams();
 
@@ -279,14 +282,12 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         .get(action.form)
         .then((formDoc) => this.renderForm(action, formDoc))
         .then(() => {
-          this.telemetryData.postRender = Date.now();
-          this.telemetryData.action = action.content.doc ? 'edit' : 'add';
-          this.telemetryData.form = this.formId;
-
-          this.telemetryService.record(
-            `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-            this.telemetryData.postRender - this.telemetryData.preRender
-          );
+          this.trackMetadata.action = action.content.doc ? 'edit' : 'add';
+          this.trackRender?.stop({
+            name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'render' ].join(':'),
+            recordApdex: true,
+          });
+          this.trackEditDuration = this.performanceService.track();
         })
         .catch((err) => {
           this.errorTranslationKey = err?.translationKey || 'error.loading.form';
@@ -312,12 +313,10 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.telemetryData.preSave = Date.now();
-
-    this.telemetryService.record(
-      `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender
-    );
+    this.trackEditDuration?.stop({
+      name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+    });
+    this.trackSave = this.performanceService.track();
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -338,12 +337,10 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.router.navigate(['/tasks', 'group']);
       })
       .then(() => {
-        this.telemetryData.postSave = Date.now();
-
-        this.telemetryService.record(
-          `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave
-        );
+        this.trackSave?.stop({
+          name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'save' ].join(':'),
+          recordApdex: true,
+        });
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);

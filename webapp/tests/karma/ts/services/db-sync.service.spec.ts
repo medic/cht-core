@@ -11,6 +11,7 @@ import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
@@ -33,6 +34,8 @@ describe('DBSync service', () => {
   let rulesEngine;
   let checkDateService;
   let telemetryService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let translateService;
   let migrationService;
   let replicationService;
@@ -89,6 +92,12 @@ describe('DBSync service', () => {
     translateService = { instant: sinon.stub().returnsArg(0) };
     store = { dispatch: sinon.stub() };
 
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = {
+      track: sinon.stub().returns({ stop: stopPerformanceTrackStub }),
+      recordPerformance: sinon.stub().resolves(),
+    };
+
     localMedicDb = {
       replicate: { to: to },
       info: sinon.stub().resolves({ update_seq: 99 }),
@@ -122,6 +131,7 @@ describe('DBSync service', () => {
         { provide: DbSyncRetryService, useValue: { retryForbiddenFailure: dbSyncRetry } },
         { provide: RulesEngineService, useValue: rulesEngine },
         { provide: TelemetryService, useValue: telemetryService },
+        { provide: PerformanceService, useValue: performanceService },
         { provide: TranslateService, useValue: translateService },
         { provide: Store, useValue: store },
         { provide: CheckDateService, useValue: checkDateService },
@@ -215,19 +225,23 @@ describe('DBSync service', () => {
 
       return syncResult.then(() => {
         expectSyncCall(1);
-        expect(telemetryService.record.callCount).to.equal(8);
+        expect(telemetryService.record.calledThrice).to.be.true;
         expect(telemetryService.record.args).to.have.deep.members([
-          ['replication:medic:from:success', 1000],
-          ['replication:medic:from:ms-since-last-replicated-date', 900],
           ['replication:medic:from:docs', 45],
-
-          ['replication:medic:to:success', 500],
-          ['replication:medic:to:ms-since-last-replicated-date', 400],
           ['replication:medic:to:docs', 63],
-
-          ['replication:meta:sync:success', 0],
           ['replication:meta:sync:docs', 10],
         ]);
+
+        expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+        expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+        expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+
+        expect(performanceService.recordPerformance.calledTwice).to.be.true;
+        expect(performanceService.recordPerformance.args[0][0])
+          .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+        expect(performanceService.recordPerformance.args[1][0])
+          .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
       });
     });
 
@@ -418,21 +432,24 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(4);
           expect(telemetryService.record.args).to.have.deep.members([
-
-            ['replication:medic:from:failure', 2000],
-            ['replication:medic:from:ms-since-last-replicated-date', 1800],
             ['replication:medic:from:docs', 22],
             ['replication:medic:from:failure:reason:offline:server'],
-
-            ['replication:medic:to:success', 1000],
-            ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 32],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 25],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:failure' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
 
@@ -465,20 +482,24 @@ describe('DBSync service', () => {
         return syncResult.then(() => {
           expectSyncCall(1);
 
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(4);
           expect(telemetryService.record.args).to.have.deep.members([
-            ['replication:medic:from:failure', 2000],
-            ['replication:medic:from:ms-since-last-replicated-date', 1800],
             ['replication:medic:from:docs', 22],
             ['replication:medic:from:failure:reason:offline:server'],
-
-            ['replication:medic:to:success', 1000],
-            ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 32],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 20],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:failure' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
 
@@ -511,22 +532,25 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(10);
+          expect(telemetryService.record.callCount).to.equal(5);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:user-initiated'],
-
-            ['replication:medic:from:failure', 0],
-            ['replication:medic:from:ms-since-last-replicated-date', 1700],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:offline:client'],
-
-            ['replication:medic:to:success', 1000],
-            ['replication:medic:to:ms-since-last-replicated-date', 700],
             ['replication:medic:to:docs', 67],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 0],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:failure' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
 
@@ -556,20 +580,24 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(4);
           expect(telemetryService.record.args).to.have.deep.members([
-            ['replication:medic:from:failure', 0],
-            ['replication:medic:from:ms-since-last-replicated-date', 1700],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:error'],
-
-            ['replication:medic:to:success', 1000],
-            ['replication:medic:to:ms-since-last-replicated-date', 700],
             ['replication:medic:to:docs', 67],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 0],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:failure' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
 
@@ -600,20 +628,24 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(4);
           expect(telemetryService.record.args).to.have.deep.members([
-            ['replication:medic:from:success', 1000],
-            ['replication:medic:from:ms-since-last-replicated-date', 2800],
             ['replication:medic:from:docs', 32],
-
-            ['replication:medic:to:failure', 2000],
-            ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 22],
             ['replication:medic:to:failure:reason:offline:server'],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 0],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:failure' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
 
@@ -645,22 +677,25 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(10);
+          expect(telemetryService.record.callCount).to.equal(5);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:user-initiated'],
-
-            ['replication:medic:from:success', 7000],
-            ['replication:medic:from:ms-since-last-replicated-date', 1100],
             ['replication:medic:from:docs', 500],
-
-            ['replication:medic:to:failure', 1000],
-            ['replication:medic:to:ms-since-last-replicated-date', 100],
             ['replication:medic:to:docs', 12],
             ['replication:medic:to:failure:reason:offline:client'],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 0],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:failure' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
 
@@ -688,22 +723,25 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(10);
+          expect(telemetryService.record.callCount).to.equal(5);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:user-initiated'],
-
-            ['replication:medic:from:success', 0],
-            ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 400],
-
-            ['replication:medic:to:failure', 700],
-            ['replication:medic:to:ms-since-last-replicated-date', 100],
             ['replication:medic:to:docs', 6],
             ['replication:medic:to:failure:reason:error'],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 0],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:failure' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
 
@@ -735,23 +773,26 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(11);
+          expect(telemetryService.record.callCount).to.equal(6);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:user-initiated'],
-
-            ['replication:medic:to:failure', 100],
-            ['replication:medic:to:ms-since-last-replicated-date', 100],
             ['replication:medic:to:docs', 6],
             ['replication:medic:to:failure:reason:error'],
-
-            ['replication:medic:from:failure', 200],
-            ['replication:medic:from:ms-since-last-replicated-date', 200],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:error'],
-
-            ['replication:meta:sync:success', 0],
             ['replication:meta:sync:docs', 0],
           ]);
+
+          expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+          expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
+          expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:to:failure' });
+          expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:from:failure' });
+
+          expect(performanceService.recordPerformance.calledTwice).to.be.true;
+          expect(performanceService.recordPerformance.args[0][0])
+            .to.deep.equal({ name: 'replication:medic:to:ms-since-last-replicated-date' });
+          expect(performanceService.recordPerformance.args[1][0])
+            .to.deep.equal({ name: 'replication:medic:from:ms-since-last-replicated-date' });
         });
       });
     });
@@ -1009,14 +1050,14 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
-          ['replication:medic:to:success', 0],
           ['replication:medic:to:docs', undefined],
-
-          ['replication:medic:from:success', 0],
-
-          ['replication:meta:sync:success', 1000],
           ['replication:meta:sync:docs', 132],
         ]);
+
+        expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+        expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+        expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:meta:sync:success' });
       });
 
       it('should record telemetry when failed because "server" was offline', async () => {
@@ -1037,22 +1078,21 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
-          ['replication:medic:to:success', 0],
           ['replication:medic:to:docs', undefined],
-          ['replication:medic:from:success', 0],
-
-          ['replication:medic:to:success', 0],
           ['replication:medic:to:docs', undefined],
-          ['replication:medic:from:success', 0],
-
-          ['replication:medic:to:success', 0],
           ['replication:medic:to:docs', undefined],
-          ['replication:medic:from:success', 0],
-
-          ['replication:meta:sync:failure', 1000],
           ['replication:meta:sync:docs', 0],
           ['replication:meta:sync:failure:reason:offline:server'],
         ]);
+
+        expect(stopPerformanceTrackStub.callCount).to.equal(7);
+        expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+        expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+        expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+        expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({ name: 'replication:meta:sync:failure' });
       });
 
       it('should record telemetry when failed because "client" was offline', async () => {
@@ -1075,22 +1115,21 @@ describe('DBSync service', () => {
 
         expect(telemetryService.record.args).to.have.deep.members([
           ['replication:user-initiated'],
-          ['replication:medic:to:success', 0],
           ['replication:medic:to:docs', undefined],
-          ['replication:medic:from:success', 0],
-
-          ['replication:medic:to:success', 0],
           ['replication:medic:to:docs', undefined],
-          ['replication:medic:from:success', 0],
-
-          ['replication:medic:to:success', 0],
           ['replication:medic:to:docs', undefined],
-          ['replication:medic:from:success', 0],
-
-          ['replication:meta:sync:failure', 1312321],
           ['replication:meta:sync:docs', 13],
           ['replication:meta:sync:failure:reason:offline:client'],
         ]);
+
+        expect(stopPerformanceTrackStub.callCount).to.equal(7);
+        expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+        expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+        expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'replication:medic:to:success' });
+        expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({ name: 'replication:medic:from:success' });
+        expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({ name: 'replication:meta:sync:failure' });
       });
     });
   });

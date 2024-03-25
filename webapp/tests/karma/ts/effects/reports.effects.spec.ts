@@ -24,6 +24,7 @@ import { EditReportComponent } from '@mm-modals/edit-report/edit-report.componen
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { AuthService } from '@mm-services/auth.service';
 import { ServicesActions } from '@mm-actions/services';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
@@ -38,6 +39,8 @@ describe('Reports effects', () => {
   let store;
   let authService;
   let translateService;
+  let performanceService;
+  let stopPerformanceTrackStub;
 
   beforeEach(waitForAsync(() => {
     actions$ = new Observable<Action>();
@@ -50,6 +53,8 @@ describe('Reports effects', () => {
       { selector: Selectors.getUnreadCount, value: {} },
     ];
 
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub() };
     reportViewModelGeneratorService = { get: sinon.stub().resolves() };
     markReadService = { markAsRead: sinon.stub().resolves() };
     dbService = { get: sinon.stub(), put: sinon.stub() };
@@ -86,6 +91,7 @@ describe('Reports effects', () => {
         { provide: SearchService, useValue: searchService },
         { provide: AuthService, useValue: authService },
         { provide: TranslateService, useValue: translateService },
+        { provide: PerformanceService, useValue: performanceService },
       ],
     });
 
@@ -267,6 +273,7 @@ describe('Reports effects', () => {
       expect(openReportContentStub.calledOnce).to.be.true;
       expect(openReportContentStub.args[0]).to.deep.equal([{ _id: 'reportID', doc: { _id: 'reportID' } }]);
       expect(unsetSelectedStub.notCalled).to.be.true;
+      expect(performanceService.track.calledOnce).to.be.true;
     }));
 
     it('should load report when not silent', fakeAsync(() => {
@@ -286,6 +293,7 @@ describe('Reports effects', () => {
       expect(openReportContentStub.calledOnce).to.be.true;
       expect(openReportContentStub.args[0]).to.deep.equal([{ _id: 'reportID', doc: { _id: 'reportID' } }]);
       expect(unsetSelectedStub.notCalled).to.be.true;
+      expect(performanceService.track.calledOnce).to.be.true;
     }));
 
     it('should set report when a new report is selected while still loading an initial report', fakeAsync(() => {
@@ -312,7 +320,7 @@ describe('Reports effects', () => {
         [{ _id: 'reportID0', doc: { _id: 'reportID0' } }],
         [{ _id: 'reportID1', doc: { _id: 'reportID1' } }],
       ]);
-
+      expect(performanceService.track.calledTwice).to.be.true;
       expect(unsetSelectedStub.notCalled).to.be.true;
     }));
 
@@ -371,10 +379,12 @@ describe('Reports effects', () => {
         _id: 'report',
         doc: {
           _id: 'report',
+          form: 'a-form',
           data: true,
         }
       };
       const expandedModel = { ...model, expanded: true };
+      effects.trackOpenReport = { stop: stopPerformanceTrackStub };
 
       actions$ = of(ReportActionList.openReportContent(model));
       effects.openReportContent.subscribe();
@@ -390,6 +400,11 @@ describe('Reports effects', () => {
       expect(setRightActionBar.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'report_detail:a-form:load',
+        recordApdex: true,
+      });
     });
 
     it('should call correct actions when refreshing', () => {
@@ -403,6 +418,7 @@ describe('Reports effects', () => {
         }
       };
       const expandedModel = { ...model, expanded: true };
+      effects.trackOpenReport = { stop: stopPerformanceTrackStub };
 
       actions$ = of(ReportActionList.openReportContent(model));
       effects.openReportContent.subscribe();
@@ -417,6 +433,7 @@ describe('Reports effects', () => {
       expect(setRightActionBar.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
+      expect(stopPerformanceTrackStub.notCalled).to.be.true;
     });
   });
 
