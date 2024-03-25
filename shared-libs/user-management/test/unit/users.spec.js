@@ -38,7 +38,7 @@ describe('Users service', () => {
     db.init({
       medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub(), query: sinon.stub() },
       medicLogs: { get: sinon.stub(), put: sinon.stub(), },
-      users: { get: sinon.stub(), put: sinon.stub() },
+      users: { bulkGet: sinon.stub(), get: sinon.stub(), put: sinon.stub() },
     });
     lineage.init(require('@medic/lineage')(Promise, db.medic));
     addMessage = sinon.stub();
@@ -199,30 +199,40 @@ describe('Users service', () => {
     describe('with filters', () => {
       it('with facility_id', () => {
         const filters = { facilityId: 'c' };
-        const usersByIds = [
-          {
-            _id: 'org.couchdb.user:x',
-            name: 'lucas',
-            facility_id: 'c',
-            roles: ['national-admin', 'data-entry'],
-          },
-        ];
-        const allUsersSettings = [
-          {
-            _id: 'org.couchdb.user:x',
-            name: 'lucas',
-            fullname: 'Lucas M',
-            email: 'l@m.com',
-            phone: '123456789',
-            facility_id: 'c',
-          },
-        ];
-        const getUsersByIds = sinon.stub().resolves(usersByIds);
-        service.__set__('getAllUserSettings', sinon.stub().resolves(allUsersSettings));
-        service.__set__('getUsersByIds', getUsersByIds);
+        const userSettingsResponse = {
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:x',
+              name: 'lucas',
+              fullname: 'Lucas M',
+              email: 'l@m.com',
+              phone: '123456789',
+              facility_id: 'c',
+            },
+          }],
+        };
+        const queryOptions = {
+          include_docs: true,
+          key: ['user-settings', 'c'],
+        };
+        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+
+        const usersResponse = {
+          results: [{
+            docs: [{
+              ok: {
+                _id: 'org.couchdb.user:x',
+                name: 'lucas',
+                facility_id: 'c',
+                roles: ['national-admin', 'data-entry'],
+              },
+            }],
+          }],
+        };
+        db.users.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:x' }] }).resolves(usersResponse);
+
         return service.getList(filters).then(data => {
           chai.expect(data.length).to.equal(1);
-          chai.expect(getUsersByIds.firstCall.args[0][0]).to.equal('org.couchdb.user:x');
           const lucas = data[0];
           chai.expect(lucas.id).to.equal('org.couchdb.user:x');
           chai.expect(lucas.username).to.equal('lucas');
@@ -236,32 +246,42 @@ describe('Users service', () => {
 
       it('with contact_id', () => {
         const filters = { contactId: 'c' };
-        const usersByIds = [
-          {
-            _id: 'org.couchdb.user:y',
-            name: 'milan',
-            facility_id: 'b',
-            roles: ['district-admin'],
-          },
-        ];
-        const allUsersSettings = [
-          {
-            _id: 'org.couchdb.user:y',
-            name: 'milan',
-            fullname: 'Milan A',
-            email: 'm@a.com',
-            phone: '987654321',
-            external_id: 'LTT093',
-            facility_id: 'b',
-            contact_id: 'milan-contact',
-          },
-        ];
-        const getUsersByIds = sinon.stub().resolves(usersByIds);
-        service.__set__('getAllUserSettings', sinon.stub().resolves(allUsersSettings));
-        service.__set__('getUsersByIds', getUsersByIds);
+        const userSettingsResponse = {
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:y',
+              name: 'milan',
+              fullname: 'Milan A',
+              email: 'm@a.com',
+              phone: '987654321',
+              external_id: 'LTT093',
+              facility_id: 'b',
+              contact_id: 'milan-contact',
+            },
+          }],
+        };
+        const queryOptions = {
+          include_docs: true,
+          key: ['user-settings', 'c'],
+        };
+        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+
+        const usersResponse = {
+          results: [{
+            docs: [{
+              ok: {
+                _id: 'org.couchdb.user:y',
+                name: 'milan',
+                facility_id: 'b',
+                roles: ['district-admin'],
+              },
+            }],
+          }],
+        };
+        db.users.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(usersResponse);
+
         return service.getList(filters).then(data => {
           chai.expect(data.length).to.equal(1);
-          chai.expect(getUsersByIds.firstCall.args[0][0]).to.equal('org.couchdb.user:y');
           const milan = data[0];
           chai.expect(milan.id).to.equal('org.couchdb.user:y');
           chai.expect(milan.username).to.equal('milan');
@@ -276,32 +296,42 @@ describe('Users service', () => {
 
       it('with both facility_id and contact_id', () => {
         const filters = { facilityId: 'b', contactId: 'c' };
-        const usersByIds = [
-          {
-            _id: 'org.couchdb.user:y',
-            name: 'milan',
-            facility_id: 'b',
-            roles: ['district-admin'],
-          },
-        ];
-        const allUsersSettings = [
-          {
-            _id: 'org.couchdb.user:y',
-            name: 'milan',
-            fullname: 'Milan A',
-            email: 'm@a.com',
-            phone: '987654321',
-            external_id: 'LTT093',
-            facility_id: 'b',
-            contact_id: 'milan-contact',
-          },
-        ];
-        const getUsersByIds = sinon.stub().resolves(usersByIds);
-        service.__set__('getAllUserSettings', sinon.stub().resolves(allUsersSettings));
-        service.__set__('getUsersByIds', getUsersByIds);
+        const userSettingsResponse = {
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:y',
+              name: 'milan',
+              fullname: 'Milan A',
+              email: 'm@a.com',
+              phone: '987654321',
+              external_id: 'LTT093',
+              facility_id: 'b',
+              contact_id: 'milan-contact',
+            },
+          }],
+        };
+        const queryOptions = {
+          include_docs: true,
+          key: ['user-settings', 'b', 'c'],
+        };
+        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+
+        const usersResponse = {
+          results: [{
+            docs: [{
+              ok: {
+                _id: 'org.couchdb.user:y',
+                name: 'milan',
+                facility_id: 'b',
+                roles: ['district-admin'],
+              },
+            }],
+          }],
+        };
+        db.users.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(usersResponse);
+
         return service.getList(filters).then(data => {
           chai.expect(data.length).to.equal(1);
-          chai.expect(getUsersByIds.firstCall.args[0][0]).to.equal('org.couchdb.user:y');
           const milan = data[0];
           chai.expect(milan.id).to.equal('org.couchdb.user:y');
           chai.expect(milan.username).to.equal('milan');
