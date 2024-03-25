@@ -18,11 +18,12 @@ export class ErrorComponent implements OnInit, OnDestroy {
     403: {
       title: 'error.403.title',
       description: 'error.403.description',
-      showReloadLink: true,
+      showBackLink: true,
     },
     404: {
       title: 'error.404.title',
-      description: 'error.404.description'
+      description: 'error.404.description',
+      showBackLink: true,
     },
     503: {
       title: 'error.503.description',
