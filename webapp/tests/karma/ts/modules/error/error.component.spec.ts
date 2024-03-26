@@ -101,5 +101,16 @@ describe('ErrorComponent', () => {
       expect(routerMock.navigate.args[0]).to.have.deep.members([ [ '/home' ] ]);
       expect(documentMock.defaultView.location.reload.notCalled).to.be.true;
     });
+
+    it('should navigate back to home and reload  when previous URL is the error page', () => {
+      navigationService.getPreviousUrl.returns('/error/404');
+
+      component.exit();
+
+      expect(routerMock.navigateByUrl.notCalled).to.be.true;
+      expect(routerMock.navigate.calledOnce).to.be.true;
+      expect(routerMock.navigate.args[0]).to.have.deep.members([ [ '/home' ] ]);
+      expect(documentMock.defaultView.location.reload.notCalled).to.be.true;
+    });
   });
 });

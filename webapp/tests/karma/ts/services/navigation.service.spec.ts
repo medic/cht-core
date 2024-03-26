@@ -316,14 +316,14 @@ describe('NavigationService', () => {
       expect(url).to.equal('/');
     }));
 
-    it('should return previous url that is not error page', fakeAsync(() => {
+    it('should return previous url even if it is error page', fakeAsync(() => {
       router.url = '/error/403';
       service = TestBed.inject(NavigationService);
       routerEventSubject.next({ url: '/path/a' });
       flush();
 
       let url = service.getPreviousUrl();
-      expect(url).to.be.undefined;
+      expect(url).to.equal('/error/403');
 
       routerEventSubject.next({ url: '/path/b' });
       url = service.getPreviousUrl();

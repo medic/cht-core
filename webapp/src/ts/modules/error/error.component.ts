@@ -76,10 +76,12 @@ export class ErrorComponent implements OnInit, OnDestroy {
   }
 
   async exit() {
-    const prevUrl = this.navigationService.getPreviousUrl();
     const HOME = '/home';
+    const prevUrl = this.navigationService.getPreviousUrl();
+    const isHomePage = prevUrl === '/' || prevUrl === HOME;
+    const isErrorPage = prevUrl?.startsWith('/error');
 
-    if (!prevUrl || [ '/', HOME ].find(item => prevUrl === item)) {
+    if (!prevUrl || isHomePage || isErrorPage) {
       await this.router.navigate([ HOME ]);
       this.windowRef?.location?.reload();
       return;

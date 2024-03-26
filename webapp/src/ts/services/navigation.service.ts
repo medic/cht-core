@@ -13,7 +13,7 @@ import { HeaderTabsService } from '@mm-services/header-tabs.service';
 export class NavigationService {
   private primaryTab;
   private currentTab;
-  private prevUrlNotErrorPage;
+  private previousUrl;
   private currentUrl;
 
   constructor(
@@ -32,9 +32,7 @@ export class NavigationService {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        if (!this.currentUrl.startsWith('/error/')) {
-          this.prevUrlNotErrorPage = this.currentUrl;
-        }
+        this.previousUrl = this.currentUrl;
         this.currentUrl = event.url;
       });
   }
@@ -102,6 +100,6 @@ export class NavigationService {
   }
 
   getPreviousUrl(){
-    return this.prevUrlNotErrorPage;
+    return this.previousUrl;
   }
 }
