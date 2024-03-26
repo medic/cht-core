@@ -438,7 +438,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(err => {
         this.error = true;
-        this.loading = false;
         console.error('Error loading contacts', err);
       })
       .finally(() => {

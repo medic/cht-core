@@ -156,7 +156,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
-      this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
