@@ -799,8 +799,7 @@ const stopService = async (service) => {
   if (isDocker()) {
     return await dockerComposeCmd('stop', '-t', '0', service);
   }
-  const s = await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=0`);
-  console.log(s);
+  await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=0`);
 };
 
 const stopSentinel = () => stopService('sentinel');
@@ -1038,7 +1037,6 @@ const startServices = async () => {
 };
 
 const runCommand = (command) => {
-  console.log(command);
   const [cmd, ...params] = command.split(' ');
   return new Promise((resolve, reject) => {
     const proc = spawn(cmd, [ ...params], { env });
@@ -1182,7 +1180,6 @@ const waitForLogs = (container, ...regex) => {
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
   const params = `logs ${container} -f --tail=1 ${isK3D() ? `-n ${PROJECT_NAME}`: ''}`;
-  console.log(cmd, params);
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
