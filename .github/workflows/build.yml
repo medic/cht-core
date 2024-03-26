@@ -144,6 +144,7 @@ jobs:
             suite: data
           - cmd: ci-webdriver-default
             suite: enketo
+            chrome-version: 90
           - cmd: ci-webdriver-default
             suite: lowLevel
           - cmd: ci-webdriver-default
