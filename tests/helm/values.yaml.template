@@ -1,0 +1,18 @@
+namespace: "{{namespace}}" # e.g. "cht-dev-namespace"
+cht_image_tag: "{{tag}}"
+
+upstream_servers:
+  docker_registry: "{{repo}}"
+  builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4"
+
+couchdb:
+  password: "{{password}}"
+  secret: "{{secret}}"
+  user: "{{user}}"
+  uuid: "{{uuid}}"
+  db_name: "{{db_name}}"
+
+local_path:
+  preExistingDiskPath-1: "/data/srv1" #If node1 has pre-existing data.
+  preExistingDiskPath-2: "/data/srv2" #If node2 has pre-existing data.
+  preExistingDiskPath-3: "/data/srv3" #If node3 has pre-existing data.

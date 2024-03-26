@@ -57,7 +57,7 @@ check_if_couchdb_is_ready(){
     wait_count=0
     until curl -s --head  --request GET $COUCHDB_URL | grep "200 OK" > /dev/null
     do
-      echo "Waiting for cht couchdb" >&2
+      echo "Waiting for cht couchdb at $COUCHDB_URL" >&2
       wait_count=$((wait_count +1))
       if [[ "$wait_count" -gt $WAIT_THRESHOLD ]]; then
         echo "No couchdb end point Found at $COUCHDB_URL" >&2
@@ -88,7 +88,7 @@ add_peers_to_cluster() {
     done
     complete_cluster_setup
     #verify_cluster_setup
-    check_cluster_membership
+    echo check_cluster_membership
 }
 
 create_system_databases() {

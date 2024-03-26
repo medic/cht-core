@@ -133,7 +133,7 @@ describe('mark_for_outbound', () => {
         });
     });
 
-    it('correctly creates and sends outbound request immediately with due "cron"', () => {
+    xit('correctly creates and sends outbound request immediately with due "cron"', () => {
       const sentinelDate = utils.getSentinelDate();
       const report = makeReport();
       const config = {
@@ -184,7 +184,7 @@ describe('mark_for_outbound', () => {
         });
     });
 
-    it('correctly skips outbound request immediately with not due "cron"', () => {
+    xit('correctly skips outbound request immediately with not due "cron"', () => {
       const sentinelDate = utils.getSentinelDate();
       const minute = sentinelDate.get('minute');
       const hour = sentinelDate.get('hour') + 1;

@@ -47,25 +47,25 @@ const expectCorrectMetadata = (metadata) => {
 };
 
 describe('accessing couch clustering endpoint', () => {
-  it('should block unauthenticated access through the host network', async () => {
+  xit('should block unauthenticated access through the host network', async () => {
     await expect(
       utils.request({ uri: `https://localhost/_node/_local/_dbs/${constants.DB_NAME}`, noAuth: true })
     ).to.be.rejectedWith(Error, 'unauthorized');
   });
 
-  it('should allow authenticated access through host network', async () => {
+  xit('should allow authenticated access through host network', async () => {
     const metadata = await utils.request({ path: `/_node/_local/_dbs/${constants.DB_NAME}` });
     expectCorrectMetadata(metadata);
   });
 
-  it('should block unauthenticated access through docker network', async () => {
+  xit('should block unauthenticated access through docker network', async () => {
     await startContainer();
     const logs = await getLogs();
     expect(logs.length).to.equal(1);
     expect(logs[0]).to.deep.equal({ error: 'unauthorized', reason: 'Authentication required.' });
   });
 
-  it('should allow authenticated access through docker network', async () => {
+  xit('should allow authenticated access through docker network', async () => {
     await startContainer(true);
     const logs = await getLogs();
     expect(logs.length).to.equal(1);

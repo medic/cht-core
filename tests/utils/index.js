@@ -26,21 +26,24 @@ const DEBUG = process.env.DEBUG;
 
 let originalSettings;
 let dockerVersion;
+let infrastructure = 'docker';
+const isDocker = () => infrastructure === 'docker';
+const isK3D = () => infrastructure !== 'docker';
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
 const ONE_YEAR_IN_S = 31536000;
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
-const services = {
+const SERVICES = {
   haproxy: 'haproxy',
   nginx: 'nginx',
-  couch1: 'couchdb-1.local',
-  couch2: 'couchdb-2.local',
-  couch3: 'couchdb-3.local',
+  couchdb1: 'couchdb-1.local',
+  couchdb2: 'couchdb-2.local',
+  couchdb3: 'couchdb-3.local',
   api: 'api',
   sentinel: 'sentinel',
-  haproxy_healthcheck: 'healthcheck',
+  'haproxy-healthcheck': 'healthcheck',
 };
 const CONTAINER_NAMES = {};
 const originalTranslations = {};
@@ -754,6 +757,10 @@ const listenForApi = async () => {
   console.log('Checking API');
   try {
     await request({ path: '/api/info' });
+    await delayPromise(1000);
+    await request({ path: '/api/info' });
+    await delayPromise(1000);
+    await request({ path: '/api/info' });
     console.log('API is up');
   } catch (err) {
     console.log('API check failed, trying again in 1 second');
@@ -789,13 +796,20 @@ const dockerComposeCmd = (...params) => {
 };
 
 const stopService = async (service) => {
-  await dockerComposeCmd('stop', '-t', '0', service);
+  if (isDocker()) {
+    return await dockerComposeCmd('stop', '-t', '0', service);
+  }
+  const s = await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=0`);
+  console.log(s);
 };
 
 const stopSentinel = () => stopService('sentinel');
 
 const startService = async (service) => {
-  await dockerComposeCmd('start', service);
+  if (isDocker()) {
+    return await dockerComposeCmd('start', service);
+  }
+  await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=1`);
 };
 
 const startSentinel = () => startService('sentinel');
@@ -952,6 +966,24 @@ const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scr
 
 const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.yml`);
 
+const generateK3DValuesFile = async () => {
+  const view = {
+    repo: buildVersions.getRepo(),
+    tag: buildVersions.getImageTag(),
+    db_name: constants.DB_NAME,
+    user: constants.USERNAME,
+    password: constants.PASSWORD,
+    secret: '',
+    uuid: '',
+    namespace: PROJECT_NAME,
+  };
+
+  const templatePath = path.resolve(__dirname, '..', 'helm', `values.yaml.template`);
+  const testValuesPath = path.resolve(__dirname, '..', 'helm', `values.yaml`);
+  const template = await fs.promises.readFile(templatePath, 'utf-8');
+  await fs.promises.writeFile(testValuesPath, mustache.render(template, view));
+};
+
 const generateComposeFiles = async () => {
   const view = {
     repo: buildVersions.getRepo(),
@@ -1005,6 +1037,73 @@ const startServices = async () => {
   }
 };
 
+const runCommand = (command) => {
+  console.log(command);
+  const [cmd, ...params] = command.split(' ');
+  return new Promise((resolve, reject) => {
+    const proc = spawn(cmd, [ ...params], { env });
+    const output = [];
+    const log = (data, error) => {
+      data = data.toString();
+      output.push(data);
+      error ? console.error(data) : console.log(data);
+    };
+
+    proc.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    proc.stdout.on('data', log);
+    proc.stderr.on('data', log);
+
+    proc.on('close', () => resolve(output));
+  });
+};
+
+const createCluster = async (dataDir) => {
+  await runCommand('kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/' +
+    'controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml');
+  await runCommand(
+    `k3d cluster create --port 443:443@loadbalancer --port 80:80@loadbalancer --volume ${dataDir}:/data`
+  );
+};
+
+const importImages = async () => {
+  for (const service of Object.keys(SERVICES)) {
+    const serviceName = service.replace(/\d/, '');
+    const image = `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
+    await runCommand(`k3d image import ${image} -c k3s-default`);
+  }
+};
+
+const prepK3DServices = async (defaultSettings) => {
+  infrastructure = 'k3d';
+  await createLogDir();
+  await generateK3DValuesFile();
+
+  const dataDir = makeTempDir('ci-dbdata');
+  await fs.promises.mkdir(path.join(dataDir, 'srv1'));
+  await fs.promises.mkdir(path.join(dataDir, 'srv2'));
+  await fs.promises.mkdir(path.join(dataDir, 'srv3'));
+
+  await runCommand(`helm uninstall ${PROJECT_NAME} -n ${PROJECT_NAME}`);
+  await runCommand('k3d cluster delete');
+  await createCluster(dataDir);
+  await importImages();
+
+  const helmChartPath = path.join(__dirname, '..', 'helm');
+  const valesPath = path.join(helmChartPath, 'values.yaml');
+  await runCommand(
+    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} --values ${valesPath} --create-namespace`
+  );
+  await listenForApi();
+
+  if (defaultSettings) {
+    await runAndLogApiStartupMessage('Settings setup', setupSettings);
+  }
+  await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+};
+
 const prepServices = async (defaultSettings) => {
   await createLogDir();
   await generateComposeFiles();
@@ -1047,6 +1146,10 @@ const saveLogs = async () => {
 };
 
 const tearDownServices = async () => {
+  if (isK3D()) {
+    // todo
+    return;
+  }
   await saveLogs();
   if (!DEBUG) {
     await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
@@ -1060,14 +1163,16 @@ const killSpawnedProcess = (proc) => {
 };
 
 /**
- * Watches a docker log until at least one line matches one of the given regular expressions.
+ * Watches a docker or kubernetes container log until at least one line matches one of the given regular expressions.
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
  * @param {[RegExp]} regex - matching expression(s) run against lines
  * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
  */
-const waitForDockerLogs = (container, ...regex) => {
-  container = getContainerName(container);
+
+const waitForLogs = (container, ...regex) => {
+  container = isDocker() ? getContainerName(container) : `deployment/cht-${container}`;
+  const cmd = isDocker() ? 'docker' : 'kubectl';
   let timeout;
   let logs = '';
   let firstLine = false;
@@ -1076,8 +1181,9 @@ const waitForDockerLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1`;
-  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const params = `logs ${container} -f --tail=1 ${isK3D() ? `-n ${PROJECT_NAME}`: ''}`;
+  console.log(cmd, params);
+  const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
@@ -1118,8 +1224,8 @@ const waitForDockerLogs = (container, ...regex) => {
   }));
 };
 
-const waitForApiLogs = (...regex) => waitForDockerLogs('api', ...regex);
-const waitForSentinelLogs = (...regex) => waitForDockerLogs('sentinel', ...regex);
+const waitForApiLogs = (...regex) => waitForLogs('api', ...regex);
+const waitForSentinelLogs = (...regex) => waitForLogs('sentinel', ...regex);
 
 /**
  * Collector that listens to the given container logs and collects lines that match at least one of the
@@ -1134,7 +1240,8 @@ const waitForSentinelLogs = (...regex) => waitForDockerLogs('sentinel', ...regex
  * @return     {Promise<function>}      promise that returns a function that returns a promise
  */
 const collectLogs = (container, ...regex) => {
-  container = getContainerName(container);
+  container = isDocker() ? getContainerName(container) : `deployment/cht-${container}`;
+  const cmd = isDocker() ? 'docker' : 'kubectl';
   const matches = [];
   const errors = [];
   let logs = '';
@@ -1143,8 +1250,8 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1`;
-  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const params = `logs ${container} -f --tail=1 ${isK3D() ? `-n ${PROJECT_NAME}`: ''}`;
+  const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
@@ -1206,7 +1313,7 @@ const getDockerVersion = () => {
 const updateContainerNames = (project = PROJECT_NAME) => {
   dockerVersion = dockerVersion || getDockerVersion();
 
-  Object.entries(services).forEach(([key, service]) => {
+  Object.entries(SERVICES).forEach(([key, service]) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
   });
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
@@ -1318,6 +1425,7 @@ module.exports = {
   enableLanguages,
   getSettings,
   prepServices,
+  prepK3DServices,
   tearDownServices,
   waitForApiLogs,
   waitForSentinelLogs,
