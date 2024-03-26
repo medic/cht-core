@@ -136,6 +136,10 @@ jobs:
         include:
           - cmd: ci-webdriver-default
             suite: core
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            suite: core
+            chrome-version: latest
           - cmd: ci-webdriver-default
             suite: data
           - cmd: ci-webdriver-default
