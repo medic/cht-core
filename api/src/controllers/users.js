@@ -238,7 +238,7 @@ module.exports = {
 
   v2: {
     get: async (req, res) => {
-      if (req.params.username) {
+      if (req.params?.username) {
         try {
           const username = req.params.username;
           const credentials = auth.basicAuthCredentials(req);
