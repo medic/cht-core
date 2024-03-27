@@ -22,7 +22,7 @@ spec:
       restartPolicy: Always
       serviceAccountName: cht-upgrade-service-user
       containers:
-      - image: medicmobile/upgrade-service:0.31
+      - image: medicmobile/upgrade-service:0.32
         name: upgrade-service
         resources: {}
         env:
