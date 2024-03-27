@@ -85,6 +85,7 @@ const isLoggedIn = async () => {
 const loginIfNeeded = async () => {
   if (!await isLoggedIn()) {
     await login();
+    await commonPage.sync();
   }
 };
 
