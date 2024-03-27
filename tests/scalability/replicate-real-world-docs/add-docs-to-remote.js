@@ -5,6 +5,7 @@ const user = config.users[threadId % config.users.length];
 
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-session-authentication'));
 const path = require('path');
 const fs = require('fs');
 

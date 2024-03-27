@@ -6,6 +6,7 @@ const jsondiff = require('json-diff');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const argv = parseArgs(process.argv);
