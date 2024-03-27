@@ -1063,7 +1063,7 @@ const runCommand = (command) => {
 
 const createCluster = async (dataDir) => {
   await runCommand('kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/' +
-    'controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml');
+    'controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml --validate=false');
   await runCommand(
     `k3d cluster create --port 443:443@loadbalancer --port 80:80@loadbalancer --volume ${dataDir}:/data`
   );
