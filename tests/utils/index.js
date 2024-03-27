@@ -28,7 +28,7 @@ let originalSettings;
 let dockerVersion;
 let infrastructure = 'docker';
 const isDocker = () => infrastructure === 'docker';
-const isK3D = () => infrastructure !== 'docker';
+const isK3D = () => !isDocker();
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
@@ -1029,8 +1029,11 @@ const startServices = async () => {
   env.DB2_DATA = makeTempDir('ci-dbdata');
   env.DB3_DATA = makeTempDir('ci-dbdata');
 
+  console.log('starting services');
+
   await dockerComposeCmd('up', '-d');
   const services = await dockerComposeCmd('ps', '-q');
+  console.log(services);
   if (!services.length) {
     throw new Error('Errors when starting services');
   }
@@ -1179,7 +1182,7 @@ const waitForLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1 ${isK3D() ? `-n ${PROJECT_NAME}`: ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}`: ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
