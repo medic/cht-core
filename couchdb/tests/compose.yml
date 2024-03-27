@@ -1,0 +1,52 @@
+version: "3.7"
+
+services:
+  couchdb.1:
+    build:
+      context: ..
+      target: cht-couchdb
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
+      - "SVC_NAME=couchdb.1"
+      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+
+  couchdb.2:
+    build:
+      context: ..
+      target: cht-couchdb
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
+      - "SVC_NAME=couchdb.2"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+
+  couchdb.3:
+    build:
+      context: ..
+      target: cht-couchdb
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
+      - "SVC_NAME=couchdb.3"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+
+  sut:
+    depends_on:
+      - couchdb.1
+      - couchdb.2
+      - couchdb.3
+    build:
+      context: ..
+      target: test_couchdb_build
+    environment:
+      - "TEST_MODE=CLUSTERED"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "SVC_NAME=couchdb.1"

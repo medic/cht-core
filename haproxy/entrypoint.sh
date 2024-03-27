@@ -7,6 +7,7 @@ BACKEND="/usr/local/etc/haproxy/backend.cfg"
 
 # Update backend servers
 cp /usr/local/etc/haproxy/backend.cfg.template $BACKEND
+# shellcheck disable=SC2153
 for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
 do
   echo "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr $HEALTHCHECK_ADDR agent-port 5555" >> $BACKEND
