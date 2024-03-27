@@ -5,6 +5,7 @@
     require( 'enketo-core/src/widget/table/tablewidget' ).default,
     require( 'enketo-core/src/widget/radio/radiopicker' ).default,
     require( 'enketo-core/src/widget/date/datepicker-extended' ).default,
+    require( 'enketo-core/src/widget/draw/draw-widget' ).default,
     require( 'enketo-core/src/widget/time/timepicker-extended' ).default,
     require( 'enketo-core/src/widget/datetime/datetimepicker-extended' ).default,
     require( 'enketo-core/src/widget/columns/columns' ).default,
