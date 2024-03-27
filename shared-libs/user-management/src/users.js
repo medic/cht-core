@@ -105,10 +105,18 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = () => {
+const getAllUserSettings = ({ facilityId, contactId } = {}) => {
+  const key = ['user-settings'];
+  if (facilityId) {
+    key.push(facilityId);
+  }
+  if (contactId) {
+    key.push(contactId);
+  }
+
   const opts = {
     include_docs: true,
-    key: ['user-settings']
+    key,
   };
   return db.medic.query('medic-client/doc_by_type', opts)
     .then(result => result.rows.map(row => row.doc));
@@ -116,7 +124,15 @@ const getAllUserSettings = () => {
 
 const getAllUsers = () => {
   return db.users.allDocs({ include_docs: true })
-    .then(result => result.rows);
+    .then(result => result.rows.map(({ doc }) => doc));
+};
+
+const getUsersByIds = async (ids) => {
+  const docs = ids.map(id => ({ id }));
+  const { results } = await db.users.bulkGet({ docs });
+  return results
+    .map(result => result?.docs?.[0]?.ok)
+    .filter(doc => doc);
 };
 
 const validateContact = (id, placeID) => {
@@ -335,21 +351,21 @@ const hasParent = (facility, id) => {
 const mapUsers = (users, settings, facilities) => {
   users = users || [];
   return users
-    .filter(user => user.id.indexOf(USER_PREFIX) === 0)
+    .filter(user => user._id.indexOf(USER_PREFIX) === 0)
     .map(user => {
-      const setting = getDoc(user.id, settings) || {};
+      const setting = getDoc(user._id, settings) || {};
       return {
-        id: user.id,
-        rev: user.doc._rev,
-        username: user.doc.name,
+        id: user._id,
+        rev: user._rev,
+        username: user.name,
         fullname: setting.fullname,
         email: setting.email,
         phone: setting.phone,
-        place: getDoc(user.doc.facility_id, facilities),
-        roles: user.doc.roles,
+        place: getDoc(setting.facility_id, facilities),
+        roles: user.roles,
         contact: getDoc(setting.contact_id, facilities),
         external_id: setting.external_id,
-        known: user.doc.known
+        known: user.known
       };
     });
 };
@@ -770,8 +786,18 @@ const getUserSettings = async({ name }) => {
  */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
-  getList: async () => {
-    const [ users, settings ] = await Promise.all([ getAllUsers(), getAllUserSettings() ]);
+  getList: async (filters) => {
+    let users;
+    let settings;
+
+    if (_.isEmpty(filters)) {
+      [users, settings] = await Promise.all([getAllUsers(), getAllUserSettings()]);
+    } else {
+      settings = await getAllUserSettings(filters);
+      const ids = settings.map(({ _id }) => _id);
+      users = await getUsersByIds(ids);
+    }
+
     const facilities = await facility.list(users, settings);
     return mapUsers(users, settings, facilities);
   },

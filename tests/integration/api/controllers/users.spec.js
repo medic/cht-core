@@ -1585,7 +1585,7 @@ describe('Users API', () => {
       await utils.revertDb([], true);
     });
 
-    it('should create and get users', async () => {
+    it('should create and get all users', async () => {
       const users = Array.from({ length: 10 }).map(() => ({
         username: uuid(),
         password: password,
@@ -1600,10 +1600,7 @@ describe('Users API', () => {
         roles: ['district_admin', 'mm-online']
       }));
 
-      const createUserOpts = { path: '/api/v2/users', method: 'POST' };
-      for (const user of users) {
-        await utils.request({ ...createUserOpts, body: user });
-      }
+      await utils.request({ path: '/api/v2/users', method: 'POST', body: users });
 
       const savedUsers = await utils.request({ path: '/api/v2/users' });
       for (const user of users) {
@@ -1616,6 +1613,178 @@ describe('Users API', () => {
           'contact.name': user.contact.name,
         });
       }
+
+      await Promise.all(savedUsers.map(async (savedUser) => {
+        let filteredUsers;
+
+        // GET with facility_id filter
+        if (savedUser.place?._id) {
+          filteredUsers = await utils.request({
+            path: '/api/v2/users',
+            qs: { facility_id: savedUser.place._id },
+          });
+          expect(filteredUsers.length).to.equal(1);
+          expect(filteredUsers[0]).to.deep.equal(savedUser);
+        }
+
+        // GET with contact_id filter
+        if (savedUser.contact?._id) {
+          filteredUsers = await utils.request({
+            path: '/api/v2/users',
+            qs: { contact_id: savedUser.contact._id },
+          });
+          expect(filteredUsers.length).to.equal(1);
+          expect(filteredUsers[0]).to.deep.equal(savedUser);
+        }
+
+        // GET with facility_id AND contact_id filters
+        if (savedUser.place?._id && savedUser.contact?._id) {
+          filteredUsers = await utils.request({
+            path: '/api/v2/users',
+            qs: {
+              facility_id: savedUser.place._id,
+              contact_id: savedUser.contact._id,
+            },
+          });
+          expect(filteredUsers.length).to.equal(1);
+          expect(filteredUsers[0]).to.deep.equal(savedUser);
+        }
+      }));
+    });
+
+    it('should create and query users using filters', async () => {
+      const facilityE = await utils.request({
+        path: '/api/v1/places',
+        method: 'POST',
+        body: { type: 'health_center', name: 'Facility E', parent: 'PARENT_PLACE' },
+      });
+      const facilityF = await utils.request({
+        path: '/api/v1/places',
+        method: 'POST',
+        body: { type: 'health_center', name: 'Facility F', parent: 'PARENT_PLACE' },
+      });
+      const contactA = await utils.request({
+        path: '/api/v1/people',
+        method: 'POST',
+        body: { name: 'Contact A', place: facilityE.id },
+      });
+      const contactB = await utils.request({
+        path: '/api/v1/people',
+        method: 'POST',
+        body: { name: 'Contact B', place: facilityE.id },
+      });
+      const contactC = await utils.request({
+        path: '/api/v1/people',
+        method: 'POST',
+        body: { name: 'Contact C', place: facilityF.id },
+      });
+
+      const userFactory = ({ contact, place }) => ({
+        username: uuid(),
+        password: password,
+        roles: ['district_admin', 'mm-online'],
+        contact,
+        place,
+      });
+      const user1 = userFactory({ contact: contactA.id, place: facilityE.id });
+      const user2 = userFactory({ contact: contactA.id, place: facilityE.id });
+      const user3 = userFactory({ contact: contactB.id, place: facilityE.id });
+      const user4 = userFactory({ contact: contactC.id, place: facilityF.id });
+      const [user1Response, user2Response, user3Response, user4Response] = await utils.request({
+        path: '/api/v2/users',
+        method: 'POST',
+        body: [user1, user2, user3, user4],
+      });
+
+      let filteredUsers;
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: {
+          facility_id: facilityE.id,
+          contact_id: contactA.id,
+        },
+      });
+      expect(filteredUsers.length).to.equal(2);
+      // using find instead of accessing array by index here because
+      // couch sorts results by their id, not by their creation order
+      expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
+        id: user1Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
+        id: user2Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { facility_id: facilityE.id },
+      });
+      expect(filteredUsers.length).to.equal(3);
+      expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
+        id: user1Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
+        id: user2Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user3Response.user.id)).to.deep.nested.include({
+        id: user3Response.user.id,
+        'contact._id': contactB.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { contact_id: contactA.id },
+      });
+      expect(filteredUsers.length).to.equal(2);
+      expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
+        id: user1Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
+        id: user2Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { contact_id: contactC.id },
+      });
+      expect(filteredUsers.length).to.equal(1);
+      expect(filteredUsers.find(user => user.id === user4Response.user.id)).to.deep.nested.include({
+        id: user4Response.user.id,
+        'contact._id': contactC.id,
+        'place._id': facilityF.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { contact_id: 'non_existent_contact' },
+      });
+      expect(filteredUsers.length).to.equal(0);
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { facility_id: 'non_existent_facility' },
+      });
+      expect(filteredUsers.length).to.equal(0);
     });
   });
 });
