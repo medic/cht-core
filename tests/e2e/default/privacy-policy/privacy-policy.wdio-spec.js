@@ -68,6 +68,7 @@ describe('Privacy policy', () => {
       it('should show if the user changes their language', async () => {
         await browser.setCookies({ name: 'locale', value: 'es' });
         await browser.refresh();
+        await commonElements.waitForLoaders();
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), spanishTexts);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
