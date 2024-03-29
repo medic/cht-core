@@ -1281,7 +1281,7 @@ const collectLogs = (container, ...regex) => {
   proc.on('error', err => {
     receivedFirstLine();
     errors.push(err.toString());
-  })
+  });
 
   const collect = () => {
     if (errors.length) {
