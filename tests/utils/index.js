@@ -763,6 +763,9 @@ const listenForApi = async () => {
     await request({ path: '/api/info' });
     console.log('API is up');
   } catch (err) {
+    if (isK3D()) {
+      await runCommand('kubectl -n cht-e2e get pods -o wide');
+    }
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
     await apiRetry();
@@ -1190,7 +1193,7 @@ const waitForLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME} -c ${PROJECT_NAME}`: ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}`: ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1258,7 +1261,7 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? `-n ${PROJECT_NAME} -c ${PROJECT_NAME}`: ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}`: ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1274,6 +1277,11 @@ const collectLogs = (container, ...regex) => {
     receivedFirstLine();
     errors.push(err.toString());
   });
+
+  proc.on('error', err => {
+    receivedFirstLine();
+    errors.push(err.toString());
+  })
 
   const collect = () => {
     if (errors.length) {
