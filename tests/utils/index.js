@@ -1072,12 +1072,13 @@ const createCluster = async (dataDir) => {
 };
 
 const importImages = async () => {
-  if (buildVersions.getRepo() !== 'medicmobile') { // detect local build better
-    return;
-  }
+  const isLocalBuild = buildVersions.getRepo() === 'medicmobile';
   for (const service of Object.keys(SERVICES)) {
     const serviceName = service.replace(/\d/, '');
     const image = `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
+    if (!isLocalBuild) {
+      await runCommand(`docker pull ${image}`);
+    }
     await runCommand(`k3d image import ${image} -c ${PROJECT_NAME}`);
   }
 };
