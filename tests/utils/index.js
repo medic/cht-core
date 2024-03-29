@@ -158,7 +158,7 @@ const request = (options, { debug } = {}) => { //NOSONAR
 
   return rpn(options).catch(err => {
     err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.status} ${err.responseBody}`);
     throw err;
   });
 };
@@ -1057,15 +1057,13 @@ const runCommand = (command) => {
     proc.stdout.on('data', log);
     proc.stderr.on('data', log);
 
-    proc.on('close', () => resolve(output));
+    proc.on('close', (number) => number ? reject(output) : resolve(output));
   });
 };
 
 const createCluster = async (dataDir) => {
-  await runCommand('kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/' +
-    'controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml --validate=false');
   await runCommand(
-    `k3d cluster create --port 443:443@loadbalancer --port 80:80@loadbalancer --volume ${dataDir}:/data`
+    `k3d cluster create ${PROJECT_NAME} --api-port 6550 --port 443:443@loadbalancer --volume ${dataDir}:/data`
   );
 };
 
@@ -1074,6 +1072,15 @@ const importImages = async () => {
     const serviceName = service.replace(/\d/, '');
     const image = `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
     await runCommand(`k3d image import ${image} -c k3s-default`);
+  }
+};
+
+const cleanupOldCluster = async () => {
+  try {
+    await runCommand(`helm uninstall ${PROJECT_NAME} -n ${PROJECT_NAME}`);
+    await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
+  } catch (err) {
+    // ignore
   }
 };
 
@@ -1087,8 +1094,7 @@ const prepK3DServices = async (defaultSettings) => {
   await fs.promises.mkdir(path.join(dataDir, 'srv2'));
   await fs.promises.mkdir(path.join(dataDir, 'srv3'));
 
-  await runCommand(`helm uninstall ${PROJECT_NAME} -n ${PROJECT_NAME}`);
-  await runCommand('k3d cluster delete');
+  await cleanupOldCluster();
   await createCluster(dataDir);
   await importImages();
 

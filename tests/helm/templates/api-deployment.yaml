@@ -34,6 +34,8 @@ spec:
           name: cht-api
           ports:
             - containerPort: 5988
+              port: 5988
+              targetPort: 5988
           resources: {}
       restartPolicy: Always
 status: {}
