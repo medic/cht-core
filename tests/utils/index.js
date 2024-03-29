@@ -157,8 +157,8 @@ const request = (options, { debug } = {}) => { //NOSONAR
   };
 
   return rpn(options).catch(err => {
-    err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.status} ${err.responseBody}`);
+    err.responseBody = err.response?.body;
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.response?.statusCode}`);
     throw err;
   });
 };
@@ -1068,16 +1068,18 @@ const createCluster = async (dataDir) => {
 };
 
 const importImages = async () => {
+  if (buildVersions.getRepo() !== 'medicmobile') { // detect local build better
+    return;
+  }
   for (const service of Object.keys(SERVICES)) {
     const serviceName = service.replace(/\d/, '');
     const image = `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
-    await runCommand(`k3d image import ${image} -c k3s-default`);
+    await runCommand(`k3d image import ${image} -c ${PROJECT_NAME}`);
   }
 };
 
 const cleanupOldCluster = async () => {
   try {
-    await runCommand(`helm uninstall ${PROJECT_NAME} -n ${PROJECT_NAME}`);
     await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
   } catch (err) {
     // ignore
@@ -1188,7 +1190,7 @@ const waitForLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}`: ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME} -c ${PROJECT_NAME}`: ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1256,7 +1258,7 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? `-n ${PROJECT_NAME}`: ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? `-n ${PROJECT_NAME} -c ${PROJECT_NAME}`: ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
