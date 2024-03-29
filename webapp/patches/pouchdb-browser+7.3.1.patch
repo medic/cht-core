@@ -1,0 +1,1508 @@
+diff --git a/node_modules/pouchdb-browser/lib/index.es.js b/node_modules/pouchdb-browser/lib/index.es.js
+index b1eba82..7f17280 100644
+--- a/node_modules/pouchdb-browser/lib/index.es.js
++++ b/node_modules/pouchdb-browser/lib/index.es.js
+@@ -9625,6 +9625,7 @@ function replicate(src, target, opts, returnValue, result) {
+   returnValue.ready(src, target);
+ 
+   function initCheckpointer() {
++    console.debug('getting checkpointer');
+     if (checkpointer) {
+       return Promise.resolve();
+     }
+@@ -9647,6 +9648,7 @@ function replicate(src, target, opts, returnValue, result) {
+   }
+ 
+   function writeDocs() {
++    console.debug('write docs', currentBatch.docs.length);
+     changedDocs = [];
+ 
+     if (currentBatch.docs.length === 0) {
+@@ -9697,6 +9699,7 @@ function replicate(src, target, opts, returnValue, result) {
+   }
+ 
+   function finishBatch() {
++    console.debug('finish batch');
+     if (currentBatch.error) {
+       throw new Error('There was a problem getting docs.');
+     }
+@@ -9731,6 +9734,7 @@ function replicate(src, target, opts, returnValue, result) {
+   }
+ 
+   function getDiffs() {
++    console.debug('det diff');
+     var diff = {};
+     currentBatch.changes.forEach(function (change) {
+       returnValue.emit('checkpoint', { 'revs_diff': change });
+@@ -9755,6 +9759,7 @@ function replicate(src, target, opts, returnValue, result) {
+   }
+ 
+   function getBatchDocs() {
++    console.debug('get batch docs');
+     return getDocs(src, target, currentBatch.diffs, returnValue).then(function (got) {
+       currentBatch.error = !got.ok;
+       got.docs.forEach(function (doc) {
+@@ -9766,6 +9771,7 @@ function replicate(src, target, opts, returnValue, result) {
+   }
+ 
+   function startNextBatch() {
++    console.debug('start nexr batch');
+     if (returnValue.cancelled || currentBatch) {
+       return;
+     }
+@@ -9787,6 +9793,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function processPendingBatch(immediate$$1) {
++    console.debug('process pending batch');
+     if (pendingBatch.changes.length === 0) {
+       if (batches.length === 0 && !currentBatch) {
+         if ((continuous && changesOpts.live) || changesCompleted) {
+@@ -9820,6 +9827,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function abortReplication(reason, err) {
++    console.debug('abort');
+     if (replicationCompleted) {
+       return;
+     }
+@@ -9839,6 +9847,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function completeReplication(fatalError) {
++    console.debug('complete!');
+     if (replicationCompleted) {
+       return;
+     }
+@@ -9877,6 +9886,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function onChange(change, pending, lastSeq) {
++    console.debug('on change');
+     /* istanbul ignore if */
+     if (returnValue.cancelled) {
+       return completeReplication();
+@@ -9901,6 +9911,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function onChangesComplete(changes) {
++    console.debug('on changes complete');
+     changesPending = false;
+     /* istanbul ignore if */
+     if (returnValue.cancelled) {
+@@ -9953,6 +9964,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function getChanges() {
++    console.debug('get changes');
+     if (!(
+       !changesPending &&
+       !changesCompleted &&
+@@ -9989,6 +10001,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function startChanges() {
++    console.debug('start changes');
+     initCheckpointer().then(function () {
+       /* istanbul ignore if */
+       if (returnValue.cancelled) {
+diff --git a/node_modules/pouchdb-browser/lib/index.js b/node_modules/pouchdb-browser/lib/index.js
+index 354dfcc..365e307 100644
+--- a/node_modules/pouchdb-browser/lib/index.js
++++ b/node_modules/pouchdb-browser/lib/index.js
+@@ -810,7 +810,7 @@ function isRemote(db) {
+ 
+ function listenerCount(ee, type) {
+   return 'listenerCount' in ee ? ee.listenerCount(type) :
+-                                 EE.listenerCount(ee, type);
++    EE.listenerCount(ee, type);
+ }
+ 
+ function parseDesignDocFunctionName(s) {
+@@ -836,7 +836,7 @@ function normalizeDesignDocFunctionName(s) {
+ // (c) Steven Levithan <stevenlevithan.com>
+ // MIT License
+ var keys = ["source", "protocol", "authority", "userInfo", "user", "password",
+-    "host", "port", "relative", "path", "directory", "file", "query", "anchor"];
++  "host", "port", "relative", "path", "directory", "file", "query", "anchor"];
+ var qName ="queryKey";
+ var qParser = /(?:^|&)([^&=]*)=?([^&]*)/g;
+ 
+@@ -951,9 +951,9 @@ function createBlob(parts, properties) {
+       throw e;
+     }
+     var Builder = typeof BlobBuilder !== 'undefined' ? BlobBuilder :
+-                  typeof MSBlobBuilder !== 'undefined' ? MSBlobBuilder :
+-                  typeof MozBlobBuilder !== 'undefined' ? MozBlobBuilder :
+-                  WebKitBlobBuilder;
++      typeof MSBlobBuilder !== 'undefined' ? MSBlobBuilder :
++        typeof MozBlobBuilder !== 'undefined' ? MozBlobBuilder :
++          WebKitBlobBuilder;
+     var builder = new Builder();
+     for (var i = 0; i < parts.length; i += 1) {
+       builder.append(parts[i]);
+@@ -1150,7 +1150,7 @@ function winningRev(metadata) {
+     var id = tree[0];
+     // sort by deleted, then pos, then id
+     if (!winningId || (winningDeleted !== deleted ? winningDeleted :
+-        winningPos !== pos ? winningPos < pos : winningId < id)) {
++      winningPos !== pos ? winningPos < pos : winningId < id)) {
+       winningId = id;
+       winningPos = pos;
+       winningDeleted = deleted;
+@@ -1318,7 +1318,7 @@ function mergeTree(in_tree1, in_tree2) {
+     if (tree1[1].status || tree2[1].status) {
+       tree1[1].status =
+         (tree1[1].status ===  'available' ||
+-        tree2[1].status === 'available') ? 'available' : 'missing';
++          tree2[1].status === 'available') ? 'available' : 'missing';
+     }
+ 
+     for (var i = 0; i < tree2[2].length; i++) {
+@@ -1667,7 +1667,7 @@ function processChange(doc, metadata, opts) {
+   var changeList = [{rev: doc._rev}];
+   if (opts.style === 'all_docs') {
+     changeList = collectLeaves(metadata.rev_tree)
+-    .map(function (x) { return {rev: x.rev}; });
++      .map(function (x) { return {rev: x.rev}; });
+   }
+   var change = {
+     id: metadata.id,
+@@ -1912,15 +1912,15 @@ function AbstractPouchDB() {
+ 
+ AbstractPouchDB.prototype.post =
+   adapterFun('post', function (doc, opts, callback) {
+-  if (typeof opts === 'function') {
+-    callback = opts;
+-    opts = {};
+-  }
+-  if (typeof doc !== 'object' || Array.isArray(doc)) {
+-    return callback(createError(NOT_AN_OBJECT));
+-  }
+-  this.bulkDocs({docs: [doc]}, opts, yankError(callback, doc._id));
+-});
++    if (typeof opts === 'function') {
++      callback = opts;
++      opts = {};
++    }
++    if (typeof doc !== 'object' || Array.isArray(doc)) {
++      return callback(createError(NOT_AN_OBJECT));
++    }
++    this.bulkDocs({docs: [doc]}, opts, yankError(callback, doc._id));
++  });
+ 
+ AbstractPouchDB.prototype.put = adapterFun('put', function (doc, opts, cb) {
+   if (typeof opts === 'function') {
+@@ -1975,139 +1975,139 @@ AbstractPouchDB.prototype.put = adapterFun('put', function (doc, opts, cb) {
+ 
+ AbstractPouchDB.prototype.putAttachment =
+   adapterFun('putAttachment', function (docId, attachmentId, rev,
+-                                              blob, type) {
+-  var api = this;
+-  if (typeof type === 'function') {
+-    type = blob;
+-    blob = rev;
+-    rev = null;
+-  }
+-  // Lets fix in https://github.com/pouchdb/pouchdb/issues/3267
+-  /* istanbul ignore if */
+-  if (typeof type === 'undefined') {
+-    type = blob;
+-    blob = rev;
+-    rev = null;
+-  }
+-  if (!type) {
+-    guardedConsole('warn', 'Attachment', attachmentId, 'on document', docId, 'is missing content_type');
+-  }
+-
+-  function createAttachment(doc) {
+-    var prevrevpos = '_rev' in doc ? parseInt(doc._rev, 10) : 0;
+-    doc._attachments = doc._attachments || {};
+-    doc._attachments[attachmentId] = {
+-      content_type: type,
+-      data: blob,
+-      revpos: ++prevrevpos
+-    };
+-    return api.put(doc);
+-  }
+-
+-  return api.get(docId).then(function (doc) {
+-    if (doc._rev !== rev) {
+-      throw createError(REV_CONFLICT);
++                                        blob, type) {
++    var api = this;
++    if (typeof type === 'function') {
++      type = blob;
++      blob = rev;
++      rev = null;
++    }
++    // Lets fix in https://github.com/pouchdb/pouchdb/issues/3267
++    /* istanbul ignore if */
++    if (typeof type === 'undefined') {
++      type = blob;
++      blob = rev;
++      rev = null;
++    }
++    if (!type) {
++      guardedConsole('warn', 'Attachment', attachmentId, 'on document', docId, 'is missing content_type');
+     }
+ 
+-    return createAttachment(doc);
+-  }, function (err) {
+-     // create new doc
+-    /* istanbul ignore else */
+-    if (err.reason === MISSING_DOC.message) {
+-      return createAttachment({_id: docId});
+-    } else {
+-      throw err;
++    function createAttachment(doc) {
++      var prevrevpos = '_rev' in doc ? parseInt(doc._rev, 10) : 0;
++      doc._attachments = doc._attachments || {};
++      doc._attachments[attachmentId] = {
++        content_type: type,
++        data: blob,
++        revpos: ++prevrevpos
++      };
++      return api.put(doc);
+     }
++
++    return api.get(docId).then(function (doc) {
++      if (doc._rev !== rev) {
++        throw createError(REV_CONFLICT);
++      }
++
++      return createAttachment(doc);
++    }, function (err) {
++      // create new doc
++      /* istanbul ignore else */
++      if (err.reason === MISSING_DOC.message) {
++        return createAttachment({_id: docId});
++      } else {
++        throw err;
++      }
++    });
+   });
+-});
+ 
+ AbstractPouchDB.prototype.removeAttachment =
+   adapterFun('removeAttachment', function (docId, attachmentId, rev,
+-                                                 callback) {
+-  var self = this;
+-  self.get(docId, function (err, obj) {
+-    /* istanbul ignore if */
+-    if (err) {
+-      callback(err);
+-      return;
+-    }
+-    if (obj._rev !== rev) {
+-      callback(createError(REV_CONFLICT));
+-      return;
+-    }
+-    /* istanbul ignore if */
+-    if (!obj._attachments) {
+-      return callback();
+-    }
+-    delete obj._attachments[attachmentId];
+-    if (Object.keys(obj._attachments).length === 0) {
+-      delete obj._attachments;
+-    }
+-    self.put(obj, callback);
++                                           callback) {
++    var self = this;
++    self.get(docId, function (err, obj) {
++      /* istanbul ignore if */
++      if (err) {
++        callback(err);
++        return;
++      }
++      if (obj._rev !== rev) {
++        callback(createError(REV_CONFLICT));
++        return;
++      }
++      /* istanbul ignore if */
++      if (!obj._attachments) {
++        return callback();
++      }
++      delete obj._attachments[attachmentId];
++      if (Object.keys(obj._attachments).length === 0) {
++        delete obj._attachments;
++      }
++      self.put(obj, callback);
++    });
+   });
+-});
+ 
+ AbstractPouchDB.prototype.remove =
+   adapterFun('remove', function (docOrId, optsOrRev, opts, callback) {
+-  var doc;
+-  if (typeof optsOrRev === 'string') {
+-    // id, rev, opts, callback style
+-    doc = {
+-      _id: docOrId,
+-      _rev: optsOrRev
+-    };
+-    if (typeof opts === 'function') {
+-      callback = opts;
+-      opts = {};
+-    }
+-  } else {
+-    // doc, opts, callback style
+-    doc = docOrId;
+-    if (typeof optsOrRev === 'function') {
+-      callback = optsOrRev;
+-      opts = {};
++    var doc;
++    if (typeof optsOrRev === 'string') {
++      // id, rev, opts, callback style
++      doc = {
++        _id: docOrId,
++        _rev: optsOrRev
++      };
++      if (typeof opts === 'function') {
++        callback = opts;
++        opts = {};
++      }
+     } else {
+-      callback = opts;
+-      opts = optsOrRev;
++      // doc, opts, callback style
++      doc = docOrId;
++      if (typeof optsOrRev === 'function') {
++        callback = optsOrRev;
++        opts = {};
++      } else {
++        callback = opts;
++        opts = optsOrRev;
++      }
+     }
+-  }
+-  opts = opts || {};
+-  opts.was_delete = true;
+-  var newDoc = {_id: doc._id, _rev: (doc._rev || opts.rev)};
+-  newDoc._deleted = true;
+-  if (isLocalId(newDoc._id) && typeof this._removeLocal === 'function') {
+-    return this._removeLocal(doc, callback);
+-  }
+-  this.bulkDocs({docs: [newDoc]}, opts, yankError(callback, newDoc._id));
+-});
++    opts = opts || {};
++    opts.was_delete = true;
++    var newDoc = {_id: doc._id, _rev: (doc._rev || opts.rev)};
++    newDoc._deleted = true;
++    if (isLocalId(newDoc._id) && typeof this._removeLocal === 'function') {
++      return this._removeLocal(doc, callback);
++    }
++    this.bulkDocs({docs: [newDoc]}, opts, yankError(callback, newDoc._id));
++  });
+ 
+ AbstractPouchDB.prototype.revsDiff =
+   adapterFun('revsDiff', function (req, opts, callback) {
+-  if (typeof opts === 'function') {
+-    callback = opts;
+-    opts = {};
+-  }
+-  var ids = Object.keys(req);
++    if (typeof opts === 'function') {
++      callback = opts;
++      opts = {};
++    }
++    var ids = Object.keys(req);
+ 
+-  if (!ids.length) {
+-    return callback(null, {});
+-  }
++    if (!ids.length) {
++      return callback(null, {});
++    }
+ 
+-  var count = 0;
+-  var missing = new ExportedMap();
++    var count = 0;
++    var missing = new ExportedMap();
+ 
+-  function addToMissing(id, revId) {
+-    if (!missing.has(id)) {
+-      missing.set(id, {missing: []});
++    function addToMissing(id, revId) {
++      if (!missing.has(id)) {
++        missing.set(id, {missing: []});
++      }
++      missing.get(id).missing.push(revId);
+     }
+-    missing.get(id).missing.push(revId);
+-  }
+ 
+-  function processDoc(id, rev_tree) {
+-    // Is this fast enough? Maybe we should switch to a set simulated by a map
+-    var missingForId = req[id].slice(0);
+-    traverseRevTree(rev_tree, function (isLeaf, pos, revHash, ctx,
+-      opts) {
++    function processDoc(id, rev_tree) {
++      // Is this fast enough? Maybe we should switch to a set simulated by a map
++      var missingForId = req[id].slice(0);
++      traverseRevTree(rev_tree, function (isLeaf, pos, revHash, ctx,
++                                          opts) {
+         var rev = pos + '-' + revHash;
+         var idx = missingForId.indexOf(rev);
+         if (idx === -1) {
+@@ -2121,35 +2121,35 @@ AbstractPouchDB.prototype.revsDiff =
+         }
+       });
+ 
+-    // Traversing the tree is synchronous, so now `missingForId` contains
+-    // revisions that were not found in the tree
+-    missingForId.forEach(function (rev) {
+-      addToMissing(id, rev);
+-    });
+-  }
++      // Traversing the tree is synchronous, so now `missingForId` contains
++      // revisions that were not found in the tree
++      missingForId.forEach(function (rev) {
++        addToMissing(id, rev);
++      });
++    }
+ 
+-  ids.map(function (id) {
+-    this._getRevisionTree(id, function (err, rev_tree) {
+-      if (err && err.status === 404 && err.message === 'missing') {
+-        missing.set(id, {missing: req[id]});
+-      } else if (err) {
+-        /* istanbul ignore next */
+-        return callback(err);
+-      } else {
+-        processDoc(id, rev_tree);
+-      }
++    ids.map(function (id) {
++      this._getRevisionTree(id, function (err, rev_tree) {
++        if (err && err.status === 404 && err.message === 'missing') {
++          missing.set(id, {missing: req[id]});
++        } else if (err) {
++          /* istanbul ignore next */
++          return callback(err);
++        } else {
++          processDoc(id, rev_tree);
++        }
+ 
+-      if (++count === ids.length) {
+-        // convert LazyMap to object
+-        var missingObj = {};
+-        missing.forEach(function (value, key) {
+-          missingObj[key] = value;
+-        });
+-        return callback(null, missingObj);
+-      }
+-    });
+-  }, this);
+-});
++        if (++count === ids.length) {
++          // convert LazyMap to object
++          var missingObj = {};
++          missing.forEach(function (value, key) {
++            missingObj[key] = value;
++          });
++          return callback(null, missingObj);
++        }
++      });
++    }, this);
++  });
+ 
+ // _bulk_get API for faster replication, as described in
+ // https://github.com/apache/couchdb-chttpd/pull/33
+@@ -2160,57 +2160,57 @@ AbstractPouchDB.prototype.revsDiff =
+ // to do a more efficient single HTTP request.
+ AbstractPouchDB.prototype.bulkGet =
+   adapterFun('bulkGet', function (opts, callback) {
+-  bulkGet(this, opts, callback);
+-});
++    bulkGet(this, opts, callback);
++  });
+ 
+ // compact one document and fire callback
+ // by compacting we mean removing all revisions which
+ // are further from the leaf in revision tree than max_height
+ AbstractPouchDB.prototype.compactDocument =
+   adapterFun('compactDocument', function (docId, maxHeight, callback) {
+-  var self = this;
+-  this._getRevisionTree(docId, function (err, revTree) {
+-    /* istanbul ignore if */
+-    if (err) {
+-      return callback(err);
+-    }
+-    var height = computeHeight(revTree);
+-    var candidates = [];
+-    var revs = [];
+-    Object.keys(height).forEach(function (rev) {
+-      if (height[rev] > maxHeight) {
+-        candidates.push(rev);
++    var self = this;
++    this._getRevisionTree(docId, function (err, revTree) {
++      /* istanbul ignore if */
++      if (err) {
++        return callback(err);
+       }
+-    });
++      var height = computeHeight(revTree);
++      var candidates = [];
++      var revs = [];
++      Object.keys(height).forEach(function (rev) {
++        if (height[rev] > maxHeight) {
++          candidates.push(rev);
++        }
++      });
+ 
+-    traverseRevTree(revTree, function (isLeaf, pos, revHash, ctx, opts) {
+-      var rev = pos + '-' + revHash;
+-      if (opts.status === 'available' && candidates.indexOf(rev) !== -1) {
+-        revs.push(rev);
+-      }
++      traverseRevTree(revTree, function (isLeaf, pos, revHash, ctx, opts) {
++        var rev = pos + '-' + revHash;
++        if (opts.status === 'available' && candidates.indexOf(rev) !== -1) {
++          revs.push(rev);
++        }
++      });
++      self._doCompaction(docId, revs, callback);
+     });
+-    self._doCompaction(docId, revs, callback);
+   });
+-});
+ 
+ // compact the whole database using single document
+ // compaction
+ AbstractPouchDB.prototype.compact =
+   adapterFun('compact', function (opts, callback) {
+-  if (typeof opts === 'function') {
+-    callback = opts;
+-    opts = {};
+-  }
++    if (typeof opts === 'function') {
++      callback = opts;
++      opts = {};
++    }
+ 
+-  var self = this;
+-  opts = opts || {};
++    var self = this;
++    opts = opts || {};
+ 
+-  self._compactionQueue = self._compactionQueue || [];
+-  self._compactionQueue.push({opts: opts, callback: callback});
+-  if (self._compactionQueue.length === 1) {
+-    doNextCompaction(self);
+-  }
+-});
++    self._compactionQueue = self._compactionQueue || [];
++    self._compactionQueue.push({opts: opts, callback: callback});
++    if (self._compactionQueue.length === 1) {
++      doNextCompaction(self);
++    }
++  });
+ AbstractPouchDB.prototype._compact = function (opts, callback) {
+   var self = this;
+   var changesOpts = {
+@@ -2443,64 +2443,64 @@ AbstractPouchDB.prototype.get = adapterFun('get', function (id, opts, cb) {
+ // adapter.js and the adapter implementation
+ AbstractPouchDB.prototype.getAttachment =
+   adapterFun('getAttachment', function (docId, attachmentId, opts, callback) {
+-  var self = this;
+-  if (opts instanceof Function) {
+-    callback = opts;
+-    opts = {};
+-  }
+-  this._get(docId, opts, function (err, res) {
+-    if (err) {
+-      return callback(err);
+-    }
+-    if (res.doc._attachments && res.doc._attachments[attachmentId]) {
+-      opts.ctx = res.ctx;
+-      opts.binary = true;
+-      self._getAttachment(docId, attachmentId,
+-                          res.doc._attachments[attachmentId], opts, callback);
+-    } else {
+-      return callback(createError(MISSING_DOC));
++    var self = this;
++    if (opts instanceof Function) {
++      callback = opts;
++      opts = {};
+     }
++    this._get(docId, opts, function (err, res) {
++      if (err) {
++        return callback(err);
++      }
++      if (res.doc._attachments && res.doc._attachments[attachmentId]) {
++        opts.ctx = res.ctx;
++        opts.binary = true;
++        self._getAttachment(docId, attachmentId,
++          res.doc._attachments[attachmentId], opts, callback);
++      } else {
++        return callback(createError(MISSING_DOC));
++      }
++    });
+   });
+-});
+ 
+ AbstractPouchDB.prototype.allDocs =
+   adapterFun('allDocs', function (opts, callback) {
+-  if (typeof opts === 'function') {
+-    callback = opts;
+-    opts = {};
+-  }
+-  opts.skip = typeof opts.skip !== 'undefined' ? opts.skip : 0;
+-  if (opts.start_key) {
+-    opts.startkey = opts.start_key;
+-  }
+-  if (opts.end_key) {
+-    opts.endkey = opts.end_key;
+-  }
+-  if ('keys' in opts) {
+-    if (!Array.isArray(opts.keys)) {
+-      return callback(new TypeError('options.keys must be an array'));
+-    }
+-    var incompatibleOpt =
+-      ['startkey', 'endkey', 'key'].filter(function (incompatibleOpt) {
+-      return incompatibleOpt in opts;
+-    })[0];
+-    if (incompatibleOpt) {
+-      callback(createError(QUERY_PARSE_ERROR,
+-        'Query parameter `' + incompatibleOpt +
+-        '` is not compatible with multi-get'
+-      ));
+-      return;
++    if (typeof opts === 'function') {
++      callback = opts;
++      opts = {};
++    }
++    opts.skip = typeof opts.skip !== 'undefined' ? opts.skip : 0;
++    if (opts.start_key) {
++      opts.startkey = opts.start_key;
+     }
+-    if (!isRemote(this)) {
+-      allDocsKeysParse(opts);
+-      if (opts.keys.length === 0) {
+-        return this._allDocs({limit: 0}, callback);
++    if (opts.end_key) {
++      opts.endkey = opts.end_key;
++    }
++    if ('keys' in opts) {
++      if (!Array.isArray(opts.keys)) {
++        return callback(new TypeError('options.keys must be an array'));
++      }
++      var incompatibleOpt =
++        ['startkey', 'endkey', 'key'].filter(function (incompatibleOpt) {
++          return incompatibleOpt in opts;
++        })[0];
++      if (incompatibleOpt) {
++        callback(createError(QUERY_PARSE_ERROR,
++          'Query parameter `' + incompatibleOpt +
++          '` is not compatible with multi-get'
++        ));
++        return;
++      }
++      if (!isRemote(this)) {
++        allDocsKeysParse(opts);
++        if (opts.keys.length === 0) {
++          return this._allDocs({limit: 0}, callback);
++        }
+       }
+     }
+-  }
+ 
+-  return this._allDocs(opts, callback);
+-});
++    return this._allDocs(opts, callback);
++  });
+ 
+ AbstractPouchDB.prototype.changes = function (opts, callback) {
+   if (typeof opts === 'function') {
+@@ -2549,163 +2549,163 @@ AbstractPouchDB.prototype.type = function () {
+ 
+ AbstractPouchDB.prototype.bulkDocs =
+   adapterFun('bulkDocs', function (req, opts, callback) {
+-  if (typeof opts === 'function') {
+-    callback = opts;
+-    opts = {};
+-  }
+-
+-  opts = opts || {};
++    if (typeof opts === 'function') {
++      callback = opts;
++      opts = {};
++    }
+ 
+-  if (Array.isArray(req)) {
+-    req = {
+-      docs: req
+-    };
+-  }
++    opts = opts || {};
+ 
+-  if (!req || !req.docs || !Array.isArray(req.docs)) {
+-    return callback(createError(MISSING_BULK_DOCS));
+-  }
++    if (Array.isArray(req)) {
++      req = {
++        docs: req
++      };
++    }
+ 
+-  for (var i = 0; i < req.docs.length; ++i) {
+-    if (typeof req.docs[i] !== 'object' || Array.isArray(req.docs[i])) {
+-      return callback(createError(NOT_AN_OBJECT));
++    if (!req || !req.docs || !Array.isArray(req.docs)) {
++      return callback(createError(MISSING_BULK_DOCS));
+     }
+-  }
+ 
+-  var attachmentError;
+-  req.docs.forEach(function (doc) {
+-    if (doc._attachments) {
+-      Object.keys(doc._attachments).forEach(function (name) {
+-        attachmentError = attachmentError || attachmentNameError(name);
+-        if (!doc._attachments[name].content_type) {
+-          guardedConsole('warn', 'Attachment', name, 'on document', doc._id, 'is missing content_type');
+-        }
+-      });
++    for (var i = 0; i < req.docs.length; ++i) {
++      if (typeof req.docs[i] !== 'object' || Array.isArray(req.docs[i])) {
++        return callback(createError(NOT_AN_OBJECT));
++      }
+     }
+-  });
+ 
+-  if (attachmentError) {
+-    return callback(createError(BAD_REQUEST, attachmentError));
+-  }
++    var attachmentError;
++    req.docs.forEach(function (doc) {
++      if (doc._attachments) {
++        Object.keys(doc._attachments).forEach(function (name) {
++          attachmentError = attachmentError || attachmentNameError(name);
++          if (!doc._attachments[name].content_type) {
++            guardedConsole('warn', 'Attachment', name, 'on document', doc._id, 'is missing content_type');
++          }
++        });
++      }
++    });
+ 
+-  if (!('new_edits' in opts)) {
+-    if ('new_edits' in req) {
+-      opts.new_edits = req.new_edits;
+-    } else {
+-      opts.new_edits = true;
++    if (attachmentError) {
++      return callback(createError(BAD_REQUEST, attachmentError));
+     }
+-  }
+ 
+-  var adapter = this;
+-  if (!opts.new_edits && !isRemote(adapter)) {
+-    // ensure revisions of the same doc are sorted, so that
+-    // the local adapter processes them correctly (#2935)
+-    req.docs.sort(compareByIdThenRev);
+-  }
++    if (!('new_edits' in opts)) {
++      if ('new_edits' in req) {
++        opts.new_edits = req.new_edits;
++      } else {
++        opts.new_edits = true;
++      }
++    }
+ 
+-  cleanDocs(req.docs);
++    var adapter = this;
++    if (!opts.new_edits && !isRemote(adapter)) {
++      // ensure revisions of the same doc are sorted, so that
++      // the local adapter processes them correctly (#2935)
++      req.docs.sort(compareByIdThenRev);
++    }
+ 
+-  // in the case of conflicts, we want to return the _ids to the user
+-  // however, the underlying adapter may destroy the docs array, so
+-  // create a copy here
+-  var ids = req.docs.map(function (doc) {
+-    return doc._id;
+-  });
++    cleanDocs(req.docs);
+ 
+-  return this._bulkDocs(req, opts, function (err, res) {
+-    if (err) {
+-      return callback(err);
+-    }
+-    if (!opts.new_edits) {
+-      // this is what couch does when new_edits is false
+-      res = res.filter(function (x) {
+-        return x.error;
+-      });
+-    }
+-    // add ids for error/conflict responses (not required for CouchDB)
+-    if (!isRemote(adapter)) {
+-      for (var i = 0, l = res.length; i < l; i++) {
+-        res[i].id = res[i].id || ids[i];
++    // in the case of conflicts, we want to return the _ids to the user
++    // however, the underlying adapter may destroy the docs array, so
++    // create a copy here
++    var ids = req.docs.map(function (doc) {
++      return doc._id;
++    });
++
++    return this._bulkDocs(req, opts, function (err, res) {
++      if (err) {
++        return callback(err);
++      }
++      if (!opts.new_edits) {
++        // this is what couch does when new_edits is false
++        res = res.filter(function (x) {
++          return x.error;
++        });
++      }
++      // add ids for error/conflict responses (not required for CouchDB)
++      if (!isRemote(adapter)) {
++        for (var i = 0, l = res.length; i < l; i++) {
++          res[i].id = res[i].id || ids[i];
++        }
+       }
+-    }
+ 
+-    callback(null, res);
++      callback(null, res);
++    });
+   });
+-});
+ 
+ AbstractPouchDB.prototype.registerDependentDatabase =
+   adapterFun('registerDependentDatabase', function (dependentDb,
+-                                                          callback) {
+-  var dbOptions = clone(this.__opts);
+-  if (this.__opts.view_adapter) {
+-    dbOptions.adapter = this.__opts.view_adapter;
+-  }
++                                                    callback) {
++    var dbOptions = clone(this.__opts);
++    if (this.__opts.view_adapter) {
++      dbOptions.adapter = this.__opts.view_adapter;
++    }
+ 
+-  var depDB = new this.constructor(dependentDb, dbOptions);
++    var depDB = new this.constructor(dependentDb, dbOptions);
+ 
+-  function diffFun(doc) {
+-    doc.dependentDbs = doc.dependentDbs || {};
+-    if (doc.dependentDbs[dependentDb]) {
+-      return false; // no update required
++    function diffFun(doc) {
++      doc.dependentDbs = doc.dependentDbs || {};
++      if (doc.dependentDbs[dependentDb]) {
++        return false; // no update required
++      }
++      doc.dependentDbs[dependentDb] = true;
++      return doc;
+     }
+-    doc.dependentDbs[dependentDb] = true;
+-    return doc;
+-  }
+-  upsert(this, '_local/_pouch_dependentDbs', diffFun)
+-    .then(function () {
+-      callback(null, {db: depDB});
+-    }).catch(callback);
+-});
++    upsert(this, '_local/_pouch_dependentDbs', diffFun)
++      .then(function () {
++        callback(null, {db: depDB});
++      }).catch(callback);
++  });
+ 
+ AbstractPouchDB.prototype.destroy =
+   adapterFun('destroy', function (opts, callback) {
+ 
+-  if (typeof opts === 'function') {
+-    callback = opts;
+-    opts = {};
+-  }
++    if (typeof opts === 'function') {
++      callback = opts;
++      opts = {};
++    }
+ 
+-  var self = this;
+-  var usePrefix = 'use_prefix' in self ? self.use_prefix : true;
++    var self = this;
++    var usePrefix = 'use_prefix' in self ? self.use_prefix : true;
+ 
+-  function destroyDb() {
+-    // call destroy method of the particular adaptor
+-    self._destroy(opts, function (err, resp) {
+-      if (err) {
+-        return callback(err);
+-      }
+-      self._destroyed = true;
+-      self.emit('destroyed');
+-      callback(null, resp || { 'ok': true });
+-    });
+-  }
++    function destroyDb() {
++      // call destroy method of the particular adaptor
++      self._destroy(opts, function (err, resp) {
++        if (err) {
++          return callback(err);
++        }
++        self._destroyed = true;
++        self.emit('destroyed');
++        callback(null, resp || { 'ok': true });
++      });
++    }
+ 
+-  if (isRemote(self)) {
+-    // no need to check for dependent DBs if it's a remote DB
+-    return destroyDb();
+-  }
++    if (isRemote(self)) {
++      // no need to check for dependent DBs if it's a remote DB
++      return destroyDb();
++    }
+ 
+-  self.get('_local/_pouch_dependentDbs', function (err, localDoc) {
+-    if (err) {
+-      /* istanbul ignore if */
+-      if (err.status !== 404) {
+-        return callback(err);
+-      } else { // no dependencies
+-        return destroyDb();
++    self.get('_local/_pouch_dependentDbs', function (err, localDoc) {
++      if (err) {
++        /* istanbul ignore if */
++        if (err.status !== 404) {
++          return callback(err);
++        } else { // no dependencies
++          return destroyDb();
++        }
+       }
+-    }
+-    var dependentDbs = localDoc.dependentDbs;
+-    var PouchDB = self.constructor;
+-    var deletedMap = Object.keys(dependentDbs).map(function (name) {
+-      // use_prefix is only false in the browser
+-      /* istanbul ignore next */
+-      var trueName = usePrefix ?
+-        name.replace(new RegExp('^' + PouchDB.prefix), '') : name;
+-      return new PouchDB(trueName, self.__opts).destroy();
++      var dependentDbs = localDoc.dependentDbs;
++      var PouchDB = self.constructor;
++      var deletedMap = Object.keys(dependentDbs).map(function (name) {
++        // use_prefix is only false in the browser
++        /* istanbul ignore next */
++        var trueName = usePrefix ?
++          name.replace(new RegExp('^' + PouchDB.prefix), '') : name;
++        return new PouchDB(trueName, self.__opts).destroy();
++      });
++      Promise.all(deletedMap).then(destroyDb, callback);
+     });
+-    Promise.all(deletedMap).then(destroyDb, callback);
+   });
+-});
+ 
+ function TaskQueue() {
+   this.isReady = false;
+@@ -2765,7 +2765,7 @@ function parseAdapter(name, opts) {
+       // check for browsers that have been upgraded from websql-only to websql+idb
+       /* istanbul ignore if */
+       if (adapterName === 'idb' && 'websql' in adapters &&
+-          hasLocalStorage() && localStorage['_pouch__websqldb_' + prefix + name]) {
++        hasLocalStorage() && localStorage['_pouch__websqldb_' + prefix + name]) {
+         // log it, because this can be confusing during development
+         guardedConsole('log', 'PouchDB is downgrading "' + name + '" to WebSQL to' +
+           ' avoid data loss, because it was already opened with WebSQL.');
+@@ -2857,13 +2857,13 @@ function PouchDB(name, opts) {
+   PouchDB.emit('debug', ['adapter', 'Picked adapter: ', opts.adapter]);
+ 
+   if (!PouchDB.adapters[opts.adapter] ||
+-      !PouchDB.adapters[opts.adapter].valid()) {
++    !PouchDB.adapters[opts.adapter].valid()) {
+     throw new Error('Invalid Adapter: ' + opts.adapter);
+   }
+ 
+   if (opts.view_adapter) {
+     if (!PouchDB.adapters[opts.view_adapter] ||
+-        !PouchDB.adapters[opts.view_adapter].valid()) {
++      !PouchDB.adapters[opts.view_adapter].valid()) {
+       throw new Error('Invalid View Adapter: ' + opts.view_adapter);
+     }
+   }
+@@ -2889,8 +2889,8 @@ function PouchDB(name, opts) {
+ // AbortController was introduced quite a while after fetch and
+ // isnt required for PouchDB to function so polyfill if needed
+ var a = (typeof AbortController !== 'undefined')
+-    ? AbortController
+-    : function () { return {abort: function () {}}; };
++  ? AbortController
++  : function () { return {abort: function () {}}; };
+ 
+ var f$1 = fetch;
+ var h = Headers;
+@@ -3244,34 +3244,34 @@ function mergeRegex(value, fieldMatchers) {
+ 
+ //#7458: execute function mergeAndedSelectors on nested $and
+ function mergeAndedSelectorsNested(obj) {
+-    for (var prop in obj) {
+-        if (Array.isArray(obj)) {
+-            for (var i in obj) {
+-                if (obj[i]['$and']) {
+-                    obj[i] = mergeAndedSelectors(obj[i]['$and']);
+-                }
+-            }
+-        }
+-        var value = obj[prop];
+-        if (typeof value === 'object') {
+-            mergeAndedSelectorsNested(value); // <- recursive call
++  for (var prop in obj) {
++    if (Array.isArray(obj)) {
++      for (var i in obj) {
++        if (obj[i]['$and']) {
++          obj[i] = mergeAndedSelectors(obj[i]['$and']);
+         }
++      }
+     }
+-    return obj;
++    var value = obj[prop];
++    if (typeof value === 'object') {
++      mergeAndedSelectorsNested(value); // <- recursive call
++    }
++  }
++  return obj;
+ }
+ 
+ //#7458: determine id $and is present in selector (at any level)
+ function isAndInSelector(obj, isAnd) {
+-    for (var prop in obj) {
+-        if (prop === '$and') {
+-            isAnd = true;
+-        }
+-        var value = obj[prop];
+-        if (typeof value === 'object') {
+-            isAnd = isAndInSelector(value, isAnd); // <- recursive call
+-        }
++  for (var prop in obj) {
++    if (prop === '$and') {
++      isAnd = true;
++    }
++    var value = obj[prop];
++    if (typeof value === 'object') {
++      isAnd = isAndInSelector(value, isAnd); // <- recursive call
+     }
+-    return isAnd;
++  }
++  return isAnd;
+ }
+ 
+ //
+@@ -3280,14 +3280,14 @@ function isAndInSelector(obj, isAnd) {
+ function massageSelector(input) {
+   var result = clone(input);
+   var wasAnded = false;
+-    //#7458: if $and is present in selector (at any level) merge nested $and
+-    if (isAndInSelector(result, false)) {
+-        result = mergeAndedSelectorsNested(result);
+-        if ('$and' in result) {
+-            result = mergeAndedSelectors(result['$and']);
+-        }
+-        wasAnded = true;
++  //#7458: if $and is present in selector (at any level) merge nested $and
++  if (isAndInSelector(result, false)) {
++    result = mergeAndedSelectorsNested(result);
++    if ('$and' in result) {
++      result = mergeAndedSelectors(result['$and']);
+     }
++    wasAnded = true;
++  }
+ 
+   ['$or', '$nor'].forEach(function (orOrNor) {
+     if (orOrNor in result) {
+@@ -3399,7 +3399,7 @@ function normalizeKey(key) {
+         for (var i = 0; i < len; i++) {
+           key[i] = normalizeKey(origKey[i]);
+         }
+-      /* istanbul ignore next */
++        /* istanbul ignore next */
+       } else if (key instanceof Date) {
+         return key.toJSON();
+       } else if (key !== null) { // generic object
+@@ -3435,7 +3435,7 @@ function indexify(key) {
+           .replace(/\u0002/g, '\u0002\u0002')
+           .replace(/\u0001/g, '\u0001\u0002')
+           .replace(/\u0000/g, '\u0001\u0001');
+-        /* eslint-enable no-control-regex */
++      /* eslint-enable no-control-regex */
+       case 'object':
+         var isArray = Array.isArray(key);
+         var arr = isArray ? key : Object.keys(key);
+@@ -3450,7 +3450,7 @@ function indexify(key) {
+           while (++i < len) {
+             var objKey = arr[i];
+             result += toIndexableString(objKey) +
+-                toIndexableString(key[objKey]);
++              toIndexableString(key[objKey]);
+           }
+         }
+         return result;
+@@ -3605,7 +3605,7 @@ function parseIndexableString(str) {
+       default:
+         throw new Error(
+           'bad collationIndex or unexpectedly reached end of input: ' +
+-            collationIndex);
++          collationIndex);
+     }
+   }
+ }
+@@ -3747,7 +3747,7 @@ function filterInMemoryFields(rows, requestDef, inMemoryFields) {
+     var fieldSorter = createFieldSorter(requestDef.sort);
+     rows = rows.sort(fieldSorter);
+     if (typeof requestDef.sort[0] !== 'string' &&
+-        getValue(requestDef.sort[0]) === 'desc') {
++      getValue(requestDef.sort[0]) === 'desc') {
+       rows = rows.reverse();
+     }
+   }
+@@ -4937,7 +4937,7 @@ function idbBulkDocs(dbOpts, req, opts, api, idb, callback) {
+ 
+   function idbProcessDocs() {
+     processDocs(dbOpts.revs_limit, docInfos, api, fetchedDocs,
+-                txn, results, writeDoc, opts, onAllDocsProcessed);
++      txn, results, writeDoc, opts, onAllDocsProcessed);
+   }
+ 
+   function updateDocCountIfReady() {
+@@ -6270,7 +6270,7 @@ function init(api, opts, callback) {
+     docStore.get(docId).onsuccess = function (event) {
+       var metadata = decodeMetadata(event.target.result);
+       traverseRevTree(metadata.rev_tree, function (isLeaf, pos,
+-                                                         revHash, ctx, opts) {
++                                                   revHash, ctx, opts) {
+         var rev = pos + '-' + revHash;
+         if (revs.indexOf(rev) !== -1) {
+           opts.status = 'missing';
+@@ -6774,8 +6774,8 @@ function genUrl(opts, path) {
+   // If the host already has a path, then we need to have a path delimiter
+   // Otherwise, the path delimiter is the empty string
+   return opts.protocol + '://' + opts.host +
+-         (opts.port ? (':' + opts.port) : '') +
+-         '/' + opts.path + pathDel + path;
++    (opts.port ? (':' + opts.port) : '') +
++    '/' + opts.path + pathDel + path;
+ }
+ 
+ function paramsToStr(params) {
+@@ -6786,7 +6786,7 @@ function paramsToStr(params) {
+ 
+ function shouldCacheBust(opts) {
+   var ua = (typeof navigator !== 'undefined' && navigator.userAgent) ?
+-      navigator.userAgent.toLowerCase() : '';
++    navigator.userAgent.toLowerCase() : '';
+   var isIE = ua.indexOf('msie') !== -1;
+   var isTrident = ua.indexOf('trident') !== -1;
+   var isEdge = ua.indexOf('edge') !== -1;
+@@ -6950,7 +6950,7 @@ function HttpPouch(opts, callback) {
+     }).then(function (result) {
+       // Bad response or missing `uuid` should not prevent ID generation.
+       var uuid$$1 = (result && result.uuid) ?
+-          (result.uuid + host.db) : genDBUrl(host, '');
++        (result.uuid + host.db) : genDBUrl(host, '');
+       callback(null, uuid$$1);
+     });
+   });
+@@ -7148,7 +7148,7 @@ function HttpPouch(opts, callback) {
+       function fetchData(filename) {
+         var att = atts[filename];
+         var path = encodeDocId(doc._id) + '/' + encodeAttachmentId(filename) +
+-            '?rev=' + doc._rev;
++          '?rev=' + doc._rev;
+         return ourFetch(genDBUrl(host, path)).then(function (response) {
+           if ('buffer' in response) {
+             return response.buffer();
+@@ -7249,14 +7249,14 @@ function HttpPouch(opts, callback) {
+ 
+   // Get the attachment
+   api.getAttachment = adapterFun$$1('getAttachment', function (docId, attachmentId,
+-                                                            opts, callback) {
++                                                               opts, callback) {
+     if (typeof opts === 'function') {
+       callback = opts;
+       opts = {};
+     }
+     var params = opts.rev ? ('?rev=' + opts.rev) : '';
+     var url = genDBUrl(host, encodeDocId(docId)) + '/' +
+-        encodeAttachmentId(attachmentId) + params;
++      encodeAttachmentId(attachmentId) + params;
+     var contentType;
+     ourFetch(url, {method: 'GET'}).then(function (response) {
+       contentType = response.headers.get('content-type');
+@@ -7286,11 +7286,11 @@ function HttpPouch(opts, callback) {
+ 
+   // Remove the attachment given by the id and rev
+   api.removeAttachment =  adapterFun$$1('removeAttachment', function (docId,
+-                                                                   attachmentId,
+-                                                                   rev,
+-                                                                   callback) {
++                                                                      attachmentId,
++                                                                      rev,
++                                                                      callback) {
+     var url = genDBUrl(host, encodeDocId(docId) + '/' +
+-                       encodeAttachmentId(attachmentId)) + '?rev=' + rev;
++      encodeAttachmentId(attachmentId)) + '?rev=' + rev;
+     fetchJSON(url, {method: 'DELETE'}, callback).catch(callback);
+   });
+ 
+@@ -7298,8 +7298,8 @@ function HttpPouch(opts, callback) {
+   // to the document with the given id, the revision given by rev, and
+   // add it to the database given by host.
+   api.putAttachment = adapterFun$$1('putAttachment', function (docId, attachmentId,
+-                                                            rev, blob,
+-                                                            type, callback) {
++                                                               rev, blob,
++                                                               type, callback) {
+     if (typeof type === 'function') {
+       callback = type;
+       type = blob;
+@@ -7319,7 +7319,7 @@ function HttpPouch(opts, callback) {
+         binary = thisAtob(blob);
+       } catch (err) {
+         return callback(createError(BAD_ARG,
+-                        'Attachment is not a valid base64 string'));
++          'Attachment is not a valid base64 string'));
+       }
+       blob = binary ? binStringToBluffer(binary, type) : '';
+     }
+@@ -7446,7 +7446,7 @@ function HttpPouch(opts, callback) {
+     }
+ 
+     fetchJSON(genDBUrl(host, '_all_docs' + paramStr), {
+-       method: method,
++      method: method,
+       body: JSON.stringify(body)
+     }).then(function (result) {
+       if (opts.include_docs && opts.attachments && opts.binary) {
+@@ -7478,13 +7478,13 @@ function HttpPouch(opts, callback) {
+     // ensure CHANGES_TIMEOUT_BUFFER applies
+     if ('timeout' in opts && opts.timeout &&
+       (requestTimeout - opts.timeout) < CHANGES_TIMEOUT_BUFFER) {
+-        requestTimeout = opts.timeout + CHANGES_TIMEOUT_BUFFER;
++      requestTimeout = opts.timeout + CHANGES_TIMEOUT_BUFFER;
+     }
+ 
+     /* istanbul ignore if */
+     if ('heartbeat' in opts && opts.heartbeat &&
+-       (requestTimeout - opts.heartbeat) < CHANGES_TIMEOUT_BUFFER) {
+-        requestTimeout = opts.heartbeat + CHANGES_TIMEOUT_BUFFER;
++      (requestTimeout - opts.heartbeat) < CHANGES_TIMEOUT_BUFFER) {
++      requestTimeout = opts.heartbeat + CHANGES_TIMEOUT_BUFFER;
+     }
+ 
+     var params = {};
+@@ -8309,8 +8309,8 @@ function createAbstractMapReduce(localDocName, mapper, reducer, ddocValidator) {
+       method: 'POST',
+       body: JSON.stringify(body)
+     }).then(function (response) {
+-        ok = response.ok;
+-        status = response.status;
++      ok = response.ok;
++      status = response.status;
+       return response.json();
+     }).then(function (result) {
+       if (!ok) {
+@@ -9075,8 +9075,8 @@ function isGenOne$1(rev) {
+ 
+ function fileHasChanged(localDoc, remoteDoc, filename) {
+   return !localDoc._attachments ||
+-         !localDoc._attachments[filename] ||
+-         localDoc._attachments[filename].digest !== remoteDoc._attachments[filename].digest;
++    !localDoc._attachments[filename] ||
++    localDoc._attachments[filename].digest !== remoteDoc._attachments[filename].digest;
+ }
+ 
+ function getDocAttachments(db, doc) {
+@@ -9141,7 +9141,7 @@ function getDocs(src, target, diffs, state) {
+   diffs = clone(diffs); // we do not need to modify this
+ 
+   var resultDocs = [],
+-      ok = true;
++    ok = true;
+ 
+   function getAllDocs() {
+ 
+@@ -9171,24 +9171,24 @@ function getDocs(src, target, diffs, state) {
+           }
+ 
+           return getDocAttachmentsFromTargetOrSource(target, src, remoteDoc)
+-                   .then(function (attachments) {
+-                           var filenames = Object.keys(remoteDoc._attachments);
+-                           attachments
+-                             .forEach(function (attachment, i) {
+-                                        var att = remoteDoc._attachments[filenames[i]];
+-                                        delete att.stub;
+-                                        delete att.length;
+-                                        att.data = attachment;
+-                                      });
+-
+-                                      return remoteDoc;
+-                                    });
++            .then(function (attachments) {
++              var filenames = Object.keys(remoteDoc._attachments);
++              attachments
++                .forEach(function (attachment, i) {
++                  var att = remoteDoc._attachments[filenames[i]];
++                  delete att.stub;
++                  delete att.length;
++                  att.data = attachment;
++                });
++
++              return remoteDoc;
++            });
+         }));
+       }))
+ 
+-      .then(function (results) {
+-        resultDocs = resultDocs.concat(flatten(results).filter(Boolean));
+-      });
++        .then(function (results) {
++          resultDocs = resultDocs.concat(flatten(results).filter(Boolean));
++        });
+     });
+   }
+ 
+@@ -9213,7 +9213,7 @@ function getDocs(src, target, diffs, state) {
+       }
+       res.rows.forEach(function (row) {
+         if (row.deleted || !row.doc || !isGenOne$1(row.value.rev) ||
+-            hasAttachments(row.doc) || hasConflicts(row.doc)) {
++          hasAttachments(row.doc) || hasConflicts(row.doc)) {
+           // if any of these conditions apply, we need to fetch using get()
+           return;
+         }
+@@ -9629,6 +9629,7 @@ function replicate(src, target, opts, returnValue, result) {
+   returnValue.ready(src, target);
+ 
+   function initCheckpointer() {
++    console.debug('initCheckpointer');
+     if (checkpointer) {
+       return Promise.resolve();
+     }
+@@ -9651,6 +9652,7 @@ function replicate(src, target, opts, returnValue, result) {
+   }
+ 
+   function writeDocs() {
++    console.debug('write docs', currentBatch.docs.length);
+     changedDocs = [];
+ 
+     if (currentBatch.docs.length === 0) {
+@@ -9701,6 +9703,7 @@ function replicate(src, target, opts, returnValue, result) {
+   }
+ 
+   function finishBatch() {
++    console.debug('finish batch');
+     if (currentBatch.error) {
+       throw new Error('There was a problem getting docs.');
+     }
+@@ -9718,7 +9721,7 @@ function replicate(src, target, opts, returnValue, result) {
+     }
+     writingCheckpoint = true;
+     return checkpointer.writeCheckpoint(currentBatch.seq,
+-        session).then(function () {
++      session).then(function () {
+       returnValue.emit('checkpoint', { 'checkpoint': currentBatch.seq });
+       writingCheckpoint = false;
+       /* istanbul ignore if */
+@@ -9736,6 +9739,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+   function getDiffs() {
+     var diff = {};
++    console.debug('get diffs');
+     currentBatch.changes.forEach(function (change) {
+       returnValue.emit('checkpoint', { 'revs_diff': change });
+       // Couchbase Sync Gateway emits these, but we can ignore them
+@@ -9755,10 +9759,12 @@ function replicate(src, target, opts, returnValue, result) {
+       }
+       // currentBatch.diffs elements are deleted as the documents are written
+       currentBatch.diffs = diffs;
++      console.debug('got diffs');
+     });
+   }
+ 
+   function getBatchDocs() {
++    console.debug('get batch docs');
+     return getDocs(src, target, currentBatch.diffs, returnValue).then(function (got) {
+       currentBatch.error = !got.ok;
+       got.docs.forEach(function (doc) {
+@@ -9881,6 +9887,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function onChange(change, pending, lastSeq) {
++    console.debug('on change');
+     /* istanbul ignore if */
+     if (returnValue.cancelled) {
+       return completeReplication();
+@@ -9905,6 +9912,7 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+ 
+   function onChangesComplete(changes) {
++    console.debug('on changes complete');
+     changesPending = false;
+     /* istanbul ignore if */
+     if (returnValue.cancelled) {
+@@ -9914,11 +9922,12 @@ function replicate(src, target, opts, returnValue, result) {
+     // if no results were returned then we're done,
+     // else fetch more
+     if (changes.results.length > 0) {
++      console.debug('next batch');
+       changesOpts.since = changes.results[changes.results.length - 1].seq;
+       getChanges();
+       processPendingBatch(true);
+     } else {
+-
++      console.debug('no changes');
+       var complete = function () {
+         if (continuous) {
+           changesOpts.live = true;
+@@ -9931,15 +9940,17 @@ function replicate(src, target, opts, returnValue, result) {
+ 
+       // update the checkpoint so we start from the right seq next time
+       if (!currentBatch && changes.results.length === 0) {
++        console.debug('before complete');
+         writingCheckpoint = true;
+         checkpointer.writeCheckpoint(changes.last_seq,
+-            session).then(function () {
++          session).then(function () {
+           writingCheckpoint = false;
+           result.last_seq = last_seq = changes.last_seq;
+           complete();
+         })
+-        .catch(onCheckpointError);
++          .catch(onCheckpointError);
+       } else {
++        console.debug('complete current batch');
+         complete();
+       }
+     }
+@@ -9961,7 +9972,7 @@ function replicate(src, target, opts, returnValue, result) {
+       !changesPending &&
+       !changesCompleted &&
+       batches.length < batches_limit
+-      )) {
++    )) {
+       return;
+     }
+     changesPending = true;
+@@ -9978,6 +9989,7 @@ function replicate(src, target, opts, returnValue, result) {
+     }
+     returnValue.once('cancel', abortChanges);
+ 
++    console.debug('get changes');
+     var changes = src.changes(changesOpts)
+       .on('change', onChange);
+     changes.then(removeListener, removeListener);
+@@ -10150,7 +10162,7 @@ function replicateWrapper(src, target, opts, callback) {
+ 
+   if (opts.doc_ids && !Array.isArray(opts.doc_ids)) {
+     throw createError(BAD_REQUEST,
+-                       "`doc_ids` filter parameter is not a list.");
++      "`doc_ids` filter parameter is not a list.");
+   }
+ 
+   opts.complete = callback;
