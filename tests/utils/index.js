@@ -8,6 +8,7 @@ const os = require('os');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
+mustache.escape = (text) => text;
 const semver = require('semver');
 const moment = require('moment');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
