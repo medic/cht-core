@@ -9,6 +9,7 @@ const formTitle = () => $('.enketo form #form-title');
 const currentFormView = () => $('.enketo form .current');
 const validationErrors = () => $$('.invalid-required');
 const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
+const waitForValidationErrors = () => browser.waitUntil(async () => (await validationErrors()).length);
 const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
 
 const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
@@ -41,9 +42,11 @@ const selectContact = async (contactName) => {
   });
 };
 
-const submitForm = async (waitForPageLoaded = true) => {
+const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = false } = {}) => {
   await formTitle().click();
-  await waitForValidationErrorsToDisappear();
+  if (!ignoreValidationErrors) {
+    await waitForValidationErrorsToDisappear();
+  }
   await (await submitButton()).waitForClickable();
   await (await submitButton()).click();
   if (waitForPageLoaded) {
@@ -92,6 +95,8 @@ module.exports = {
   getFormTitle,
   getErrorMessage,
   cancelButton,
+  waitForValidationErrors,
+  waitForValidationErrorsToDisappear,
   nextPage,
   nameField,
   fieldByName,
