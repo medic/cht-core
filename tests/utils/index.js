@@ -80,7 +80,7 @@ const isDockerDesktop = () => {
 };
 
 const dockerGateway = () => {
-    const network = isDocker() ? NETWORK : `k3d-${PROJECT_NAME}`;
+  const network = isDocker() ? NETWORK : `k3d-${PROJECT_NAME}`;
   try {
     return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`));
   } catch (error) {

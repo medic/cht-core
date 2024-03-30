@@ -13,7 +13,7 @@ module.exports = {
   fullTrace: true,
   asyncOnly: false,
   spec: [
-    'tests/integration/!(cht-conf)/**/*.spec.js', // run everything except the sentinel tests - those are tested in .mocharc-sentinel.js
+    'tests/integration/!(cht-conf)/**/*.spec.js',
   ],
   timeout: 20000 * 1000, //API takes a little long to start up
   reporter: 'spec',
