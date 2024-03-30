@@ -1,5 +1,5 @@
 diff --git a/node_modules/pouchdb-browser/lib/index.es.js b/node_modules/pouchdb-browser/lib/index.es.js
-index b1eba82..7f17280 100644
+index b1eba82..aca5648 100644
 --- a/node_modules/pouchdb-browser/lib/index.es.js
 +++ b/node_modules/pouchdb-browser/lib/index.es.js
 @@ -9625,6 +9625,7 @@ function replicate(src, target, opts, returnValue, result) {
@@ -26,7 +26,30 @@ index b1eba82..7f17280 100644
      if (currentBatch.error) {
        throw new Error('There was a problem getting docs.');
      }
-@@ -9731,6 +9734,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9712,17 +9715,22 @@ function replicate(src, target, opts, returnValue, result) {
+       }
+       returnValue.emit('change', outResult);
+     }
++    console.debug('outresult');
++    console.debug(JSON.stringify(outResult));
+     writingCheckpoint = true;
+     return checkpointer.writeCheckpoint(currentBatch.seq,
+         session).then(function () {
+       returnValue.emit('checkpoint', { 'checkpoint': currentBatch.seq });
++      console.debug('after checkpoint');
+       writingCheckpoint = false;
+       /* istanbul ignore if */
+       if (returnValue.cancelled) {
++        console.debug('complete cancelled');
+         completeReplication();
+         throw new Error('cancelled');
+       }
+       currentBatch = undefined;
++      console.debug('get changes for next batch');
+       getChanges();
+     }).catch(function (err) {
+       onCheckpointError(err);
+@@ -9731,6 +9739,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function getDiffs() {
@@ -34,7 +57,7 @@ index b1eba82..7f17280 100644
      var diff = {};
      currentBatch.changes.forEach(function (change) {
        returnValue.emit('checkpoint', { 'revs_diff': change });
-@@ -9755,6 +9759,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9755,6 +9764,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function getBatchDocs() {
@@ -42,7 +65,7 @@ index b1eba82..7f17280 100644
      return getDocs(src, target, currentBatch.diffs, returnValue).then(function (got) {
        currentBatch.error = !got.ok;
        got.docs.forEach(function (doc) {
-@@ -9766,6 +9771,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9766,6 +9776,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function startNextBatch() {
@@ -50,7 +73,7 @@ index b1eba82..7f17280 100644
      if (returnValue.cancelled || currentBatch) {
        return;
      }
-@@ -9787,6 +9793,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9787,6 +9798,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function processPendingBatch(immediate$$1) {
@@ -58,7 +81,7 @@ index b1eba82..7f17280 100644
      if (pendingBatch.changes.length === 0) {
        if (batches.length === 0 && !currentBatch) {
          if ((continuous && changesOpts.live) || changesCompleted) {
-@@ -9820,6 +9827,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9820,6 +9832,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function abortReplication(reason, err) {
@@ -66,7 +89,7 @@ index b1eba82..7f17280 100644
      if (replicationCompleted) {
        return;
      }
-@@ -9839,6 +9847,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9839,6 +9852,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function completeReplication(fatalError) {
@@ -74,7 +97,7 @@ index b1eba82..7f17280 100644
      if (replicationCompleted) {
        return;
      }
-@@ -9877,6 +9886,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9877,6 +9891,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function onChange(change, pending, lastSeq) {
@@ -82,7 +105,7 @@ index b1eba82..7f17280 100644
      /* istanbul ignore if */
      if (returnValue.cancelled) {
        return completeReplication();
-@@ -9901,6 +9911,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9901,6 +9916,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function onChangesComplete(changes) {
@@ -90,7 +113,7 @@ index b1eba82..7f17280 100644
      changesPending = false;
      /* istanbul ignore if */
      if (returnValue.cancelled) {
-@@ -9953,6 +9964,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9953,6 +9969,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function getChanges() {
@@ -98,7 +121,7 @@ index b1eba82..7f17280 100644
      if (!(
        !changesPending &&
        !changesCompleted &&
-@@ -9989,6 +10001,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9989,6 +10006,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function startChanges() {
