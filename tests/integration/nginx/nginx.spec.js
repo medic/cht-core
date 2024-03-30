@@ -1,11 +1,15 @@
 const { expect } = require('chai');
 const utils = require('@utils');
+const constants = require('@constants');
 
 describe('HTTP request should redirect to HTTPS', () => {
-  xit('should return a 301 status code and redirect to HTTPS', async () => {
+  it('should return a 301 status code and redirect to HTTPS', async function () {
+    if (utils.isK3D()) {
+      return this.skip();
+    }
     const [jsonResponse, htmlResponse] = await Promise.all([
-      utils.request({ uri: 'http://localhost/', followRedirect: false, json: true }).catch(err => err),
-      utils.request({ uri: 'http://localhost/', followRedirect: false, json: false }).catch(err => err),
+      utils.request({ uri: `http://${constants.API_HOST}/`, followRedirect: false, json: true }).catch(err => err),
+      utils.request({ uri: `http://${constants.API_HOST}/`, followRedirect: false, json: false }).catch(err => err),
     ]);
 
     expect(jsonResponse.statusCode).to.be.equal(301);
@@ -16,10 +20,14 @@ describe('HTTP request should redirect to HTTPS', () => {
 });
 
 describe('HTTP acme-challenge should not redirect', () => {
-  xit('should return a 404 status code and not redirect', async () => {
+  it('should return a 404 status code and not redirect', async function () {
+    if (utils.isK3D()) {
+      return this.skip();
+    }
+
     const [jsonResponse, htmlResponse] = await Promise.all([
-      utils.request({ uri: 'http://localhost/.well-known/acme-challenge/', json: true }).catch(err => err),
-      utils.request({ uri: 'http://localhost/.well-known/acme-challenge/', json: false }).catch(err => err),
+      utils.request({ uri: `http://${constants.API_HOST}/.well-known/acme-challenge/`, json: true }).catch(err => err),
+      utils.request({ uri: `http://${constants.API_HOST}/.well-known/acme-challenge/`, json: false }).catch(err => err),
     ]);
 
     expect(jsonResponse.statusCode).to.be.equal(404);

@@ -80,8 +80,9 @@ const isDockerDesktop = () => {
 };
 
 const dockerGateway = () => {
+    const network = isDocker() ? NETWORK : `k3d-${PROJECT_NAME}`;
   try {
-    return JSON.parse(execSync(`docker network inspect ${NETWORK} --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`));
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -95,7 +96,7 @@ const getHostRoot = () => {
     return 'host.docker.internal';
   }
   const gateway = dockerGateway();
-  return gateway?.[0]?.Gateway || 'localhost';
+  return gateway?.[0]?.Gateway || `localhost`;
 };
 
 const hostURL = (port = 80) => {
@@ -765,7 +766,7 @@ const listenForApi = async () => {
     console.log('API is up');
   } catch (err) {
     if (isK3D()) {
-      await runCommand('kubectl -n cht-e2e get pods -o wide');
+      await runCommand(`kubectl -n ${PROJECT_NAME} get pods -o wide`);
     }
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
@@ -1043,7 +1044,7 @@ const startServices = async () => {
   }
 };
 
-const runCommand = (command) => {
+const runCommand = (command, silent) => {
   const [cmd, ...params] = command.split(' ');
   return new Promise((resolve, reject) => {
     const proc = spawn(cmd, [ ...params], { env });
@@ -1051,7 +1052,9 @@ const runCommand = (command) => {
     const log = (data, error) => {
       data = data.toString();
       output.push(data);
-      error ? console.error(data) : console.log(data);
+      if (!silent) {
+        error ? console.error(data) : console.log(data);
+      }
     };
 
     proc.on('error', (err) => {
@@ -1061,7 +1064,7 @@ const runCommand = (command) => {
     proc.stdout.on('data', log);
     proc.stderr.on('data', log);
 
-    proc.on('close', (number) => number ? reject(output) : resolve(output));
+    proc.on('close', (exitCode) => exitCode ? reject(output) : resolve(output));
   });
 };
 
@@ -1072,11 +1075,14 @@ const createCluster = async (dataDir) => {
 };
 
 const importImages = async () => {
-  const isLocalBuild = buildVersions.getRepo() === 'medicmobile';
   for (const service of Object.keys(SERVICES)) {
     const serviceName = service.replace(/\d/, '');
     const image = `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
-    if (!isLocalBuild) {
+    // authentication to private repos is weird to set up in k3d.
+    // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
+    try {
+      await runCommand(`docker image inspect ${image}`, true);
+    } catch (err) {
       await runCommand(`docker pull ${image}`);
     }
     await runCommand(`k3d image import ${image} -c ${PROJECT_NAME}`);
@@ -1087,7 +1093,7 @@ const cleanupOldCluster = async () => {
   try {
     await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
   } catch (err) {
-    // ignore
+    console.warn('No cluster to clean up');
   }
 };
 
@@ -1185,7 +1191,7 @@ const killSpawnedProcess = (proc) => {
  */
 
 const waitForLogs = (container, ...regex) => {
-  container = isDocker() ? getContainerName(container) : `deployment/cht-${container}`;
+  container = getContainerName(container);
   const cmd = isDocker() ? 'docker' : 'kubectl';
   let timeout;
   let logs = '';
@@ -1195,7 +1201,7 @@ const waitForLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}`: ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() && ` -n ${PROJECT_NAME}`}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1253,7 +1259,7 @@ const waitForSentinelLogs = (...regex) => waitForLogs('sentinel', ...regex);
  * @return     {Promise<function>}      promise that returns a function that returns a promise
  */
 const collectLogs = (container, ...regex) => {
-  container = isDocker() ? getContainerName(container) : `deployment/cht-${container}`;
+  container = getContainerName(container);
   const cmd = isDocker() ? 'docker' : 'kubectl';
   const matches = [];
   const errors = [];
@@ -1263,7 +1269,7 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}`: ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() && ` -n ${PROJECT_NAME}`}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1337,9 +1343,13 @@ const updateContainerNames = (project = PROJECT_NAME) => {
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
 const getContainerName = (service, project = PROJECT_NAME) => {
-  dockerVersion = dockerVersion || getDockerVersion();
-  const separator = dockerVersion === 2 ? '-' : '_';
-  return `${project}${separator}${service}${separator}1`;
+  if (isDocker()) {
+    dockerVersion = dockerVersion || getDockerVersion();
+    const separator = dockerVersion === 2 ? '-' : '_';
+    return `${project}${separator}${service}${separator}1`;
+  }
+
+  return `deployment/cht-${service}`;
 };
 
 const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
@@ -1357,14 +1367,18 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 
 const getSentinelDate = () => getContainerDate('sentinel');
 
-const getContainerDate = (container) => {
-  container = getContainerName(container);
-  try {
-    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
-  } catch (error) {
-    console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
-    console.error(error.message);
+const getContainerDate = async (container) => {
+  let date;
+  if (isDocker()) {
+    container = getContainerName(container);
+    date = await runCommand(`docker exec ${container} date -R`);
+  } else {
+    const podName = await runCommand(
+      `kubectl get pods -n ${PROJECT_NAME} -l cht.service=${container} -o jsonpath="{.items[0].metadata.name}"`
+    );
+    date = await runCommand(`kubectl exec -n ${PROJECT_NAME} ${podName[0].replace(/"/g, '')} -- date -R`);
   }
+  return moment.utc(date[0]);
 };
 
 const logFeedbackDocs = async (test) => {
@@ -1395,6 +1409,7 @@ module.exports = {
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
+  PROJECT_NAME,
   makeTempDir,
   hostURL,
   parseCookieResponse,
@@ -1459,4 +1474,5 @@ module.exports = {
   logFeedbackDocs,
   isMinimumChromeVersion,
   escapeBranchName,
+  isK3D,
 };

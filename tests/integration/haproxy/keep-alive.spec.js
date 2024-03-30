@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const constants = require('@constants');
+const utils = require('@utils');
 
 const runDockerCommand = (command, params, env=process.env) => {
   return new Promise((resolve, reject) => {
@@ -29,7 +30,11 @@ describe('logging in through API directly', () => {
     await runDockerCommand('docker-compose', ['down', '--remove-orphans']);
   });
 
-  xit('should allow logins', async () => {
+  it('should allow logins', async function () {
+    if (utils.isK3D()) {
+      return this.skip();
+    }
+
     await runScript();
     const logs = await getLogs();
 
