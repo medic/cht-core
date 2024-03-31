@@ -1201,7 +1201,7 @@ const waitForLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() && ` -n ${PROJECT_NAME}`}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}` : ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1269,7 +1269,7 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() && ` -n ${PROJECT_NAME}`}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}` : ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);

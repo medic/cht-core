@@ -38,7 +38,7 @@ const expectCorrectMetadata = (metadata) => {
   expect(metadata._id).to.equal(constants.DB_NAME);
   // 12 shards, evenly distributed across 3 nodes
   expect(Object.keys(metadata.by_range).length).to.equal(12);
-  const nodeName = (nbr) => `couchdb@couchdb-${nbr}${utils.isK3D() && `.${utils.PROJECT_NAME}.svc.cluster`}.local`;
+  const nodeName = (nbr) => `couchdb@couchdb-${nbr}${utils.isK3D() ? `.${utils.PROJECT_NAME}.svc.cluster` : ''}.local`;
   expect(metadata.by_node).to.have.keys([nodeName(1), nodeName(2), nodeName(3)]);
   expect(metadata.by_node[nodeName(1)].length).to.equal(4);
   expect(metadata.by_node[nodeName(2)].length).to.equal(4);
