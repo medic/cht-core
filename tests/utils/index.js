@@ -837,7 +837,7 @@ const startService = async (service) => {
 
 const startSentinel = async () => {
   await startService('sentinel');
-  const logs = await waitForLogs('sentinel', /.*/);
+  const logs = await waitForLogs('sentinel');
   await logs.promise;
 };
 
@@ -1105,7 +1105,7 @@ const importImages = async () => {
     // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
     try {
       await runCommand(`docker image inspect ${image}`, true);
-    } catch (err) {
+    } catch {
       await runCommand(`docker pull ${image}`);
     }
     await runCommand(`k3d image import ${image} -c ${PROJECT_NAME}`);
@@ -1115,7 +1115,7 @@ const importImages = async () => {
 const cleanupOldCluster = async () => {
   try {
     await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
-  } catch (err) {
+  } catch {
     console.warn('No cluster to clean up');
   }
 };
@@ -1240,6 +1240,11 @@ const waitForLogs = (container, ...regex) => {
       if (!firstLine) {
         firstLine = true;
         receivedFirstLine();
+        if (!regex.length) {
+          resolve();
+          clearTimeout(timeout);
+          killSpawnedProcess(proc);
+        }
         return;
       }
 
