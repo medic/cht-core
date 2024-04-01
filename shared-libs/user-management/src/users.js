@@ -105,34 +105,36 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = ({ facilityId, contactId } = {}) => {
-  const key = ['user-settings'];
-  if (facilityId) {
-    key.push(facilityId);
-  }
-  if (contactId) {
-    key.push(contactId);
-  }
-
+const getAllUserSettings = () => {
   const opts = {
     include_docs: true,
-    key,
+    key: ['user-settings'],
   };
   return db.medic.query('medic-client/doc_by_type', opts)
     .then(result => result.rows.map(row => row.doc));
 };
 
-const getAllUsers = () => {
-  return db.users.allDocs({ include_docs: true })
-    .then(result => result.rows.map(({ doc }) => doc));
-};
-
-const getUsersByIds = async (ids) => {
+const getSettingsByIds = async (ids) => {
   const docs = ids.map(id => ({ id }));
-  const { results } = await db.users.bulkGet({ docs });
+  const { results } = await db.medic.bulkGet({ docs });
   return results
     .map(result => result?.docs?.[0]?.ok)
     .filter(doc => doc);
+};
+
+const getAllUsers = async (filters) => {
+  if (_.isEmpty(filters)) {
+    const { rows } = await db.users.allDocs({ include_docs: true });
+    return rows.map(({ doc }) => doc);
+  }
+
+  const { docs } = await db.users.find({
+    selector: {
+      facility_id: filters.facilityId,
+      contact_id: filters.contactId,
+    },
+  });
+  return docs;
 };
 
 const validateContact = (id, placeID) => {
@@ -793,9 +795,9 @@ module.exports = {
     if (_.isEmpty(filters)) {
       [users, settings] = await Promise.all([getAllUsers(), getAllUserSettings()]);
     } else {
-      settings = await getAllUserSettings(filters);
-      const ids = settings.map(({ _id }) => _id);
-      users = await getUsersByIds(ids);
+      users = await getAllUsers(filters);
+      const ids = users.map(({ _id }) => _id);
+      settings = await getSettingsByIds(ids);
     }
 
     const facilities = await facility.list(users, settings);
