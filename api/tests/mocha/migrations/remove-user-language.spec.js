@@ -3,7 +3,7 @@ const chai = require('chai');
 const db = require('../../../src/db');
 const migration = require('../../../src/migrations/remove-user-language');
 
-const docByType = 'medic-client/doc_by_type';
+const docByType = 'medic/doc_by_type';
 let userQuery;
 let bulkDocs;
 let expectedOptions;
@@ -132,7 +132,7 @@ describe('remove-user-language migration', () => {
 
     const message = 'Some Error';
     userQuery.onFirstCall().resolves({ rows: [ user ] });
-    bulkDocs.returns(Promise.reject(message));    
+    bulkDocs.returns(Promise.reject(message));
 
     return migration
       .run()

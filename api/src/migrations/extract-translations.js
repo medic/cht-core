@@ -5,7 +5,7 @@ const DOC_TYPE = 'translations';
 
 const getDocs = () => {
   const options = { key: [ DOC_TYPE, true ], include_docs: true };
-  return db.medic.query('medic-client/doc_by_type', options)
+  return db.medic.query('medic/doc_by_type', options)
     .then(response => _.map(response.rows, 'doc'));
 };
 

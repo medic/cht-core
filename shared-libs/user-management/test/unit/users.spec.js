@@ -215,7 +215,7 @@ describe('Users service', () => {
           include_docs: true,
           key: ['user-settings', 'c'],
         };
-        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+        db.medic.query.withArgs('medic/doc_by_type', queryOptions).resolves(userSettingsResponse);
 
         const usersResponse = {
           results: [{
@@ -264,7 +264,7 @@ describe('Users service', () => {
           include_docs: true,
           key: ['user-settings', 'c'],
         };
-        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+        db.medic.query.withArgs('medic/doc_by_type', queryOptions).resolves(userSettingsResponse);
 
         const usersResponse = {
           results: [{
@@ -314,7 +314,7 @@ describe('Users service', () => {
           include_docs: true,
           key: ['user-settings', 'b', 'c'],
         };
-        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+        db.medic.query.withArgs('medic/doc_by_type', queryOptions).resolves(userSettingsResponse);
 
         const usersResponse = {
           results: [{

@@ -24,7 +24,7 @@ const ensureViewDdocExists = function(auditDb, callback) {
 };
 
 const batchMoveAuditDocs = function(auditDb, callback) {
-  db.medic.query('medic-client/doc_by_type', { key: ['audit_record'], limit: BATCH_SIZE}, function(err, doclist) {
+  db.medic.query('medic/doc_by_type', { key: ['audit_record'], limit: BATCH_SIZE}, function(err, doclist) {
     if (err) {
       return callback(err);
     }

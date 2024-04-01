@@ -118,7 +118,7 @@ const getAllUserSettings = ({ facilityId, contactId } = {}) => {
     include_docs: true,
     key,
   };
-  return db.medic.query('medic-client/doc_by_type', opts)
+  return db.medic.query('medic/doc_by_type', opts)
     .then(result => result.rows.map(row => row.doc));
 };
 

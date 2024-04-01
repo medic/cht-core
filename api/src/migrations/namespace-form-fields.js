@@ -57,7 +57,7 @@ const runBatch = function(batchSize, skip, callback) {
     limit: batchSize,
     skip: skip,
   };
-  db.medic.query('medic-client/doc_by_type', options, function(err, result) {
+  db.medic.query('medic/doc_by_type', options, function(err, result) {
     if (err) {
       return callback(err);
     }

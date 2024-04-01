@@ -120,6 +120,6 @@ module.exports = {
   name: 'associate-records-with-people',
   created: new Date(2015, 5, 13, 11, 41, 0, 0),
   run: () => {
-    return batch.view('medic-client/doc_by_type', { key: [ 'data_record' ] }, associate);
+    return batch.view('medic/doc_by_type', { key: [ 'data_record' ] }, associate);
   }
 };

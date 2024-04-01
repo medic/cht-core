@@ -40,6 +40,6 @@ module.exports = {
   name: 'extract-read-status',
   created: new Date(2017, 6, 7),
   run: () => {
-    return batch.view('medic-client/doc_by_type', { key: [ 'data_record' ] }, extract);
+    return batch.view('medic/doc_by_type', { key: [ 'data_record' ] }, extract);
   }
 };

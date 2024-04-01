@@ -46,7 +46,7 @@ const runBatch = (ddoc, view, viewParams, iteratee) => {
 /**
  * Run an operation over all documents returned from the query in batches.
  *
- * @param {String} viewName Name of the view, eg: "medic-client/doc_by_type".
+ * @param {String} viewName Name of the view, eg: "medic/doc_by_type".
  * @param {Object} viewParams Parameters to pass to the view query.
  *    `include_docs` defaults to `true` and cannot be overridden.
  *    `startkey` and `startkey_docid` cannot be overriden.

@@ -23,7 +23,7 @@ const fixUsers = function(skip, callback) {
     skip: skip,
     key: [ 'user-settings' ]
   };
-  db.medic.query('medic-client/doc_by_type', options, function(err, result) {
+  db.medic.query('medic/doc_by_type', options, function(err, result) {
     if (err) {
       return callback(err);
     }

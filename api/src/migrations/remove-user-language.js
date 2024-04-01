@@ -16,7 +16,7 @@ const removeLanguageFromUserSettings = (skipSize) => {
     key: [ 'user-settings' ]
   };
   return db.medic
-    .query('medic-client/doc_by_type', options)
+    .query('medic/doc_by_type', options)
     .then(result => {
       if (!result.rows || !result.rows.length) {
         return false;

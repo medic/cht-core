@@ -13,7 +13,7 @@ describe('convert-translation-messages migration', () => {
     return migration.run().then(() => {
       chai.expect(db.medic.query.callCount).to.equal(1);
       chai.expect(db.medic.query.args[0]).to.deep.equal([
-        'medic-client/doc_by_type',
+        'medic/doc_by_type',
         {
           startkey: [ 'translations', false ],
           endkey: [ 'translations', true ],

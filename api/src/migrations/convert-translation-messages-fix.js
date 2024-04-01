@@ -58,7 +58,7 @@ module.exports = {
   created: new Date(2019, 6, 10),
   run: () => {
     return db.medic
-      .query('medic-client/doc_by_type', {
+      .query('medic/doc_by_type', {
         startkey: [ 'translations', false ],
         endkey: [ 'translations', true ],
         include_docs: true

@@ -228,7 +228,7 @@ describe('extract-translations migration', () => {
     return migration.run().then(() => {
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
-      chai.expect(view.args[0][0]).to.equal('medic-client/doc_by_type');
+      chai.expect(view.args[0][0]).to.equal('medic/doc_by_type');
       chai.expect(view.args[0][1].key[0]).to.equal('translations');
       chai.expect(view.args[0][1].key[1]).to.equal(true);
       chai.expect(view.args[0][1].include_docs).to.equal(true);
@@ -356,7 +356,7 @@ describe('extract-translations migration', () => {
     return migration.run().then(() => {
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
-      chai.expect(view.args[0][0]).to.equal('medic-client/doc_by_type');
+      chai.expect(view.args[0][0]).to.equal('medic/doc_by_type');
       chai.expect(view.args[0][1].key[0]).to.equal('translations');
       chai.expect(view.args[0][1].key[1]).to.equal(true);
       chai.expect(view.args[0][1].include_docs).to.equal(true);
