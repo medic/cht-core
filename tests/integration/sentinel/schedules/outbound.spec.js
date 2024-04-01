@@ -85,13 +85,13 @@ const wipeTasks = () => {
   });
 };
 
-describe.skip('Outbound', () => {
-  before(() => {
+describe('Outbound', () => {
+  before(async () => {
     // get a random port assigned. we will reuse this port when starting the server again.
     // the known port is necessary for the outbound config
     server = destinationApp.listen();
     port = server.address().port;
-    sentinelDate = utils.getSentinelDate();
+    sentinelDate = await utils.getSentinelDate();
     minute = sentinelDate.get('minute') - 1;
     hour = sentinelDate.get('hour');
     server.close();

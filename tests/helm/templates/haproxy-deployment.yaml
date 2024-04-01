@@ -15,6 +15,7 @@ spec:
       labels:
         cht.service: haproxy
     spec:
+      terminationGracePeriodSeconds: 0
       containers:
         - env:
             - name: COUCHDB_PASSWORD

@@ -19,6 +19,7 @@ spec:
       labels:
         cht.service: api
     spec:
+      terminationGracePeriodSeconds: 0
       containers:
         - env:
             - name: BUILDS_URL

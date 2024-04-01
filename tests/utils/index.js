@@ -805,6 +805,14 @@ const stopService = async (service) => {
     return await dockerComposeCmd('stop', '-t', '0', service);
   }
   await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=0`);
+  do {
+    try {
+      await getPodName(service, true);
+      await delayPromise(100);
+    } catch {
+      return;
+    }
+  } while (true);
 };
 
 const stopSentinel = () => stopService('sentinel');
@@ -814,6 +822,13 @@ const startService = async (service) => {
     return await dockerComposeCmd('start', service);
   }
   await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=1`);
+  do {
+    try {
+      return await getPodName(service, true);
+    } catch {
+      await delayPromise(100);
+    }
+  } while (true);
 };
 
 const startSentinel = () => startService('sentinel');
@@ -1366,6 +1381,16 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
+const getPodName = async (service, silent) => {
+  const runningSelector = '--field-selector=status.phase==Running';
+  const jsonPath = '-o jsonpath="{.items[0].metadata.name}"';
+  const labelSelector = `-l cht.service=${service}`;
+  const cmd = await runCommand(
+    `kubectl get pods -n ${PROJECT_NAME} ${labelSelector} ${runningSelector} ${jsonPath}`,
+    silent
+  );
+  return cmd[0].replace(/"/g, '').trim();
+};
 
 const getContainerDate = async (container) => {
   let date;
@@ -1373,10 +1398,8 @@ const getContainerDate = async (container) => {
     container = getContainerName(container);
     date = await runCommand(`docker exec ${container} date -R`);
   } else {
-    const podName = await runCommand(
-      `kubectl get pods -n ${PROJECT_NAME} -l cht.service=${container} -o jsonpath="{.items[0].metadata.name}"`
-    );
-    date = await runCommand(`kubectl exec -n ${PROJECT_NAME} ${podName[0].replace(/"/g, '')} -- date -R`);
+    const podName = await getPodName(container);
+    date = await runCommand(`kubectl exec -n ${PROJECT_NAME} ${podName} -- date -R`);
   }
   return moment.utc(date[0]);
 };

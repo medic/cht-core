@@ -15,6 +15,7 @@ spec:
       labels:
         cht.service: sentinel
     spec:
+      terminationGracePeriodSeconds: 0
       containers:
         - env:
             - name: API_HOST
