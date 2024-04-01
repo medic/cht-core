@@ -1085,7 +1085,7 @@ const runCommand = (command, silent) => {
     proc.stderr.on('data', log);
 
     proc.on('close', (exitCode) => {
-      let outString = output.join('\n');
+      const outString = output.join('\n');
       return exitCode ? reject(outString) : resolve(outString);
     });
   });
