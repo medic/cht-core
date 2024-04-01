@@ -809,7 +809,7 @@ const stopService = async (service) => {
   do {
     try {
       await getPodName(service, true);
-      await delayPromise(500);
+      await delayPromise(100);
       tries--;
     } catch {
       return;
@@ -830,12 +830,16 @@ const startService = async (service) => {
       return await getPodName(service, true);
     } catch {
       tries--;
-      await delayPromise(500);
+      await delayPromise(100);
     }
   } while (tries > 0);
 };
 
-const startSentinel = () => startService('sentinel');
+const startSentinel = async () => {
+  await startService('sentinel');
+  const logs = await waitForLogs('sentinel', /.*/);
+  await logs.promise;
+};
 
 const stopApi = () => stopService('api');
 
