@@ -1,8 +1,44 @@
 diff --git a/node_modules/pouchdb-browser/lib/index.es.js b/node_modules/pouchdb-browser/lib/index.es.js
-index b1eba82..aca5648 100644
+index b1eba82..9d71c17 100644
 --- a/node_modules/pouchdb-browser/lib/index.es.js
 +++ b/node_modules/pouchdb-browser/lib/index.es.js
-@@ -9625,6 +9625,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9262,6 +9262,7 @@ var CHECKPOINT_HISTORY_SIZE = 5;
+ var LOWEST_SEQ = 0;
+ 
+ function updateCheckpoint(db, id, checkpoint, session, returnValue) {
++  console.debug('update checkpoint');
+   return db.get(id).catch(function (err) {
+     if (err.status === 404) {
+       if (db.adapter === 'http' || db.adapter === 'https') {
+@@ -9285,6 +9286,7 @@ function updateCheckpoint(db, id, checkpoint, session, returnValue) {
+ 
+     // if the checkpoint has not changed, do not update
+     if (doc.last_seq === checkpoint) {
++      console.debug('skipping writing');
+       return;
+     }
+ 
+@@ -9310,8 +9312,11 @@ function updateCheckpoint(db, id, checkpoint, session, returnValue) {
+     doc.session_id = session;
+     doc.last_seq = checkpoint;
+ 
++    console.debug('writing checkpointer doc');
++
+     return db.put(doc).catch(function (err) {
+       if (err.status === 409) {
++        console.debug('409 on write checkpoint');
+         // retry; someone is trying to write a checkpoint simultaneously
+         return updateCheckpoint(db, id, checkpoint, session, returnValue);
+       }
+@@ -9331,6 +9336,7 @@ function Checkpointer(src, target, id, returnValue, opts) {
+ Checkpointer.prototype.writeCheckpoint = function (checkpoint, session) {
+   var self = this;
+   return this.updateTarget(checkpoint, session).then(function () {
++    console.debug('after update target');
+     return self.updateSource(checkpoint, session);
+   });
+ };
+@@ -9625,6 +9631,7 @@ function replicate(src, target, opts, returnValue, result) {
    returnValue.ready(src, target);
  
    function initCheckpointer() {
@@ -10,7 +46,7 @@ index b1eba82..aca5648 100644
      if (checkpointer) {
        return Promise.resolve();
      }
-@@ -9647,6 +9648,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9647,6 +9654,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function writeDocs() {
@@ -18,7 +54,7 @@ index b1eba82..aca5648 100644
      changedDocs = [];
  
      if (currentBatch.docs.length === 0) {
-@@ -9697,6 +9699,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9697,6 +9705,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function finishBatch() {
@@ -26,7 +62,7 @@ index b1eba82..aca5648 100644
      if (currentBatch.error) {
        throw new Error('There was a problem getting docs.');
      }
-@@ -9712,17 +9715,22 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9712,17 +9721,22 @@ function replicate(src, target, opts, returnValue, result) {
        }
        returnValue.emit('change', outResult);
      }
@@ -49,7 +85,7 @@ index b1eba82..aca5648 100644
        getChanges();
      }).catch(function (err) {
        onCheckpointError(err);
-@@ -9731,6 +9739,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9731,6 +9745,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function getDiffs() {
@@ -57,7 +93,7 @@ index b1eba82..aca5648 100644
      var diff = {};
      currentBatch.changes.forEach(function (change) {
        returnValue.emit('checkpoint', { 'revs_diff': change });
-@@ -9755,6 +9764,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9755,6 +9770,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function getBatchDocs() {
@@ -65,7 +101,7 @@ index b1eba82..aca5648 100644
      return getDocs(src, target, currentBatch.diffs, returnValue).then(function (got) {
        currentBatch.error = !got.ok;
        got.docs.forEach(function (doc) {
-@@ -9766,6 +9776,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9766,6 +9782,7 @@ function replicate(src, target, opts, returnValue, result) {
    }
  
    function startNextBatch() {
@@ -73,7 +109,7 @@ index b1eba82..aca5648 100644
      if (returnValue.cancelled || currentBatch) {
        return;
      }
-@@ -9787,6 +9798,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9787,6 +9804,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function processPendingBatch(immediate$$1) {
@@ -81,7 +117,7 @@ index b1eba82..aca5648 100644
      if (pendingBatch.changes.length === 0) {
        if (batches.length === 0 && !currentBatch) {
          if ((continuous && changesOpts.live) || changesCompleted) {
-@@ -9820,6 +9832,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9820,6 +9838,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function abortReplication(reason, err) {
@@ -89,7 +125,7 @@ index b1eba82..aca5648 100644
      if (replicationCompleted) {
        return;
      }
-@@ -9839,6 +9852,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9839,6 +9858,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function completeReplication(fatalError) {
@@ -97,7 +133,7 @@ index b1eba82..aca5648 100644
      if (replicationCompleted) {
        return;
      }
-@@ -9877,6 +9891,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9877,6 +9897,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function onChange(change, pending, lastSeq) {
@@ -105,7 +141,7 @@ index b1eba82..aca5648 100644
      /* istanbul ignore if */
      if (returnValue.cancelled) {
        return completeReplication();
-@@ -9901,6 +9916,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9901,6 +9922,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function onChangesComplete(changes) {
@@ -113,7 +149,7 @@ index b1eba82..aca5648 100644
      changesPending = false;
      /* istanbul ignore if */
      if (returnValue.cancelled) {
-@@ -9953,6 +9969,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9953,6 +9975,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function getChanges() {
@@ -121,7 +157,7 @@ index b1eba82..aca5648 100644
      if (!(
        !changesPending &&
        !changesCompleted &&
-@@ -9989,6 +10006,7 @@ function replicate(src, target, opts, returnValue, result) {
+@@ -9989,6 +10012,7 @@ function replicate(src, target, opts, returnValue, result) {
  
  
    function startChanges() {
