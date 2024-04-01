@@ -1397,7 +1397,7 @@ const getPodName = async (service, silent) => {
     `kubectl get pods -n ${PROJECT_NAME} ${labelSelector} ${runningSelector} ${jsonPath}`,
     silent
   );
-  return cmd[0].replace(/"/g, '').trim();
+  return cmd[0].replace(/[^A-Za-z0-9-]/g, '');
 };
 
 const getContainerDate = async (container) => {
