@@ -765,9 +765,6 @@ const listenForApi = async () => {
     await request({ path: '/api/info' });
     console.log('API is up');
   } catch (err) {
-    if (isK3D()) {
-      await runCommand(`kubectl -n ${PROJECT_NAME} get pods -o wide`);
-    }
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
     await apiRetry();
@@ -1087,7 +1084,10 @@ const runCommand = (command, silent) => {
     proc.stdout.on('data', log);
     proc.stderr.on('data', log);
 
-    proc.on('close', (exitCode) => exitCode ? reject(output) : resolve(output));
+    proc.on('close', (exitCode) => {
+      let outString = output.join('\n');
+      return exitCode ? reject(outString) : resolve(outString);
+    });
   });
 };
 
@@ -1402,8 +1402,8 @@ const getPodName = async (service, silent) => {
     `kubectl get pods -n ${PROJECT_NAME} ${labelSelector} ${runningSelector} ${jsonPath}`,
     silent
   );
-  console.log('podname', cmd[0], cmd[0].replace(/[^A-Za-z0-9-]/g, ''));
-  return cmd[0].replace(/[^A-Za-z0-9-]/g, '');
+  console.log('podname', cmd, cmd.replace(/[^A-Za-z0-9-]/g, ''));
+  return cmd.replace(/[^A-Za-z0-9-]/g, '');
 };
 
 const getContainerDate = async (container) => {
@@ -1415,7 +1415,7 @@ const getContainerDate = async (container) => {
     const podName = await getPodName(container);
     date = await runCommand(`kubectl exec -n ${PROJECT_NAME} ${podName} -- date -R`);
   }
-  return moment.utc(date[0]);
+  return moment.utc(date);
 };
 
 const logFeedbackDocs = async (test) => {
