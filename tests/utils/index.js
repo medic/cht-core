@@ -805,14 +805,16 @@ const stopService = async (service) => {
     return await dockerComposeCmd('stop', '-t', '0', service);
   }
   await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=0`);
+  let tries = 100;
   do {
     try {
       await getPodName(service, true);
-      await delayPromise(100);
+      await delayPromise(500);
+      tries--;
     } catch {
       return;
     }
-  } while (true);
+  } while (tries > 0);
 };
 
 const stopSentinel = () => stopService('sentinel');
@@ -822,13 +824,15 @@ const startService = async (service) => {
     return await dockerComposeCmd('start', service);
   }
   await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=1`);
+  let tries = 100;
   do {
     try {
       return await getPodName(service, true);
     } catch {
-      await delayPromise(100);
+      tries--;
+      await delayPromise(500);
     }
-  } while (true);
+  } while (tries > 0);
 };
 
 const startSentinel = () => startService('sentinel');
