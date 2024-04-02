@@ -157,12 +157,12 @@
     "semver": "^7.5.4",
     "sinon": "^16.1.0",
     "tail": "^2.2.6",
-    "typescript": "^5.1.6",
+    "typescript": "^5.4.3",
     "uglify-js": "^3.17.4",
     "uuid": "^9.0.1",
     "wdio-chromedriver-service": "^8.1.1",
     "webpack-bundle-analyzer": "^4.9.1",
-    "zone.js": "^0.13.3"
+    "zone.js": "^0.14.4"
   },
   "overrides": {
     "minimist": ">=1.2.6",
