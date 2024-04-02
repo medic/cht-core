@@ -36,6 +36,8 @@ import { TranslateService } from '@mm-services/translate.service';
   providedIn: 'root'
 })
 export class ContactViewModelGeneratorService {
+  LIMIT_SELECT_ALL_REPORTS = 500;
+
   constructor(
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private dbService:DbService,
@@ -309,7 +311,7 @@ export class ContactViewModelGeneratorService {
     });
     const filter = { subjectIds: _flattenDeep(subjectIds) };
     return this.searchService
-      .search('reports', filter, { include_docs: true })
+      .search('reports', filter, { include_docs: true, limit: this.LIMIT_SELECT_ALL_REPORTS })
       .then((reports) => {
         reports.forEach((report) => {
           report.valid = !report.errors || !report.errors.length;
