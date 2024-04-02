@@ -23,7 +23,7 @@ spec:
       containers:
         - env:
             - name: BUILDS_URL
-              value: {{ .Values.upstream_servers.builds_url }}
+              value: 'https://staging.dev.medicmobile.org/_couch/builds_4'
             - name: COUCH_URL
               valueFrom:
                 secretKeyRef:

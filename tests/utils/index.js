@@ -30,6 +30,7 @@ let dockerVersion;
 let infrastructure = 'docker';
 const isDocker = () => infrastructure === 'docker';
 const isK3D = () => !isDocker();
+const K3D_DATA_PATH = '/data';
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
@@ -1000,6 +1001,7 @@ const generateK3DValuesFile = async () => {
     secret: '',
     uuid: '',
     namespace: PROJECT_NAME,
+    data_path: K3D_DATA_PATH,
   };
 
   const templatePath = path.resolve(__dirname, '..', 'helm', `values.yaml.template`);
@@ -1012,7 +1014,7 @@ const generateComposeFiles = async () => {
   const view = {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
-    db_name: 'medic-test',
+    db_name: constants.DB_NAME,
     couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
@@ -1054,11 +1056,8 @@ const startServices = async () => {
   env.DB2_DATA = makeTempDir('ci-dbdata');
   env.DB3_DATA = makeTempDir('ci-dbdata');
 
-  console.log('starting services');
-
   await dockerComposeCmd('up', '-d');
   const services = await dockerComposeCmd('ps', '-q');
-  console.log(services);
   if (!services.length) {
     throw new Error('Errors when starting services');
   }
@@ -1093,7 +1092,7 @@ const runCommand = (command, silent) => {
 
 const createCluster = async (dataDir) => {
   await runCommand(
-    `k3d cluster create ${PROJECT_NAME} --api-port 6550 --port 443:443@loadbalancer --volume ${dataDir}:/data`
+    `k3d cluster create ${PROJECT_NAME} --port 443:443@loadbalancer --volume ${dataDir}:${K3D_DATA_PATH}`
   );
 };
 
@@ -1123,7 +1122,6 @@ const cleanupOldCluster = async () => {
 const prepK3DServices = async (defaultSettings) => {
   infrastructure = 'k3d';
   await createLogDir();
-  await generateK3DValuesFile();
 
   const dataDir = makeTempDir('ci-dbdata');
   await fs.promises.mkdir(path.join(dataDir, 'srv1'));
@@ -1132,6 +1130,7 @@ const prepK3DServices = async (defaultSettings) => {
 
   await cleanupOldCluster();
   await createCluster(dataDir);
+  await generateK3DValuesFile();
   await importImages();
 
   const helmChartPath = path.join(__dirname, '..', 'helm');
@@ -1162,12 +1161,15 @@ const prepServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
-const getDockerLogs = (container) => {
-  const logFile = path.resolve(__dirname, '../logs', `${container}.log`);
+const getLogs = (container) => {
+  const logFile = path.resolve(__dirname, '../logs', `${container.replace('pod/', '')}.log`);
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
+  const command = isDocker() ? 'docker' : 'kubectl';
+
+  const params = `logs ${container}${isK3D() ? ` -n ${PROJECT_NAME}` : ''}`;
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker', ['logs', container]);
+    const cmd = spawn(command, params.split(' '));
     cmd.on('error', (err) => {
       console.error('Error while collecting container logs', err);
       reject(err);
@@ -1183,18 +1185,26 @@ const getDockerLogs = (container) => {
 };
 
 const saveLogs = async () => {
+  if (isK3D()) {
+    const podsList = await runCommand(`kubectl -n ${PROJECT_NAME} get pods --no-headers -o name`);
+    const pods = podsList.split('\n').filter(name => name);
+    for (const podName of pods) {
+      await getLogs(podName);
+    }
+    return;
+  }
+
   for (const containerName of Object.values(CONTAINER_NAMES)) {
-    await getDockerLogs(containerName);
+    await getLogs(containerName);
   }
 };
 
 const tearDownServices = async () => {
-  if (isK3D()) {
-    // todo
-    return;
-  }
   await saveLogs();
   if (!DEBUG) {
+    if (isK3D()) {
+      return await cleanupOldCluster();
+    }
     await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
   }
 };
@@ -1395,15 +1405,11 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 
 const getSentinelDate = () => getContainerDate('sentinel');
 const getPodName = async (service, silent) => {
-  const runningSelector = '--field-selector=status.phase==Running';
-  const jsonPath = '-o jsonpath="{.items[0].metadata.name}"';
-  const labelSelector = `-l cht.service=${service}`;
   const cmd = await runCommand(
-    `kubectl get pods -n ${PROJECT_NAME} ${labelSelector} ${runningSelector} ${jsonPath}`,
+    `kubectl get pods -n ${PROJECT_NAME} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
     silent
   );
-  console.log('podname', cmd, cmd.replace(/[^A-Za-z0-9-]/g, ''));
-  return cmd.replace(/[^A-Za-z0-9-]/g, '');
+  return cmd.replace(/[^A-Za-z0-9-/]/g, '');
 };
 
 const getContainerDate = async (container) => {
@@ -1419,7 +1425,6 @@ const getContainerDate = async (container) => {
 };
 
 const logFeedbackDocs = async (test) => {
-
   const feedBackDocs = await chtDbUtils.getFeedbackDocs();
   const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
   if (!newFeedbackDocs.length) {
