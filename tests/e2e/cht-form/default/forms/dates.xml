@@ -14,7 +14,7 @@
         </translation>
       </itext>
       <instance>
-        <dates delimiter="#" id="dates" prefix="J1!dates!" version="2024-03-27 00:00:00">
+        <dates delimiter="#" id="dates" prefix="J1!dates!" version="2024-04-02 00:00:00">
           <group>
             <date_a/>
             <date_b/>
@@ -23,7 +23,6 @@
           <diff_in_weeks/>
           <diff_in_months/>
           <diff_in_years/>
-          <days_remaining_in_week/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -36,7 +35,6 @@
       <bind calculate="cht:difference-in-weeks( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/diff_in_weeks" type="string"/>
       <bind calculate="cht:difference-in-months( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/diff_in_months" type="string"/>
       <bind calculate="cht:difference-in-years( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/diff_in_years" type="string"/>
-      <bind calculate="cht:days-remaining-in-week( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/days_remaining_in_week" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/dates/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>

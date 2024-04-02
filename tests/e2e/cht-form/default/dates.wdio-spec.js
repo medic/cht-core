@@ -17,6 +17,5 @@ describe('cht-form web component - Dates', () => {
     expect(fields.diff_in_weeks).to.equal('255');
     expect(fields.diff_in_months).to.equal('58');
     expect(fields.diff_in_years).to.equal('4');
-    expect(fields.days_remaining_in_week).to.equal('4');
   });
 });
