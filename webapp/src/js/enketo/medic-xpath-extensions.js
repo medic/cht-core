@@ -195,7 +195,6 @@ module.exports = {
     'difference-in-months': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.MONTHS), // To be deprecated
     'cht:difference-in-weeks': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.WEEKS),
     'cht:difference-in-days': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.DAYS),
-    'cht:days-remaining-in-week': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.DAYS_REMAINING),
     'cht:extension-lib': function () {
       const args = Array.from(arguments);
       const firstArg = args.shift();

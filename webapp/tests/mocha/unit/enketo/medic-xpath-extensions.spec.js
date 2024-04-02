@@ -167,21 +167,6 @@ describe('medic-xpath-extensions', function () {
     });
   });
 
-  describe('#days-remaining-in-week', function () {
-    const daysRemaining = func['cht:days-remaining-in-week'];
-    [
-      ['2023-09-21', '2023-09-22', 1],
-      ['2023-01-05', '2023-10-11', 6],
-      ['2023-02-05', '2023-11-01', 3],
-      ['2023-02-05', '2023-10-29', 0]
-    ].forEach(([startDate, endDate, expectedDiffInDays]) => {
-      it('should return the days remaining in the week', function () {
-        const days_remaining = daysRemaining(wrapDate(startDate), wrapDate(endDate));
-        assert.deepStrictEqual(days_remaining.v, expectedDiffInDays);
-      });
-    });
-  });
-
   describe('#to-bikram-sambat()', () => {
     [
       [{ t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२'],
