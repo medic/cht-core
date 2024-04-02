@@ -161,7 +161,7 @@ jobs:
 
       - uses: nolar/setup-k3d-k3s@v1
       - uses: azure/setup-helm@v4.1.0
-      - uses: azure/setup-kubectl@v3
+      - uses: azure/setup-kubectl@v4
       - name: Run tests
         run: npm run ci-integration-all-k3d
 
