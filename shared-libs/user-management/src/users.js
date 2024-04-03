@@ -45,6 +45,7 @@ const RESTRICTED_USER_EDITABLE_FIELDS = [
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
+  'contact',
   'type',
   'roles',
 ]);
@@ -413,7 +414,7 @@ const getSettingsUpdates = (username, data) => {
 };
 
 const getUserUpdates = (username, data) => {
-  const ignore = ['type', 'place'];
+  const ignore = ['type', 'place', 'contact'];
 
   const user = {
     name: username,
@@ -435,6 +436,9 @@ const getUserUpdates = (username, data) => {
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
+  }
+  if (data.contact) {
+    user.contact_id = getDocID(data.contact);
   }
 
   return user;
