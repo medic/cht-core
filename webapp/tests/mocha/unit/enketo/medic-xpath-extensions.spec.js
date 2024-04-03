@@ -174,6 +174,13 @@ describe('medic-xpath-extensions', function () {
       const result = diffInDays(wrapDate('2023-01-01'), wrapDate('2023-08-01'));
       assert.deepStrictEqual(result.v, 212);
     });
+
+    it('Should handle leap years correctly', () => {
+      const startDate = moment('2020-02-29');
+      const endDate = moment('2024-02-29');
+      const result = diffInDays(wrapDate(startDate), wrapDate(endDate));
+      assert.equal(result.v, 1461);
+    });
   });
 
   describe('#to-bikram-sambat()', () => {
