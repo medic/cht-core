@@ -155,6 +155,20 @@ describe('medic-xpath-extensions', function () {
         assert.deepStrictEqual(weeks_remaining.v, expectedDiffInWeeks);
       });
     });
+
+    it('Should handle start date after end date', () => {
+      const startDate = moment('2024-01-01');
+      const endDate = moment('2020-01-01');
+      const result = diffInWeeks(wrapDate(startDate), wrapDate(endDate));
+      assert.equal(result.v, -208);
+    });
+
+    it('Should handle leap years correctly', () => {
+      const startDate = moment('2020-02-29');
+      const endDate = moment('2024-02-29');
+      const result = diffInWeeks(wrapDate(startDate), wrapDate(endDate));
+      assert.equal(result.v, 208);
+    });
   });
 
   describe('#difference-in-days', function () {
