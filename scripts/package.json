@@ -6,6 +6,7 @@
   "dependencies": {
     "@medic/translation-checker": "^1.0.1",
     "@octokit/rest": "^20.0.1",
+    "@octokit/graphql": "^7.0.2",
     "chalk": "^5.3.0",
     "clui": "^0.3.6",
     "command-line-usage": "^7.0.1",
