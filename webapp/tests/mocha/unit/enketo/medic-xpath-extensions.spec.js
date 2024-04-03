@@ -34,45 +34,54 @@ describe('medic-xpath-extensions', function () {
   });
 
   describe('#difference-in-years', function () {
-    const daysRemaining = func['cht:difference-in-years'];
+    const diffInYears = func['cht:difference-in-years'];
 
     it('Should correctly calculate the difference in years', () => {
       const startDate = moment('2020-01-01');
       const endDate = moment('2024-01-01');
-      const result = daysRemaining(wrapDate(startDate), wrapDate(endDate));
+      const result = diffInYears(wrapDate(startDate), wrapDate(endDate));
       assert.equal(result.v, 4); // Expected difference in years between the start and end dates
     });
 
     it('Should return 0 if start and end dates are the same', () => {
       const startDate = moment('2020-01-01');
       const endDate = moment('2020-01-01');
-      const result = daysRemaining(wrapDate(startDate), wrapDate(endDate));
+      const result = diffInYears(wrapDate(startDate), wrapDate(endDate));
+      assert.equal(result.v, 0);
+    });
+
+    it('Should return 0 if start and end date years are the same, but not the months and/or days.', () => {
+      const startDate = moment('2020-01-05');
+      const endDate = moment('2020-08-23');
+      const result = diffInYears(wrapDate(startDate), wrapDate(endDate));
       assert.equal(result.v, 0);
     });
 
     it('Should handle leap years correctly', () => {
       const startDate = moment('2020-02-29'); // Leap year
       const endDate = moment('2024-02-29'); // Leap year
-      const result = daysRemaining(wrapDate(startDate), wrapDate(endDate));
+      const result = diffInYears(wrapDate(startDate), wrapDate(endDate));
       assert.equal(result.v, 4); // Expected difference in years should be 4 despite leap years
     });
 
     it('Should handle invalid dates', () => {
       const startDate = moment('2020-01-01');
       const endDate = moment('Invalid Date');
-      const result = daysRemaining(wrapDate(startDate), wrapDate(endDate));
+      const result = diffInYears(wrapDate(startDate), wrapDate(endDate));
       assert.equal(result.v, ''); // Expected result for an invalid date
     });
 
     it('Should handle start date after end date', () => {
       const startDate = moment('2024-01-01');
       const endDate = moment('2020-01-01');
-      const result = daysRemaining(wrapDate(startDate), wrapDate(endDate));
+      const result = diffInYears(wrapDate(startDate), wrapDate(endDate));
       assert.equal(result.v, -4); // Expected negative difference as start date is after end date
     });
   });
 
   describe('#difference-in-months', function () {
+    const diffInMonths = func['cht:difference-in-months'];
+    
     [
       ['2015-10-01', '2015-10-01', 0,],
       ['2015-09-01', '2015-10-01', 1,],
@@ -92,7 +101,7 @@ describe('medic-xpath-extensions', function () {
       const expectedDifference = example[2];
 
       it(`should report difference between ${d1.v} and ${d2.v} as ${expectedDifference}`, function () {
-        assert.equal(func['cht:difference-in-months'](d1, d2).v, expectedDifference);
+        assert.equal(diffInMonths(d1, d2).v, expectedDifference);
       });
     });
 
@@ -100,7 +109,7 @@ describe('medic-xpath-extensions', function () {
       const d1 = { t: 'date', v: new Date('2015-09-22') };
       const d2 = { t: 'date', v: new Date('2014-09-22') };
 
-      assert.equal(func['difference-in-months'](d1, d2).v, -12);
+      assert.equal(diffInMonths(d1, d2).v, -12);
     });
 
     it('should report difference between day counts', function () {
@@ -109,15 +118,15 @@ describe('medic-xpath-extensions', function () {
       const str1 = { t: 'str', v: '10' };
       const str2 = { t: 'str', v: '50' };
 
-      assert.equal(func['difference-in-months'](num1, str2).v, 1);
-      assert.equal(func['difference-in-months'](str1, num2).v, 1);
+      assert.equal(diffInMonths(num1, str2).v, 1);
+      assert.equal(diffInMonths(str1, num2).v, 1);
     });
 
     it('should report difference between element arrays', function () {
       const d1 = { t: 'arr', v: [{ textContent: '2015-09-22' }] };
       const d2 = { t: 'arr', v: [{ textContent: '2014-09-22' }] };
 
-      assert.equal(func['difference-in-months'](d1, d2).v, -12);
+      assert.equal(diffInMonths(d1, d2).v, -12);
     });
 
     it('should return an empty string when the difference cannot be calculated', function () {
@@ -126,14 +135,14 @@ describe('medic-xpath-extensions', function () {
       const nonsense = { t: 'nonsense', v: '2015-09-22' };
       const valid = { t: 'str', v: '2015-09-22' };
 
-      assert.equal(func['difference-in-months'](invalidStr, valid).v, '');
-      assert.equal(func['difference-in-months'](valid, bool).v, '');
-      assert.equal(func['difference-in-months'](nonsense, valid).v, '');
+      assert.equal(diffInMonths(invalidStr, valid).v, '');
+      assert.equal(diffInMonths(valid, bool).v, '');
+      assert.equal(diffInMonths(nonsense, valid).v, '');
     });
   });
 
   describe('#difference-in-weeks', function () {
-    const weeksRemaining = func['cht:difference-in-weeks'];
+    const diffInWeeks = func['cht:difference-in-weeks'];
     [
       ['2023-09-10', '2023-09-22', 1],
       ['2023-01-05', '2023-10-11', 39],
@@ -142,7 +151,7 @@ describe('medic-xpath-extensions', function () {
       ['2023-06-10', '2023-06-16', 0]
     ].forEach(([startDate, endDate, expectedDiffInWeeks]) => {
       it('should return the difference in weeks', function () {
-        const weeks_remaining = weeksRemaining(wrapDate(startDate), wrapDate(endDate));
+        const weeks_remaining = diffInWeeks(wrapDate(startDate), wrapDate(endDate));
         assert.deepStrictEqual(weeks_remaining.v, expectedDiffInWeeks);
       });
     });

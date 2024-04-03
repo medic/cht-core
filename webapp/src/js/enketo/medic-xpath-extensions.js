@@ -13,7 +13,6 @@ const MOMENT_KEYS = {
   HOURS: 'hours',
   MINUTES: 'minutes',
 };
-const TIME_UNIT = {...MOMENT_KEYS, DAYS_REMAINING: 'days_remaining' };
 
 let zscoreUtil;
 let toBikramSambat;
@@ -160,10 +159,6 @@ const dateDiff = function (startDateObj, endDateObj, key) {
     return XPR.string('');
   }
 
-  if (key === TIME_UNIT.DAYS_REMAINING) {
-    return XPR.number(endDate.diff(startDate, 'days') % 7);
-  }
-
   return XPR.number(endDate.diff(startDate, key));
 };
 
@@ -190,11 +185,11 @@ module.exports = {
     },
     'to-bikram-sambat': convertToBikramSambat,
     'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
-    'cht:difference-in-years': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.YEARS),
-    'cht:difference-in-months': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.MONTHS),
-    'difference-in-months': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.MONTHS), // To be deprecated
-    'cht:difference-in-weeks': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.WEEKS),
-    'cht:difference-in-days': (d1, d2) => dateDiff(d1, d2, TIME_UNIT.DAYS),
+    'cht:difference-in-years': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.YEARS),
+    'cht:difference-in-months': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.MONTHS),
+    'difference-in-months': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.MONTHS), // To be deprecated
+    'cht:difference-in-weeks': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.WEEKS),
+    'cht:difference-in-days': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.DAYS),
     'cht:extension-lib': function () {
       const args = Array.from(arguments);
       const firstArg = args.shift();
