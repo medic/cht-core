@@ -804,7 +804,7 @@ module.exports = {
   getUser: async (username) => {
     const [user, setting] = await getUserDocsByName(username);
     const facilities = await facility.list([user], [setting]);
-    return mapUsers([user], [setting], facilities);
+    return mapUsers([user], [setting], facilities)[0];
   },
   getList: async (filters) => {
     const [users, settings] = await getUsersAndSettings(filters);

@@ -136,6 +136,35 @@ const convertUserListToV1 = (users=[]) => {
   return users;
 };
 
+const getUserByUsername = async (req, res) => {
+  try {
+    const username = req.params.username;
+    const credentials = auth.basicAuthCredentials(req);
+    const [hasPermission, isGettingSelf] = await Promise.all([
+      hasPermissions(req, 'can_view_users'),
+      isUpdatingSelf(req, credentials, username),
+    ]).catch(error => {
+      if (error.statusCode === 401) {
+        throw { code: 401, message: 'Not logged in', err: error };
+      }
+
+      throw error;
+    });
+
+    if (!hasPermission && !isGettingSelf) {
+      throw {
+        message: 'You do not have permissions to fetch this person',
+        code: 403,
+      };
+    }
+
+    const body = await users.getUser(username);
+    res.json(body);
+  } catch (error) {
+    serverUtils.error(error, req, res);
+  }
+};
+
 module.exports = {
   get: (req, res) => {
     return getUserList(req)
@@ -239,33 +268,7 @@ module.exports = {
   v2: {
     get: async (req, res) => {
       if (req.params?.username) {
-        try {
-          const username = req.params.username;
-          const credentials = auth.basicAuthCredentials(req);
-          const [hasPermission, isGettingSelf] = await Promise.all([
-            hasPermissions(req, 'can_view_users'),
-            isUpdatingSelf(req, credentials, username),
-          ]).catch(error => {
-            if (error.statusCode === 401) {
-              throw { code: 401, message: 'Not logged in', err: error };
-            }
-
-            throw error;
-          });
-
-          if (!hasPermission && !isGettingSelf) {
-            throw {
-              message: 'You do not have permissions to fetch this person',
-              code: 403,
-            };
-          }
-
-          const body = await users.getUser(username);
-          res.json(body);
-        } catch (error) {
-          serverUtils.error(error, req, res);
-        }
-        return;
+        return getUserByUsername(req, res);
       }
 
       try {
