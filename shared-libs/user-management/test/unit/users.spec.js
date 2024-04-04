@@ -201,9 +201,8 @@ describe('Users service', () => {
   });
 
   describe('getList', () => {
-
     describe('with filters', () => {
-      it('with facility_id', () => {
+      it('with facility_id', async () => {
         const filters = { facilityId: 'c' };
         const usersResponse = {
           docs: [{
@@ -236,20 +235,19 @@ describe('Users service', () => {
         };
         db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:x' }] }).resolves(userSettingsResponse);
 
-        return service.getList(filters).then(data => {
-          chai.expect(data.length).to.equal(1);
-          const lucas = data[0];
-          chai.expect(lucas.id).to.equal('org.couchdb.user:x');
-          chai.expect(lucas.username).to.equal('lucas');
-          chai.expect(lucas.fullname).to.equal('Lucas M');
-          chai.expect(lucas.email).to.equal('l@m.com');
-          chai.expect(lucas.phone).to.equal('123456789');
-          chai.expect(lucas.place).to.deep.equal(facilityc);
-          chai.expect(lucas.roles).to.deep.equal(['national-admin', 'data-entry']);
-        });
+        const data = await service.getList(filters);
+        chai.expect(data.length).to.equal(1);
+        const lucas = data[0];
+        chai.expect(lucas.id).to.equal('org.couchdb.user:x');
+        chai.expect(lucas.username).to.equal('lucas');
+        chai.expect(lucas.fullname).to.equal('Lucas M');
+        chai.expect(lucas.email).to.equal('l@m.com');
+        chai.expect(lucas.phone).to.equal('123456789');
+        chai.expect(lucas.place).to.deep.equal(facilityc);
+        chai.expect(lucas.roles).to.deep.equal(['national-admin', 'data-entry']);
       });
 
-      it('with contact_id', () => {
+      it('with contact_id', async () => {
         const filters = { contactId: 'milan-contact' };
         const usersResponse = {
           docs: [{
@@ -285,21 +283,20 @@ describe('Users service', () => {
         };
         db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(userSettingsResponse);
 
-        return service.getList(filters).then(data => {
-          chai.expect(data.length).to.equal(1);
-          const milan = data[0];
-          chai.expect(milan.id).to.equal('org.couchdb.user:y');
-          chai.expect(milan.username).to.equal('milan');
-          chai.expect(milan.fullname).to.equal('Milan A');
-          chai.expect(milan.email).to.equal('m@a.com');
-          chai.expect(milan.phone).to.equal('987654321');
-          chai.expect(milan.contact._id).to.equal('milan-contact');
-          chai.expect(milan.place).to.deep.equal(facilityb);
-          chai.expect(milan.roles).to.deep.equal(['district-admin']);
-        });
+        const data = await service.getList(filters);
+        chai.expect(data.length).to.equal(1);
+        const milan = data[0];
+        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.username).to.equal('milan');
+        chai.expect(milan.fullname).to.equal('Milan A');
+        chai.expect(milan.email).to.equal('m@a.com');
+        chai.expect(milan.phone).to.equal('987654321');
+        chai.expect(milan.contact._id).to.equal('milan-contact');
+        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.roles).to.deep.equal(['district-admin']);
       });
 
-      it('with both facility_id and contact_id', () => {
+      it('with both facility_id and contact_id', async () => {
         const filters = { facilityId: 'b', contactId: 'milan-contact' };
         const usersResponse = {
           docs: [{
@@ -335,23 +332,22 @@ describe('Users service', () => {
         };
         db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(userSettingsResponse);
 
-        return service.getList(filters).then(data => {
-          chai.expect(data.length).to.equal(1);
-          const milan = data[0];
-          chai.expect(milan.id).to.equal('org.couchdb.user:y');
-          chai.expect(milan.username).to.equal('milan');
-          chai.expect(milan.fullname).to.equal('Milan A');
-          chai.expect(milan.email).to.equal('m@a.com');
-          chai.expect(milan.phone).to.equal('987654321');
-          chai.expect(milan.contact._id).to.equal('milan-contact');
-          chai.expect(milan.place).to.deep.equal(facilityb);
-          chai.expect(milan.roles).to.deep.equal(['district-admin']);
-        });
+        const data = await service.getList(filters);
+        chai.expect(data.length).to.equal(1);
+        const milan = data[0];
+        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.username).to.equal('milan');
+        chai.expect(milan.fullname).to.equal('Milan A');
+        chai.expect(milan.email).to.equal('m@a.com');
+        chai.expect(milan.phone).to.equal('987654321');
+        chai.expect(milan.contact._id).to.equal('milan-contact');
+        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.roles).to.deep.equal(['district-admin']);
       });
     });
 
     describe('without filters', () => {
-      it('collects user infos', () => {
+      it('collects user infos', async () => {
         const allUsers = [
           {
             _id: 'org.couchdb.user:x',
@@ -387,29 +383,27 @@ describe('Users service', () => {
         ];
         service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
         service.__set__('getAllUserSettings', sinon.stub().resolves(allUsersSettings));
-        return service.getList().then(data => {
-          chai.expect(data.length).to.equal(2);
-          const lucas = data[0];
-          chai.expect(lucas.id).to.equal('org.couchdb.user:x');
-          chai.expect(lucas.username).to.equal('lucas');
-          chai.expect(lucas.fullname).to.equal('Lucas M');
-          chai.expect(lucas.email).to.equal('l@m.com');
-          chai.expect(lucas.phone).to.equal('123456789');
-          chai.expect(lucas.place).to.deep.equal(facilityc);
-          chai.expect(lucas.roles).to.deep.equal([ 'national-admin', 'data-entry' ]);
-          const milan = data[1];
-          chai.expect(milan.id).to.equal('org.couchdb.user:y');
-          chai.expect(milan.username).to.equal('milan');
-          chai.expect(milan.fullname).to.equal('Milan A');
-          chai.expect(milan.email).to.equal('m@a.com');
-          chai.expect(milan.phone).to.equal('987654321');
-          chai.expect(milan.place).to.deep.equal(facilityb);
-          chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
-          chai.expect(milan.external_id).to.equal('LTT093');
-        });
+        const data = await service.getList();
+        chai.expect(data.length).to.equal(2);
+        const [lucas, milan] = data;
+        chai.expect(lucas.id).to.equal('org.couchdb.user:x');
+        chai.expect(lucas.username).to.equal('lucas');
+        chai.expect(lucas.fullname).to.equal('Lucas M');
+        chai.expect(lucas.email).to.equal('l@m.com');
+        chai.expect(lucas.phone).to.equal('123456789');
+        chai.expect(lucas.place).to.deep.equal(facilityc);
+        chai.expect(lucas.roles).to.deep.equal([ 'national-admin', 'data-entry' ]);
+        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.username).to.equal('milan');
+        chai.expect(milan.fullname).to.equal('Milan A');
+        chai.expect(milan.email).to.equal('m@a.com');
+        chai.expect(milan.phone).to.equal('987654321');
+        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
+        chai.expect(milan.external_id).to.equal('LTT093');
       });
 
-      it('filters out non-users', () => {
+      it('filters out non-users', async () => {
         const allUsers = [
           {
             _id: 'x',
@@ -451,21 +445,19 @@ describe('Users service', () => {
         service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
         service.__set__('getAllUserSettings', sinon.stub().resolves(allUserSettings));
 
-        return service.getList().then(data => {
-          chai.expect(data.length).to.equal(1);
-          const milan = data[0];
-          chai.expect(milan.id).to.equal('org.couchdb.user:y');
-          chai.expect(milan.username).to.equal('milan');
-          chai.expect(milan.fullname).to.equal('Milan A');
-          chai.expect(milan.email).to.equal('m@a.com');
-          chai.expect(milan.phone).to.equal('987654321');
-          chai.expect(milan.place).to.deep.equal(facilityb);
-          chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
-        });
-
+        const data = await service.getList();
+        chai.expect(data.length).to.equal(1);
+        const milan = data[0];
+        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.username).to.equal('milan');
+        chai.expect(milan.fullname).to.equal('Milan A');
+        chai.expect(milan.email).to.equal('m@a.com');
+        chai.expect(milan.phone).to.equal('987654321');
+        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
       });
 
-      it('handles minimal users', () => {
+      it('handles minimal users', async () => {
         const allUsers = [
           {
             _id: 'org.couchdb.user:x',
@@ -474,17 +466,16 @@ describe('Users service', () => {
         ];
         service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
         service.__set__('getAllUserSettings', sinon.stub().resolves([]));
-        return service.getList().then(data => {
-          chai.expect(data.length).to.equal(1);
-          const lucas = data[0];
-          chai.expect(lucas.id).to.equal('org.couchdb.user:x');
-          chai.expect(lucas.username).to.equal('lucas');
-          chai.expect(lucas.fullname).to.equal(undefined);
-          chai.expect(lucas.email).to.equal(undefined);
-          chai.expect(lucas.phone).to.equal(undefined);
-          chai.expect(lucas.facility).to.equal(undefined);
-          chai.expect(lucas.roles).to.equal(undefined);
-        });
+        const data = await service.getList();
+        chai.expect(data.length).to.equal(1);
+        const lucas = data[0];
+        chai.expect(lucas.id).to.equal('org.couchdb.user:x');
+        chai.expect(lucas.username).to.equal('lucas');
+        chai.expect(lucas.fullname).to.equal(undefined);
+        chai.expect(lucas.email).to.equal(undefined);
+        chai.expect(lucas.phone).to.equal(undefined);
+        chai.expect(lucas.facility).to.equal(undefined);
+        chai.expect(lucas.roles).to.equal(undefined);
       });
 
       it('returns errors from users service', () => {
@@ -524,7 +515,6 @@ describe('Users service', () => {
         });
       });
     });
-
   });
 
   describe('getUserSettings', () => {
