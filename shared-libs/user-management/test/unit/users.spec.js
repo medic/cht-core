@@ -36,9 +36,15 @@ describe('Users service', () => {
       getTransitionsLib: sinon.stub(),
     });
     db.init({
-      medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub(), query: sinon.stub() },
+      medic: {
+        bulkGet: sinon.stub(),
+        get: sinon.stub(),
+        put: sinon.stub(),
+        allDocs: sinon.stub(),
+        query: sinon.stub(),
+      },
       medicLogs: { get: sinon.stub(), put: sinon.stub(), },
-      users: { bulkGet: sinon.stub(), get: sinon.stub(), put: sinon.stub() },
+      users: { find: sinon.stub(), get: sinon.stub(), put: sinon.stub() },
     });
     lineage.init(require('@medic/lineage')(Promise, db.medic));
     addMessage = sinon.stub();
@@ -199,37 +205,36 @@ describe('Users service', () => {
     describe('with filters', () => {
       it('with facility_id', () => {
         const filters = { facilityId: 'c' };
-        const userSettingsResponse = {
-          rows: [{
-            doc: {
-              _id: 'org.couchdb.user:x',
-              name: 'lucas',
-              fullname: 'Lucas M',
-              email: 'l@m.com',
-              phone: '123456789',
-              facility_id: 'c',
-            },
+        const usersResponse = {
+          docs: [{
+            _id: 'org.couchdb.user:x',
+            name: 'lucas',
+            facility_id: 'c',
+            roles: ['national-admin', 'data-entry'],
           }],
         };
-        const queryOptions = {
-          include_docs: true,
-          key: ['user-settings', 'c'],
-        };
-        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+        db.users.find.withArgs({
+          selector: {
+            facility_id: filters.facilityId,
+            contact_id: filters.contactId,
+          },
+        }).resolves(usersResponse);
 
-        const usersResponse = {
+        const userSettingsResponse = {
           results: [{
             docs: [{
               ok: {
                 _id: 'org.couchdb.user:x',
                 name: 'lucas',
+                fullname: 'Lucas M',
+                email: 'l@m.com',
+                phone: '123456789',
                 facility_id: 'c',
-                roles: ['national-admin', 'data-entry'],
               },
             }],
           }],
         };
-        db.users.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:x' }] }).resolves(usersResponse);
+        db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:x' }] }).resolves(userSettingsResponse);
 
         return service.getList(filters).then(data => {
           chai.expect(data.length).to.equal(1);
@@ -245,40 +250,40 @@ describe('Users service', () => {
       });
 
       it('with contact_id', () => {
-        const filters = { contactId: 'c' };
-        const userSettingsResponse = {
-          rows: [{
-            doc: {
-              _id: 'org.couchdb.user:y',
-              name: 'milan',
-              fullname: 'Milan A',
-              email: 'm@a.com',
-              phone: '987654321',
-              external_id: 'LTT093',
-              facility_id: 'b',
-              contact_id: 'milan-contact',
-            },
+        const filters = { contactId: 'milan-contact' };
+        const usersResponse = {
+          docs: [{
+            _id: 'org.couchdb.user:y',
+            name: 'milan',
+            facility_id: 'b',
+            contact_id: 'milan-contact',
+            roles: ['district-admin'],
           }],
         };
-        const queryOptions = {
-          include_docs: true,
-          key: ['user-settings', 'c'],
-        };
-        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+        db.users.find.withArgs({
+          selector: {
+            facility_id: filters.facilityId,
+            contact_id: filters.contactId,
+          },
+        }).resolves(usersResponse);
 
-        const usersResponse = {
+        const userSettingsResponse = {
           results: [{
             docs: [{
               ok: {
                 _id: 'org.couchdb.user:y',
                 name: 'milan',
+                fullname: 'Milan A',
+                email: 'm@a.com',
+                phone: '987654321',
+                external_id: 'LTT093',
                 facility_id: 'b',
-                roles: ['district-admin'],
+                contact_id: 'milan-contact',
               },
             }],
           }],
         };
-        db.users.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(usersResponse);
+        db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(userSettingsResponse);
 
         return service.getList(filters).then(data => {
           chai.expect(data.length).to.equal(1);
@@ -295,40 +300,40 @@ describe('Users service', () => {
       });
 
       it('with both facility_id and contact_id', () => {
-        const filters = { facilityId: 'b', contactId: 'c' };
-        const userSettingsResponse = {
-          rows: [{
-            doc: {
-              _id: 'org.couchdb.user:y',
-              name: 'milan',
-              fullname: 'Milan A',
-              email: 'm@a.com',
-              phone: '987654321',
-              external_id: 'LTT093',
-              facility_id: 'b',
-              contact_id: 'milan-contact',
-            },
+        const filters = { facilityId: 'b', contactId: 'milan-contact' };
+        const usersResponse = {
+          docs: [{
+            _id: 'org.couchdb.user:y',
+            name: 'milan',
+            facility_id: 'b',
+            contact_id: 'milan-contact',
+            roles: ['district-admin'],
           }],
         };
-        const queryOptions = {
-          include_docs: true,
-          key: ['user-settings', 'b', 'c'],
-        };
-        db.medic.query.withArgs('medic-client/doc_by_type', queryOptions).resolves(userSettingsResponse);
+        db.users.find.withArgs({
+          selector: {
+            facility_id: filters.facilityId,
+            contact_id: filters.contactId,
+          },
+        }).resolves(usersResponse);
 
-        const usersResponse = {
+        const userSettingsResponse = {
           results: [{
             docs: [{
               ok: {
                 _id: 'org.couchdb.user:y',
                 name: 'milan',
+                fullname: 'Milan A',
+                email: 'm@a.com',
+                phone: '987654321',
+                external_id: 'LTT093',
                 facility_id: 'b',
-                roles: ['district-admin'],
+                contact_id: 'milan-contact',
               },
             }],
           }],
         };
-        db.users.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(usersResponse);
+        db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(userSettingsResponse);
 
         return service.getList(filters).then(data => {
           chai.expect(data.length).to.equal(1);

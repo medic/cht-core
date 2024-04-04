@@ -364,9 +364,9 @@ const mapUsers = (users, settings, facilities) => {
         fullname: setting.fullname,
         email: setting.email,
         phone: setting.phone,
-        place: getDoc(setting.facility_id, facilities),
+        place: getDoc(user.facility_id, facilities),
         roles: user.roles,
-        contact: getDoc(setting.contact_id, facilities),
+        contact: getDoc(user.contact_id, facilities),
         external_id: setting.external_id,
         known: user.known
       };
@@ -577,6 +577,7 @@ const validateUserContact = (data, user, userSettings) => {
         {'field': 'Contact'}
       ));
     }
+    user.contact_id = null;
     userSettings.contact_id = null;
   }
 };
@@ -804,7 +805,7 @@ module.exports = {
       settings = await getSettingsByIds(ids);
     }
 
-    const facilities = await facility.list(users, settings);
+    const facilities = await facility.list(users);
     return mapUsers(users, settings, facilities);
   },
   getUserSettings,
