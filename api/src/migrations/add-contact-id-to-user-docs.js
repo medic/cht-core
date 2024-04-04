@@ -1,7 +1,7 @@
 const db = require('../db');
 const logger = require('../logger');
 
-const BATCH_SIZE = 1;
+const BATCH_SIZE = 100;
 
 const processDocument = async ({ _id, contact_id }) => {
   try {
