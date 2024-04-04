@@ -1640,43 +1640,6 @@ describe('Users API', () => {
           'contact.name': user.contact.name,
         });
       }
-
-      await Promise.all(savedUsers.map(async (savedUser) => {
-        let filteredUsers;
-
-        // GET with facility_id filter
-        if (savedUser.place?._id) {
-          filteredUsers = await utils.request({
-            path: '/api/v2/users',
-            qs: { facility_id: savedUser.place._id },
-          });
-          expect(filteredUsers.length).to.equal(1);
-          expect(filteredUsers[0]).to.deep.equal(savedUser);
-        }
-
-        // GET with contact_id filter
-        if (savedUser.contact?._id) {
-          filteredUsers = await utils.request({
-            path: '/api/v2/users',
-            qs: { contact_id: savedUser.contact._id },
-          });
-          expect(filteredUsers.length).to.equal(1);
-          expect(filteredUsers[0]).to.deep.equal(savedUser);
-        }
-
-        // GET with facility_id AND contact_id filters
-        if (savedUser.place?._id && savedUser.contact?._id) {
-          filteredUsers = await utils.request({
-            path: '/api/v2/users',
-            qs: {
-              facility_id: savedUser.place._id,
-              contact_id: savedUser.contact._id,
-            },
-          });
-          expect(filteredUsers.length).to.equal(1);
-          expect(filteredUsers[0]).to.deep.equal(savedUser);
-        }
-      }));
     });
 
     it('should create and query users using filters', async () => {
