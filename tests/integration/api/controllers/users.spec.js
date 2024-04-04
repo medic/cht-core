@@ -1652,7 +1652,7 @@ describe('Users API', () => {
       }));
     });
 
-    it.only('should create and query users using filters', async () => {
+    it('should create and query users using filters', async () => {
       const facilityE = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
