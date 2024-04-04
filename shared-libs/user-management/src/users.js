@@ -566,7 +566,7 @@ const validateUserFacility = (data, user, userSettings) => {
 
 const validateUserContact = (data, user, userSettings) => {
   if (data.contact) {
-    return validateContact(userSettings.contact_id, user.facility_id);
+    return validateContact(user.contact_id, user.facility_id);
   }
 
   if (_.isNull(data.contact)) {
