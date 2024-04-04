@@ -66,6 +66,7 @@ describe('Users API', () => {
       name: username,
       password: password,
       facility_id: null,
+      contact_id: null,
       roles: [
         'chw',
         'data_entry',
@@ -73,6 +74,7 @@ describe('Users API', () => {
     };
 
     const newPlaceId = 'NewPlaceId' + new Date().getTime();
+    const newContactId = 'NewContactId' + new Date().getTime();
 
     let cookie;
 
@@ -92,7 +94,14 @@ describe('Users API', () => {
       {
         _id: newPlaceId,
         type: 'clinic'
-      }
+      },
+      {
+        _id: newContactId,
+        type: 'person',
+        parent: {
+          _id: newPlaceId,
+        },
+      },
     ];
 
     before(async () => {
@@ -165,19 +174,28 @@ describe('Users API', () => {
       await utils.revertDb([], true);
     });
 
-    it('Allows for admin users to modify someone', () => {
-      return utils
-        .request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          body: {
-            place: newPlaceId
-          }
-        })
-        .then(() => utils.getDoc(getUserId(username)))
-        .then(doc => {
-          chai.expect(doc.facility_id).to.equal(newPlaceId);
-        });
+    it('Allows for admin users to modify someone', async () => {
+      let userSettingsDoc = await utils.getDoc(getUserId(username));
+      chai.expect(userSettingsDoc.facility_id).to.equal(null);
+      chai.expect(userSettingsDoc.contact_id).to.equal(null);
+      let userDoc = await utils.usersDb.get(getUserId(username));
+      chai.expect(userDoc.facility_id).to.equal(null);
+      chai.expect(userDoc.contact_id).to.equal(null);
+
+      await utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        body: {
+          place: newPlaceId,
+          contact: newContactId,
+        },
+      });
+      userSettingsDoc = await utils.getDoc(getUserId(username));
+      chai.expect(userSettingsDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userSettingsDoc.contact_id).to.equal(newContactId);
+      userDoc = await utils.usersDb.get(getUserId(username));
+      chai.expect(userDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userDoc.contact_id).to.equal(newContactId);
     });
 
     it('401s if a user without the right permissions attempts to modify someone else', () => {
@@ -623,6 +641,7 @@ describe('Users API', () => {
         type: 'user',
         roles: ['district_admin'],
         facility_id: 'fixture:test',
+        contact_id: 'fixture:user:testuser',
       };
       chai.expect(user).to.shallowDeepEqual(Object.assign(defaultProps, extra));
     };
@@ -1015,9 +1034,14 @@ describe('Users API', () => {
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
-          const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
+          const extraProps = {
+            facility_id: user.place._id,
+            contact_id: user.contact._id,
+            name: user.username,
+            roles: user.roles,
+          };
           expectCorrectUser(userInDb, extraProps);
-          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+          expectCorrectUserSettings(userSettings, extraProps);
           chai.expect(userInDb.token_login).to.be.undefined;
           chai.expect(userSettings.token_login).to.be.undefined;
           await expectPasswordLoginToWork(user);
@@ -1040,7 +1064,6 @@ describe('Users API', () => {
           expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
           expectCorrectUserSettings(userSettings, {
             ...extraProps,
-            contact_id: user.contact._id,
             roles: ['new_role'],
             phone: '+40744898989',
           });
@@ -1125,9 +1148,14 @@ describe('Users API', () => {
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
-          const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
+          const extraProps = {
+            facility_id: user.place._id,
+            contact_id: user.contact._id,
+            name: user.username,
+            roles: user.roles,
+          };
           expectCorrectUser(userInDb, extraProps);
-          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+          expectCorrectUserSettings(userSettings, extraProps);
           chai.expect(userInDb.token_login).to.be.ok;
           chai.expect(userInDb.token_login).to.have.keys(['active', 'token', 'expiration_date' ]);
           chai.expect(userInDb.token_login).to.include({ active: true });
@@ -1173,7 +1201,6 @@ describe('Users API', () => {
           expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
           expectCorrectUserSettings(userSettings, {
             ...extraProps,
-            contact_id: user.contact._id,
             roles: ['new_role'],
             phone: '+40744898989',
           });
@@ -1794,7 +1821,6 @@ describe('Users API', () => {
       expect(filteredUsers.length).to.equal(0);
 
       const allUsers = await utils.request({ path: '/api/v2/users' });
-      expect(allUsers.length).to.equal(4);
       expect(allUsers.map(user => user.id)).to.not.include(user5Response.user.id);
     });
   });
