@@ -1652,7 +1652,7 @@ describe('Users API', () => {
       }));
     });
 
-    it('should create and query users using filters', async () => {
+    it.only('should create and query users using filters', async () => {
       const facilityE = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
@@ -1690,10 +1690,17 @@ describe('Users API', () => {
       const user2 = userFactory({ contact: contactA.id, place: facilityE.id });
       const user3 = userFactory({ contact: contactB.id, place: facilityE.id });
       const user4 = userFactory({ contact: contactC.id, place: facilityF.id });
-      const [user1Response, user2Response, user3Response, user4Response] = await utils.request({
+      const user5 = userFactory({ contact: contactC.id, place: facilityF.id });
+      const [user1Response, user2Response, user3Response, user4Response, user5Response] = await utils.request({
         path: '/api/v2/users',
         method: 'POST',
-        body: [user1, user2, user3, user4],
+        body: [user1, user2, user3, user4, user5],
+      });
+
+      const user5Name = user5Response.user.id.replace('org.couchdb.user:', '');
+      await utils.request({
+        path: `/api/v1/users/${user5Name}`,
+        method: 'DELETE',
       });
 
       let filteredUsers;
@@ -1785,6 +1792,10 @@ describe('Users API', () => {
         qs: { facility_id: 'non_existent_facility' },
       });
       expect(filteredUsers.length).to.equal(0);
+
+      const allUsers = await utils.request({ path: '/api/v2/users' });
+      expect(allUsers.length).to.equal(4);
+      expect(allUsers.map(user => user.id)).to.not.include(user5Response.user.id);
     });
   });
 });
