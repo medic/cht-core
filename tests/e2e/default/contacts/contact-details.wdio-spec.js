@@ -7,6 +7,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
+const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 
 const updateSettings = async (settings) => {
   await utils.revertSettings(true);
@@ -32,13 +33,25 @@ describe('Contact details page', () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
     const user = userFactory.build({ username: 'offlineuser', roles: [role] });
     const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
-    const report = reportFactory
-      .report()
-      .build(
-        { form: 'pregnancy_danger_sign' },
-        { patient, submitter: user.contact, fields: { t_danger_signs_referral_follow_up: 'yes' },
-        }
-      );
+
+    const reports = Array.from({ length: 60 }).map(() => reportFactory.report().build(
+      { form: 'pregnancy_danger_sign' },
+      {
+        patient,
+        submitter: user.contact,
+        fields: { t_danger_signs_referral_follow_up: 'yes' },
+      }
+    ));
+
+    const pregnancyReport = [
+      pregnancyFactory.build({
+        fields: {
+          patient_id: patient._id,
+          patient_uuid: patient._id,
+          patient_name: patient.name,
+        },
+      }),
+    ];
 
     const updatePermissions = async (role, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();
@@ -50,11 +63,16 @@ describe('Contact details page', () => {
       await updateSettings({ roles: settings.roles, permissions: settings.permissions });
     };
 
+    const DOCS_DISPLAY_LIMIT = 50;
+
     before(async () => {
       const permissions = ['can_view_contacts', 'can_view_contacts_tab', 'can_view_reports', 'can_view_tasks'];
       await updatePermissions(role, permissions);
 
-      await utils.saveDocs([parent, patient, report]);
+      await utils.saveDocs([parent, patient]);
+      await utils.saveDocs(reports);
+      await utils.saveDocs(pregnancyReport);
+
       await utils.createUsers([user]);
 
       await loginPage.login(user);
@@ -69,9 +87,17 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(1);
-      expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(1);
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
     });
+
+    it(
+      'should show contact summary that has the full context for reports > 50' +
+      'validate that the pregnancy card is always displayed', async () => {
+
+        expect(await contactPage.pregnancyCard().isDisplayed()).to.be.true;
+      }
+    );
 
     it('should not show reports when permission is disabled', async () => {
       await updatePermissions(role, [], ['can_view_reports']);
@@ -83,7 +109,7 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(false);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
 
-      expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(1);
+      expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
     });
 
     it('should not show tasks when permission is disabled', async () => {
@@ -97,7 +123,7 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(1);
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
     });
   });
 
