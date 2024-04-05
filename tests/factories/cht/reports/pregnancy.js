@@ -1,4 +1,5 @@
 const Factory = require('rosie').Factory;
+const { faker } = require('@faker-js/faker');
 const uuid = require('uuid');
 const _ = require('lodash');
 const geolocation = require('./geolocation');
@@ -14,6 +15,16 @@ const defaultSubmitter = {
     }
   }
 };
+
+const edd = faker.date
+  .between({ from: '2024-06-01T00:00:00.000Z', to: '2024-06-30T00:00:00.000Z' })
+  .toISOString()
+  .split('T')[0];
+
+const lmp = faker.date
+  .between({ from: '2023-11-01T00:00:00.000Z', to: '2023-11-30T00:00:00.000Z' })
+  .toISOString()
+  .split('T')[0];
 
 const defaultFields = {
   'inputs': {
@@ -36,8 +47,8 @@ const defaultFields = {
   'patient_name': 'Adelia Akiyama',
   'patient_short_name': 'the woman',
   'patient_short_name_start': 'The woman',
-  'lmp_date_8601': '2021-02-02',
-  'edd_8601': '2021-11-09',
+  'lmp_date_8601': lmp,
+  'edd_8601': edd,
   'days_since_lmp': '77',
   'weeks_since_lmp': '34',
   'weeks_since_lmp_rounded': '34',
@@ -47,8 +58,8 @@ const defaultFields = {
   'tt_received': 'no',
   't_pregnancy_follow_up_date': '',
   't_pregnancy_follow_up': 'no',
-  't_danger_signs_referral_follow_up_date': '2021-04-23T00:00:00.000-04:00',
-  't_danger_signs_referral_follow_up': 'no',
+  't_danger_signs_referral_follow_up_date': faker.date.recent({ days: 5 }).toISOString(),
+  't_danger_signs_referral_follow_up': 'yes',
   'gestational_age': {
     'register_method': {
       'register_note': '',
@@ -63,10 +74,10 @@ const defaultFields = {
       'edd_note': '',
       'edd_check_note': ''
     },
-    'g_lmp_date_8601': '2021-02-02',
-    'g_lmp_date': '2 Feb, 2021',
-    'g_edd_8601': '2021-11-09',
-    'g_edd': '9 Nov, 2021'
+    'g_lmp_date_8601': '',
+    'g_lmp_date': lmp,
+    'g_edd_8601': edd,
+    'g_edd': ''
   },
   'anc_visits_hf': {
     'anc_visits_hf_past': {
@@ -102,7 +113,7 @@ const defaultFields = {
   'danger_signs': {
     'danger_signs_note': '',
     'danger_signs_question_note': '',
-    'vaginal_bleeding': 'no',
+    'vaginal_bleeding': 'yes',
     'fits': 'no',
     'severe_abdominal_pain': 'no',
     'severe_headache': 'no',
@@ -163,7 +174,7 @@ const defaultFields = {
     'r_following_tasks': '',
     'r_fup_pregnancy_visit': '',
     'next_visit_weeks': '1',
-    'edd_summary': '9 Nov, 2021',
+    'edd_summary': '',
     'next_appointment_date': '',
     'custom_translations': {
       'custom_woman_label_translator': 'woman',
@@ -175,15 +186,15 @@ const defaultFields = {
   'data': {
     '__lmp_method': 'method_approx',
     '__no_lmp_registration_reason': '',
-    '__lmp_date': '2021-02-02',
+    '__lmp_date': lmp,
     '__lmp_approx_weeks': '34',
     '__lmp_approx_months': '',
-    '__edd': '2021-11-09',
+    '__edd': edd,
     '__num_previous_anc_hf_visits': '1',
     '__previous_anc_hf_visit_dates': '',
     '__next_anc_hf_visit_date_known': 'no',
     '__next_anc_hf_visit_date': '',
-    '__has_risk_factors': 'no',
+    '__has_risk_factors': 'yes',
     '__first_pregnancy': 'no',
     '__previous_miscarriage': 'no',
     '__previous_difficulties': 'no',
@@ -196,7 +207,7 @@ const defaultFields = {
     '__additional_high_risk_condition_to_report': 'no',
     '__additional_high_risk_condition': '',
     '__has_danger_sign': 'no',
-    '__vaginal_bleeding': 'no',
+    '__vaginal_bleeding': 'yes',
     '__fits': 'no',
     '__severe_abdominal_pain': 'no',
     '__severe_headache': 'no',
