@@ -6,7 +6,11 @@ let userSettings;
 
 describe('validate doc update', () => {
 
-  beforeEach(done => {
+  const wrapValidateDocUpdate = (file) => eval(`log = console.log; (${fs.readFileSync(__dirname + file)})`);
+  const serverFn = wrapValidateDocUpdate('/../../../../ddocs/medic-db/medic/validate_doc_update.js');
+  const clientFn = wrapValidateDocUpdate('/../../../../ddocs/medic-db/medic-client/validate_doc_update.js');
+
+  beforeEach(() => {
     // A valid user-settings doc. Does not require type property because that is
     // already matched before passing to the validation function.
     userSettings = {
@@ -15,15 +19,14 @@ describe('validate doc update', () => {
       type: 'user-settings',
       roles: []
     };
-    done();
   });
 
-  const userCtx = function(additions) {
+  const userCtx = (additions) => {
     additions = additions || {};
     return _.defaults(additions, { name: 'a-user' });
   };
 
-  const checkFn = function(lib, userCtx, newDoc, oldDoc) {
+  const checkFn = (lib, userCtx, newDoc, oldDoc) => {
     oldDoc = oldDoc || newDoc;
     try {
       lib(newDoc, oldDoc, userCtx, {});
@@ -33,22 +36,12 @@ describe('validate doc update', () => {
     }
   };
 
-  const disallowed = function (reason) {
+  const disallowed = (reason) => {
     return { forbidden: reason };
   };
 
-  const clientValidateDocUpdate = function() {
-    const fn = fs.readFileSync(`${__dirname}/../../../../ddocs/medic-db/medic-client/validate_doc_update.js`);
-    eval('log = console.log; (' + fn + ')').apply(null, arguments);
-  };
-
-  const serverValidateDocUpdate = function() {
-    const fn = fs.readFileSync(`${__dirname}/../../../../ddocs/medic-db/medic/validate_doc_update.js`);
-    eval('log = console.log; (' + fn + ')').apply(null, arguments);
-  };
-
-  const allowedOnServer = _.partial(checkFn, serverValidateDocUpdate);
-  const allowedOnClient = _.partial(checkFn, clientValidateDocUpdate);
+  const allowedOnServer = (userCtx, newDoc, oldDoc) => checkFn(serverFn, userCtx, newDoc, oldDoc);
+  const allowedOnClient = (userCtx, newDoc, oldDoc) => checkFn(clientFn, userCtx, newDoc, oldDoc);
 
   describe('only db and national admins are allowed to change...', () => {
     Object.entries({
@@ -61,7 +54,7 @@ describe('validate doc update', () => {
       'header logo': { _id: 'branding' },
       'partners': { _id: 'partners' }
     }).forEach(([ name, doc ]) => {
-      it(name, done => {
+      it(name, () => {
         assert.equal(allowedOnServer(userCtx( {roles: [ '_admin' ] }), doc), true);
         assert.deepEqual(
           allowedOnServer(userCtx({ roles: [ 'national_admin' ] }), doc),
@@ -71,12 +64,11 @@ describe('validate doc update', () => {
           allowedOnServer(userCtx({ roles: [ 'test' ] }), doc),
           disallowed('You are not authorized to edit admin only docs')
         );
-        done();
       });
     });
   });
 
-  it('only db and national admins are allowed change their own place', done => {
+  it('only db and national admins are allowed change their own place', () => {
     const doc = { _id: 'abc', type: 'clinic' };
     assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ], facility_id: 'abc' }), doc));
     assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ], facility_id: 'abc' }), doc));
@@ -84,89 +76,82 @@ describe('validate doc update', () => {
       allowedOnServer(userCtx({roles: [ 'district_admin' ], facility_id: 'abc' }), doc),
       disallowed('You are not authorized to edit your own place')
     );
-    done();
   });
 
-  it('allowed returns false on empty userCtx', done => {
+  it('allowed returns false on empty userCtx', () => {
     assert.deepEqual(
       allowedOnServer({}, {}),
       disallowed('You must be logged in to edit documents')
     );
-    done();
   });
 
-  it('allowed returns false on userCtx with null name', done => {
+  it('allowed returns false on userCtx with null name', () => {
     assert.deepEqual(
       allowedOnServer({ name: null }, {}),
       disallowed('You must be logged in to edit documents')
     );
-    done();
   });
 
-  it('allowed returns true when userCtx has _admin role', done => {
+  it('allowed returns true when userCtx has _admin role', () => {
     assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}, {})));
-    done();
   });
 
-  it('validateUserSettings succeeds if doc is valid', done => {
-    assert.isOk(allowedOnClient(userCtx(), userSettings));
-    done();
-  });
+  describe('type:user-settings', () => {
 
-  it('validateUserSettings fails if no name is defined', done => {
-    delete userSettings.name;
-    assert.deepEqual(
-      allowedOnClient(userCtx(), userSettings),
-      disallowed('name property must be equivalent to username. e.g. "org.couchdb.user:sally"')
-    );
-    done();
-  });
+    it('succeeds if doc is valid', () => {
+      assert.isOk(allowedOnClient(userCtx(), userSettings));
+    });
 
-  it('validateUserSettings _id prefix must be org.couchdb.user', done => {
-    userSettings._id = 'org.couchdb.foo:sally';
-    assert.deepEqual(
-      allowedOnClient(userCtx(), userSettings),
-      disallowed('_id must be prefixed with "org.couchdb.user:". e.g. "org.couchdb.user:sally"')
-    );
-    done();
-  });
+    it('fails if no name is defined', () => {
+      delete userSettings.name;
+      assert.deepEqual(
+        allowedOnClient(userCtx(), userSettings),
+        disallowed('name property must be equivalent to username. e.g. "org.couchdb.user:sally"')
+      );
+    });
 
-  it('validateUserSettings _id must define a value after :', done => {
-    userSettings._id = 'org.couchdb.user:';
-    assert.deepEqual(
-      allowedOnClient(userCtx(), userSettings),
-      disallowed('_id must define a value after "org.couchdb.user:". e.g. "org.couchdb.user:sally"')
-    );
-    done();
-  });
+    it('_id prefix must be org.couchdb.user', () => {
+      userSettings._id = 'org.couchdb.foo:sally';
+      assert.deepEqual(
+        allowedOnClient(userCtx(), userSettings),
+        disallowed('_id must be prefixed with "org.couchdb.user:". e.g. "org.couchdb.user:sally"')
+      );
+    });
 
-  it('validateUserSettings name and username must match', done => {
-    userSettings.name = 'foo';
-    assert.deepEqual(
-      allowedOnClient(userCtx(), userSettings),
-      disallowed('name property must be equivalent to username. e.g. "org.couchdb.user:sally"')
-    );
-    done();
-  });
+    it('_id must define a value after :', () => {
+      userSettings._id = 'org.couchdb.user:';
+      assert.deepEqual(
+        allowedOnClient(userCtx(), userSettings),
+        disallowed('_id must define a value after "org.couchdb.user:". e.g. "org.couchdb.user:sally"')
+      );
+    });
 
-  it('validateUserSettings known must be boolean', done => {
-    userSettings.known = 3;
-    assert.deepEqual(
-      allowedOnClient(userCtx(), userSettings),
-      disallowed('known is not a boolean.')
-    );
-    userSettings.known = false;
-    assert.isOk(allowedOnClient(userCtx(), userSettings));
-    done();
-  });
+    it('name and username must match', () => {
+      userSettings.name = 'foo';
+      assert.deepEqual(
+        allowedOnClient(userCtx(), userSettings),
+        disallowed('name property must be equivalent to username. e.g. "org.couchdb.user:sally"')
+      );
+    });
 
-  it('validateUserSettings roles must exist', done => {
-    delete userSettings.roles;
-    assert.deepEqual(
-      allowedOnClient(userCtx(), userSettings),
-      disallowed('roles is a required array')
-    );
-    done();
+    it('known must be boolean', () => {
+      userSettings.known = 3;
+      assert.deepEqual(
+        allowedOnClient(userCtx(), userSettings),
+        disallowed('known is not a boolean.')
+      );
+      userSettings.known = false;
+      assert.isOk(allowedOnClient(userCtx(), userSettings));
+    });
+
+    it('roles must exist', () => {
+      delete userSettings.roles;
+      assert.deepEqual(
+        allowedOnClient(userCtx(), userSettings),
+        disallowed('roles is a required array')
+      );
+    });
+
   });
 
 });
