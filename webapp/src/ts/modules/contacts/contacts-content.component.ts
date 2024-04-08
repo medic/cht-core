@@ -55,7 +55,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   childContactTypes;
   filteredTasks = [];
   filteredReports = [];
-  FILTER_DISPLAY_LIMIT = 50;
+  DISPLAY_LIMIT = 50;
 
   constructor(
     private store: Store,
@@ -236,31 +236,20 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   filterReports(months?, reports?) {
     this.reportsTimeWindowMonths = months;
     const reportStartDate = months ? moment().subtract(months, 'months') : null;
+
     const allReports = reports || this.selectedContact?.reports || [];
-
-    if (!reportStartDate) {
-      this.filteredReports = allReports;
-      return;
-    }
-
     this.filteredReports = allReports
-      .filter((report) => reportStartDate.isBefore(report.reported_date))
-      .slice(0, this.FILTER_DISPLAY_LIMIT);
+      .filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date))
+      .slice(0, this.DISPLAY_LIMIT);
   }
 
   filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
     const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
     const allTasks = tasks || this.selectedContact?.tasks || [];
-
-    if (!taskEndDate) {
-      this.filteredTasks = allTasks;
-      return;
-    }
-
     this.filteredTasks = allTasks
       .filter((task) => !taskEndDate || task.dueDate <= taskEndDate)
-      .slice(0, this.FILTER_DISPLAY_LIMIT);
+      .slice(0, this.DISPLAY_LIMIT);
   }
 
   private async setRightActionBar() {
