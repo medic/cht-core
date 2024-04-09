@@ -3,36 +3,49 @@ const logger = require('../logger');
 
 const BATCH_SIZE = 100;
 
-const processDocument = async ({ _id, contact_id }) => {
-  try {
-    const user = await db.users.get(_id);
-    user.contact_id = contact_id;
-    await db.users.put(user);
-  } catch (error) {
-    if (error.status !== 404) {
-      throw error;
-    }
-    logger.warn(`User with id "${_id}" does not exist anymore, skipping it.`);
-  }
-};
-
-const runBatch = async (skip = 0) => {
+const getUserSettingsDocs = async (skip = 0) => {
   const options = {
     include_docs: true,
     limit: BATCH_SIZE,
     key: ['user-settings'],
     skip,
   };
-  const { rows } = await db.medic.query('medic-client/doc_by_type', options);
-  if (!rows.length) {
+  return (await db.medic.query('medic-client/doc_by_type', options))
+    .rows
+    .map(row => row.doc);
+};
+
+const getUpdatedUserDoc = (userSettingsDocs) => (userDoc, index) => {
+  const { _id, contact_id } = userSettingsDocs[index];
+  if (!userDoc) {
+    logger.warn(`Could not find user with id "${_id}". Skipping it.`);
+    return null;
+  }
+  return { ...userDoc, contact_id };
+};
+
+const updateUsersDatabase = async (userSettingsDocs) => {
+  const allDocsOptions = {
+    include_docs: true,
+    keys: userSettingsDocs.map(doc => doc._id),
+  };
+  const updatedUsersDocs = (await db.users.allDocs(allDocsOptions))
+    .rows
+    .map(row => row.doc)
+    .map(getUpdatedUserDoc(userSettingsDocs))
+    .filter(Boolean);
+  await db.users.bulkDocs(updatedUsersDocs);
+};
+
+const runBatch = async (skip = 0) => {
+  const userSettingsDocs = await getUserSettingsDocs(skip);
+  if (!userSettingsDocs.length) {
     return;
   }
 
-  for (const row of rows) {
-    await processDocument(row.doc);
-  }
+  await updateUsersDatabase(userSettingsDocs);
 
-  if (rows.length < BATCH_SIZE) {
+  if (userSettingsDocs.length < BATCH_SIZE) {
     return;
   }
 

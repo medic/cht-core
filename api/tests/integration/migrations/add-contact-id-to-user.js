@@ -60,22 +60,24 @@ describe('add-contact-id-to-user migration', function() {
   });
 
   it('skips users that do not exist in _users', async () => {
-    const userSettingsDoc = createUserSettingsDoc('org.couchdb.user:missing-chw', 'contact');
-    await utils.initDb([ userSettingsDoc ]);
+    const userSettingsDocMissing = createUserSettingsDoc('org.couchdb.user:missing-chw', 'contact');
+    const userSettingsDocDeleted = createUserSettingsDoc('org.couchdb.user:user-deleted', 'contact');
+    await utils.initDb([ userSettingsDocMissing, userSettingsDocDeleted ]);
+    const userDoc = {
+      ...createUserDoc(userSettingsDocDeleted),
+      _deleted: true
+    };
+    await writeUserDocs([userDoc]);
     sinon.spy(logger, 'warn');
 
     await utils.runMigration('add-contact-id-to-user-docs');
 
-    expect(logger.warn.calledOnce).to.equal(true);
+    expect(logger.warn.calledTwice).to.equal(true);
     expect(logger.warn.firstCall.args[0]).to
-      .equal(`User with id "${userSettingsDoc._id}" does not exist anymore, skipping it.`);
-    await utils.assertDb([ userSettingsDoc ]);
-    try {
-      await getUserDoc(userSettingsDoc._id);
-      expect.fail('Expected to throw');
-    } catch (e) {
-      expect(e.status).to.equal(404);
-    }
+      .equal(`Could not find user with id "${userSettingsDocMissing._id}". Skipping it.`);
+    expect(logger.warn.secondCall.args[0]).to
+      .equal(`Could not find user with id "${userSettingsDocDeleted._id}". Skipping it.`);
+    await utils.assertDb([ userSettingsDocMissing, userSettingsDocDeleted ]);
   });
 
   it('overwrites any existing contact_id value in _users', async () => {
@@ -99,7 +101,6 @@ describe('add-contact-id-to-user migration', function() {
     await utils.runMigration('add-contact-id-to-user-docs');
 
     await utils.assertDb(userSettingsDocs);
-
     const updatedUserDoc0 = await getUserDoc(userDocs[0]._id);
     expect(updatedUserDoc0).to.deep.include({ ...userDocs[0], contact_id: userSettingsDocs[0].contact_id });
     const updatedUserDoc1 = await getUserDoc(userDocs[1]._id);
