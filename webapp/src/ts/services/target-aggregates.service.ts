@@ -228,18 +228,14 @@ export class TargetAggregatesService {
       });
   }
 
-  private getHomePlace() {
-    return this.userSettingsService
-      .get()
-      .then((userSettings:any) => {
-        if (!userSettings.facility_id) {
-          return;
-        }
+  private async getHomePlace() {
+    const { facility_id }:any = await this.userSettingsService.get();
+    if (!facility_id) {
+      return;
+    }
 
-        return this.getDataRecordsService
-          .get([ userSettings.facility_id ])
-          .then(places => places?.length ? places[0] : undefined);
-      });
+    const places = await this.getDataRecordsService.get([ facility_id ]);
+    return places?.length ? places[0] : undefined;
   }
 
   private getSupervisedContacts() {

@@ -288,7 +288,7 @@ export class ContactViewModelGeneratorService {
 
   private async addHeading(reports, forms) {
     const summaries = await this.getDataRecordsService.getDocsSummaries(reports);
-    summaries.forEach(summary => {
+    summaries?.forEach(summary => {
       const report = reports.find(report => report._id === summary._id);
       if (report) {
         report.heading = this.getHeading(summary, forms);
