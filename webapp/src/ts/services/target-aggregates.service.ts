@@ -236,7 +236,9 @@ export class TargetAggregatesService {
           return;
         }
 
-        return this.getDataRecordsService.get(userSettings.facility_id);
+        return this.getDataRecordsService
+          .get([ userSettings.facility_id ])
+          .then(places => places?.length ? places[0] : undefined);
       });
   }
 

@@ -1,4 +1,3 @@
-import { map as _map, isArray as _isArray } from 'lodash-es';
 import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
@@ -36,41 +35,38 @@ export class GetDataRecordsService {
     return this.dbService
       .get()
       .allDocs({ keys: ids, include_docs: true })
-      .then((response) => {
-        return _map(response.rows, 'doc');
-      });
+      .then(response => response.rows.map(row => row.doc));
   }
 
-  private getSummaries(ids, options) {
-    return this.getSummariesService
-      .get(ids)
-      .then(summaries => {
-        const promiseToSummary = options.hydrateContactNames ?
-          this.hydrateContactNames.get(summaries) : Promise.resolve(summaries);
-        return promiseToSummary.then((summaries) => this.getSubjectSummariesService.get(summaries));
-      });
+  private async getSummaries(options, docs?, ids?) {
+    let summaries = await this.getSummariesService.get(ids, docs);
+
+    if (options.hydrateContactNames) {
+      summaries = await this.hydrateContactNames.get(summaries);
+    }
+
+    return await this.getSubjectSummariesService.get(summaries);
   }
 
-  get(ids?, options?) {
-    const opts = Object.assign({ hydrateContactNames: false, include_docs: false }, options);
+  get(ids: string[], options?) {
+    if (!ids?.length) {
+      return Promise.resolve([]);
+    }
 
-    if (!ids) {
+    const opts = { hydrateContactNames: false, include_docs: false, ...options};
+    if (opts.include_docs) {
+      return this.getDocs(ids);
+    }
+
+    return this.getSummaries(opts, null, ids);
+  }
+
+  getDocsSummaries(docs, options?) {
+    if (!docs?.length) {
       return Promise.resolve([]);
     }
-    const arrayGiven = _isArray(ids);
-    if (!arrayGiven) {
-      ids = [ ids ];
-    }
-    if (!ids.length) {
-      return Promise.resolve([]);
-    }
-    const getPromise = opts.include_docs ? this.getDocs(ids) : this.getSummaries(ids, opts);
-    return getPromise
-      .then((response) => {
-        if (!arrayGiven) {
-          response = response.length ? response[0] : null;
-        }
-        return response;
-      });
+
+    const opts = { hydrateContactNames: false, ...options};
+    return this.getSummaries(opts, docs);
   }
 }
