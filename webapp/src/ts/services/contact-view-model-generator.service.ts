@@ -4,7 +4,6 @@ import {
   partial as _partial,
   find as _find,
   flattenDeep as _flattenDeep,
-  map as _map
 } from 'lodash-es';
 
 import registrationUtils from '@medic/registration-utils';
