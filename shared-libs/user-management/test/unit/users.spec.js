@@ -44,7 +44,7 @@ describe('Users service', () => {
         query: sinon.stub(),
       },
       medicLogs: { get: sinon.stub(), put: sinon.stub(), },
-      users: { find: sinon.stub(), get: sinon.stub(), put: sinon.stub() },
+      users: { query: sinon.stub(), get: sinon.stub(), put: sinon.stub() },
     });
     lineage.init(require('@medic/lineage')(Promise, db.medic));
     addMessage = sinon.stub();
@@ -205,18 +205,18 @@ describe('Users service', () => {
       it('with facility_id', async () => {
         const filters = { facilityId: 'c' };
         const usersResponse = {
-          docs: [{
-            _id: 'org.couchdb.user:x',
-            name: 'lucas',
-            facility_id: 'c',
-            roles: ['national-admin', 'data-entry'],
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:x',
+              name: 'lucas',
+              facility_id: 'c',
+              roles: ['national-admin', 'data-entry'],
+            }
           }],
         };
-        db.users.find.withArgs({
-          selector: {
-            facility_id: filters.facilityId,
-            contact_id: filters.contactId,
-          },
+        db.users.query.withArgs('users/users_by_facility_id', {
+          include_docs: true,
+          key: filters.facilityId,
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
@@ -250,19 +250,19 @@ describe('Users service', () => {
       it('with contact_id', async () => {
         const filters = { contactId: 'milan-contact' };
         const usersResponse = {
-          docs: [{
-            _id: 'org.couchdb.user:y',
-            name: 'milan',
-            facility_id: 'b',
-            contact_id: 'milan-contact',
-            roles: ['district-admin'],
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:y',
+              name: 'milan',
+              facility_id: 'b',
+              contact_id: 'milan-contact',
+              roles: ['district-admin'],
+            }
           }],
         };
-        db.users.find.withArgs({
-          selector: {
-            facility_id: filters.facilityId,
-            contact_id: filters.contactId,
-          },
+        db.users.query.withArgs('users/users_by_contact_id', {
+          include_docs: true,
+          key: filters.contactId,
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
@@ -299,19 +299,30 @@ describe('Users service', () => {
       it('with both facility_id and contact_id', async () => {
         const filters = { facilityId: 'b', contactId: 'milan-contact' };
         const usersResponse = {
-          docs: [{
-            _id: 'org.couchdb.user:y',
-            name: 'milan',
-            facility_id: 'b',
-            contact_id: 'milan-contact',
-            roles: ['district-admin'],
-          }],
+          rows: [
+            {
+              doc: {
+                _id: 'org.couchdb.user:y',
+                name: 'milan',
+                facility_id: 'b',
+                contact_id: 'milan-contact',
+                roles: ['district-admin'],
+              }
+            },
+            {
+              doc: {
+                _id: 'org.couchdb.user:z',
+                name: 'bill',
+                facility_id: 'a',
+                contact_id: 'milan-contact',
+                roles: ['district-admin'],
+              }
+            }
+          ],
         };
-        db.users.find.withArgs({
-          selector: {
-            facility_id: filters.facilityId,
-            contact_id: filters.contactId,
-          },
+        db.users.query.withArgs('users/users_by_contact_id', {
+          include_docs: true,
+          key: filters.contactId,
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
@@ -333,6 +344,7 @@ describe('Users service', () => {
         db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(userSettingsResponse);
 
         const data = await service.getList(filters);
+        chai.expect(db.users.query.callCount).to.equal(1);
         chai.expect(data.length).to.equal(1);
         const milan = data[0];
         chai.expect(milan.id).to.equal('org.couchdb.user:y');
