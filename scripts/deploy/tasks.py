@@ -7,7 +7,7 @@ import re
 import json
 
 MEDIC_REPO_NAME = "medic"
-MEDIC_REPO_URL = "https://docs.communityhealthtoolkit.org/helm-charts/"
+MEDIC_REPO_URL = "https://docs.communityhealthtoolkit.org/helm-charts"
 CHT_CHART_NAME = f"{MEDIC_REPO_NAME}/cht-chart-4x"
 DEFAULT_CHART_VERSION = "0.2.2"
 
@@ -227,7 +227,7 @@ def _ensure_medic_helm_repo(chart_version):
     if medic_repo is None:
         print(f"Helm repo {MEDIC_REPO_NAME} not found, adding..")
         subprocess.run(["helm", "repo", "add", MEDIC_REPO_NAME, MEDIC_REPO_URL], check=True)
-    elif medic_repo["url"].rstrip("/") != MEDIC_REPO_URL.rstrip("/"):
+    elif medic_repo["url"].rstrip("/") != MEDIC_REPO_URL:
         raise UserRuntimeError(f"Medic repo found but url not matching '{MEDIC_REPO_URL}', see: helm repo list")
 
     show_chart_command = subprocess.run(["helm", "pull", CHT_CHART_NAME, "--version", chart_version], check=False)
