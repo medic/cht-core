@@ -1,4 +1,16 @@
 # Browsers that we support
+#
+# Chrome is set to a lagging value because the CHT is mostly used in a webview. Webviews are
+# almost always the Android Webview (Chromium). 
+#
+# Because many Android phones are not set to autoupdate, we know that lots use old versions of webview.
+# We progressively increase the minimum browser version when possible, but it needs careful communication and
+# is quite expensive for partners to verify which phones need updating and which don't.
+#
+# Firefox on the other hand is in the vast majority of cases only used on desktops which are much better at 
+# keeping up to date so, we can safely stick to a rolling version there. 
+#
+# See the CHT dependency matrix at: https://docs.communityhealthtoolkit.org/core/releases/#dependencies
 
 Chrome >= 90
 last 4 Firefox versions
