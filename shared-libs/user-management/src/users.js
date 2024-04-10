@@ -106,14 +106,11 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = () => {
-  const opts = {
-    include_docs: true,
-    key: ['user-settings'],
-  };
-  return db.medic.query('medic-client/doc_by_type', opts)
-    .then(result => result.rows.map(row => row.doc));
-};
+const queryDocs = (db, view, key) => db
+  .query(view, { include_docs: true, key })
+  .then(result => result.rows.map(row => row.doc));
+
+const getAllUserSettings = () => queryDocs(db.medic, 'medic-client/doc_by_type', ['user-settings']);
 
 const getSettingsByIds = async (ids) => {
   const docs = ids.map(id => ({ id }));
@@ -123,19 +120,31 @@ const getSettingsByIds = async (ids) => {
     .filter(doc => doc);
 };
 
-const getAllUsers = async (filters) => {
-  if (_.isEmpty(filters)) {
-    const { rows } = await db.users.allDocs({ include_docs: true });
-    return rows.map(({ doc }) => doc);
+const getAllUsers = async () => db.users
+  .allDocs({ include_docs: true })
+  .then(({ rows }) => rows.map(({ doc }) => doc));
+
+const getUsers = async ({ facilityId, contactId }) => {
+  if (!contactId) {
+    return queryDocs(db.users, 'users/users_by_facility_id', facilityId);
   }
 
-  const { docs } = await db.users.find({
-    selector: {
-      facility_id: filters.facilityId,
-      contact_id: filters.contactId,
-    },
-  });
-  return docs;
+  const usersForContactId = await queryDocs(db.users, 'users/users_by_contact_id', contactId);
+  if (facilityId) {
+    return usersForContactId.filter(user => user.facility_id === facilityId);
+  }
+
+  return usersForContactId;
+};
+
+const getUsersAndSettings = async (filters) => {
+  if (_.isEmpty(filters)) {
+    return Promise.all([getAllUsers(), getAllUserSettings()]);
+  }
+  const users = await getUsers(filters);
+  const ids = users.map(({ _id }) => _id);
+  const settings = await getSettingsByIds(ids);
+  return [users, settings];
 };
 
 const validateContact = (id, placeID) => {
@@ -794,17 +803,7 @@ const getUserSettings = async({ name }) => {
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
   getList: async (filters) => {
-    let users;
-    let settings;
-
-    if (_.isEmpty(filters)) {
-      [users, settings] = await Promise.all([getAllUsers(), getAllUserSettings()]);
-    } else {
-      users = await getAllUsers(filters);
-      const ids = users.map(({ _id }) => _id);
-      settings = await getSettingsByIds(ids);
-    }
-
+    const [users, settings] = await getUsersAndSettings(filters);
     const facilities = await facility.list(users);
     return mapUsers(users, settings, facilities);
   },
