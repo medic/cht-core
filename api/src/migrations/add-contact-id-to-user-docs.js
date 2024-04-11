@@ -3,17 +3,12 @@ const logger = require('../logger');
 
 const BATCH_SIZE = 100;
 
-const getUserSettingsDocs = async (skip = 0) => {
-  const options = {
-    include_docs: true,
-    limit: BATCH_SIZE,
-    key: ['user-settings'],
-    skip,
-  };
-  return (await db.medic.query('medic-client/doc_by_type', options))
-    .rows
-    .map(row => row.doc);
-};
+const getUserSettingsDocs = async (skip = 0) => db.medic.query('medic-client/doc_by_type', {
+  include_docs: true,
+  limit: BATCH_SIZE,
+  key: ['user-settings'],
+  skip,
+}).then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getUpdatedUserDoc = (userSettingsDocs) => (userDoc, index) => {
   const { _id, contact_id } = userSettingsDocs[index];
@@ -24,18 +19,16 @@ const getUpdatedUserDoc = (userSettingsDocs) => (userDoc, index) => {
   return { ...userDoc, contact_id };
 };
 
-const updateUsersDatabase = async (userSettingsDocs) => {
-  const allDocsOptions = {
-    include_docs: true,
-    keys: userSettingsDocs.map(doc => doc._id),
-  };
-  const updatedUsersDocs = (await db.users.allDocs(allDocsOptions))
-    .rows
-    .map(row => row.doc)
+const updateUsersDatabase = async (userSettingsDocs) => db.users.allDocs({
+  include_docs: true,
+  keys: userSettingsDocs.map(doc => doc._id),
+}).then(({ rows }) => {
+  const updatedUsersDocs = rows
+    .map(({ doc }) => doc)
     .map(getUpdatedUserDoc(userSettingsDocs))
     .filter(Boolean);
-  await db.users.bulkDocs(updatedUsersDocs);
-};
+  return db.users.bulkDocs(updatedUsersDocs);
+});
 
 const runBatch = async (skip = 0) => {
   const userSettingsDocs = await getUserSettingsDocs(skip);

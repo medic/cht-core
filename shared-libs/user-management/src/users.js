@@ -108,7 +108,7 @@ const getDocID = doc => {
 
 const queryDocs = (db, view, key) => db
   .query(view, { include_docs: true, key })
-  .then(result => result.rows.map(row => row.doc));
+  .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getAllUserSettings = () => queryDocs(db.medic, 'medic-client/doc_by_type', ['user-settings']);
 
@@ -117,7 +117,7 @@ const getSettingsByIds = async (ids) => {
   const { results } = await db.medic.bulkGet({ docs });
   return results
     .map(result => result?.docs?.[0]?.ok)
-    .filter(doc => doc);
+    .filter(Boolean);
 };
 
 const getAllUsers = async () => db.users
