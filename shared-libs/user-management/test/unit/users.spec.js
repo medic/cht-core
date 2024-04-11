@@ -134,13 +134,16 @@ describe('Users service', () => {
       chai.expect(user.name ).to.equal('john');
     });
 
-    it('reassigns place field', () => {
+    it('reassigns place and contact fields', () => {
       const data = {
-        place: 'abc'
+        place: 'abc',
+        contact: 'xyz'
       };
       const user = service.__get__('getUserUpdates')('john', data);
       chai.expect(user.place).to.equal(undefined);
+      chai.expect(user.contact).to.equal(undefined);
       chai.expect(user.facility_id).to.equal('abc');
+      chai.expect(user.contact_id).to.equal('xyz');
     });
 
   });
@@ -2401,6 +2404,7 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
+        contact_id: 1,
         roles: ['mm-online']
       }));
       service.__set__('validateUserSettings', sinon.stub().resolves({
@@ -2418,6 +2422,7 @@ describe('Users service', () => {
         chai.expect(db.users.put.callCount).to.equal(1);
         const user = db.users.put.args[0][0];
         chai.expect(user.facility_id).to.equal(null);
+        chai.expect(user.contact_id).to.equal(null);
       });
     });
 
