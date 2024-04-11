@@ -1041,7 +1041,7 @@ describe('Users API', () => {
             roles: user.roles,
           };
           expectCorrectUser(userInDb, extraProps);
-          expectCorrectUserSettings(userSettings, extraProps);
+          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
           chai.expect(userInDb.token_login).to.be.undefined;
           chai.expect(userSettings.token_login).to.be.undefined;
           await expectPasswordLoginToWork(user);
@@ -1064,6 +1064,7 @@ describe('Users API', () => {
           expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
           expectCorrectUserSettings(userSettings, {
             ...extraProps,
+            contact_id: user.contact._id,
             roles: ['new_role'],
             phone: '+40744898989',
           });
@@ -1155,7 +1156,7 @@ describe('Users API', () => {
             roles: user.roles,
           };
           expectCorrectUser(userInDb, extraProps);
-          expectCorrectUserSettings(userSettings, extraProps);
+          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
           chai.expect(userInDb.token_login).to.be.ok;
           chai.expect(userInDb.token_login).to.have.keys(['active', 'token', 'expiration_date' ]);
           chai.expect(userInDb.token_login).to.include({ active: true });
@@ -1201,6 +1202,7 @@ describe('Users API', () => {
           expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
           expectCorrectUserSettings(userSettings, {
             ...extraProps,
+            contact_id: user.contact._id,
             roles: ['new_role'],
             phone: '+40744898989',
           });
