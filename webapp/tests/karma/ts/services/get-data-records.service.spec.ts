@@ -11,11 +11,11 @@ describe('GetDataRecords service', () => {
   let service:GetDataRecordsService;
   let allDocs;
   let getSummariesService;
-  let hydrateContactNames;
+  let hydrateContactNamesService;
 
   beforeEach(() => {
     allDocs = sinon.stub();
-    hydrateContactNames = sinon.stub();
+    hydrateContactNamesService = { get: sinon.stub() };
     getSummariesService = {
       get: sinon.stub(),
       getByDocs: sinon.stub(),
@@ -24,7 +24,7 @@ describe('GetDataRecords service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => ({ allDocs }) } },
-        { provide: HydrateContactNamesService, useValue: { get: hydrateContactNames } },
+        { provide: HydrateContactNamesService, useValue: hydrateContactNamesService },
         { provide: GetSummariesService, useValue: getSummariesService },
       ]
     });
@@ -76,7 +76,7 @@ describe('GetDataRecords service', () => {
         contact: 'a',
         lineage: [ 'b', 'c' ]
       } ]);
-      hydrateContactNames.resolves([ expected ]);
+      hydrateContactNamesService.get.resolves([ expected ]);
 
       const actual = await service
         .getDocsSummaries([ { _id: '5' } ], { hydrateContactNames: true })
@@ -98,7 +98,7 @@ describe('GetDataRecords service', () => {
         { _id: '6', name: 'six' },
         { _id: '7', name: 'seven' }
       ]);
-      hydrateContactNames.resolves(expected);
+      hydrateContactNamesService.get.resolves(expected);
 
       const actual = await service
         .getDocsSummaries([ { _id: '5' }, { _id: '6' }, { _id: '7' } ], { hydrateContactNames: true })
@@ -125,7 +125,7 @@ describe('GetDataRecords service', () => {
 
     it('no result', () => {
       getSummariesService.get.resolves(null);
-      hydrateContactNames.resolves([]);
+      hydrateContactNamesService.get.resolves([]);
 
       return service
         .get([ '5' ])
@@ -152,7 +152,7 @@ describe('GetDataRecords service', () => {
           lineage: [ 'b', 'c' ]
         }
       ]);
-      hydrateContactNames.resolves([ expected ]);
+      hydrateContactNamesService.get.resolves([ expected ]);
 
       return service
         .get([ '5' ], { hydrateContactNames: true })
@@ -160,8 +160,8 @@ describe('GetDataRecords service', () => {
           expect(actual).to.deep.equal([ expected ]);
           expect(getSummariesService.get.callCount).to.equal(1);
           expect(allDocs.callCount).to.equal(0);
-          expect(hydrateContactNames.callCount).to.equal(1);
-          expect(hydrateContactNames.args[0][0]).to.deep.equal([{
+          expect(hydrateContactNamesService.get.callCount).to.equal(1);
+          expect(hydrateContactNamesService.get.args[0][0]).to.deep.equal([{
             _id: '5',
             name: 'five',
             contact: 'a',
@@ -181,7 +181,7 @@ describe('GetDataRecords service', () => {
         { _id: '6', name: 'six' },
         { _id: '7', name: 'seven' }
       ]);
-      hydrateContactNames.resolves(expected);
+      hydrateContactNamesService.get.resolves(expected);
 
       return service
         .get([ '5', '6', '7' ], { hydrateContactNames: true })
