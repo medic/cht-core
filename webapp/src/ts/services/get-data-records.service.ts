@@ -38,9 +38,7 @@ export class GetDataRecordsService {
       .then(response => response.rows.map(row => row.doc));
   }
 
-  private async getSummaries(options, docs?, ids?) {
-    let summaries = await this.getSummariesService.get(ids, docs);
-
+  private async prepareSummaries(summaries, options?) {
     if (options.hydrateContactNames) {
       summaries = await this.hydrateContactNames.get(summaries);
     }
@@ -48,7 +46,7 @@ export class GetDataRecordsService {
     return await this.getSubjectSummariesService.get(summaries);
   }
 
-  get(ids: string[], options?) {
+  async get(ids: string[], options?) {
     if (!ids?.length) {
       return Promise.resolve([]);
     }
@@ -58,15 +56,17 @@ export class GetDataRecordsService {
       return this.getDocs(ids);
     }
 
-    return this.getSummaries(opts, null, ids);
+    const summaries = await this.getSummariesService.get(ids);
+    return this.prepareSummaries(summaries, opts);
   }
 
-  getDocsSummaries(docs, options?) {
+  async getDocsSummaries(docs, options?) {
     if (!docs?.length) {
       return Promise.resolve([]);
     }
 
     const opts = { hydrateContactNames: false, ...options};
-    return this.getSummaries(opts, docs);
+    const summaries = this.getSummariesService.getByDocs(docs);
+    return this.prepareSummaries(summaries, opts);
   }
 }

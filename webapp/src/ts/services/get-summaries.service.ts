@@ -106,10 +106,6 @@ export class GetSummariesService {
   }
 
   private getRemote(ids) {
-    if (!ids?.length) {
-      return Promise.resolve([]);
-    }
-
     return this.dbService
       .get()
       .query('medic/doc_summaries_by_id', { keys: ids })
@@ -121,32 +117,31 @@ export class GetSummariesService {
       });
   }
 
-  private async getLocal(ids, docs) {
-    if (!ids?.length && !docs?.length) {
+  async get(ids?) {
+    if (!ids?.length) {
       return Promise.resolve([]);
     }
 
-    if (!docs) {
-      const result = await this.dbService.get().allDocs({ keys: ids, include_docs: true });
-      docs = result.rows?.map(row => row.doc);
-    }
-
-    return docs
-      .map(doc => this.summarise(doc))
-      .filter(summary => summary);
-  }
-
-  /**
-   * Returns the summary of a giving list of IDs or docs.
-   * @param ids String[]. Provide list of doc's IDs to fetch the doc for the local DB (offline user)
-   *                      or from remote DB (online user)
-   * @param docs Object[]. Provide list of docs for offline user to avoid fetching them again from the local DB.
-   */
-  get(ids?, docs?) {
     if (this.sessionService.isOnlineOnly()) {
       return this.getRemote(ids);
     }
 
-    return this.getLocal(ids, docs);
+    const result = await this.dbService
+      .get()
+      .allDocs({ keys: ids, include_docs: true });
+
+    return result?.rows
+      ?.map(row => this.summarise(row.doc))
+      .filter(summary => summary);
+  }
+
+  getByDocs(docs) {
+    if (!docs?.length) {
+      return [];
+    }
+
+    return docs
+      .map(row => this.summarise(row.doc))
+      .filter(summary => summary);
   }
 }
