@@ -146,6 +146,39 @@ const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
   return [users, settings];
 };
 
+const getUserFromDb = async id => db.users
+  .get(id)
+  .catch(err => {
+    if (err.status === 404) {
+      err.message = 'Failed to find user.';
+    }
+    return Promise.reject(err);
+  });
+
+const getUserSettingsFromDb = async id => db.medic
+  .get(id)
+  .catch(err => {
+    if (err.status === 404) {
+      err.message = 'Failed to find user settings.';
+    }
+    return Promise.reject(err);
+  });
+
+const getUser = async (username) => {
+  if (!username) {
+    throw new Error('Username is required.');
+  }
+
+  const id = createID(username);
+  const [user, userSettings] = await Promise.all([
+    getUserFromDb(id),
+    getUserSettingsFromDb(id),
+  ]);
+
+  const facilities = await facility.list([user]);
+  return mapUser(user, userSettings, facilities);
+};
+
 const validateContact = (id, placeID) => {
   return db.medic.get(id)
     .then(doc => {
@@ -156,26 +189,6 @@ const validateContact = (id, placeID) => {
         return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
       }
       return doc;
-    });
-};
-
-const validateUser = id => {
-  return db.users.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user.';
-      }
-      return Promise.reject(err);
-    });
-};
-
-const validateUserSettings = id => {
-  return db.medic.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user settings.';
-      }
-      return Promise.reject(err);
     });
 };
 
@@ -359,25 +372,29 @@ const hasParent = (facility, id) => {
  * available, but in this function the user doc takes precedence.  If the two
  * docs somehow get out of sync this might cause confusion.
  */
+const mapUser = (user, setting, facilities) => {
+  return {
+    id: user._id,
+    rev: user._rev,
+    username: user.name,
+    fullname: setting.fullname,
+    email: setting.email,
+    phone: setting.phone,
+    place: getDoc(user.facility_id, facilities),
+    roles: user.roles,
+    contact: getDoc(user.contact_id, facilities),
+    external_id: setting.external_id,
+    known: user.known
+  };
+};
+
 const mapUsers = (users, settings, facilities) => {
   users = users || [];
   return users
     .filter(user => user._id.indexOf(USER_PREFIX) === 0)
     .map(user => {
       const setting = getDoc(user._id, settings) || {};
-      return {
-        id: user._id,
-        rev: user._rev,
-        username: user.name,
-        fullname: setting.fullname,
-        email: setting.email,
-        phone: setting.phone,
-        place: getDoc(user.facility_id, facilities),
-        roles: user.roles,
-        contact: getDoc(user.contact_id, facilities),
-        external_id: setting.external_id,
-        known: user.known
-      };
+      return mapUser(user, setting, facilities);
     });
 };
 
@@ -511,7 +528,7 @@ const missingFields = data => {
 
 const getUpdatedUserDoc = (username, data) => {
   const userID = createID(username);
-  return validateUser(userID).then(doc => {
+  return getUserFromDb(userID).then(doc => {
     const user = Object.assign(doc, getUserUpdates(username, data));
     user._id = userID;
     return user;
@@ -520,7 +537,7 @@ const getUpdatedUserDoc = (username, data) => {
 
 const getUpdatedSettingsDoc = (username, data) => {
   const userID = createID(username);
-  return validateUserSettings(userID).then(doc => {
+  return getUserSettingsFromDb(userID).then(doc => {
     const settings = Object.assign(doc, getSettingsUpdates(username, data));
     settings._id = userID;
     return settings;
@@ -806,6 +823,7 @@ module.exports = {
     const facilities = await facility.list(users);
     return mapUsers(users, settings, facilities);
   },
+  getUser,
   getUserSettings,
   /* eslint-disable max-len */
   /**
@@ -941,7 +959,7 @@ module.exports = {
   * if they do not already exist.
   */
   createAdmin: userCtx => {
-    return validateUser(createID(userCtx.name))
+    return getUserFromDb(createID(userCtx.name))
       .catch(err => {
         if (err && err.status === 404) {
           const data = { username: userCtx.name, roles: ['admin'] };
