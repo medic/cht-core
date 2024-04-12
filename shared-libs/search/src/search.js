@@ -50,17 +50,18 @@ module.exports = function(Promise, DB) {
     });
 
     const firstMapKeys = Object.keys(responsesMapById[0]);
-    let intersection = new Set(firstMapKeys);
-    responsesMapById.slice(1).forEach((map) => {
-      intersection = new Set(
-        Object.keys(map).filter((id) => intersection.has(id))
+    let intersectionSet = new Set(firstMapKeys);
+
+    responsesMapById.slice(1).forEach(map => {
+      intersectionSet = new Set(
+        [...intersectionSet].filter(id => Object.hasOwnProperty.call(map, id))
       );
     });
 
     // we use the last query response values for sorting by default, but we allow other responses to "pitch in"
     // used for displaying muted contacts to the bottom when sorting by last visited date
     const lastResponse = responsesMapById.pop();
-    const result = Array.from(intersection).map((id) => {
+    const result = [...intersectionSet].map(id => {
       const row = lastResponse[id];
       responsesMapById.forEach(idMap => {
         if (idMap[id].sort) {
