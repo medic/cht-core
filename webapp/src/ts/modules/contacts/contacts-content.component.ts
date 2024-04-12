@@ -167,7 +167,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         }
         await this.setChildTypesBySelectedContact();
         await this.setSettings();
-        await Promise.all([ this.setRightActionBar(), this.updateFastActions() ]);
+        await Promise.all([this.setRightActionBar(), this.updateFastActions()]);
         this.subscribeToAllContactXmlForms();
         this.subscribeToSelectedContactXmlForms();
       });
@@ -200,7 +200,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToRoute() {
-    const routeSubscription =  this.route.params.subscribe((params) => {
+    const routeSubscription = this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
@@ -217,8 +217,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       key: 'contacts-content',
       filter: (change) => {
         return this.contactChangeFilterService.matchContact(change, this.selectedContact) ||
-               this.contactChangeFilterService.isRelevantContact(change, this.selectedContact) ||
-               this.contactChangeFilterService.isRelevantReport(change, this.selectedContact);
+          this.contactChangeFilterService.isRelevantContact(change, this.selectedContact) ||
+          this.contactChangeFilterService.isRelevantReport(change, this.selectedContact);
       },
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
@@ -238,17 +238,21 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     const reportStartDate = months ? moment().subtract(months, 'months') : null;
 
     const allReports = reports || this.selectedContact?.reports || [];
-    const newFilteredReports: any[] = [];
+
+    this.filteredReports = this.getFilteredReports(allReports, reportStartDate, this.DISPLAY_LIMIT);
+  }
+
+  private getFilteredReports(allReports: any[], reportStartDate: moment.Moment | null, displayLimit: number): any[] {
+    const filteredReports: any[] = [];
     for (const report of allReports) {
       if (!reportStartDate || reportStartDate.isBefore(report.reported_date)) {
-        newFilteredReports.push(report);
+        filteredReports.push(report);
       }
-      if (newFilteredReports.length >= this.DISPLAY_LIMIT) {
+      if (filteredReports.length >= displayLimit) {
         break;
       }
     }
-
-    this.filteredReports = newFilteredReports;
+    return filteredReports;
   }
 
   filterTasks(weeks?, tasks?) {
