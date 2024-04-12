@@ -1,23 +1,11 @@
-/*
- * Generates a changelog given a GH report and milestone.
- *
- * USAGE:
- *  1) Make sure all the issues in the release are assigned to the milestone
- *  2) Each issue should have one and only one Type label - the script will tell you which ones don't
- *  3) Make sure you have generated a GH token and created a token.json file, eg: { "githubApiToken": "..." }
- *     This token needs at least `read:org` permissions
- *  4) Execute the command: node index.js <repo_name> <milestone_name> > <output_file>
- *      eg: node index.js cht-core 3.0.0 > tmp.md
- *  5) Insert the contents of the output file into the appropriate location in Changes.md
- */
-
+const minimist = require('minimist');
 const { Octokit } = require('@octokit/rest');
 const { graphql } = require('@octokit/graphql');
 const octokit = new Octokit({
   auth: require('../token.json').githubApiToken,
   userAgent: 'cht-release-note-generator',
 });
-const gitHub = graphql.defaults({
+const authenticatedGraphql = graphql.defaults({
   headers: {
     authorization: `token ${require('../token.json').githubApiToken}`,
     userAgent: 'cht-release-note-generator',
@@ -27,11 +15,29 @@ const gitHub = graphql.defaults({
 const OWNER = 'medic';
 const ISSUE_STATE = 'all';
 
-const REPO_NAME = process.argv[2];
+const argv = minimist(process.argv.slice(2));
+if (argv.help) {
+  console.log(`
+Usage: node index.js [OPTIONS] REPO MILESTONE
+
+Generates a changelog given a GH report and milestone. Requires a GitHub API token to be configured. 
+See the README for more information.
+
+Options:
+   --help  Show this help message
+   --skip-commit-validation  Skip validation of commits
+   
+Repository: The name of the repository (e.g. cht-core).
+
+Milestone: The name of the milestone (e.g. 2.15.0).
+`);
+  process.exit(0);
+}
+
+const [REPO_NAME, MILESTONE_NAME] = argv._;
 if (!REPO_NAME) {
   throw new Error('You must specify a repo name (eg: "cht-core") as the first argument');
 }
-const MILESTONE_NAME = process.argv[3];
 if (!MILESTONE_NAME) {
   throw new Error('You must specify a milestone name (eg: "2.15.0") as the second argument');
 }
@@ -56,7 +62,142 @@ const PREFIXES_TO_IGNORE = [
   'Type: Investigation',
 ];
 
-const gitHubRepoQuery = query => gitHub(`{ repository(owner: "${OWNER}", name: "${REPO_NAME}") { ${query} } }`);
+const gitHubRepoQuery = query => authenticatedGraphql(
+  `{ repository(owner: "${OWNER}", name: "${REPO_NAME}") { ${query} } }`
+);
+
+const getLatestReleaseName = async () => gitHubRepoQuery(
+  `releases(first: 1) {
+        edges { node { tagName } }
+      }`
+).then(({ repository }) => repository.releases.edges[0].node.tagName);
+
+const getMilestoneBranch = async () => {
+  const milestoneBranch = [...MILESTONE_NAME.split('.').slice(0, -1), 'x'].join('.');
+  const branchExists = await gitHubRepoQuery(
+    `ref(qualifiedName: "refs/heads/${milestoneBranch}") {
+        target { oid }
+      }`
+  ).then(({ repository }) => repository.ref);
+  if (branchExists) {
+    return milestoneBranch;
+  }
+
+  // Fall back to default branch if milestone branch doesn't exist. This might be useful when preparing for a release
+  // before actually creating the release branch.
+  return gitHubRepoQuery(
+    `defaultBranchRef { name }`
+  ).then(({ repository }) => repository.defaultBranchRef.name);
+};
+
+// This query calculates the "commits for the release" by comparing the commit history of the latest release with the
+// commit history of the milestone branch and keeping only the commits that are unique to the milestone branch.
+const getPageOfCommitsForRelease = async (release, milestoneBranch, after) => gitHubRepoQuery(
+  `ref(qualifiedName: "${release}") {
+      compare(headRef: "${milestoneBranch}") {
+        commits(first: 100, after: ${after}) {
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+          nodes {
+            oid
+            messageHeadline
+            associatedPullRequests(first: 50) {
+              nodes {
+                milestone { id }
+                closingIssuesReferences(first: 50) { edges { node { milestone { id } } } }
+              }
+            }
+          }
+        }
+      }
+    }`
+).then(({ repository }) => repository.ref.compare.commits);
+
+const getCommitsForRelease = async (release, milestoneBranch) => {
+  const commits = [];
+  let after = null;
+  do {
+    const { nodes, pageInfo } = await getPageOfCommitsForRelease(release, milestoneBranch, after);
+    commits.push(...nodes);
+    after = pageInfo.hasNextPage ? `"${pageInfo.endCursor}"` : null;
+  } while (after);
+
+  return commits;
+};
+
+const commitHasPRWithMilestone = commit => commit.associatedPullRequests.nodes.find(pr => pr.milestone);
+const prHasIssueWithMilestone = pr => pr.closingIssuesReferences.edges.find(edge => edge.node.milestone);
+const commitPRHasIssueWithMilestone = commit => commit.associatedPullRequests.nodes.find(prHasIssueWithMilestone);
+
+const getIssueNumbers = commitMessage => {
+  const issuePattern = /#(\d+)/g;
+  const results = commitMessage.match(issuePattern);
+  if (!results) {
+    return [];
+  }
+
+  return results.map(result => result.substring(1));
+};
+
+const issueHasMilestone = async issueNumber => gitHubRepoQuery(
+  `issueOrPullRequest(number: ${issueNumber}){
+        ... on Issue { milestone { id } }
+        ... on PullRequest { milestone { id } }
+      }`
+).then(({ repository }) => repository.issueOrPullRequest.milestone);
+
+const commitMsgHasIssueWithMilestone = async ({ messageHeadline }) => {
+  for (const issueNumber of getIssueNumbers(messageHeadline)) {
+    if (await issueHasMilestone(issueNumber)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const findCommitsWithoutMilestone = async (commitsForRelease) => {
+  const commitsWithoutMilestone = [];
+  for (const commit of commitsForRelease) {
+    if (
+      commitHasPRWithMilestone(commit)
+      || commitPRHasIssueWithMilestone(commit)
+      || (await commitMsgHasIssueWithMilestone(commit))
+    ) {
+      continue;
+    }
+
+    commitsWithoutMilestone.push(commit);
+  }
+  return commitsWithoutMilestone;
+};
+
+const validateCommits = async () => {
+  if (argv['skip-commit-validation']) {
+    return;
+  }
+  const latestReleaseName = await getLatestReleaseName();
+  const milestoneBranch = await getMilestoneBranch();
+  const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
+  const commitsWithoutMilestone = await findCommitsWithoutMilestone(commitsForRelease);
+
+  if (commitsWithoutMilestone.length) {
+    console.error(`
+Some commits included in the release are not associated with a milestone. Commits can be associated with a milestone by:
+
+  1. Setting the milestone on an issue closed by the commit's PR (issue must be listed in the PR's "Development" links)
+  2. Setting the milestone directly on the commit's PR
+  3. Setting the milestone on an issue referenced in the commit message (e.g. "fix(#1345): ..."
+
+Commits:
+`);
+    commitsWithoutMilestone.forEach(commit => console.error(`- ${commit.oid}: ${commit.messageHeadline}`));
+
+    throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
+  }
+};
 
 const getMilestone = async () => {
   const response = await octokit.rest.issues.listMilestones({ owner: OWNER, repo: REPO_NAME });
@@ -69,115 +210,6 @@ const getMilestoneNumber = async () => {
     throw new Error(`Could not find milestone with the repo ${REPO_NAME} and name ${MILESTONE_NAME}`);
   }
   return milestone.number;
-};
-
-const getLatestReleaseName = async () => (await gitHubRepoQuery(
-  `releases(first: 1) {
-        edges { node { tagName } }
-      }`
-)).repository.releases.edges[0].node.tagName;
-
-const getMilestoneBranch = async () => {
-  const milestoneBranch = [...MILESTONE_NAME.split('.').slice(0, -1), 'x'].join('.');
-  const branchExists = (await gitHubRepoQuery(
-    `ref(qualifiedName: "refs/heads/${milestoneBranch}") {
-        target { oid }
-      }`
-  )).repository.ref;
-  if (branchExists) {
-    return milestoneBranch;
-  }
-
-  return (await gitHubRepoQuery(
-    `defaultBranchRef { name }`
-  )).repository.defaultBranchRef.name;
-};
-
-const getPageOfCommitsForRelease = async (release, milestoneBranch, after) => (await gitHubRepoQuery(
-  `ref(qualifiedName: "${release}") {
-      compare(headRef: "${milestoneBranch}") {
-        commits(first: 10, after: ${after}) {
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-          nodes {
-            oid
-            messageHeadline
-            associatedPullRequests(first: 10) {
-              nodes {
-                milestone { id }
-                closingIssuesReferences(first: 100) { edges { node { milestone { id } } } }
-              }
-            }
-          }
-        }
-      }
-    }`
-)).repository.ref.compare.commits;
-
-const getCommitsForRelease = async (release, milestoneBranch) => {
-  const commits = [];
-  let after = null;
-  do {
-    const page = await getPageOfCommitsForRelease(release, milestoneBranch, after);
-    commits.push(...page.nodes);
-    after = page.pageInfo.hasNextPage ? `"${page.pageInfo.endCursor}"` : null;
-  } while (after);
-
-  return commits;
-};
-
-const commitHasPRWithMilestone = commit => commit.associatedPullRequests.nodes.find(pr => pr.milestone);
-const prHasIssueWithMilestone = pr => pr.closingIssuesReferences.edges.find(edge => edge.node.milestone);
-const commitHasIssueWithMilestone = commit => commit.associatedPullRequests.nodes.find(prHasIssueWithMilestone);
-const commitMsgHasIssueWithMilestone = async commit => {
-  const issuePattern = /#(\d+)/g;
-  const results = commit.messageHeadline.match(issuePattern);
-  if (!results) {
-    return false;
-  }
-
-  const issueNumbers = results.map(result => result.substring(1));
-  for (const issueNumber of issueNumbers) {
-    const { milestone } = (await gitHubRepoQuery(
-      `issueOrPullRequest(number: ${issueNumber}){
-        ... on Issue { milestone { id } }
-        ... on PullRequest { milestone { id } }
-      }`
-    )).repository.issueOrPullRequest;
-    if (milestone) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const validateCommits = async () => {
-  const latestReleaseName = await getLatestReleaseName();
-  const milestoneBranch = await getMilestoneBranch();
-  const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
-
-  const commitsWithoutMilestone = [];
-  for (const commit of commitsForRelease) {
-    if (
-      commitHasPRWithMilestone(commit)
-      || commitHasIssueWithMilestone(commit)
-      || (await commitMsgHasIssueWithMilestone(commit))
-    ) {
-      continue;
-    }
-
-    commitsWithoutMilestone.push(commit);
-  }
-
-  if (commitsWithoutMilestone.length) {
-    console.error('Some commits included in the release are missing a milestone (either on their issue or their PR):');
-    commitsWithoutMilestone.forEach(commit => console.error(`- ${commit.oid}: ${commit.messageHeadline}`));
-
-    throw new Error('Some commits are in an invalid state');
-  }
 };
 
 const validateIssue = issue => {
@@ -269,22 +301,11 @@ ${outputGroups(warnings)}
 ${outputGroups(types)}`);
 };
 
-(async () => {
-  await validateCommits();
-  // await getMilestoneNumber()
-  //   .then(getIssues)
-  //   .then(filterIssues)
-  //   .then(groupIssues)
-  //   .then(output)
-  //   .catch(console.error);
-})();
-
-
-
-// Promise.resolve()
-//   .then(getMilestoneNumber)
-//   .then(getIssues)
-//   .then(filterIssues)
-//   .then(groupIssues)
-//   .then(output)
-//   .catch(console.error);
+Promise.resolve()
+  .then(validateCommits)
+  .then(getMilestoneNumber)
+  .then(getIssues)
+  .then(filterIssues)
+  .then(groupIssues)
+  .then(output)
+  .catch(console.error);
