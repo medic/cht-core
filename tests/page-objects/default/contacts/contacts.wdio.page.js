@@ -321,6 +321,15 @@ const getPregnancyCardInfo = async () => {
   };
 };
 
+const getTestPregnancyCardInfo = async () => {
+  await pregnancyCard().waitForDisplayed();
+  return {
+    weeksPregnant: await weeksPregnant().getText(),
+    deliveryDate: await edd().getText(),
+    risk: await highRisk().getText(),
+  };
+};
+
 const getPregnancyLabel = async () => {
   await pregnancyLabel().waitForDisplayed();
   return (await pregnancyLabel()).getText();
@@ -435,6 +444,7 @@ module.exports = {
   getContactCardText,
   pregnancyCard,
   getPregnancyCardInfo,
+  getTestPregnancyCardInfo,
   deathCard,
   getDeathCardInfo,
   contactMuted,

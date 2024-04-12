@@ -34,14 +34,16 @@ describe('Contact details page', () => {
     const user = userFactory.build({ username: 'offlineuser', roles: [role] });
     const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
 
-    const reports = Array.from({ length: 60 }).map(() => reportFactory.report().build(
-      { form: 'pregnancy_danger_sign' },
-      {
-        patient,
-        submitter: user.contact,
-        fields: { t_danger_signs_referral_follow_up: 'yes' },
-      }
-    ));
+    const reports = Array
+      .from({ length: 60 })
+      .map(() => reportFactory.report().build(
+        { form: 'pregnancy_danger_sign' },
+        {
+          patient,
+          submitter: user.contact,
+          fields: { t_danger_signs_referral_follow_up: 'yes' },
+        }
+      ));
 
     const pregnancyReport = [
       pregnancyFactory.build({
@@ -96,6 +98,9 @@ describe('Contact details page', () => {
       'validate that the pregnancy card is always displayed', async () => {
 
         expect(await contactPage.pregnancyCard().isDisplayed()).to.be.true;
+        const pregnancyCardInfo = await contactPage.getTestPregnancyCardInfo();
+        expect(pregnancyCardInfo.weeksPregnant).to.equal('23');
+        expect(pregnancyCardInfo.risk).to.equal('High risk');
       }
     );
 

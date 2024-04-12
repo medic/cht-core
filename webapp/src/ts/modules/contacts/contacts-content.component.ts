@@ -54,7 +54,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   relevantReportForms;
   childContactTypes;
   filteredTasks = [];
-  filteredReports = [];
+  filteredReports: any[] = [];
   DISPLAY_LIMIT = 50;
 
   constructor(
@@ -238,9 +238,17 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     const reportStartDate = months ? moment().subtract(months, 'months') : null;
 
     const allReports = reports || this.selectedContact?.reports || [];
-    this.filteredReports = allReports
-      .filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date))
-      .slice(0, this.DISPLAY_LIMIT);
+    const newFilteredReports: any[] = [];
+    for (const report of allReports) {
+      if (!reportStartDate || reportStartDate.isBefore(report.reported_date)) {
+        newFilteredReports.push(report);
+      }
+      if (newFilteredReports.length >= this.DISPLAY_LIMIT) {
+        break;
+      }
+    }
+
+    this.filteredReports = newFilteredReports;
   }
 
   filterTasks(weeks?, tasks?) {
