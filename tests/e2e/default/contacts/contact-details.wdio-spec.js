@@ -98,8 +98,8 @@ describe('Contact details page', () => {
       'validate that the pregnancy card is always displayed', async () => {
 
         expect(await contactPage.pregnancyCard().isDisplayed()).to.be.true;
-        const pregnancyCardInfo = await contactPage.getTestPregnancyCardInfo();
-        expect(pregnancyCardInfo.weeksPregnant).to.equal('23');
+        const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
+        expect(pregnancyCardInfo.weeksPregnant).to.equal('12');
         expect(pregnancyCardInfo.risk).to.equal('High risk');
       }
     );

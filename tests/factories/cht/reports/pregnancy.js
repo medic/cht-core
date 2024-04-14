@@ -1,5 +1,6 @@
 const Factory = require('rosie').Factory;
 const { faker } = require('@faker-js/faker');
+const moment = require('moment');
 const uuid = require('uuid');
 const _ = require('lodash');
 const geolocation = require('./geolocation');
@@ -16,15 +17,8 @@ const defaultSubmitter = {
   }
 };
 
-const edd = faker.date
-  .between({ from: '2024-06-01T00:00:00.000Z', to: '2024-06-30T00:00:00.000Z' })
-  .toISOString()
-  .split('T')[0];
-
-const lmp = faker.date
-  .between({ from: '2023-11-01T00:00:00.000Z', to: '2023-11-30T00:00:00.000Z' })
-  .toISOString()
-  .split('T')[0];
+const nextANCVisit = moment().add(2, 'day');
+const lmp = moment().subtract(3, 'months');
 
 const defaultFields = {
   'inputs': {
@@ -48,7 +42,7 @@ const defaultFields = {
   'patient_short_name': 'the woman',
   'patient_short_name_start': 'The woman',
   'lmp_date_8601': lmp,
-  'edd_8601': edd,
+  'edd_8601': lmp,
   'days_since_lmp': '77',
   'weeks_since_lmp': '34',
   'weeks_since_lmp_rounded': '34',
@@ -56,8 +50,8 @@ const defaultFields = {
   'hiv_status_known': 'no',
   'deworming_med_received': '',
   'tt_received': 'no',
-  't_pregnancy_follow_up_date': '',
-  't_pregnancy_follow_up': 'no',
+  't_pregnancy_follow_up_date': nextANCVisit,
+  't_pregnancy_follow_up': 'yes',
   't_danger_signs_referral_follow_up_date': faker.date.recent({ days: 5 }).toISOString(),
   't_danger_signs_referral_follow_up': 'yes',
   'gestational_age': {
@@ -76,7 +70,7 @@ const defaultFields = {
     },
     'g_lmp_date_8601': '',
     'g_lmp_date': lmp,
-    'g_edd_8601': edd,
+    'g_edd_8601': lmp,
     'g_edd': ''
   },
   'anc_visits_hf': {
@@ -189,7 +183,7 @@ const defaultFields = {
     '__lmp_date': lmp,
     '__lmp_approx_weeks': '34',
     '__lmp_approx_months': '',
-    '__edd': edd,
+    '__edd': lmp,
     '__num_previous_anc_hf_visits': '1',
     '__previous_anc_hf_visit_dates': '',
     '__next_anc_hf_visit_date_known': 'no',
