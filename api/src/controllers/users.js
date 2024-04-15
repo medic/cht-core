@@ -112,10 +112,10 @@ const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
 const getUserList = async (req) => {
   await auth.check(req, 'can_view_users');
-const filters = {
-  facilityId: req.query.facility_id,
-  contactId: req.query.contact_id,
-};
+  const filters = {
+    facilityId: req.query.facility_id,
+    contactId: req.query.contact_id,
+  };
   return await users.getList(filters);
 };
 
