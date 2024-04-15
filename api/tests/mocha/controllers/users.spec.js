@@ -111,7 +111,8 @@ describe('Users Controller', () => {
         };
 
         await controller.v2.get(req, res);
-        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: 'chw-facility' });
+        chai.expect(users.getList.firstCall.args[0])
+          .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(1);
         chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
@@ -145,7 +146,7 @@ describe('Users Controller', () => {
         req.query = { roles: ['chw'], name: 'admin' };
 
         await controller.v2.get(req, res);
-        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({});
+        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(3);
         chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
