@@ -245,14 +245,19 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private getFilteredReports(allReports: any[], reportStartDate, displayLimit): any[] {
     const filteredReports: any[] = [];
     for (const report of allReports) {
-      if (!reportStartDate || reportStartDate.isBefore(report.reported_date)) {
+      if (filteredReports.length >= displayLimit) {
+        break;
+      }
+
+      if (this.validateReport(report, reportStartDate)) {
         filteredReports.push(report);
-        if (filteredReports.length >= displayLimit) {
-          break;
-        }
       }
     }
     return filteredReports;
+  }
+
+  private validateReport(report: any, reportStartDate): boolean {
+    return !reportStartDate || reportStartDate.isBefore(report.reported_date);
   }
 
   filterTasks(weeks?, tasks?) {
