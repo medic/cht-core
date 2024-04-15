@@ -159,7 +159,7 @@ rightSideAction = true,) => {
   await (await customPlaceNameField()).setValue(placeNameValue);
   await (await externalIdField(typeValue)).setValue(externalIDValue);
   await (await notes(typeValue)).setValue(notesValue);
-  await genericForm.submitForm(false);
+  await genericForm.submitForm({ waitForPageLoaded: false });
   const dashedType = typeValue.replace('_', '-');
   await waitForContactLoaded(dashedType);
 };

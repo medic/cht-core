@@ -54,7 +54,9 @@ const selectDropdownOptions = async (element, type, value) => {
 };
 
 const clickTimer = async (formId) => {
-  const timer = await $(`form[data-form-id="${formId}"] .or-appearance-countdown-timer canvas`);
+  const noteTimerSelector = `form[data-form-id="${formId}"] .current .or-appearance-countdown-timer canvas`;
+  const triggerTimerSelector = `form[data-form-id="${formId}"] .current.or-appearance-countdown-timer canvas`;
+  const timer = await $(`${noteTimerSelector}, ${triggerTimerSelector}`);
   await timer.waitForClickable();
   await timer.click();
 };

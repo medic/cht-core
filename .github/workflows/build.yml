@@ -181,10 +181,18 @@ jobs:
         include:
           - cmd: ci-webdriver-default
             suite: core
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            suite: core
+            chrome-version: latest
           - cmd: ci-webdriver-default
             suite: data
           - cmd: ci-webdriver-default
             suite: enketo
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            suite: enketo
+            chrome-version: latest
           - cmd: ci-webdriver-default
             suite: lowLevel
           - cmd: ci-webdriver-default
@@ -195,8 +203,6 @@ jobs:
           - cmd: ci-integration-sentinel
             chrome-version: 90
           - cmd: ci-webdriver-default-mobile
-            chrome-version: 90
-          - cmd: ci-webdriver-default
             chrome-version: 90
     steps:
     - name: Login to Docker Hub
@@ -329,7 +335,7 @@ jobs:
     - name: Install regctl
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: regclient/actions/regctl-installer@main
-      
+
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: aws-actions/configure-aws-credentials@v4
