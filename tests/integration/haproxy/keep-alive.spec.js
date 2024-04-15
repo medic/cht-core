@@ -30,11 +30,7 @@ describe('logging in through API directly', () => {
     await runDockerCommand('docker-compose', ['down', '--remove-orphans']);
   });
 
-  it('should allow logins', async function () {
-    if (utils.isK3D()) {
-      return this.skip();
-    }
-
+  it('should allow logins @docker', async () => {
     await runScript();
     const logs = await getLogs();
 

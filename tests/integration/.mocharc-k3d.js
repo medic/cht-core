@@ -15,6 +15,8 @@ module.exports = {
   spec: [
     'tests/integration/!(cht-conf)/**/*.spec.js',
   ],
+  grep: '@docker',
+  invert: true,
   timeout: 20000 * 1000, //API takes a little long to start up
   reporter: 'spec',
   require: [ 'tests/integration/hooks-k3d.js' ],

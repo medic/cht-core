@@ -57,20 +57,14 @@ describe('accessing couch clustering endpoint', () => {
     expectCorrectMetadata(metadata);
   });
 
-  it('should block unauthenticated access through docker network', async function() {
-    if (utils.isK3D()) {
-      return this.skip();
-    }
+  it('should block unauthenticated access through docker network @docker', async () => {
     await startContainer();
     const logs = await getLogs();
     expect(logs.length).to.equal(1);
     expect(logs[0]).to.deep.equal({ error: 'unauthorized', reason: 'Authentication required.' });
   });
 
-  it('should allow authenticated access through docker network', async function() {
-    if (utils.isK3D()) {
-      return this.skip();
-    }
+  it('should allow authenticated access through docker network @docker', async () => {
     await startContainer(true);
     const logs = await getLogs();
     expect(logs.length).to.equal(1);

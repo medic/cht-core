@@ -8,6 +8,7 @@ const os = require('os');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
+// by default, mustache escapes slashes, which messes with paths and urls.
 mustache.escape = (text) => text;
 const semver = require('semver');
 const moment = require('moment');
@@ -97,7 +98,7 @@ const getHostRoot = () => {
     return 'host.docker.internal';
   }
   const gateway = dockerGateway();
-  return gateway?.[0]?.Gateway || `localhost`;
+  return gateway?.[0]?.Gateway || 'localhost';
 };
 
 const hostURL = (port = 80) => {
@@ -1091,8 +1092,9 @@ const runCommand = (command, silent) => {
 };
 
 const createCluster = async (dataDir) => {
+  const hostPort = process.env.NGINX_HTTPS_PORT ? `${process.env.NGINX_HTTPS_PORT}` : '443';
   await runCommand(
-    `k3d cluster create ${PROJECT_NAME} --port 443:443@loadbalancer --volume ${dataDir}:${K3D_DATA_PATH}`
+    `k3d cluster create ${PROJECT_NAME} --port ${hostPort}:443@loadbalancer --volume ${dataDir}:${K3D_DATA_PATH}`
   );
 };
 
