@@ -129,12 +129,11 @@ const getUsers = async ({ facilityId, contactId }) => {
   }
 
   const usersForContactId = await queryDocs(db.users, 'users/users_by_contact_id', contactId);
-if (!facilityId) {
-  return usersForContactId;
-}
-return usersForContactId.filter(user => user.facility_id === facilityId);
+  if (!facilityId) {
+    return usersForContactId;
+  }
 
-  return usersForContactId;
+  return usersForContactId.filter(user => user.facility_id === facilityId);
 };
 
 const getUsersAndSettings = async (filters) => {
