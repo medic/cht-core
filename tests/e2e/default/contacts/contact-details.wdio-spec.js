@@ -70,7 +70,7 @@ describe('Contact details page', () => {
       await updatePermissions(role, permissions);
 
       await utils.saveDocs([parent, patient]);
-      await utils.saveDocs([...reports, pregnancyReport]
+      await utils.saveDocs([...reports, pregnancyReport]);
 
       await utils.createUsers([user]);
 
