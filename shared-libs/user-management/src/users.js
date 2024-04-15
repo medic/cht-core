@@ -791,7 +791,7 @@ const getUserDocsByName = (name) => {
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
-  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id', 'contact_id'));
   return hydrateUserSettings(medicUser);
 };
 

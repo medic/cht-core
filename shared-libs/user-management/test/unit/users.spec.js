@@ -37,7 +37,6 @@ describe('Users service', () => {
     });
     db.init({
       medic: {
-        bulkGet: sinon.stub(),
         get: sinon.stub(),
         put: sinon.stub(),
         allDocs: sinon.stub(),
@@ -223,20 +222,18 @@ describe('Users service', () => {
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
-          results: [{
-            docs: [{
-              ok: {
-                _id: 'org.couchdb.user:x',
-                name: 'lucas',
-                fullname: 'Lucas M',
-                email: 'l@m.com',
-                phone: '123456789',
-                facility_id: 'c',
-              },
-            }],
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:x',
+              name: 'lucas',
+              fullname: 'Lucas M',
+              email: 'l@m.com',
+              phone: '123456789',
+              facility_id: 'c',
+            },
           }],
         };
-        db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:x' }] }).resolves(userSettingsResponse);
+        db.medic.allDocs.withArgs({ keys: ['org.couchdb.user:x'], include_docs: true }).resolves(userSettingsResponse);
 
         const data = await service.getList(filters);
         chai.expect(data.length).to.equal(1);
@@ -269,22 +266,20 @@ describe('Users service', () => {
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
-          results: [{
-            docs: [{
-              ok: {
-                _id: 'org.couchdb.user:y',
-                name: 'milan',
-                fullname: 'Milan A',
-                email: 'm@a.com',
-                phone: '987654321',
-                external_id: 'LTT093',
-                facility_id: 'b',
-                contact_id: 'milan-contact',
-              },
-            }],
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:y',
+              name: 'milan',
+              fullname: 'Milan A',
+              email: 'm@a.com',
+              phone: '987654321',
+              external_id: 'LTT093',
+              facility_id: 'b',
+              contact_id: 'milan-contact',
+            },
           }],
         };
-        db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(userSettingsResponse);
+        db.medic.allDocs.withArgs({ keys: ['org.couchdb.user:y'], include_docs: true }).resolves(userSettingsResponse);
 
         const data = await service.getList(filters);
         chai.expect(data.length).to.equal(1);
@@ -329,22 +324,20 @@ describe('Users service', () => {
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
-          results: [{
-            docs: [{
-              ok: {
-                _id: 'org.couchdb.user:y',
-                name: 'milan',
-                fullname: 'Milan A',
-                email: 'm@a.com',
-                phone: '987654321',
-                external_id: 'LTT093',
-                facility_id: 'b',
-                contact_id: 'milan-contact',
-              },
-            }],
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:y',
+              name: 'milan',
+              fullname: 'Milan A',
+              email: 'm@a.com',
+              phone: '987654321',
+              external_id: 'LTT093',
+              facility_id: 'b',
+              contact_id: 'milan-contact',
+            },
           }],
         };
-        db.medic.bulkGet.withArgs({ docs: [{ id: 'org.couchdb.user:y' }] }).resolves(userSettingsResponse);
+        db.medic.allDocs.withArgs({ keys: ['org.couchdb.user:y'], include_docs: true }).resolves(userSettingsResponse);
 
         const data = await service.getList(filters);
         chai.expect(db.users.query.callCount).to.equal(1);
@@ -535,8 +528,8 @@ describe('Users service', () => {
   describe('getUserSettings', () => {
 
     it('returns medic user doc with facility from couchdb user doc', () => {
-      db.users.get.resolves({ name: 'steve', facility_id: 'steveVille', roles: ['b'] });
-      db.medic.get.resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve', roles: ['c'] });
+      db.users.get.resolves({ name: 'steve', facility_id: 'steveVille', contact_id: 'steve', roles: ['b'] });
+      db.medic.get.resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'not_steve', roles: ['c'] });
       db.medic.allDocs.resolves({
         rows: [
           { id: 'steveVille', key: 'steveVille', doc: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' } },
