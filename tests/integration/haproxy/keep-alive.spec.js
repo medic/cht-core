@@ -1,7 +1,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const constants = require('@constants');
-const utils = require('@utils');
 
 const runDockerCommand = (command, params, env=process.env) => {
   return new Promise((resolve, reject) => {
