@@ -141,7 +141,7 @@ export class GetSummariesService {
     }
 
     return docs
-      .map(row => this.summarise(row.doc))
+      .map(doc => this.summarise(doc))
       .filter(summary => summary);
   }
 }
