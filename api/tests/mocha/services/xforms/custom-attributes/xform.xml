@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:cht="https://docs.communityhealthtoolkit.org/" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Custom Attributes</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/custom_attributes/my_text:label">
+            <value>My Text</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_date:label">
+            <value>My Date</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_note:label">
+            <value>My Note</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_select/dk:label">
+            <value>Don't Know</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_select/na:label">
+            <value>Not Applicable</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_select/no:label">
+            <value>No</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_select/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_select:label">
+            <value>My Select</value>
+          </text>
+          <text id="/custom_attributes/test_attributes/my_trigger:label">
+            <value>My Trigger</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <custom_attributes delimiter="#" id="custom_attributes" prefix="J1!custom_attributes!" version="2024-02-23 00:00:00">
+          <test_attributes>
+            <my_note cht:duration="10"/>
+            <my_trigger cht:duration="5"/>
+            <my_date cht:message="2024/02/09"/>
+            <my_select cht:link="https://docs.communityhealthtoolkit.org/#why-work-with-the-cht"/>
+          </test_attributes>
+          <my_text cht:duration="42" cht:link="https://google.com" cht:message="Hello World!"/>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </custom_attributes>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/custom_attributes/test_attributes/my_note" readonly="true()" type="string"/>
+      <bind nodeset="/custom_attributes/test_attributes/my_date" type="date"/>
+      <bind nodeset="/custom_attributes/test_attributes/my_select" type="select1"/>
+      <bind nodeset="/custom_attributes/my_text" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/custom_attributes/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/custom_attributes/test_attributes">
+      <input appearance="countdown-timer" ref="/custom_attributes/test_attributes/my_note">
+        <label ref="jr:itext('/custom_attributes/test_attributes/my_note:label')"/>
+      </input>
+      <trigger appearance="countdown-timer" ref="/custom_attributes/test_attributes/my_trigger">
+        <label ref="jr:itext('/custom_attributes/test_attributes/my_trigger:label')"/>
+      </trigger>
+      <input ref="/custom_attributes/test_attributes/my_date">
+        <label ref="jr:itext('/custom_attributes/test_attributes/my_date:label')"/>
+      </input>
+      <select1 ref="/custom_attributes/test_attributes/my_select">
+        <label ref="jr:itext('/custom_attributes/test_attributes/my_select:label')"/>
+        <item>
+          <label ref="jr:itext('/custom_attributes/test_attributes/my_select/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/custom_attributes/test_attributes/my_select/no:label')"/>
+          <value>no</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/custom_attributes/test_attributes/my_select/dk:label')"/>
+          <value>dk</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/custom_attributes/test_attributes/my_select/na:label')"/>
+          <value>na</value>
+        </item>
+      </select1>
+    </group>
+    <input ref="/custom_attributes/my_text">
+      <label ref="jr:itext('/custom_attributes/my_text:label')"/>
+    </input>
+  </h:body>
+</h:html>
