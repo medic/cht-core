@@ -141,7 +141,6 @@ export class TasksComponent implements OnInit, OnDestroy {
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
 
       this.hasTasks = taskDocs.length > 0;
-      this.loading = false;
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
@@ -157,10 +156,10 @@ export class TasksComponent implements OnInit, OnDestroy {
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
-      this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
+      this.loading = false;
       const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
       this.trackPerformance?.stop({
         name: performanceName,

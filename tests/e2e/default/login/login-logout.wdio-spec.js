@@ -42,7 +42,7 @@ describe('Login page funcionality tests', () => {
     const esTranslations = {
       user: 'Nombre de usuario',
       pass: 'Contraseña',
-      error: 'Nombre de usuario o contraseña incorrecto. Favor intentar de nuevo.'
+      error: 'Nombre de usuario o contraseña incorrecto. Inténtelo de nuevo.'
     };
 
     it('should show locale selector on login page', async () => {

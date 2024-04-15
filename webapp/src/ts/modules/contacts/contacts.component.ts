@@ -430,7 +430,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.moreItems = updatedContacts.length >= options.limit;
         this.hasContacts = !!this.contactsList.length;
-        this.loading = false;
         this.appending = false;
         this.error = false;
         this.initScroll();
@@ -439,10 +438,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(err => {
         this.error = true;
-        this.loading = false;
         console.error('Error loading contacts', err);
       })
       .finally(() => {
+        this.loading = false;
         trackPerformance?.stop({ name: 'contact_list:query', recordApdex: true });
       });
   }
