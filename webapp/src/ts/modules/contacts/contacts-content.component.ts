@@ -249,17 +249,13 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         break;
       }
 
-      if (this.validateReport(report, reportStartDate)) {
+      if (reportStartDate?.isBefore(report.reported_date)) {
         filteredReports.push(report);
       }
     }
     return filteredReports;
   }
-
-  private validateReport(report: any, reportStartDate): boolean {
-    return !reportStartDate || reportStartDate.isBefore(report.reported_date);
-  }
-
+  
   filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
     const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;

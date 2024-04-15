@@ -45,15 +45,13 @@ describe('Contact details page', () => {
         }
       ));
 
-    const pregnancyReport = [
-      pregnancyFactory.build({
-        fields: {
-          patient_id: patient._id,
-          patient_uuid: patient._id,
-          patient_name: patient.name,
-        },
-      }),
-    ];
+    const pregnancyReport = pregnancyFactory.build({
+      fields: {
+        patient_id: patient._id,
+        patient_uuid: patient._id,
+        patient_name: patient.name,
+      },
+    });
 
     const updatePermissions = async (role, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();
@@ -72,8 +70,7 @@ describe('Contact details page', () => {
       await updatePermissions(role, permissions);
 
       await utils.saveDocs([parent, patient]);
-      await utils.saveDocs(reports);
-      await utils.saveDocs(pregnancyReport);
+      await utils.saveDocs([...reports, pregnancyReport]
 
       await utils.createUsers([user]);
 
