@@ -113,9 +113,10 @@ const queryDocs = (db, view, key) => db
 const getAllUserSettings = () => queryDocs(db.medic, 'medic-client/doc_by_type', ['user-settings']);
 
 const getSettingsByIds = async (ids) => {
-  const docs = ids.map(id => ({ id }));
-const { rows } = await db.medic.allDocs({ keys: ids, include_docs: true });
-return rows.map(row => row.doc).filter(Boolean);
+  const { rows } = await db.medic.allDocs({ keys: ids, include_docs: true });
+  return rows
+    .map(row => row.doc)
+    .filter(Boolean);
 };
 
 const getAllUsers = async () => db.users
