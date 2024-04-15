@@ -1,3 +1,6 @@
+const fs = require('fs');
+const utils = require('@utils');
+
 const currentSection =  () => $('section[class*="current"]');
 
 const divContainer = () => $('div.container');
@@ -64,6 +67,33 @@ const validateSummaryReport = async (textArray) => {
   }
 };
 
+const uploadForm = async (formName, saveDoc = true) => {
+  const formXML = fs.readFileSync(`${__dirname}/../../../e2e/default/enketo/forms/${formName}.xml`, 'utf8');
+  const formDoc = {
+    _id: `form:${formName}`,
+    internalId: formName,
+    title: formName,
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(formXML).toString('base64'),
+      },
+    },
+  };
+  if (saveDoc) {
+    await utils.saveDoc(formDoc);
+  }
+  return formDoc;
+};
+
+const getInputValue = async (question) => {
+  return await (await getCurrentPageSection())
+    .$(`label*=${question}`)
+    .$('input')
+    .getValue();
+};
+
 module.exports = {
   isElementDisplayed,
   selectRadioButton,
@@ -72,4 +102,6 @@ module.exports = {
   setDateValue,
   setTextareaValue,
   validateSummaryReport,
+  uploadForm,
+  getInputValue,
 };

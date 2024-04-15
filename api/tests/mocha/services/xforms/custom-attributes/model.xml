@@ -1,0 +1,19 @@
+
+<model>
+  <instance>
+    <custom_attributes xmlns:cht="Hello" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" delimiter="#" id="custom_attributes" prefix="J1!custom_attributes!" version="2024-02-23 00:00:00">
+      <test_attributes>
+        <my_note cht:duration="10"/>
+        <my_trigger cht:duration="5"/>
+        <my_date cht:message="2024/02/09"/>
+        <my_select cht:link="https://docs.communityhealthtoolkit.org/#why-work-with-the-cht"/>
+      </test_attributes>
+      <my_text cht:duration="42" cht:link="https://google.com" cht:message="Hello World!"/>
+      <meta tag="hidden">
+        <instanceID/>
+      </meta>
+    </custom_attributes>
+  </instance>
+  <instance id="contact-summary"/>
+</model>
+

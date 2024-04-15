@@ -7,6 +7,7 @@ import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
@@ -32,6 +33,8 @@ describe('RulesEngineService', () => {
   let rulesEngineCoreStubs;
   let pipesService;
   let chtScriptApiService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let clock;
 
   let fetchTasksFor;
@@ -111,6 +114,8 @@ describe('RulesEngineService', () => {
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
     chtScriptApiService = { getApi: sinon.stub().returns(chtScriptApi) };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
@@ -161,6 +166,7 @@ describe('RulesEngineService', () => {
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
         { provide: TelemetryService, useValue: telemetryService },
+        { provide: PerformanceService, useValue: performanceService },
         { provide: UHCSettingsService, useValue: uhcSettingsService },
         { provide: UserContactService, useValue: userContactService },
         { provide: UserSettingsService, useValue: userSettingsService },
@@ -213,8 +219,8 @@ describe('RulesEngineService', () => {
         user: userSettingsDoc,
         contact: userContactDoc,
       });
-      expect(telemetryService.record.callCount).to.equal(1);
-      expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
     });
 
     it('should initialize enableTargets as disabled', async () => {
@@ -328,8 +334,11 @@ describe('RulesEngineService', () => {
         await change.callback(changeFeedFormat(scenario.doc));
         expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.eq(1);
         expect(rulesEngineCoreStubs.updateEmissionsFor.args[0][0]).to.deep.eq(scenario.expected);
-        expect(telemetryService.record.callCount).to.equal(2);
-        expect(telemetryService.record.args[1][0]).to.equal('rules-engine:update-emissions');
+        expect(stopPerformanceTrackStub.callCount).to.equal(2);
+        expect(stopPerformanceTrackStub.args[0][0])
+          .to.deep.equal({ name: 'rules-engine:initialize' });
+        expect(stopPerformanceTrackStub.args[1][0])
+          .to.deep.equal({ name: 'rules-engine:update-emissions' });
       });
     }
 
@@ -456,7 +465,7 @@ describe('RulesEngineService', () => {
 
     const actual = await service.fetchTaskDocsForAllContacts();
 
-    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTasksFor.calledOnce).to.be.true;
     expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.be.undefined;
     expect(actual.length).to.eq(1);
     expect(actual[0]).to.nested.include({
@@ -465,10 +474,12 @@ describe('RulesEngineService', () => {
       'emission.priorityLabel': 'and.this',
       'emission.other': true,
     });
-    expect(telemetryService.record.callCount).to.equal(4);
-    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 3]);
-    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
-    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:tasks:all-contacts');
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal([ 'rules-engine:tasks:dirty-contacts', 3 ]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(3);
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   });
 
   it('fetchTaskDocsFor() should fetch task docs', async () => {
@@ -489,9 +500,11 @@ describe('RulesEngineService', () => {
       'emission.priorityLabel': 'and.this',
       'emission.other': true,
     });
-    expect(telemetryService.record.callCount).to.equal(3);
-    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
-    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
   });
 
   it('fetchTaskDocsFor() should not crash with empty priority label', async () => {
@@ -513,9 +526,11 @@ describe('RulesEngineService', () => {
       'emission.priorityLabel': '',
       'emission.other': true,
     });
-    expect(telemetryService.record.callCount).to.equal(3);
-    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
-    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
   });
 
   it('fetchTargets() should send correct range to Rules Engine Core when getting targets', async () => {
@@ -538,12 +553,13 @@ describe('RulesEngineService', () => {
 
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
-    expect(telemetryService.record.callCount).to.equal(5);
-    expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
-    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 20]);
-    expect(telemetryService.record.args[2]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
-    expect(telemetryService.record.args[3]).to.deep.equal(['rules-engine:targets:dirty-contacts', 20]);
-    expect(telemetryService.record.args[4]).to.deep.equal(['rules-engine:targets', 0]);
+    expect(telemetryService.record.callCount).to.equal(2);
+    expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 20]);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:targets:dirty-contacts', 20]);
+    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets' });
   }));
 
   it('should ensure freshness of tasks only', fakeAsync(async () => {
@@ -556,12 +572,14 @@ describe('RulesEngineService', () => {
 
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
-    expect(telemetryService.record.callCount).to.equal(6);
-    expect(telemetryService.record.args[1][0]).to.equal('rules-engine:targets:dirty-contacts');
-    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
-    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets');
-    expect(telemetryService.record.args[4][0]).to.equal('rules-engine:tasks:dirty-contacts');
-    expect(telemetryService.record.args[5][0]).to.equal('rules-engine:tasks:all-contacts');
+    expect(telemetryService.record.callCount).to.equal(2);
+    expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:targets:dirty-contacts', 0]);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(4);
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets' });
+    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   }));
 
   it('should cancel all ensure freshness threads', async () => {
@@ -578,13 +596,15 @@ describe('RulesEngineService', () => {
 
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
-    expect(telemetryService.record.callCount).to.equal(7);
-    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:targets:dirty-contacts', 0]);
-    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
-    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets');
-    expect(telemetryService.record.args[4]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
-    expect(telemetryService.record.args[5][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
-    expect(telemetryService.record.args[6][0]).to.equal('rules-engine:tasks:all-contacts');
+    expect(telemetryService.record.calledTwice).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:targets:dirty-contacts', 0]);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(5);
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets' });
+    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   });
 
   it('should record correct telemetry data with emitted events', async () => {
@@ -603,50 +623,51 @@ describe('RulesEngineService', () => {
 
     expect(fetchTargets.events).to.have.keys(['queued', 'running']);
     expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
-    expect(telemetryService.record.callCount).to.equal(6);
+    expect(telemetryService.record.calledThrice).to.be.true;
     expect(telemetryService.record.args.map(arg => arg[0])).to.deep.equal([
-      'rules-engine:initialize',
       'rules-engine:targets:dirty-contacts',
-      'rules-engine:ensureTargetFreshness:cancel',
       'rules-engine:tasks:dirty-contacts',
-      'rules-engine:ensureTaskFreshness:cancel',
       'rules-engine:tasks:dirty-contacts',
     ]);
+    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
 
     fetchTargets.events.queued[0]();
     fetchTasksFor.events.queued[0]();
     fetchTasksFor.events.queued[1]();
 
-    expect(telemetryService.record.callCount).to.equal(6);
+    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
     fetchTargets.events.running[0]();
-    expect(telemetryService.record.callCount).to.equal(7);
-    expect(telemetryService.record.args[6]).to.deep.equal(['rules-engine:targets:queued', 0]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(4);
+    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:targets:queued' });
 
     await Promise.resolve();
     clock.tick(5000);
     fetchTargetResultPromise([]);
     await nextTick();
 
-    expect(telemetryService.record.callCount).to.equal(8);
-    expect(telemetryService.record.args[7]).to.deep.equal(['rules-engine:targets', 5000]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(5);
+    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:targets' });
     fetchTasksFor.events.running[0]();
-    expect(telemetryService.record.callCount).to.equal(9);
-    expect(telemetryService.record.args[8]).to.deep.equal(['rules-engine:tasks:all-contacts:queued', 5000]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(6);
+    expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts:queued' });
     clock.tick(10000);
     fetchTasksResultPromise[1]([]);
 
     await nextTick();
-    expect(telemetryService.record.callCount).to.equal(10);
-    expect(telemetryService.record.args[9]).to.deep.equal(['rules-engine:tasks:all-contacts', 10000]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(7);
+    expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
     fetchTasksFor.events.running[1]();
-    expect(telemetryService.record.callCount).to.equal(11);
-    expect(telemetryService.record.args[10]).to.deep.equal(['rules-engine:tasks:some-contacts:queued', 15000]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(8);
+    expect(stopPerformanceTrackStub.args[7][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts:queued' });
     clock.tick(550);
     fetchTasksResultPromise[3]([]);
 
     await nextTick();
-    expect(telemetryService.record.callCount).to.equal(12);
-    expect(telemetryService.record.args[11]).to.deep.equal(['rules-engine:tasks:some-contacts', 550]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(9);
+    expect(stopPerformanceTrackStub.args[8][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
   });
 
   it('should record correct telemetry data for disabled actions', async () => {
@@ -665,24 +686,29 @@ describe('RulesEngineService', () => {
     expect(fetchTargets.events).to.have.keys(['queued', 'running']);
     expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
 
-    expect(telemetryService.record.callCount).to.equal(6);
+    expect(telemetryService.record.calledThrice).to.be.true;
     expect(telemetryService.record.args.map(arg => arg[0])).to.include.members([
-      'rules-engine:initialize',
       'rules-engine:targets:dirty-contacts',
-      'rules-engine:ensureTargetFreshness:cancel',
       'rules-engine:tasks:dirty-contacts',
-      'rules-engine:ensureTaskFreshness:cancel',
       'rules-engine:tasks:dirty-contacts'
     ]);
+
+    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
 
     await nextTick();
 
     // queued and running events are not emitted!
 
-    expect(telemetryService.record.callCount).to.equal(9);
-    expect(telemetryService.record.args[6]).to.deep.equal(['rules-engine:targets', 0]);
-    expect(telemetryService.record.args[7]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
-    expect(telemetryService.record.args[8]).to.deep.equal(['rules-engine:tasks:some-contacts', 0]);
+    expect(stopPerformanceTrackStub.callCount).to.equal(6);
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:targets' });
+    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
+    expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
   });
 
   describe('fetchTasksBreakdown', () => {
@@ -721,9 +747,9 @@ describe('RulesEngineService', () => {
 
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([undefined]);
-      expect(telemetryService.record.callCount).to.equal(2);
-      expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:initialize', 0]);
-      expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks-breakdown:all-contacts', 3000]);
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:all-contacts' });
     });
 
     it('should return results from rulesEngineCore and record telemetry with contacts', async () => {
@@ -749,9 +775,10 @@ describe('RulesEngineService', () => {
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([['c1', 'c2', 'c3']]);
 
-      expect(telemetryService.record.callCount).to.equal(2);
-      expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:initialize', 0]);
-      expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks-breakdown:some-contacts', 2569]);
+
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:some-contacts' });
     });
   });
 });

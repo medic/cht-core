@@ -26,7 +26,7 @@
       }
     }
 
-    .question:not(.or-appearance-likert):not(.or-appearance-columns) .option-wrapper {
+    .question:not(.or-appearance-likert):not(.or-appearance-columns):not(.or-appearance-list-nolabel) .option-wrapper {
       .option-label.active {
         white-space: normal;
         word-break: break-word;
@@ -247,7 +247,7 @@
     font-style: italic;
   }
   .or-appearance-countdown-timer {
-    input {
+    input, .option-wrapper {
       display: none;
     }
     canvas {

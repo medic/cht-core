@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
@@ -8,24 +6,9 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('DB Object Widget', () => {
-  const formId = 'db-object-widget';
-  const form = fs.readFileSync(`${__dirname}/forms/${formId}.xml`, 'utf8');
-  const formDocument = {
-    _id: `form:${formId}`,
-    internalId: formId,
-    title: `Form ${formId}`,
-    type: 'form',
-    context: { person: true, place: true },
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(form).toString('base64')
-      }
-    }
-  };
-
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
   const area1 = places.get('health_center');
@@ -41,14 +24,15 @@ describe('DB Object Widget', () => {
   const personArea2 = personFactory.build({ name: 'Patricio', parent: { _id: area2._id, parent: area2.parent } });
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), area2, personArea1, personArea2, formDocument ]);
+    await commonEnketoPage.uploadForm('db-object-widget');
+    await utils.saveDocs([ ...places.values(), area2, personArea1, personArea2 ]);
     await utils.createUsers([ offlineUser ]);
     await loginPage.login(offlineUser);
   });
 
   it('should display only the contacts from the parent contact', async () => {
     await commonPage.goToPeople(area1._id);
-    await commonPage.openFastActionReport(formId);
+    await commonPage.openFastActionReport('db-object-widget');
 
     const sameParent = await genericForm.getDBObjectWidgetValues('/db_object_form/people/person_test_same_parent');
     await sameParent[0].click();
@@ -63,20 +47,17 @@ describe('DB Object Widget', () => {
     expect(allContacts[2].name).to.equal(personArea2.name);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
     await commonPage.goToReports();
 
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal(offlineUser.contact.name);
-    expect(firstReport.form).to.equal('Form db-object-widget');
+    expect(firstReport.form).to.equal('db-object-widget');
 
     await reportsPage.openReport(firstReport.dataId);
-    expect(await reportsPage.getReportDetailFieldValueByLabel(
-      'report.db-object-widget.people.person_test_same_parent'
-    )).to.equal(personArea1._id);
-    expect(await reportsPage.getReportDetailFieldValueByLabel(
-      'report.db-object-widget.people.person_test_all'
-    )).to.equal(personArea2._id);
+    expect((await reportsPage.getDetailReportRowContent('report.db-object-widget.people.person_test_same_parent'))
+      .rowValues[0]).to.equal(personArea1._id);
+    expect((await reportsPage.getDetailReportRowContent('report.db-object-widget.people.person_test_all'))
+      .rowValues[0]).to.equal(personArea2._id);
   });
 
 });

@@ -112,12 +112,12 @@ const selectRHSRowById = async (id) => {
 
 const getReportFiltersText = async () => {
   await (await reportFilter()).waitForDisplayed();
-  return Promise.all((await reportFilters()).map(filter => filter.getText()));
+  return (await reportFilters()).map(filter => filter.getText());
 };
 
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
-  return await Promise.all((await taskFilters()).map(filter => filter.getText()));
+  return await (await taskFilters()).map(filter => filter.getText());
 };
 
 const waitForContactLoaded = async (type) => {
@@ -128,12 +128,6 @@ const waitForContactLoaded = async (type) => {
 
 const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
-};
-
-const submitForm = async (waitForLoad = true) => {
-  await (await genericForm.submitButton()).waitForClickable();
-  await (await genericForm.submitButton()).click();
-  waitForLoad && await waitForContactLoaded();
 };
 
 const addPlace = async ({
@@ -165,8 +159,7 @@ rightSideAction = true,) => {
   await (await customPlaceNameField()).setValue(placeNameValue);
   await (await externalIdField(typeValue)).setValue(externalIDValue);
   await (await notes(typeValue)).setValue(notesValue);
-  await (await genericForm.submitButton()).waitForClickable();
-  await (await genericForm.submitButton()).click();
+  await genericForm.submitForm({ waitForPageLoaded: false });
   const dashedType = typeValue.replace('_', '-');
   await waitForContactLoaded(dashedType);
 };
@@ -190,7 +183,7 @@ const addPerson = async ({
   await (await roleField(type, roleValue)).click();
   await (await externalIdField(type)).addValue(externalIDValue);
   await (await notes(type)).addValue(notesValue);
-  await submitForm();
+  await genericForm.submitForm();
   if (waitForSentinel) {
     await sentinelUtils.waitForSentinel();
   }
@@ -216,8 +209,8 @@ const editPerson = async (currentName, { name, phone, dob }) => {
   if (dob !== undefined) {
     await (await dateOfBirthField()).setValue(dob);
   }
-
-  await submitForm();
+  await genericForm.formTitle().click();
+  await genericForm.submitForm();
 };
 
 const editPersonName = async (name, updatedName) => {
@@ -264,11 +257,10 @@ const getAllRHSTaskNames = async () => {
 
 const allContactsList = async () => {
   const parentCards = await contactCards();
-  return Promise.all(parentCards.map(async (parent) => {
-    return {
-      heading: await (await parent.$('h3')).getText(),
-      contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
-    };
+
+  return parentCards.map(async (parent) => ({
+    heading: await (await parent.$('h3')).getText(),
+    contactNames: await (await parent.$$('.children h4 span')).map(filter => filter.getText())
   }));
 };
 
@@ -283,7 +275,7 @@ const editPlace = async (currentName, editedName, placeType) => {
   await (await nameField(placeType)).setValue(editedName);
   // blur field to trigger Enketo validation
   await (await notes(placeType)).click();
-  await submitForm();
+  await genericForm.submitForm();
 };
 
 const openFormWithWarning = async (formId) => {
@@ -428,7 +420,6 @@ module.exports = {
   deletePerson,
   allContactsList,
   childrenCards,
-  submitForm,
   openReport,
   getContactCardTitle,
   getContactInfoName,

@@ -88,6 +88,7 @@ export class TelemetryService {
           year: date.year,
           month: date.month,
           day: date.date,
+          aggregate_date: new Date().toISOString(),
           user: this.sessionService.userCtx().name,
           deviceId: this.getUniqueDeviceId(),
           versions: {
