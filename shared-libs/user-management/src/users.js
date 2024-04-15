@@ -120,7 +120,7 @@ const getSettingsByIds = async (ids) => {
 };
 
 const getAllUsers = async () => db.users
-.allDocs({ include_docs: true, start_key: 'org.couchdb.user:', end_key: 'org.couchdb.user:\ufff0' })
+  .allDocs({ include_docs: true, start_key: 'org.couchdb.user:', end_key: 'org.couchdb.user:\ufff0' })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getUsers = async ({ facilityId, contactId }) => {
