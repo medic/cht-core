@@ -19,13 +19,17 @@ export class ReplicationService {
 
   async replicateFrom():Promise<{ read_docs: number }> {
     const remoteDocIdsRevs = await this.getRemoteDocs();
+    console.debug('got remote docs');
     const localDocs = await this.dbService.get().allDocs();
+    console.debug('got all docs');
 
     const localIdRevMap = Object.assign({}, ...localDocs.rows.map(row => ({ [row.id]: row.value?.rev })));
     const remoteIdRevMap = Object.assign({}, ...remoteDocIdsRevs.map(({ id, rev }) => ({ [id]: rev })));
 
     const nbrDownloaded = await this.getMissingDocs(localIdRevMap, remoteDocIdsRevs);
+    console.debug('got missing');
     const nbrDeleted = await this.getDeletesAndPurges(localIdRevMap, remoteIdRevMap);
+    console.debug('got deleted');
     return { read_docs: nbrDeleted + nbrDownloaded };
   }
 

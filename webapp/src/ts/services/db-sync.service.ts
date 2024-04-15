@@ -167,9 +167,12 @@ export class DBSyncService {
       this.getLastReplicationDate(),
     );
 
+    console.debug('replicate from start');
+
     try {
       const result = await this.replicationService.replicateFrom();
       telemetryEntry.recordSuccess(result);
+      console.debug('replicate from success');
     } catch (err) {
       telemetryEntry.recordFailure(err, this.knownOnlineState);
       console.error('Error replicating from remote server', err);
@@ -198,10 +201,12 @@ export class DBSyncService {
   }
 
   private async syncMedic(replicateFromServer: boolean, successiveSyncs = 0) {
+    console.debug('replicateFromServer', replicateFromServer);
     const replicationErrors = {
       to: await this.replicateTo(),
       from: replicateFromServer ? await this.replicateFrom() : null,
     };
+    console.debug('after replicate');
     const hasErrors = replicationErrors.to || replicationErrors.from;
     let syncState = await this.getSyncState(hasErrors);
 

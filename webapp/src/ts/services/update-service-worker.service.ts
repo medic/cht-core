@@ -14,6 +14,7 @@ export class UpdateServiceWorkerService {
   private readonly retryFailedUpdateAfterSec = 5 * 60;
   private existingUpdateLoop;
   private globalActions;
+  private existingUpdate;
 
   constructor(
     private store:Store,
@@ -23,6 +24,12 @@ export class UpdateServiceWorkerService {
 
   update(onSuccess) {
     // This avoids multiple updates retrying in parallel
+    if (this.existingUpdate) {
+      return;
+    }
+
+    this.existingUpdate = true;
+
     if (this.existingUpdateLoop) {
       clearTimeout(this.existingUpdateLoop);
       this.existingUpdateLoop = undefined;
@@ -38,12 +45,14 @@ export class UpdateServiceWorkerService {
 
         registration.onupdatefound = () => {
           const installingWorker = registration.installing!;
+          console.debug(installingWorker);
           installingWorker.onstatechange = () => {
             switch (installingWorker.state) {
             case 'activated':
               !environment.production && this.globalActions.setSnackbarContent('New service worker activated');
               registration.onupdatefound = null;
               onSuccess();
+              this.existingUpdate = false;
               break;
             case 'redundant':
               console.warn(
