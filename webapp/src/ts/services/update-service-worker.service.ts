@@ -61,6 +61,7 @@ export class UpdateServiceWorkerService {
               );
               this.existingUpdateLoop = setTimeout(() => this.update(onSuccess), this.retryFailedUpdateAfterSec * 1000);
               registration.onupdatefound = null;
+              this.existingUpdate = false;
               break;
             default:
               console.debug(`Service worker state changed to ${installingWorker.state}!`);

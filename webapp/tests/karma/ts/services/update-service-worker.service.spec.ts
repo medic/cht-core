@@ -130,7 +130,7 @@ describe('UpdateServiceWorker service', () => {
     registration.installing.onstatechange();
     tick();
 
-    expect(registration.update.callCount).to.equal(3);
+    expect(registration.update.callCount).to.equal(1);
     expect(callback.callCount).to.equal(0);
 
     registration.installing.state = 'activated';
@@ -140,7 +140,7 @@ describe('UpdateServiceWorker service', () => {
     registration.installing.onstatechange();
     tick();
 
-    expect(registration.update.callCount).to.equal(4);
+    expect(registration.update.callCount).to.equal(2);
     expect(registration.onupdatefound).to.equal(null);
     expect(callback.callCount).to.equal(1);
   }));
