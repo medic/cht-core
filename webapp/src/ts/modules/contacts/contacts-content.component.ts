@@ -242,14 +242,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.filteredReports = this.getFilteredReports(allReports, reportStartDate, this.DISPLAY_LIMIT);
   }
 
-  private getFilteredReports(allReports: any[], reportStartDate: moment.Moment | null, displayLimit: number): any[] {
+  private getFilteredReports(allReports: any[], reportStartDate, displayLimit): any[] {
     const filteredReports: any[] = [];
     for (const report of allReports) {
       if (!reportStartDate || reportStartDate.isBefore(report.reported_date)) {
         filteredReports.push(report);
-      }
-      if (filteredReports.length >= displayLimit) {
-        break;
+        if (filteredReports.length >= displayLimit) {
+          break;
+        }
       }
     }
     return filteredReports;
