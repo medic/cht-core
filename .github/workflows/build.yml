@@ -120,9 +120,9 @@ jobs:
       - name: Run Tests
         run: npm run wdio-cht-form
 
-  k3de2e:
+  tests-k3d:
     needs: build
-    name: k3de2e
+    name: ci-integration-all-k3d
     runs-on: ubuntu-22.04
 
     steps:
