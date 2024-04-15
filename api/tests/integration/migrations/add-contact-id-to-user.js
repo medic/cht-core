@@ -93,7 +93,8 @@ describe('add-contact-id-to-user migration', function() {
       },
       {
         ...createUserDoc(userSettingsDocs[1]),
-        contact_id: 'old-contact'
+        contact_id: 'old-contact',
+        facility_id: 'different-facility'
       },
     ];
     await writeUserDocs(userDocs);
@@ -108,5 +109,7 @@ describe('add-contact-id-to-user migration', function() {
     delete expectedUserDoc1.contact_id;
     expect(updatedUserDoc1).to.deep.include(expectedUserDoc1);
     expect(updatedUserDoc1.contact_id).to.be.undefined;
+    // The _users doc facility_id will not be updated
+    expect(updatedUserDoc1.facility_id).to.equal('different-facility');
   });
 });
