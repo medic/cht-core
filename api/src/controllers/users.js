@@ -112,10 +112,10 @@ const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
 const getUserList = async (req) => {
   await auth.check(req, 'can_view_users');
-  const filters = _.chain(req.query)
-    .pick(['facility_id', 'contact_id']) // keep only supported filtering properties
-    .mapKeys((value, key) => _.camelCase(key)) // rename them to keep consistent variable names
-    .value();
+const filters = {
+  facilityId: req.query.facility_id,
+  contactId: req.query.contact_id,
+};
   return await users.getList(filters);
 };
 
