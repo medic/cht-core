@@ -125,10 +125,10 @@ const getAllUsers = async () => db.users
 
 const getUsers = async ({ facilityId, contactId }) => {
   if (!contactId) {
-    return queryDocs(db.users, 'users/users_by_facility_id', facilityId);
+    return queryDocs(db.users, 'users/users_by_field', ['facility_id', facilityId]);
   }
 
-  const usersForContactId = await queryDocs(db.users, 'users/users_by_contact_id', contactId);
+  const usersForContactId = await queryDocs(db.users, 'users/users_by_field', ['contact_id', contactId]);
   if (!facilityId) {
     return usersForContactId;
   }

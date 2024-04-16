@@ -216,9 +216,9 @@ describe('Users service', () => {
             }
           }],
         };
-        db.users.query.withArgs('users/users_by_facility_id', {
+        db.users.query.withArgs('users/users_by_field', {
           include_docs: true,
-          key: filters.facilityId,
+          key: ['facility_id', filters.facilityId],
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
@@ -260,9 +260,9 @@ describe('Users service', () => {
             }
           }],
         };
-        db.users.query.withArgs('users/users_by_contact_id', {
+        db.users.query.withArgs('users/users_by_field', {
           include_docs: true,
-          key: filters.contactId,
+          key: ['contact_id', filters.contactId],
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
@@ -318,9 +318,9 @@ describe('Users service', () => {
             }
           ],
         };
-        db.users.query.withArgs('users/users_by_contact_id', {
+        db.users.query.withArgs('users/users_by_field', {
           include_docs: true,
-          key: filters.contactId,
+          key: ['contact_id', filters.contactId],
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
