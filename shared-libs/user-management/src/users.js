@@ -146,39 +146,6 @@ const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
   return [users, settings];
 };
 
-const getUserFromDb = async id => db.users
-  .get(id)
-  .catch(err => {
-    if (err.status === 404) {
-      err.message = 'Failed to find user.';
-    }
-    return Promise.reject(err);
-  });
-
-const getUserSettingsFromDb = async id => db.medic
-  .get(id)
-  .catch(err => {
-    if (err.status === 404) {
-      err.message = 'Failed to find user settings.';
-    }
-    return Promise.reject(err);
-  });
-
-const getUser = async (username) => {
-  if (!username) {
-    throw new Error('Username is required.');
-  }
-
-  const id = createID(username);
-  const [user, userSettings] = await Promise.all([
-    getUserFromDb(id),
-    getUserSettingsFromDb(id),
-  ]);
-
-  const facilities = await facility.list([user]);
-  return mapUser(user, userSettings, facilities);
-};
-
 const validateContact = (id, placeID) => {
   return db.medic.get(id)
     .then(doc => {
@@ -526,23 +493,24 @@ const missingFields = data => {
   return missing;
 };
 
-const getUpdatedUserDoc = (username, data) => {
-  const userID = createID(username);
-  return getUserFromDb(userID).then(doc => {
-    const user = Object.assign(doc, getUserUpdates(username, data));
-    user._id = userID;
-    return user;
+const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
+  .then(doc => {
+    return {
+      ...doc,
+      ...getUserUpdates(username, data),
+      _id: createID(username)
+    };
   });
-};
 
-const getUpdatedSettingsDoc = (username, data) => {
-  const userID = createID(username);
-  return getUserSettingsFromDb(userID).then(doc => {
-    const settings = Object.assign(doc, getSettingsUpdates(username, data));
-    settings._id = userID;
-    return settings;
+
+const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
+  .then(doc => {
+    return {
+      ...doc,
+      ...getSettingsUpdates(username, data),
+      _id: createID(username)
+    };
   });
-};
 
 const isDbAdmin = user => {
   return couchSettings
@@ -783,28 +751,16 @@ const hydrateUserSettings = (userSettings) => {
     });
 };
 
-const getUserDoc = (username, dbName) => {
-  return db[dbName]
-    .get(`org.couchdb.user:${username}`)
-    .catch(err => {
-      err.db = dbName;
-      throw err;
-    });
-};
+const getUserDoc = (username, dbName) => (db[dbName]
+  .get(createID(username))
+  .catch(err => {
+    if (err.status === 404) {
+      err.message = `Failed to find user with name [${username}] in the [${dbName}] database.`;
+    }
+    return Promise.reject(err);
+  }));
 
-const getUserDocsByName = (name) => {
-  return Promise
-    .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
-    .catch(error => {
-      if (error.status !== 404) {
-        return Promise.reject(error);
-      }
-      return Promise.reject({
-        status: 404,
-        message: `Failed to find user with name [${name}] in the [${error.db}] database.`
-      });
-    });
-};
+const getUserDocsByName = (name) => Promise.all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)));
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
@@ -823,7 +779,15 @@ module.exports = {
     const facilities = await facility.list(users);
     return mapUsers(users, settings, facilities);
   },
-  getUser,
+  getUser: async username => {
+    if (!username) {
+      throw new Error('Username is required.');
+    }
+
+    const [user, userSettings] = await getUserDocsByName(username);
+    const facilities = await facility.list([user]);
+    return mapUser(user, userSettings, facilities);
+  },
   getUserSettings,
   /* eslint-disable max-len */
   /**
@@ -959,7 +923,7 @@ module.exports = {
   * if they do not already exist.
   */
   createAdmin: userCtx => {
-    return getUserFromDb(createID(userCtx.name))
+    return getUserDoc(userCtx.name, 'users')
       .catch(err => {
         if (err && err.status === 404) {
           const data = { username: userCtx.name, roles: ['admin'] };
