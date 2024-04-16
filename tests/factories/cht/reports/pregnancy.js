@@ -42,7 +42,7 @@ const defaultFields = {
   'patient_short_name': 'the woman',
   'patient_short_name_start': 'The woman',
   'lmp_date_8601': lmp,
-  'edd_8601': lmp,
+  'edd_8601': '',
   'days_since_lmp': '77',
   'weeks_since_lmp': '34',
   'weeks_since_lmp_rounded': '34',
@@ -70,7 +70,7 @@ const defaultFields = {
     },
     'g_lmp_date_8601': '',
     'g_lmp_date': lmp,
-    'g_edd_8601': lmp,
+    'g_edd_8601': '',
     'g_edd': ''
   },
   'anc_visits_hf': {
@@ -183,7 +183,7 @@ const defaultFields = {
     '__lmp_date': lmp,
     '__lmp_approx_weeks': '34',
     '__lmp_approx_months': '',
-    '__edd': lmp,
+    '__edd': '',
     '__num_previous_anc_hf_visits': '1',
     '__previous_anc_hf_visit_dates': '',
     '__next_anc_hf_visit_date_known': 'no',

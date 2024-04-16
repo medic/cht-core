@@ -92,7 +92,7 @@ describe('Contact details page', () => {
 
     it(
       'should show contact summary that has the full context for reports > 50' +
-      'validate that the pregnancy card is always displayed', async () => {
+      ' validate that the pregnancy card is always displayed', async () => {
 
         expect(await contactPage.pregnancyCard().isDisplayed()).to.be.true;
         const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
