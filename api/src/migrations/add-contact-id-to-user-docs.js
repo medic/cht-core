@@ -27,6 +27,9 @@ const updateUsersDatabase = async (userSettingsDocs) => db.users.allDocs({
     .map(({ doc }) => doc)
     .map(getUpdatedUserDoc(userSettingsDocs))
     .filter(Boolean);
+  if (!updatedUsersDocs.length) {
+    return;
+  }
   return db.users.bulkDocs(updatedUsersDocs);
 });
 
