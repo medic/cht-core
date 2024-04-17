@@ -234,7 +234,7 @@ describe('infodocs', () => {
         'transitions.generate_shortcode_on_contacts.last_rev': rev,
         'transitions.generate_shortcode_on_contacts.ok': true,
       });
-      const transitionTs = moment(infoDoc.transitions.generate_shortcode_on_contacts.timestamp);
+      const transitionTs = moment(infoDoc.transitions.generate_shortcode_on_contacts.run_date);
       assert.equal(transitionTs.diff(sentinelDate, 'minute'), 0);
     });
   });

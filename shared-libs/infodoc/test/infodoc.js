@@ -426,7 +426,7 @@ describe('infodoc', () => {
               ok: true,
               seq: 12,
               last_rev: 2,
-              timestamp: then.toISOString(),
+              run_date: then.toISOString(),
             }
           }
         }
@@ -441,13 +441,13 @@ describe('infodoc', () => {
               ok: true,
               seq: 12,
               last_rev: 2,
-              timestamp: then.toISOString(),
+              run_date: then.toISOString(),
             },
             accept_patient_reports: {
               ok: false,
               seq: 12,
               last_rev: 2,
-              timestamp: now.toISOString(),
+              run_date: now.toISOString(),
             }
           }
         }

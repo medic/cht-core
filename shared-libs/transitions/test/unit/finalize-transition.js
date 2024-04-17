@@ -89,7 +89,7 @@ describe('finalize transition', () => {
         assert(info.transitions.x.ok);
         assert(info.transitions.x.last_rev);
         assert(info.transitions.x.seq);
-        assert(info.transitions.x.timestamp);
+        assert(info.transitions.x.run_date);
         assert.equal(doc.errors, undefined);
         assert.equal(doc.foo, 'bar');
         done();
