@@ -116,14 +116,14 @@ describe('Users Controller', () => {
 
       it('rejects if not permitted', async () => {
         sinon.stub(auth, 'check').rejects(new Error('nope'));
-        await controller.getList(req, res);
+        await controller.list(req, res);
         chai.expect(serverUtils.error.callCount).to.equal(1);
       });
 
       it('gets the list of users', async () => {
         sinon.stub(auth, 'check').resolves();
 
-        await controller.getList(req, res);
+        await controller.list(req, res);
         const result = res.json.args[0][0];
         chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
         chai.expect(result[0].type).to.equal('_admin');
@@ -141,14 +141,14 @@ describe('Users Controller', () => {
     describe('v2', () => {
       it('rejects if not permitted', async () => {
         sinon.stub(auth, 'check').rejects(new Error('nope'));
-        await controller.v2.getList(req, res);
+        await controller.v2.list(req, res);
         chai.expect(serverUtils.error.callCount).to.equal(1);
       });
 
       it('gets the list of users without filters', async () => {
         sinon.stub(auth, 'check').resolves();
 
-        await controller.v2.getList(req, res);
+        await controller.v2.list(req, res);
         const result = res.json.args[0][0];
         chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
         chai.expect(result[0].type).to.be.undefined;
@@ -171,7 +171,7 @@ describe('Users Controller', () => {
           this_wont_work: 123,
         };
 
-        await controller.v2.getList(req, res);
+        await controller.v2.list(req, res);
         chai.expect(users.getList.firstCall.args[0])
           .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined });
         const result = res.json.args[0][0];
@@ -188,7 +188,7 @@ describe('Users Controller', () => {
         users.getList.resolves([userList[1]]);
         req.query = { facility_id: 'chw-facility', contact_id: 'chw-contact' };
 
-        await controller.v2.getList(req, res);
+        await controller.v2.list(req, res);
         chai.expect(users.getList.firstCall.args[0]).to.deep.equal({
           contactId: 'chw-contact',
           facilityId: 'chw-facility',
@@ -206,7 +206,7 @@ describe('Users Controller', () => {
         sinon.stub(auth, 'check').resolves();
         req.query = { roles: ['chw'], name: 'admin' };
 
-        await controller.v2.getList(req, res);
+        await controller.v2.list(req, res);
         chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(3);

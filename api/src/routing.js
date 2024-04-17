@@ -414,9 +414,9 @@ app.get('/api/v1/forms', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
-app.get('/api/v1/users', users.getList);
+app.get('/api/v1/users', users.list);
 app.get('/api/v2/users/:username', users.v2.get);
-app.get('/api/v2/users', users.v2.getList);
+app.get('/api/v2/users', users.v2.list);
 app.postJson('/api/v1/users', users.create);
 app.postJsonOrCsv('/api/v2/users', users.v2.create);
 app.postJson('/api/v1/users/:username', users.update);

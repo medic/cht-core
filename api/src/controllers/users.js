@@ -135,7 +135,7 @@ const convertUserListToV1 = (users=[]) => {
 };
 
 module.exports = {
-  getList: (req, res) => {
+  list: (req, res) => {
     return getUserList(req)
       .then(list => convertUserListToV1(list))
       .then(body => res.json(body))
@@ -239,7 +239,7 @@ module.exports = {
       .then(() => users.getUser(req.params.username))
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res)),
-    getList: async (req, res) => {
+    list: async (req, res) => {
       try {
         const body = await getUserList(req);
         res.json(body);
