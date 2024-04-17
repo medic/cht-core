@@ -227,7 +227,7 @@ app.use(compression({
   }
 }));
 
-app.get('/.well-known/assetlinks.json', async (req, res, next) => {
+app.get('/.well-known/assetlinks.json', async (req, res) => {
   const settings = await settingsService.get();
   const key = 'TODO';
   if (Object.hasOwn(settings, key)) {
