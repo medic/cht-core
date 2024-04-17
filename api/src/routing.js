@@ -48,6 +48,7 @@ const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
+const settingsService = require('./services/settings');
 const startupLog = require('./services/setup/startup-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
@@ -225,6 +226,17 @@ app.use(compression({
     return compression.filter(req, res);
   }
 }));
+
+app.get('/.well-known/assetlinks.json', async (req, res, next) => {
+  const settings = await settingsService.get();
+  const key = 'TODO';
+  if (Object.hasOwn(settings, key)) {
+    return res.json(settings[key]);
+  }
+
+  res.status(404);
+  res.json({ error: 'not_found', reason: 'No assetlinks.json configured' });
+});
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
