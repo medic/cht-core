@@ -47,7 +47,7 @@ describe('DatabaseConnectionMonitorService', () => {
     expect(callback.callCount).to.equal(0);
   });
 
-  it.skip('should resolve from DOMException', (done) => {
+  it('should resolve from DOMException', (done) => {
     const callback = sinon.stub().callsFake(() => {
       expect(callback.callCount).to.equal(1);
       done();
