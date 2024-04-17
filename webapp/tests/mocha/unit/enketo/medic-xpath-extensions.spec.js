@@ -93,7 +93,7 @@ describe('medic-xpath-extensions', function () {
       ['2015-10-01T11:11:11.111', '2014-10-01T11:11:11.111', -12,],
       ['2014-10-01T00:00:00.000', '2015-10-01T00:00:00.000', 12,],
       ['August 19, 1975 00:00:00 GMT', 'August 18, 1976 23:15:30 GMT+07:00', 11],
-      ['Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 21:59:59 GMT+2300', 0],
+      ['Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2300', 0],
       ['Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2200', 1]
     ].forEach(function (example) {
       const d1 = { t: 'str', v: example[0] };
@@ -175,7 +175,7 @@ describe('medic-xpath-extensions', function () {
     const diffInDays = func['cht:difference-in-days'];
 
     it('should handle cases where end date is before start date and return negative number', function () {
-      const result = diffInDays(wrapDate('2023-08-01 UTC'), wrapDate('2023-01-01 UTC'));
+      const result = diffInDays(wrapDate('2023-08-01'), wrapDate('2023-01-01'));
       assert.equal(result.v, -212);
     });
 
@@ -185,7 +185,7 @@ describe('medic-xpath-extensions', function () {
     });
 
     it('should return the difference when valid inputs are provided', function () {
-      const result = diffInDays(wrapDate('2023-01-01 UTC'), wrapDate('2023-08-01 UTC'));
+      const result = diffInDays(wrapDate('2023-01-01'), wrapDate('2023-08-01'));
       assert.deepStrictEqual(result.v, 212);
     });
 
