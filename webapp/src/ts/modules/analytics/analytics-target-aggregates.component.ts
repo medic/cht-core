@@ -5,6 +5,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { Selectors } from '@mm-selectors/index';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   selector: 'analytics-target-aggregates',
@@ -12,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   private targetAggregatesActions: TargetAggregatesActions;
+  private trackPerformance;
   subscriptions: Subscription = new Subscription();
   loading = true;
   enabled = false;
@@ -21,12 +23,14 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store,
-    private targetAggregatesService: TargetAggregatesService
+    private targetAggregatesService: TargetAggregatesService,
+    private performanceService: PerformanceService,
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
   }
 
   ngOnInit(): void {
+    this.trackPerformance = this.performanceService.track();
     this.subscribeToStore();
     this.getTargetAggregates();
   }
@@ -57,7 +61,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   }
 
   private getTargetAggregates() {
-    this.targetAggregatesService
+    return this.targetAggregatesService
       .isEnabled()
       .then(enabled => {
         this.enabled = enabled;
@@ -76,6 +80,12 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
         console.error('Error getting aggregate targets', err);
         this.targetAggregatesActions.setTargetAggregatesError(err);
       })
-      .then(() => this.loading = false);
+      .finally(() => {
+        this.loading = false;
+        this.trackPerformance?.stop({
+          name: [ 'analytics', 'target_aggregates', 'load' ].join(':'),
+          recordApdex: true,
+        });
+      });
   }
 }

@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { FormService } from '@mm-services/form.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { DbService } from '@mm-services/db.service';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
@@ -32,12 +32,16 @@ describe('TasksContentComponent', () => {
   let formService;
   let router;
   let tasksForContactService;
+  let stopPerformanceTrackStub;
+  let performanceService;
 
   let compileComponent;
   let component: TasksContentComponent;
   let fixture: ComponentFixture<TasksContentComponent>;
 
   beforeEach(() => {
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     render = sinon.stub().resolves();
     xmlFormsService = { get: sinon.stub().resolves() };
     get = sinon.stub().resolves({ _id: 'contact' });
@@ -67,7 +71,7 @@ describe('TasksContentComponent', () => {
         { provide: FormService, useValue: formService },
         { provide: DbService, useValue: { get: () => ({ get })}},
         { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: TelemetryService, useValue: { record: sinon.stub() }},
+        { provide: PerformanceService, useValue: performanceService},
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
         { provide: TasksForContactService, useValue: tasksForContactService },
@@ -541,6 +545,12 @@ describe('TasksContentComponent', () => {
       resetFormError();
 
       expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(1);
+      expect(performanceService.track.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'enketo:tasks:myform:add:render',
+        recordApdex: true,
+      });
     });
 
     it('should catch contact preloading errors', async () => {
@@ -688,6 +698,15 @@ describe('TasksContentComponent', () => {
       expect(unsetSelected.callCount).to.equal(1);
       expect(setLastSubmittedTask.callCount).to.equal(1);
       expect(setLastSubmittedTask.args[0]).to.deep.equal([component.selectedTask]);
+      expect(performanceService.track.calledOnce).to.be.true;
+      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'enketo:tasks:the form id:add:user_edit_time',
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'enketo:tasks:the form id:add:save',
+        recordApdex: true,
+      });
     });
   });
 

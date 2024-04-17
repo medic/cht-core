@@ -5,15 +5,16 @@ import { expect } from 'chai';
 
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
 import { SessionService } from '@mm-services/session.service';
 import { provideMockStore } from '@ngrx/store/testing';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('AnalyticsTargetsComponent', () => {
   let component: AnalyticsTargetsComponent;
   let fixture: ComponentFixture<AnalyticsTargetsComponent>;
   let rulesEngineService;
-  let telemetryService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let sessionService;
 
   beforeEach(waitForAsync(() => {
@@ -21,7 +22,8 @@ describe('AnalyticsTargetsComponent', () => {
       isEnabled: sinon.stub().resolves(true),
       fetchTargets: sinon.stub().resolves([]),
     };
-    telemetryService = { record: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 
     sessionService = {
       isOnlineOnly: sinon.stub().returns(false),
@@ -37,7 +39,7 @@ describe('AnalyticsTargetsComponent', () => {
         providers: [
           provideMockStore(),
           { provide: RulesEngineService, useValue: rulesEngineService },
-          { provide: TelemetryService, useValue: telemetryService },
+          { provide: PerformanceService, useValue: performanceService },
           { provide: SessionService, useValue: sessionService },
 
         ]
@@ -56,6 +58,7 @@ describe('AnalyticsTargetsComponent', () => {
 
   it('should create', () => {
     expect(component).to.exist;
+    expect(performanceService.track.calledOnce).to.be.true;
   });
 
   it('should set up component when rules engine is not enabled', fakeAsync(() => {
@@ -69,8 +72,8 @@ describe('AnalyticsTargetsComponent', () => {
     expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
     expect(component.targetsDisabled).to.equal(true);
     expect(!!component.errorStack).to.be.false;
-    expect(telemetryService.record.callCount).to.equal(1);
-    expect(telemetryService.record.args[0][0]).to.equal('analytics:targets:load');
+    expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'analytics:targets:load', recordApdex: true });
     expect(component.targets).to.deep.equal([]);
     expect(component.loading).to.equal(false);
   }));
@@ -87,8 +90,8 @@ describe('AnalyticsTargetsComponent', () => {
     expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
     expect(component.targetsDisabled).to.equal(false);
     expect(!!component.errorStack).to.be.false;
-    expect(telemetryService.record.callCount).to.equal(1);
-    expect(telemetryService.record.args[0][0]).to.equal('analytics:targets:load');
+    expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'analytics:targets:load', recordApdex: true });
     expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
     expect(component.loading).to.equal(false);
   }));
