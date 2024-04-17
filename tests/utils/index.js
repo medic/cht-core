@@ -1139,7 +1139,8 @@ const prepK3DServices = async (defaultSettings) => {
   const helmChartPath = path.join(__dirname, '..', 'helm');
   const valesPath = path.join(helmChartPath, 'values.yaml');
   await runCommand(
-    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} --kube-context k3d-${PROJECT_NAME} --values ${valesPath} --create-namespace`
+    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} `+
+    `--kube-context k3d-${PROJECT_NAME} --values ${valesPath} --create-namespace`
   );
   await listenForApi();
 
