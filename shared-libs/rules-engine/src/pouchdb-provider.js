@@ -122,25 +122,31 @@ const medicPouchProvider = db => {
       return rowsOf(dbQuery( 'medic-client/tasks_by_contact', options));
     },
 
-    taskDataFor: (contactIds, userSettingsDoc) => {
+    taskDataFor: (contactIds, contactDocs, userSettingsDoc) => {
       if (!contactIds || contactIds.length === 0) {
         return Promise.resolve({});
       }
 
-      return docsOf(db.allDocs({ keys: contactIds, include_docs: true }))
+      const contactsPromise = contactDocs?.length ?
+        Promise.resolve(contactDocs) : docsOf(db.allDocs({ keys: contactIds, include_docs: true }));
+
+      return contactsPromise
         .then(contactDocs => {
+          console.warn('pouchProvider ==> taskDataFor ==> contactDocs:', contactDocs);
           const subjectIds = contactDocs.reduce((agg, contactDoc) => {
             registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
             return agg;
           }, new Set(contactIds));
 
           const keys = Array.from(subjectIds);
+          console.warn('pouchProvider ==> taskDataFor ==> subjectIds:', keys);
           return Promise
             .all([
               docsOf(dbQuery('medic-client/reports_by_subject', { keys, include_docs: true })),
               self.tasksByRelation(contactIds, 'requester'),
             ])
             .then(([reportDocs, taskDocs]) => {
+              console.warn('pouchProvider ==> taskDataFor ==> reportDocs:', reportDocs);
               // tighten the connection between reports and contacts
               // a report will only be allowed to generate tasks for a single contact!
               reportDocs = reportDocs.filter(report => {

@@ -72,15 +72,20 @@ module.exports = {
    * @param {string[]} contactIds An array of contact ids. If undefined, returns tasks for all contacts
    * @returns {Promise<Object[]>} All the fresh task docs owned by contacts
    */
-  fetchTasksFor: (provider, contactIds) => {
+  fetchTasksFor: (provider, contactIds, docs) => {
     if (!rulesEmitter.isEnabled() || !wireupOptions.enableTasks) {
       return disabledResponse();
     }
 
     return enqueue(() => {
       const calculationTimestamp = Date.now();
-      return refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds)
-        .then(() => contactIds ? provider.tasksByRelation(contactIds, 'owner') : provider.allTasks('owner'))
+      return refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds, docs)
+        .then(() => {
+          if (contactIds) {
+            return provider.tasksByRelation(contactIds, 'owner');
+          }
+          return provider.allTasks('owner');
+        })
         .then(tasksToDisplay => {
           const docsToCommit = updateTemporalStates(tasksToDisplay, calculationTimestamp);
           provider.commitTaskDocs(docsToCommit);
@@ -217,7 +222,7 @@ const disabledResponse = () => {
   return p;
 };
 
-const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
+const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds, docs) => {
   const refreshAndSave = (freshData, updatedContactIds) => (
     refreshRulesEmissions(freshData, calculationTimestamp, wireupOptions)
       .then(refreshed => Promise.all([
@@ -247,9 +252,14 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
       ))
   );
 
-  const refreshForKnownContacts = (calculationTimestamp, contactIds) => {
+  const refreshForKnownContacts = (calculationTimestamp, contactIds, docs) => {
+    // eslint-disable-next-line no-console
+    console.warn('rules engine - refreshForKnownContacts - ids', contactIds);
+    // eslint-disable-next-line no-console
+    console.warn('rules engine - refreshForKnownContacts - docs', docs);
     const dirtyContactIds = contactIds.filter(contactId => rulesStateStore.isDirty(contactId));
-    return provider.taskDataFor(dirtyContactIds, rulesStateStore.currentUserSettings())
+    const dirtyContactDocs = docs.filter(doc => rulesStateStore.isDirty(doc._id));
+    return provider.taskDataFor(dirtyContactIds, dirtyContactDocs, rulesStateStore.currentUserSettings())
       .then(freshData => refreshAndSave(freshData, dirtyContactIds))
       .then(() => {
         rulesStateStore.markFresh(calculationTimestamp, dirtyContactIds);
@@ -257,8 +267,8 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   };
 
   return handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }).then(() => {
-    if (contactIds) {
-      return refreshForKnownContacts(calculationTimestamp, contactIds);
+    if (contactIds || docs?.length) {
+      return refreshForKnownContacts(calculationTimestamp, contactIds, docs);
     }
 
     // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in

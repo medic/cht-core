@@ -41,7 +41,7 @@ module.exports = db => {
      * @param {string[]} contactIds An array of contact ids. If undefined, returns tasks for all contacts
      * @returns {Promise<Object[]>} All the fresh task docs owned by contactIds
      */
-    fetchTasksFor: contactIds => wireupToProvider.fetchTasksFor(provider, contactIds),
+    fetchTasksFor: (contactIds, docs) => wireupToProvider.fetchTasksFor(provider, contactIds, docs),
 
     /**
      * Returns a breakdown of tasks by state and title for the provided list of contacts

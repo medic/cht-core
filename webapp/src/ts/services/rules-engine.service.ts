@@ -341,11 +341,11 @@ export class RulesEngineService implements OnDestroy {
       .then(taskDocs => this.translateTaskDocs(taskDocs));
   }
 
-  fetchTaskDocsFor(contactIds) {
-    return this.ngZone.runOutsideAngular(() => this._fetchTaskDocsFor(contactIds));
+  fetchTaskDocsFor(contactIds, docs?) {
+    return this.ngZone.runOutsideAngular(() => this._fetchTaskDocsFor(contactIds, docs));
   }
 
-  private _fetchTaskDocsFor(contactIds) {
+  private _fetchTaskDocsFor(contactIds, docs?) {
     const trackName = [ 'rules-engine', 'tasks', 'some-contacts' ];
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
@@ -358,7 +358,7 @@ export class RulesEngineService implements OnDestroy {
         );
 
         return this.rulesEngineCore
-          .fetchTasksFor(contactIds)
+          .fetchTasksFor(contactIds, docs)
           .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
           .on('running', () => {
             trackPerformanceRunning = this.performanceService.track();

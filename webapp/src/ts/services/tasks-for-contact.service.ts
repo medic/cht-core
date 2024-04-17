@@ -32,6 +32,19 @@ export class TasksForContactService {
     return contactIds;
   }
 
+  getDocsForTasks(model) {
+    const contactDocs: any[] = [];
+    if (!model?.type?.person && model?.children) {
+      model.children.forEach(child => {
+        if (child?.type?.person && child?.contacts?.length) {
+          contactDocs.push(...child.contacts.map(contact => contact.doc));
+        }
+      });
+    }
+    contactDocs.push(model.doc);
+    return contactDocs;
+  }
+
   private areTasksEnabled(type) {
     if (!type) {
       return Promise.resolve(false);
@@ -82,8 +95,11 @@ export class TasksForContactService {
         }
 
         const contactIds = this.getIdsForTasks(model);
+        const docs = this.getDocsForTasks(model);
+        console.warn('TasksForContactService.get - model', model);
+        console.warn('TasksForContactService.get - contact docs', docs);
         return this.rulesEngineService
-          .fetchTaskDocsFor(contactIds)
+          .fetchTaskDocsFor(contactIds, docs)
           .then(tasks => this.decorateAndSortTasks(tasks));
       });
   }
