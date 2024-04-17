@@ -9,7 +9,6 @@ spec:
   selector:
     matchLabels:
       cht.service: sentinel
-  strategy: {}
   template:
     metadata:
       labels:
@@ -29,6 +28,4 @@ spec:
               value: '5988'
           image: {{ .Values.upstream_servers.docker_registry }}/cht-sentinel:{{ .Values.cht_image_tag }}
           name: cht-sentinel
-          resources: {}
       restartPolicy: Always
-status: {}

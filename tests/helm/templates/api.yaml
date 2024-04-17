@@ -9,11 +9,6 @@ spec:
   selector:
     matchLabels:
       cht.service: api
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 0
-      maxUnavailable: 1
   template:
     metadata:
       labels:
@@ -35,8 +30,34 @@ spec:
           name: cht-api
           ports:
             - containerPort: 5988
-              port: 5988
-              targetPort: 5988
-          resources: {}
       restartPolicy: Always
-status: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: api
+                port:
+                  number: 5988
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cht.service: api
+  name: api
+spec:
+  ports:
+    - port: 5988
+      targetPort: 5988
+  selector:
+    cht.service: api
+

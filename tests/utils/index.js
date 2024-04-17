@@ -59,6 +59,7 @@ const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
+const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -803,7 +804,7 @@ const stopService = async (service) => {
   if (isDocker()) {
     return await dockerComposeCmd('stop', '-t', '0', service);
   }
-  await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=0`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
   let tries = 100;
   do {
     try {
@@ -822,7 +823,7 @@ const startService = async (service) => {
   if (isDocker()) {
     return await dockerComposeCmd('start', service);
   }
-  await runCommand(`kubectl -n ${PROJECT_NAME} scale deployment cht-${service} --replicas=1`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
   let tries = 100;
   do {
     try {
@@ -1138,7 +1139,7 @@ const prepK3DServices = async (defaultSettings) => {
   const helmChartPath = path.join(__dirname, '..', 'helm');
   const valesPath = path.join(helmChartPath, 'values.yaml');
   await runCommand(
-    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} --values ${valesPath} --create-namespace`
+    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} --kube-context k3d-${PROJECT_NAME} --values ${valesPath} --create-namespace`
   );
   await listenForApi();
 
@@ -1168,7 +1169,7 @@ const getLogs = (container) => {
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
   const command = isDocker() ? 'docker' : 'kubectl';
 
-  const params = `logs ${container}${isK3D() ? ` -n ${PROJECT_NAME}` : ''}`;
+  const params = `logs ${container}${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
 
   return new Promise((resolve, reject) => {
     const cmd = spawn(command, params.split(' '));
@@ -1188,7 +1189,7 @@ const getLogs = (container) => {
 
 const saveLogs = async () => {
   if (isK3D()) {
-    const podsList = await runCommand(`kubectl -n ${PROJECT_NAME} get pods --no-headers -o name`);
+    const podsList = await runCommand(`kubectl ${KUBECTL_CONTEXT} get pods --no-headers -o name`);
     const pods = podsList.split('\n').filter(name => name);
     for (const podName of pods) {
       await getLogs(podName);
@@ -1236,7 +1237,7 @@ const waitForLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}` : ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1309,7 +1310,7 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` -n ${PROJECT_NAME}` : ''}`;
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1408,7 +1409,7 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 const getSentinelDate = () => getContainerDate('sentinel');
 const getPodName = async (service, silent) => {
   const cmd = await runCommand(
-    `kubectl get pods -n ${PROJECT_NAME} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
+    `kubectl get pods ${KUBECTL_CONTEXT} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
     silent
   );
   return cmd.replace(/[^A-Za-z0-9-/]/g, '');
@@ -1421,7 +1422,7 @@ const getContainerDate = async (container) => {
     date = await runCommand(`docker exec ${container} date -R`);
   } else {
     const podName = await getPodName(container);
-    date = await runCommand(`kubectl exec -n ${PROJECT_NAME} ${podName} -- date -R`);
+    date = await runCommand(`kubectl exec ${KUBECTL_CONTEXT} ${podName} -- date -R`);
   }
   return moment.utc(date);
 };

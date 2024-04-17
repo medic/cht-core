@@ -9,7 +9,6 @@ spec:
   selector:
     matchLabels:
       cht.service: healthcheck
-  strategy: {}
   template:
     metadata:
       labels:
@@ -39,3 +38,15 @@ spec:
           ports:
             - containerPort: 5555
       restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: healthcheck
+spec:
+  selector:
+    cht.service: healthcheck
+  ports:
+    - protocol: TCP
+      port: 5555
+      targetPort: 5555

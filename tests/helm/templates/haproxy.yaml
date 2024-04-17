@@ -9,7 +9,6 @@ spec:
   selector:
     matchLabels:
       cht.service: haproxy
-  strategy: {}
   template:
     metadata:
       labels:
@@ -43,7 +42,20 @@ spec:
           name: cht-haproxy
           ports:
             - containerPort: 5984
-          resources: {}
       hostname: haproxy
       restartPolicy: Always
-status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cht.service: haproxy
+  name: haproxy
+spec:
+  ports:
+    - name: "5984"
+      port: 5984
+      targetPort: 5984
+  selector:
+    cht.service: haproxy
+
