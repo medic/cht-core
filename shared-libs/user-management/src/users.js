@@ -751,14 +751,14 @@ const hydrateUserSettings = (userSettings) => {
     });
 };
 
-const getUserDoc = (username, dbName) => (db[dbName]
+const getUserDoc = (username, dbName) => db[dbName]
   .get(createID(username))
   .catch(err => {
     if (err.status === 404) {
       err.message = `Failed to find user with name [${username}] in the [${dbName}] database.`;
     }
     return Promise.reject(err);
-  }));
+  });
 
 const getUserDocsByName = (name) => Promise.all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)));
 

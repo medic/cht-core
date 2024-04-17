@@ -1,5 +1,4 @@
 const chai = require('chai');
-const { expect } = chai;
 const sinon = require('sinon');
 const rewire = require('rewire');
 
@@ -536,7 +535,7 @@ describe('Users service', () => {
 
       const user = await service.getUser('steve');
 
-      expect(user).to.deep.equal({
+      chai.expect(user).to.deep.equal({
         id: userId,
         rev: 'steve-user-rev',
         username: 'steve',
@@ -549,12 +548,12 @@ describe('Users service', () => {
         external_id: 'CHP020',
         known: 'true'
       });
-      expect(db.users.get.calledOnce).to.be.true;
-      expect(db.users.get.args[0]).to.deep.equal([userId]);
-      expect(db.medic.get.calledOnce).to.be.true;
-      expect(db.medic.get.args[0]).to.deep.equal([userId]);
-      expect(facility.list.calledOnce).to.be.true;
-      expect(facility.list.args[0]).to.deep.equal([[userDoc]]);
+      chai.expect(db.users.get.calledOnce).to.be.true;
+      chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
+      chai.expect(db.medic.get.calledOnce).to.be.true;
+      chai.expect(db.medic.get.args[0]).to.deep.equal([userId]);
+      chai.expect(facility.list.calledOnce).to.be.true;
+      chai.expect(facility.list.args[0]).to.deep.equal([[userDoc]]);
     });
 
     it('returns a user with minimal data', async () => {
@@ -572,7 +571,7 @@ describe('Users service', () => {
 
       const user = await service.getUser('steve');
 
-      expect(user).to.deep.equal({
+      chai.expect(user).to.deep.equal({
         id: userId,
         rev: 'steve-user-rev',
         username: 'steve',
@@ -585,12 +584,12 @@ describe('Users service', () => {
         external_id: undefined,
         known: undefined
       });
-      expect(db.users.get.calledOnce).to.be.true;
-      expect(db.users.get.args[0]).to.deep.equal([userId]);
-      expect(db.medic.get.calledOnce).to.be.true;
-      expect(db.medic.get.args[0]).to.deep.equal([userId]);
-      expect(facility.list.calledOnce).to.be.true;
-      expect(facility.list.args[0]).to.deep.equal([[userDoc]]);
+      chai.expect(db.users.get.calledOnce).to.be.true;
+      chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
+      chai.expect(db.medic.get.calledOnce).to.be.true;
+      chai.expect(db.medic.get.args[0]).to.deep.equal([userId]);
+      chai.expect(facility.list.calledOnce).to.be.true;
+      chai.expect(facility.list.args[0]).to.deep.equal([[userDoc]]);
     });
 
     [undefined, null, ''].forEach(username => {
@@ -598,13 +597,13 @@ describe('Users service', () => {
         try {
           await service.getUser(username);
         } catch (e) {
-          expect(e.message).to.equal('Username is required.');
-          expect(db.users.get.notCalled).to.be.true;
-          expect(db.medic.get.notCalled).to.be.true;
-          expect(facility.list.notCalled).to.be.true;
+          chai.expect(e.message).to.equal('Username is required.');
+          chai.expect(db.users.get.notCalled).to.be.true;
+          chai.expect(db.medic.get.notCalled).to.be.true;
+          chai.expect(facility.list.notCalled).to.be.true;
           return;
         }
-        expect.fail('Expected an error');
+        chai.expect.fail('Expected an error');
       });
     });
 
@@ -619,15 +618,15 @@ describe('Users service', () => {
       try {
         await service.getUser('steve');
       } catch (e) {
-        expect(e.message).to.equal('Failed to find user with name [steve] in the [users] database.');
-        expect(db.users.get.calledOnce).to.be.true;
-        expect(db.users.get.args[0]).to.deep.equal([userId]);
-        expect(db.medic.get.calledOnce).to.be.true;
-        expect(db.medic.get.args[0]).to.deep.equal([userId]);
-        expect(facility.list.notCalled).to.be.true;
+        chai.expect(e.message).to.equal('Failed to find user with name [steve] in the [users] database.');
+        chai.expect(db.users.get.calledOnce).to.be.true;
+        chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
+        chai.expect(db.medic.get.calledOnce).to.be.true;
+        chai.expect(db.medic.get.args[0]).to.deep.equal([userId]);
+        chai.expect(facility.list.notCalled).to.be.true;
         return;
       }
-      expect.fail('Expected an error');
+      chai.expect.fail('Expected an error');
     });
 
     it('fails if no user-settings doc exists', async () => {
@@ -642,15 +641,15 @@ describe('Users service', () => {
       try {
         await service.getUser('steve');
       } catch (e) {
-        expect(e.message).to.equal('Failed to find user with name [steve] in the [medic] database.');
-        expect(db.users.get.calledOnce).to.be.true;
-        expect(db.users.get.args[0]).to.deep.equal([userId]);
-        expect(db.medic.get.calledOnce).to.be.true;
-        expect(db.medic.get.args[0]).to.deep.equal([userId]);
-        expect(facility.list.notCalled).to.be.true;
+        chai.expect(e.message).to.equal('Failed to find user with name [steve] in the [medic] database.');
+        chai.expect(db.users.get.calledOnce).to.be.true;
+        chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
+        chai.expect(db.medic.get.calledOnce).to.be.true;
+        chai.expect(db.medic.get.args[0]).to.deep.equal([userId]);
+        chai.expect(facility.list.notCalled).to.be.true;
         return;
       }
-      expect.fail('Expected an error');
+      chai.expect.fail('Expected an error');
     });
   });
 
