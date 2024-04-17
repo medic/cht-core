@@ -6,6 +6,9 @@ const querystring = require('querystring');
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('@utils/sentinel');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -1602,6 +1605,42 @@ describe('Users API', () => {
             },
           });
         });
+    });
+  });
+
+  describe('GET api/v2/users/{username}', () => {
+    it('retrieves a user by username', async () => {
+      const facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
+      const person = personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null });
+      facility.contact = person._id;
+      const user = userFactory.build({ place: facility._id, contact: person._id });
+      await utils.saveDocs([ facility, person ]);
+      await utils.createUsers([{ ...user, password: 'password1234!' }]);
+
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+      });
+
+      delete user.password;
+      expect(users).to.deep.include({
+        ...user,
+        place: { ...facility, _rev: users.place._rev },
+        contact: { ...person, _rev: users.contact._rev },
+      });
+    });
+
+    it('returns an error when no user is found for username', async () => {
+      try {
+        await utils.request({
+          path: `/api/v2/users/invalidUsername`,
+        });
+      } catch ({ error }) {
+        expect(error.code).to.equal(404);
+        expect(error.error).to.equal('Failed to find user with name [invalidUsername] in the [users] database.');
+        return;
+      }
+
+      expect.fail('Should have thrown an error');
     });
   });
 
