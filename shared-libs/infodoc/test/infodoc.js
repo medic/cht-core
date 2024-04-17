@@ -6,6 +6,7 @@ describe('infodoc', () => {
   const _ = () => {
     throw Error('unimplemented test stub');
   };
+  let clock;
 
   const db = {
     medic: {
@@ -23,7 +24,10 @@ describe('infodoc', () => {
 
   lib.initLib(db.medic, db.sentinel);
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clock?.restore();
+  });
 
   describe('retrieving infodocs', () => {
     it('provides a single doc get interface', () => {
@@ -409,23 +413,42 @@ describe('infodoc', () => {
 
   describe('updateTransition(s)', () => {
     it('updateTransition should set transition data', () => {
+      const now = new Date('2024-04-15');
+      const then = new Date('2024-04-12');
+      clock = sinon.useFakeTimers(then.valueOf());
       const change = { seq: 12, doc: { _rev: 2 }, info: {}};
       lib.updateTransition(change, 'update_clinics', true);
       assert.deepEqual(
         change.info,
         {
           transitions: {
-            update_clinics: { ok: true, seq: 12, last_rev: 2 }
+            update_clinics: {
+              ok: true,
+              seq: 12,
+              last_rev: 2,
+              timestamp: then.toISOString(),
+            }
           }
         }
       );
+      clock.setSystemTime(now.valueOf());
       lib.updateTransition(change, 'accept_patient_reports', false);
       assert.deepEqual(
         change.info,
         {
           transitions: {
-            update_clinics: { ok: true, seq: 12, last_rev: 2 },
-            accept_patient_reports: { ok: false, seq: 12, last_rev: 2 }
+            update_clinics: {
+              ok: true,
+              seq: 12,
+              last_rev: 2,
+              timestamp: then.toISOString(),
+            },
+            accept_patient_reports: {
+              ok: false,
+              seq: 12,
+              last_rev: 2,
+              timestamp: now.toISOString(),
+            }
           }
         }
       );
