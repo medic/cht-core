@@ -123,7 +123,7 @@ const getAllUsers = async () => db.users
   .allDocs({ include_docs: true, start_key: 'org.couchdb.user:', end_key: 'org.couchdb.user:\ufff0' })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
-const getUsers = async ({ facilityId, contactId }) => {
+const getUsers = async (facilityId, contactId) => {
   if (!contactId) {
     return queryDocs(db.users, 'users/users_by_field', ['facility_id', facilityId]);
   }
@@ -136,11 +136,11 @@ const getUsers = async ({ facilityId, contactId }) => {
   return usersForContactId.filter(user => user.facility_id === facilityId);
 };
 
-const getUsersAndSettings = async (filters) => {
-  if (_.isEmpty(filters)) {
+const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
+  if (!facilityId && !contactId) {
     return Promise.all([getAllUsers(), getAllUserSettings()]);
   }
-  const users = await getUsers(filters);
+  const users = await getUsers(facilityId, contactId);
   const ids = users.map(({ _id }) => _id);
   const settings = await getSettingsByIds(ids);
   return [users, settings];
