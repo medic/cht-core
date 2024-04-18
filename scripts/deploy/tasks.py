@@ -9,7 +9,7 @@ import json
 MEDIC_REPO_NAME = "medic"
 MEDIC_REPO_URL = "https://docs.communityhealthtoolkit.org/helm-charts"
 CHT_CHART_NAME = f"{MEDIC_REPO_NAME}/cht-chart-4x"
-DEFAULT_CHART_VERSION = "0.2.2"
+DEFAULT_CHART_VERSION = "0.2.3"
 
 class UserRuntimeError(RuntimeError):
     """
