@@ -19,7 +19,7 @@ export class TasksForContactService {
   }
 
   getIdsForTasks(model) {
-    const contactIds: any[] = [];
+    const contactIds: string[] = [];
     if (!model?.type?.person && model?.children) {
       model.children.forEach(child => {
         if (child?.type?.person && child?.contacts?.length) {
@@ -70,13 +70,11 @@ export class TasksForContactService {
     return tasks.sort((a, b) => a.emission.dueDate < b.emission.dueDate ? -1 : 1);
   }
 
-  async getTasksBreakdown(model) {
+  async getTasksBreakdown(model, contactIds) {
     const enabled = await this.areTasksEnabled(model.type);
     if (!enabled) {
       return;
     }
-
-    const contactIds = this.getIdsForTasks(model);
     return this.rulesEngineService.fetchTasksBreakdown(contactIds);
   }
 

@@ -111,18 +111,18 @@ describe('TasksForContact service', () => {
 
   describe('getTasksBreakdown', () => {
     it('should return undefined when no type', async () => {
-      expect(await service.getTasksBreakdown({ })).to.equal(undefined);
+      expect(await service.getTasksBreakdown({ }, [])).to.equal(undefined);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
 
     it('should return undefined when rules engine not enabled', async () => {
       rulesEngineIsEnabled.resolves(false);
-      expect(await service.getTasksBreakdown({ type: CLINIC_TYPE })).to.equal(undefined);
+      expect(await service.getTasksBreakdown({ type: CLINIC_TYPE }, [ 'contact-123' ])).to.equal(undefined);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
 
     it('should return undefined when type is not a leaf place type or person type', async () => {
-      expect(await service.getTasksBreakdown({ type: HEALTH_CENTER_TYPE })).to.equal(undefined);
+      expect(await service.getTasksBreakdown({ type: HEALTH_CENTER_TYPE }, [ 'contact-123' ])).to.equal(undefined);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
 
@@ -148,8 +148,9 @@ describe('TasksForContact service', () => {
 
       const tasksBreakdown = { Ready: 10, Cancelled: 12, Draft: 2, Failed: 5 };
       rulesEngineService.fetchTasksBreakdown.resolves({ ...tasksBreakdown });
+      const result = await service.getTasksBreakdown(model, [ 'person1', 'person2', 'person3', docId ]);
 
-      expect(await service.getTasksBreakdown(model)).to.deep.equal(tasksBreakdown);
+      expect(result).to.deep.equal(tasksBreakdown);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineService.fetchTasksBreakdown.args[0]).to.deep.equal([['person1', 'person2', 'person3', docId]]);
     });
