@@ -38,7 +38,12 @@ describe('databases', () => {
         name: 'thedb-users-meta',
         db: db.medicUsersMeta,
         jsonFileName: 'users-meta.json',
-      }
+      },
+      {
+        name: `thedb-users`,
+        db: db.users,
+        jsonFileName: 'users.json',
+      },
     ]);
   });
 });
