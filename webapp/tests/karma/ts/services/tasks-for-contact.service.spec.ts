@@ -100,14 +100,6 @@ describe('TasksForContact service', () => {
     });
   }
 
-  it('get flags task as late', async () => {
-    const task = emissionAsDoc({_id: 'a', dueDate: 0 });
-    fetchTaskDocsFor.resolves([task]);
-    const model = { type: PERSON_TYPE, doc: {} };
-    const tasks = await service.get(model);
-    expect(tasks[0].emission.overdue).to.eq(true);
-  });
-
   it('get sorts tasks by duedate', async () => {
     const first = emissionAsDoc({_id: 'a', dueDate: 0 });
     const second = emissionAsDoc({_id: 'b', dueDate: 1 });

@@ -65,11 +65,13 @@ describe('RulesEngineService', () => {
   const sampleTaskDoc = {
     _id: 'taskdoc',
     type: 'task',
+    owner: 'contact-1234',
     emission: {
       _id: 'emission_id',
       title: 'translate.this',
       priorityLabel: 'and.this',
       other: true,
+      dueDate: '2023-10-24',
     },
   };
   const userSettingsDoc = {
@@ -468,11 +470,17 @@ describe('RulesEngineService', () => {
     expect(rulesEngineCoreStubs.fetchTasksFor.calledOnce).to.be.true;
     expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.be.undefined;
     expect(actual.length).to.eq(1);
-    expect(actual[0]).to.nested.include({
-      _id: 'taskdoc',
-      'emission.title': 'translate.this',
-      'emission.priorityLabel': 'and.this',
-      'emission.other': true,
+    const actualTask = actual[0];
+    expect(actualTask._id).to.equal('taskdoc');
+    expect(actualTask.emission.date.toDateString()).to.equal('Tue Oct 24 2023');
+    expect(actualTask.emission).to.deep.include({
+      _id: 'emission_id',
+      title: 'translate.this',
+      priorityLabel: 'and.this',
+      other: true,
+      overdue: true,
+      owner: 'contact-1234',
+      dueDate: '2023-10-24'
     });
     expect(telemetryService.record.calledOnce).to.be.true;
     expect(telemetryService.record.args[0]).to.deep.equal([ 'rules-engine:tasks:dirty-contacts', 3 ]);
@@ -494,11 +502,17 @@ describe('RulesEngineService', () => {
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.eq(contactIds);
     expect(actual.length).to.eq(1);
-    expect(actual[0]).to.nested.include({
-      _id: 'taskdoc',
-      'emission.title': 'translate.this',
-      'emission.priorityLabel': 'and.this',
-      'emission.other': true,
+    const actualTask = actual[0];
+    expect(actualTask._id).to.equal('taskdoc');
+    expect(actualTask.emission.date.toDateString()).to.equal('Tue Oct 24 2023');
+    expect(actualTask.emission).to.deep.include({
+      _id: 'emission_id',
+      title: 'translate.this',
+      priorityLabel: 'and.this',
+      other: true,
+      overdue: true,
+      owner: 'contact-1234',
+      dueDate: '2023-10-24'
     });
     expect(telemetryService.record.calledOnce).to.be.true;
     expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
@@ -520,11 +534,17 @@ describe('RulesEngineService', () => {
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.eq(contactIds);
     expect(actual.length).to.eq(1);
-    expect(actual[0]).to.nested.include({
-      _id: 'taskdoc',
-      'emission.title': 'translate.this',
-      'emission.priorityLabel': '',
-      'emission.other': true,
+    const actualTask = actual[0];
+    expect(actualTask._id).to.equal('taskdoc');
+    expect(actualTask.emission.date.toDateString()).to.equal('Tue Oct 24 2023');
+    expect(actualTask.emission).to.deep.include({
+      _id: 'emission_id',
+      title: 'translate.this',
+      priorityLabel: '',
+      other: true,
+      overdue: true,
+      owner: 'contact-1234',
+      dueDate: '2023-10-24'
     });
     expect(telemetryService.record.calledOnce).to.be.true;
     expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
