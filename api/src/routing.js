@@ -229,9 +229,8 @@ app.use(compression({
 
 app.get('/.well-known/assetlinks.json', async (req, res) => {
   const settings = await settingsService.get();
-  const key = 'TODO';
-  if (Object.hasOwn(settings, key)) {
-    return res.json(settings[key]);
+  if (Object.hasOwn(settings, 'assetlinks')) {
+    return res.json(settings.assetlinks);
   }
 
   res.status(404);
