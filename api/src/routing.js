@@ -46,9 +46,9 @@ const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
+const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
-const settingsService = require('./services/settings');
 const startupLog = require('./services/setup/startup-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
@@ -227,15 +227,7 @@ app.use(compression({
   }
 }));
 
-app.get('/.well-known/assetlinks.json', async (req, res) => {
-  const settings = await settingsService.get();
-  if (Object.hasOwn(settings, 'assetlinks')) {
-    return res.json(settings.assetlinks);
-  }
-
-  res.status(404);
-  res.json({ error: 'not_found', reason: 'No assetlinks.json configured' });
-});
+app.get('/.well-known/assetlinks.json', wellKnownController.assetlinks);
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
