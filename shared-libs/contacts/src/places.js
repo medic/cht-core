@@ -75,12 +75,6 @@ const validatePlace = place => {
     if (!_.isString(place.contact) && !_.isObject(place.contact)) {
       return err(`Property "contact" on place ${placeId} must be an object or string.`);
     }
-    if (_.isObject(place.contact)) {
-      const errStr = people._validatePerson(place.contact);
-      if (errStr) {
-        return err(errStr);
-      }
-    }
   }
   if (place.parent && !_.isEmpty(place.parent)) {
     // validate parents
@@ -90,10 +84,17 @@ const validatePlace = place => {
 };
 
 const createPlace = async (place) => {
-  if (place.contact && !place.contact.type) {
-    place.contact.type = people._getDefaultPersonType();
+  await module.exports._validatePlace(place); 
+  if (_.isObject(place.contact)) {
+    place.contact.type = place.contact.type || people._getDefaultPersonType();
+    const errStr = people._validatePerson(place.contact);
+    if (errStr) {
+      return Promise.reject({
+        code: 400,
+        message: errStr
+      });
+    }
   }
-  await module.exports._validatePlace(place);
 
   const contact = place.contact;
   delete place.contact;
@@ -109,8 +110,9 @@ const createPlace = async (place) => {
     return response;
   }
   const placeUUID = response.id;
-
-  contact.place = placeUUID;
+  if (_.isObject(contact)) {
+    contact.place = placeUUID;
+  }
   const person = await people.getOrCreatePerson(contact);
   const result = await updatePlace(placeUUID, { contact: person._id });
   return { ...result, contact: { id: person._id } };
