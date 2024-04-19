@@ -8,6 +8,7 @@ const childProcess = require('child_process');
 const markdown = require('../../../src/enketo-transformer/markdown');
 const db = require('../../../src/db');
 const service = require('../../../src/services/generate-xform');
+const htmlParser = require('node-html-parser');
 
 const FILES = {
   xform: 'xform.xml',
@@ -99,6 +100,8 @@ describe('generate-xform service', () => {
     it('should correctly replace models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
 
     it('should replace markdown syntax', () => runTest('markdown', spawned));
+
+    it('should set custom CHT attributes', () => runTest('custom-attributes', spawned));
 
     it('should fail when child process errors', async () => {
       try {
@@ -486,7 +489,10 @@ describe('generate-xform service', () => {
 
     beforeEach(() => {
       const generate = rewire('../../../src/services/generate-xform');
-      replaceAllMarkdown = generate.__get__('replaceAllMarkdown');
+      replaceAllMarkdown = (formString) => {
+        const formElement = htmlParser.parse(formString).querySelector('form');
+        return generate.__get__('replaceAllMarkdown')(formElement);
+      };
     });
 
     it('strips root node', () => {

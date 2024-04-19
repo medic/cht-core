@@ -217,11 +217,15 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        const facilityId = homePlaceId ?? userSettings.facility_id;
-        if (facilityId) {
-          this.globalActions.setUserFacilityId(facilityId);
-          return this.getDataRecordsService.get(facilityId);
+        const facilityId: string = homePlaceId ?? userSettings.facility_id;
+        if (!facilityId) {
+          return;
         }
+
+        this.globalActions.setUserFacilityId(facilityId);
+        return this.getDataRecordsService
+          .get([ facilityId ])
+          .then(places => places?.length ? places[0] : undefined);
       })
       .then((summary) => {
         if (summary) {
@@ -430,7 +434,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.moreItems = updatedContacts.length >= options.limit;
         this.hasContacts = !!this.contactsList.length;
-        this.loading = false;
         this.appending = false;
         this.error = false;
         this.initScroll();
@@ -439,10 +442,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(err => {
         this.error = true;
-        this.loading = false;
         console.error('Error loading contacts', err);
       })
       .finally(() => {
+        this.loading = false;
         trackPerformance?.stop({ name: 'contact_list:query', recordApdex: true });
       });
   }

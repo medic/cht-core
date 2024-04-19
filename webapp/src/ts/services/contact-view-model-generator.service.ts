@@ -4,7 +4,6 @@ import {
   partial as _partial,
   find as _find,
   flattenDeep as _flattenDeep,
-  map as _map
 } from 'lodash-es';
 
 import registrationUtils from '@medic/registration-utils';
@@ -36,6 +35,8 @@ import { TranslateService } from '@mm-services/translate.service';
   providedIn: 'root'
 })
 export class ContactViewModelGeneratorService {
+  LIMIT_SELECT_ALL_REPORTS = 500;
+
   constructor(
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private dbService:DbService,
@@ -287,19 +288,15 @@ export class ContactViewModelGeneratorService {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private addHeading(reports, forms) {
-    const reportIds = _map(reports, '_id');
-    return this.getDataRecordsService
-      .get(reportIds)
-      .then((dataRecords) => {
-        dataRecords.forEach((dataRecord) => {
-          const report = reports.find(report => report._id === dataRecord._id);
-          if (report) {
-            report.heading = this.getHeading(dataRecord, forms);
-          }
-        });
-        return reports;
-      });
+  private async addHeading(reports, forms) {
+    const summaries = await this.getDataRecordsService.getDocsSummaries(reports);
+    summaries?.forEach(summary => {
+      const report = reports.find(report => report._id === summary._id);
+      if (report) {
+        report.heading = this.getHeading(summary, forms);
+      }
+    });
+    return reports;
   }
 
   private getReports(contactDocs) {
@@ -309,7 +306,7 @@ export class ContactViewModelGeneratorService {
     });
     const filter = { subjectIds: _flattenDeep(subjectIds) };
     return this.searchService
-      .search('reports', filter, { include_docs: true })
+      .search('reports', filter, { include_docs: true, limit: this.LIMIT_SELECT_ALL_REPORTS })
       .then((reports) => {
         reports.forEach((report) => {
           report.valid = !report.errors || !report.errors.length;
@@ -332,7 +329,7 @@ export class ContactViewModelGeneratorService {
     return this
       .getReports(contacts)
       .then(reports => this.addHeading(reports, forms))
-      .then((reports) => {
+      .then(reports => {
         this.addPatientName(reports, contacts);
         reports.sort(this.reportedDateComparator);
         return reports;
