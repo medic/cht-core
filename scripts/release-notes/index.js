@@ -1,19 +1,13 @@
 const minimist = require('minimist');
-const { Octokit } = require('@octokit/rest');
-const { graphql } = require('@octokit/graphql');
-const octokit = new Octokit({
+const { Octokit } = require('@octokit/core');
+const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
+const ExtendedOctokit = Octokit.plugin(paginateGraphql);
+const octokit = new ExtendedOctokit({
   auth: require('../token.json').githubApiToken,
   userAgent: 'cht-release-note-generator',
 });
-const authenticatedGraphql = graphql.defaults({
-  headers: {
-    authorization: `token ${require('../token.json').githubApiToken}`,
-    userAgent: 'cht-release-note-generator',
-  },
-});
 
 const OWNER = 'medic';
-const ISSUE_STATE = 'all';
 
 const argv = minimist(process.argv.slice(2));
 if (argv.help) {
@@ -62,11 +56,14 @@ const PREFIXES_TO_IGNORE = [
   'Type: Investigation',
 ];
 
-const gitHubRepoQuery = query => authenticatedGraphql(
-  `{ repository(owner: "${OWNER}", name: "${REPO_NAME}") { ${query} } }`
-);
+const getRepoQueryString = query => `{ repository(owner: "${OWNER}", name: "${REPO_NAME}") { ${query} } }`;
 
-const getLatestReleaseName = async () => gitHubRepoQuery(
+const queryRepo = query => octokit.graphql(getRepoQueryString(query));
+
+const queryRepoPaginated = query => octokit.graphql
+  .paginate(`query paginate($cursor: String) ${getRepoQueryString(query)}`);
+
+const getLatestReleaseName = async () => queryRepo(
   `releases(first: 1) {
         edges { node { tagName } }
       }`
@@ -74,7 +71,7 @@ const getLatestReleaseName = async () => gitHubRepoQuery(
 
 const getMilestoneBranch = async () => {
   const milestoneBranch = [...MILESTONE_NAME.split('.').slice(0, -1), 'x'].join('.');
-  const branchExists = await gitHubRepoQuery(
+  const branchExists = await queryRepo(
     `ref(qualifiedName: "refs/heads/${milestoneBranch}") {
         target { oid }
       }`
@@ -85,17 +82,17 @@ const getMilestoneBranch = async () => {
 
   // Fall back to default branch if milestone branch doesn't exist. This might be useful when preparing for a release
   // before actually creating the release branch.
-  return gitHubRepoQuery(
+  return queryRepo(
     `defaultBranchRef { name }`
   ).then(({ repository }) => repository.defaultBranchRef.name);
 };
 
 // This query calculates the "commits for the release" by comparing the commit history of the latest release with the
 // commit history of the milestone branch and keeping only the commits that are unique to the milestone branch.
-const getPageOfCommitsForRelease = async (release, milestoneBranch, after) => gitHubRepoQuery(
+const getCommitsForRelease = async (release, milestoneBranch) => queryRepoPaginated(
   `ref(qualifiedName: "${release}") {
       compare(headRef: "${milestoneBranch}") {
-        commits(first: 100, after: ${after}) {
+        commits(first: 100, after: $cursor) {
           pageInfo {
             endCursor
             hasNextPage
@@ -113,19 +110,7 @@ const getPageOfCommitsForRelease = async (release, milestoneBranch, after) => gi
         }
       }
     }`
-).then(({ repository }) => repository.ref.compare.commits);
-
-const getCommitsForRelease = async (release, milestoneBranch) => {
-  const commits = [];
-  let after = null;
-  do {
-    const { nodes, pageInfo } = await getPageOfCommitsForRelease(release, milestoneBranch, after);
-    commits.push(...nodes);
-    after = pageInfo.hasNextPage ? `"${pageInfo.endCursor}"` : null;
-  } while (after);
-
-  return commits;
-};
+).then(({ repository }) => repository.ref.compare.commits.nodes);
 
 const commitHasPRWithMilestone = commit => commit.associatedPullRequests.nodes.find(pr => pr.milestone);
 const prHasIssueWithMilestone = pr => pr.closingIssuesReferences.edges.find(edge => edge.node.milestone);
@@ -141,7 +126,7 @@ const getIssueNumbers = commitMessage => {
   return results.map(result => result.substring(1));
 };
 
-const issueHasMilestone = async issueNumber => gitHubRepoQuery(
+const issueHasMilestone = async issueNumber => queryRepo(
   `issueOrPullRequest(number: ${issueNumber}){
         ... on Issue { milestone { id } }
         ... on PullRequest { milestone { id } }
@@ -198,11 +183,9 @@ Commits:
     throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
   }
 };
-
-const getMilestone = async () => {
-  const response = await octokit.rest.issues.listMilestones({ owner: OWNER, repo: REPO_NAME });
-  return response.data.find(milestone => milestone.title === MILESTONE_NAME);
-};
+const getMilestone = async () => queryRepo(
+  `milestones(query: "${MILESTONE_NAME}", first: 1) { nodes { number } }`
+).then(({ repository }) => repository.milestones.nodes[0]);
 
 const getMilestoneNumber = async () => {
   const milestone = await getMilestone();
@@ -212,13 +195,30 @@ const getMilestoneNumber = async () => {
   return milestone.number;
 };
 
+const getMilestoneIssues = async (milestoneNumber) => queryRepoPaginated(
+  `milestone(number: ${milestoneNumber}) {
+    issues(first: 100, after: $cursor, states: [OPEN, CLOSED]) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      nodes {
+        number
+        url
+        title
+        labels(first: 100) { nodes { name } }
+      }
+    }
+  }`
+).then(({ repository }) => repository.milestone.issues.nodes);
+
 const validateIssue = issue => {
-  const matchingTypes = TYPES.filter(type => issue.labels.find(label => type.labels.includes(label.name)));
+  const matchingTypes = TYPES.filter(type => issue.labels.nodes.find(label => type.labels.includes(label.name)));
   if (!matchingTypes.length) {
-    return `Issue doesn't have any Type label: ${issue.html_url}`;
+    return `Issue doesn't have any Type label: ${issue.url}`;
   }
   if (matchingTypes.length > 1) {
-    return `Issue has too many Type labels: ${issue.html_url}`;
+    return `Issue has too many Type labels: ${issue.url}`;
   }
 };
 
@@ -233,20 +233,9 @@ const validateIssues = issues => {
   return issues;
 };
 
-const getIssues = async (milestoneId) => {
-  const issues = await octokit.paginate(octokit.rest.issues.listForRepo, {
-    owner: OWNER,
-    repo: REPO_NAME,
-    milestone: milestoneId,
-    state: ISSUE_STATE,
-    per_page: 100
-  });
-  return validateIssues(issues);
-};
-
 const filterIssues = issues => {
   return issues.filter(issue => {
-    return issue.labels.every(label => {
+    return issue.labels.nodes.every(label => {
       return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
     });
   });
@@ -254,8 +243,8 @@ const filterIssues = issues => {
 
 const group = (group, issues) => {
   const filtered = issues
-    .filter(issue => issue.labels.find(label => group.labels.includes(label.name)))
-    .sort((lhs, rhs) => lhs.html_url.localeCompare(rhs.html_url));
+    .filter(issue => issue.labels.nodes.find(label => group.labels.includes(label.name)))
+    .sort((lhs, rhs) => lhs.url.localeCompare(rhs.url));
   return { title: group.title, issues: filtered };
 };
 
@@ -266,7 +255,7 @@ const groupIssues = issues => {
   };
 };
 
-const format = issue => `- [#${issue.number}](${issue.html_url}): ${issue.title}\n`;
+const format = issue => `- [#${issue.number}](${issue.url}): ${issue.title}\n`;
 
 const formatAll = issues => issues.length ? issues.map(format).join('') : 'None.\n';
 
@@ -304,7 +293,8 @@ ${outputGroups(types)}`);
 Promise.resolve()
   .then(validateCommits)
   .then(getMilestoneNumber)
-  .then(getIssues)
+  .then(getMilestoneIssues)
+  .then(validateIssues)
   .then(filterIssues)
   .then(groupIssues)
   .then(output)
