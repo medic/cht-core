@@ -1609,19 +1609,64 @@ describe('Users API', () => {
   });
 
   describe('GET api/v2/users/{username}', () => {
-    it('retrieves a user by username', async () => {
-      const facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
-      const person = personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null });
-      facility.contact = person._id;
-      const user = userFactory.build({ place: facility._id, contact: person._id });
-      await utils.saveDocs([ facility, person ]);
-      await utils.createUsers([{ ...user, password: 'password1234!' }]);
+    const password = 'password1234!';
+    let facility;
+    let person;
+    let user;
+    let userProgramOfficer;
 
+    before(async () => {
+      facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
+      person = utils.deepFreeze(
+        personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null })
+      );
+      facility.contact = person._id;
+      facility = utils.deepFreeze(facility);
+      user = userFactory.build({ username: 'chw111', place: facility._id, contact: person._id, roles: ['chw'] });
+      delete user.password;
+      user = utils.deepFreeze(user);
+      userProgramOfficer = utils.deepFreeze(userFactory.build({
+        username: 'prog222',
+        place: facility._id,
+        contact: person._id,
+        roles: ['program_officer']
+      }));
+
+      await utils.saveDocs([ facility, person ]);
+      await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
+
+      const settings = await utils.getSettings();
+      const permissions = {
+        ...settings.permissions,
+        'can_view_users': ['program_officer'],
+      };
+      await utils.updateSettings({ permissions }, true);
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
+      await utils.revertDb([], true);
+      await utils.deleteUsers([user]);
+    });
+
+    it('retrieves a user by username', async () => {
       const users = await utils.request({
         path: `/api/v2/users/${user.username}`,
       });
 
-      delete user.password;
+      expect(users).to.deep.include({
+        ...user,
+        place: { ...facility, _rev: users.place._rev },
+        contact: { ...person, _rev: users.contact._rev },
+      });
+    });
+
+    it('retrieves a user with can_view_users permission', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+        auth: { username: userProgramOfficer.username, password },
+      });
+
       expect(users).to.deep.include({
         ...user,
         place: { ...facility, _rev: users.place._rev },
@@ -1642,7 +1687,36 @@ describe('Users API', () => {
 
       expect.fail('Should have thrown an error');
     });
+
+    it('returns an error when user does not have can_view_users permission', async () => {
+      try {
+        await utils.request({
+          path: `/api/v2/users/${userProgramOfficer.username}`,
+          auth: { username: user.username, password },
+        });
+      } catch ({ error }) {
+        expect(error.code).to.equal(403);
+        expect(error.error).to.equal('Insufficient privileges');
+        return;
+      }
+
+      expect.fail('Should have thrown an error');
+    });
+
+    it('retrieves self even when user does not have can_view_users permission', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+        auth: { username: user.username, password },
+      });
+
+      expect(users).to.deep.include({
+        ...user,
+        place: { ...facility, _rev: users.place._rev },
+        contact: { ...person, _rev: users.contact._rev },
+      });
+    });
   });
+
 
   describe('POST/GET api/v2/users', () => {
     before(async () => {
