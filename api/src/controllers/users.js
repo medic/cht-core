@@ -19,14 +19,14 @@ const hasFullPermission = req => {
     });
 };
 
-const isUpdatingSelf = (req, credentials, username) => {
-  return auth.getUserCtx(req).then(userCtx => {
-    return (
-      userCtx.name === username &&
-      (!credentials || credentials.username === username)
-    );
-  });
-};
+const isReferencingSelf = (userCtx, credentials, username) => (
+  userCtx.name === username &&
+  (!credentials || credentials.username === username)
+);
+
+const isUpdatingSelf = (req, credentials, username) => auth
+  .getUserCtx(req)
+  .then(userCtx => isReferencingSelf(userCtx, credentials, username));
 
 const basicAuthValid = (credentials, username) => {
   if (!credentials) {
@@ -235,7 +235,15 @@ module.exports = {
   },
 
   v2: {
-    get: (req, res) => auth.check(req, 'can_view_users')
+    get: (req, res) => auth.getUserCtx(req)
+      .then(userCtx => {
+        const hasPermission = auth.hasAllPermissions(userCtx, 'can_view_users');
+        if (!hasPermission && !isReferencingSelf(userCtx, auth.basicAuthCredentials(req), req.params.username)) {
+          const error = new Error('Insufficient privileges');
+          error.code = 403;
+          throw error;
+        }
+      })
       .then(() => users.getUser(req.params.username))
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res)),

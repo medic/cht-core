@@ -31,8 +31,12 @@ describe('Users Controller', () => {
   afterEach(() => sinon.restore());
 
   describe('get single user', () => {
+    const userContext = Object.freeze({ name: 'medic' });
+
     beforeEach(() => {
-      sinon.stub(auth, 'check').resolves();
+      sinon.stub(auth, 'getUserCtx').resolves(userContext);
+      auth.hasAllPermissions.returns(true);
+      sinon.stub(auth, 'basicAuthCredentials');
       sinon.stub(users, 'getUser');
       res = { json: sinon.stub() };
     });
@@ -51,26 +55,116 @@ describe('Users Controller', () => {
 
       await controller.v2.get(req, res);
 
-      chai.expect(auth.check.calledOnce).to.be.true;
-      chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_view_users']);
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userContext, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.notCalled).to.be.true;
       chai.expect(users.getUser.calledOnce).to.be.true;
       chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
       chai.expect(res.json.calledOnce).to.be.true;
       chai.expect(res.json.args[0]).to.deep.equal([expectedUser]);
     });
 
-    it('returns error when user does not have permission', async () => {
-      const expectedError = { status: 403 };
-      auth.check.rejects(expectedError);
+    it('returns user when user does not have permission but is referencing self', async () => {
+      auth.hasAllPermissions.returns(false);
+      const userCtx = { name: 'chw' };
+      auth.getUserCtx.resolves({ name: 'chw' });
+      const expectedUser = {
+        id: 'org.couchdb.user:chw',
+        roles: ['chw', 'district-admin'],
+        contact: {
+          _id: 'chw-contact',
+          parent: { _id: 'chw-facility' },
+        }
+      };
+      users.getUser.resolves(expectedUser);
       req = { params: { username: 'chw' } };
 
       await controller.v2.get(req, res);
 
-      chai.expect(auth.check.calledOnce).to.be.true;
-      chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_view_users']);
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
+      chai.expect(users.getUser.calledOnce).to.be.true;
+      chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
+      chai.expect(res.json.calledOnce).to.be.true;
+      chai.expect(res.json.args[0]).to.deep.equal([expectedUser]);
+    });
+
+    it('returns user when user does not have permission but is referencing self with basic auth', async () => {
+      auth.hasAllPermissions.returns(false);
+      auth.basicAuthCredentials.returns({ username: 'chw' });
+      const userCtx = { name: 'chw' };
+      auth.getUserCtx.resolves(userCtx);
+      const expectedUser = {
+        id: 'org.couchdb.user:chw',
+        roles: ['chw', 'district-admin'],
+        contact: {
+          _id: 'chw-contact',
+          parent: { _id: 'chw-facility' },
+        }
+      };
+      users.getUser.resolves(expectedUser);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
+      chai.expect(users.getUser.calledOnce).to.be.true;
+      chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
+      chai.expect(res.json.calledOnce).to.be.true;
+      chai.expect(res.json.args[0]).to.deep.equal([expectedUser]);
+    });
+
+    it('returns error when user does not have permission and is not referencing self', async () => {
+      auth.hasAllPermissions.returns(false);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userContext, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
       chai.expect(users.getUser.notCalled).to.be.true;
       chai.expect(res.json.notCalled).to.be.true;
       chai.expect(serverUtils.error.calledOnce).to.be.true;
+      const expectedError = new Error('Insufficient privileges');
+      expectedError.code = 403;
+      chai.expect(serverUtils.error.args[0]).to.deep.equal([expectedError, req, res]);
+    });
+
+    it('returns error when user does not have permission and is not referencing self with basic auth', async () => {
+      auth.hasAllPermissions.returns(false);
+      auth.basicAuthCredentials.returns({ username: 'medic' });
+      const userCtx = { name: 'chw' };
+      auth.getUserCtx.resolves(userCtx);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
+      chai.expect(users.getUser.notCalled).to.be.true;
+      chai.expect(res.json.notCalled).to.be.true;
+      chai.expect(serverUtils.error.calledOnce).to.be.true;
+      const expectedError = new Error('Insufficient privileges');
+      expectedError.code = 403;
       chai.expect(serverUtils.error.args[0]).to.deep.equal([expectedError, req, res]);
     });
 
@@ -81,8 +175,11 @@ describe('Users Controller', () => {
 
       await controller.v2.get(req, res);
 
-      chai.expect(auth.check.calledOnce).to.be.true;
-      chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_view_users']);
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userContext, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.notCalled).to.be.true;
       chai.expect(users.getUser.calledOnce).to.be.true;
       chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
       chai.expect(res.json.notCalled).to.be.true;
