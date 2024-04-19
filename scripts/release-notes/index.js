@@ -183,6 +183,7 @@ Commits:
     throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
   }
 };
+
 const getMilestone = async () => queryRepo(
   `milestones(query: "${MILESTONE_NAME}", first: 1) { nodes { number } }`
 ).then(({ repository }) => repository.milestones.nodes[0]);
