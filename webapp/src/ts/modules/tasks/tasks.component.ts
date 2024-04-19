@@ -159,8 +159,8 @@ export class TasksComponent implements OnInit, OnDestroy {
     const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
     const subjects = await this.lineageModelGeneratorService.reportSubjects(ids);
     const subjectMap = new Map(subjects.map(subject => [subject._id, subject.lineage]));
-    if (subjects?.size <= 0) {
-      return;
+    if (!subjectMap?.size) {
+      return [];
     }
 
     return taskDocs.map(task => {
