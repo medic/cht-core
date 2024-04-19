@@ -40,7 +40,7 @@
     "unit-api": "UNIT_TEST_ENV=1 nyc --nycrcPath='api/nyc.config.js' mocha 'api/tests/mocha/**/*.js'",
     "unit-sentinel": "UNIT_TEST_ENV=1 nyc --nycrcPath='sentinel/nyc.config.js' mocha 'sentinel/tests/**/*.js'",
     "unit-shared-lib": "UNIT_TEST_ENV=1 npm test --workspaces --if-present",
-    "unit-webapp": "UNIT_TEST_ENV=1 mocha 'webapp/tests/mocha/**/*.spec.js' && cd webapp && npm run unit -- --watch=false && npm run unit:cht-form -- --watch=false",
+    "unit-webapp": "cd webapp && npm run unit:mocha:tz && npm run unit -- --watch=false && npm run unit:cht-form -- --watch=false",
     "unit-webapp-continuous": "cd webapp && npm run unit -- --watch=true",
     "unit-nginx": "cd nginx/tests && make test",
     "unit-haproxy": "cd haproxy/tests && make test",
