@@ -16,6 +16,7 @@ const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 process.env.COUCHDB_USER = constants.USERNAME;
@@ -1235,7 +1236,7 @@ const getSentinelDate = () => getContainerDate('sentinel');
 const getContainerDate = (container) => {
   container = getContainerName(container);
   try {
-    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
+    return moment.utc(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
   } catch (error) {
     console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
     console.error(error.message);
