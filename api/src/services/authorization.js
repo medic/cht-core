@@ -187,13 +187,14 @@ const alwaysAllowCreate = doc => {
 
 const getContactsByDepthKeys = (userCtx, depth) => {
   const keys = [];
-  if (depth >= 0) {
-    for (let i = 0; i <= depth; i++) {
-      keys.push([ userCtx.facility_id, i ]);
+  const facilityIds = Array.isArray(userCtx.facility_id) ? userCtx.facility_id : [userCtx.facility_id];
+  for (const facilityId of facilityIds) {
+    if (depth >= 0) {
+      keys.push(...Array.from({ length: depth + 1 }).map((_, i) => [facilityId, i]));
+    } else {
+      // no configured depth limit
+      keys.push([ facilityId ]);
     }
-  } else {
-    // no configured depth limit
-    keys.push([ userCtx.facility_id ]);
   }
 
   return keys;
