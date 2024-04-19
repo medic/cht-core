@@ -103,7 +103,7 @@ describe('Places API', () => {
         type: 'district_hospital',
         name: 'A Place',
         contact: {
-          _id: ""
+          _id: ''
         }
       };
       return utils.saveDoc(parentDoc).then(() => {
@@ -112,7 +112,7 @@ describe('Places API', () => {
           type: 'health_center',
           parent: parentDoc._id
         };
-        return utils.request(onlineRequestOptions)
+        return utils.request(onlineRequestOptions);
       })
         .then(result => {
           chai.expect(result.id).to.not.be.undefined;
