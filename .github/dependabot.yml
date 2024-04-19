@@ -5,11 +5,11 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: "weekly"
-      day: "saturday" # run these builds over the weekend so devs aren't impacted
+      day: "saturday"
     commit-message:
       prefix: "chore"
     groups:
@@ -19,6 +19,53 @@ updates:
       wdio:
         patterns:
         - "@wdio/*"
+      pouchdb:
+        patterns:
+        - "pouchdb-*"
+  - package-ecosystem: "npm"
+    directory: "/admin"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      angular:
+        patterns:
+        - "angular*"
+  - package-ecosystem: "npm"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      pouchdb:
+        patterns:
+        - "pouchdb-*"
+  - package-ecosystem: "npm"
+    directory: "/sentinel"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      pouchdb:
+        patterns:
+        - "pouchdb-*"
+  - package-ecosystem: "npm"
+    directory: "/webapp"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      angular:
+        patterns:
+        - "@angular*"
       pouchdb:
         patterns:
         - "pouchdb-*"
