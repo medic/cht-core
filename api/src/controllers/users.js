@@ -112,7 +112,11 @@ const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
 const getUserList = async (req) => {
   await auth.check(req, 'can_view_users');
-  return await users.getList();
+  const filters = {
+    facilityId: req.query?.facility_id,
+    contactId: req.query?.contact_id,
+  };
+  return await users.getList(filters);
 };
 
 const getType = user => {
@@ -233,7 +237,7 @@ module.exports = {
   v2: {
     get: async (req, res) => {
       try {
-        const body = await getUserList(req, res);
+        const body = await getUserList(req);
         res.json(body);
       } catch (err) {
         serverUtils.error(err, req, res);

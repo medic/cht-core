@@ -49,24 +49,27 @@ describe('Setup utils', () => {
       ddocsService.getStagedDdocs.withArgs(DATABASES[1]).resolves([{ _id: 'two' }]);
       ddocsService.getStagedDdocs.withArgs(DATABASES[2]).resolves([{ _id: 'three' }]);
       ddocsService.getStagedDdocs.withArgs(DATABASES[3]).resolves([{ _id: 'four' }]);
+      ddocsService.getStagedDdocs.withArgs(DATABASES[4]).resolves([{ _id: 'five' }]);
 
       db.saveDocs.resolves();
 
       await utils.__get__('deleteStagedDdocs')();
 
-      expect(ddocsService.getStagedDdocs.callCount).to.equal(4);
+      expect(ddocsService.getStagedDdocs.callCount).to.equal(5);
       expect(ddocsService.getStagedDdocs.args).to.deep.equal([
         [DATABASES[0]],
         [DATABASES[1]],
         [DATABASES[2]],
         [DATABASES[3]],
+        [DATABASES[4]],
       ]);
-      expect(db.saveDocs.callCount).to.equal(4);
+      expect(db.saveDocs.callCount).to.equal(5);
       expect(db.saveDocs.args).to.deep.equal([
         [DATABASES[0].db, [{ _id: 'one', _deleted: true }]],
         [DATABASES[1].db, [{ _id: 'two', _deleted: true }]],
         [DATABASES[2].db, [{ _id: 'three', _deleted: true }]],
         [DATABASES[3].db, [{ _id: 'four', _deleted: true }]],
+        [DATABASES[4].db, [{ _id: 'five', _deleted: true }]],
       ]);
     });
 
@@ -128,17 +131,19 @@ describe('Setup utils', () => {
       ddocsService.getStagedDdocs.withArgs(DATABASES[1]).resolves([]);
       ddocsService.getStagedDdocs.withArgs(DATABASES[2]).resolves([{ _id: 'three' }]);
       ddocsService.getStagedDdocs.withArgs(DATABASES[3]).resolves([]);
+      ddocsService.getStagedDdocs.withArgs(DATABASES[4]).resolves([]);
 
       db.saveDocs.resolves();
 
       await utils.__get__('deleteStagedDdocs')();
 
-      expect(ddocsService.getStagedDdocs.callCount).to.equal(4);
+      expect(ddocsService.getStagedDdocs.callCount).to.equal(5);
       expect(ddocsService.getStagedDdocs.args).to.deep.equal([
         [DATABASES[0]],
         [DATABASES[1]],
         [DATABASES[2]],
         [DATABASES[3]],
+        [DATABASES[4]],
       ]);
       expect(db.saveDocs.callCount).to.equal(2);
       expect(db.saveDocs.args).to.deep.equal([
@@ -154,6 +159,7 @@ describe('Setup utils', () => {
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
+      mockDb(db.users);
 
       utils.cleanup();
 
@@ -161,11 +167,13 @@ describe('Setup utils', () => {
       expect(db.sentinel.compact.callCount).to.equal(1);
       expect(db.medicLogs.compact.callCount).to.equal(1);
       expect(db.medicUsersMeta.compact.callCount).to.equal(1);
+      expect(db.users.compact.callCount).to.equal(1);
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
       expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
       expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
+      expect(db.users.viewCleanup.callCount).to.equal(1);
     });
 
     it('should catch errors', async () => {
@@ -173,6 +181,7 @@ describe('Setup utils', () => {
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
+      mockDb(db.users);
 
       db.sentinel.compact.rejects({ some: 'error' });
       utils.cleanup();
@@ -208,19 +217,22 @@ describe('Setup utils', () => {
           { _id: '_design/meta1', views: { usersmeta1: {} } },
           { _id: '_design/meta2', views: { usersmeta2: {} } },
         ];
+        const usersDdocs = [{ _id: '_design/users', views: { users1: {} } }];
 
         fs.promises.readFile.withArgs('localDdocs/medic.json').resolves(genDdocsJson(medicDdocs));
         fs.promises.readFile.withArgs('localDdocs/sentinel.json').resolves(genDdocsJson(sentinelDdocs));
         fs.promises.readFile.withArgs('localDdocs/logs.json').resolves(genDdocsJson(logsDdocs));
         fs.promises.readFile.withArgs('localDdocs/users-meta.json').resolves(genDdocsJson(usersMetaDdocs));
+        fs.promises.readFile.withArgs('localDdocs/users.json').resolves(genDdocsJson(usersDdocs));
 
         const result = await utils.getDdocDefinitions();
 
-        expect(result.size).to.equal(4);
+        expect(result.size).to.equal(5);
         expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
         expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
         expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
         expect(result.get(DATABASES[3])).to.deep.equal(usersMetaDdocs);
+        expect(result.get(DATABASES[4])).to.deep.equal(usersDdocs);
 
         expect(db.builds.get.callCount).to.equal(0);
         expect(fs.promises.readFile.args).to.deep.equal([
@@ -228,6 +240,7 @@ describe('Setup utils', () => {
           ['localDdocs/sentinel.json', 'utf-8'],
           ['localDdocs/logs.json', 'utf-8'],
           ['localDdocs/users-meta.json', 'utf-8'],
+          ['localDdocs/users.json', 'utf-8'],
         ]);
       });
 
@@ -439,12 +452,13 @@ describe('Setup utils', () => {
         { _id: '_design/meta1', views: { usersmeta1: {} } },
         { _id: '_design/meta2', views: { usersmeta2: {} } },
       ]);
+      ddocDefinitions.set(DATABASES[4],  [{ _id: '_design/users', views: { users1: {} } }]);
 
       sinon.stub(db, 'saveDocs').resolves();
 
       await utils.saveStagedDdocs(ddocDefinitions);
 
-      expect(db.saveDocs.callCount).to.equal(4);
+      expect(db.saveDocs.callCount).to.equal(5);
       expect(db.saveDocs.args[0]).to.deep.equal([db.medic, [
         { _id: '_design/:staged:medic', views: { medic1: {}, medic2: {} }, deploy_info: deployInfo },
         { _id: '_design/:staged:medic-client', views: { client1: {}, client2: {} }, deploy_info: deployInfo },
@@ -458,6 +472,9 @@ describe('Setup utils', () => {
       expect(db.saveDocs.args[3]).to.deep.equal([db.medicUsersMeta, [
         { _id: '_design/:staged:meta1', views: { usersmeta1: {} }, deploy_info: deployInfo },
         { _id: '_design/:staged:meta2', views: { usersmeta2: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(db.saveDocs.args[4]).to.deep.equal([db.users, [
+        { _id: '_design/:staged:users', views: { users1: {} }, deploy_info: deployInfo }
       ]]);
     });
 
@@ -477,12 +494,13 @@ describe('Setup utils', () => {
         { _id: '_design/meta1', _rev: 100, views: { usersmeta1: {} } },
         { _id: '_design/meta2', _rev: 582, views: { usersmeta2: {} } },
       ]);
+      ddocDefinitions.set(DATABASES[4],  [{ _id: '_design/users', views: { users1: {} } }]);
 
       sinon.stub(db, 'saveDocs').resolves();
 
       await utils.saveStagedDdocs(ddocDefinitions);
 
-      expect(db.saveDocs.callCount).to.equal(4);
+      expect(db.saveDocs.callCount).to.equal(5);
       expect(db.saveDocs.args[0]).to.deep.equal([db.medic, [
         { _id: '_design/:staged:medic', views: { medic: {} }, deploy_info: deployInfo },
         { _id: '_design/:staged:medic-client', views: { clienta: {}, clientb: {} }, deploy_info: deployInfo },
@@ -496,6 +514,9 @@ describe('Setup utils', () => {
       expect(db.saveDocs.args[3]).to.deep.equal([db.medicUsersMeta, [
         { _id: '_design/:staged:meta1', views: { usersmeta1: {} }, deploy_info: deployInfo },
         { _id: '_design/:staged:meta2', views: { usersmeta2: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(db.saveDocs.args[4]).to.deep.equal([db.users, [
+        { _id: '_design/:staged:users', views: { users1: {} }, deploy_info: deployInfo }
       ]]);
     });
 
@@ -514,12 +535,13 @@ describe('Setup utils', () => {
         { _id: '_design/meta1', views: { usersmeta1: {} } },
         { _id: '_design/meta2', views: { usersmeta2: {} } },
       ]);
+      ddocDefinitions.set(DATABASES[4],  [{ _id: '_design/users', views: { users1: {} } }]);
 
       sinon.stub(db, 'saveDocs').resolves();
 
       await utils.saveStagedDdocs(ddocDefinitions);
 
-      expect(db.saveDocs.callCount).to.equal(4);
+      expect(db.saveDocs.callCount).to.equal(5);
       expect(db.saveDocs.args[0]).to.deep.equal([db.medic, [
         { _id: '_design/:staged:medic', views: { medic: {} }, deploy_info: deployInfo },
         { _id: '_design/:staged:medic-client', views: { clienta: {}, clientb: {} }, deploy_info: deployInfo },
@@ -531,6 +553,9 @@ describe('Setup utils', () => {
       expect(db.saveDocs.args[3]).to.deep.equal([db.medicUsersMeta, [
         { _id: '_design/:staged:meta1', views: { usersmeta1: {} }, deploy_info: deployInfo },
         { _id: '_design/:staged:meta2', views: { usersmeta2: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(db.saveDocs.args[4]).to.deep.equal([db.users, [
+        { _id: '_design/:staged:users', views: { users1: {} }, deploy_info: deployInfo }
       ]]);
     });
 
@@ -678,6 +703,7 @@ describe('Setup utils', () => {
         { doc: { _id: '_design/logs1', _rev: '3', field: 'b', deploy_info: deployInfoOld } },
       ] }); // one extra staged ddoc
       sinon.stub(db.medicUsersMeta, 'allDocs').resolves({ rows: [] }); // no ddocs
+      sinon.stub(db.users, 'allDocs').resolves({ rows: [] }); // no ddocs
 
       sinon.stub(db, 'saveDocs').resolves();
 
@@ -693,8 +719,10 @@ describe('Setup utils', () => {
       expect(db.medicLogs.allDocs.args[0]).to.deep.equal(allDocsArgs);
       expect(db.medicUsersMeta.allDocs.callCount).to.equal(1);
       expect(db.medicUsersMeta.allDocs.args[0]).to.deep.equal(allDocsArgs);
+      expect(db.users.allDocs.callCount).to.equal(1);
+      expect(db.users.allDocs.args[0]).to.deep.equal(allDocsArgs);
 
-      expect(db.saveDocs.callCount).to.equal(4);
+      expect(db.saveDocs.callCount).to.equal(5);
       expect(db.saveDocs.args[0]).to.deep.equal([db.medic, [
         { _id: '_design/medic', _rev: '2', new: true, deploy_info: deployInfoExpected },
         { _id: '_design/medic-client', _rev: '3', new: true, deploy_info: deployInfoExpected },
@@ -707,6 +735,7 @@ describe('Setup utils', () => {
         { _id: '_design/logs2', deploy_info: deployInfoExpected },
       ]]);
       expect(db.saveDocs.args[3]).to.deep.equal([db.medicUsersMeta, []]);
+      expect(db.saveDocs.args[4]).to.deep.equal([db.users, []]);
     });
 
     it('should throw an error when getting ddocs fails', async () => {
