@@ -17,6 +17,7 @@ const compilePrimary = async () => {
   await compile([ 'build/ddocs/sentinel-db/sentinel' ], 'build/ddocs/sentinel.json');
   await compile([ 'build/ddocs/users-meta-db/users-meta' ], 'build/ddocs/users-meta.json');
   await compile([ 'build/ddocs/logs-db/logs' ], 'build/ddocs/logs.json');
+  await compile([ 'build/ddocs/users-db/users' ], 'build/ddocs/users.json');
 };
 
 const commands = {

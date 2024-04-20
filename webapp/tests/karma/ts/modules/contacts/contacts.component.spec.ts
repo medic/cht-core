@@ -81,7 +81,7 @@ describe('Contacts component', () => {
       get: sinon.stub().resolves({ facility_id: district._id })
     };
     getDataRecordsService = {
-      get: sinon.stub().resolves(district)
+      get: sinon.stub().resolves([ district ])
     };
     contactTypesService = {
       getChildren: sinon.stub().resolves([
@@ -370,7 +370,7 @@ describe('Contacts component', () => {
       sinon.resetHistory();
       sessionService.isOnlineOnly.returns(true);
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves({});
+      getDataRecordsService.get.resolves([ {} ]);
       searchResults = [
         {
           _id: 'search-result',

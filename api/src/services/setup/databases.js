@@ -33,6 +33,11 @@ const DATABASES = [
     db: db.medicUsersMeta,
     jsonFileName: 'users-meta.json',
   },
+  {
+    name: `${environment.db}-users`,
+    db: db.users,
+    jsonFileName: 'users.json',
+  },
 ];
 
 module.exports = {

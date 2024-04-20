@@ -31,15 +31,24 @@ describe('Users Controller', () => {
   afterEach(() => sinon.restore());
 
   describe('get users list', () => {
+    let userList;
 
     beforeEach(() => {
+      userList = [
+        { id: 'org.couchdb.user:admin', roles: ['_admin'] },
+        {
+          id: 'org.couchdb.user:chw',
+          roles: ['chw', 'district-admin'],
+          contact: {
+            _id: 'chw-contact',
+            parent: { _id: 'chw-facility' },
+          }
+        },
+        { id: 'org.couchdb.user:unknown' },
+      ];
       req = { };
       res = { json: sinon.stub() };
-      sinon.stub(users, 'getList').resolves([
-        { id: 'org.couchdb.user:admin', roles: [ '_admin' ] },
-        { id: 'org.couchdb.user:chw', roles: [ 'chw', 'district-admin' ] },
-        { id: 'org.couchdb.user:unknown' },
-      ]);
+      sinon.stub(users, 'getList').resolves(userList);
     });
 
     describe('v1', () => {
@@ -69,14 +78,13 @@ describe('Users Controller', () => {
     });
 
     describe('v2', () => {
-
       it('rejects if not permitted', async () => {
         sinon.stub(auth, 'check').rejects(new Error('nope'));
         await controller.v2.get(req, res);
         chai.expect(serverUtils.error.callCount).to.equal(1);
       });
 
-      it('gets the list of users', async () => {
+      it('gets the list of users without filters', async () => {
         sinon.stub(auth, 'check').resolves();
 
         await controller.v2.get(req, res);
@@ -92,6 +100,59 @@ describe('Users Controller', () => {
         chai.expect(result[2].roles).to.be.undefined;
       });
 
+      it('gets the list of users with facility_id filter', async () => {
+        sinon.stub(auth, 'check').resolves();
+        users.getList.resolves([userList[1]]);
+        req.query = {
+          facility_id: 'chw-facility',
+          unsupported: 'nope',
+          contactId: 'not supported either',
+          this_wont_work: 123,
+        };
+
+        await controller.v2.get(req, res);
+        chai.expect(users.getList.firstCall.args[0])
+          .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined });
+        const result = res.json.args[0][0];
+        chai.expect(result.length).to.equal(1);
+        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].type).to.be.undefined;
+        chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
+        chai.expect(result[0].contact._id).to.equal('chw-contact');
+        chai.expect(result[0].contact.parent._id).to.equal('chw-facility');
+      });
+
+      it('gets the list of users with facility_id and contact_id filters', async () => {
+        sinon.stub(auth, 'check').resolves();
+        users.getList.resolves([userList[1]]);
+        req.query = { facility_id: 'chw-facility', contact_id: 'chw-contact' };
+
+        await controller.v2.get(req, res);
+        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({
+          contactId: 'chw-contact',
+          facilityId: 'chw-facility',
+        });
+        const result = res.json.args[0][0];
+        chai.expect(result.length).to.equal(1);
+        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].type).to.be.undefined;
+        chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
+        chai.expect(result[0].contact._id).to.equal('chw-contact');
+        chai.expect(result[0].contact.parent._id).to.equal('chw-facility');
+      });
+
+      it('gets the list of users and ignores unexpected filters', async () => {
+        sinon.stub(auth, 'check').resolves();
+        req.query = { roles: ['chw'], name: 'admin' };
+
+        await controller.v2.get(req, res);
+        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined });
+        const result = res.json.args[0][0];
+        chai.expect(result.length).to.equal(3);
+        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+      });
     });
 
   });
