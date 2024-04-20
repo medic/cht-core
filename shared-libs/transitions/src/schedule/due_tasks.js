@@ -1,4 +1,4 @@
-// TODO: this doesn't need to exist. We can just work this out dynamically when
+// ToThinkAbout: this doesn't need to exist. We can just work this out dynamically when
 //       gateway queries, it's not slow or complicated.
 const moment = require('moment');
 const utils = require('../lib/utils');
@@ -83,26 +83,7 @@ const updateScheduledTasks = (doc, context, dueDates) => {
   return updatedTasks;
 };
 
-const getBatch = async (query, startKey, startKeyDocId) => {
-  const queryString = Object.assign({}, query);
-  if (startKeyDocId) {
-    queryString.startkey_docid = startKeyDocId;
-    queryString.startkey = JSON.stringify(startKey);
-  }
-
-  const options = {
-    baseUrl: db.couchUrl,
-    uri: '/_design/medic/_view/messages_by_state',
-    qs: queryString,
-    json: true
-  };
-
-
-  const result = await rpn.get(options);
-  if (!result.rows || !result.rows.length) {
-    return;
-  }
-
+const getNextBatch = (result, startKeyDocId, query) => {
   const lastRow = result.rows.at(-1);
   const nextKey = lastRow.key;
   let nextKeyDocId = lastRow.id;
@@ -116,7 +97,11 @@ const getBatch = async (query, startKey, startKeyDocId) => {
       nextKeyDocId = null;
     }
   }
+  
+  return { nextKeyDocId, nextKey };
+};
 
+const processBatch = async (result) => {
   const rows = {};
   result.rows.forEach(row => {
     if (!rows[row.id]) {
@@ -135,7 +120,30 @@ const getBatch = async (query, startKey, startKeyDocId) => {
       await db.medic.put(doc);
     }
   }
+};
 
+const getBatch = async (query, startKey, startKeyDocId) => {
+  const queryString = Object.assign({}, query);
+  if (startKeyDocId) {
+    queryString.startkey_docid = startKeyDocId;
+    queryString.startkey = JSON.stringify(startKey);
+  }
+
+  const options = {
+    baseUrl: db.couchUrl,
+    uri: '/_design/medic/_view/messages_by_state',
+    qs: queryString,
+    json: true
+  };
+
+  const result = await rpn.get(options);
+  if (!result.rows?.length) {
+    return;
+  }
+
+  await processBatch(result);
+
+  const { nextKeyDocId, nextKey } = getNextBatch(result, startKeyDocId, query);
   if (nextKeyDocId) {
     return await getBatch(query, nextKey, nextKeyDocId);
   }

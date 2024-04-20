@@ -523,11 +523,10 @@ export class FormatDataRecordService {
     this.includeNonFormFieldsJson(settings, doc, keys, language);
   }
 
-  private formatScheduledTasks(formatted, doc, settings, language, context) {
-    formatted.scheduled_tasks_by_group = [];
+  private formatScheduledTasks(doc, settings, language, context) {
+    const scheduledTasksByGroup:Array<{ group; name; type; number; rows; rows_sorted }> = [];
     const groups = {};
     doc.scheduled_tasks.forEach((task) => {
-      // avoid crash if item is falsey
       if (!task) {
         return;
       }
@@ -566,8 +565,6 @@ export class FormatDataRecordService {
         copy.message_key = task.message_key;
       }
 
-      // setup scheduled groups
-
       const groupName = this.getGroupName(task);
       let group = groups[groupName];
       if (!group) {
@@ -584,8 +581,10 @@ export class FormatDataRecordService {
     });
     Object.keys(groups).forEach((key) => {
       groups[key].rows_sorted = _.sortBy(groups[key].rows, 'timestamp');
-      formatted.scheduled_tasks_by_group.push(groups[key]);
+      scheduledTasksByGroup.push(groups[key]);
     });
+
+    return scheduledTasksByGroup;
   }
 
   /*
@@ -672,7 +671,7 @@ export class FormatDataRecordService {
     }
 
     if (formatted.scheduled_tasks) {
-      this.formatScheduledTasks(formatted, doc, settings, language, context);
+      formatted.scheduled_tasks_by_group =this.formatScheduledTasks(doc, settings, language, context);
     }
 
     if (formatted.kujua_message) {
