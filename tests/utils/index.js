@@ -762,10 +762,6 @@ const listenForApi = async () => {
   console.log('Checking API');
   try {
     await request({ path: '/api/info' });
-    await delayPromise(1000);
-    await request({ path: '/api/info' });
-    await delayPromise(1000);
-    await request({ path: '/api/info' });
     console.log('API is up');
   } catch (err) {
     console.log('API check failed, trying again in 1 second');
@@ -1095,7 +1091,9 @@ const runCommand = (command, silent) => {
 const createCluster = async (dataDir) => {
   const hostPort = process.env.NGINX_HTTPS_PORT ? `${process.env.NGINX_HTTPS_PORT}` : '443';
   await runCommand(
-    `k3d cluster create ${PROJECT_NAME} --port ${hostPort}:443@loadbalancer --volume ${dataDir}:${K3D_DATA_PATH}`
+    `k3d cluster create ${PROJECT_NAME} ` +
+    `--port ${hostPort}:443@loadbalancer ` +
+    `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false`
   );
 };
 

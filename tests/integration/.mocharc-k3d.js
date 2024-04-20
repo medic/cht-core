@@ -15,7 +15,7 @@ module.exports = {
   spec: [
     'tests/integration/!(cht-conf)/**/*.spec.js',
   ],
-  grep: '@docker',
+  grep: '@docker', // exclude all tests that should only run in docker
   invert: true,
   timeout: 20000 * 1000, //API takes a little long to start up
   reporter: 'spec',
