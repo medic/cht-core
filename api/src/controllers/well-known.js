@@ -5,7 +5,7 @@ module.exports = {
   assetlinks: async (req, res) => {
     try {
       const settings = await settingsService.get();
-      if (Object.hasOwn(settings, 'assetlinks')) {
+      if (settings.assetlinks) {
         return res.json(settings.assetlinks);
       }
 
