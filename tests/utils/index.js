@@ -825,7 +825,10 @@ const startService = async (service) => {
   do {
     try {
       const podName = await getPodName(service, true);
-      await runCommand(`kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`, true);
+      await runCommand(
+        `kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`
+        , true
+      );
       return;
     } catch {
       tries--;
