@@ -1,4 +1,4 @@
-const utils= require('@utils');
+const utils = require('@utils');
 const hooks = require('./hooks');
 
 exports.mochaHooks = {

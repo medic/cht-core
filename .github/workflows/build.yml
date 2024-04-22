@@ -122,8 +122,13 @@ jobs:
 
   tests-k3d:
     needs: build
-    name: ci-integration-all-k3d
+    name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['ci-integration-all-k3d', 'ci-integration-sentinel-k3d']
 
     steps:
       - name: Login to Docker Hub
@@ -164,6 +169,16 @@ jobs:
       - uses: azure/setup-kubectl@v4
       - name: Run tests
         run: npm run ci-integration-all-k3d
+      - name: Archive Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.cmd }}
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}
 
   tests:
     needs: build

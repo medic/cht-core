@@ -12,9 +12,7 @@ module.exports = {
   checkLeaks: true,
   fullTrace: true,
   asyncOnly: false,
-  spec: [
-    // extend this file and overwrite this property with the specs you want to run
-  ],
+  spec: require('./specs').base,
   timeout: 200 * 1000, //API takes a little long to start up
   reporter: 'spec',
   require: [ 'tests/integration/hooks.js' ],
