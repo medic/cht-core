@@ -1244,7 +1244,6 @@ const getContainerDate = (container) => {
 };
 
 const logFeedbackDocs = async (test) => {
-
   const feedBackDocs = await chtDbUtils.getFeedbackDocs();
   const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
   if (!newFeedbackDocs.length) {
