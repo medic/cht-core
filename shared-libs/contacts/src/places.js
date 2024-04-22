@@ -83,18 +83,23 @@ const validatePlace = place => {
   return Promise.resolve();
 };
 
-const createPlace = async (place) => {
-  await module.exports._validatePlace(place); 
-  if (_.isObject(place.contact)) {
-    place.contact.type = place.contact.type || people._getDefaultPersonType();
-    const errStr = people._validatePerson(place.contact);
-    if (errStr) {
+const validatePlaceContact = async (contact) => {
+  if(_.isString(contact)) return;
+  const errStr = people._validatePerson(place.contact);
+  if (errStr) {
       return Promise.reject({
         code: 400,
         message: errStr
       });
-    }
   }
+};
+
+const createPlace = async (place) => {
+  await module.exports._validatePlace(place); 
+  if (_.isObject(place.contact)) {
+    place.contact.type = place.contact.type || people._getDefaultPersonType();
+  }
+  await validatePlaceContact(place.contact);
 
   const contact = place.contact;
   delete place.contact;
