@@ -722,8 +722,7 @@ describe('routing', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: { name: username, password },
-          username,
-          password
+          auth: { username, password }
         });
       };
 
