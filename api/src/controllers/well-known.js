@@ -3,14 +3,15 @@ const serverUtils = require('../server-utils');
 
 module.exports = {
   assetlinks: async (req, res) => {
-    return settingsService.get()
-      .then((settings) => {
-        if (!settings.assetlinks) {
-          throw { code: 404, error: 'not_found', reason: 'No assetlinks.json configured' };
-        }
-
+    try {
+      const settings = await settingsService.get();
+      if (settings.assetlinks) {
         return res.json(settings.assetlinks);
-      })
-      .catch(error => serverUtils.error(error, req, res));
+      }
+
+      serverUtils.error({ code: 404, reason: 'No assetlinks.json configured' }, req, res);
+    } catch (error) {
+      serverUtils.error(error, req, res);
+    }
   },
 };
