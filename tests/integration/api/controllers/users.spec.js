@@ -1671,7 +1671,7 @@ describe('Users API', () => {
       } catch ({ error }) {
         expect(error.code).to.equal(404);
         expect(error.error).to
-          .match(/Failed to find user with name [invalidUsername] in the [(users|medic)] database./);
+          .match(/Failed to find user with name \[invalidUsername\] in the \[(users|medic)\] database./);
         return;
       }
 
