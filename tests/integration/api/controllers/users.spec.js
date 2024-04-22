@@ -108,12 +108,7 @@ describe('Users API', () => {
     ];
 
     before(async () => {
-      const settings = await utils.getSettings();
-      const permissions = {
-        ...settings.permissions,
-        'can_edit': ['chw'],
-      };
-      await utils.updateSettings({ permissions }, true);
+      await utils.updatePermissions(['chw'], ['can_edit']);
 
       await utils.request({
         path: '/_users',
@@ -1609,7 +1604,6 @@ describe('Users API', () => {
   });
 
   describe('GET api/v2/users/{username}', () => {
-    const password = 'password1234!';
     let facility;
     let person;
     let user;
@@ -1635,12 +1629,7 @@ describe('Users API', () => {
       await utils.saveDocs([ facility, person ]);
       await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
 
-      const settings = await utils.getSettings();
-      const permissions = {
-        ...settings.permissions,
-        'can_view_users': ['program_officer'],
-      };
-      await utils.updateSettings({ permissions }, true);
+      await utils.updatePermissions(['program_officer'], ['can_view_users']);
     });
 
     after(async () => {
@@ -1654,10 +1643,10 @@ describe('Users API', () => {
         path: `/api/v2/users/${user.username}`,
       });
 
-      expect(users).to.deep.include({
+      expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: { ...facility, _rev: users.place._rev },
-        contact: { ...person, _rev: users.contact._rev },
+        place: facility,
+        contact: person,
       });
     });
 
@@ -1667,10 +1656,10 @@ describe('Users API', () => {
         auth: { username: userProgramOfficer.username, password },
       });
 
-      expect(users).to.deep.include({
+      expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: { ...facility, _rev: users.place._rev },
-        contact: { ...person, _rev: users.contact._rev },
+        place: facility,
+        contact: person,
       });
     });
 
@@ -1709,10 +1698,10 @@ describe('Users API', () => {
         auth: { username: user.username, password },
       });
 
-      expect(users).to.deep.include({
+      expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: { ...facility, _rev: users.place._rev },
-        contact: { ...person, _rev: users.contact._rev },
+        place: facility,
+        contact: person,
       });
     });
   });

@@ -140,13 +140,14 @@ describe('Users Controller', () => {
       chai.expect(users.getUser.notCalled).to.be.true;
       chai.expect(res.json.notCalled).to.be.true;
       chai.expect(serverUtils.error.calledOnce).to.be.true;
-      const expectedError = new Error('Insufficient privileges');
-      expectedError.code = 403;
+      const expectedError = { message: 'Insufficient privileges', code: 403 };
       chai.expect(serverUtils.error.args[0]).to.deep.equal([expectedError, req, res]);
     });
 
-    it('returns error when user does not have permission and is not referencing self with basic auth', async () => {
+    it('returns error when user does not have permission and conflicting basic auth and session cookie', async () => {
       auth.hasAllPermissions.returns(false);
+      // If a request has both basic auth and a session cookie, they should always match. But it is possible for a
+      // mismatched cookie to be sent with the request. In this case, we check both to see if user is referencing self.
       auth.basicAuthCredentials.returns({ username: 'medic' });
       const userCtx = { name: 'chw' };
       auth.getUserCtx.resolves(userCtx);
@@ -163,8 +164,7 @@ describe('Users Controller', () => {
       chai.expect(users.getUser.notCalled).to.be.true;
       chai.expect(res.json.notCalled).to.be.true;
       chai.expect(serverUtils.error.calledOnce).to.be.true;
-      const expectedError = new Error('Insufficient privileges');
-      expectedError.code = 403;
+      const expectedError = { message: 'Insufficient privileges', code: 403 };
       chai.expect(serverUtils.error.args[0]).to.deep.equal([expectedError, req, res]);
     });
 

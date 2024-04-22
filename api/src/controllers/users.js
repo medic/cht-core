@@ -235,18 +235,20 @@ module.exports = {
   },
 
   v2: {
-    get: (req, res) => auth.getUserCtx(req)
-      .then(userCtx => {
+    get: async (req, res) => {
+      try {
+        const userCtx = await auth.getUserCtx(req);
         const hasPermission = auth.hasAllPermissions(userCtx, 'can_view_users');
         if (!hasPermission && !isReferencingSelf(userCtx, auth.basicAuthCredentials(req), req.params.username)) {
-          const error = new Error('Insufficient privileges');
-          error.code = 403;
-          throw error;
+          serverUtils.error({ message: 'Insufficient privileges', code: 403 }, req, res);
+          return;
         }
-      })
-      .then(() => users.getUser(req.params.username))
-      .then(result => res.json(result))
-      .catch(err => serverUtils.error(err, req, res)),
+        const user  = await users.getUser(req.params.username);
+        return res.json(user);
+      } catch (err) {
+        serverUtils.error(err, req, res);
+      }
+    },
     list: async (req, res) => {
       try {
         const body = await getUserList(req);
