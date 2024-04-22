@@ -30,12 +30,12 @@ const contact = placeFactory.place().build({
 });
 
 describe('Testing Incorrect locale', () => {
-  after(async () => {
-    await browser.setCookies({ name: 'locale', value: 'en' });
+  afterEach(async () => {
     await utils.revertSettings(true);
+    await browser.setCookies({ name: 'locale', value: 'en' });
   });
 
-  before(async () => {
+  beforeEach(async () => {
     await loginPage.cookieLogin();
     await utils.saveDoc(contact);
     await sentinelUtils.waitForSentinel();
