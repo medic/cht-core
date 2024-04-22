@@ -84,14 +84,16 @@ const validatePlace = place => {
 };
 
 const preparePlaceContact = async (contact) => {
-  if(_.isString(contact)) return contact;
-  place.contact.type = place.contact.type || people._getDefaultPersonType();
-  const errStr = people._validatePerson(place.contact);
+  if (_.isString(contact)) { 
+    return contact; 
+  }
+  contact.type = contact.type || people._getDefaultPersonType();
+  const errStr = people._validatePerson(contact);
   if (errStr) {
-      return Promise.reject({
-        code: 400,
-        message: errStr
-      });
+    return Promise.reject({
+      code: 400,
+      message: errStr
+    });
   }
   return contact;
 };
