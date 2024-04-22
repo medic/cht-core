@@ -469,7 +469,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForSentinelLogs(/Reminder messages allowed between/);
+    return waitForSentinelLogs(true, /Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };
@@ -824,7 +824,9 @@ const startService = async (service) => {
   let tries = 100;
   do {
     try {
-      return await getPodName(service, true);
+      const podName = await getPodName(service, true);
+      await runCommand(`kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`, true);
+      return;
     } catch {
       tries--;
       await delayPromise(100);
@@ -834,7 +836,7 @@ const startService = async (service) => {
 
 const startSentinel = async () => {
   await startService('sentinel');
-  const logs = await waitForLogs('sentinel');
+  const logs = await waitForSentinelLogs(false);
   await logs.promise;
 };
 
@@ -1065,7 +1067,7 @@ const startServices = async () => {
 const runCommand = (command, silent) => {
   const [cmd, ...params] = command.split(' ');
   return new Promise((resolve, reject) => {
-    const proc = spawn(cmd, [ ...params], { env });
+    const proc = spawn(cmd, params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1099,9 +1101,15 @@ const createCluster = async (dataDir) => {
 };
 
 const importImages = async () => {
-  for (const service of Object.keys(SERVICES)) {
-    const serviceName = service.replace(/\d/, '');
-    const image = `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
+  const allImages = Object
+    .keys(SERVICES)
+    .map(service => {
+      const serviceName = service.replace(/\d/, '');
+      return `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
+    });
+  const images = [...new Set(allImages)];
+
+  for (const image of images) {
     // authentication to private repos is weird to set up in k3d.
     // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
     try {
@@ -1222,11 +1230,12 @@ const killSpawnedProcess = (proc) => {
  * Watches a docker or kubernetes container log until at least one line matches one of the given regular expressions.
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
+ * @param {Boolean} tail - check logs with or without tailing
  * @param {[RegExp]} regex - matching expression(s) run against lines
  * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
  */
 
-const waitForLogs = (container, ...regex) => {
+const waitForLogs = (container, tail, ...regex) => {
   container = getContainerName(container);
   const cmd = isDocker() ? 'docker' : 'kubectl';
   let timeout;
@@ -1237,7 +1246,7 @@ const waitForLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
+  const params = `logs ${container} -f${tail ? ` --tail=1` : ''}${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
   const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1254,11 +1263,12 @@ const waitForLogs = (container, ...regex) => {
         firstLine = true;
         receivedFirstLine();
         if (!regex.length) {
+          console.log(data.toString());
           resolve();
           clearTimeout(timeout);
           killSpawnedProcess(proc);
+          return;
         }
-        return;
       }
 
       data = data.toString();
@@ -1284,9 +1294,8 @@ const waitForLogs = (container, ...regex) => {
   }));
 };
 
-const waitForApiLogs = (...regex) => waitForLogs('api', ...regex);
-const waitForSentinelLogs = (...regex) => waitForLogs('sentinel', ...regex);
-
+const waitForApiLogs = (...regex) => waitForLogs('api', true, ...regex);
+const waitForSentinelLogs = (tail, ...regex) => waitForLogs('sentinel', tail, ...regex);
 /**
  * Collector that listens to the given container logs and collects lines that match at least one of the
  * given regular expressions

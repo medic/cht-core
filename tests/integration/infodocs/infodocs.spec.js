@@ -73,10 +73,7 @@ describe('infodocs', () => {
     await utils.stopSentinel();
     await utils.startSentinel();
 
-    // this might time out when we start the container and it clears the background queue so
-    // fast that, by the time we watch the logs, it had already completed. if this proves to be the case, we would
-    // need to edit the waitForSentinelLogs command to include more trailing logs or something.
-    const waitForLogs = await utils.waitForSentinelLogs(/Task backgroundCleanup completed /);
+    const waitForLogs = await utils.waitForSentinelLogs(false, /Task backgroundCleanup completed /);
     await waitForLogs.promise;
 
     const results = await delayedInfoDocsOf(doc._id);
