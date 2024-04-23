@@ -92,7 +92,7 @@ describe('Outbound', () => {
     server = destinationApp.listen();
     port = server.address().port;
     sentinelDate = await utils.getSentinelDate();
-    minute = sentinelDate.get('minute') - 1;
+    minute = sentinelDate.get('minute') - 2;
     hour = sentinelDate.get('hour');
     server.close();
   });
