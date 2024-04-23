@@ -809,8 +809,6 @@ const dockerComposeCmd = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
   params.unshift(...composeFiles, '-p', PROJECT_NAME);
 
-  console.log(params);
-
   return new Promise((resolve, reject) => {
     const cmd = spawn('docker-compose', params, { env });
     const output = [];
@@ -833,7 +831,7 @@ const dockerComposeCmd = (params) => {
 
 const stopService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`down -t 0 ${service}`);
+    return await dockerComposeCmd(`stop -t 0 ${service}`);
   }
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
   let tries = 100;
@@ -852,7 +850,7 @@ const stopSentinel = () => stopService('sentinel');
 
 const startService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`up -d ${service}`);
+    return await dockerComposeCmd(`start ${service}`);
   }
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
   let tries = 100;
@@ -1276,6 +1274,7 @@ const waitForLogs = (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let firstLine = false;
+  tail = isDocker() ? true : tail;
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
