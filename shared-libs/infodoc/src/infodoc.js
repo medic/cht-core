@@ -147,6 +147,7 @@ const updateTransition = (change, transition, ok) => {
     last_rev: change.doc._rev,
     seq: change.seq,
     ok: ok,
+    run_date: (new Date()).toISOString(),
   };
 };
 

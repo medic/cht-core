@@ -54,7 +54,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   relevantReportForms;
   childContactTypes;
   filteredTasks = [];
-  filteredReports = [];
+  filteredReports: any[] = [];
+  DISPLAY_LIMIT = 50;
 
   constructor(
     private store: Store,
@@ -166,7 +167,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         }
         await this.setChildTypesBySelectedContact();
         await this.setSettings();
-        await Promise.all([ this.setRightActionBar(), this.updateFastActions() ]);
+        await Promise.all([this.setRightActionBar(), this.updateFastActions()]);
         this.subscribeToAllContactXmlForms();
         this.subscribeToSelectedContactXmlForms();
       });
@@ -199,7 +200,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToRoute() {
-    const routeSubscription =  this.route.params.subscribe((params) => {
+    const routeSubscription = this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
@@ -216,8 +217,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       key: 'contacts-content',
       filter: (change) => {
         return this.contactChangeFilterService.matchContact(change, this.selectedContact) ||
-               this.contactChangeFilterService.isRelevantContact(change, this.selectedContact) ||
-               this.contactChangeFilterService.isRelevantReport(change, this.selectedContact);
+          this.contactChangeFilterService.isRelevantContact(change, this.selectedContact) ||
+          this.contactChangeFilterService.isRelevantReport(change, this.selectedContact);
       },
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
@@ -237,15 +238,31 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     const reportStartDate = months ? moment().subtract(months, 'months') : null;
 
     const allReports = reports || this.selectedContact?.reports || [];
-    this.filteredReports = allReports
-      .filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
+
+    this.filteredReports = this.getFilteredReports(allReports, reportStartDate, this.DISPLAY_LIMIT);
   }
 
+  private getFilteredReports(allReports: any[], reportStartDate, displayLimit): any[] {
+    const filteredReports: any[] = [];
+    for (const report of allReports) {
+      if (filteredReports.length >= displayLimit) {
+        break;
+      }
+
+      if (reportStartDate?.isBefore(report.reported_date)) {
+        filteredReports.push(report);
+      }
+    }
+    return filteredReports;
+  }
+  
   filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
     const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
     const allTasks = tasks || this.selectedContact?.tasks || [];
-    this.filteredTasks = allTasks.filter((task) => !taskEndDate || task.dueDate <= taskEndDate);
+    this.filteredTasks = allTasks
+      .filter((task) => !taskEndDate || task.dueDate <= taskEndDate)
+      .slice(0, this.DISPLAY_LIMIT);
   }
 
   private async setRightActionBar() {

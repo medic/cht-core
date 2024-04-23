@@ -217,11 +217,15 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        const facilityId = homePlaceId ?? userSettings.facility_id;
-        if (facilityId) {
-          this.globalActions.setUserFacilityId(facilityId);
-          return this.getDataRecordsService.get(facilityId);
+        const facilityId: string = homePlaceId ?? userSettings.facility_id;
+        if (!facilityId) {
+          return;
         }
+
+        this.globalActions.setUserFacilityId(facilityId);
+        return this.getDataRecordsService
+          .get([ facilityId ])
+          .then(places => places?.length ? places[0] : undefined);
       })
       .then((summary) => {
         if (summary) {

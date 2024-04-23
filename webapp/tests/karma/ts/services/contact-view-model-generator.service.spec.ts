@@ -23,9 +23,9 @@ describe('ContactViewModelGenerator service', () => {
   let dbQuery;
   let doc;
   let search;
-  let getDataRecords;
   let forms;
   let contactTypesService;
+  let getDataRecordsService;
   let types;
 
   const childPlaceIcon = 'fa-mushroom';
@@ -59,15 +59,15 @@ describe('ContactViewModelGenerator service', () => {
     search.resolves(reports);
   };
 
-  const stubGetDataRecords = (dataRecords) => {
-    getDataRecords.resolves(dataRecords);
+  const stubGetDataRecordsService = (dataRecords) => {
+    getDataRecordsService.get = sinon.stub().resolves(dataRecords);
+    getDataRecordsService.getDocsSummaries = sinon.stub().resolves(dataRecords);
   };
 
   beforeEach(() => {
     search = sinon.stub();
     dbGet = sinon.stub();
     dbQuery = sinon.stub();
-    getDataRecords = sinon.stub();
     types = [
       { id: 'family' },
       { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
@@ -107,13 +107,18 @@ describe('ContactViewModelGenerator service', () => {
       getTypeById: sinon.stub().callsFake((types, id) => types.find(type => type.id === id)),
     };
 
+    getDataRecordsService = {
+      get: sinon.stub(),
+      getDocsSummaries: sinon.stub(),
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
         { provide: SearchService, useValue: { search } },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
-        { provide: GetDataRecordsService, useValue: { get: getDataRecords } },
+        { provide: GetDataRecordsService, useValue: getDataRecordsService },
         { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
       ]
     });
@@ -143,10 +148,11 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(doc);
       stubDbGet(null, childContactPerson);
       stubSearch([]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
       stubDbQueryChildren(doc._id, childrenArray);
 
-      return service.getContact(doc._id)
+      return service
+        .getContact(doc._id)
         .then(waitForModelToLoad);
     };
 
@@ -223,9 +229,11 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(doc);
       stubDbGet({ status: 404 }, childContactPerson);
       stubSearch([]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
       stubDbQueryChildren(doc._id, [childPerson]);
-      return service.getContact(doc._id)
+
+      return service
+        .getContact(doc._id)
         .then(waitForModelToLoad)
         .then(model => {
           assert.equal(model.children[0].contacts.length, 1);
@@ -407,7 +415,7 @@ describe('ContactViewModelGenerator service', () => {
     const runPersonTest = parentDoc => {
       stubLineageModelGenerator(childContactPerson, [ parentDoc ]);
       stubSearch([]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
       return service.getContact(childContactPerson._id);
     };
 
@@ -450,7 +458,8 @@ describe('ContactViewModelGenerator service', () => {
 
     it('sets the returned reports as selected', () => {
       stubSearch([ { _id: 'ab' } ]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -463,7 +472,8 @@ describe('ContactViewModelGenerator service', () => {
       const report1 = { _id: 'ab', reported_date: 123 };
       const report2 = { _id: 'cd', reported_date: 456 };
       stubSearch([ report1, report2 ]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -475,7 +485,8 @@ describe('ContactViewModelGenerator service', () => {
 
     it('includes reports from children', () => {
       stubSearch([ { _id: 'ab' }, { _id: 'cd' } ]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
         .then(waitForModelToLoad)
         .then(model => {
@@ -493,7 +504,8 @@ describe('ContactViewModelGenerator service', () => {
       const report1 = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
       const report2 = { _id: 'cd', fields: { patient_id: childPerson.patient_id, patient_name: 'Jack' } };
       stubSearch([ report1, report2 ]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
@@ -512,7 +524,8 @@ describe('ContactViewModelGenerator service', () => {
         { _id: 'bb', reported_date: 345 }
       ];
       stubSearch([ expectedReports[0], expectedReports[1] ]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
@@ -526,7 +539,8 @@ describe('ContactViewModelGenerator service', () => {
       doc.patient_id = 'cd';
       doc.place_id = 'ef';
       stubSearch([ { _id: 'ab' } ]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(() => {
@@ -543,7 +557,8 @@ describe('ContactViewModelGenerator service', () => {
       childPerson.patient_id = '12345';
       const report = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
       stubSearch([ report ]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([childPerson])
         .then(waitForModelToLoad)
         .then(model => {
@@ -563,7 +578,8 @@ describe('ContactViewModelGenerator service', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', validSubject: 'ac', subject: { value: 'ad' } };
       stubSearch([ report ]);
-      stubGetDataRecords([ dataRecord ]);
+      stubGetDataRecordsService([ dataRecord ]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -576,7 +592,8 @@ describe('ContactViewModelGenerator service', () => {
       const dataRecord = { _id: 'ab', form: 'a', validSubject: 'ac', subject: { value: 'ad' } };
       forms = [ { code: 'a', subjectKey: 'some.key' } ];
       stubSearch([ report ]);
-      stubGetDataRecords([ dataRecord ]);
+      stubGetDataRecordsService([ dataRecord ]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -588,7 +605,8 @@ describe('ContactViewModelGenerator service', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', subject: { value: 'ad' } };
       stubSearch([ report ]);
-      stubGetDataRecords([ dataRecord ]);
+      stubGetDataRecordsService([ dataRecord ]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -600,7 +618,8 @@ describe('ContactViewModelGenerator service', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', validSubject: 'ac' };
       stubSearch([ report ]);
-      stubGetDataRecords([ dataRecord ]);
+      stubGetDataRecordsService([ dataRecord ]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -611,7 +630,8 @@ describe('ContactViewModelGenerator service', () => {
     it('does not add heading to reports when no data record is found', () => {
       const report = { _id: 'ab' };
       stubSearch([ report ]);
-      stubGetDataRecords([ ]);
+      stubGetDataRecordsService([]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -624,7 +644,8 @@ describe('ContactViewModelGenerator service', () => {
       const dataRecordA = { _id: 'a', validSubject: 'avs', subject: { value: 'asv' } };
       const dataRecordB = { _id: 'b', validSubject: 'bvs', subject: { value: 'bsv' } };
       stubSearch([ report ]);
-      stubGetDataRecords([ dataRecordB, dataRecordA ]);
+      stubGetDataRecordsService([ dataRecordB, dataRecordA ]);
+
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -638,7 +659,7 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(doc, lineage);
       stubDbGet(null, {});
       stubSearch([]);
-      stubGetDataRecords([]);
+      stubGetDataRecordsService([]);
       stubDbQueryChildren(doc._id, []);
       return service.getContact(doc._id);
     };

@@ -1,12 +1,10 @@
 const db = require('./db');
 
-const list = async (users, settings) => {
+const list = async (users) => {
   const ids = new Set();
   for (const user of users) {
-    ids.add(user?.doc?.facility_id);
-  }
-  for (const setting of settings) {
-    ids.add(setting?.contact_id);
+    ids.add(user?.facility_id);
+    ids.add(user?.contact_id);
   }
   ids.delete(undefined);
   if (!ids.size) {
