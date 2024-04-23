@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const crypto = require('crypto');
 
 const sinon = require('sinon');
@@ -60,7 +60,7 @@ describe('Settings Shared Library', () => {
         .getCredentials('/../../some-other-db')
         .then(() => {
           expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0])
+          expect(request.get.args[0][0].url)
             .to.equal('http://user:pass@server.com/medic-vault/credential:%2F..%2F..%2Fsome-other-db');
         });
     });
@@ -84,8 +84,8 @@ describe('Settings Shared Library', () => {
         final: sinon.stub().returns(Buffer.from('end'))
       };
       sinon.stub(request, 'get')
-        .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ password: `${iv}:${encryptedPass}` })
-        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/medic-vault/credential:mykey')).resolves({ password: `${iv}:${encryptedPass}` })
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/_node/_local/_config/couch_httpd_auth/secret')).resolves('mysecret');
       sinon.stub(crypto, 'createDecipheriv').returns(cipher);
 
       return lib
@@ -120,8 +120,8 @@ describe('Settings Shared Library', () => {
 
     it('rejects if no id given', () => {
       sinon.stub(request, 'get')
-        .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ password: `oldiv:oldpass` })
-        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/medic-vault/credential:mykey')).resolves({ password: `oldiv:oldpass` })
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/_node/_local/_config/couch_httpd_auth/secret')).resolves('mysecret');
       return lib.setCredentials()
         .then(() => expect.fail('exception expected'))
         .catch(err => {
@@ -136,7 +136,7 @@ describe('Settings Shared Library', () => {
         .then(() => expect.fail('exception expected'))
         .catch(err => {
           expect(request.get.callCount).to.equal(2);
-          expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
+          expect(request.get.args[0][0].url).to.equal('http://server.com/medic-vault/credential:mykey');
           expect(err.message).to.equal('down');
         });
     });
@@ -151,8 +151,8 @@ describe('Settings Shared Library', () => {
         .then(() => {
           expect(request.get.callCount).to.equal(2);
           expect(request.put.callCount).to.equal(1);
-          expect(request.put.args[0][0]).to.equal('http://server.com/medic-vault/credential:%2F..%2F..%2Fsome-other-db');
-          expect(request.put.args[0][1].body).to.deep.equal({
+          expect(request.put.args[0][0].url).to.equal('http://server.com/medic-vault/credential:%2F..%2F..%2Fsome-other-db');
+          expect(request.put.args[0][0].body).to.deep.equal({
             _id: 'credential:%2F..%2F..%2Fsome-other-db',
             password: 'myiv:' + Buffer.from('startend').toString('hex')
           });
@@ -161,15 +161,15 @@ describe('Settings Shared Library', () => {
 
     it('handles creating doc', () => {
       sinon.stub(request, 'get')
-        .withArgs('http://server.com/medic-vault/credential:mykey').rejects({ message: 'missing', statusCode: 404 })
-        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/medic-vault/credential:mykey')).rejects({ message: 'missing', statusCode: 404 })
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/_node/_local/_config/couch_httpd_auth/secret')).resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib.setCredentials('mykey', 'mypass')
         .then(() => {
           expect(request.get.callCount).to.equal(2);
           expect(request.put.callCount).to.equal(1);
-          expect(request.put.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
-          expect(request.put.args[0][1].body).to.deep.equal({
+          expect(request.put.args[0][0].url).to.equal('http://server.com/medic-vault/credential:mykey');
+          expect(request.put.args[0][0].body).to.deep.equal({
             _id: 'credential:mykey',
             password: 'myiv:' + Buffer.from('startend').toString('hex')
           });
@@ -186,15 +186,15 @@ describe('Settings Shared Library', () => {
 
     it('handles updating doc', () => {
       sinon.stub(request, 'get')
-        .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ _id: 'credential:mykey', _rev: '1', password: 'old' })
-        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/medic-vault/credential:mykey')).resolves({ _id: 'credential:mykey', _rev: '1', password: 'old' })
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/_node/_local/_config/couch_httpd_auth/secret')).resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib.setCredentials('mykey', 'mypass')
         .then(() => {
           expect(request.get.callCount).to.equal(2);
           expect(request.put.callCount).to.equal(1);
-          expect(request.put.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
-          expect(request.put.args[0][1].body).to.deep.equal({
+          expect(request.put.args[0][0].url).to.equal('http://server.com/medic-vault/credential:mykey');
+          expect(request.put.args[0][0].body).to.deep.equal({
             _id: 'credential:mykey',
             _rev: '1',
             password: 'myiv:' + Buffer.from('startend').toString('hex')
@@ -227,7 +227,7 @@ describe('Settings Shared Library', () => {
       return lib
         .setCredentials('mykey', 'mypass')
         .then(() => {
-          const doc = request.put.args[0][1].body;
+          const doc = request.put.args[0][0].body;
           requestGet.onCall(2).resolves(doc);
           requestGet.onCall(3).resolves(secret);
           return lib.getCredentials('mykey');
@@ -246,7 +246,7 @@ describe('Settings Shared Library', () => {
       return lib
         .setCredentials('mykey', 'mypass')
         .then(() => {
-          const doc = request.put.args[0][1].body;
+          const doc = request.put.args[0][0].body;
           requestGet.onCall(2).resolves(doc);
           requestGet.onCall(3).resolves(secret);
           return lib.getCredentials('mykey');
@@ -278,7 +278,7 @@ describe('Settings Shared Library', () => {
       return lib
         .setCredentials('mykey', 'mypass')
         .then(() => {
-          const doc = request.put.args[0][1].body;
+          const doc = request.put.args[0][0].body;
           requestGet.onCall(2).resolves(doc);
           requestGet.onCall(3).resolves('newsecret');
           return lib.getCredentials('mykey');
