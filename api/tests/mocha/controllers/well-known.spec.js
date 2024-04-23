@@ -3,6 +3,7 @@ const chai = require('chai');
 
 const controller = require('../../../src/controllers/well-known');
 const settingsService = require('../../../src/services/settings');
+const serverUtils = require('../../../src/server-utils');
 
 describe('well-known controller', () => {
   let req;
@@ -10,14 +11,9 @@ describe('well-known controller', () => {
   let settingsGet;
 
   beforeEach(() => {
-    req = {
-      accepts: sinon.stub().returns('json'),
-    };
+    req = {};
     res = {
       json: sinon.stub(),
-      status: sinon.stub(),
-      type: sinon.stub(),
-      end: sinon.stub(),
     };
     settingsGet = sinon.stub(settingsService, 'get');
   });
@@ -35,17 +31,19 @@ describe('well-known controller', () => {
 
     it('should respond 404 not found if not configured', async () => {
       settingsGet.resolves({});
+      sinon.stub(serverUtils, 'error');
 
       await controller.assetlinks(req, res);
-      chai.expect(res.status.args[0][0]).to.equal(404);
+      chai.expect(serverUtils.error.args[0][0].code).to.equal(404);
       chai.expect(res.json.callCount).to.equal(0);
     });
 
     it('should respond 500 with an error if settings service is failing', async () => {
       settingsGet.rejects();
+      sinon.stub(serverUtils, 'error');
 
       await controller.assetlinks(req, res);
-      chai.expect(res.status.args[0][0]).to.equal(500);
+      chai.expect(serverUtils.error.args[0][0]).to.be.an.instanceOf(Error);
       chai.expect(res.json.callCount).to.equal(0);
     });
   });
