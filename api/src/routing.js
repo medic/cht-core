@@ -53,6 +53,7 @@ const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
+const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
 const startupLog = require('./services/setup/startup-log');
@@ -232,6 +233,8 @@ app.use(compression({
     return compression.filter(req, res);
   }
 }));
+
+app.get('/.well-known/assetlinks.json', wellKnownController.assetlinks);
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
