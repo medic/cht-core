@@ -1,4 +1,4 @@
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
@@ -15,7 +15,7 @@ const get = (path, headers) => {
     .forEach(header => delete getHeaders[header]);
 
   const url = new URL(path, environment.serverUrlNoAuth);
-  return rpn.get({
+  return request.get({
     url: url.toString(),
     headers: getHeaders,
     json: true
@@ -103,7 +103,7 @@ module.exports = {
     const authUrl = new URL(environment.serverUrlNoAuth);
     authUrl.username = username;
     authUrl.password = password;
-    return rpn.head({
+    return request.head({
       uri: authUrl.toString(),
       resolveWithFullResponse: true
     })

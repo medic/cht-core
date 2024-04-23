@@ -1,7 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const http = require('http');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const rewire = require('rewire');
 
 let service;

@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const crypto = require('crypto');
 
 const IV_LENGTH = 16;
@@ -24,7 +24,7 @@ const getCredentialsDoc = (id) => {
     return Promise.reject(new Error('You must pass the key for the credentials you want'));
   }
   return request
-    .get(getVaultUrl(id), { json: true })
+    .get({ url: getVaultUrl(id), json: true })
     .catch(err => {
       if (err.statusCode === 404) {
         // No credentials defined
@@ -40,7 +40,7 @@ const getKey = () => {
   // https://docs.couchdb.org/en/stable/config/auth.html#chttpd_auth/secret
   const url = `${getCouchConfigUrl()}/couch_httpd_auth/secret`;
   return request
-    .get(url, { json: true })
+    .get({ url, json: true })
     .then(key => {
       if (!key.length) {
         throw new Error('Invalid cypher. CouchDB Secret needs to be set in order to use secure credentials.');
@@ -106,7 +106,7 @@ const setCredentials = (id, password) => {
         doc = { _id: getCredentialId(id) };
       }
       doc.password = encrypted;
-      return request.put(getVaultUrl(id), { json: true, body: doc });
+      return request.put({ url: getVaultUrl(id), json: true, body: doc });
     });
 };
 
