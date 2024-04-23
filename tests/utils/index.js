@@ -804,10 +804,11 @@ const listenForApi = async () => {
   }
 };
 
-const dockerComposeCmd = (...params) => {
+const dockerComposeCmd = (params) => {
   const composeFilesParam = COMPOSE_FILES
     .map(file => ['-f', getTestComposeFilePath(file)])
     .flat();
+  params = params.split(' ').filter(String);
   const projectParams = ['-p', PROJECT_NAME];
 
   return new Promise((resolve, reject) => {
@@ -832,7 +833,7 @@ const dockerComposeCmd = (...params) => {
 
 const stopService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd('stop', '-t', '0', service);
+    return await dockerComposeCmd(`down -t 0 ${service}`);
   }
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
   let tries = 100;
@@ -851,7 +852,7 @@ const stopSentinel = () => stopService('sentinel');
 
 const startService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd('start', service);
+    return await dockerComposeCmd(`up -d ${service}`);
   }
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
   let tries = 100;
@@ -1093,8 +1094,8 @@ const startServices = async () => {
   env.DB2_DATA = makeTempDir('ci-dbdata');
   env.DB3_DATA = makeTempDir('ci-dbdata');
 
-  await dockerComposeCmd('up', '-d');
-  const services = await dockerComposeCmd('ps', '-q');
+  await dockerComposeCmd('up -d');
+  const services = await dockerComposeCmd('ps -q');
   if (!services.length) {
     throw new Error('Errors when starting services');
   }
@@ -1252,7 +1253,7 @@ const tearDownServices = async () => {
     if (isK3D()) {
       return await cleanupOldCluster();
     }
-    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+    await dockerComposeCmd('down -t 0 --remove-orphans --volumes');
   }
 };
 
@@ -1299,7 +1300,6 @@ const waitForLogs = (container, tail, ...regex) => {
         firstLine = true;
         receivedFirstLine();
         if (!regex.length) {
-          console.log(data.toString());
           resolve();
           clearTimeout(timeout);
           killSpawnedProcess(proc);

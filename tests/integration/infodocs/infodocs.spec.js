@@ -73,7 +73,7 @@ describe('infodocs', () => {
     await utils.stopSentinel();
     await utils.startSentinel();
 
-    const waitForLogs = await utils.waitForSentinelLogs(false, /Task backgroundCleanup completed /);
+    const waitForLogs = await utils.waitForSentinelLogs(false, /Task backgroundCleanup completed/);
     await waitForLogs.promise;
 
     const results = await delayedInfoDocsOf(doc._id);
