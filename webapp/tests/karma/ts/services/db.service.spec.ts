@@ -359,6 +359,7 @@ describe('Db Service', () => {
         getService();
         const db = service.get();
         sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        sinon.resetHistory();
 
         // can't use await, changes doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -449,6 +450,7 @@ describe('Db Service', () => {
         const db = service.get();
         const onError = sinon.stub();
         sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        sinon.resetHistory();
 
         return db
           .changes(opts)
