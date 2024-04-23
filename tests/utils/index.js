@@ -805,14 +805,14 @@ const listenForApi = async () => {
 };
 
 const dockerComposeCmd = (params) => {
-  const composeFilesParam = COMPOSE_FILES
-    .map(file => ['-f', getTestComposeFilePath(file)])
-    .flat();
   params = params.split(' ').filter(String);
-  const projectParams = ['-p', PROJECT_NAME];
+  const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
+  params.unshift(...composeFiles, '-p', PROJECT_NAME);
+
+  console.log(params);
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [...projectParams, ...composeFilesParam, ...params], { env });
+    const cmd = spawn('docker-compose', params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -873,8 +873,6 @@ const startService = async (service) => {
 
 const startSentinel = async () => {
   await startService('sentinel');
-  const logs = await waitForSentinelLogs(false);
-  await logs.promise;
 };
 
 const stopApi = () => stopService('api');

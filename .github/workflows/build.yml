@@ -168,7 +168,7 @@ jobs:
       - uses: azure/setup-helm@v4.1.0
       - uses: azure/setup-kubectl@v4
       - name: Run tests
-        run: npm run ci-integration-all-k3d
+        run: npm run ${{ matrix.cmd }}
       - name: Archive Results
         uses: actions/upload-artifact@v4
         with:
