@@ -6,6 +6,9 @@ const querystring = require('querystring');
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('@utils/sentinel');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -105,12 +108,7 @@ describe('Users API', () => {
     ];
 
     before(async () => {
-      const settings = await utils.getSettings();
-      const permissions = {
-        ...settings.permissions,
-        'can_edit': ['chw'],
-      };
-      await utils.updateSettings({ permissions }, true);
+      await utils.updatePermissions(['chw'], ['can_edit']);
 
       await utils.request({
         path: '/_users',
@@ -1604,6 +1602,111 @@ describe('Users API', () => {
         });
     });
   });
+
+  describe('GET api/v2/users/{username}', () => {
+    let facility;
+    let person;
+    let user;
+    let userProgramOfficer;
+
+    before(async () => {
+      facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
+      person = utils.deepFreeze(
+        personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null })
+      );
+      facility.contact = person._id;
+      facility = utils.deepFreeze(facility);
+      user = userFactory.build({ username: 'chw111', place: facility._id, contact: person._id, roles: ['chw'] });
+      delete user.password;
+      user = utils.deepFreeze(user);
+      userProgramOfficer = utils.deepFreeze(userFactory.build({
+        username: 'prog222',
+        place: facility._id,
+        contact: person._id,
+        roles: ['program_officer']
+      }));
+
+      await utils.saveDocs([ facility, person ]);
+      await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
+
+      await utils.updatePermissions(['program_officer'], ['can_view_users']);
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
+      await utils.revertDb([], true);
+      await utils.deleteUsers([user]);
+    });
+
+    it('retrieves a user by username', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+      });
+
+      expect(users).excludingEvery(['_rev']).to.deep.include({
+        ...user,
+        place: facility,
+        contact: person,
+      });
+    });
+
+    it('retrieves a user with can_view_users permission', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+        auth: { username: userProgramOfficer.username, password },
+      });
+
+      expect(users).excludingEvery(['_rev']).to.deep.include({
+        ...user,
+        place: facility,
+        contact: person,
+      });
+    });
+
+    it('returns an error when no user is found for username', async () => {
+      try {
+        await utils.request({
+          path: `/api/v2/users/invalidUsername`,
+        });
+      } catch ({ error }) {
+        expect(error.code).to.equal(404);
+        expect(error.error).to
+          .match(/Failed to find user with name \[invalidUsername\] in the \[(users|medic)\] database./);
+        return;
+      }
+
+      expect.fail('Should have thrown an error');
+    });
+
+    it('returns an error when user does not have can_view_users permission', async () => {
+      try {
+        await utils.request({
+          path: `/api/v2/users/${userProgramOfficer.username}`,
+          auth: { username: user.username, password },
+        });
+      } catch ({ error }) {
+        expect(error.code).to.equal(403);
+        expect(error.error).to.equal('Insufficient privileges');
+        return;
+      }
+
+      expect.fail('Should have thrown an error');
+    });
+
+    it('retrieves self even when user does not have can_view_users permission', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+        auth: { username: user.username, password },
+      });
+
+      expect(users).excludingEvery(['_rev']).to.deep.include({
+        ...user,
+        place: facility,
+        contact: person,
+      });
+    });
+  });
+
 
   describe('POST/GET api/v2/users', () => {
     before(async () => {
