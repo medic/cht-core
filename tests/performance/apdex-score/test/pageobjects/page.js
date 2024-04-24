@@ -1,4 +1,4 @@
-const { browser } = require('@wdio/globals');
+const { browser, driver } = require('@wdio/globals');
 const moment = require('moment-timezone');
 const { execSync } = require('child_process');
 
@@ -37,31 +37,31 @@ module.exports = class Page {
   }
 
   get tabDropdown() {
-    return $('//android.view.View[@text=""]')
+    return $('//android.view.View[@text=""]');
   }
 
   get menuItemSyncNow() {
-    return $('//android.view.MenuItem[@text="Sync now"]')
+    return $('//android.view.MenuItem[@text="Sync now"]');
   }
 
   get menuTextSyncStatus() {
-    return $('(//*[@resource-id="header-dropdown"]//android.view.View)[2]')
+    return $('(//*[@resource-id="header-dropdown"]//android.view.View)[2]');
   }
 
   get menuTextSyncTime() {
-    return $('//android.view.View[contains(@text, "Last sync")]')
+    return $('//android.view.View[contains(@text, "Last sync")]');
   }
 
   get menuItemAbout() {
-    return $('//android.view.MenuItem[@text="About"]')
+    return $('//android.view.MenuItem[@text="About"]');
   }
 
   get menuItemSettings() {
-    return $('//android.view.MenuItem[@text="User settings"]')
+    return $('//android.view.MenuItem[@text="User settings"]');
   }
 
   get menuItemReportBug() {
-    return $('//android.view.MenuItem[@text="Report bug"]')
+    return $('//android.view.MenuItem[@text="Report bug"]');
   }
 
   get scrollView () {
@@ -83,11 +83,11 @@ module.exports = class Page {
 
   async toggleAirplaneMode (state) {
     driver.getNetworkConnection().then(nConnect => {
-        if (nConnect == 1 && state == 'off') {
-            execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });
-        }else if (nConnect == 6 && state == 'on') {
-            execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
-        }
+      if (nConnect === 1 && state === 'off') {
+        return execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });
+      } else if (nConnect === 6 && state === 'on') {
+        return execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
+      }
     });
   }
 
@@ -129,9 +129,9 @@ module.exports = class Page {
     console.log('TIME::: Hour:', extractCurrentDate.hour);
     console.log('TIME::: Minute:', extractCurrentDate.minute);
     console.log('TIME::: Extracted Components:', extractCurrentDate);
-    const ardDateFormat = `${extractCurrentDate.month}${extractCurrentDate.day}${extractCurrentDate.hour}${extractCurrentDate.minute}${extractCurrentDate.year}`;
-    console.log('TIME::: Command is:', 'adb -e shell su root date ' + '`'  + ardDateFormat + '`');
-    execSync('adb shell su root date ' + ardDateFormat, { stdio: 'inherit' });
+    const adbDateFormat = `${extractCurrentDate.month}${extractCurrentDate.day}${extractCurrentDate.hour}
+    ${extractCurrentDate.minute}${extractCurrentDate.year}`;
+    execSync('adb shell su root date ' + adbDateFormat, { stdio: 'inherit' });
     browser.pause(10000);
   }
 
@@ -153,4 +153,4 @@ module.exports = class Page {
     return visitDate;
   }
 
-}
+};

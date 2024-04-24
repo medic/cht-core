@@ -10,6 +10,7 @@ class TasksPage extends Page {
   get iconPregnancy () {
     return $('//*[@text="icon-pregnancy"]');
   }
+  
   get iconClose () {
     return $('//*[@text="Close"]');
   }

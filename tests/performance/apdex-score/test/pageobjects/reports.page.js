@@ -4,15 +4,15 @@ const Page = require('./page');
 class ReportsPage extends Page {
     
   get iconHealthCare () {
-      return $('(//*[@text="icon-healthcare"])[1]');
+    return $('(//*[@text="icon-healthcare"])[1]');
   }
 
   get itemFirstReport () {
-      return $('((//android.widget.ListView//android.view.View)[1]//android.view.View)[1]');
+    return $('((//android.widget.ListView//android.view.View)[1]//android.view.View)[1]');
   }
 
   get iconBack () {
-      return $('//*[@text="Back"]');
+    return $('//*[@text="Back"]');
   }
 
   async viewAReport () {
