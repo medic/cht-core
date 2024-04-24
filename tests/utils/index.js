@@ -54,6 +54,7 @@ const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
+const cookieJar = rpn.jar();
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -124,12 +125,42 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
+const getSession = async () => {
+  if (cookieJar.getCookies(constants.BASE_URL).length) {
+    return;
+  }
+
+  const options = {
+    method: 'POST',
+    uri: `${constants.BASE_URL}/_session`,
+    json: true,
+    body: { name: auth.username, password: auth.password},
+    auth,
+    resolveWithFullResponse: true,
+  };
+  const response = await rpn(options);
+  const setCookie = response.headers?.['set-cookie'];
+  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
+  if (header) {
+    try {
+      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+};
+
+const isLoginRequest = options => {
+  return options.path === '/medic/login' && options.body.user !== auth.username;
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug } = {}) => { //NOSONAR
+const request = async (options, { debug } = {}) => { //NOSONAR
   options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth) {
-    options.auth = options.auth || auth;
+  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
+    await getSession();
+    options.jar = cookieJar;
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
@@ -154,11 +185,13 @@ const request = (options, { debug } = {}) => { //NOSONAR
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  return rpn(options).catch(err => {
+  try {
+    return await rpn(options);
+  } catch (err) {
     err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.statusCode}`);
     throw err;
-  });
+  }
 };
 
 const requestOnTestDb = (options, debug) => {
@@ -1236,7 +1269,7 @@ const getSentinelDate = () => getContainerDate('sentinel');
 const getContainerDate = (container) => {
   container = getContainerName(container);
   try {
-    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
+    return moment.utc(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
   } catch (error) {
     console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
     console.error(error.message);
