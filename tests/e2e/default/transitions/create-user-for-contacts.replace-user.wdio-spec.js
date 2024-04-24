@@ -137,6 +137,7 @@ const submitLoginRequest = ({ username, password }) => {
     body: { user: username, password, locale: 'en' },
     method: 'POST',
     simple: false,
+    noAuth: true,
   };
   return utils.request(opts);
 };
