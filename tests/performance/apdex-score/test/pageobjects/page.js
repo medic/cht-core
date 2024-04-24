@@ -89,9 +89,9 @@ module.exports = class Page {
         execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
       }
     })
-    .catch (error => {
-      console.error('Error: ', error);
-    });
+      .catch(error => {
+        console.error('Error: ', error);
+      });
   }
 
   async relaunchApp () {
