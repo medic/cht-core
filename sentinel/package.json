@@ -19,7 +19,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mustache": "^4.2.0",
-    "node-fetch": "^2.6.9",
+    "node-fetch": "^3.3.2",
     "object-path": "^0.11.8",
     "pouchdb-adapter-http": "^7.3.1",
     "pouchdb-core": "^7.3.1",
