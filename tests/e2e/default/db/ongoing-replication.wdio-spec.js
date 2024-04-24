@@ -34,13 +34,10 @@ describe('ongoing replication', function() {
     await saveData(userDeniedDocs);
   });
 
-  after(async () => {
-    await sentinelUtils.skipToSeq();
-    await sentinelUtils.waitForSentinel();
-  });
-
   afterEach(async () => {
     await browser.throttle('online');
+    await sentinelUtils.skipToSeq();
+    await sentinelUtils.waitForSentinel();
   });
 
   it('should download new documents ', async () => {
@@ -156,7 +153,7 @@ describe('ongoing replication', function() {
       'messages-rnd'
     ];
     await utils.deleteDocs(docIdsToDelete);
-    await sentinelUtils.waitForSentinel();
+    await sentinelUtils.waitForSentinel(docIdsToDelete);
     await waitForServiceWorker.promise;
 
     await commonPage.sync(true);
