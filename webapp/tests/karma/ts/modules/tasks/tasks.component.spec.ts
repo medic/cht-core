@@ -450,7 +450,7 @@ describe('TasksComponent', () => {
           _id: 'e1',
           date: new Date('2020-10-20T17:00:00.000Z'),
           dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'a',
         },

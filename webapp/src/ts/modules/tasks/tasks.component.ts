@@ -126,7 +126,8 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.tasksDisabled = !(await this.rulesEngineService.isEnabled());
       const taskDocs = this.tasksDisabled ? [] : await this.rulesEngineService.fetchTaskDocsForAllContacts() || [];
       this.hasTasks = taskDocs.length > 0;
-      const taskEmissions = await this.getTasksWithLineage(taskDocs, await this.currentLevel);
+      const userLineageLevel = await this.currentLevel;
+      const taskEmissions = await this.getTasksWithLineage(taskDocs, userLineageLevel);
       this.tasksActions.setTasksList(taskEmissions);
 
     } catch (exception) {
@@ -156,31 +157,37 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private async getTasksWithLineage(taskDocs, userLineageLevel) {
-    const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
-    const subjects = await this.lineageModelGeneratorService.reportSubjects(ids);
-    const subjectMap = new Map(subjects.map(subject => [subject._id, subject.lineage]));
-    if (!subjectMap?.size) {
-      return [];
-    }
+    const ownerIds = [ ...new Set(taskDocs.map(task => task.owner)) ];
+    const subjects = await this.lineageModelGeneratorService.reportSubjects(ownerIds);
+    const subjectLineageMap = new Map();
+    subjects.forEach(subject => {
+      const taskLineage = subject.lineage
+        ?.filter(level => level?.name)
+        .map(level => level.name);
+
+      if (taskLineage?.length) {
+        subjectLineageMap.set(subject._id, taskLineage);
+      }
+    });
 
     return taskDocs.map(task => {
-      const { emission } = task;
-      emission.lineage = this.cleanAndRemoveCurrentLineage(subjectMap.get(task.owner), userLineageLevel);
-      return emission;
+      return {
+        ...task.emission,
+        lineage: this.removeCurrentLineage(subjectLineageMap.get(task.owner), userLineageLevel),
+      };
     });
   }
 
-  private cleanAndRemoveCurrentLineage(taskLineage, userLineageLevel) {
+  private removeCurrentLineage(taskLineage, userLineageLevel) {
     if (!taskLineage?.length) {
       return;
     }
 
-    const lastLineage = taskLineage.length - 1;
-    return taskLineage
-      .filter((lineage, index) => {
-        const isUserPlace = index === lastLineage && lineage?.name === userLineageLevel;
-        return lineage?.name && !isUserPlace;
-      })
-      .map(lineage => lineage.name);
+    const lastLevel = taskLineage[taskLineage.length - 1];
+    if (lastLevel === userLineageLevel) {
+      taskLineage.pop();
+    }
+
+    return taskLineage;
   }
 }
