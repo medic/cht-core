@@ -1098,7 +1098,8 @@ const killSpawnedProcess = (proc) => {
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
  * @param {[RegExp]} regex - matching expression(s) run against lines
- * @returns {Promise<{cancel: function(): void, promise: Promise<void>}>} that contains the promise to resolve when logs lines are matched and a cancel function
+ * @returns {Promise<{cancel: function(): void, promise: Promise<void>}>}
+ * that contains the promise to resolve when logs lines are matched and a cancel function
  */
 const waitForDockerLogs = (container, ...regex) => {
   container = getContainerName(container);
