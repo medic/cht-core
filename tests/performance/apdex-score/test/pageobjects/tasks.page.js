@@ -3,79 +3,79 @@ const Page = require('./page');
 
 class TasksPage extends Page {
     
-get iconCommodity () {
+  get iconCommodity () {
     return $('//*[@text="icon-commodity"]');
-}
+  }
 
-get iconPregnancy () {
+  get iconPregnancy () {
     return $('//*[@text="icon-pregnancy"]');
-}
-get iconClose () {
+  }
+  get iconClose () {
     return $('//*[@text="Close"]');
-}
+  }
 
-get itemFirstTask () {
+  get itemFirstTask () {
     return $('//*[contains(@text,"days left")]');
-}
+  }
 
-get itemRoyTask () {
+  get itemRoyTask () {
     return $('//*[contains(@text,"Roy")]');
-}
+  }
 
-get itemDueTask () {
+  get itemDueTask () {
     return $('//*[contains(@text,"Due")]');
-}
+  }
 
-get itemFollowUpTask () {
+  get itemFollowUpTask () {
     return $('(//*[contains(@text,"Follow-up")])[1]');
-}
+  }
 
-get btnYes () {
+  get btnYes () {
     return $('//android.widget.Button[@text="Yes"]');
-}
+  }
 
-get btnNext () {
+  get btnNext () {
     return $('//android.widget.Button[@text="Next >"]');
-}
+  }
 
-get btnExit () {
+  get btnExit () {
     return $('//android.widget.Button[@text="Exit"]');
-}
+  }
 
-async viewATask () {
+  async viewATask () {
     await super.clickDisplayedElem(super.tabTasks);
     await super.clickDisplayedElem(this.itemRoyTask);
     await browser.pause(2000);
     await this.iconClose.click();
     await this.itemRoyTask.waitForDisplayed();
-}
+  }
 
-async viewATaskNE () {
+  async viewATaskNE () {
     await super.clickDisplayedElem(super.tabTasks);
     await super.clickDisplayedElem(this.iconPregnancy);
     await browser.pause(2000);
     await this.iconClose.click();
     await this.clickDisplayedElem(this.btnYes);
     await this.iconPregnancy.waitForDisplayed();
-}
+  }
 
-async viewATaskUG () {
+  async viewATaskUG () {
     await super.clickDisplayedElem(super.tabTasks);
     await super.clickDisplayedElem(this.itemDueTask);
     await browser.pause(2000);
     await this.iconClose.click();
     await this.itemDueTask.waitForDisplayed();
-}
+  }
 
-async viewATaskTG () {
+  async viewATaskTG () {
     await super.clickDisplayedElem(super.tabTasks);
     await super.clickDisplayedElem(this.itemFollowUpTask);
     await browser.pause(2000);
     await this.iconClose.click();
     await this.itemFollowUpTask.waitForDisplayed();
-}
+  }
 
-async viewATaskML () {
+  async viewATaskML () {
     await super.clickDisplayedElem(super.tabTasks);
     await super.clickDisplayedElem(this.iconPregnancy);
     await this.btnNext.waitForDisplayed();
@@ -83,7 +83,7 @@ async viewATaskML () {
     await this.iconClose.click();
     await this.clickDisplayedElem(this.btnExit);
     await this.iconPregnancy.waitForDisplayed();
-}
+  }
 
 }
 

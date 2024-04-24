@@ -4,84 +4,84 @@ const { execSync } = require('child_process');
 
 module.exports = class Page {
 
-get btnCustom() {
+  get btnCustom() {
     return $('//*[@text="Custom"]');
-}
+  }
 
-get tabMessages() {
+  get tabMessages() {
     return $('//*[@text="Messages"]');
-}
+  }
 
-get tabTasks() {
+  get tabTasks() {
     return $('//*[@text="Tasks"]');
-}
+  }
 
-get tabReports() {
+  get tabReports() {
     return $('//*[@text="Reports"]');
-}
+  }
 
-get tabPeople() {
+  get tabPeople() {
     return $('//*[@text="People"]');
-}
+  }
 
-get tabPerformance() {
+  get tabPerformance() {
     return $('//*[@text="Performance"]');
-}
+  }
 
-get tabVHTSummary() {
+  get tabVHTSummary() {
     return $('//*[contains(@text, "Summary")]');
-}
+  }
 
-get tabAnalytics() {
+  get tabAnalytics() {
     return $('//*[contains(@text, "Analytics")]');
-}
+  }
 
-get tabDropdown() {
+  get tabDropdown() {
     return $('//android.view.View[@text=""]')
-}
+  }
 
-get menuItemSyncNow() {
+  get menuItemSyncNow() {
     return $('//android.view.MenuItem[@text="Sync now"]')
-}
+  }
 
-get menuTextSyncStatus() {
+  get menuTextSyncStatus() {
     return $('(//*[@resource-id="header-dropdown"]//android.view.View)[2]')
-}
+  }
 
-get menuTextSyncTime() {
+  get menuTextSyncTime() {
     return $('//android.view.View[contains(@text, "Last sync")]')
-}
+  }
 
-get menuItemAbout() {
+  get menuItemAbout() {
     return $('//android.view.MenuItem[@text="About"]')
-}
+  }
 
-get menuItemSettings() {
+  get menuItemSettings() {
     return $('//android.view.MenuItem[@text="User settings"]')
-}
+  }
 
-get menuItemReportBug() {
+  get menuItemReportBug() {
     return $('//android.view.MenuItem[@text="Report bug"]')
-}
+  }
 
-get scrollView () {
+  get scrollView () {
     return $('android=new UiScrollable(new UiSelector().scrollable(true)).scrollToEnd(1)');
-}
+  }
 
-get scrollToEnd () {
+  get scrollToEnd () {
     return $('android=new UiScrollable(new UiSelector().scrollable(true)).scrollToEnd(20)');
-}
+  }
 
-async scrollUntilTextVisible(text) {
+  async scrollUntilTextVisible(text) {
     return $(`android=new UiScrollable(new UiSelector().scrollable(true)).scrollTextIntoView("${text}")`);
-}
+  }
 
-async clickDisplayedElem (elem) {
+  async clickDisplayedElem (elem) {
     await elem.waitForDisplayed();
     await elem.click();
-}
+  }
 
-async toggleAirplaneMode (state) {
+  async toggleAirplaneMode (state) {
     driver.getNetworkConnection().then(nConnect => {
         if (nConnect == 1 && state == 'off') {
             execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });
@@ -89,15 +89,15 @@ async toggleAirplaneMode (state) {
             execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
         }
     });
-}
+  }
 
-async relaunchApp () {
+  async relaunchApp () {
     await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await browser.pause(2000);
     await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
-}
+  }
 
-async syncData () {
+  async syncData () {
     console.log(`TIME IS::: ${await driver.getDeviceTime()}`);
     //change date here - WIP
     await browser.pause(5000);
@@ -105,9 +105,9 @@ async syncData () {
     await this.clickDisplayedElem(this.menuItemSyncNow);
     await browser.pause(1000);
     await this.tabDropdown.click();
-}
+  }
 
-async extractCurrentDate(days) {
+  async extractCurrentDate(days) {
     const dateTimeString = await driver.getDeviceTime();
     let dateTime = moment(dateTimeString);
     dateTime = moment(dateTime).add(days, 'days');
@@ -119,9 +119,9 @@ async extractCurrentDate(days) {
     const minute = dateTime.format('mm');
 
     return {year, month, day, hour, minute};
-}
+  }
 
-async updateCurrentDate (days) {
+  async updateCurrentDate (days) {
     const extractCurrentDate = await this.extractCurrentDate(days);
     console.log('TIME::: Year:', extractCurrentDate.year);
     console.log('TIME::: Month:', extractCurrentDate.month);
@@ -133,24 +133,24 @@ async updateCurrentDate (days) {
     console.log('TIME::: Command is:', 'adb -e shell su root date ' + '`'  + ardDateFormat + '`');
     execSync('adb shell su root date ' + ardDateFormat, { stdio: 'inherit' });
     browser.pause(10000);
-}
+  }
 
-async getLmpDate () {
+  async getLmpDate () {
     const extractLmpDate = await this.extractCurrentDate(-62);
     const lmpDate = `20${extractLmpDate.year}-${extractLmpDate.month}-${extractLmpDate.day}`;
     return lmpDate;
-}
+  }
 
-async getFollowUpDate () {
+  async getFollowUpDate () {
     const extractNextDate = await this.extractCurrentDate(1);
     const followUpDate = `20${extractNextDate.year}-${extractNextDate.month}-${extractNextDate.day}`;
     return followUpDate;
-}
+  }
 
-async getVHTVisitDate () {
+  async getVHTVisitDate () {
     const extractPreviousDate = await this.extractCurrentDate(-1);
     const visitDate = `20${extractPreviousDate.year}-${extractPreviousDate.month}-${extractPreviousDate.day}`;
     return visitDate;
-}
+  }
 
 }

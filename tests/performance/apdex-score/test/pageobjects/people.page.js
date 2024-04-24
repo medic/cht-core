@@ -3,650 +3,650 @@ const Page = require('./page');
 
 class PeoplePage extends Page {
    
-get btnSearch() {
+  get btnSearch() {
     return $('//*[@text="Performance"]');
-}
+  }
 
-get firstHouseholdKE () {
+  get firstHouseholdKE () {
     return $('(//android.widget.TextView[@text="visits"])[1]');
-}
+  }
 
-get firstHousehold () {
+  get firstHousehold () {
     return $('(//android.view.View[@text="icon-family"])[1]');
-}
+  }
 
-get firstVillage () {
+  get firstVillage () {
     return $('//*[contains(@text,"Village")]');
-}
+  }
 
-get btnAdd () {
+  get btnAdd () {
     return $('//android.widget.Button');
-}
+  }
 
-get btnAddNew () {
+  get btnAddNew () {
     return $('(//android.widget.Button)[2]');
-}
+  }
 
-get textNewPersonKE () {
+  get textNewPersonKE () {
     return $('//*[@text="Add new Person"]');
-}
+  }
 
-get textNewPersonNE () {
+  get textNewPersonNE () {
     return $('//*[@text="New person"]');
-}
+  }
 
-get textNewPersonUG () {
+  get textNewPersonUG () {
     return $('//*[@text="New Person"]');
-}
+  }
 
-get textNewPersonTG () {
+  get textNewPersonTG () {
     return $('//*[@text="Add person"]');
-}
+  }
 
-get inputFirstName () {
+  get inputFirstName () {
     return $('//*[@text="First name"]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputMiddleName () {
+  get inputMiddleName () {
     return $('//*[@text="Middle name"]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputLastName () {
+  get inputLastName () {
     return $('//*[contains(@text, "Last name")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputFirstNameNE () {
+  get inputFirstNameNE () {
     return $('//*[@text="First Name"]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputLastNameNE () {
+  get inputLastNameNE () {
     return $('//*[@text="Last Name"]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioMale () {
+  get radioMale () {
     return $('//*[@text="Gender*"]//android.widget.RadioButton[@text="Male"]');
-}
+  }
 
-get radioFemale () {
+  get radioFemale () {
     return $('//*[@text="Gender*"]//android.widget.RadioButton[@text="Female"]');
-}
+  }
 
-get radioInterSex () {
+  get radioInterSex () {
     return $('//*[@text="Intersex"]');
-}
+  }
 
-get radioDobWithCalendar () {
+  get radioDobWithCalendar () {
     return $('//*[@text="With calendar (preferred)"]');
-}
+  }
 
-get radioDobWithAge () {
+  get radioDobWithAge () {
     return $('//*[@text="Date of birth with current age"]');
-}
+  }
 
-get inputDOB () {
+  get inputDOB () {
     return $('//*[contains(@text,"Date of Birth")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioAgeYears () {
+  get radioAgeYears () {
     return $('//*[@text="Age* Age in years"]');
-}
+  }
 
-get radioAgeMonths () {
+  get radioAgeMonths () {
     return $('//*[@text="0, Months* And how many months?"]');
-}
+  }
 
-get radioIsKenyanYes () {
+  get radioIsKenyanYes () {
     return $('//*[contains(@text,"Kenyan?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioBornInKenyaYes () {
+  get radioBornInKenyaYes () {
     return $('//*[contains(@text,"born in Kenya?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get inputCountyOfBirth () {
+  get inputCountyOfBirth () {
     return $('//*[contains(@text, "County of birth*")]');
-}
+  }
 
-get inputCountyOfResidence () {
+  get inputCountyOfResidence () {
     return $('//*[contains(@text, "County of residence*")]');
-}
+  }
 
-get selectCounty () {
+  get selectCounty () {
     return $('//android.widget.CheckedTextView[@text="BUSIA"]');
-}
+  }
 
-get inputSubCounty () {
+  get inputSubCounty () {
     return $('//*[contains(@text, "Sub county*")]');
-}
+  }
 
-get selectSubCounty () {
+  get selectSubCounty () {
     return $('//android.widget.CheckedTextView[@text="BUTULA"]');
-}
+  }
 
-get inputWard () {
+  get inputWard () {
     return $('//*[contains(@text, "Ward*")]');
-}
+  }
 
-get selectWard () {
+  get selectWard () {
     return $('//android.widget.CheckedTextView[@text="KINGANDOLE"]');
-}
+  }
 
-get inputVillage () {
+  get inputVillage () {
     return $('//*[@text="Village"]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioHaveAPhoneNo () {
+  get radioHaveAPhoneNo () {
     return $('//*[contains(@text,"have a phone number?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioIdentificationPassport () {
+  get radioIdentificationPassport () {
     return $('//android.widget.RadioButton[@text="Passport"]');
-}
+  }
 
-get inputPassportNumber () {
+  get inputPassportNumber () {
     return $('//*[@text="Passport"]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputNextOfKin () {
+  get inputNextOfKin () {
     return $('//*[contains(@text, "next of kin")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioNextOfKinRelationship () {
+  get radioNextOfKinRelationship () {
     return $('//*[@text="Mother"]//parent::android.view.View/android.widget.RadioButton');
-}
+  }
 
-get inputAddress () {
+  get inputAddress () {
     return $('//*[contains(@text, "Physical address")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputPrimaryMobile () {
+  get inputPrimaryMobile () {
     return $('//*[contains(@text, "primary mobile number")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputSecondaryMobile () {
+  get inputSecondaryMobile () {
     return $('//*[contains(@text, "secondary mobile number")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputEmail () {
+  get inputEmail () {
     return $('//*[contains(@text, "Email address")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioRelationshipHouseHead () {
+  get radioRelationshipHouseHead () {
     return $('//*[contains(@text,"household head?")]//android.widget.RadioButton[@text="Sibling"]');
-}
+  }
 
-get radioHouseholdRelationship () {
+  get radioHouseholdRelationship () {
     return $('//*[contains(@text,"Relation with house")]//android.widget.RadioButton[contains(@text,"Son or")]');
-}
+  }
 
-get radioDisabilityNo () {
+  get radioDisabilityNo () {
     return $('//*[contains(@text,"known disability?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioIllnessNo () {
+  get radioIllnessNo () {
     return $('//*[contains(@text,"chronic illness?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioPregnantYes () {
+  get radioPregnantYes () {
     return $('//*[contains(@text,"pregnant?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioHasHandBookYes () {
+  get radioHasHandBookYes () {
     return $('//*[contains(@text,"MCH handbook?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get btnSubmit () {
+  get btnSubmit () {
     return $('//android.widget.Button[@text="Submit"]');
-}
+  }
 
-get householdPerson () {
+  get householdPerson () {
     return $('//*[contains(@text, "years")]');
-}
+  }
 
-get iconBack () {
+  get iconBack () {
     return $('//*[@text="Back"]');
-}
+  }
 
-get textCHVArea () {
+  get textCHVArea () {
     return $('//*[contains(@text, "CHV")]');
-}
+  }
 
-get textVHTArea () {
+  get textVHTArea () {
     return $('//*[contains(@text, "VHT")]');
-}
+  }
 
-get textCHWSite () {
+  get textCHWSite () {
     return $('//*[contains(@text, "CHW")]');
-}
+  }
 
-get radioDifferentPhoneNo () {
+  get radioDifferentPhoneNo () {
     return $('//*[contains(@text,"phone number?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioReligion () {
+  get radioReligion () {
     return $('//*[@text="Religion*"]//android.widget.RadioButton[@text="Christian"]');
-}
+  }
 
-get radioMaritalStatus () {
+  get radioMaritalStatus () {
     return $('//*[contains(@text,"Marital")]//android.widget.RadioButton[@text="Married"]');
-}
+  }
 
-get radioPersonDisabledNo () {
+  get radioPersonDisabledNo () {
     return $('//*[contains(@text,"person disabled?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioEducationLevel () {
+  get radioEducationLevel () {
     return $('//*[contains(@text,"education completed")]//android.widget.RadioButton[@text="Basic education"]');
-}
+  }
 
-get radioOccupation () {
+  get radioOccupation () {
     return $('//*[contains(@text,"Occupation")]//android.widget.RadioButton[@text="Business"]');
-}
+  }
 
-get radioCasteCode () {
+  get radioCasteCode () {
     return $('//*[contains(@text,"Caste code")]//android.widget.RadioButton[@text="Brahmin"]');
-}
+  }
 
-get imagePerson () {
+  get imagePerson () {
     return $('//android.view.View[@text="icon-person"]');
-}
+  }
 
-get iconPregnancy () {
+  get iconPregnancy () {
     return $('//*[@text="Pregnancy registration"]');
-}
+  }
 
-get btnNext () {
+  get btnNext () {
     return $('//android.widget.Button[@text="Next >"]');
-}
+  }
 
-get btnPrev () {
+  get btnPrev () {
     return $('//android.widget.Button[@text="< Prev"]');
-}
+  }
 
-get inputLmpDate () {
+  get inputLmpDate () {
     return $('//*[contains(@text,"date of the LMP")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputAncNumber () {
+  get inputAncNumber () {
     return $('//*[contains(@text,"How many times ")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioFirstPregnancyYes () {
+  get radioFirstPregnancyYes () {
     return $('//*[contains(@text,"first pregnancy?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioMiscarriagesNo () {
+  get radioMiscarriagesNo () {
     return $('//*[contains(@text,"any miscarriages")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get checkBoxChronicNone () {
+  get checkBoxChronicNone () {
     return $('//*[contains(@text,"chronic diseases?")]//android.widget.CheckBox[@text="None"]');
-}
+  }
 
-get radioVaginalBleeding () {
+  get radioVaginalBleeding () {
     return $('//*[contains(@text,"Vaginal bleeding")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioFits () {
+  get radioFits () {
     return $('//*[contains(@text,"Fits")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioAbdominalPain () {
+  get radioAbdominalPain () {
     return $('//*[contains(@text,"abdominal pain")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioHeadache () {
+  get radioHeadache () {
     return $('//*[contains(@text,"Severe headache")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioPale () {
+  get radioPale () {
     return $('//*[contains(@text,"Very pale")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioFever () {
+  get radioFever () {
     return $('//*[contains(@text,"Fever")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioSwelling () {
+  get radioSwelling () {
     return $('//*[contains(@text,"Swelling of")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioBreathlessness () {
+  get radioBreathlessness () {
     return $('//*[contains(@text,"Breathlessness")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioHeartBeat () {
+  get radioHeartBeat () {
     return $('//*[contains(@text,"Heart Beat")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioAlbumin () {
+  get radioAlbumin () {
     return $('//*[contains(@text,"Albumin in urine")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get iconSearch () {
+  get iconSearch () {
     return $('//android.widget.TextView[@text=""]');
-}
+  }
 
-get inputSearch () {
+  get inputSearch () {
     return $('//android.widget.EditText');
-}
+  }
 
-get toastPersonCreated () {
+  get toastPersonCreated () {
     return $('//android.widget.Toast');
-}
+  }
 
-get iconPregnancyKE () {
+  get iconPregnancyKE () {
     return $('//*[@text="Pregnancy Home Visit Service"]');
-}
+  }
 
-get radioIsPregnantYes () {
+  get radioIsPregnantYes () {
     return $('//*[contains(@text,"pregnant?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioStartedAncNo () {
+  get radioStartedAncNo () {
     return $('//*[contains(@text,"started ANC?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get checkDangerSignsNone () {
+  get checkDangerSignsNone () {
     return $('//*[contains(@text,"danger signs")]//android.widget.CheckBox[@text="None"]');
-}
+  }
 
-get radioColorOfMuac () {
+  get radioColorOfMuac () {
     return $('//*[contains(@text,"color of MUAC?")]//android.widget.RadioButton[@text="Green"]');
-}
+  }
 
-get radioSupplementsNo () {
+  get radioSupplementsNo () {
     return $('//*[contains(@text,"supplements daily?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get checkAskMentalSignsNone () {
+  get checkAskMentalSignsNone () {
     return $('//*[contains(@text,"Ask if")]//android.widget.CheckBox[@text="None"]');
-}
+  }
 
-get checkObserveMentalSignsNone () {
+  get checkObserveMentalSignsNone () {
     return $('//*[contains(@text,"Observe if")]//android.widget.CheckBox[@text="None"]');
-}
+  }
 
-get radioInsuranceNo () {
+  get radioInsuranceNo () {
     return $('//*[contains(@text,"insurance?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get iconDefaulter () {
+  get iconDefaulter () {
     return $('//*[@text="Defaulter Follow Up"]');
-}
+  }
 
-get radioAvailableNo () {
+  get radioAvailableNo () {
     return $('//*[contains(@text,"available?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get inputFollowUpDate () {
+  get inputFollowUpDate () {
     return $('//*[contains(@text,"like to follow up")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-//num-3
+  //num-3
 
-get inputNames () {
+  get inputNames () {
     return $('//*[contains(@text, "Names")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioSexFemale () {
+  get radioSexFemale () {
     return $('//*[contains(@text,"Sex")]//android.widget.RadioButton[@text="Female"]');
-}
+  }
 
-get inputAge () {
+  get inputAge () {
     return $('//*[contains(@text, "Age (in years)")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputVHTVisit () {
+  get inputVHTVisit () {
     return $('//*[contains(@text, "VHT Visit")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioRelationshipWithHouseHead () {
+  get radioRelationshipWithHouseHead () {
     return $('//*[contains(@text,"Household Head?")]//android.widget.RadioButton[@text="Spouse"]');
-}
+  }
 
-get radioClientCategory () {
+  get radioClientCategory () {
     return $('//*[contains(@text,"client category?")]//android.widget.RadioButton[@text="Foreigner"]');
-}
+  }
 
-get radioFunctionalLimitation () {
+  get radioFunctionalLimitation () {
     return $('//*[contains(@text,"functional limitation?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioTestedForHIV () {
+  get radioTestedForHIV () {
     return $('//*[contains(@text,"tested for HIV")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioTestResult () {
+  get radioTestResult () {
     return $('//*[contains(@text,"HIV test?")]//android.widget.RadioButton[@text="Negative"]');
-}
+  }
 
-get radioHaveTB () {
+  get radioHaveTB () {
     return $('//*[contains(@text,"have TB?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioTTVaccine () {
+  get radioTTVaccine () {
     return $('//*[contains(@text,"TT vaccine?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioTakeAlcohol () {
+  get radioTakeAlcohol () {
     return $('//*[contains(@text,"take alcohol?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioHaveHypertension () {
+  get radioHaveHypertension () {
     return $('//*[contains(@text,"have Hypertension?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioHaveSickleCell () {
+  get radioHaveSickleCell () {
     return $('//*[contains(@text,"Sickle Cell?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioUseTobacco () {
+  get radioUseTobacco () {
     return $('//*[contains(@text,"use Tobacco?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioTreatedNet () {
+  get radioTreatedNet () {
     return $('//*[contains(@text,"net (LLIN)?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioFamilyPlanning () {
+  get radioFamilyPlanning () {
     return $('//*[contains(@text,"family planning method?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get iconPregnancyReg () {
+  get iconPregnancyReg () {
     return $('//*[@text="Pregnancy Registration"]');
-}
+  }
 
-get radioReportPregnancy () {
+  get radioReportPregnancy () {
     return $('//*[contains(@text,"pregnancy?")]//android.widget.RadioButton[@text="Last menstrual period (LMP)"]');
-}
+  }
 
-get inputANCVisit () {
+  get inputANCVisit () {
     return $('//*[contains(@text, "?* Kindly, ")]');
-}
+  }
 
-get selectVisits () {
+  get selectVisits () {
     return $('//android.widget.CheckedTextView[@text="None"]');
-}
+  }
 
-get radioANCVisits () {
+  get radioANCVisits () {
     return $('//*[contains(@text,"upcoming ANC visits?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioSevereAbdomenPain () {
+  get radioSevereAbdomenPain () {
     return $('//*[contains(@text,"lower abdomen")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioFeotalMovement () {
+  get radioFeotalMovement () {
     return $('//*[contains(@text,"feotal movements")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioBlurredVision () {
+  get radioBlurredVision () {
     return $('//*[contains(@text,"Blurred vision")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioMuac () {
+  get radioMuac () {
     return $('//*[contains(@text,"MUAC?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get checkBoxSupplementation () {
+  get checkBoxSupplementation () {
     return $('//*[contains(@text,"Supplementation")]//android.widget.CheckBox[@text="Iron"]');
-}
+  }
 
-get radioNutrition () {
+  get radioNutrition () {
     return $('//*[contains(@text,"nutrition follow up?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioInsecticidalNet () {
+  get radioInsecticidalNet () {
     return $('//*[contains(@text,"insecticidal net")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioTTCard () {
+  get radioTTCard () {
     return $('//*[contains(@text,"Toxoid (TD) card?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get checkBoxVaccineReceived () {
+  get checkBoxVaccineReceived () {
     return $('//*[contains(@text,"received?")]//android.widget.CheckBox[@text="2"]');
-}
+  }
 
-get imagePersonUG () {
+  get imagePersonUG () {
     return $('//android.view.View[@text="medic-person"]');
-}
+  }
 
-//num-4
+  //num-4
 
-get inputFirstNameTG () {
+  get inputFirstNameTG () {
     return $('//*[contains(@text, "First name")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputNameTG () {
+  get inputNameTG () {
     return $('//*[contains(@text, "Name")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioSexTG () {
+  get radioSexTG () {
     return $('(//*[contains(@text,"Sex")]//android.widget.RadioButton[@text="-"])[2]');
-}
+  }
 
-get radioPersonType () {
+  get radioPersonType () {
     return $('(//*[contains(@text, "Type of person")]//android.widget.RadioButton[@text="-"])[2]');
-}
+  }
 
-get inputAgeTG () {
+  get inputAgeTG () {
     return $('//*[contains(@text, "Age")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioEducationalLevel () {
+  get radioEducationalLevel () {
     return $('(//*[contains(@text,"Educational level")]//android.widget.RadioButton[@text="-"])[2]');
-}
+  }
 
-get radioHaveATelephone () {
+  get radioHaveATelephone () {
     return $('(//*[contains(@text,"have a telephone number?")]//android.widget.RadioButton[@text="-"])[2]');
-}
+  }
 
-get radioHouseholdStatus () {
+  get radioHouseholdStatus () {
     return $('(//*[contains(@text,"Status in the household")]//android.widget.RadioButton[@text="-"])[2]');
-}
+  }
 
-get radioOccupationTG () {
+  get radioOccupationTG () {
     return $('(//*[contains(@text,"Occupation")]//android.widget.RadioButton[@text="-"])[2]');
-}
+  }
 
-get radioIdentificationTG () {
+  get radioIdentificationTG () {
     return $('//*[contains(@text,"How was")]//android.widget.RadioButton[@text="During the home visit"]');
-}
+  }
 
-get radioPregnancyConfirm () {
+  get radioPregnancyConfirm () {
     return $('//*[contains(@text,"mother-baby diary")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-//num-5
+  //num-5
 
-get inputProfession () {
+  get inputProfession () {
     return $('//android.view.View[contains(@text,"Profession")]');
-}
+  }
 
-get selectProfession () {
+  get selectProfession () {
     return $('//android.widget.CheckedTextView[@text="Teacher"]');
-}
+  }
 
-get inputPhoneNumber () {
+  get inputPhoneNumber () {
     return $('//*[contains(@text, "Phone number")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioMatrimonialStatus () {
+  get radioMatrimonialStatus () {
     return $('//*[contains(@text,"Matrimonial Status")]//android.widget.RadioButton[@text="Single"]');
-}
+  }
 
-get radioRelationshipHouseHold () {
+  get radioRelationshipHouseHold () {
     return $('//*[contains(@text,"head of household")]//android.widget.RadioButton[@text="Cousin"]');
-}
+  }
 
-get btnNewAction () {
+  get btnNewAction () {
     return $('//*[contains(@text,"New action")]');
-}
+  }
 
-get radioRegistrationDone () {
+  get radioRegistrationDone () {
     return $('//*[contains(@text,"Was the pregnancy")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get radioPregnancyConfirmed () {
+  get radioPregnancyConfirmed () {
     return $('//*[contains(@text,"pregnancy confirmed?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get checkBoxPregnancyConfirmed () {
+  get checkBoxPregnancyConfirmed () {
     return $('//*[contains(@text,"pregnancy confirmed?")]//android.widget.CheckBox[@text="ANC card"]');
-}
+  }
 
-get inputWeight () {
+  get inputWeight () {
     return $('//*[contains(@text, "the weight of")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputHeight () {
+  get inputHeight () {
     return $('//*[contains(@text, "How tall is")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioLastPeriod () {
+  get radioLastPeriod () {
     return $('//*[contains(@text,"last period was?")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get inputLastPeriod () {
+  get inputLastPeriod () {
     return $('//*[contains(@text,"date of the last period?")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioDateOfDelivery () {
+  get radioDateOfDelivery () {
     return $('//*[contains(@text,"date of delivery?")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get inputPreviousPregnancy () {
+  get inputPreviousPregnancy () {
     return $('//*[contains(@text, "successful pregnancy")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get inputPreviousAbortion () {
+  get inputPreviousAbortion () {
     return $('//*[contains(@text, "How many abortions")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioTDVaccine () {
+  get radioTDVaccine () {
     return $('//*[contains(@text,"Td1")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get radioPrenatalVisit () {
+  get radioPrenatalVisit () {
     return $('//*[contains(@text,"prenatal visit")]//android.widget.RadioButton[@text="No"]');
-}
+  }
 
-get inputANCVisitML () {
+  get inputANCVisitML () {
     return $('//*[contains(@text, "ANC visit?")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
-get radioRefer () {
+  get radioRefer () {
     return $('//*[contains(@text,"Did you refer")]//android.widget.RadioButton[@text="Yes"]');
-}
+  }
 
-get inputSolution () {
+  get inputSolution () {
     return $('//*[contains(@text, "SOLUTION")]//parent::android.view.View/android.widget.EditText');
-}
+  }
 
 
-async createPersonKE (firstName, lastName, dateOfBirth) {
+  async createPersonKE (firstName, lastName, dateOfBirth) {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -708,9 +708,9 @@ async createPersonKE (firstName, lastName, dateOfBirth) {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePerson.waitForDisplayed();
     await browser.pause(5000);
-}
+  }
 
-async createPersonNE (firstName, lastName, dateOfBirth) {
+  async createPersonNE (firstName, lastName, dateOfBirth) {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -741,9 +741,9 @@ async createPersonNE (firstName, lastName, dateOfBirth) {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePerson.waitForDisplayed();
     await browser.pause(5000);
-}
+  }
 
-async createPersonUG (firstName, lastName) {
+  async createPersonUG (firstName, lastName) {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -784,9 +784,9 @@ async createPersonUG (firstName, lastName) {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePersonUG.waitForDisplayed();
     await browser.pause(5000);
-}
+  }
 
-async createPersonTG (firstName, lastName) {
+  async createPersonTG (firstName, lastName) {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -812,9 +812,9 @@ async createPersonTG (firstName, lastName) {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePersonUG.waitForDisplayed();
     await browser.pause(3000);
-}
+  }
 
-async createPersonML (firstName, lastName, dateOfBirth) {
+  async createPersonML (firstName, lastName, dateOfBirth) {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -847,9 +847,9 @@ async createPersonML (firstName, lastName, dateOfBirth) {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePersonUG.waitForDisplayed();
     await browser.pause(5000);
-}
+  }
 
-async createReportKE () {
+  async createReportKE () {
     await this.btnAdd.click();
     await this.iconPregnancyKE.click();
     await this.radioIsPregnantYes.click();
@@ -894,9 +894,9 @@ async createReportKE () {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePerson.waitForDisplayed();
     await this.iconBack.click();
-}
+  }
 
-async createReport () {
+  async createReport () {
     await this.btnAdd.click();
     await this.iconPregnancy.click();
     const lmpDate = await super.getLmpDate();
@@ -947,9 +947,9 @@ async createReport () {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePerson.waitForDisplayed();
     await this.iconBack.click();
-}
+  }
 
-async createReportUG () {
+  async createReportUG () {
     await this.btnAdd.click();
     await this.iconPregnancyReg.click();
     await this.radioReportPregnancy.click();
@@ -974,7 +974,6 @@ async createReportUG () {
     await this.radioPale.click();
     await super.scrollView;
     await this.radioFever.click();
-    // await this.radioFeotalMovement.click();
     await this.radioBlurredVision.click();
     await super.scrollView;
     await this.radioSwelling.click();
@@ -996,9 +995,9 @@ async createReportUG () {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePersonUG.waitForDisplayed();
     await this.iconBack.click();
-}
+  }
 
-async createReportTG () {
+  async createReportTG () {
     await this.btnAddNew.click();
     await this.iconPregnancyReg.click();
     await this.radioIdentificationTG.click();
@@ -1016,9 +1015,9 @@ async createReportTG () {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePersonUG.waitForDisplayed();
     await this.iconBack.click();
-}
+  }
 
-async createReportML () {
+  async createReportML () {
     await this.btnNewAction.click();
     await this.iconPregnancy.click();
     await this.radioRegistrationDone.click();
@@ -1081,9 +1080,9 @@ async createReportML () {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePersonUG.waitForDisplayed();
     await this.iconBack.click();
-}
+  }
 
-async createDefaulterReport () {
+  async createDefaulterReport () {
     await this.btnAdd.click();
     await this.iconDefaulter.click();
     await this.radioAvailableNo.click();
@@ -1095,9 +1094,9 @@ async createDefaulterReport () {
     await super.clickDisplayedElem(this.btnSubmit);
     await this.imagePerson.waitForDisplayed();
     await this.iconBack.click();
-}
+  }
 
-async searchPerson (firstName) {
+  async searchPerson (firstName) {
     await this.iconSearch.click();
     await this.inputSearch.waitForDisplayed();
     await this.inputSearch.setValue(firstName);
@@ -1106,9 +1105,9 @@ async searchPerson (firstName) {
     await this.inputSearch.click();
     await this.inputSearch.clearValue();
     await driver.pressKeyCode(66);
-}
+  }
 
-async searchPersonUG (firstName) {
+  async searchPersonUG (firstName) {
     await this.iconSearch.click();
     await this.inputSearch.waitForDisplayed();
     await this.inputSearch.setValue(firstName);
@@ -1117,9 +1116,9 @@ async searchPersonUG (firstName) {
     await this.inputSearch.click();
     await this.inputSearch.clearValue();
     await driver.pressKeyCode(66);
-}
+  }
 
-async viewPerson () {
+  async viewPerson () {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -1127,9 +1126,9 @@ async viewPerson () {
     await this.householdPerson.click();
     await this.iconBack.click();
     await this.firstHousehold.waitForDisplayed();
-}
+  }
 
-async viewPersonKE () {
+  async viewPersonKE () {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -1137,9 +1136,9 @@ async viewPersonKE () {
     await this.householdPerson.click();
     await this.iconBack.click();
     await this.firstHouseholdKE.waitForDisplayed();
-}
+  }
 
-async viewPersonML () {
+  async viewPersonML () {
     await super.tabPeople.waitForDisplayed();
     await super.toggleAirplaneMode('on');
     await super.tabPeople.click();
@@ -1152,32 +1151,32 @@ async viewPersonML () {
     await this.iconBack.click();
     await browser.pause(2000);
     await this.firstVillage.waitForDisplayed();
-}
+  }
 
-async viewCHPArea () {
+  async viewCHPArea () {
     await super.clickDisplayedElem(super.tabPeople);
     await super.clickDisplayedElem(this.textCHVArea);
     await browser.pause(2000);
     await this.iconBack.click();
     await this.textCHVArea.waitForDisplayed();
-}
+  }
 
-async viewVHTArea () {
+  async viewVHTArea () {
     await super.clickDisplayedElem(super.tabPeople);
     await super.clickDisplayedElem(this.textVHTArea);
     await browser.pause(2000);
     await this.iconBack.click();
     await this.textVHTArea.waitForDisplayed();
-}
+  }
 
-async viewCHWSite () {
+  async viewCHWSite () {
     await super.clickDisplayedElem(super.tabPeople);
     await super.clickDisplayedElem(this.textCHWSite);
     await browser.pause(5000);
     await this.iconBack.click();
     await browser.pause(2000);
     await this.textCHWSite.waitForDisplayed();
-}
+  }
 
 }
 

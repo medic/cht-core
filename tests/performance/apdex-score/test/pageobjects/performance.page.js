@@ -3,29 +3,29 @@ const Page = require('./page');
 
 class PerformancePage extends Page {
     
-get iconMenu () {
+  get iconMenu () {
     return $('//*[@resource-id="header-dropdown-link"]');
-}
+  }
 
-async viewPerformance () {
+  async viewPerformance () {
     await super.clickDisplayedElem(super.tabPerformance);
     await browser.pause(5000);
-}
+  }
 
-async viewVHTSummary () {
+  async viewVHTSummary () {
     await super.clickDisplayedElem(super.tabVHTSummary);
     await browser.pause(5000);
-}
+  }
 
-async viewAnalytics () {
+  async viewAnalytics () {
     await super.clickDisplayedElem(super.tabAnalytics);
     await browser.pause(5000);
-}
+  }
 
-async relaunchApp () {
+  async relaunchApp () {
     await super.relaunchApp();
     await browser.pause(10000);
-}
+  }
 
 }
 
