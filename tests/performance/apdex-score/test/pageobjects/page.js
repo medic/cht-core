@@ -82,13 +82,17 @@ module.exports = class Page {
   }
 
   async toggleAirplaneMode (state) {
-    driver.getNetworkConnection().then(nConnect => {
-      if (nConnect === 1 && state === 'off') {
-        return execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });
-      } else if (nConnect === 6 && state === 'on') {
-        return execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
-      }
-    });
+    try{
+      driver.getNetworkConnection().then(nConnect => {
+        if (nConnect === 1 && state === 'off') {
+          execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });
+        } else if (nConnect === 6 && state === 'on') {
+          execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
+        }
+      });
+    } catch (error) {
+      console.error('Error in test: ', error);
+    }
   }
 
   async relaunchApp () {

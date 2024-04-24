@@ -10,8 +10,8 @@ exports.config = {
 
   services: [
     ['appium', {
-        command: 'appium',
-        logPath: './logs/'
+      command: 'appium',
+      logPath: './logs/'
     }]
   ],
 

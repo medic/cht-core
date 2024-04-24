@@ -50,4 +50,4 @@ describe('Apdex Performance Workflows', () => {
     await PerformancePage.relaunchApp();
   });
 
-})
+});

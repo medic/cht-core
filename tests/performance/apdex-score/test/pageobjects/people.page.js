@@ -1,4 +1,4 @@
-const { $ } = require('@wdio/globals');
+const { $, driver } = require('@wdio/globals');
 const Page = require('./page');
 
 class PeoplePage extends Page {
