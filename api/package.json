@@ -56,7 +56,7 @@
     "url-join": "^4.0.1",
     "uuid": "^8.3.2",
     "winston": "^3.10.0",
-    "workbox-build": "^7.0.0",
+    "workbox-build": "^7.1.0",
     "xmlbuilder": "^15.1.1"
   },
   "overrides": {
