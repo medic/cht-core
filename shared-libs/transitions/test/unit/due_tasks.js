@@ -497,7 +497,7 @@ describe('due tasks', () => {
     });
   });
 
-  it('should generate messages correctly for patient subjects', () => {
+  it('should generate messages correctly for place subjects', () => {
     const due = moment();
     const phone = '123456789';
 
@@ -596,6 +596,117 @@ describe('due tasks', () => {
               recipient: 'clinic',
               messages: [{
                 message: 'Place joes place 999999 lalala must be visited',
+                to: phone,
+
+              }]
+            }
+          ],
+        }
+      ], ['uuid']);
+    });
+  });
+
+  it('should generate messages correctly for patient subjects when report does not have patient_id', () => {
+    const due = moment();
+    const phone = '123456789';
+
+    sinon.stub(utils, 'translate').returns('Patient {{patient_name}} {{patient_id}} {{fld}} must be visited');
+    sinon.stub(utils, 'getRegistrations').resolves([{ fields: { place_id: '999999', fld: 'lalala' } }]);
+    sinon.stub(utils, 'setTaskState');
+
+    const minified = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        patient_uuid: 'uuid',
+        patient_id: '',
+      },
+      contact: {
+        _id: 'a',
+        parent: {
+          _id: 'b',
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+    const hydrated = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        patient_uuid: 'uuid',
+        patient_id: '',
+      },
+      patient: {
+        _id: 'uuid',
+        patient_id: '223',
+        name: 'jow',
+      },
+      contact: {
+        _id: 'a',
+        type: 'person',
+        parent: {
+          _id: 'b',
+          type: 'clinic',
+          contact: {
+            _id: 'c',
+            type: 'person',
+            phone: phone,
+          },
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+
+    sinon
+      .stub(request, 'get')
+      .resolves({ rows: [{ id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }]});
+    sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
+    sinon.stub(db.medic, 'put').resolves();
+
+    return schedule.execute().then(() => {
+      assert.equal(request.get.callCount, 1);
+      assert.equal(utils.translate.callCount, 1);
+      assert.equal(utils.translate.args[0][0], 'visit-1');
+      assert.equal(utils.getRegistrations.callCount, 1);
+      assert.deepEqual(utils.getRegistrations.args[0], [{ id: '223' }]);
+      assert.equal(utils.setTaskState.callCount, 1);
+      assert.equal(db.medic.put.callCount, 1);
+      assert.deepEqualExcludingEvery(db.medic.put.args[0], [
+        {
+          _id: 'report_id',
+          type: 'data_record',
+          fields: {
+            patient_uuid: 'uuid',
+            patient_id: '',
+          },
+          contact: {
+            _id: 'a',
+            parent: {
+              _id: 'b',
+            },
+          },
+          scheduled_tasks: [
+            {
+              due: due.toISOString(),
+              state: 'scheduled',
+              message_key: 'visit-1',
+              recipient: 'clinic',
+              messages: [{
+                message: 'Patient jow 223 lalala must be visited',
                 to: phone,
 
               }]
