@@ -6,6 +6,9 @@ const querystring = require('querystring');
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('@utils/sentinel');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -66,6 +69,7 @@ describe('Users API', () => {
       name: username,
       password: password,
       facility_id: null,
+      contact_id: null,
       roles: [
         'chw',
         'data_entry',
@@ -73,6 +77,7 @@ describe('Users API', () => {
     };
 
     const newPlaceId = 'NewPlaceId' + new Date().getTime();
+    const newContactId = 'NewContactId' + new Date().getTime();
 
     let cookie;
 
@@ -92,16 +97,18 @@ describe('Users API', () => {
       {
         _id: newPlaceId,
         type: 'clinic'
-      }
+      },
+      {
+        _id: newContactId,
+        type: 'person',
+        parent: {
+          _id: newPlaceId,
+        },
+      },
     ];
 
     before(async () => {
-      const settings = await utils.getSettings();
-      const permissions = {
-        ...settings.permissions,
-        'can_edit': ['chw'],
-      };
-      await utils.updateSettings({ permissions }, true);
+      await utils.updatePermissions(['chw'], ['can_edit']);
 
       await utils.request({
         path: '/_users',
@@ -165,19 +172,28 @@ describe('Users API', () => {
       await utils.revertDb([], true);
     });
 
-    it('Allows for admin users to modify someone', () => {
-      return utils
-        .request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          body: {
-            place: newPlaceId
-          }
-        })
-        .then(() => utils.getDoc(getUserId(username)))
-        .then(doc => {
-          chai.expect(doc.facility_id).to.equal(newPlaceId);
-        });
+    it('Allows for admin users to modify someone', async () => {
+      let userSettingsDoc = await utils.getDoc(getUserId(username));
+      chai.expect(userSettingsDoc.facility_id).to.equal(null);
+      chai.expect(userSettingsDoc.contact_id).to.equal(null);
+      let userDoc = await utils.usersDb.get(getUserId(username));
+      chai.expect(userDoc.facility_id).to.equal(null);
+      chai.expect(userDoc.contact_id).to.equal(null);
+
+      await utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        body: {
+          place: newPlaceId,
+          contact: newContactId,
+        },
+      });
+      userSettingsDoc = await utils.getDoc(getUserId(username));
+      chai.expect(userSettingsDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userSettingsDoc.contact_id).to.equal(newContactId);
+      userDoc = await utils.usersDb.get(getUserId(username));
+      chai.expect(userDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userDoc.contact_id).to.equal(newContactId);
     });
 
     it('401s if a user without the right permissions attempts to modify someone else', () => {
@@ -623,6 +639,7 @@ describe('Users API', () => {
         type: 'user',
         roles: ['district_admin'],
         facility_id: 'fixture:test',
+        contact_id: 'fixture:user:testuser',
       };
       chai.expect(user).to.shallowDeepEqual(Object.assign(defaultProps, extra));
     };
@@ -1015,7 +1032,12 @@ describe('Users API', () => {
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
-          const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
+          const extraProps = {
+            facility_id: user.place._id,
+            contact_id: user.contact._id,
+            name: user.username,
+            roles: user.roles,
+          };
           expectCorrectUser(userInDb, extraProps);
           expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
           chai.expect(userInDb.token_login).to.be.undefined;
@@ -1125,7 +1147,12 @@ describe('Users API', () => {
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
-          const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
+          const extraProps = {
+            facility_id: user.place._id,
+            contact_id: user.contact._id,
+            name: user.username,
+            roles: user.roles,
+          };
           expectCorrectUser(userInDb, extraProps);
           expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
           chai.expect(userInDb.token_login).to.be.ok;
@@ -1576,6 +1603,111 @@ describe('Users API', () => {
     });
   });
 
+  describe('GET api/v2/users/{username}', () => {
+    let facility;
+    let person;
+    let user;
+    let userProgramOfficer;
+
+    before(async () => {
+      facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
+      person = utils.deepFreeze(
+        personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null })
+      );
+      facility.contact = person._id;
+      facility = utils.deepFreeze(facility);
+      user = userFactory.build({ username: 'chw111', place: facility._id, contact: person._id, roles: ['chw'] });
+      delete user.password;
+      user = utils.deepFreeze(user);
+      userProgramOfficer = utils.deepFreeze(userFactory.build({
+        username: 'prog222',
+        place: facility._id,
+        contact: person._id,
+        roles: ['program_officer']
+      }));
+
+      await utils.saveDocs([ facility, person ]);
+      await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
+
+      await utils.updatePermissions(['program_officer'], ['can_view_users']);
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
+      await utils.revertDb([], true);
+      await utils.deleteUsers([user]);
+    });
+
+    it('retrieves a user by username', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+      });
+
+      expect(users).excludingEvery(['_rev']).to.deep.include({
+        ...user,
+        place: facility,
+        contact: person,
+      });
+    });
+
+    it('retrieves a user with can_view_users permission', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+        auth: { username: userProgramOfficer.username, password },
+      });
+
+      expect(users).excludingEvery(['_rev']).to.deep.include({
+        ...user,
+        place: facility,
+        contact: person,
+      });
+    });
+
+    it('returns an error when no user is found for username', async () => {
+      try {
+        await utils.request({
+          path: `/api/v2/users/invalidUsername`,
+        });
+      } catch ({ error }) {
+        expect(error.code).to.equal(404);
+        expect(error.error).to
+          .match(/Failed to find user with name \[invalidUsername\] in the \[(users|medic)\] database./);
+        return;
+      }
+
+      expect.fail('Should have thrown an error');
+    });
+
+    it('returns an error when user does not have can_view_users permission', async () => {
+      try {
+        await utils.request({
+          path: `/api/v2/users/${userProgramOfficer.username}`,
+          auth: { username: user.username, password },
+        });
+      } catch ({ error }) {
+        expect(error.code).to.equal(403);
+        expect(error.error).to.equal('Insufficient privileges');
+        return;
+      }
+
+      expect.fail('Should have thrown an error');
+    });
+
+    it('retrieves self even when user does not have can_view_users permission', async () => {
+      const users = await utils.request({
+        path: `/api/v2/users/${user.username}`,
+        auth: { username: user.username, password },
+      });
+
+      expect(users).excludingEvery(['_rev']).to.deep.include({
+        ...user,
+        place: facility,
+        contact: person,
+      });
+    });
+  });
+
+
   describe('POST/GET api/v2/users', () => {
     before(async () => {
       await utils.saveDoc(parentPlace);
@@ -1585,7 +1717,7 @@ describe('Users API', () => {
       await utils.revertDb([], true);
     });
 
-    it('should create and get users', async () => {
+    it('should create and get all users', async () => {
       const users = Array.from({ length: 10 }).map(() => ({
         username: uuid(),
         password: password,
@@ -1600,10 +1732,7 @@ describe('Users API', () => {
         roles: ['district_admin', 'mm-online']
       }));
 
-      const createUserOpts = { path: '/api/v2/users', method: 'POST' };
-      for (const user of users) {
-        await utils.request({ ...createUserOpts, body: user });
-      }
+      await utils.request({ path: '/api/v2/users', method: 'POST', body: users });
 
       const savedUsers = await utils.request({ path: '/api/v2/users' });
       for (const user of users) {
@@ -1616,6 +1745,151 @@ describe('Users API', () => {
           'contact.name': user.contact.name,
         });
       }
+    });
+
+    it('should create and query users using filters', async () => {
+      const facilityE = await utils.request({
+        path: '/api/v1/places',
+        method: 'POST',
+        body: { type: 'health_center', name: 'Facility E', parent: 'PARENT_PLACE' },
+      });
+      const facilityF = await utils.request({
+        path: '/api/v1/places',
+        method: 'POST',
+        body: { type: 'health_center', name: 'Facility F', parent: 'PARENT_PLACE' },
+      });
+      const contactA = await utils.request({
+        path: '/api/v1/people',
+        method: 'POST',
+        body: { name: 'Contact A', place: facilityE.id },
+      });
+      const contactB = await utils.request({
+        path: '/api/v1/people',
+        method: 'POST',
+        body: { name: 'Contact B', place: facilityE.id },
+      });
+      const contactC = await utils.request({
+        path: '/api/v1/people',
+        method: 'POST',
+        body: { name: 'Contact C', place: facilityF.id },
+      });
+
+      const userFactory = ({ contact, place }) => ({
+        username: uuid(),
+        password: password,
+        roles: ['district_admin', 'mm-online'],
+        contact,
+        place,
+      });
+      const user1 = userFactory({ contact: contactA.id, place: facilityE.id });
+      const user2 = userFactory({ contact: contactA.id, place: facilityE.id });
+      const user3 = userFactory({ contact: contactB.id, place: facilityE.id });
+      const user4 = userFactory({ contact: contactC.id, place: facilityF.id });
+      const user5 = userFactory({ contact: contactC.id, place: facilityF.id });
+      const [user1Response, user2Response, user3Response, user4Response, user5Response] = await utils.request({
+        path: '/api/v2/users',
+        method: 'POST',
+        body: [user1, user2, user3, user4, user5],
+      });
+
+      const user5Name = user5Response.user.id.replace('org.couchdb.user:', '');
+      await utils.request({
+        path: `/api/v1/users/${user5Name}`,
+        method: 'DELETE',
+      });
+
+      let filteredUsers;
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: {
+          facility_id: facilityE.id,
+          contact_id: contactA.id,
+        },
+      });
+      expect(filteredUsers.length).to.equal(2);
+      // using find instead of accessing array by index here because
+      // couch sorts results by their id, not by their creation order
+      expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
+        id: user1Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
+        id: user2Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { facility_id: facilityE.id },
+      });
+      expect(filteredUsers.length).to.equal(3);
+      expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
+        id: user1Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
+        id: user2Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user3Response.user.id)).to.deep.nested.include({
+        id: user3Response.user.id,
+        'contact._id': contactB.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { contact_id: contactA.id },
+      });
+      expect(filteredUsers.length).to.equal(2);
+      expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
+        id: user1Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+      expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
+        id: user2Response.user.id,
+        'contact._id': contactA.id,
+        'place._id': facilityE.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { contact_id: contactC.id },
+      });
+      expect(filteredUsers.length).to.equal(1);
+      expect(filteredUsers.find(user => user.id === user4Response.user.id)).to.deep.nested.include({
+        id: user4Response.user.id,
+        'contact._id': contactC.id,
+        'place._id': facilityF.id,
+        'place.parent._id': parentPlace._id,
+      });
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { contact_id: 'non_existent_contact' },
+      });
+      expect(filteredUsers.length).to.equal(0);
+
+      filteredUsers = await utils.request({
+        path: '/api/v2/users',
+        qs: { facility_id: 'non_existent_facility' },
+      });
+      expect(filteredUsers.length).to.equal(0);
+
+      const allUsers = await utils.request({ path: '/api/v2/users' });
+      expect(allUsers.map(user => user.id)).to.not.include(user5Response.user.id);
     });
   });
 });

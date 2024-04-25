@@ -3,7 +3,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const chai = require('chai');
 const sinon = require('sinon');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');

@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const outbound = rewire('../src/outbound');
 
 describe('outbound shared library', () => {

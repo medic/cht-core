@@ -155,9 +155,11 @@ const matchDbs = (expected, actual) => {
 
 const realMedicDb = db.medic;
 const realSentinelDb = db.sentinel;
+const realUsersDb = db.users;
 const switchToRealDbs = () => {
   db.medic = realMedicDb;
   db.sentinel = realSentinelDb;
+  db.users = realUsersDb;
 };
 
 const switchToTestDbs = () => {
@@ -166,6 +168,9 @@ const switchToTestDbs = () => {
   );
   db.sentinel = new PouchDB(
     realSentinelDb.name.replace(/medic-sentinel$/, 'medic-sentinel-test')
+  );
+  db.users = new PouchDB(
+    realUsersDb.name.replace(/_users$/, 'users-test')
   );
 };
 

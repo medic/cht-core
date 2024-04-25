@@ -1,18 +1,16 @@
-const request = require('request-promise-native');
-const MIN_MAJOR = 16;
+const request = require('@medic/couch-request');
+
+const MIN_COUCHDB_VERSION = { major: 3, minor: 3 };
 
 /* eslint-disable no-console */
 
 const nodeVersionCheck = () => {
   try {
-    const [major, minor, patch] = process.versions.node.split('.').map(Number);
-    if (major < MIN_MAJOR) {
-      throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
-    }
+    console.log(`Node Version: ${process.versions.node}`);
+    console.log(`Node Mode: "${process.env.NODE_ENV || 'development'}"`);
     console.log(`Node Environment Options: '${process.env.NODE_OPTIONS}'`);
-    console.log(`Node Version: ${major}.${minor}.${patch} in ${process.env.NODE_ENV || 'development'} mode`);
   } catch (err) {
-    console.error('Fatal error initialising');
+    console.error('Fatal error checking node version');
     console.log(err);
     process.exit(1);
   }
@@ -105,14 +103,19 @@ const checkCluster = async (couchUrl) => {
   console.log('CouchDb Cluster ready');
 };
 
-const getCouchDbVersion = (couchUrl) => {
-  return request.get({ url: couchUrl, json: true }).then(response => response.version);
+const getCouchDbVersion = async (couchUrl) => {
+  const response = await request.get({ url: couchUrl, json: true });
+  return response.version;
 };
 
-const couchDbVersionCheck = (couchUrl) => {
-  return getCouchDbVersion(couchUrl).then(version => {
-    console.log(`CouchDB Version: ${version}`);
-  });
+const couchDbVersionCheck = async (couchUrl) => {
+  const version = await getCouchDbVersion(couchUrl);
+  const [ major, minor ] = version.split('.').map(Number);
+  if (major < MIN_COUCHDB_VERSION.major || minor < MIN_COUCHDB_VERSION.minor) {
+    throw new Error(`CouchDB Version ${version} is not supported, minimum is ` + 
+                    `${MIN_COUCHDB_VERSION.major}.${MIN_COUCHDB_VERSION.minor}.0`);
+  }
+  console.log(`CouchDB Version: ${version}`);
 };
 
 const logRequestError = (error) => {
@@ -142,11 +145,10 @@ const couchDbCheck = async (couchUrl) => {
   } while (true);
 };
 
-const check = (couchUrl) => {
-  return Promise.resolve()
-    .then(nodeVersionCheck)
-    .then(() => checkServerUrl(couchUrl))
-    .then(() => couchDbCheck(couchUrl));
+const check = async (couchUrl) => {
+  await nodeVersionCheck();
+  await checkServerUrl(couchUrl);
+  await couchDbCheck(couchUrl);
 };
 
 module.exports = {

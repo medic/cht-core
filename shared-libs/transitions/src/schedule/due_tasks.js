@@ -5,7 +5,7 @@ const utils = require('../lib/utils');
 const date = require('../date');
 const config = require('../config');
 const db = require('../db');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
@@ -17,7 +17,7 @@ const getTemplateContext = async (doc) => {
     patient: doc.patient,
     place: doc.place,
   };
-  
+
   const patientShortcodeId = doc.fields?.patient_id || doc.patient?.patient_id;
   const placeShortcodeId = doc.fields?.place_id || doc.place?.place_id;
   if (!patientShortcodeId && !placeShortcodeId) {
@@ -97,7 +97,7 @@ const getNextBatch = (result, startKeyDocId, query) => {
       nextKeyDocId = null;
     }
   }
-  
+
   return { nextKeyDocId, nextKey };
 };
 
@@ -136,7 +136,7 @@ const getBatch = async (query, startKey, startKeyDocId) => {
     json: true
   };
 
-  const result = await rpn.get(options);
+  const result = await request.get(options);
   if (!result.rows?.length) {
     return;
   }
