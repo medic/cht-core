@@ -1,35 +1,38 @@
-// TODO: this doesn't need to exist. We can just work this out dynamically when
+// ToThinkAbout: this doesn't need to exist. We can just work this out dynamically when
 //       gateway queries, it's not slow or complicated.
 const moment = require('moment');
 const utils = require('../lib/utils');
 const date = require('../date');
 const config = require('../config');
 const db = require('../db');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
 const BATCH_SIZE = 1000;
 
-const getTemplateContext = (doc) => {
-  const patientShortcodeId = doc.fields && doc.fields.patient_id;
-  const placeShortcodeId = doc.fields && doc.fields.place_id;
+const getTemplateContext = async (doc) => {
+  const context = {
+    // the doc is already hydrated
+    patient: doc.patient,
+    place: doc.place,
+  };
+
+  const patientShortcodeId = doc.fields?.patient_id || doc.patient?.patient_id;
+  const placeShortcodeId = doc.fields?.place_id || doc.place?.place_id;
   if (!patientShortcodeId && !placeShortcodeId) {
-    return Promise.resolve();
+    return context;
   }
 
-  return Promise
-    .all([
-      patientShortcodeId && utils.getRegistrations({ id: patientShortcodeId }),
-      placeShortcodeId && utils.getRegistrations({ id: placeShortcodeId }),
-    ])
-    .then(([ patientRegistrations, placeRegistrations]) => ({
-      registrations: patientRegistrations,
-      placeRegistrations,
-      // the doc is already hydrated
-      patient: doc.patient,
-      place: doc.place,
-    }));
+  const [patientRegistrations, placeRegistrations] = await Promise.all([
+    patientShortcodeId && utils.getRegistrations({ id: patientShortcodeId }),
+    placeShortcodeId && utils.getRegistrations({ id: placeShortcodeId }),
+  ]);
+
+  context.registrations = patientRegistrations;
+  context.placeRegistrations = placeRegistrations;
+
+  return context;
 };
 
 const updateScheduledTasks = (doc, context, dueDates) => {
@@ -80,7 +83,46 @@ const updateScheduledTasks = (doc, context, dueDates) => {
   return updatedTasks;
 };
 
-const getBatch = (query, startKey, startKeyDocId) => {
+const getNextBatch = (result, startKeyDocId, query) => {
+  const lastRow = result.rows.at(-1);
+  const nextKey = lastRow.key;
+  let nextKeyDocId = lastRow.id;
+
+  if (nextKeyDocId === startKeyDocId || nextKeyDocId === result.rows[0].id) {
+    if (result.rows.length >= query.limit) {
+      // queue is saturated with this single doc, double the limit for the next requests to get past it
+      query.limit = query.limit * 2;
+    } else {
+      // this is the last doc, process it and there's no need to continue
+      nextKeyDocId = null;
+    }
+  }
+
+  return { nextKeyDocId, nextKey };
+};
+
+const processBatch = async (result) => {
+  const rows = {};
+  result.rows.forEach(row => {
+    if (!rows[row.id]) {
+      row.dueDates = [];
+      rows[row.id] = row;
+    }
+    rows[row.id].dueDates.push(moment(row.key[1]).toISOString());
+  });
+
+  for (const row of Object.values(rows)) {
+    const [doc] = await lineage.hydrateDocs([row.doc]);
+    const context = await getTemplateContext(doc);
+    const hasUpdatedTasks = updateScheduledTasks(doc, context, row.dueDates);
+    if (hasUpdatedTasks) {
+      lineage.minify(doc);
+      await db.medic.put(doc);
+    }
+  }
+};
+
+const getBatch = async (query, startKey, startKeyDocId) => {
   const queryString = Object.assign({}, query);
   if (startKeyDocId) {
     queryString.startkey_docid = startKeyDocId;
@@ -94,57 +136,17 @@ const getBatch = (query, startKey, startKeyDocId) => {
     json: true
   };
 
-  let nextKey;
-  let nextKeyDocId;
+  const result = await request.get(options);
+  if (!result.rows?.length) {
+    return;
+  }
 
-  return rpn
-    .get(options)
-    .then(result => {
-      if (!result.rows || !result.rows.length) {
-        return;
-      }
+  await processBatch(result);
 
-      ({ key: nextKey, id: nextKeyDocId } = result.rows[result.rows.length - 1]);
-
-      if (nextKeyDocId === startKeyDocId || nextKeyDocId === result.rows[0].id) {
-        if (result.rows.length >= query.limit) {
-          // queue is saturated with this single doc, double the limit for the next requests to get past it
-          query.limit = query.limit * 2;
-        } else {
-          // this is the last doc, process it and there's no need to continue
-          nextKeyDocId = null;
-        }
-      }
-
-      const objs = {};
-      result.rows.forEach(row => {
-        if (!objs[row.id]) {
-          row.dueDates = [];
-          objs[row.id] = row;
-        }
-        objs[row.id].dueDates.push(moment(row.key[1]).toISOString());
-      });
-
-      let promiseChain = Promise.resolve();
-      Object.values(objs).forEach(obj => {
-        promiseChain = promiseChain
-          .then(() => lineage.hydrateDocs([obj.doc]))
-          .then(([doc]) => {
-            return getTemplateContext(doc).then(context => {
-              const hasUpdatedTasks = updateScheduledTasks(doc, context, obj.dueDates);
-              if (!hasUpdatedTasks) {
-                return;
-              }
-
-              lineage.minify(doc);
-              return db.medic.put(doc);
-            });
-          });
-      });
-
-      return promiseChain;
-    })
-    .then(() => nextKeyDocId && getBatch(query, nextKey, nextKeyDocId));
+  const { nextKeyDocId, nextKey } = getNextBatch(result, startKeyDocId, query);
+  if (nextKeyDocId) {
+    return await getBatch(query, nextKey, nextKeyDocId);
+  }
 };
 
 module.exports = {

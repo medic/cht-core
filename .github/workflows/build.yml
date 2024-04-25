@@ -186,6 +186,8 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       CHROME_VERSION: ${{ matrix.chrome-version }}
+      JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
+
 
     strategy:
       fail-fast: false
@@ -258,9 +260,6 @@ jobs:
       working-directory: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Set ENV
-      run: |
-        echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install pyxform
@@ -277,7 +276,7 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
+        cp -r build-history-data/cht-core/allure/${{ env.JOB_NAME }}/allure-report/history allure-results | true
     - name: Install Chrome 90
       if: ${{matrix.chrome-version=='90'}}
       run: |
@@ -297,8 +296,8 @@ jobs:
     - name: Copy new allure history
       if: always()
       run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report | true
+        mkdir -p build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/allure-report | true
     - name: Upload allure report history
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       continue-on-error: true # don't fail the build if git push fails
@@ -318,8 +317,8 @@ jobs:
     - name: Copy new report
       if: always()
       run: |
-        mkdir -p build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}
-        cp -r allure-report build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }} | true
+        mkdir -p build-history/cht-core/allure/${{ env.JOB_NAME }}
+        cp -r allure-report build-history/cht-core/allure/${{ env.JOB_NAME }} | true
     - name: Upload allure report
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       continue-on-error: true # don't fail the build if git push fails
@@ -332,7 +331,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
+        name: ${{ env.JOB_NAME }}
         path: |
           allure-results
           allure-report
