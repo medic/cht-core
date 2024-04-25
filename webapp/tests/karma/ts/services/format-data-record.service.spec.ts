@@ -626,6 +626,94 @@ describe('FormatDataRecord service', () => {
         });
       });
     });
+
+    it('should generate messages with patient and hidden fields', async () => {
+      const report = {
+        _id: 'report',
+        form: 'frm',
+        fields: { patient_id: '12345', shown_field: 10, hidden_field: 20 },
+        hidden_fields: ['hidden_field'],
+        patient: { _id: 'p_uuid', patient_id: '12345', name: 'alpha' },
+        contact: { _id: 'submitter', phone: '+40858585' },
+        scheduled_tasks: [
+          {
+            due: 10,
+            group: 1,
+            type: 1,
+            message_key: 'message1',
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+
+      translateLocaleService.instant.withArgs('message1').returns(
+        'Patient {{patient_name}} has a hidden_field of {{hidden_field}}'
+      );
+
+      db.query.resolves({ rows: [] });
+      Settings.resolves({ registrations: [{ }]});
+
+      const formatted = await service.format(report);
+      expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted[0]).excludingEvery('uuid').to.deep.equal({
+        due: 10,
+        group: 1,
+        type: 1,
+        message_key: 'message1',
+        recipient: 'reporting_unit',
+        timestamp: 10,
+        messages: [{
+          to: report.contact.phone,
+          message: 'Patient alpha has a hidden_field of 20',
+        }]
+      });
+    });
+
+    it('should generate messages with patient without patient_id', async () => {
+      const report = {
+        _id: 'report',
+        form: 'frm',
+        fields: { patient_id: '', patient_uuid: 'p_uuid', patient_name: 'alpha' },
+        hidden_fields: ['hidden_field'],
+        patient: { _id: 'p_uuid', patient_id: '12345', name: 'alpha', phone: '222' },
+        contact: { _id: 'submitter', phone: '+40858585' },
+        scheduled_tasks: [
+          {
+            due: 10,
+            group: 1,
+            type: 1,
+            message_key: 'message1',
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+
+      translateLocaleService.instant.withArgs('message1').returns(
+        'Message patient {{patient_name}}({{patient_id}}) at {{patient.phone}}'
+      );
+
+      db.query.resolves({ rows: [] });
+      Settings.resolves({ registrations: [{ }]});
+
+      const formatted = await service.format(report);
+      expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted[0]).excludingEvery('uuid').to.deep.equal({
+        due: 10,
+        group: 1,
+        type: 1,
+        message_key: 'message1',
+        recipient: 'reporting_unit',
+        timestamp: 10,
+        messages: [{
+          to: report.contact.phone,
+          message: 'Message patient alpha(12345) at 222',
+        }]
+      });
+    });
   });
 
 });
