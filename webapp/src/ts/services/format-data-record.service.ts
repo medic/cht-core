@@ -524,10 +524,9 @@ export class FormatDataRecordService {
   }
 
   private formatScheduledTasks(doc, settings, language, context) {
-    doc.scheduled_tasks_by_group = [];
+    const scheduledTasksByGroup:Array<{ group; name; type; number; rows; rows_sorted }> = [];
     const groups = {};
     doc.scheduled_tasks.forEach((task) => {
-      // avoid crash if item is falsey
       if (!task) {
         return;
       }
@@ -566,8 +565,6 @@ export class FormatDataRecordService {
         copy.message_key = task.message_key;
       }
 
-      // setup scheduled groups
-
       const groupName = this.getGroupName(task);
       let group = groups[groupName];
       if (!group) {
@@ -584,9 +581,10 @@ export class FormatDataRecordService {
     });
     Object.keys(groups).forEach((key) => {
       groups[key].rows_sorted = _.sortBy(groups[key].rows, 'timestamp');
-      doc.scheduled_tasks_by_group.push(groups[key]);
+      scheduledTasksByGroup.push(groups[key]);
     });
 
+    return scheduledTasksByGroup;
   }
 
   /*
@@ -673,7 +671,7 @@ export class FormatDataRecordService {
     }
 
     if (formatted.scheduled_tasks) {
-      this.formatScheduledTasks(formatted, settings, language, context);
+      formatted.scheduled_tasks_by_group =this.formatScheduledTasks(doc, settings, language, context);
     }
 
     if (formatted.kujua_message) {
@@ -688,8 +686,8 @@ export class FormatDataRecordService {
   }
 
   private _format(doc) {
-    const patientId = doc.patient_id || doc.fields?.patient_id;
-    const placeId = doc.place_id || doc.fields?.place_id;
+    const patientId = doc.patient_id || doc.fields?.patient_id || doc.patient?.patient_id;
+    const placeId = doc.place_id || doc.fields?.place_id || doc.place?.place_id;
 
     return Promise
       .all([
@@ -701,14 +699,14 @@ export class FormatDataRecordService {
       .then(([ settings, language, patientRegistrations=[], placeRegistrations=[] ]) => {
         const context:any = {};
 
-        if (patientId) {
+        if (doc.patient) {
           context.patient = doc.patient;
           context.registrations = patientRegistrations.filter((registration) => {
             return registrationUtils.isValidRegistration(registration, settings);
           });
         }
 
-        if (placeId) {
+        if (doc.place) {
           context.place = doc.place;
           context.placeRegistrations = placeRegistrations.filter((registration) => {
             return registrationUtils.isValidRegistration(registration, settings);
