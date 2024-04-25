@@ -25,8 +25,6 @@ describe('ongoing replication', function() {
   this.timeout(4 * 60 * 1000); // Sometimes the tests take longer to complete than the original 2 minutes timeout.
 
   before(async () => {
-    await sentinelUtils.skipToSeq();
-
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
@@ -34,10 +32,14 @@ describe('ongoing replication', function() {
     await saveData(userDeniedDocs);
   });
 
+  after(async () => {
+    await utils.stopSentinel();
+    await sentinelUtils.skipToSeq();
+    await utils.startSentinel();
+  });
+
   afterEach(async () => {
     await browser.throttle('online');
-    await sentinelUtils.skipToSeq();
-    await sentinelUtils.waitForSentinel();
   });
 
   it('should download new documents ', async () => {
@@ -153,7 +155,6 @@ describe('ongoing replication', function() {
       'messages-rnd'
     ];
     await utils.deleteDocs(docIdsToDelete);
-    await sentinelUtils.waitForSentinel(docIdsToDelete);
     await waitForServiceWorker.promise;
 
     await commonPage.sync(true);
