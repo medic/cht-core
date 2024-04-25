@@ -671,12 +671,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(rpn, 'get').resolves({ rows: [{ id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }]});
+    sinon
+      .stub(request, 'get')
+      .resolves({ rows: [{ id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 1);
+      assert.equal(request.get.callCount, 1);
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
