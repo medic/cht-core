@@ -40,6 +40,11 @@ describe('ongoing replication', function() {
 
   afterEach(async () => {
     await browser.throttle('online');
+    const isRevertingSettings = utils.revertSettings(true);
+    if (isRevertingSettings) {
+      await isRevertingSettings;
+      await commonPage.sync(true);
+    }
   });
 
   it('should download new documents ', async () => {
@@ -170,9 +175,6 @@ describe('ongoing replication', function() {
     await commonPage.sync(true);
     const [settings] = await chtDbUtils.getDocs(['settings']);
     expect(settings.settings.test).to.equal(true);
-
-    await utils.revertSettings(true);
-    await commonPage.sync(true);
   });
 
   it('should handle conflicts', async () => {

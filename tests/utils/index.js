@@ -545,7 +545,7 @@ const revertSettings = async ignoreRefresh => {
   const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertCustomSettings();
 
-  if (!ignoreRefresh) {
+  if (!ignoreRefresh && needsRefresh) {
     return await commonElements.closeReloadModal(true);
   }
 
