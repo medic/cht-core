@@ -30,30 +30,197 @@ describe('Users Controller', () => {
   });
   afterEach(() => sinon.restore());
 
-  describe('get users list', () => {
+  describe('get single user', () => {
+    const userContext = Object.freeze({ name: 'medic' });
 
     beforeEach(() => {
+      sinon.stub(auth, 'getUserCtx').resolves(userContext);
+      auth.hasAllPermissions.returns(true);
+      sinon.stub(auth, 'basicAuthCredentials');
+      sinon.stub(users, 'getUser');
+      res = { json: sinon.stub() };
+    });
+
+    it('returns a user', async () => {
+      const expectedUser = {
+        id: 'org.couchdb.user:chw',
+        roles: ['chw', 'district-admin'],
+        contact: {
+          _id: 'chw-contact',
+          parent: { _id: 'chw-facility' },
+        }
+      };
+      users.getUser.resolves(expectedUser);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userContext, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.notCalled).to.be.true;
+      chai.expect(users.getUser.calledOnce).to.be.true;
+      chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
+      chai.expect(res.json.calledOnce).to.be.true;
+      chai.expect(res.json.args[0]).to.deep.equal([expectedUser]);
+    });
+
+    it('returns user when user does not have permission but is referencing self', async () => {
+      auth.hasAllPermissions.returns(false);
+      const userCtx = { name: 'chw' };
+      auth.getUserCtx.resolves({ name: 'chw' });
+      const expectedUser = {
+        id: 'org.couchdb.user:chw',
+        roles: ['chw', 'district-admin'],
+        contact: {
+          _id: 'chw-contact',
+          parent: { _id: 'chw-facility' },
+        }
+      };
+      users.getUser.resolves(expectedUser);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
+      chai.expect(users.getUser.calledOnce).to.be.true;
+      chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
+      chai.expect(res.json.calledOnce).to.be.true;
+      chai.expect(res.json.args[0]).to.deep.equal([expectedUser]);
+    });
+
+    it('returns user when user does not have permission but is referencing self with basic auth', async () => {
+      auth.hasAllPermissions.returns(false);
+      auth.basicAuthCredentials.returns({ username: 'chw' });
+      const userCtx = { name: 'chw' };
+      auth.getUserCtx.resolves(userCtx);
+      const expectedUser = {
+        id: 'org.couchdb.user:chw',
+        roles: ['chw', 'district-admin'],
+        contact: {
+          _id: 'chw-contact',
+          parent: { _id: 'chw-facility' },
+        }
+      };
+      users.getUser.resolves(expectedUser);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
+      chai.expect(users.getUser.calledOnce).to.be.true;
+      chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
+      chai.expect(res.json.calledOnce).to.be.true;
+      chai.expect(res.json.args[0]).to.deep.equal([expectedUser]);
+    });
+
+    it('returns error when user does not have permission and is not referencing self', async () => {
+      auth.hasAllPermissions.returns(false);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userContext, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
+      chai.expect(users.getUser.notCalled).to.be.true;
+      chai.expect(res.json.notCalled).to.be.true;
+      chai.expect(serverUtils.error.calledOnce).to.be.true;
+      const expectedError = { message: 'Insufficient privileges', code: 403 };
+      chai.expect(serverUtils.error.args[0]).to.deep.equal([expectedError, req, res]);
+    });
+
+    it('returns error when user does not have permission and conflicting basic auth and session cookie', async () => {
+      auth.hasAllPermissions.returns(false);
+      // If a request has both basic auth and a session cookie, they should always match. But it is possible for a
+      // mismatched cookie to be sent with the request. In this case, we check both to see if user is referencing self.
+      auth.basicAuthCredentials.returns({ username: 'medic' });
+      const userCtx = { name: 'chw' };
+      auth.getUserCtx.resolves(userCtx);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userCtx, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.calledOnce).to.be.true;
+      chai.expect(auth.basicAuthCredentials.args[0]).to.deep.equal([req]);
+      chai.expect(users.getUser.notCalled).to.be.true;
+      chai.expect(res.json.notCalled).to.be.true;
+      chai.expect(serverUtils.error.calledOnce).to.be.true;
+      const expectedError = { message: 'Insufficient privileges', code: 403 };
+      chai.expect(serverUtils.error.args[0]).to.deep.equal([expectedError, req, res]);
+    });
+
+    it('returns an error when retrieving user fails', async () => {
+      const expectedError = new Error('Could not find user.');
+      users.getUser.rejects(expectedError);
+      req = { params: { username: 'chw' } };
+
+      await controller.v2.get(req, res);
+
+      chai.expect(auth.getUserCtx.calledOnce).to.be.true;
+      chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+      chai.expect(auth.hasAllPermissions.calledOnce).to.be.true;
+      chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([userContext, 'can_view_users']);
+      chai.expect(auth.basicAuthCredentials.notCalled).to.be.true;
+      chai.expect(users.getUser.calledOnce).to.be.true;
+      chai.expect(users.getUser.args[0]).to.deep.equal([req.params.username]);
+      chai.expect(res.json.notCalled).to.be.true;
+      chai.expect(serverUtils.error.calledOnce).to.be.true;
+      chai.expect(serverUtils.error.args[0]).to.deep.equal([expectedError, req, res]);
+    });
+  });
+
+  describe('get users list', () => {
+    let userList;
+
+    beforeEach(() => {
+      userList = [
+        { id: 'org.couchdb.user:admin', roles: ['_admin'] },
+        {
+          id: 'org.couchdb.user:chw',
+          roles: ['chw', 'district-admin'],
+          contact: {
+            _id: 'chw-contact',
+            parent: { _id: 'chw-facility' },
+          }
+        },
+        { id: 'org.couchdb.user:unknown' },
+      ];
       req = { };
       res = { json: sinon.stub() };
-      sinon.stub(users, 'getList').resolves([
-        { id: 'org.couchdb.user:admin', roles: [ '_admin' ] },
-        { id: 'org.couchdb.user:chw', roles: [ 'chw', 'district-admin' ] },
-        { id: 'org.couchdb.user:unknown' },
-      ]);
+      sinon.stub(users, 'getList').resolves(userList);
     });
 
     describe('v1', () => {
 
       it('rejects if not permitted', async () => {
         sinon.stub(auth, 'check').rejects(new Error('nope'));
-        await controller.get(req, res);
+        await controller.list(req, res);
         chai.expect(serverUtils.error.callCount).to.equal(1);
       });
 
       it('gets the list of users', async () => {
         sinon.stub(auth, 'check').resolves();
 
-        await controller.get(req, res);
+        await controller.list(req, res);
         const result = res.json.args[0][0];
         chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
         chai.expect(result[0].type).to.equal('_admin');
@@ -69,17 +236,16 @@ describe('Users Controller', () => {
     });
 
     describe('v2', () => {
-
       it('rejects if not permitted', async () => {
         sinon.stub(auth, 'check').rejects(new Error('nope'));
-        await controller.v2.get(req, res);
+        await controller.v2.list(req, res);
         chai.expect(serverUtils.error.callCount).to.equal(1);
       });
 
-      it('gets the list of users', async () => {
+      it('gets the list of users without filters', async () => {
         sinon.stub(auth, 'check').resolves();
 
-        await controller.v2.get(req, res);
+        await controller.v2.list(req, res);
         const result = res.json.args[0][0];
         chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
         chai.expect(result[0].type).to.be.undefined;
@@ -92,6 +258,59 @@ describe('Users Controller', () => {
         chai.expect(result[2].roles).to.be.undefined;
       });
 
+      it('gets the list of users with facility_id filter', async () => {
+        sinon.stub(auth, 'check').resolves();
+        users.getList.resolves([userList[1]]);
+        req.query = {
+          facility_id: 'chw-facility',
+          unsupported: 'nope',
+          contactId: 'not supported either',
+          this_wont_work: 123,
+        };
+
+        await controller.v2.list(req, res);
+        chai.expect(users.getList.firstCall.args[0])
+          .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined });
+        const result = res.json.args[0][0];
+        chai.expect(result.length).to.equal(1);
+        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].type).to.be.undefined;
+        chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
+        chai.expect(result[0].contact._id).to.equal('chw-contact');
+        chai.expect(result[0].contact.parent._id).to.equal('chw-facility');
+      });
+
+      it('gets the list of users with facility_id and contact_id filters', async () => {
+        sinon.stub(auth, 'check').resolves();
+        users.getList.resolves([userList[1]]);
+        req.query = { facility_id: 'chw-facility', contact_id: 'chw-contact' };
+
+        await controller.v2.list(req, res);
+        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({
+          contactId: 'chw-contact',
+          facilityId: 'chw-facility',
+        });
+        const result = res.json.args[0][0];
+        chai.expect(result.length).to.equal(1);
+        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].type).to.be.undefined;
+        chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
+        chai.expect(result[0].contact._id).to.equal('chw-contact');
+        chai.expect(result[0].contact.parent._id).to.equal('chw-facility');
+      });
+
+      it('gets the list of users and ignores unexpected filters', async () => {
+        sinon.stub(auth, 'check').resolves();
+        req.query = { roles: ['chw'], name: 'admin' };
+
+        await controller.v2.list(req, res);
+        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined });
+        const result = res.json.args[0][0];
+        chai.expect(result.length).to.equal(3);
+        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+      });
     });
 
   });

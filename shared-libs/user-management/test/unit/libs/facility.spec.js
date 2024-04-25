@@ -6,11 +6,8 @@ const db = require('../../../src/libs/db');
 
 describe('facility', () => {
 
-  const userA = { doc: { facility_id: 'a' } };
-  const userB = { doc: { facility_id: 'b' } };
-
-  const settingA = { contact_id: 'a' };
-  const settingB = { contact_id: 'e' };
+  const userA = { facility_id: 'a', contact_id: 'a' };
+  const userB = { facility_id: 'b', contact_id: 'e' };
 
   const facilityA = { _id: 'a' };
   const facilityB = { _id: 'b' };
@@ -41,7 +38,7 @@ describe('facility', () => {
       { doc: facilityB },
       facilityNotFound,
     ] });
-    const result = await list([ userA, userB ], [ settingA, settingB ]);
+    const result = await list([userA, userB]);
     expect(result).to.deep.equal([ facilityA, facilityB ]);
     expect(allDocs.callCount).to.equal(1);
     expect(allDocs.args[0][0].keys).to.deep.equal([ 'a', 'b', 'e' ]);
