@@ -84,7 +84,9 @@ const validatePlace = place => {
 };
 
 const preparePlaceContact = async (contact) => {
-  if (!contact) return;
+  if (!contact) {
+    return;
+  }
   if (_.isString(contact)) { 
     return contact; 
   }
