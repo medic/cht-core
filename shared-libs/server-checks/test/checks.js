@@ -49,20 +49,10 @@ describe('Server Checks service', () => {
         service.__set__('process', process);
         service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
-        chai.assert.equal(console.log.callCount, 2);
-        chai.assert.isTrue(log(0).startsWith('Node Environment Options'));
-        chai.expect(log(1)).to.equal('Node Version: 16.11.1 in development mode');
-      });
-
-      it('too old', () => {
-        process = { versions: { node: '12.1.0' }, exit: sinon.stub() };
-        service.__set__('process', process);
-        service.__get__('nodeVersionCheck')();
-        chai.assert.isTrue(console.log.called);
-        chai.assert.equal(console.log.callCount, 1);
-        chai.assert.equal(console.error.callCount, 1);
-        chai.assert.equal(log(0), 'Error: Node version 12.1.0 is not supported, minimum is 16.0.0');
-        chai.assert.equal(error(0), 'Fatal error initialising');
+        chai.assert.equal(console.log.callCount, 3);
+        chai.expect(log(0)).to.equal('Node Version: 16.11.1');
+        chai.expect(log(1)).to.equal('Node Mode: "development"');
+        chai.assert.isTrue(log(2).startsWith('Node Environment Options'));
       });
 
     });
@@ -122,11 +112,10 @@ describe('Server Checks service', () => {
           });
       });
 
-      it('logs version', () => {
-        sinon.stub(request, 'get').resolves({ version: '2' });
-        return service.__get__('couchDbVersionCheck')('something').then(() => {
-          chai.assert.equal(log(0), 'CouchDB Version: 2');
-        });
+      it('logs version', async () => {
+        sinon.stub(request, 'get').resolves({ version: '3.3.3' });
+        await service.__get__('couchDbVersionCheck')('something');
+        chai.assert.equal(log(0), 'CouchDB Version: 3.3.3');
       });
     });
   });
@@ -141,7 +130,7 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get');
-      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '3.3.3' });
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
         all_nodes: ['a'],
         cluster_nodes: ['a'],
@@ -161,7 +150,7 @@ describe('Server Checks service', () => {
 
       sinon.stub(http, 'get').onCall(0).callsArgWith(1, { statusCode: 200 });
       sinon.stub(request, 'get');
-      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '3.3.3' });
       const unfinishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a'] };
       const finishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a', 'b'] };
       const membershipQuery = request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' }));
@@ -191,7 +180,7 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').onCall(0).callsArgWith(1, { statusCode: 200 });
       sinon.stub(request, 'get');
-      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '3.3.3' });
 
       const membershipQuery = request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' }));
       membershipQuery.onCall(0).resolves({ all_nodes: ['a'], cluster_nodes: ['a'] });
@@ -226,7 +215,7 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').onCall(0).callsArgWith(1, { statusCode: 200 });
       sinon.stub(request, 'get');
-      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '3.3.3' });
 
       request.get
         .withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' }))
@@ -256,7 +245,7 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').rejects({ an: 'error' });
-      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).onCall(100).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).onCall(100).resolves({ version: '3.3.3' });
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
         cluster_nodes: ['1', '2'],
         all_nodes: ['1', '2'],
@@ -281,7 +270,7 @@ describe('Server Checks service', () => {
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
       http.get.onCall(300).callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get');
-      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '3.3.3' });
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
         cluster_nodes: ['1', '2'],
         all_nodes: ['1', '2'],
@@ -303,7 +292,7 @@ describe('Server Checks service', () => {
         exit: sinon.stub(),
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-      sinon.stub(request, 'get').resolves({ version: '2' });
+      sinon.stub(request, 'get').resolves({ version: '3.3.3' });
       return service
         .check()
         .then(() => chai.expect.fail('Should have thrown'))
@@ -319,7 +308,24 @@ describe('Server Checks service', () => {
         exit: sinon.stub(),
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-      sinon.stub(request, 'get').resolves({ version: '2' });
+      sinon.stub(request, 'get').resolves({ version: '3.3.3' });
+      return service
+        .check('http://admin:pass@localhost:5984/path/to/db')
+        .then(() => chai.assert.fail('should have thrown'))
+        .catch(err => {
+          chai.assert.include(err.message, 'Environment variable "COUCH_URL" must have only one path segment');
+        });
+    });
+
+    it('unsupported version should throw', () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
+      sinon.stub(request, 'get');
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2.4.1' });
       return service
         .check('http://admin:pass@localhost:5984/path/to/db')
         .then(() => chai.assert.fail('should have thrown'))
@@ -331,13 +337,12 @@ describe('Server Checks service', () => {
   });
 
   describe('getCouchDbVersion', () => {
-    it('should return couchdb version', () => {
-      sinon.stub(request, 'get').resolves({ version: '2.2.0' });
-      return service.getCouchDbVersion('someURL').then(version => {
-        chai.expect(version).to.equal('2.2.0');
-        chai.expect(request.get.callCount).to.equal(1);
-        chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'someURL', json: true });
-      });
+    it('valid version should be logged', async () => {
+      sinon.stub(request, 'get').resolves({ version: '3.3.3' });
+      const version = await service.getCouchDbVersion('someURL');
+      chai.expect(version).to.equal('3.3.3');
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'someURL', json: true });
     });
 
     it('should reject errors', () => {
