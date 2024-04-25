@@ -1,4 +1,7 @@
 require('dotenv').config();
+
+const settingsProvider = require('../../../settings-provider');
+
 const LoadPage = require('../../pageobjects/load.page');
 const LoginPage = require('../../pageobjects/login.page');
 const PeoplePage = require('../../pageobjects/people.page');
@@ -7,14 +10,12 @@ const MessagesPage = require('../../pageobjects/messages.page');
 const ReportsPage = require('../../pageobjects/reports.page');
 const PerformancePage = require('../../pageobjects/performance.page');
 
-const instanceUrl = process.env.KE_URL;
-const username = process.env.KE_USERNAME;
-const password = process.env.KE_PASSWORD;
-
 describe('Apdex Performance Workflows', () => {
-  before( async () => {
+  before(async () => {
+    const instanceUrl = settingsProvider.getInstanceURL();
+    const user = settingsProvider.getUser('offline', 'chw');
     await LoadPage.loadInstance(instanceUrl);
-    await LoginPage.login(username, password);
+    await LoginPage.login(user.username, user.password);
   });
 
   it('should submit a report for a newly created person', async () => {
