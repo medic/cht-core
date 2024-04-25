@@ -19,14 +19,14 @@ const hasFullPermission = req => {
     });
 };
 
-const isUpdatingSelf = (req, credentials, username) => {
-  return auth.getUserCtx(req).then(userCtx => {
-    return (
-      userCtx.name === username &&
-      (!credentials || credentials.username === username)
-    );
-  });
-};
+const isReferencingSelf = (userCtx, credentials, username) => (
+  userCtx.name === username &&
+  (!credentials || credentials.username === username)
+);
+
+const isUpdatingSelf = (req, credentials, username) => auth
+  .getUserCtx(req)
+  .then(userCtx => isReferencingSelf(userCtx, credentials, username));
 
 const basicAuthValid = (credentials, username) => {
   if (!credentials) {
@@ -135,7 +135,7 @@ const convertUserListToV1 = (users=[]) => {
 };
 
 module.exports = {
-  get: (req, res) => {
+  list: (req, res) => {
     return getUserList(req)
       .then(list => convertUserListToV1(list))
       .then(body => res.json(body))
@@ -236,6 +236,20 @@ module.exports = {
 
   v2: {
     get: async (req, res) => {
+      try {
+        const userCtx = await auth.getUserCtx(req);
+        const hasPermission = auth.hasAllPermissions(userCtx, 'can_view_users');
+        if (!hasPermission && !isReferencingSelf(userCtx, auth.basicAuthCredentials(req), req.params.username)) {
+          serverUtils.error({ message: 'Insufficient privileges', code: 403 }, req, res);
+          return;
+        }
+        const user  = await users.getUser(req.params.username);
+        return res.json(user);
+      } catch (err) {
+        serverUtils.error(err, req, res);
+      }
+    },
+    list: async (req, res) => {
       try {
         const body = await getUserList(req);
         res.json(body);

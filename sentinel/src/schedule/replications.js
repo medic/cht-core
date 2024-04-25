@@ -1,7 +1,7 @@
 const later = require('later');
 const db = require('../db');
 const logger = require('../lib/logger');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 const PURGE_LOG_ID = '_local/purge_log';
 // default CouchDB purge max_document_id_number
@@ -32,7 +32,7 @@ const purgeDocs = (sourceDb, changes) => {
         body: docsToPurge,
       };
 
-      return rpn.post(opts);
+      return request.post(opts);
     });
 };
 

@@ -54,6 +54,7 @@ const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
+const cookieJar = rpn.jar();
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -124,12 +125,42 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
+const getSession = async () => {
+  if (cookieJar.getCookies(constants.BASE_URL).length) {
+    return;
+  }
+
+  const options = {
+    method: 'POST',
+    uri: `${constants.BASE_URL}/_session`,
+    json: true,
+    body: { name: auth.username, password: auth.password},
+    auth,
+    resolveWithFullResponse: true,
+  };
+  const response = await rpn(options);
+  const setCookie = response.headers?.['set-cookie'];
+  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
+  if (header) {
+    try {
+      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+};
+
+const isLoginRequest = options => {
+  return options.path === '/medic/login' && options.body.user !== auth.username;
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug } = {}) => { //NOSONAR
+const request = async (options, { debug } = {}) => { //NOSONAR
   options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth) {
-    options.auth = options.auth || auth;
+  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
+    await getSession();
+    options.jar = cookieJar;
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
@@ -154,11 +185,13 @@ const request = (options, { debug } = {}) => { //NOSONAR
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  return rpn(options).catch(err => {
+  try {
+    return await rpn(options);
+  } catch (err) {
     err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.statusCode}`);
     throw err;
-  });
+  }
 };
 
 const requestOnTestDb = (options, debug) => {
@@ -513,7 +546,7 @@ const revertSettings = async ignoreRefresh => {
   const needsRefresh = await revertCustomSettings();
 
   if (!ignoreRefresh) {
-    return await commonElements.closeReloadModal(true);
+    return needsRefresh && await commonElements.closeReloadModal(true);
   }
 
   if (!needsRefresh) {
@@ -603,11 +636,11 @@ const deleteMetaDbs = async () => {
  * @param {boolean} ignoreRefresh
  */
 const revertDb = async (except, ignoreRefresh) => { //NOSONAR
-  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
-  const needsRefresh = await revertCustomSettings();
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+  const needsRefresh = await revertCustomSettings();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
@@ -1065,7 +1098,8 @@ const killSpawnedProcess = (proc) => {
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
  * @param {[RegExp]} regex - matching expression(s) run against lines
- * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
+ * @returns {Promise<{cancel: function(): void, promise: Promise<void>}>}
+ * that contains the promise to resolve when logs lines are matched and a cancel function
  */
 const waitForDockerLogs = (container, ...regex) => {
   container = getContainerName(container);
@@ -1082,6 +1116,20 @@ const waitForDockerLogs = (container, ...regex) => {
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
+  const checkOutput = (data) => {
+    if (!firstLine) {
+      firstLine = true;
+      receivedFirstLine();
+      return;
+    }
+
+    data = data.toString();
+    logs += data;
+    const lines = data.split('\n');
+    const matchingLine = lines.find(line => regex.find(r => r.test(line)));
+    return matchingLine;
+  };
+
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
       console.log('Found logs', logs, 'did not match expected regex:', ...regex);
@@ -1089,25 +1137,17 @@ const waitForDockerLogs = (container, ...regex) => {
       killSpawnedProcess(proc);
     }, 20000);
 
-    const checkOutput = (data) => {
-      if (!firstLine) {
-        firstLine = true;
-        receivedFirstLine();
-        return;
-      }
-
-      data = data.toString();
-      logs += data;
-      const lines = data.split('\n');
-      if (lines.find(line => regex.find(r => r.test(line)))) {
+    const check = data => {
+      const foundMatch = checkOutput(data);
+      if (foundMatch) {
         resolve();
         clearTimeout(timeout);
         killSpawnedProcess(proc);
       }
     };
 
-    proc.stdout.on('data', checkOutput);
-    proc.stderr.on('data', checkOutput);
+    proc.stdout.on('data', check);
+    proc.stderr.on('data', check);
   });
 
   return firstLineReceivedPromise.then(() => ({
@@ -1236,7 +1276,7 @@ const getSentinelDate = () => getContainerDate('sentinel');
 const getContainerDate = (container) => {
   container = getContainerName(container);
   try {
-    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
+    return moment.utc(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
   } catch (error) {
     console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
     console.error(error.message);
@@ -1244,7 +1284,6 @@ const getContainerDate = (container) => {
 };
 
 const logFeedbackDocs = async (test) => {
-
   const feedBackDocs = await chtDbUtils.getFeedbackDocs();
   const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
   if (!newFeedbackDocs.length) {
