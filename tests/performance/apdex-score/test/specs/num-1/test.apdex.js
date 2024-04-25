@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const settingsProvider = require('../../../settings-provider');
+const loadSettings = require('../../../settings-provider');
 
 const LoadPage = require('../../pageobjects/load.page');
 const LoginPage = require('../../pageobjects/login.page');
@@ -12,6 +12,7 @@ const PerformancePage = require('../../pageobjects/performance.page');
 
 describe('Apdex Performance Workflows', () => {
   before(async () => {
+    const settingsProvider = loadSettings();
     const instanceUrl = settingsProvider.getInstanceURL();
     const user = settingsProvider.getUser('offline', 'chw');
     await LoadPage.loadInstance(instanceUrl);

@@ -1,4 +1,4 @@
-const settingsProvider = require('./settings-provider');
+const loadSettings = require('./settings-provider');
 
 exports.config = {
   //
@@ -173,9 +173,7 @@ exports.config = {
    */
   onPrepare: function (config, capabilities) {
     try {
-      settingsProvider.loadSettingsFile();
-
-      const appiumSettings = settingsProvider.getAppiumSettings();
+      const appiumSettings = loadSettings().getAppiumSettings();
       const appium = capabilities[0];
       appium['appium:platformVersion'] = appiumSettings.platformVersion;
       appium['appium:deviceName'] = appiumSettings.deviceName;
