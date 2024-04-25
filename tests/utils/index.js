@@ -546,7 +546,7 @@ const revertSettings = async ignoreRefresh => {
   const needsRefresh = await revertCustomSettings();
 
   if (!ignoreRefresh) {
-    return await commonElements.closeReloadModal(true);
+    return needsRefresh && await commonElements.closeReloadModal(true);
   }
 
   if (!needsRefresh) {
@@ -636,11 +636,11 @@ const deleteMetaDbs = async () => {
  * @param {boolean} ignoreRefresh
  */
 const revertDb = async (except, ignoreRefresh) => { //NOSONAR
-  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
-  const needsRefresh = await revertCustomSettings();
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+  const needsRefresh = await revertCustomSettings();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
@@ -1098,7 +1098,8 @@ const killSpawnedProcess = (proc) => {
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
  * @param {[RegExp]} regex - matching expression(s) run against lines
- * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
+ * @returns {Promise<{cancel: function(): void, promise: Promise<void>}>}
+ * that contains the promise to resolve when logs lines are matched and a cancel function
  */
 const waitForDockerLogs = (container, ...regex) => {
   container = getContainerName(container);
@@ -1115,6 +1116,20 @@ const waitForDockerLogs = (container, ...regex) => {
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
+  const checkOutput = (data) => {
+    if (!firstLine) {
+      firstLine = true;
+      receivedFirstLine();
+      return;
+    }
+
+    data = data.toString();
+    logs += data;
+    const lines = data.split('\n');
+    const matchingLine = lines.find(line => regex.find(r => r.test(line)));
+    return matchingLine;
+  };
+
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
       console.log('Found logs', logs, 'did not match expected regex:', ...regex);
@@ -1122,25 +1137,17 @@ const waitForDockerLogs = (container, ...regex) => {
       killSpawnedProcess(proc);
     }, 20000);
 
-    const checkOutput = (data) => {
-      if (!firstLine) {
-        firstLine = true;
-        receivedFirstLine();
-        return;
-      }
-
-      data = data.toString();
-      logs += data;
-      const lines = data.split('\n');
-      if (lines.find(line => regex.find(r => r.test(line)))) {
+    const check = data => {
+      const foundMatch = checkOutput(data);
+      if (foundMatch) {
         resolve();
         clearTimeout(timeout);
         killSpawnedProcess(proc);
       }
     };
 
-    proc.stdout.on('data', checkOutput);
-    proc.stderr.on('data', checkOutput);
+    proc.stdout.on('data', check);
+    proc.stderr.on('data', check);
   });
 
   return firstLineReceivedPromise.then(() => ({
