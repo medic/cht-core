@@ -500,7 +500,7 @@ export class EnketoService {
       } catch (error) {
         console.error('Error while processing draw widget data:', error);
       }
-    }
+    };
 
     const dataURLtoBlob = (dataURL) => {
       const parts = dataURL.split(';base64,');
@@ -514,7 +514,7 @@ export class EnketoService {
       }
 
       return new Blob([arrayBuffer], { type: contentType });
-    }
+    };
 
     $record
       .find('[type=binary]')
