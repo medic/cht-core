@@ -13,6 +13,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -74,6 +75,7 @@ export class DBSyncService {
     private ngZone:NgZone,
     private checkDateService:CheckDateService,
     private telemetryService:TelemetryService,
+    private performanceService:PerformanceService,
     private store:Store,
     private translateService:TranslateService,
     private migrationsService:MigrationsService,
@@ -101,6 +103,7 @@ export class DBSyncService {
   private replicateToRetry({ batchSize=BATCH_SIZE }={}) {
     const telemetryEntry = new DbSyncTelemetry(
       this.telemetryService,
+      this.performanceService,
       'medic',
       'to',
       this.getLastReplicationDate(),
@@ -158,6 +161,7 @@ export class DBSyncService {
   private async replicateFrom() {
     const telemetryEntry = new DbSyncTelemetry(
       this.telemetryService,
+      this.performanceService,
       'medic',
       'from',
       this.getLastReplicationDate(),
@@ -269,7 +273,7 @@ export class DBSyncService {
       return Promise.resolve();
     }
 
-    const telemetryEntry = new DbSyncTelemetry(this.telemetryService, 'meta', 'sync');
+    const telemetryEntry = new DbSyncTelemetry(this.telemetryService, this.performanceService, 'meta', 'sync');
     const remote = this.dbService.get({ meta: true, remote: true });
     const local = this.dbService.get({ meta: true });
     let currentSeq;
@@ -391,22 +395,24 @@ class DbSyncTelemetry {
   private readonly failedToParse = 'Unexpected token';
   private readonly database;
   private readonly direction;
-  private readonly start;
+  private readonly endLastReplicated;
   private readonly lastReplicated;
   private readonly key;
-  private end;
+  private trackReplication;
 
   constructor(
-    public telemetryService:TelemetryService,
+    public telemetryService: TelemetryService,
+    public performanceService: PerformanceService,
     database,
     direction,
     lastReplicated?,
   ) {
     this.database = database;
     this.direction = direction;
-    this.start = Date.now();
     this.lastReplicated = lastReplicated;
+    this.endLastReplicated = Date.now(); // The lastReplicated is based on Date API, so we use the Date API here too.
     this.key = `${this.telemetryKeyword}:${this.database}:${this.direction}`;
+    this.trackReplication = this.performanceService.track();
   }
 
   private getSuccessKey() {
@@ -438,10 +444,13 @@ class DbSyncTelemetry {
   }
 
   private async record(key) {
-    this.end = Date.now();
-    await this.telemetryService.record(key, this.end - this.start);
+    this.trackReplication.stop({ name: key });
+
     if (this.lastReplicated) {
-      await this.telemetryService.record(this.getLastReplicatedKey(), this.start - this.lastReplicated);
+      await this.performanceService.recordPerformance(
+        { name: this.getLastReplicatedKey() },
+        (this.endLastReplicated - this.lastReplicated),
+      );
     }
   }
 

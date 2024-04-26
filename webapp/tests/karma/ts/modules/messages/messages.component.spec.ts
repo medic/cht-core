@@ -22,6 +22,7 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
 import { SessionService } from '@mm-services/session.service';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -34,6 +35,8 @@ describe('Messages Component', () => {
   let fastActionButtonService;
   let authService;
   let sessionService;
+  let performanceService;
+  let stopPerformanceTrackStub;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -46,6 +49,8 @@ describe('Messages Component', () => {
   };
 
   beforeEach(waitForAsync(() => {
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     modalService = { show: sinon.stub() };
     messageContactService = {
       getList: sinon.stub().resolves([]),
@@ -96,6 +101,7 @@ describe('Messages Component', () => {
           { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: PerformanceService, useValue: performanceService },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
@@ -126,6 +132,9 @@ describe('Messages Component', () => {
     expect(spyUpdateConversations.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
     expect(spySubscriptionsAdd.callCount).to.equal(3);
+    expect(performanceService.track.calledTwice).to.be.true;
+    expect(stopPerformanceTrackStub.calledOnce).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'message_list:load', recordApdex: true });
   });
 
   it('listTrackBy() should return unique identifier', () => {

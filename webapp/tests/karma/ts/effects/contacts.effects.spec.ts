@@ -17,6 +17,7 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -27,6 +28,8 @@ describe('Contacts effects', () => {
   let store;
   let targetAggregateService;
   let tasksForContactService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let routeSnapshotService;
 
   beforeEach(async() => {
@@ -42,6 +45,8 @@ describe('Contacts effects', () => {
       loadChildren: sinon.stub().resolves([]),
       loadReports: sinon.stub().resolves([]),
     };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     translateService = { instant: sinon.stub().returnsArg(0) };
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getCurrentTargetDoc: sinon.stub().resolves() };
@@ -59,6 +64,7 @@ describe('Contacts effects', () => {
         { provide: ContactSummaryService, useValue: contactSummaryService },
         { provide: TargetAggregatesService, useValue: targetAggregateService },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: PerformanceService, useValue: performanceService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
       ]
     });
@@ -164,6 +170,30 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
+      expect(performanceService.track.callCount).to.equal(7);
+      expect(stopPerformanceTrackStub.callCount).to.equal(7);
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:contact_data',
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_descendants',
+      });
+      expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_reports',
+      });
+      expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_targets',
+      });
+      expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_contact_summary',
+      });
+      expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_tasks',
+      });
+      expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({
+        name: 'contact_detail:contact:load',
+        recordApdex: true,
+      });
     });
 
     it('should load the contact when silent', async () => {
@@ -186,6 +216,30 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
+      expect(performanceService.track.callCount).to.equal(7);
+      expect(stopPerformanceTrackStub.callCount).to.equal(7);
+      expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:contact_data',
+      });
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_descendants',
+      });
+      expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_reports',
+      });
+      expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_targets',
+      });
+      expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_contact_summary',
+      });
+      expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({
+        name: 'contact_detail:contact:load:load_tasks',
+      });
+      expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({
+        name: 'contact_detail:contact:load',
+        recordApdex: true,
+      });
     });
 
     it('should handle missing contacts', fakeAsync(() => {

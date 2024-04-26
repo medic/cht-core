@@ -45,6 +45,7 @@ const RESTRICTED_USER_EDITABLE_FIELDS = [
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
+  'contact',
   'type',
   'roles',
 ]);
@@ -105,18 +106,44 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = () => {
-  const opts = {
-    include_docs: true,
-    key: ['user-settings']
-  };
-  return db.medic.query('medic-client/doc_by_type', opts)
-    .then(result => result.rows.map(row => row.doc));
+const queryDocs = (db, view, key) => db
+  .query(view, { include_docs: true, key })
+  .then(({ rows }) => rows.map(({ doc }) => doc));
+
+const getAllUserSettings = () => queryDocs(db.medic, 'medic-client/doc_by_type', ['user-settings']);
+
+const getSettingsByIds = async (ids) => {
+  const { rows } = await db.medic.allDocs({ keys: ids, include_docs: true });
+  return rows
+    .map(row => row.doc)
+    .filter(Boolean);
 };
 
-const getAllUsers = () => {
-  return db.users.allDocs({ include_docs: true })
-    .then(result => result.rows);
+const getAllUsers = async () => db.users
+  .allDocs({ include_docs: true, start_key: 'org.couchdb.user:', end_key: 'org.couchdb.user:\ufff0' })
+  .then(({ rows }) => rows.map(({ doc }) => doc));
+
+const getUsers = async (facilityId, contactId) => {
+  if (!contactId) {
+    return queryDocs(db.users, 'users/users_by_field', ['facility_id', facilityId]);
+  }
+
+  const usersForContactId = await queryDocs(db.users, 'users/users_by_field', ['contact_id', contactId]);
+  if (!facilityId) {
+    return usersForContactId;
+  }
+
+  return usersForContactId.filter(user => user.facility_id === facilityId);
+};
+
+const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
+  if (!facilityId && !contactId) {
+    return Promise.all([getAllUsers(), getAllUserSettings()]);
+  }
+  const users = await getUsers(facilityId, contactId);
+  const ids = users.map(({ _id }) => _id);
+  const settings = await getSettingsByIds(ids);
+  return [users, settings];
 };
 
 const validateContact = (id, placeID) => {
@@ -129,26 +156,6 @@ const validateContact = (id, placeID) => {
         return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
       }
       return doc;
-    });
-};
-
-const validateUser = id => {
-  return db.users.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user.';
-      }
-      return Promise.reject(err);
-    });
-};
-
-const validateUserSettings = id => {
-  return db.medic.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user settings.';
-      }
-      return Promise.reject(err);
     });
 };
 
@@ -332,25 +339,29 @@ const hasParent = (facility, id) => {
  * available, but in this function the user doc takes precedence.  If the two
  * docs somehow get out of sync this might cause confusion.
  */
+const mapUser = (user, setting, facilities) => {
+  return {
+    id: user._id,
+    rev: user._rev,
+    username: user.name,
+    fullname: setting.fullname,
+    email: setting.email,
+    phone: setting.phone,
+    place: getDoc(user.facility_id, facilities),
+    roles: user.roles,
+    contact: getDoc(user.contact_id, facilities),
+    external_id: setting.external_id,
+    known: user.known
+  };
+};
+
 const mapUsers = (users, settings, facilities) => {
   users = users || [];
   return users
-    .filter(user => user.id.indexOf(USER_PREFIX) === 0)
+    .filter(user => user._id.indexOf(USER_PREFIX) === 0)
     .map(user => {
-      const setting = getDoc(user.id, settings) || {};
-      return {
-        id: user.id,
-        rev: user.doc._rev,
-        username: user.doc.name,
-        fullname: setting.fullname,
-        email: setting.email,
-        phone: setting.phone,
-        place: getDoc(user.doc.facility_id, facilities),
-        roles: user.doc.roles,
-        contact: getDoc(setting.contact_id, facilities),
-        external_id: setting.external_id,
-        known: user.doc.known
-      };
+      const setting = getDoc(user._id, settings) || {};
+      return mapUser(user, setting, facilities);
     });
 };
 
@@ -395,7 +406,7 @@ const getSettingsUpdates = (username, data) => {
 };
 
 const getUserUpdates = (username, data) => {
-  const ignore = ['type', 'place'];
+  const ignore = ['type', 'place', 'contact'];
 
   const user = {
     name: username,
@@ -417,6 +428,9 @@ const getUserUpdates = (username, data) => {
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
+  }
+  if (data.contact) {
+    user.contact_id = getDocID(data.contact);
   }
 
   return user;
@@ -479,23 +493,24 @@ const missingFields = data => {
   return missing;
 };
 
-const getUpdatedUserDoc = (username, data) => {
-  const userID = createID(username);
-  return validateUser(userID).then(doc => {
-    const user = Object.assign(doc, getUserUpdates(username, data));
-    user._id = userID;
-    return user;
+const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
+  .then(doc => {
+    return {
+      ...doc,
+      ...getUserUpdates(username, data),
+      _id: createID(username)
+    };
   });
-};
 
-const getUpdatedSettingsDoc = (username, data) => {
-  const userID = createID(username);
-  return validateUserSettings(userID).then(doc => {
-    const settings = Object.assign(doc, getSettingsUpdates(username, data));
-    settings._id = userID;
-    return settings;
+
+const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
+  .then(doc => {
+    return {
+      ...doc,
+      ...getSettingsUpdates(username, data),
+      _id: createID(username)
+    };
   });
-};
 
 const isDbAdmin = user => {
   return couchSettings
@@ -544,7 +559,7 @@ const validateUserFacility = (data, user, userSettings) => {
 
 const validateUserContact = (data, user, userSettings) => {
   if (data.contact) {
-    return validateContact(userSettings.contact_id, user.facility_id);
+    return validateContact(user.contact_id, user.facility_id);
   }
 
   if (_.isNull(data.contact)) {
@@ -555,6 +570,7 @@ const validateUserContact = (data, user, userSettings) => {
         {'field': 'Contact'}
       ));
     }
+    user.contact_id = null;
     userSettings.contact_id = null;
   }
 };
@@ -735,32 +751,20 @@ const hydrateUserSettings = (userSettings) => {
     });
 };
 
-const getUserDoc = (username, dbName) => {
-  return db[dbName]
-    .get(`org.couchdb.user:${username}`)
-    .catch(err => {
-      err.db = dbName;
-      throw err;
-    });
-};
+const getUserDoc = (username, dbName) => db[dbName]
+  .get(createID(username))
+  .catch(err => {
+    if (err.status === 404) {
+      err.message = `Failed to find user with name [${username}] in the [${dbName}] database.`;
+    }
+    return Promise.reject(err);
+  });
 
-const getUserDocsByName = (name) => {
-  return Promise
-    .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
-    .catch(error => {
-      if (error.status !== 404) {
-        return Promise.reject(error);
-      }
-      return Promise.reject({
-        status: 404,
-        message: `Failed to find user with name [${name}] in the [${error.db}] database.`
-      });
-    });
-};
+const getUserDocsByName = (name) => Promise.all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)));
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
-  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id', 'contact_id'));
   return hydrateUserSettings(medicUser);
 };
 
@@ -770,10 +774,19 @@ const getUserSettings = async({ name }) => {
  */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
-  getList: async () => {
-    const [ users, settings ] = await Promise.all([ getAllUsers(), getAllUserSettings() ]);
-    const facilities = await facility.list(users, settings);
+  getList: async (filters) => {
+    const [users, settings] = await getUsersAndSettings(filters);
+    const facilities = await facility.list(users);
     return mapUsers(users, settings, facilities);
+  },
+  getUser: async username => {
+    if (!username) {
+      throw new Error('Username is required.');
+    }
+
+    const [user, userSettings] = await getUserDocsByName(username);
+    const facilities = await facility.list([user]);
+    return mapUser(user, userSettings, facilities);
   },
   getUserSettings,
   /* eslint-disable max-len */
@@ -910,7 +923,7 @@ module.exports = {
   * if they do not already exist.
   */
   createAdmin: userCtx => {
-    return validateUser(createID(userCtx.name))
+    return getUserDoc(userCtx.name, 'users')
       .catch(err => {
         if (err && err.status === 404) {
           const data = { username: userCtx.name, roles: ['admin'] };

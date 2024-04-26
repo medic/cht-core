@@ -12,15 +12,22 @@ const prometheusMiddleware = require('prometheus-api-metrics');
 const rateLimiterMiddleware = require('./middleware/rate-limiter');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
-const target = 'http://' + environment.host + ':' + environment.port;
-const proxy = require('http-proxy').createProxyServer({ target: target });
+
+const port = typeof environment.port !== 'undefined' && environment.port !== null ? `:${environment.port}` : '';
+const target = `${environment.protocol}//${environment.host}${port}`;
+const proxy = require('http-proxy').createProxyServer({
+  target: target, 
+  changeOrigin: environment.proxies.changeOrigin
+});
 const proxyForAuth = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: environment.proxies.changeOrigin
 });
 const proxyForChanges = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: environment.proxies.changeOrigin
 });
 const login = require('./controllers/login');
 const smsGateway = require('./controllers/sms-gateway');
@@ -46,6 +53,7 @@ const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
+const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
 const startupLog = require('./services/setup/startup-log');
@@ -225,6 +233,8 @@ app.use(compression({
     return compression.filter(req, res);
   }
 }));
+
+app.get('/.well-known/assetlinks.json', wellKnownController.assetlinks);
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
@@ -414,8 +424,9 @@ app.get('/api/v1/forms', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
-app.get('/api/v1/users', users.get);
-app.get('/api/v2/users', users.v2.get);
+app.get('/api/v1/users', users.list);
+app.get('/api/v2/users/:username', users.v2.get);
+app.get('/api/v2/users', users.v2.list);
 app.postJson('/api/v1/users', users.create);
 app.postJsonOrCsv('/api/v2/users', users.v2.create);
 app.postJson('/api/v1/users/:username', users.update);

@@ -1,4 +1,4 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const url = require('url');
 const chai = require('chai');
 const sinon = require('sinon');
@@ -6,9 +6,19 @@ const auth = require('../../src/auth');
 const config = require('../../src/config');
 const environment = require('../../src/environment');
 
+let req;
+
 describe('Auth', () => {
 
   beforeEach(() => {
+    req = {
+      headers: {
+        host: 'localhost:5988',
+        'user-agent': 'curl/8.6.0',
+        accept: '*/*',
+        'content-type': 'application/json',
+      },
+    };
     sinon.stub(environment, 'serverUrlNoAuth').get(() => 'http://abc.com');
   });
 
@@ -113,6 +123,82 @@ describe('Auth', () => {
         chai.expect(err.message).to.equal('Insufficient privileges');
         chai.expect(err.code).to.equal(403);
       });
+    });
+  });
+
+  describe('getUserCtx', () => {
+    it('should return userCtx when authentication is successful', async () => {
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'user', roles: ['userrole'] }});
+
+      const result = await auth.getUserCtx(req);
+      chai.expect(result).to.deep.equal({ name: 'user', roles: ['userrole'] });
+      chai.expect(request.get.args).to.deep.equal([[{
+        url: 'http://abc.com/_session',
+        json: true,
+        headers: {
+          host: 'localhost:5988',
+          'user-agent': 'curl/8.6.0',
+          accept: '*/*',
+          'content-type': 'application/json',
+        },
+      }]]);
+    });
+
+    it('should clean content-length headers before forwarding', async () => {
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'theuser', roles: ['userrole'] }});
+
+      req.headers['content-length'] = 100;
+      req.headers['Content-Length'] = 22;
+      req.headers['Content-length'] = 44;
+      req.headers['content-Length'] = 82;
+      req.headers['CONTENT-LENGTH'] = 240;
+
+      const result = await auth.getUserCtx(req);
+      chai.expect(result).to.deep.equal({ name: 'theuser', roles: ['userrole'] });
+      chai.expect(request.get.args).to.deep.equal([[{
+        url: 'http://abc.com/_session',
+        json: true,
+        headers: {
+          host: 'localhost:5988',
+          'user-agent': 'curl/8.6.0',
+          accept: '*/*',
+          'content-type': 'application/json',
+        },
+      }]]);
+    });
+
+    it('should throw a custom 401 error', async () => {
+      sinon.stub(request, 'get').rejects({ statusCode: 401, error: 'not logged in' });
+
+      await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
+        code: 401,
+        message: 'Not logged in',
+        err: { statusCode: 401, error: 'not logged in' }
+      });
+
+      chai.expect(request.get.callCount).to.equal(1);
+    });
+
+    it('should throw non-401 errors', async () => {
+      sinon.stub(request, 'get').rejects({ statusCode: 400, error: 'invalid' });
+
+      await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
+        statusCode: 400,
+        error: 'invalid'
+      });
+
+      chai.expect(request.get.callCount).to.equal(1);
+    });
+
+    it('should throw 500 when auth is invalid', async () => {
+      sinon.stub(request, 'get').resolves({ userCtx: { invalid: 'userctx' }});
+
+      await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
+        code: 500,
+        message: 'Failed to authenticate'
+      });
+
+      chai.expect(request.get.callCount).to.equal(1);
     });
   });
 

@@ -357,15 +357,15 @@ describe('UpgradeCtrl controller', () => {
   it('should continue following when request errors', async () => {
     const deployInfo = { the: 'deplopy info', version: '4.1.0' };
     const upgradeDoc = {
-      from: { version: '4.1.0', build: '4.1.0' },
-      to: { version: '4.2.0', build: '4.2.0' },
+      from: { version: '4.1.0', build: '4.1.0.113' },
+      to: { version: '4.2.0', build: '4.2.0..114' },
     };
     Object.freeze(deployInfo);
     Object.freeze(upgradeDoc);
 
     http.get.withArgs('/api/deploy-info')
       .onCall(0).resolves({ data: deployInfo })
-      .onCall(1).resolves({ data: { the: 'deplopy info', version: '4.2.0' } });
+      .onCall(1).resolves({ data: { the: 'deplopy info', version: '4.2.0', build: '4.2.0..114' } });
     http.get.withArgs('/api/v2/upgrade')
       .onCall(0).resolves({ data: { upgradeDoc, indexers: [] } })
       .onCall(1).rejects({ error: 502 })
@@ -508,19 +508,19 @@ describe('UpgradeCtrl controller', () => {
           { id: 'medic:medic:branch2', value: { version: 'branch2' } },
         ],
       });
-      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
-      const deployInfoUpgraded = { the: 'deplopy info', version: '4.2.0' };
+      const deployInfo = { the: 'deplopy info', version: '4.1.0', build: '4.1.0.123' };
+      const deployInfoUpgraded = { the: 'deplopy info', version: '4.2.0', build: '4.2.0.134' };
       http.get.withArgs('/api/deploy-info')
         .onCall(0).resolves({ data: deployInfo })
         .onCall(1).resolves({ data: deployInfoUpgraded });
       const upgradeDoc = {
         from: {
           version: '4.1.0',
-          build: '4.1.0',
+          build: '4.1.0.123',
         },
         to: {
           version: '4.2.0',
-          build: '4.2.0',
+          build: '4.2.0.134',
         }
       };
       http.get.withArgs('/api/v2/upgrade')
@@ -577,7 +577,7 @@ describe('UpgradeCtrl controller', () => {
           { id: 'medic:medic:branch2', value: { version: 'branch2' } },
         ],
       });
-      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
+      const deployInfo = { the: 'deplopy info', version: '4.1.0', build: '4.1.0.234' };
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade')
         .onCall(0).resolves({ data: { upgradeDoc: undefined  } })

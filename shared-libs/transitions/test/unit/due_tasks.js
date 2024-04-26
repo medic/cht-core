@@ -6,7 +6,7 @@ chai.use(chaiExclude);
 const moment = require('moment');
 const utils = require('../../src/lib/utils');
 const db = require('../../src/db');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const config = require('../../src/config');
 
 describe('due tasks', () => {
@@ -30,7 +30,7 @@ describe('due tasks', () => {
   });
 
   it('due_tasks handles view returning no rows', () => {
-    const view = sinon.stub(rpn, 'get')
+    const view = sinon.stub(request, 'get')
       .resolves({
         rows: [],
       });
@@ -73,7 +73,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(rpn, 'get').resolves({
+    const view = sinon.stub(request, 'get').resolves({
       rows: [
         {
           id: id,
@@ -132,7 +132,7 @@ describe('due tasks', () => {
       ],
     };
     const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
-    const view = sinon.stub(rpn, 'get').resolves({
+    const view = sinon.stub(request, 'get').resolves({
       rows: [
         {
           id: id,
@@ -189,7 +189,7 @@ describe('due tasks', () => {
       ],
     };
 
-    const view = sinon.stub(rpn, 'get')
+    const view = sinon.stub(request, 'get')
       .onCall(0).resolves({
         rows: [
           {
@@ -295,7 +295,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(rpn, 'get').resolves({
+    const view = sinon.stub(request, 'get').resolves({
       rows: [
         {
           id: id,
@@ -398,7 +398,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(rpn, 'get').resolves({
+    const view = sinon.stub(request, 'get').resolves({
       rows: [
         {
           id: id,
@@ -481,14 +481,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(rpn, 'get').resolves({ rows: [
+    sinon.stub(request, 'get').resolves({ rows: [
       { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
     ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 1);
+      assert.equal(request.get.callCount, 1);
       assert.equal(db.medic.put.callCount, 0);
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
@@ -497,7 +497,7 @@ describe('due tasks', () => {
     });
   });
 
-  it('should generate messages correctly for patient subjects', () => {
+  it('should generate messages correctly for place subjects', () => {
     const due = moment();
     const phone = '123456789';
 
@@ -560,12 +560,15 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(rpn, 'get').resolves({ rows: [{ id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }]});
+    sinon.stub(request, 'get').resolves(
+      { rows: [{ id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }]
+      }
+    );
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 1);
+      assert.equal(request.get.callCount, 1);
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
@@ -593,6 +596,117 @@ describe('due tasks', () => {
               recipient: 'clinic',
               messages: [{
                 message: 'Place joes place 999999 lalala must be visited',
+                to: phone,
+
+              }]
+            }
+          ],
+        }
+      ], ['uuid']);
+    });
+  });
+
+  it('should generate messages correctly for patient subjects when report does not have patient_id', () => {
+    const due = moment();
+    const phone = '123456789';
+
+    sinon.stub(utils, 'translate').returns('Patient {{patient_name}} {{patient_id}} {{fld}} must be visited');
+    sinon.stub(utils, 'getRegistrations').resolves([{ fields: { place_id: '999999', fld: 'lalala' } }]);
+    sinon.stub(utils, 'setTaskState');
+
+    const minified = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        patient_uuid: 'uuid',
+        patient_id: '',
+      },
+      contact: {
+        _id: 'a',
+        parent: {
+          _id: 'b',
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+    const hydrated = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        patient_uuid: 'uuid',
+        patient_id: '',
+      },
+      patient: {
+        _id: 'uuid',
+        patient_id: '223',
+        name: 'jow',
+      },
+      contact: {
+        _id: 'a',
+        type: 'person',
+        parent: {
+          _id: 'b',
+          type: 'clinic',
+          contact: {
+            _id: 'c',
+            type: 'person',
+            phone: phone,
+          },
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+
+    sinon
+      .stub(request, 'get')
+      .resolves({ rows: [{ id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }]});
+    sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
+    sinon.stub(db.medic, 'put').resolves();
+
+    return schedule.execute().then(() => {
+      assert.equal(request.get.callCount, 1);
+      assert.equal(utils.translate.callCount, 1);
+      assert.equal(utils.translate.args[0][0], 'visit-1');
+      assert.equal(utils.getRegistrations.callCount, 1);
+      assert.deepEqual(utils.getRegistrations.args[0], [{ id: '223' }]);
+      assert.equal(utils.setTaskState.callCount, 1);
+      assert.equal(db.medic.put.callCount, 1);
+      assert.deepEqualExcludingEvery(db.medic.put.args[0], [
+        {
+          _id: 'report_id',
+          type: 'data_record',
+          fields: {
+            patient_uuid: 'uuid',
+            patient_id: '',
+          },
+          contact: {
+            _id: 'a',
+            parent: {
+              _id: 'b',
+            },
+          },
+          scheduled_tasks: [
+            {
+              due: due.toISOString(),
+              state: 'scheduled',
+              message_key: 'visit-1',
+              recipient: 'clinic',
+              messages: [{
+                message: 'Patient jow 223 lalala must be visited',
                 to: phone,
 
               }]
@@ -675,14 +789,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(rpn, 'get').resolves({ rows: [
+    sinon.stub(request, 'get').resolves({ rows: [
       { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified },
     ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 1);
+      assert.equal(request.get.callCount, 1);
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 2);
@@ -787,14 +901,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(rpn, 'get').resolves({ rows: [
+    sinon.stub(request, 'get').resolves({ rows: [
       { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
     ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves({});
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 1);
+      assert.equal(request.get.callCount, 1);
       assert.equal(db.medic.put.callCount, 1);
 
       assert.equal(utils.translate.callCount, 1);
@@ -915,7 +1029,7 @@ describe('due tasks', () => {
       ],
       reported_date: due.valueOf(),
     };
-    const view = sinon.stub(rpn, 'get').resolves({
+    const view = sinon.stub(request, 'get').resolves({
       rows: [
         {
           id: id,
@@ -965,7 +1079,7 @@ describe('due tasks', () => {
     const now = moment('2020-02-01 00:00:00');
     sinon.stub(date, 'getDate').returns(now);
     sinon.stub(db, 'couchUrl').value('http://admin:pass@127.0.0.1:5984/medic');
-    const view = sinon.stub(rpn, 'get').resolves({ rows: [] });
+    const view = sinon.stub(request, 'get').resolves({ rows: [] });
 
     return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
@@ -1084,7 +1198,7 @@ describe('due tasks', () => {
     ];
 
     sinon
-      .stub(rpn, 'get')
+      .stub(request, 'get')
       .onCall(0).resolves({ rows: firstResults })
       .onCall(1).resolves({ rows: secondResults })
       .onCall(2).resolves({ rows: [] });
@@ -1111,8 +1225,8 @@ describe('due tasks', () => {
     sinon.stub(utils, 'translate').returns('Message for doc {{_id}}');
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 3);
-      assert.deepEqual(rpn.get.args[0], [{
+      assert.equal(request.get.callCount, 3);
+      assert.deepEqual(request.get.args[0], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
@@ -1123,7 +1237,7 @@ describe('due tasks', () => {
         },
         json: true
       }]);
-      assert.deepEqual(rpn.get.args[1], [{
+      assert.deepEqual(request.get.args[1], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
@@ -1135,7 +1249,7 @@ describe('due tasks', () => {
         },
         json: true
       }]);
-      assert.deepEqual(rpn.get.args[2], [{
+      assert.deepEqual(request.get.args[2], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
@@ -1310,7 +1424,7 @@ describe('due tasks', () => {
     ];
 
     sinon
-      .stub(rpn, 'get')
+      .stub(request, 'get')
       .onCall(0).resolves({ rows: firstResults })
       .onCall(1).resolves({ rows: secondResults })
       .onCall(2).resolves({ rows: [{
@@ -1352,8 +1466,8 @@ describe('due tasks', () => {
     sinon.stub(utils, 'translate').returns(false);
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 3);
-      assert.deepEqual(rpn.get.args[0], [{
+      assert.equal(request.get.callCount, 3);
+      assert.deepEqual(request.get.args[0], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
@@ -1364,7 +1478,7 @@ describe('due tasks', () => {
         },
         json: true
       }]);
-      assert.deepEqual(rpn.get.args[1], [{
+      assert.deepEqual(request.get.args[1], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
@@ -1376,7 +1490,7 @@ describe('due tasks', () => {
         },
         json: true
       }]);
-      assert.deepEqual(rpn.get.args[2], [{
+      assert.deepEqual(request.get.args[2], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
@@ -1451,7 +1565,7 @@ describe('due tasks', () => {
       doc: secondDoc
     });
 
-    sinon.stub(rpn, 'get')
+    sinon.stub(request, 'get')
       .onCall(0).resolves({ rows: firstResponseRows })
       .onCall(1).resolves({ rows: secondResponseRows })
       .onCall(2).resolves({ rows: [] });
@@ -1479,9 +1593,9 @@ describe('due tasks', () => {
     sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 3);
+      assert.equal(request.get.callCount, 3);
 
-      assert.deepNestedInclude(rpn.get.args[0][0], {
+      assert.deepNestedInclude(request.get.args[0][0], {
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
           include_docs: true,
@@ -1490,7 +1604,7 @@ describe('due tasks', () => {
           startkey: JSON.stringify([ 'scheduled', moment(now).subtract(7, 'days').valueOf() ]),
         }
       });
-      assert.deepNestedInclude(rpn.get.args[1][0], {
+      assert.deepNestedInclude(request.get.args[1][0], {
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
           include_docs: true,
@@ -1500,7 +1614,7 @@ describe('due tasks', () => {
           startkey_docid: minifiedDoc._id,
         }
       });
-      assert.deepNestedInclude(rpn.get.args[2][0], {
+      assert.deepNestedInclude(request.get.args[2][0], {
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
           include_docs: true,
@@ -1584,7 +1698,7 @@ describe('due tasks', () => {
       doc: secondDoc
     });
 
-    sinon.stub(rpn, 'get')
+    sinon.stub(request, 'get')
       .onCall(0).resolves({ rows: firstResponseRows })
       .onCall(1).resolves({ rows: secondResponseRows })
       .onCall(2).resolves({ rows: thirdResponseRows })
@@ -1613,9 +1727,9 @@ describe('due tasks', () => {
     sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 4);
+      assert.equal(request.get.callCount, 4);
 
-      assert.deepNestedInclude(rpn.get.args[0][0], {
+      assert.deepNestedInclude(request.get.args[0][0], {
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
           include_docs: true,
@@ -1624,7 +1738,7 @@ describe('due tasks', () => {
           startkey: JSON.stringify([ 'scheduled', moment(now).subtract(7, 'days').valueOf() ]),
         }
       });
-      assert.deepNestedInclude(rpn.get.args[1][0], {
+      assert.deepNestedInclude(request.get.args[1][0], {
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
           include_docs: true,
@@ -1634,7 +1748,7 @@ describe('due tasks', () => {
           startkey_docid: minifiedDoc._id,
         }
       });
-      assert.deepNestedInclude(rpn.get.args[2][0], {
+      assert.deepNestedInclude(request.get.args[2][0], {
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
           include_docs: true,
@@ -1644,7 +1758,7 @@ describe('due tasks', () => {
           startkey_docid: minifiedDoc._id,
         }
       });
-      assert.deepNestedInclude(rpn.get.args[3][0], {
+      assert.deepNestedInclude(request.get.args[3][0], {
         uri: '/_design/medic/_view/messages_by_state',
         qs: {
           include_docs: true,

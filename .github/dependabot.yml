@@ -1,0 +1,71 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      angular:
+        patterns:
+        - "@angular*"
+      wdio:
+        patterns:
+        - "@wdio/*"
+      pouchdb:
+        patterns:
+        - "pouchdb-*"
+  - package-ecosystem: "npm"
+    directory: "/admin"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      angular:
+        patterns:
+        - "angular*"
+  - package-ecosystem: "npm"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      pouchdb:
+        patterns:
+        - "pouchdb-*"
+  - package-ecosystem: "npm"
+    directory: "/sentinel"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      pouchdb:
+        patterns:
+        - "pouchdb-*"
+  - package-ecosystem: "npm"
+    directory: "/webapp"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    commit-message:
+      prefix: "chore"
+    groups:
+      angular:
+        patterns:
+        - "@angular*"
+      pouchdb:
+        patterns:
+        - "pouchdb-*"

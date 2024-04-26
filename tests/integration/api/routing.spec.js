@@ -83,7 +83,6 @@ describe('routing', () => {
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   describe('unauthenticated routing', () => {
-
     describe('API restricts endpoints which need authentication', () => {
 
       const tests = [
@@ -722,8 +721,7 @@ describe('routing', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: { name: username, password },
-          username,
-          password
+          auth: { username, password }
         });
       };
 

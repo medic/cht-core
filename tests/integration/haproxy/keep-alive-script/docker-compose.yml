@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  login_call:
+    build: .
+    networks:
+      net:
+    environment:
+      - USER
+      - PASSWORD
+
+networks:
+  net:
+    name: cht-net-e2e
+    external: true

@@ -106,29 +106,42 @@ export class GetSummariesService {
   }
 
   private getRemote(ids) {
-    return this.dbService.get().query('medic/doc_summaries_by_id', { keys: ids }).then(response => {
-      return response.rows.map(row => {
-        row.value._id = row.id;
-        return row.value;
+    return this.dbService
+      .get()
+      .query('medic/doc_summaries_by_id', { keys: ids })
+      .then(response => {
+        return response.rows.map(row => {
+          row.value._id = row.id;
+          return row.value;
+        });
       });
-    });
   }
 
-  private getLocal(ids) {
-    return this.dbService.get().allDocs({ keys: ids, include_docs: true }).then(response => {
-      return response.rows
-        .map(row => this.summarise(row.doc))
-        .filter(summary => summary);
-    });
-  }
-
-  get(ids?) {
-    if (!ids || !ids.length) {
+  async get(ids?) {
+    if (!ids?.length) {
       return Promise.resolve([]);
     }
+
     if (this.sessionService.isOnlineOnly()) {
       return this.getRemote(ids);
     }
-    return this.getLocal(ids);
+
+    const result = await this.dbService
+      .get()
+      .allDocs({ keys: ids, include_docs: true });
+
+    return result?.rows
+      ?.map(row => this.summarise(row.doc))
+      .filter(summary => summary);
+  }
+
+  getByDocs(docs) {
+    if (!docs?.length) {
+      return [];
+    }
+
+    return docs
+      .map(doc => this.summarise(doc))
+      .filter(summary => summary);
   }
 }

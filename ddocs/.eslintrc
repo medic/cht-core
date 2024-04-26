@@ -7,6 +7,6 @@
     "no-var": "off"
   },
   "parserOptions": {
-    "ecmaVersion": 5,
+    "ecmaVersion": 6,
   }
 }

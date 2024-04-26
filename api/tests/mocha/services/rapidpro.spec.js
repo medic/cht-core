@@ -2,7 +2,7 @@ const { expect, assert } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const secureSettings = require('@medic/settings');
 const config = require('../../../src/config');
 const db = require('../../../src/db');

@@ -3,14 +3,13 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
-import * as moment from 'moment';
 import sinon from 'sinon';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
@@ -23,9 +22,9 @@ describe('TasksComponent', () => {
   let getComponent;
   let changesService;
   let rulesEngineService;
-  let telemetryService;
+  let performanceService;
+  let stopPerformanceTrackStub;
   let contactTypesService;
-  let clock;
   let store;
   let sessionService;
   let userContactService;
@@ -49,8 +48,8 @@ describe('TasksComponent', () => {
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
       contactsMarkedAsDirty: sinon.stub(),
     };
-
-    telemetryService = { record: sinon.stub() };
+    stopPerformanceTrackStub = sinon.stub();
+    performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     contactTypesService = {
       includes: sinon.stub(),
     };
@@ -72,7 +71,7 @@ describe('TasksComponent', () => {
         provideMockStore(),
         { provide: ChangesService, useValue: changesService },
         { provide: RulesEngineService, useValue: rulesEngineService },
-        { provide: TelemetryService, useValue: telemetryService },
+        { provide: PerformanceService, useValue: performanceService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
         { provide: SessionService, useValue: sessionService },
@@ -98,7 +97,6 @@ describe('TasksComponent', () => {
   afterEach(() => {
     store.resetSelectors();
     sinon.restore();
-    clock?.restore();
   });
 
   it('should ngOnDestroy should unsubscribe and clear state', async () => {
@@ -162,32 +160,54 @@ describe('TasksComponent', () => {
   });
 
   it('tasks render', async () => {
-    const now = moment('2020-10-20');
-    const futureDate = now.clone().add(3, 'days');
-    const pastDate = now.clone().subtract(3, 'days');
-    clock = sinon.useFakeTimers(now.valueOf());
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
+      {
+        _id: '1',
+        owner: 'a',
+        emission: {
+          _id: 'e1',
+          dueDate: '2030-10-24',
+          date: new Date('2023-10-24T17:00:00.000Z'),
+          overdue: false,
+          owner: 'a',
+        },
+      },
+      {
+        _id: '2',
+        owner: 'b',
+        emission: {
+          _id: 'e2',
+          dueDate: '2023-10-24',
+          date: new Date('2023-10-24T17:00:00.000Z'),
+          overdue: true,
+          owner: 'b',
+        },
+      },
     ];
     const expectedTasks = [
       {
         _id: 'e1',
-        dueDate: futureDate.format('YYYY-MM-DD'),
+        dueDate: '2030-10-24',
+        date: new Date('2023-10-24T17:00:00.000Z'),
         overdue: false,
-        date: new Date(futureDate.valueOf()),
         owner: 'a',
+        lineage: [ 'lineage-a' ]
       },
       {
         _id: 'e2',
-        dueDate: pastDate.format('YYYY-MM-DD'),
+        dueDate: '2023-10-24',
+        date: new Date('2023-10-24T17:00:00.000Z'),
         overdue: true,
-        date: new Date(pastDate.valueOf()),
         owner: 'b',
+        lineage: [ 'lineage-b' ]
       },
     ];
-
     rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+    lineageModelGeneratorService.reportSubjects.resolves([
+      { _id: 'a', lineage: [ { name: 'lineage-a' } ] },
+      { _id: 'b', lineage: [ { name: 'lineage-b' } ] },
+    ]);
+
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
@@ -258,8 +278,8 @@ describe('TasksComponent', () => {
     });
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
-    expect(telemetryService.record.callCount).to.equal(1);
-    expect(telemetryService.record.args[0][0]).to.equal('tasks:load');
+    expect(performanceService.track.calledOnce).to.be.true;
+    expect(stopPerformanceTrackStub.calledOnceWith({ name: 'tasks:load', recordApdex: true })).to.be.true;
   });
 
   it('should should record telemetry on refresh', fakeAsync(async () => {
@@ -285,9 +305,10 @@ describe('TasksComponent', () => {
     flush();
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(2);
-    expect(telemetryService.record.callCount).to.equal(2);
-    expect(telemetryService.record.args[0][0]).to.equal('tasks:load');
-    expect(telemetryService.record.args[1][0]).to.equal('tasks:refresh');
+    expect(performanceService.track.calledOnce).to.be.true;
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'tasks:load', recordApdex: true });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'tasks:refresh', recordApdex: true });
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
 
@@ -309,8 +330,30 @@ describe('TasksComponent', () => {
       },
     };
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+      {
+        _id: '1',
+        forId: 'a',
+        owner: 'a',
+        emission: {
+          _id: 'e1',
+          dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
+          overdue: true,
+          owner: 'a',
+        },
+      },
+      {
+        _id: '2',
+        forId: 'b',
+        owner: 'b',
+        emission: {
+          _id: 'e2',
+          dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
+          overdue: true,
+          owner: 'b',
+        },
+      },
     ];
     const taskLineages = [
       {
@@ -339,7 +382,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: moment('2020-10-20').toDate(),
+          date: new Date('2020-10-20T17:00:00.000Z'),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
@@ -347,8 +390,8 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
@@ -372,7 +415,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: moment('2020-10-20').toDate(),
+          date: new Date('2020-10-20T17:00:00.000Z'),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
@@ -380,8 +423,8 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
@@ -405,7 +448,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: moment('2020-10-20').toDate(),
+          date: new Date('2020-10-20T17:00:00.000Z'),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
@@ -413,8 +456,8 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',

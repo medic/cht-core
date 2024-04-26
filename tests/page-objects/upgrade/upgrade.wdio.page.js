@@ -5,12 +5,16 @@ const cancelUpgradeButton = () => $('button*=Cancel');
 const deploymentInProgress = () => $('legend*=Deployment in progress');
 const deploymentComplete = () => $('div*=Deployment complete');
 
-const getInstallButton = async (branch, tag) => {
-  let selector = `span*=${branch} (`;
+const getInstallButtonSelector = (branch, tag) => {
   if (tag) {
-    selector = tag.includes('beta') ? `span*=${tag}` : `span=${tag}`;
+    const match = tag.includes('beta') ? '*=' : '=';
+    return `span${match}${tag}`;
   }
-  const element = await $(selector);
+  return `span*=${utils.escapeBranchName(branch)} (`;
+};
+
+const getInstallButton = async (branch, tag) => {
+  const element = await $(getInstallButtonSelector(branch, tag));
   const parent = await (await element.parentElement()).parentElement();
   return await parent.$('.btn-primary');
 };

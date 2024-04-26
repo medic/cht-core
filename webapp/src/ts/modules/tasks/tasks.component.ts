@@ -2,18 +2,17 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
-import * as moment from 'moment';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
-import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -24,7 +23,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     private changesService: ChangesService,
     private contactTypesService: ContactTypesService,
     private rulesEngineService: RulesEngineService,
-    private telemetryService: TelemetryService,
+    private performanceService: PerformanceService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private userContactService: UserContactService,
     private sessionService: SessionService,
@@ -36,6 +35,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   subscription = new Subscription();
   private tasksActions;
   private globalActions;
+  private trackPerformance;
 
   tasksList;
   selectedTask;
@@ -94,6 +94,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.trackPerformance = this.performanceService.track();
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
@@ -103,7 +104,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
 
     this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
-
     this.refreshTasks();
   }
 
@@ -121,56 +121,30 @@ export class TasksComponent implements OnInit, OnDestroy {
     window.location.reload();
   }
 
-  private hydrateEmissions(taskDocs) {
-    return taskDocs.map(taskDoc => {
-      const emission = { ...taskDoc.emission };
-      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
-      emission.date = new Date(dueDate.valueOf());
-      emission.overdue = dueDate.isBefore(moment());
-      emission.owner = taskDoc.owner;
-
-      return emission;
-    });
-  }
-
   private async refreshTasks() {
     try {
-      const telemetryData: any = {
-        start: Date.now(),
-      };
-
-      const isEnabled = await this.rulesEngineService.isEnabled();
-      this.tasksDisabled = !isEnabled;
-      const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-
+      this.tasksDisabled = !(await this.rulesEngineService.isEnabled());
+      const taskDocs = this.tasksDisabled ? [] : await this.rulesEngineService.fetchTaskDocsForAllContacts() || [];
       this.hasTasks = taskDocs.length > 0;
-      this.loading = false;
-
-      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
-      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
-      if (subjects?.size) {
-        const userLineageLevel = await this.currentLevel;
-        hydratedTasks.forEach(task => {
-          task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
-        });
-      }
-
-      this.tasksActions.setTasksList(hydratedTasks);
-
-      if (!this.tasksLoaded) {
-        this.tasksActions.setTasksLoaded(true);
-      }
-
-      telemetryData.end = Date.now();
-      const telemetryEntryName = !this.tasksLoaded ? `tasks:load` : `tasks:refresh`;
-      this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
+      const userLineageLevel = await this.currentLevel;
+      const taskEmissions = await this.getTasksWithLineage(taskDocs, userLineageLevel);
+      this.tasksActions.setTasksList(taskEmissions);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
-      this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
+    } finally {
+      this.loading = false;
+      const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
+      this.trackPerformance?.stop({
+        name: performanceName,
+        recordApdex: true,
+      });
+      if (!this.tasksLoaded) {
+        this.tasksActions.setTasksLoaded(true);
+      }
     }
   }
 
@@ -182,29 +156,38 @@ export class TasksComponent implements OnInit, OnDestroy {
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 
-  private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [...new Set(taskDocs.map(task => task.owner))];
-    return this.lineageModelGeneratorService
-      .reportSubjects(ids)
-      .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
+  private async getTasksWithLineage(taskDocs, userLineageLevel) {
+    const ownerIds = [ ...new Set(taskDocs.map(task => task.owner)) ];
+    const subjects = await this.lineageModelGeneratorService.reportSubjects(ownerIds);
+    const subjectLineageMap = new Map();
+    subjects.forEach(subject => {
+      const taskLineage = subject.lineage
+        ?.filter(level => level?.name)
+        .map(level => level.name);
+
+      if (taskLineage?.length) {
+        subjectLineageMap.set(subject._id, taskLineage);
+      }
+    });
+
+    return taskDocs.map(task => {
+      return {
+        ...task.emission,
+        lineage: this.removeCurrentLineage(subjectLineageMap.get(task.owner), userLineageLevel),
+      };
+    });
   }
 
-  private getTaskLineage(subjects, task, userLineageLevel) {
-    const lineage = subjects
-      .get(task.owner)
-      ?.map(lineage => lineage?.name);
-    return this.cleanAndRemoveCurrentLineage(lineage, userLineageLevel);
-  }
-
-  private cleanAndRemoveCurrentLineage(lineage, userLineageLevel) {
-    if (!lineage?.length) {
+  private removeCurrentLineage(taskLineage, userLineageLevel) {
+    if (!taskLineage?.length) {
       return;
     }
-    lineage = lineage.filter(level => level);
-    const item = lineage[lineage.length - 1];
-    if (item === userLineageLevel) {
-      lineage.pop();
+
+    const lastLevel = taskLineage[taskLineage.length - 1];
+    if (lastLevel === userLineageLevel) {
+      taskLineage.pop();
     }
-    return lineage;
+
+    return taskLineage;
   }
 }

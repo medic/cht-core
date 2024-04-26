@@ -36,13 +36,13 @@ describe('Login page funcionality tests', () => {
     const frTranslations = {
       user: `Nom d'utilisateur`,
       pass: 'Mot de passe',
-      error: `Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer`
+      error: `Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer.`
     };
 
     const esTranslations = {
       user: 'Nombre de usuario',
       pass: 'Contraseña',
-      error: 'Nombre de usuario o contraseña incorrecto. Favor intentar de nuevo.'
+      error: 'Nombre de usuario o contraseña incorrecto. Inténtelo de nuevo.'
     };
 
     it('should show locale selector on login page', async () => {
