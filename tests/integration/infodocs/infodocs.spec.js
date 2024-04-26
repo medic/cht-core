@@ -71,7 +71,7 @@ describe('infodocs', () => {
     await utils.requestOnTestDb({ path, method, body: doc });
 
     await utils.stopSentinel();
-    await utils.startSentinel();
+    await utils.startSentinel(true);
 
     const waitForLogs = await utils.waitForSentinelLogs(false, /Task backgroundCleanup completed/);
     await waitForLogs.promise;
@@ -153,7 +153,7 @@ describe('infodocs', () => {
       testDoc._rev = result.rev;
 
       await utils.setTransitionSeqToNow();
-      await utils.startSentinel();
+      await utils.startSentinel(true);
 
       testDoc.data = 'data changed';
       await utils.saveDoc(testDoc);
@@ -191,7 +191,7 @@ describe('infodocs', () => {
 
       await utils.db.put(legacyInfodoc);
       await utils.setTransitionSeqToNow();
-      await utils.startSentinel();
+      await utils.startSentinel(true);
 
       testDoc.data = 'data changed';
       await utils.saveDoc(testDoc);

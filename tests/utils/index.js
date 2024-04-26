@@ -833,6 +833,7 @@ const stopService = async (service) => {
   if (isDocker()) {
     return await dockerComposeCmd(`stop -t 0 ${service}`);
   }
+  await saveLogs(); // we lose logs when a pod crashes or is stopped.
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
   let tries = 100;
   do {
@@ -846,13 +847,7 @@ const stopService = async (service) => {
   } while (tries > 0);
 };
 
-const stopSentinel = () => stopService('sentinel');
-
-const startService = async (service) => {
-  if (isDocker()) {
-    return await dockerComposeCmd(`start ${service}`);
-  }
-  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
+const waitForService = async (service) => {
   let tries = 100;
   do {
     try {
@@ -869,8 +864,18 @@ const startService = async (service) => {
   } while (tries > 0);
 };
 
-const startSentinel = async () => {
+const stopSentinel = () => stopService('sentinel');
+
+const startService = async (service) => {
+  if (isDocker()) {
+    return await dockerComposeCmd(`start ${service}`);
+  }
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
+};
+
+const startSentinel = async (listen) => {
   await startService('sentinel');
+  listen && await waitForService('sentinel');
 };
 
 const stopApi = () => stopService('api');
