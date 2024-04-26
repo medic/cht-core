@@ -15,46 +15,6 @@ const getCapabilitiesSettings = () => {
   return SETTINGS_CACHE?.capabilities;
 };
 
-const getContactList = () => {
-  return SETTINGS_CACHE?.pages?.contactList;
-};
-
-const getContactDetails = (contactType) => {
-  return SETTINGS_CACHE?.pages?.contactDetails?.find(item => item.contactType === contactType );
-};
-
-const getReportList = () => {
-  return SETTINGS_CACHE?.pages?.reportList;
-};
-
-const getReportDetails = (formId) => {
-  return SETTINGS_CACHE?.pages?.reportDetails?.find(item => item.form === formId );
-};
-
-const getTaskList = () => {
-  return SETTINGS_CACHE?.pages?.taskList;
-};
-
-const getMessageList = () => {
-  return SETTINGS_CACHE?.pages?.messageList;
-};
-
-const getTargets = () => {
-  return SETTINGS_CACHE?.pages?.targets;
-};
-
-const getContactForms = (formId) => {
-  return SETTINGS_CACHE?.contactForms?.find(item => item.form === formId );
-};
-
-const getReportForm = (formId) => {
-  return SETTINGS_CACHE?.reportForms?.find(item => item.form === formId );
-};
-
-const getTaskForms = (formId) => {
-  return SETTINGS_CACHE?.taskForms?.find(item => item.form === formId );
-};
-
 const settingsProvider = {
   getInstanceURL,
   getUser,
