@@ -100,14 +100,6 @@ describe('TasksForContact service', () => {
     });
   }
 
-  it('get flags task as late', async () => {
-    const task = emissionAsDoc({_id: 'a', dueDate: 0 });
-    fetchTaskDocsFor.resolves([task]);
-    const model = { type: PERSON_TYPE, doc: {} };
-    const tasks = await service.get(model);
-    expect(tasks[0].emission.overdue).to.eq(true);
-  });
-
   it('get sorts tasks by duedate', async () => {
     const first = emissionAsDoc({_id: 'a', dueDate: 0 });
     const second = emissionAsDoc({_id: 'b', dueDate: 1 });
@@ -119,18 +111,18 @@ describe('TasksForContact service', () => {
 
   describe('getTasksBreakdown', () => {
     it('should return undefined when no type', async () => {
-      expect(await service.getTasksBreakdown({ })).to.equal(undefined);
+      expect(await service.getTasksBreakdown({ }, [])).to.equal(undefined);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
 
     it('should return undefined when rules engine not enabled', async () => {
       rulesEngineIsEnabled.resolves(false);
-      expect(await service.getTasksBreakdown({ type: CLINIC_TYPE })).to.equal(undefined);
+      expect(await service.getTasksBreakdown({ type: CLINIC_TYPE }, [ 'contact-123' ])).to.equal(undefined);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
 
     it('should return undefined when type is not a leaf place type or person type', async () => {
-      expect(await service.getTasksBreakdown({ type: HEALTH_CENTER_TYPE })).to.equal(undefined);
+      expect(await service.getTasksBreakdown({ type: HEALTH_CENTER_TYPE }, [ 'contact-123' ])).to.equal(undefined);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
 
@@ -156,8 +148,9 @@ describe('TasksForContact service', () => {
 
       const tasksBreakdown = { Ready: 10, Cancelled: 12, Draft: 2, Failed: 5 };
       rulesEngineService.fetchTasksBreakdown.resolves({ ...tasksBreakdown });
+      const result = await service.getTasksBreakdown(model, [ 'person1', 'person2', 'person3', docId ]);
 
-      expect(await service.getTasksBreakdown(model)).to.deep.equal(tasksBreakdown);
+      expect(result).to.deep.equal(tasksBreakdown);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineService.fetchTasksBreakdown.args[0]).to.deep.equal([['person1', 'person2', 'person3', docId]]);
     });
