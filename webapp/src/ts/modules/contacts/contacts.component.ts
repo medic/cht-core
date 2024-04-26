@@ -29,7 +29,7 @@ import { PerformanceService } from '@mm-services/performance.service';
   templateUrl: './contacts.component.html'
 })
 export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
-  private readonly PAGE_SIZE = 50;
+  private readonly PAGE_SIZE = 25;
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
   private contactsActions: ContactsActions;
