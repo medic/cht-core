@@ -83,10 +83,21 @@ const validatePlace = place => {
   return Promise.resolve();
 };
 
+const preparePlaceContact = async contact => {
+  contact.type = contact.type || people._getDefaultPersonType();
+  const errStr = people._validatePerson(contact);
+  if (errStr) {
+    return Promise.reject({
+      code: 400,
+      message: errStr
+    });
+  }
+  return contact;
+};
 
 const createPlace = async (place) => {
   await module.exports._validatePlace(place);
-  const contact = place.contact;
+  let contact = place.contact;
   delete place.contact;
 
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
@@ -109,14 +120,7 @@ const createPlace = async (place) => {
     return Promise.reject({ code: 400 });
   }
 
-  contact.type = contact.type || people._getDefaultPersonType();
-  const errStr = people._validatePerson(contact);
-  if (errStr) {
-    return Promise.reject({
-      code: 400,
-      message: errStr
-    });
-  }
+  contact = await preparePlaceContact(contact);
   const placeResponse = await db.medic.post(place);
   contact.place = placeResponse.id;
   const person = await people.getOrCreatePerson(contact);
