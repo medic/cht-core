@@ -164,7 +164,11 @@
     "uuid": "^9.0.1",
     "wdio-chromedriver-service": "^8.1.1",
     "webpack-bundle-analyzer": "^4.9.1",
-    "zone.js": "^0.14.4"
+    "zone.js": "^0.14.4",
+    "@wdio/appium-service": "^8.31.1",
+    "appium-uiautomator2-driver": "^3.0.0",
+    "dotenv": "^16.4.5",
+    "ts-node": "^10.9.2"
   },
   "overrides": {
     "minimist": ">=1.2.6",
