@@ -848,6 +848,11 @@ const stopService = async (service) => {
 };
 
 const waitForService = async (service) => {
+  if (isDocker()) {
+    // in Docker, containers start quickly enough that there is no need to check status
+    return;
+  }
+
   let tries = 100;
   do {
     try {
@@ -1266,9 +1271,10 @@ const killSpawnedProcess = (proc) => {
 
 /**
  * Watches a docker or kubernetes container log until at least one line matches one of the given regular expressions.
+ *
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
- * @param {Boolean} tail - check logs with or without tailing
+ * @param {Boolean} tail - when true, log is tailed. when false, whole log is analyzed. Always true for Docker.
  * @param {[RegExp]} regex - matching expression(s) run against lines
  * @returns {Promise<{cancel: function(): void, promise: Promise<void>}>}
  * that contains the promise to resolve when logs lines are matched and a cancel function
