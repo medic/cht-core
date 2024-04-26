@@ -561,4 +561,13 @@ describe('places controller', () => {
 
   });
 
+  describe('preparePlaceContact', () => {
+    it('adds default person type', () => {
+      return controller._preparePlaceContact({ name: 'test' }).then(contact => {
+        chai.expect(contact).to.have.property('type');
+        chai.expect(contact).property('type').equal('person');
+      })
+    });
+  });
+
 });

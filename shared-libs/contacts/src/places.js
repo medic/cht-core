@@ -232,6 +232,7 @@ module.exports = {
   _createPlaces: createPlaces,
   _updateFields: updateFields,
   _validatePlace: validatePlace,
+  _preparePlaceContact: preparePlaceContact,
   createPlace: createPlaces,
   getPlace: getPlace,
   updatePlace: updatePlace,
