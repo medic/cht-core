@@ -8,10 +8,12 @@
 ```
 {
   "instanceURL": "<instance_url>",
-  "appium": {
-    "platformVersion": "<android-version>",
-    "deviceName": "<device-name>"
-  },
+  "capabilities": [
+    {
+      "platformVersion": "<android-version>",
+      "deviceName": "<device-name>"
+    }
+  ],
   "users": [
     {
       "type": "offline",

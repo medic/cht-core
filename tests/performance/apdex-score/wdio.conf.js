@@ -173,10 +173,10 @@ exports.config = {
    */
   onPrepare: function (config, capabilities) {
     try {
-      const appiumSettings = loadSettings().getAppiumSettings();
+      const settingsCapabilities = loadSettings().getCapabilitiesSettings()[0];
       const appium = capabilities[0];
-      appium['appium:platformVersion'] = appiumSettings.platformVersion;
-      appium['appium:deviceName'] = appiumSettings.deviceName;
+      appium['appium:platformVersion'] = settingsCapabilities.platformVersion;
+      appium['appium:deviceName'] = settingsCapabilities.deviceName;
 
     } catch (error) {
       console.error('ERROR: Loading settings file for Apdex Score tests.', error.message || error);
