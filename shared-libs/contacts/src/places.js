@@ -83,27 +83,10 @@ const validatePlace = place => {
   return Promise.resolve();
 };
 
-const preparePlaceContact = async (contact) => {
-  if (!contact) {
-    return;
-  }
-  if (_.isString(contact)) { 
-    return contact; 
-  }
-  contact.type = contact.type || people._getDefaultPersonType();
-  const errStr = people._validatePerson(contact);
-  if (errStr) {
-    return Promise.reject({
-      code: 400,
-      message: errStr
-    });
-  }
-  return contact;
-};
 
 const createPlace = async (place) => {
-  await module.exports._validatePlace(place); 
-  const contact = await preparePlaceContact(place.contact);
+  await module.exports._validatePlace(place);
+  const contact = place.contact;
   delete place.contact;
 
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
@@ -112,16 +95,32 @@ const createPlace = async (place) => {
     place.parent = lineage.minifyLineage(place.parent);
   }
 
-  const response = await db.medic.post(place);
   if (!contact) {
-    return response;
+    return await db.medic.post(place);
   }
-  const placeUUID = response.id;
-  if (_.isObject(contact)) {
-    contact.place = placeUUID;
+
+  if (_.isString(contact)) {
+    const person = await people.getOrCreatePerson(contact);
+    place.contact = person._id;
+    return await db.medic.post(place);
   }
+
+  if (!_.isObject(contact)) {
+    return Promise.reject({ code: 400 });
+  }
+
+  contact.type = contact.type || people._getDefaultPersonType();
+  const errStr = people._validatePerson(contact);
+  if (errStr) {
+    return Promise.reject({
+      code: 400,
+      message: errStr
+    });
+  }
+  const placeResponse = await db.medic.post(place);
+  contact.place = placeResponse.id;
   const person = await people.getOrCreatePerson(contact);
-  const result = await updatePlace(placeUUID, { contact: person._id });
+  const result = await updatePlace(placeResponse.id, { contact: person._id });
   return { ...result, contact: { id: person._id } };
 };
 
