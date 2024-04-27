@@ -1,6 +1,7 @@
 const request = require('@medic/couch-request');
 
 const MIN_COUCHDB_VERSION = { major: 3, minor: 3 };
+const SYSTEM_DBS = [ '_users', '_replicator', '_global_changes' ];
 
 /* eslint-disable no-console */
 
@@ -72,7 +73,6 @@ const sameMembershipResult = (result1, result2) => {
 };
 
 const checkCouchDbCluster = async (couchUrl) => {
-  // TODO iterate
   const membershipResults = [
     await request.get({ url: `${couchUrl}_membership`, json: true }),
     await request.get({ url: `${couchUrl}_membership`, json: true }),
@@ -89,11 +89,10 @@ const checkCouchDbCluster = async (couchUrl) => {
 };
 
 const checkCouchDbSystemDbs = async (couchUrl) => {
-  // TODO iterate
   try {
-    await request.get({ url: `${couchUrl}_users`, json: true });
-    await request.get({ url: `${couchUrl}_replicator`, json: true });
-    await request.get({ url: `${couchUrl}_global_changes`, json: true });
+    for (const db of SYSTEM_DBS) {
+      await request.get({ url: `${couchUrl}${db}`, json: true });
+    }
   } catch (err) {
     throw new Error('System databases do not exist');
   }

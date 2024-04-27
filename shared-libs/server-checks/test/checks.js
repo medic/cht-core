@@ -5,12 +5,11 @@ const request = require('@medic/couch-request');
 
 const service = require('../src/checks');
 
-/* eslint-disable no-console */
-
 describe('checks', () => {
 
   afterEach(() => sinon.restore());
 
+  // eslint-disable-next-line no-console
   const log = idx => console.log.getCall(idx).args.map(arg => arg.toString()).join(' ');
 
   describe('checkServerUrl', () => {
