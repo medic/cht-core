@@ -11,6 +11,7 @@ const logRequestError = (error) => {
   delete error.options;
   delete error.request;
   delete error.response;
+  // eslint-disable-next-line no-console
   console.error(error);
 };
 
@@ -40,11 +41,11 @@ const check = async (couchUrl) => {
   try {
     checkEnvironment(couchUrl);
     await checkCouchDb(getServerUrl(couchUrl));
-  } catch(e) {
+  } catch (e) {
+    // eslint-disable-next-line no-console
     console.error(e);
     process.exit(1);
   }
-  console.log('hello');
 };
 
 module.exports = {

@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const http = require('http');
 const request = require('@medic/couch-request');
 
-let service = require('../src/checks');
+const service = require('../src/checks');
 
 /* eslint-disable no-console */
 
