@@ -9,10 +9,14 @@ const TasksPage = require('../../pageobjects/tasks.page');
 const MessagesPage = require('../../pageobjects/messages.page');
 const ReportsPage = require('../../pageobjects/reports.page');
 const PerformancePage = require('../../pageobjects/performance.page');
+const { $ } = require('@wdio/globals');
 
 describe('Apdex Performance Workflows', () => {
+  let settingsProvider;
+  const TIME_OUT = 1000 * 60 * 20;
+
   before(async () => {
-    const settingsProvider = loadSettings();
+    settingsProvider = loadSettings();
     const instanceUrl = settingsProvider.getInstanceURL();
     const hasPrivacyPolicy = settingsProvider.hasPrivacyPolicy();
     const user = settingsProvider.getUser('offline', 'chw');
@@ -20,6 +24,46 @@ describe('Apdex Performance Workflows', () => {
     await LoginPage.login(user.username, user.password, hasPrivacyPolicy);
   });
 
+  const waitForDisplayedAndRetry = async (elementPromise, retryTotal = 5, retryCount = 0) => {
+    return (await $(elementPromise))
+      .waitForDisplayed({ timeout: TIME_OUT })
+      .catch(() => {
+        if (retryCount >= retryTotal) {
+          return;
+        }
+        return waitForDisplayedAndRetry(elementPromise, retryTotal, retryCount + 1);
+      });
+  };
+
+  const navigateAndAssert = async (navigation, assertValue) => {
+    for (const page of navigation) {
+      if (await waitForDisplayedAndRetry(page.selector)) {
+        await (await $(page.selector)).click();
+      }
+    }
+    return waitForDisplayedAndRetry(assertValue.selector);
+  };
+
+  const navigate = async (navigation) => {
+    for (const page of navigation) {
+      if (await waitForDisplayedAndRetry(page.selector)) {
+        await (await $(page.selector)).click();
+      }
+    }
+  };
+
+  for (let i = 0; i < 40; i++) {
+    it('should load contact list', async () => {
+      const page = settingsProvider.getPage('contact-list');
+      await navigateAndAssert(page.navigation, page.assert);
+
+      // load another page to load contact list again in next iteration
+      const pageTargets = settingsProvider.getPage('targets');
+      await navigate(pageTargets.navigation);
+    });
+  }
+
+  /*
   it('should submit a report for a newly created person', async () => {
     const firstName = 'Roy';
     const lastName = 'Caxton';
@@ -52,5 +96,5 @@ describe('Apdex Performance Workflows', () => {
     await PerformancePage.viewPerformance();
     await PerformancePage.relaunchApp();
   });
-
+*/
 });

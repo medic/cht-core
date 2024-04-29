@@ -22,7 +22,46 @@
       "username": "<username>",
       "password": "<password>"
     }
-  ]
+  ],
+  "pages": {
+      "contact-list": {
+        "navigation": [ { "selector": "<selector>" } ],
+        "assert": { "selector": "<selector>" }
+      },
+      "chw-area": {
+        "navigation": [
+          { "selector": "<selector>" },
+          { "selector": "<selector>" }
+        ]
+      },
+      "household": {
+        "navigation": [
+          { "selector": "<selector>" },
+          { "selector": "<selector>" },
+          { "selector": "<selector>" }
+        ]
+      },
+      "patient": {
+        "navigation": [
+          { "selector": "<selector>" },
+          { "selector": "<selector>" },
+          { "selector": "<selector>" },
+          { "selector": "<selector>" }
+        ]
+      },
+      "report-list": {
+        "navigation": [ { "selector": "<selector>" } ]
+      },
+      "task-list": {
+        "navigation": [ { "selector": "<selector>" } ]
+      },
+      "message-list": {
+        "navigation": [ { "selector": "<selector>" } ]
+      },
+      "targets": {
+        "navigation": [ { "selector": "<selector>" } ]
+      }
+    },
 }
 ```
   - Find the android version by running `adb shell getprop | grep ro.build.version.release`
