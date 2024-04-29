@@ -7,18 +7,28 @@ const getInstanceURL = () => {
   return SETTINGS_CACHE?.instanceURL;
 };
 
-const getUser = (type, role) => {
-  return SETTINGS_CACHE?.users?.find(user => user.type === type && user.role === role);
+const hasPrivacyPolicy = () => {
+  return !!SETTINGS_CACHE?.hasPrivacyPolicy;
 };
 
 const getCapabilitiesSettings = () => {
   return SETTINGS_CACHE?.capabilities;
 };
 
+const getUser = (type, role) => {
+  return SETTINGS_CACHE?.users?.find(user => user.type === type && user.role === role);
+};
+
+const getPage = (name) => {
+  return SETTINGS_CACHE?.pages && SETTINGS_CACHE.pages[name];
+};
+
 const settingsProvider = {
   getInstanceURL,
-  getUser,
+  hasPrivacyPolicy,
   getCapabilitiesSettings,
+  getUser,
+  getPage
 };
 
 module.exports = () => {

@@ -173,13 +173,16 @@ exports.config = {
    */
   onPrepare: function (config, capabilities) {
     try {
-      const settingsCapabilities = loadSettings().getCapabilitiesSettings()[0];
-      const appium = capabilities[0];
-      appium['appium:platformVersion'] = settingsCapabilities.platformVersion;
-      appium['appium:deviceName'] = settingsCapabilities.deviceName;
+      loadSettings()
+        .getCapabilitiesSettings()
+        ?.forEach((capabilitySettings, index) => {
+          const capability = capabilities[index];
+          capability['appium:platformVersion'] = capabilitySettings.platformVersion;
+          capability['appium:deviceName'] = capabilitySettings.deviceName;
+        });
 
     } catch (error) {
-      console.error('ERROR: Loading settings file for Apdex Score tests.', error.message || error);
+      console.error('ERROR: Loading settings for capabilities.', error.message || error);
     }
   },
   /**
