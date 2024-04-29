@@ -105,12 +105,11 @@ const refreshAndWaitForAngular = async () => {
 
 describe('initial-replication', () => {
   before(async () => {
+    await utils.stopSentinel();
+
     // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
-
-    await sentinelUtils.waitForSentinel();
-    await utils.stopSentinel();
 
     await utils.saveDocs(userAllowedDocs.clinics);
     await utils.saveDocs(userDeniedDocs.clinics);

@@ -16,6 +16,9 @@ const getErrorMessage = async () => {
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+  if (utils.isMinimumChromeVersion) {
+    await browser.url('/');
+  }
   await setPasswordValue(password);
   await (await userField()).setValue(username);
   await changeLocale(locale);
@@ -59,14 +62,14 @@ const cookieLogin = async (options = {}) => {
   await commonPage.goToBase();
 };
 
-const getLanguage = async (selector) => {
-  const lang = await Promise.all((await $$(selector)).map(async localeElement => {
+const getLanguages = async () => {
+  const langs = await $$('.locale');
+  return langs.map(async localeElement => {
     return {
       code: await localeElement.getAttribute('name'),
       name: await localeElement.getText(),
     };
-  }));
-  return lang;
+  });
 };
 
 const getCurrentLanguage = async () => {
@@ -128,7 +131,7 @@ const setPasswordValue = async (password) => {
 module.exports = {
   login,
   cookieLogin,
-  getAllLocales: () => getLanguage('.locale'),
+  getAllLocales: () => getLanguages(),
   changeLanguage,
   labelForUser,
   loginButton,

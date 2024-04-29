@@ -137,6 +137,7 @@ const submitLoginRequest = ({ username, password }) => {
     body: { user: username, password, locale: 'en' },
     method: 'POST',
     simple: false,
+    noAuth: true,
   };
   return utils.request(opts);
 };
@@ -292,7 +293,7 @@ describe('Create user for contacts', () => {
 
         await commonPage.goToPeople(originalContactId);
         await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm(false);
+        await genericForm.submitForm({ waitForPageLoaded: false });
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -498,7 +499,7 @@ describe('Create user for contacts', () => {
 
         await commonPage.goToPeople(originalContactId);
         await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm(false);
+        await genericForm.submitForm({ waitForPageLoaded: false });
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();

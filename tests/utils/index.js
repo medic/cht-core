@@ -8,6 +8,8 @@ const os = require('os');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
+// by default, mustache escapes slashes, which messes with paths and urls.
+mustache.escape = (text) => text;
 const semver = require('semver');
 const moment = require('moment');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
@@ -16,6 +18,7 @@ const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 process.env.COUCHDB_USER = constants.USERNAME;
@@ -26,22 +29,25 @@ const DEBUG = process.env.DEBUG;
 
 let originalSettings;
 let dockerVersion;
-let browserLogStream;
+let infrastructure = 'docker';
+const isDocker = () => infrastructure === 'docker';
+const isK3D = () => !isDocker();
+const K3D_DATA_PATH = '/data';
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
 const ONE_YEAR_IN_S = 31536000;
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
-const services = {
+const SERVICES = {
   haproxy: 'haproxy',
   nginx: 'nginx',
-  couch1: 'couchdb-1.local',
-  couch2: 'couchdb-2.local',
-  couch3: 'couchdb-3.local',
+  couchdb1: 'couchdb-1.local',
+  couchdb2: 'couchdb-2.local',
+  couchdb3: 'couchdb-3.local',
   api: 'api',
   sentinel: 'sentinel',
-  haproxy_healthcheck: 'healthcheck',
+  'haproxy-healthcheck': 'healthcheck',
 };
 const CONTAINER_NAMES = {};
 const originalTranslations = {};
@@ -54,6 +60,8 @@ const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
+const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
+const cookieJar = rpn.jar();
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -77,8 +85,9 @@ const isDockerDesktop = () => {
 };
 
 const dockerGateway = () => {
+  const network = isDocker() ? NETWORK : `k3d-${PROJECT_NAME}`;
   try {
-    return JSON.parse(execSync(`docker network inspect ${NETWORK} --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`));
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -124,12 +133,42 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
+const getSession = async () => {
+  if (cookieJar.getCookies(constants.BASE_URL).length) {
+    return;
+  }
+
+  const options = {
+    method: 'POST',
+    uri: `${constants.BASE_URL}/_session`,
+    json: true,
+    body: { name: auth.username, password: auth.password},
+    auth,
+    resolveWithFullResponse: true,
+  };
+  const response = await rpn(options);
+  const setCookie = response.headers?.['set-cookie'];
+  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
+  if (header) {
+    try {
+      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+};
+
+const isLoginRequest = options => {
+  return options.path === '/medic/login' && options.body.user !== auth.username;
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug } = {}) => { //NOSONAR
+const request = async (options, { debug } = {}) => { //NOSONAR
   options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth) {
-    options.auth = options.auth || auth;
+  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
+    await getSession();
+    options.jar = cookieJar;
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
@@ -154,11 +193,13 @@ const request = (options, { debug } = {}) => { //NOSONAR
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  return rpn(options).catch(err => {
+  try {
+    return await rpn(options);
+  } catch (err) {
     err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.statusCode}`);
     throw err;
-  });
+  }
 };
 
 const requestOnTestDb = (options, debug) => {
@@ -461,7 +502,7 @@ const updateCustomSettings = updates => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return waitForSentinelLogs(/Reminder messages allowed between/);
+    return waitForSentinelLogs(true, /Reminder messages allowed between/);
   }
   return waitForApiLogs(/Settings updated/);
 };
@@ -513,7 +554,7 @@ const revertSettings = async ignoreRefresh => {
   const needsRefresh = await revertCustomSettings();
 
   if (!ignoreRefresh) {
-    return await commonElements.closeReloadModal(true);
+    return needsRefresh && await commonElements.closeReloadModal(true);
   }
 
   if (!needsRefresh) {
@@ -603,11 +644,11 @@ const deleteMetaDbs = async () => {
  * @param {boolean} ignoreRefresh
  */
 const revertDb = async (except, ignoreRefresh) => { //NOSONAR
-  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
-  const needsRefresh = await revertCustomSettings();
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+  const needsRefresh = await revertCustomSettings();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
@@ -763,14 +804,13 @@ const listenForApi = async () => {
   }
 };
 
-const dockerComposeCmd = (...params) => {
-  const composeFilesParam = COMPOSE_FILES
-    .map(file => ['-f', getTestComposeFilePath(file)])
-    .flat();
-  const projectParams = ['-p', PROJECT_NAME];
+const dockerComposeCmd = (params) => {
+  params = params.split(' ').filter(String);
+  const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
+  params.unshift(...composeFiles, '-p', PROJECT_NAME);
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [...projectParams, ...composeFilesParam, ...params], { env });
+    const cmd = spawn('docker-compose', params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -790,16 +830,58 @@ const dockerComposeCmd = (...params) => {
 };
 
 const stopService = async (service) => {
-  await dockerComposeCmd('stop', '-t', '0', service);
+  if (isDocker()) {
+    return await dockerComposeCmd(`stop -t 0 ${service}`);
+  }
+  await saveLogs(); // we lose logs when a pod crashes or is stopped.
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
+  let tries = 100;
+  do {
+    try {
+      await getPodName(service, true);
+      await delayPromise(100);
+      tries--;
+    } catch {
+      return;
+    }
+  } while (tries > 0);
+};
+
+const waitForService = async (service) => {
+  if (isDocker()) {
+    // in Docker, containers start quickly enough that there is no need to check status
+    return;
+  }
+
+  let tries = 100;
+  do {
+    try {
+      const podName = await getPodName(service, true);
+      await runCommand(
+        `kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`,
+        true
+      );
+      return;
+    } catch {
+      tries--;
+      await delayPromise(100);
+    }
+  } while (tries > 0);
 };
 
 const stopSentinel = () => stopService('sentinel');
 
 const startService = async (service) => {
-  await dockerComposeCmd('start', service);
+  if (isDocker()) {
+    return await dockerComposeCmd(`start ${service}`);
+  }
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
 };
 
-const startSentinel = () => startService('sentinel');
+const startSentinel = async (listen) => {
+  await startService('sentinel');
+  listen && await waitForService('sentinel');
+};
 
 const stopApi = () => stopService('api');
 
@@ -953,11 +1035,30 @@ const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scr
 
 const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.yml`);
 
+const generateK3DValuesFile = async () => {
+  const view = {
+    repo: buildVersions.getRepo(),
+    tag: buildVersions.getImageTag(),
+    db_name: constants.DB_NAME,
+    user: constants.USERNAME,
+    password: constants.PASSWORD,
+    secret: '',
+    uuid: '',
+    namespace: PROJECT_NAME,
+    data_path: K3D_DATA_PATH,
+  };
+
+  const templatePath = path.resolve(__dirname, '..', 'helm', `values.yaml.template`);
+  const testValuesPath = path.resolve(__dirname, '..', 'helm', `values.yaml`);
+  const template = await fs.promises.readFile(templatePath, 'utf-8');
+  await fs.promises.writeFile(testValuesPath, mustache.render(template, view));
+};
+
 const generateComposeFiles = async () => {
   const view = {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
-    db_name: 'medic-test',
+    db_name: constants.DB_NAME,
     couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
@@ -999,11 +1100,104 @@ const startServices = async () => {
   env.DB2_DATA = makeTempDir('ci-dbdata');
   env.DB3_DATA = makeTempDir('ci-dbdata');
 
-  await dockerComposeCmd('up', '-d');
-  const services = await dockerComposeCmd('ps', '-q');
+  await dockerComposeCmd('up -d');
+  const services = await dockerComposeCmd('ps -q');
   if (!services.length) {
     throw new Error('Errors when starting services');
   }
+};
+
+const runCommand = (command, silent) => {
+  const [cmd, ...params] = command.split(' ');
+  return new Promise((resolve, reject) => {
+    const proc = spawn(cmd, params, { env });
+    const output = [];
+    const log = (data, error) => {
+      data = data.toString();
+      output.push(data);
+      if (!silent) {
+        error ? console.error(data) : console.log(data);
+      }
+    };
+
+    proc.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    proc.stdout.on('data', log);
+    proc.stderr.on('data', log);
+
+    proc.on('close', (exitCode) => {
+      const outString = output.join('\n');
+      return exitCode ? reject(outString) : resolve(outString);
+    });
+  });
+};
+
+const createCluster = async (dataDir) => {
+  const hostPort = process.env.NGINX_HTTPS_PORT ? `${process.env.NGINX_HTTPS_PORT}` : '443';
+  await runCommand(
+    `k3d cluster create ${PROJECT_NAME} ` +
+    `--port ${hostPort}:443@loadbalancer ` +
+    `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false`
+  );
+};
+
+const importImages = async () => {
+  const allImages = Object
+    .keys(SERVICES)
+    .map(service => {
+      const serviceName = service.replace(/\d/, '');
+      return `${buildVersions.getRepo()}/cht-${serviceName}:${buildVersions.getImageTag()}`;
+    });
+  const images = [...new Set(allImages)];
+
+  for (const image of images) {
+    // authentication to private repos is weird to set up in k3d.
+    // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
+    try {
+      await runCommand(`docker image inspect ${image}`, true);
+    } catch {
+      await runCommand(`docker pull ${image}`);
+    }
+    await runCommand(`k3d image import ${image} -c ${PROJECT_NAME}`);
+  }
+};
+
+const cleanupOldCluster = async () => {
+  try {
+    await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
+  } catch {
+    console.warn('No cluster to clean up');
+  }
+};
+
+const prepK3DServices = async (defaultSettings) => {
+  infrastructure = 'k3d';
+  await createLogDir();
+
+  const dataDir = makeTempDir('ci-dbdata');
+  await fs.promises.mkdir(path.join(dataDir, 'srv1'));
+  await fs.promises.mkdir(path.join(dataDir, 'srv2'));
+  await fs.promises.mkdir(path.join(dataDir, 'srv3'));
+
+  await cleanupOldCluster();
+  await createCluster(dataDir);
+  await generateK3DValuesFile();
+  await importImages();
+
+  const helmChartPath = path.join(__dirname, '..', 'helm');
+  const valesPath = path.join(helmChartPath, 'values.yaml');
+  await runCommand(
+    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} `+
+    `--kube-context k3d-${PROJECT_NAME} --values ${valesPath} --create-namespace`
+  );
+  await listenForApi();
+
+  if (defaultSettings) {
+    await runAndLogApiStartupMessage('Settings setup', setupSettings);
+  }
+  await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
 const prepServices = async (defaultSettings) => {
@@ -1021,32 +1215,15 @@ const prepServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
-const saveBrowserLogs = () => {
-  // wdio also writes in this file
-  if (!browserLogStream) {
-    browserLogStream = fs.createWriteStream(path.join(__dirname, '..', 'logs/browser.console.log'));
-  }
-
-  return browser
-    .manage()
-    .logs()
-    .get('browser')
-    .then(logs => {
-      const currentSpec = jasmine.currentSpec.fullName;
-      browserLogStream.write(`\n~~~~~~~~~~~ ${currentSpec} ~~~~~~~~~~~~~~~~~~~~~\n\n`);
-      logs
-        .map(log => `[${log.level.name_}] ${log.message}\n`)
-        .forEach(log => browserLogStream.write(log));
-      browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
-    });
-};
-
-const getDockerLogs = (container) => {
-  const logFile = path.resolve(__dirname, '../logs', `${container}.log`);
+const getLogs = (container) => {
+  const logFile = path.resolve(__dirname, '../logs', `${container.replace('pod/', '')}.log`);
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
+  const command = isDocker() ? 'docker' : 'kubectl';
+
+  const params = `logs ${container}${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker', ['logs', container]);
+    const cmd = spawn(command, params.split(' '));
     cmd.on('error', (err) => {
       console.error('Error while collecting container logs', err);
       reject(err);
@@ -1062,15 +1239,27 @@ const getDockerLogs = (container) => {
 };
 
 const saveLogs = async () => {
+  if (isK3D()) {
+    const podsList = await runCommand(`kubectl ${KUBECTL_CONTEXT} get pods --no-headers -o name`);
+    const pods = podsList.split('\n').filter(name => name);
+    for (const podName of pods) {
+      await getLogs(podName);
+    }
+    return;
+  }
+
   for (const containerName of Object.values(CONTAINER_NAMES)) {
-    await getDockerLogs(containerName);
+    await getLogs(containerName);
   }
 };
 
 const tearDownServices = async () => {
   await saveLogs();
   if (!DEBUG) {
-    await dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
+    if (isK3D()) {
+      return await cleanupOldCluster();
+    }
+    await dockerComposeCmd('down -t 0 --remove-orphans --volumes');
   }
 };
 
@@ -1081,26 +1270,46 @@ const killSpawnedProcess = (proc) => {
 };
 
 /**
- * Watches a docker log until at least one line matches one of the given regular expressions.
+ * Watches a docker or kubernetes container log until at least one line matches one of the given regular expressions.
+ *
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
+ * @param {Boolean} tail - when true, log is tailed. when false, whole log is analyzed. Always true for Docker.
  * @param {[RegExp]} regex - matching expression(s) run against lines
- * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
+ * @returns {Promise<{cancel: function(): void, promise: Promise<void>}>}
+ * that contains the promise to resolve when logs lines are matched and a cancel function
  */
-const waitForDockerLogs = (container, ...regex) => {
+
+const waitForLogs = (container, tail, ...regex) => {
   container = getContainerName(container);
+  const cmd = isDocker() ? 'docker' : 'kubectl';
   let timeout;
   let logs = '';
   let firstLine = false;
+  tail = isDocker() ? true : tail;
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1`;
-  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const params = `logs ${container} -f${tail ? ` --tail=1` : ''}${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
+  const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+
+  const checkOutput = (data) => {
+    if (!firstLine) {
+      firstLine = true;
+      receivedFirstLine();
+      return;
+    }
+
+    data = data.toString();
+    logs += data;
+    const lines = data.split('\n');
+    const matchingLine = lines.find(line => regex.find(r => r.test(line)));
+    return matchingLine;
+  };
 
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
@@ -1109,25 +1318,17 @@ const waitForDockerLogs = (container, ...regex) => {
       killSpawnedProcess(proc);
     }, 20000);
 
-    const checkOutput = (data) => {
-      if (!firstLine) {
-        firstLine = true;
-        receivedFirstLine();
-        return;
-      }
-
-      data = data.toString();
-      logs += data;
-      const lines = data.split('\n');
-      if (lines.find(line => regex.find(r => r.test(line)))) {
+    const check = data => {
+      const foundMatch = checkOutput(data);
+      if (foundMatch || !regex.length) {
         resolve();
         clearTimeout(timeout);
         killSpawnedProcess(proc);
       }
     };
 
-    proc.stdout.on('data', checkOutput);
-    proc.stderr.on('data', checkOutput);
+    proc.stdout.on('data', check);
+    proc.stderr.on('data', check);
   });
 
   return firstLineReceivedPromise.then(() => ({
@@ -1139,9 +1340,8 @@ const waitForDockerLogs = (container, ...regex) => {
   }));
 };
 
-const waitForApiLogs = (...regex) => waitForDockerLogs('api', ...regex);
-const waitForSentinelLogs = (...regex) => waitForDockerLogs('sentinel', ...regex);
-
+const waitForApiLogs = (...regex) => waitForLogs('api', true, ...regex);
+const waitForSentinelLogs = (tail, ...regex) => waitForLogs('sentinel', tail, ...regex);
 /**
  * Collector that listens to the given container logs and collects lines that match at least one of the
  * given regular expressions
@@ -1156,6 +1356,7 @@ const waitForSentinelLogs = (...regex) => waitForDockerLogs('sentinel', ...regex
  */
 const collectLogs = (container, ...regex) => {
   container = getContainerName(container);
+  const cmd = isDocker() ? 'docker' : 'kubectl';
   const matches = [];
   const errors = [];
   let logs = '';
@@ -1164,8 +1365,8 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1`;
-  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const params = `logs ${container} -f --tail=1${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
+  const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
@@ -1177,6 +1378,11 @@ const collectLogs = (container, ...regex) => {
     lines.forEach(line => regex.forEach(r => r.test(line) && matches.push(line)));
   });
   proc.stderr.on('err', err => {
+    receivedFirstLine();
+    errors.push(err.toString());
+  });
+
+  proc.on('error', err => {
     receivedFirstLine();
     errors.push(err.toString());
   });
@@ -1227,15 +1433,19 @@ const getDockerVersion = () => {
 const updateContainerNames = (project = PROJECT_NAME) => {
   dockerVersion = dockerVersion || getDockerVersion();
 
-  Object.entries(services).forEach(([key, service]) => {
+  Object.entries(SERVICES).forEach(([key, service]) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
   });
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
 const getContainerName = (service, project = PROJECT_NAME) => {
-  dockerVersion = dockerVersion || getDockerVersion();
-  const separator = dockerVersion === 2 ? '-' : '_';
-  return `${project}${separator}${service}${separator}1`;
+  if (isDocker()) {
+    dockerVersion = dockerVersion || getDockerVersion();
+    const separator = dockerVersion === 2 ? '-' : '_';
+    return `${project}${separator}${service}${separator}1`;
+  }
+
+  return `deployment/cht-${service}`;
 };
 
 const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
@@ -1252,19 +1462,27 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
+const getPodName = async (service, silent) => {
+  const cmd = await runCommand(
+    `kubectl get pods ${KUBECTL_CONTEXT} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
+    silent
+  );
+  return cmd.replace(/[^A-Za-z0-9-/]/g, '');
+};
 
-const getContainerDate = (container) => {
-  container = getContainerName(container);
-  try {
-    return moment(execSync(`docker exec ${container} date '+%Y-%m-%d %H:%M:%S'`).toString(), 'YYYY-MM-DD HH:mm:ss');
-  } catch (error) {
-    console.error('docker exec date failed. NOTE this error is not relevant if running outside of docker');
-    console.error(error.message);
+const getContainerDate = async (container) => {
+  let date;
+  if (isDocker()) {
+    container = getContainerName(container);
+    date = await runCommand(`docker exec ${container} date -R`);
+  } else {
+    const podName = await getPodName(container);
+    date = await runCommand(`kubectl exec ${KUBECTL_CONTEXT} ${podName} -- date -R`);
   }
+  return moment.utc(date);
 };
 
 const logFeedbackDocs = async (test) => {
-
   const feedBackDocs = await chtDbUtils.getFeedbackDocs();
   const newFeedbackDocs = feedBackDocs.filter(doc => !existingFeedbackDocIds.includes(doc._id));
   if (!newFeedbackDocs.length) {
@@ -1279,7 +1497,9 @@ const logFeedbackDocs = async (test) => {
   return true;
 };
 
-const isMinimumChromeVersion = () => process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
+const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
+
+const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
 
 module.exports = {
   db,
@@ -1289,6 +1509,7 @@ module.exports = {
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
+  PROJECT_NAME,
   makeTempDir,
   hostURL,
   parseCookieResponse,
@@ -1337,7 +1558,7 @@ module.exports = {
   enableLanguages,
   getSettings,
   prepServices,
-  saveBrowserLogs,
+  prepK3DServices,
   tearDownServices,
   waitForApiLogs,
   waitForSentinelLogs,
@@ -1352,4 +1573,6 @@ module.exports = {
   getSentinelDate,
   logFeedbackDocs,
   isMinimumChromeVersion,
+  escapeBranchName,
+  isK3D,
 };

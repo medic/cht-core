@@ -8,7 +8,16 @@ angular.module('controllers').controller('ExportMessagesCtrl',
     'ngInject';
 
     $scope.export = function() {
-      Export('messages', {}, { humanReadable: true });
+      if ($scope.exporting) {
+        return;
+      }
+
+      $scope.exporting = true;
+      Export('messages', {}, { humanReadable: true })
+        .finally(() => {
+          $scope.exporting = false;
+          $scope.$apply();
+        });
     };
 
   });

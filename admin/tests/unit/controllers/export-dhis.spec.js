@@ -12,11 +12,13 @@ describe('dhis2 export controller', () => {
   let getService;
   let query;
   let Settings;
+  let Export;
 
   beforeEach(() => {
     module('adminApp');
     sinon.useFakeTimers(NOW);
     Settings = sinon.stub().resolves({ dhis_data_sets: dhisDataSets });
+    Export = sinon.stub().resolves();
     query = sinon.stub().resolves({ rows: [
       mockContact('p1'),
       mockContact('p2', { dhis: { orgUnit: 'ou-p2'}}),
@@ -28,6 +30,7 @@ describe('dhis2 export controller', () => {
 
     module($provide => {
       $provide.value('Settings', Settings);
+      $provide.value('Export', Export);
       $provide.value('$scope', scope);
     });
 
@@ -77,6 +80,19 @@ describe('dhis2 export controller', () => {
     Settings.resolves({});
     await getService();
     expect(!!scope.dataSets).to.be.false;
+  });
+
+  it('doesn\'t trigger additional exports when an export is ongoing', async () => {
+    expect(scope.exporting).to.be.undefined;
+    await getService();
+    scope.export();
+    expect(scope.exporting).to.be.true;
+    scope.export();
+    scope.export();
+    scope.export();
+    expect(Export.returnValues.length).to.equal(1);
+    await Export.returnValues[0];
+    expect(scope.exporting).to.be.false;
   });
 
   const mockContact = (name, assign) => ({

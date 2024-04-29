@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 const db = require('../../db');
 const logger = require('../../logger');
@@ -332,7 +332,7 @@ const makeUpgradeRequest = async (payload) => {
     throw new Error(`Invalid UPGRADE_SERVICE_URL: ${UPGRADE_SERVICE_URL}`);
   }
 
-  const response = await rpn.post({ url: url.toString(), json: true, body: payload });
+  const response = await request.post({ url: url.toString(), json: true, body: payload });
   const success = upgradeResponseSuccess(payload, response);
   if (!success) {
     logger.error('None of the docker-compose files or containers were updated: %o', response);

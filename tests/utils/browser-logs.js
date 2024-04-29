@@ -2,12 +2,19 @@ const fs = require('fs');
 
 const logEntries = [];
 
+
+
 const saveBrowserLogs = async (logLevels, browserLogPath) => {
   try {
     await browser.url('/');
-    await browser.cdp('Log', 'enable');
-    await browser.cdp('Runtime', 'enable');
-    const writeToFile = browserLogPath === undefined ? false : true;
+
+    const puppeteer = await browser.getPuppeteer();
+    const target = await puppeteer.waitForTarget(t => t.url().includes('/'));
+    const session = await target.createCDPSession();
+
+    await session.send('Log.enable');
+    await session.send('Runtime.enable');
+    const writeToFile = browserLogPath !== undefined;
     browser.on('Runtime.consoleAPICalled', (data) => {
       if (data && logLevels.indexOf(data.type) >= 0) {
         const logEntry = `[${data.type}] Console Api Event: ${JSON.stringify(data.args)}\n`;

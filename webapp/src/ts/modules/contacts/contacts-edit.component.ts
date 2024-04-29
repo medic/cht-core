@@ -11,7 +11,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 
 
@@ -27,7 +27,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private formService:FormService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
-    private telemetryService:TelemetryService,
+    private performanceService:PerformanceService,
     private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -51,11 +51,13 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoContact;
 
   private routeSnapshot;
-  private telemetryData: any = {
-    preRender: Date.now()
-  };
+  private trackRender;
+  private trackEditDuration;
+  private trackSave;
+  private trackMetadata = { action: '', form: '' };
 
   ngOnInit() {
+    this.trackRender = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeToRoute();
   }
@@ -204,7 +206,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       this.contact = contact;
       this.contactId = contact._id;
       formId = contactType.edit_form || contactType.create_form;
+      this.trackMetadata.action = 'edit';
     } else { // adding
+      this.trackMetadata.action = 'add';
       this.contact = {
         type: 'contact',
         contact_type: this.routeSnapshot.params?.type,
@@ -250,16 +254,14 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
     formContext.titleKey = titleKey;
-
     const formInstance = await this.formService.render(formContext);
-    this.telemetryData.postRender = Date.now();
-    this.telemetryData.form = formId;
-    this.telemetryData.action = 'edit';
 
-    await this.telemetryService.record(
-      `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-      this.telemetryData.postRender - this.telemetryData.preRender
-    );
+    this.trackMetadata.form = formId;
+    this.trackRender?.stop({
+      name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'render' ].join(':'),
+      recordApdex: true,
+    });
+    this.trackEditDuration = this.performanceService.track();
 
     return formInstance;
   }
@@ -278,11 +280,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    this.telemetryData.preSave = Date.now();
-    this.telemetryService.record(
-      `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender
-    );
+    this.trackEditDuration?.stop({
+      name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+    });
+    this.trackSave = this.performanceService.track();
 
     const form = this.enketoContact.formInstance;
     const docId = this.enketoContact.docId;
@@ -307,11 +308,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             this.globalActions.setEnketoSavingStatus(false);
             this.globalActions.setEnketoEditedStatus(false);
 
-            this.telemetryData.postSave = Date.now();
-            this.telemetryService.record(
-              `enketo:contacts:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-              this.telemetryData.postSave - this.telemetryData.preSave
-            );
+            this.trackSave?.stop({
+              name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
+              recordApdex: true,
+            });
 
             this.translateService
               .get(docId ? 'contact.updated' : 'contact.created')

@@ -13,6 +13,7 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -25,6 +26,7 @@ export class ContactsEffects {
   constructor(
     private actions$: Actions,
     private store: Store,
+    private performanceService: PerformanceService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private contactSummaryService: ContactSummaryService,
     private tasksForContactService: TasksForContactService,
@@ -56,21 +58,32 @@ export class ContactsEffects {
           return of(this.contactsActions.clearSelection());
         }
 
+        let trackName = [ 'contact_detail', 'contact', 'load' ];
+        const trackPerformance = this.performanceService.track();
+
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
           this.contactsActions.setLoadingSelectedContact();
           this.contactsActions.setContactsLoadingSummary(true);
         }
 
+        const trackContactDataLoad = this.performanceService.track();
         const loadContact = this
           .loadContact(id)
+          .then(contact => {
+            const contactType = contact?.doc?.contact_type;
+            if (contactType) {
+              trackName = trackName.map(part => part === 'contact' ? contactType : part);
+            }
+            trackContactDataLoad?.stop({ name: [ ...trackName, 'contact_data' ].join(':') });
+          })
           .then(() => this.verifySelectedContactNotChanged(id))
           .then(() => this.setTitle())
-          .then(() => this.loadChildren(id, userFacilityId))
-          .then(() => this.loadReports(id, forms))
-          .then(() => this.loadTargetDoc(id))
-          .then(() => this.loadContactSummary(id))
-          .then(() => this.loadTasks(id))
+          .then(() => this.loadChildren(id, userFacilityId, trackName))
+          .then(() => this.loadReports(id, forms, trackName))
+          .then(() => this.loadTargetDoc(id, trackName))
+          .then(() => this.loadContactSummary(id, trackName))
+          .then(() => this.loadTasks(id, trackName))
           .catch(err => {
             // If the selected contact has changed, just stop loading this one
             if (err.code === 'SELECTED_CONTACT_CHANGED') {
@@ -82,6 +95,9 @@ export class ContactsEffects {
             console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
             return of(this.contactsActions.clearSelection());
+          })
+          .finally(() => {
+            trackPerformance?.stop({ recordApdex: true, name: trackName.join(':') });
           });
 
         return of(loadContact);
@@ -107,6 +123,7 @@ export class ContactsEffects {
           .then(() => {
             this.globalActions.settingSelected();
             this.contactsActions.setSelectedContact(model);
+            return model;
           });
       });
   }
@@ -115,7 +132,8 @@ export class ContactsEffects {
     return this.contactIdToLoad !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
   }
 
-  private loadChildren(contactId, userFacilityId) {
+  private loadChildren(contactId, userFacilityId, trackName) {
+    const trackPerformance = this.performanceService.track();
     const getChildPlaces = userFacilityId !== contactId;
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
@@ -123,40 +141,56 @@ export class ContactsEffects {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactChildren(children));
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: [ ...trackName, 'load_descendants' ].join(':') });
       });
   }
 
-  private loadReports(contactId, forms) {
+  private loadReports(contactId, forms, trackName) {
+    const trackPerformance = this.performanceService.track();
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
       .then(reports => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactReports(reports));
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: [ ...trackName, 'load_reports' ].join(':') });
       });
   }
 
-  private loadTargetDoc(contactId) {
+  private loadTargetDoc(contactId, trackName) {
+    const trackPerformance = this.performanceService.track();
     return this.targetAggregateService
       .getCurrentTargetDoc(this.selectedContact)
       .then(targetDoc => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc));
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
       });
   }
 
-  private loadTasks(contactId) {
+  private loadTasks(contactId, trackName) {
+    const trackPerformance = this.performanceService.track();
     return this.tasksForContactService
       .get(this.selectedContact)
       .then(tasks => {
         return this
           .verifySelectedContactNotChanged(contactId)
           .then(() => this.contactsActions.updateSelectedContactsTasks(tasks));
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: [ ...trackName, 'load_tasks' ].join(':') });
       });
   }
 
-  private loadContactSummary(contactId) {
+  private loadContactSummary(contactId, trackName) {
+    const trackPerformance = this.performanceService.track();
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
@@ -167,6 +201,9 @@ export class ContactsEffects {
             this.contactsActions.setContactsLoadingSummary(false);
             return this.contactsActions.updateSelectedContactSummary(summary);
           });
+      })
+      .finally(() => {
+        trackPerformance?.stop({ name: [ ...trackName, 'load_contact_summary' ].join(':') });
       });
   }
 }

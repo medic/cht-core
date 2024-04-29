@@ -1,15 +1,23 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
 const { roles, users } = require('@medic/user-management')(config, db);
 
+const contentLengthRegex = /^content-length$/i;
+
 const get = (path, headers) => {
+  const getHeaders = { ...headers };
+  Object
+    .keys(getHeaders)
+    .filter(header => contentLengthRegex.test(header))
+    .forEach(header => delete getHeaders[header]);
+
   const url = new URL(path, environment.serverUrlNoAuth);
   return request.get({
     url: url.toString(),
-    headers: headers,
+    headers: getHeaders,
     json: true
   });
 };

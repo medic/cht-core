@@ -1,8 +1,9 @@
 const PouchDB = require('pouchdb-core');
 const logger = require('./logger');
 const environment = require('./environment');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
@@ -122,13 +123,13 @@ if (UNIT_TEST_ENV) {
       });
   };
 
-  module.exports.allDbs = () => rpn.get({
+  module.exports.allDbs = () => request.get({
     uri: `${environment.serverUrl}/_all_dbs`,
     json: true
   });
 
   module.exports.activeTasks = () => {
-    return rpn
+    return request
       .get({
         url: `${environment.serverUrl}/_active_tasks`,
         json: true
@@ -194,7 +195,7 @@ if (UNIT_TEST_ENV) {
     const securityUrl = new URL(environment.serverUrl);
     securityUrl.pathname = `${dbname}/_security`;
 
-    const securityObject = await rpn.get({ url: securityUrl.toString(), json: true });
+    const securityObject = await request.get({ url: securityUrl.toString(), json: true });
     const property = addAsAdmin ? 'admins' : 'members';
 
     if (!securityObject[property]) {
@@ -211,7 +212,7 @@ if (UNIT_TEST_ENV) {
 
     logger.info(`Adding "${role}" role to ${dbname} ${property}`);
     securityObject[property].roles.push(role);
-    await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
+    await request.put({ url: securityUrl.toString(), json: true, body: securityObject });
   };
 
   module.exports.addRoleAsAdmin = (dbname, role) => addRoleToSecurity(dbname, role, true);

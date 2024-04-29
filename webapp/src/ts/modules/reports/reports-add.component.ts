@@ -14,10 +14,9 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { FormService } from '@mm-services/form.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
+import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
-
 
 @Component({
   templateUrl: './reports-add.component.html',
@@ -37,7 +36,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     private translateService:TranslateService,
     private router:Router,
     private route:ActivatedRoute,
-    private telemetryService:TelemetryService,
+    private performanceService:PerformanceService,
     private ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(this.store);
@@ -59,10 +58,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   private geoHandle:any;
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
-  private telemetryData:any = {
-    preRender: Date.now()
-  };
-
+  private trackRender;
+  private trackEditDuration;
+  private trackSave;
+  private trackMetadata = { action: '', form: '' };
   private routeSnapshot;
 
   private subscribeToStore() {
@@ -128,6 +127,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
+    this.trackRender = this.performanceService.track();
     this.reset();
     this.subscribeToStore();
     this.setCancelCallback();
@@ -212,13 +212,13 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       console.error('Error loading form.', err);
     }
 
-    this.telemetryData.postRender = Date.now();
-    this.telemetryData.action = model.doc ? 'edit' : 'add';
-    this.telemetryData.form = model.formInternalId;
-    this.telemetryService.record(
-      `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-      this.telemetryData.postRender - this.telemetryData.preRender
-    );
+    this.trackMetadata.action = model.doc ? 'edit' : 'add';
+    this.trackMetadata.form =  model.formInternalId;
+    this.trackRender?.stop({
+      name: [ 'enketo', 'reports', this.trackMetadata.form, this.trackMetadata.action, 'render' ].join(':'),
+      recordApdex: true,
+    });
+    this.trackEditDuration = this.performanceService.track();
   }
 
   private setError(err) {
@@ -283,11 +283,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    this.telemetryData.preSave = Date.now();
-    this.telemetryService.record(
-      `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender
-    );
+    this.trackEditDuration?.stop({
+      name: [ 'enketo', 'reports', this.trackMetadata.form, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+    });
+    this.trackSave = this.performanceService.track();
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -303,12 +302,12 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         this.globalActions.setSnackbarContent(this.translateService.instant(snackBarTranslationKey));
         this.globalActions.setEnketoEditedStatus(false);
         this.router.navigate(['/reports', docs[0]._id]);
-
-        this.telemetryData.postSave = Date.now();
-        this.telemetryService.record(
-          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave
-        );
+      })
+      .then(() => {
+        this.trackSave?.stop({
+          name: [ 'enketo', 'reports', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
+          recordApdex: true,
+        });
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);

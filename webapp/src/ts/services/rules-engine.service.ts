@@ -3,6 +3,7 @@ import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
+import * as moment from 'moment';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
@@ -19,12 +20,13 @@ import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 interface DebounceActive {
   [key: string]: {
     active?: boolean;
     debounceRef?: any;
-    telemetryDataEntry?: any;
+    performance?: any;
   };
 }
 
@@ -60,6 +62,7 @@ export class RulesEngineService implements OnDestroy {
     private sessionService:SessionService,
     private settingsService:SettingsService,
     private telemetryService:TelemetryService,
+    private performanceService:PerformanceService,
     private uhcSettingsService:UHCSettingsService,
     private userContactService:UserContactService,
     private userSettingsService:UserSettingsService,
@@ -113,7 +116,7 @@ export class RulesEngineService implements OnDestroy {
               chtScriptApi
             );
             const rulesSettings = this.getRulesSettings(rulesEngineContext);
-            const initializeTelemetryData = this.telemetryEntry('rules-engine:initialize', true);
+            const trackPerformance = this.performanceService.track();
 
             return this.rulesEngineCore
               .initialize(rulesSettings)
@@ -131,7 +134,10 @@ export class RulesEngineService implements OnDestroy {
 
                   this.debounceActive.tasks = {
                     active: true,
-                    telemetryDataEntry: this.telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true),
+                    performance: {
+                      name: [ 'rules-engine', 'ensureTaskFreshness', 'cancel' ],
+                      track: this.performanceService.track()
+                    },
                     debounceRef: tasksDebounceRef
                   };
                   this.debounceActive.tasks.debounceRef();
@@ -143,48 +149,19 @@ export class RulesEngineService implements OnDestroy {
 
                   this.debounceActive.targets = {
                     active: true,
-                    telemetryDataEntry: this.telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true),
+                    performance: {
+                      name: [ 'rules-engine', 'ensureTargetFreshness', 'cancel' ],
+                      track: this.performanceService.track()
+                    },
                     debounceRef: targetsDebounceRef
                   };
                   this.debounceActive.targets.debounceRef();
                 }
 
-                initializeTelemetryData.record();
+                trackPerformance?.stop({ name: [ 'rules-engine', 'initialize' ].join(':') });
               });
           });
       });
-  }
-
-  private telemetryEntry(entry, startNow = false) {
-    const data: any = { entry };
-    const queued = () => data.queued = Date.now();
-
-    const start = () => {
-      data.start = Date.now();
-      data.queued && this.telemetryService.record(`${data.entry}:queued`, data.start - data.queued);
-    };
-
-    const record = () => {
-      data.start = data.start || Date.now();
-      data.end = Date.now();
-      this.telemetryService.record(data.entry, data.end - data.start);
-    };
-
-    const passThrough = (result) => {
-      record();
-      return result;
-    };
-
-    if (startNow) {
-      start();
-    }
-
-    return {
-      start,
-      queued,
-      record,
-      passThrough,
-    };
   }
 
   private cancelDebounce(entity) {
@@ -195,7 +172,7 @@ export class RulesEngineService implements OnDestroy {
     }
 
     if (debounceInfo.active) { // Debounced function is not executed or cancelled yet.
-      debounceInfo.telemetryDataEntry.record();
+      debounceInfo.performance.track.stop({ name: debounceInfo.performance.name.join(':') });
     }
 
     debounceInfo.debounceRef.cancel();
@@ -241,13 +218,14 @@ export class RulesEngineService implements OnDestroy {
       filter: change => !!change.doc && (this.contactTypesService.includes(change.doc) || isReport(change.doc)),
       callback: change => {
         const subjectIds = isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id;
-        const telemetryData = this.telemetryEntry('rules-engine:update-emissions', true);
+        const trackPerformance = this.performanceService.track();
 
         return this.rulesEngineCore
           .updateEmissionsFor(subjectIds)
           .then((result) => {
             this.observable.next(subjectIds);
-            return telemetryData.passThrough(result);
+            trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
+            return result;
           });
       }
     });
@@ -309,14 +287,19 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private translateTaskDocs(taskDocs: { emission?: any }[] = []) {
+  private hydrateTaskDocs(taskDocs: { emission?: any; owner: string }[] = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
-
-      if (emission) {
-        emission.title = this.translateProperty(emission.title, emission);
-        emission.priorityLabel = this.translateProperty(emission.priorityLabel, emission);
+      if (!emission) {
+        return;
       }
+
+      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
+      emission.overdue = dueDate.isBefore(moment());
+      emission.date = new Date(dueDate.valueOf());
+      emission.title = this.translateProperty(emission.title, emission);
+      emission.priorityLabel = this.translateProperty(emission.priorityLabel, emission);
+      emission.owner = taskDoc.owner;
     });
 
     return taskDocs;
@@ -335,7 +318,9 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private _fetchTaskDocsForAllContacts() {
-    const telemetryData = this.telemetryEntry('rules-engine:tasks:all-contacts');
+    const trackName = [ 'rules-engine', 'tasks', 'all-contacts' ];
+    let trackPerformanceQueueing;
+    let trackPerformanceRunning;
 
     return this.initialized
       .then(() => {
@@ -346,11 +331,19 @@ export class RulesEngineService implements OnDestroy {
         this.cancelDebounce('tasks');
         return this.rulesEngineCore
           .fetchTasksFor()
-          .on('queued', telemetryData.queued)
-          .on('running', telemetryData.start);
+          .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+          .on('running', () => {
+            trackPerformanceRunning = this.performanceService.track();
+            trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+          });
       })
-      .then(telemetryData.passThrough)
-      .then(taskDocs => this.translateTaskDocs(taskDocs));
+      .then(taskDocs => {
+        if (!trackPerformanceRunning) {
+          trackPerformanceRunning = this.performanceService.track();
+        }
+        trackPerformanceRunning.stop({ name: trackName.join(':') });
+        return this.hydrateTaskDocs(taskDocs);
+      });
   }
 
   fetchTaskDocsFor(contactIds) {
@@ -358,7 +351,9 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private _fetchTaskDocsFor(contactIds) {
-    const telemetryData = this.telemetryEntry('rules-engine:tasks:some-contacts');
+    const trackName = [ 'rules-engine', 'tasks', 'some-contacts' ];
+    let trackPerformanceQueueing;
+    let trackPerformanceRunning;
 
     return this.initialized
       .then(() => {
@@ -369,11 +364,19 @@ export class RulesEngineService implements OnDestroy {
 
         return this.rulesEngineCore
           .fetchTasksFor(contactIds)
-          .on('queued', telemetryData.queued)
-          .on('running', telemetryData.start);
+          .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+          .on('running', () => {
+            trackPerformanceRunning = this.performanceService.track();
+            trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+          });
       })
-      .then(telemetryData.passThrough)
-      .then(taskDocs => this.translateTaskDocs(taskDocs));
+      .then(taskDocs => {
+        if (!trackPerformanceRunning) {
+          trackPerformanceRunning = this.performanceService.track();
+        }
+        trackPerformanceRunning?.stop({ name: trackName.join(':') });
+        return this.hydrateTaskDocs(taskDocs);
+      });
   }
 
   fetchTasksBreakdown(contactIds?) {
@@ -381,12 +384,18 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private _fetchTasksBreakdown(contactIds?) {
-    const telemetryEntryName = contactIds ?
-      'rules-engine:tasks-breakdown:some-contacts' : 'rules-engine:tasks-breakdown:all-contacts';
-    const telemetryData = this.telemetryEntry(telemetryEntryName, true);
+    const trackName = [
+      'rules-engine',
+      'tasks-breakdown',
+      contactIds ? 'some-contacts' : 'all-contacts'
+    ];
+    const trackPerformance = this.performanceService.track();
     return this.initialized
       .then(() => this.rulesEngineCore.fetchTasksBreakdown(contactIds))
-      .then(telemetryData.passThrough);
+      .then(taskBreakdown => {
+        trackPerformance?.stop({ name: trackName.join(':') });
+        return taskBreakdown;
+      });
   }
 
   fetchTargets() {
@@ -394,7 +403,9 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private _fetchTargets() {
-    const telemetryData = this.telemetryEntry('rules-engine:targets');
+    const trackName = [ 'rules-engine', 'targets' ];
+    let trackPerformanceQueueing;
+    let trackPerformanceRunning;
 
     return this.initialized
       .then(() => {
@@ -406,10 +417,19 @@ export class RulesEngineService implements OnDestroy {
         const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
         return this.rulesEngineCore
           .fetchTargets(relevantInterval)
-          .on('queued', telemetryData.queued)
-          .on('running', telemetryData.start);
+          .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+          .on('running', () => {
+            trackPerformanceRunning = this.performanceService.track();
+            trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+          });
       })
-      .then(telemetryData.passThrough);
+      .then(targets => {
+        if (!trackPerformanceRunning) {
+          trackPerformanceRunning = this.performanceService.track();
+        }
+        trackPerformanceRunning?.stop({ name: trackName.join(':') });
+        return targets;
+      });
   }
 
   monitorExternalChanges(replicationResult?) {
