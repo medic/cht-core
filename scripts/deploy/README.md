@@ -4,6 +4,8 @@
 
 This guide walks you through the process of deploying the Community Health Toolkit (CHT) Core application on a Kubernetes cluster. The deployment process utilizes a set of scripts and Helm charts for a simplified deployment experience.
 
+The helm charts can be seen in the [medic/helm-charts](https://github.com/medic/helm-charts) repository.
+
 The primary script, `cht-deploy`, automatically installs the required Python packages and initiates the deployment of CHT Core on your Kubernetes cluster.
 
 ## Prerequisites
