@@ -91,14 +91,15 @@ const preparePlaceContact = async contact => {
     const person = await people.getOrCreatePerson(contact);
     return { exists: true, contact: person };
   }
-  if (_.isObject(contact)) {
-    contact.type = contact.type || people._getDefaultPersonType();
-    const errStr = people._validatePerson(contact);
-    if (errStr) {
-      return err(errStr);
-    }
-    return { exists: false, contact: contact };
+  if (!_.isObject(contact)) {
+    return err();
   }
+  contact.type = contact.type ?? people._getDefaultPersonType();
+  const errStr = people._validatePerson(contact);
+  if (errStr) {
+    return err(errStr);
+  }
+  return { exists: false, contact: contact };
 };
 
 const createPlace = async (place) => {
