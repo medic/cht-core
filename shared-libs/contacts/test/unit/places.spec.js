@@ -404,6 +404,20 @@ describe('places controller', () => {
       });
     });
 
+    it('returns err if contact does not exist', () => {
+      const place = {
+        name: 'HC',
+        type: 'district_hospital',
+        contact: 'person'
+      };
+      fetchHydratedDoc.rejects({ status: 404 });
+      const post = db.medic.post;
+      return controller._createPlaces(place).catch(err => {
+        chai.expect(err.message).to.equal('Failed to find person.');
+        chai.expect(post.callCount).to.equal(0);
+      });
+    });
+
     it('rejects contacts with wrong type', done => {
       const place = {
         name: 'HC',
@@ -563,9 +577,17 @@ describe('places controller', () => {
 
   describe('preparePlaceContact', () => {
     it('adds default person type', () => {
-      return controller._preparePlaceContact({ name: 'test' }).then(contact => {
+      return controller._preparePlaceContact({ name: 'test' }).then(({ exists, contact }) => {
+        chai.expect(exists).to.equal(false);
         chai.expect(contact).to.have.property('type');
         chai.expect(contact).property('type').equal('person');
+      });
+    });
+
+    it('rejects if contact does not exist', () => {
+      fetchHydratedDoc.rejects({ status: 404 });
+      return controller._preparePlaceContact('test').catch(err => {
+        chai.expect(err.message).to.equal('Failed to find person.');
       });
     });
   });

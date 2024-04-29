@@ -166,16 +166,16 @@ describe('Places API', () => {
     });
 
     it('should create place with contact uuid', () => {
+      const contactId = 'fixture:user:online';
       onlineRequestOptions.body = {
         name: 'DS',
         type: 'district_hospital',
-        contact: 'fixture:user:online'
+        contact: contactId
       };
       return utils.request(onlineRequestOptions)
         .then(result => {
           chai.expect(result.id).to.not.be.undefined;
-          chai.expect(result.contact.id).to.not.be.undefined;
-          return utils.getDocs([result.id, result.contact.id]);
+          return utils.getDocs([result.id, contactId]);
         })
         .then(([place, contact]) => {
           chai.expect(contact).to.deep.include({

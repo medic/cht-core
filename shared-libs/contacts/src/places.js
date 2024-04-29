@@ -25,6 +25,12 @@ const getPlace = id => {
 
 const isAPlace = place => place && contactTypesUtils.isPlace(config.get(), place);
 const getContactType = place => place && contactTypesUtils.getContactType(config.get(), place);
+const err = (msg, code) => {
+  return Promise.reject({
+    code: code || 400,
+    message: msg
+  });
+};
 
 /*
  * Validate the basic data structure for a place.  Not checking against the
@@ -36,12 +42,6 @@ const getContactType = place => place && contactTypesUtils.getContactType(config
  *     fetchHydratedDoc().
  */
 const validatePlace = place => {
-  const err = (msg, code) => {
-    return Promise.reject({
-      code: code || 400,
-      message: msg
-    });
-  };
   if (!_.isObject(place)) {
     return err('Place must be an object.');
   }
@@ -84,43 +84,39 @@ const validatePlace = place => {
 };
 
 const preparePlaceContact = async contact => {
-  contact.type = contact.type || people._getDefaultPersonType();
-  const errStr = people._validatePerson(contact);
-  if (errStr) {
-    return Promise.reject({
-      code: 400,
-      message: errStr
-    });
+  if (!contact) {
+    return {};
   }
-  return contact;
+  if (_.isString(contact)) {
+    const person = await people.getOrCreatePerson(contact);
+    return { exists: true, contact: person };
+  }
+  if (_.isObject(contact)) {
+    contact.type = contact.type || people._getDefaultPersonType();
+    const errStr = people._validatePerson(contact);
+    if (errStr) {
+      return err(errStr);
+    }
+    return { exists: false, contact: contact };
+  }
 };
 
 const createPlace = async (place) => {
   await module.exports._validatePlace(place);
-  let contact = place.contact;
+  const { exists, contact } = await preparePlaceContact(place.contact);
   delete place.contact;
-
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
   place.reported_date = date.valueOf();
   if (place.parent) {
     place.parent = lineage.minifyLineage(place.parent);
   }
-
   if (!contact) {
     return await db.medic.post(place);
   }
-
-  if (_.isString(contact)) {
-    const person = await people.getOrCreatePerson(contact);
-    place.contact = person._id;
+  if (exists) {
+    place.contact = contact._id;
     return await db.medic.post(place);
   }
-
-  if (!_.isObject(contact)) {
-    return Promise.reject({ code: 400 });
-  }
-
-  contact = await preparePlaceContact(contact);
   const placeResponse = await db.medic.post(place);
   contact.place = placeResponse.id;
   const person = await people.getOrCreatePerson(contact);
