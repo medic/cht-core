@@ -1,0 +1,46 @@
+#!/bin/bash
+
+function usage() {
+  echo "Usage: $0 <namespace>"
+  echo
+  echo "This script saves logs from all pods within the specified namespace into local files and then creates a tar.gz archive of these logs."
+  echo
+  echo "Arguments:"
+  echo "  namespace   - The namespace from which to retrieve and archive pod logs."
+  echo
+  echo "Example: $0 mynamespace"
+  exit 1
+}
+
+if [ "$#" -ne 1 ]; then
+  usage
+fi
+
+NAMESPACE=$1
+
+mkdir -p "$NAMESPACE-logs"
+if [ $? -ne 0 ]; then
+  echo "Failed to create directory for logs."
+  exit 1
+fi
+
+# Get a list of all pod names in the namespace
+PODS=$(kubectl -n $NAMESPACE get pods -o jsonpath="{.items[*].metadata.name}")
+
+if [ -z "$PODS" ]; then
+  echo "No Pods found in Namespace $NAMESPACE."
+  rm -rf "$NAMESPACE-logs"
+  exit 1
+fi
+
+# Loop through all pod names and fetch logs, saving them to individual files
+for POD in $PODS; do
+  kubectl -n $NAMESPACE logs $POD > "$NAMESPACE-logs/$POD.log"
+done
+
+# Create a tar.gz archive of the log files
+tar -czf "$NAMESPACE-logs.tar.gz" -C "$NAMESPACE-logs" .
+
+rm -rf "$NAMESPACE-logs"
+
+echo "Logs archived in $NAMESPACE-logs.tar.gz"
