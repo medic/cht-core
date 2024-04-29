@@ -1,41 +1,43 @@
-#!/bin/bash
+#!/usr/bin/env node
 
-# Check if Python is installed
-if ! command -v python3 &> /dev/null ; then
-    echo "Python is not installed. Please install Python 3."
-    exit 1
-fi
+const { install } = require('./src/install');
+const fs = require('fs');
 
-# Check if pip is installed
-if ! command -v pip3 &> /dev/null ; then
-    echo "pip is not installed. Please install pip for Python 3."
-    exit 1
-fi
+function validateArguments() {
+    const args = process.argv.slice(2);
+    if (args.length < 2 || args[0] !== '-f' || !args[1]) {
+        console.error('No values file provided. Please specify a values file using -f <file>');
+        process.exit(1);
+    }
+    return args;
+}
 
-# Check if Invoke is installed
-if ! python3 -c "import invoke" &> /dev/null ; then
-    echo "Invoke is not installed. Installing it..."
-    pip3 install invoke --quiet
-fi
+function validateFileExists(filePath) {
+    try {
+        fs.accessSync(filePath);
+    } catch (err) {
+        console.error(`File not found: ${filePath}`);
+        process.exit(1);
+    }
+}
 
-# Check if PyYAML is installed
-if ! python3 -c "import yaml" &> /dev/null ; then
-    echo "PyYAML is not installed. Installing it..."
-    pip3 install PyYAML --quiet
-fi
+async function runInstallScript(args) {
+    try {
+        const valuesFilePath = args[1];
+        await install(valuesFilePath);
+    } catch (err) {
+        console.error('Error executing the install script:');
+        console.error(err.message);
+        process.exit(1);
+    }
+}
 
-# Check if requests is installed
-if ! python3 -c "import requests" &> /dev/null ; then
-    echo "Requests is not installed. Installing it..."
-    pip3 install requests --quiet
-fi
+async function main() {
+    const args = validateArguments();
+    validateFileExists(args[1]);
+    await runInstallScript(args);
+}
 
-# Validate that -f argument is provided
-if [[ $1 != "-f" || -z $2 ]]; then
-    echo "No values file provided. Please specify a values file using -f <file>"
-    exit 1
-fi
-
-# Pass command line arguments to invoke script
-# shellcheck disable=SC2068 # wontfix script will be replaced "soon"
-invoke install $@
+main().catch((err) => {
+    console.error('An error occurred:', err.message);
+});
