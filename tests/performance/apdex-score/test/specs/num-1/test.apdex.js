@@ -14,9 +14,10 @@ describe('Apdex Performance Workflows', () => {
   before(async () => {
     const settingsProvider = loadSettings();
     const instanceUrl = settingsProvider.getInstanceURL();
+    const hasPrivacyPolicy = instanceUrl.hasPrivacyPolicy();
     const user = settingsProvider.getUser('offline', 'chw');
     await LoadPage.loadInstance(instanceUrl);
-    await LoginPage.login(user.username, user.password);
+    await LoginPage.login(user.username, user.password, hasPrivacyPolicy);
   });
 
   it('should submit a report for a newly created person', async () => {

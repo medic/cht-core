@@ -19,19 +19,14 @@ class LoginPage extends Page {
     return $('//*[@text="Accept"]');
   }
 
-  async login (username, password) {
+  async login (username, password, hasPrivacyPolicy) {
     await this.inputUsername.waitForDisplayed();
     await this.inputUsername.setValue(username);
     await this.inputPassword.setValue(password);
     await this.btnLogin.click();
-  }
-
-  async loginTG (username, password) {
-    await this.inputUsername.waitForDisplayed();
-    await this.inputUsername.setValue(username);
-    await this.inputPassword.setValue(password);
-    await this.btnLogin.click();
-    await super.clickDisplayedElem(this.btnAccept);
+    if (hasPrivacyPolicy) {
+      await super.clickDisplayedElem(this.btnAccept);
+    }
   }
 
 }

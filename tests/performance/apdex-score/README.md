@@ -7,7 +7,8 @@
 3. Create a settings file:
 ```
 {
-  "instanceURL": "<instance_url>",
+  "instanceURL": "<instance-url>",
+  "hasPrivacyPolicy": true,
   "capabilities": [
     {
       "platformVersion": "<android-version>",
