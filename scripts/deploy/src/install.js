@@ -119,9 +119,11 @@ function helmInstallOrUpdate(valuesFile, namespace, values, image_tag) {
             console.log("Release exists. Performing upgrade.");
             execSync(
                 `helm upgrade --install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
+            console.log(`Instance at ${values.ingress.host} upgraded successfully.`);
         } else {
             console.log("Release does not exist. Performing install.");
             execSync(`helm install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
+            console.log(`Instance at ${values.ingress.host} installed successfully.`);
         }
     } catch (err) {
         console.error(err.message);
