@@ -1,0 +1,24 @@
+{
+  "name": "cht-deploy",
+  "version": "1.0.0",
+  "description": "## Deploy the CHT",
+  "main": "cht-deploy",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@kubernetes/client-node": "^0.19.0",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "js-yaml": "^4.1.0"
+  }
+}
