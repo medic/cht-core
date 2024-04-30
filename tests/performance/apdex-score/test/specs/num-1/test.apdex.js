@@ -14,6 +14,7 @@ const { $ } = require('@wdio/globals');
 describe('Apdex Performance Workflows', () => {
   let settingsProvider;
   const TIME_OUT = 1000 * 60 * 20;
+  const REPETITIONS = 2;
 
   before(async () => {
     settingsProvider = loadSettings();
@@ -24,42 +25,69 @@ describe('Apdex Performance Workflows', () => {
     await LoginPage.login(user.username, user.password, hasPrivacyPolicy);
   });
 
-  const waitForDisplayedAndRetry = async (elementPromise, retryTotal = 5, retryCount = 0) => {
-    return (await $(elementPromise))
+  const waitForDisplayedAndRetry = async (selector, retryTotal = 5, retryCount = 0) => {
+    return (await $(selector))
       .waitForDisplayed({ timeout: TIME_OUT })
       .catch(() => {
         if (retryCount >= retryTotal) {
           return;
         }
-        return waitForDisplayedAndRetry(elementPromise, retryTotal, retryCount + 1);
+        return waitForDisplayedAndRetry(selector, retryTotal, retryCount + 1);
       });
   };
 
-  const navigateAndAssert = async (navigation, assertValue) => {
-    for (const page of navigation) {
-      if (await waitForDisplayedAndRetry(page.selector)) {
-        await (await $(page.selector)).click();
-      }
-    }
-    return waitForDisplayedAndRetry(assertValue.selector);
+  const scrollView = () => {
+    return $('android=new UiScrollable(new UiSelector().scrollable(true)).scrollToEnd(1)');
   };
 
-  const navigate = async (navigation) => {
-    for (const page of navigation) {
-      if (await waitForDisplayedAndRetry(page.selector)) {
-        await (await $(page.selector)).click();
+  const assertMany = async (asserts = []) => {
+    for (const assert of asserts) {
+      if (assert.scrollTo) {
+        await scrollView().catch(() => console.log('ignore'));
       }
+      await waitForDisplayedAndRetry(assert.selector);
     }
   };
 
-  for (let i = 0; i < 40; i++) {
+  const navigate = async (navigation = []) => {
+    for (const navStep of navigation) {
+      if (navStep.scrollTo) {
+        await scrollView().catch(() => console.log('ignore'));
+      }
+
+      if (await waitForDisplayedAndRetry(navStep.selector)) {
+        await (await $(navStep.selector)).click();
+      }
+
+      if (navStep.asserts) {
+        await assertMany(navStep.asserts);
+      }
+    }
+  };
+
+  for (let i = 0; i < REPETITIONS; i++) {
     it('should load contact list', async () => {
       const page = settingsProvider.getPage('contact-list');
-      await navigateAndAssert(page.navigation, page.assert);
+      await navigate(page.navigation, page.asserts);
+      await navigate(page.postTestPath);
+    });
 
-      // load another page to load contact list again in next iteration
-      const pageTargets = settingsProvider.getPage('targets');
-      await navigate(pageTargets.navigation);
+    it('should load CHW area', async () => {
+      const page = settingsProvider.getPage('chw-area');
+      await navigate(page.navigation, page.asserts);
+      await navigate(page.postTestPath);
+    });
+
+    it('should load Household', async () => {
+      const page = settingsProvider.getPage('household');
+      await navigate(page.navigation, page.asserts);
+      await navigate(page.postTestPath);
+    });
+
+    it('should load patient', async () => {
+      const page = settingsProvider.getPage('patient');
+      await navigate(page.navigation, page.asserts);
+      await navigate(page.postTestPath);
     });
   }
 
