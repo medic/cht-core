@@ -75,6 +75,7 @@
     "@angular/compiler": "^17.3.2",
     "@angular/compiler-cli": "^17.3.2",
     "@angular/localize": "^17.3.2",
+    "@commitlint/config-conventional": "^19.2.2",
     "@faker-js/faker": "^8.0.2",
     "@medic/eslint-config": "^1.1.0",
     "@types/chai": "^4.3.6",
