@@ -49,24 +49,6 @@ function determineNamespace(values) {
     return namespace;
 }
 
-function checkNamespaceExists(namespace) {
-    try {
-        execSync(`kubectl get namespace ${namespace}`, { stdio: 'inherit' });
-    } catch (err) {
-        console.log(`Namespace ${namespace} does not exist. Creating the namespace.`);
-        const namespaceManifest = `
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ${namespace}
-`;
-        const scriptDir = __dirname;
-        fs.writeFileSync(`${scriptDir}/helm/namespace.yaml`, namespaceManifest);
-        execSync(`kubectl apply -f ${scriptDir}/helm/namespace.yaml`, { stdio: 'inherit' });
-        fs.unlinkSync(`${scriptDir}/helm/namespace.yaml`);
-    }
-}
-
 async function obtainCertificateAndKey(values) {
     console.log("Obtaining certificate...");
     const certSource = values.cert_source || '';
@@ -122,7 +104,7 @@ function helmInstallOrUpdate(valuesFile, namespace, values, image_tag) {
             console.log(`Instance at ${values.ingress.host} upgraded successfully.`);
         } else {
             console.log("Release does not exist. Performing install.");
-            execSync(`helm install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
+            execSync(`helm install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --create-namespace --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
             console.log(`Instance at ${values.ingress.host} installed successfully.`);
         }
     } catch (err) {
@@ -151,7 +133,6 @@ async function install(f) {
     prepare(f);
     const values = loadValues(f);
     const namespace = determineNamespace(values);
-    checkNamespaceExists(namespace);
     if (values.cluster_type === 'k3s-k3d') {
         await obtainCertificateAndKey(values);
         createSecret(namespace, values);
