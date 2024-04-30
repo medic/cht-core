@@ -104,7 +104,7 @@ const preparePlaceContact = async contact => {
 
 const createPlace = async (place) => {
   await module.exports._validatePlace(place);
-  const { exists, contact } = await preparePlaceContact(place.contact);
+  const { exists: contactExists, contact } = await preparePlaceContact(place.contact);
   delete place.contact;
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
   place.reported_date = date.valueOf();
@@ -114,7 +114,7 @@ const createPlace = async (place) => {
   if (!contact) {
     return await db.medic.post(place);
   }
-  if (exists) {
+  if (contactExists) {
     place.contact = contact._id;
     return await db.medic.post(place);
   }
