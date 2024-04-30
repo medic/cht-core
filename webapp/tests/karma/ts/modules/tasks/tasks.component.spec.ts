@@ -3,7 +3,6 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
-import * as moment from 'moment';
 import sinon from 'sinon';
 
 import { ChangesService } from '@mm-services/changes.service';
@@ -26,7 +25,6 @@ describe('TasksComponent', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let contactTypesService;
-  let clock;
   let store;
   let sessionService;
   let userContactService;
@@ -99,7 +97,6 @@ describe('TasksComponent', () => {
   afterEach(() => {
     store.resetSelectors();
     sinon.restore();
-    clock?.restore();
   });
 
   it('should ngOnDestroy should unsubscribe and clear state', async () => {
@@ -163,32 +160,54 @@ describe('TasksComponent', () => {
   });
 
   it('tasks render', async () => {
-    const now = moment('2020-10-20');
-    const futureDate = now.clone().add(3, 'days');
-    const pastDate = now.clone().subtract(3, 'days');
-    clock = sinon.useFakeTimers(now.valueOf());
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
+      {
+        _id: '1',
+        owner: 'a',
+        emission: {
+          _id: 'e1',
+          dueDate: '2030-10-24',
+          date: new Date('2023-10-24T17:00:00.000Z'),
+          overdue: false,
+          owner: 'a',
+        },
+      },
+      {
+        _id: '2',
+        owner: 'b',
+        emission: {
+          _id: 'e2',
+          dueDate: '2023-10-24',
+          date: new Date('2023-10-24T17:00:00.000Z'),
+          overdue: true,
+          owner: 'b',
+        },
+      },
     ];
     const expectedTasks = [
       {
         _id: 'e1',
-        dueDate: futureDate.format('YYYY-MM-DD'),
+        dueDate: '2030-10-24',
+        date: new Date('2023-10-24T17:00:00.000Z'),
         overdue: false,
-        date: new Date(futureDate.valueOf()),
         owner: 'a',
+        lineage: [ 'lineage-a' ]
       },
       {
         _id: 'e2',
-        dueDate: pastDate.format('YYYY-MM-DD'),
+        dueDate: '2023-10-24',
+        date: new Date('2023-10-24T17:00:00.000Z'),
         overdue: true,
-        date: new Date(pastDate.valueOf()),
         owner: 'b',
+        lineage: [ 'lineage-b' ]
       },
     ];
-
     rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+    lineageModelGeneratorService.reportSubjects.resolves([
+      { _id: 'a', lineage: [ { name: 'lineage-a' } ] },
+      { _id: 'b', lineage: [ { name: 'lineage-b' } ] },
+    ]);
+
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
@@ -311,8 +330,30 @@ describe('TasksComponent', () => {
       },
     };
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+      {
+        _id: '1',
+        forId: 'a',
+        owner: 'a',
+        emission: {
+          _id: 'e1',
+          dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
+          overdue: true,
+          owner: 'a',
+        },
+      },
+      {
+        _id: '2',
+        forId: 'b',
+        owner: 'b',
+        emission: {
+          _id: 'e2',
+          dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
+          overdue: true,
+          owner: 'b',
+        },
+      },
     ];
     const taskLineages = [
       {
@@ -341,7 +382,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: moment('2020-10-20').toDate(),
+          date: new Date('2020-10-20T17:00:00.000Z'),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
@@ -349,8 +390,8 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
@@ -374,7 +415,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: moment('2020-10-20').toDate(),
+          date: new Date('2020-10-20T17:00:00.000Z'),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
@@ -382,8 +423,8 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
@@ -407,7 +448,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: moment('2020-10-20').toDate(),
+          date: new Date('2020-10-20T17:00:00.000Z'),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
@@ -415,8 +456,8 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
+          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',

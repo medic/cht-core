@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: couchdb-servers-configmap
+data:
+  {{- $servers := list -}}
+  {{- range $i, $e := until 3 }}
+  {{- $nodeNumber := add $i 1 }}
+  {{- $servers = append $servers (printf "couchdb-%d.%s.svc.cluster.local" $nodeNumber $.Values.namespace) -}}
+  {{- end }}
+  COUCHDB_SERVERS: {{ join "," $servers }}
+  COUCHDB_SYNC_ADMINS_NODE: couchdb-1.{{ $.Values.namespace }}.svc.cluster.local
+  {{- $ips := list -}}
+  {{- range $j, $e := until 2 }}
+  {{- $nodeNumber := add $j 2 }}
+  {{- $ips = append $ips (printf "couchdb-%d.%s.svc.cluster.local" $nodeNumber $.Values.namespace) -}}
+  {{- end }}
+  CLUSTER_PEER_IPS: {{ join "," $ips }}
