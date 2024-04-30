@@ -1,0 +1,16 @@
+name: Conventional commits
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+jobs:
+  lint_pr_title:
+    name: Lint PR title
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Run
+        run: npx --no-install commitlint <<< "${{ github.event.pull_request.title }}"
