@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { execSync } = require('child_process');
-const axios = require('axios');
+const fetch = require('node-fetch');
 const yaml = require('js-yaml');
 const path = require('path');
 
@@ -61,10 +61,12 @@ async function obtainCertificateAndKey(values) {
         fs.copyFileSync(crtFilePath, 'certificate.crt');
         fs.copyFileSync(keyFilePath, 'private.key');
     } else if (certSource === 'my-ip-co') {
-        const crtResponse = await axios.get('https://local-ip.medicmobile.org/fullchain');
-        const keyResponse = await axios.get('https://local-ip.medicmobile.org/key');
-        fs.writeFileSync('certificate.crt', crtResponse.data);
-        fs.writeFileSync('private.key', keyResponse.data);
+        const crtResponse = await fetch('https://local-ip.medicmobile.org/fullchain');
+        const crtData = await crtResponse.text();
+        const keyResponse = await fetch('https://local-ip.medicmobile.org/key');
+        const keyData = await keyResponse.text();
+        fs.writeFileSync('certificate.crt', crtData);
+        fs.writeFileSync('private.key', keyData);
     } else if (certSource !== 'eks-medic') {
         throw new UserRuntimeError("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'");
     }
@@ -84,8 +86,8 @@ function createSecret(namespace, values) {
 }
 
 async function get_image_tag(chtversion) {
-    const response = await axios.get(`https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${chtversion}`);
-    const data = response.data;
+    const response = await fetch(`https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${chtversion}`);
+    const data = await response.json();
     const tag = data.tags.find(tag => tag.container_name === 'cht-api');
     if (!tag) throw new Error('cht image tag not found');
     return tag.image.split(':').pop();
