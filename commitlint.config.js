@@ -1,1 +1,2 @@
-module.exports = {extends: ['@commitlint/config-conventional']}
+/* eslint-env node */
+module.exports = {extends: ['@commitlint/config-conventional']};
