@@ -1,3 +1,5 @@
+const loadSettings = require('./settings-provider');
+
 exports.config = {
   //
   // ====================
@@ -61,8 +63,8 @@ exports.config = {
 
   capabilities: [{
     'appium:platformName': 'Android',
-    'appium:platformVersion': process.env.SAFARICOM_VERSION,
-    'appium:deviceName': process.env.SAFARICOM_NAME,
+    'appium:platformVersion': '',
+    'appium:deviceName': '',
     'appium:autoGrantPermissions': true,
     'appium:allowInvisibleElements': true,
     'appium:disableIdLocatorAutocompletion': true,
@@ -169,8 +171,20 @@ exports.config = {
    * @param {object} config wdio configuration object
    * @param {Array.<Object>} capabilities list of capabilities details
    */
-  // onPrepare: function (config, capabilities) {
-  // },
+  onPrepare: function (config, capabilities) {
+    try {
+      loadSettings()
+        .getCapabilitiesSettings()
+        ?.forEach((capabilitySettings, index) => {
+          const capability = capabilities[index];
+          capability['appium:platformVersion'] = capabilitySettings.platformVersion;
+          capability['appium:deviceName'] = capabilitySettings.deviceName;
+        });
+
+    } catch (error) {
+      console.error('ERROR: Loading settings for capabilities.', error.message || error);
+    }
+  },
   /**
    * Gets executed before a worker process is spawned and can be used to initialize specific service
    * for that worker as well as modify runtime environments in an async fashion.
