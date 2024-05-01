@@ -9,6 +9,7 @@ const objectPath = require('object-path');
 const moment = require('moment');
 const toBikramSambatLetters = require('bikram-sambat').toBik_text;
 const phoneNumber = require('@medic/phone-number');
+const logger = require('@medic/logger');
 const SMS_TRUNCATION_SUFFIX = '...';
 
 const getParent = function(doc, type) {
@@ -361,7 +362,7 @@ exports.template = function(config, translate, doc, content, extraContext) {
  * a `translation_key` property with a string.
  * Use locale if found otherwise defaults to 'en'.
  */
-exports.getMessage = function(configuration, translate, locale, logger) {
+exports.getMessage = function(configuration, translate, locale) {
   if (!configuration) {
     return '';
   }
@@ -374,11 +375,11 @@ exports.getMessage = function(configuration, translate, locale, logger) {
   // otherwise, use the configured messages (deprecated)
   const messages = configuration.messages || configuration.message;
   if (!_.isArray(messages)) {
-    logger && logger.warn('Message property should be an array. Please check your configuration.');
+    logger.warn('Message property should be an array. Please check your configuration.');
     return messages || '';
   }
   if (!messages.length) {
-    logger && logger.warn('Message property array was empty. Please check your configuration.');
+    logger.warn('Message property array was empty. Please check your configuration.');
     return '';
   }
   // default to first item in messages array in case locale match fails

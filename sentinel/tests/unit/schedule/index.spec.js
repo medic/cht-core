@@ -6,7 +6,7 @@ const moment = require('moment');
 
 const scheduling = require('../../../src/lib/scheduling');
 const config = require('../../../src/config');
-const logger = require('../../../src/lib/logger');
+const logger = require('@medic/logger');
 const transitionsLib = config.getTransitionsLib();
 const reminders = require('../../../src/schedule/reminders');
 const replications = require('../../../src/schedule/replications');

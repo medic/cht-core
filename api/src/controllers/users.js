@@ -3,7 +3,7 @@ const db = require('../db');
 const config = require('../config');
 const { bulkUploadLog, roles, users } = require('@medic/user-management')(config, db);
 const auth = require('../auth');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const serverUtils = require('../server-utils');
 const replication = require('../services/replication');
 

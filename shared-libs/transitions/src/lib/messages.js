@@ -4,7 +4,7 @@ const messageUtils = require('@medic/message-utils');
 const utils = require('./utils');
 const config = require('../config');
 const history = require('./history');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 
 const messageStatus = (from, msg) => {
   let status = 'denied';

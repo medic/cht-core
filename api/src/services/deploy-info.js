@@ -1,7 +1,7 @@
 const db = require('../db');
 const environment = require('../environment');
 const ddocs = require('./setup/ddocs');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const semver = require('semver');
 
 let deployInfoCache;

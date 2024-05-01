@@ -1,0 +1,17 @@
+{
+  "name": "@medic/logger",
+  "version": "1.0.0",
+  "description": "Customized winston logger for CHT-Core",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "winston": "^3.13.0"
+  }
+}
