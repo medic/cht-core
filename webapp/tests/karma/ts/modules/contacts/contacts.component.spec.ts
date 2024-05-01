@@ -1170,7 +1170,7 @@ describe('Contacts component', () => {
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             const searchResults: { _id: string }[] = [];
-            Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
+            Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: String(i) }));
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(false);
@@ -1207,7 +1207,7 @@ describe('Contacts component', () => {
             'does require refreshing when sorting is `last_visited_date` and visit report is received',
             fakeAsync(() => {
               const searchResults: { _id: string }[] = [];
-              Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
+              Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: String(i) }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               authService.has.resolves(false);
