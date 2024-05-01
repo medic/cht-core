@@ -26,7 +26,6 @@ describe('mark for outbound', () => {
 
       sinon.stub(db.sentinel, 'put');
       sinon.stub(db.sentinel, 'get');
-      stub(db.sentinel, 'set');
       stub(outbound, 'send');
     });
 

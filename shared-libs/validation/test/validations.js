@@ -2,14 +2,13 @@ const moment = require('moment');
 const rewire = require('rewire');
 const sinon = require('sinon');
 const assert = require('chai').assert;
-
 const validation = rewire('../src/validation');
+const logger = require('@medic/logger');
 
 let clock;
 let db;
 let config;
 let translate;
-const logger = console;
 
 const stubMe = (functionName) => {
   logger.error(new Error(
@@ -24,8 +23,9 @@ describe('validations', () => {
     db = { medic: { query: () => stubMe('query'), allDocs: () => stubMe('allDocs') } };
     config = {};
     translate = sinon.stub().returnsArg(0);
+    sinon.stub(logger, 'debug');
 
-    validation.init({ db, config, translate, logger });
+    validation.init({ db, config, translate });
   });
   afterEach(() => {
     if (clock) {

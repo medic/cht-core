@@ -6,6 +6,8 @@ const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const db = require('../../src/db');
+const logger = require('@medic/logger');
+const { stub } = require('sinon');
 
 let transitionUtils;
 let transition;
@@ -19,6 +21,8 @@ const getMessage = doc => {
 
 describe('pregnancy registration with weeks since LMP', () => {
   beforeEach(() => {
+    sinon.stub(logger, 'debug');
+
     config.init({
       getAll: sinon.stub().returns({}),
       get: sinon.stub().returns([{
