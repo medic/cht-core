@@ -7,7 +7,6 @@ const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const db = require('../../src/db');
 const logger = require('@medic/logger');
-const { stub } = require('sinon');
 
 let transitionUtils;
 let transition;
