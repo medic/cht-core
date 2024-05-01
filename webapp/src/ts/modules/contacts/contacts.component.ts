@@ -34,14 +34,14 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private globalActions: GlobalActions;
   private contactsActions: ContactsActions;
   private listContains;
-  private destroyed: boolean;
-  private isOnlineOnly: boolean;
+  private destroyed?: boolean;
+  private isOnlineOnly?: boolean;
 
-  fastActionList: FastAction[];
+  fastActionList?: FastAction[];
   contactsList;
   loading = false;
   error;
-  appending: boolean;
+  appending?: boolean;
   hasContacts = true;
   filters: Filter = {};
   defaultFilters: Filter = {};
@@ -56,7 +56,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
   useSearchNewDesign = true;
-  enketoEdited: boolean;
+  enketoEdited?: boolean;
   selectedContact;
 
   constructor(

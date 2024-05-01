@@ -32,12 +32,12 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter: ReportsSidebarFilterComponent;
+  @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter?: ReportsSidebarFilterComponent;
 
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
   private listContains;
-  private destroyed: boolean;
+  private destroyed?: boolean;
   private isOnlineOnly = false;
   private canDefaultFilter = false;
   private trackInitialLoadPerformance;
@@ -47,22 +47,22 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedReport;
   selectedReports;
   forms;
-  error: boolean;
-  errorSyntax: boolean;
+  error?: boolean;
+  errorSyntax?: boolean;
   loading = true;
   appending = false;
-  moreItems: boolean;
+  moreItems?: boolean;
   filters: Filter = {};
-  hasReports: boolean;
+  hasReports?: boolean;
   selectMode = false;
   selectModeAvailable = false;
-  showContent: boolean;
-  enketoEdited: boolean;
+  showContent?: boolean;
+  enketoEdited?: boolean;
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
   isExporting = false;
   userParentPlace;
-  fastActionList: FastAction[];
+  fastActionList?: FastAction[];
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -354,7 +354,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private doInitialSearch() {
     if (this.canDefaultFilter && this.userParentPlace?._id) {
       // The facility filter will trigger the search.
-      this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace });
+      this.reportsSidebarFilter?.setDefaultFacilityFilter({ facility: this.userParentPlace });
       return;
     }
 

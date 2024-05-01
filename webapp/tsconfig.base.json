@@ -32,7 +32,9 @@
     },
     "strictNullChecks": true,
     "alwaysStrict": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

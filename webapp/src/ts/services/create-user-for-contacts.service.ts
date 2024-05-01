@@ -9,7 +9,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
   providedIn: 'root'
 })
 export class CreateUserForContactsService {
-  private currentUsername: string;
+  private currentUsername!: string;
 
   constructor(
     private settingsService: SettingsService,
