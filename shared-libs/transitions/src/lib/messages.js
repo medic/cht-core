@@ -92,7 +92,7 @@ module.exports = {
      * a `translation_key` property with a string.
      */
   getMessage: (configuration, locale) => {
-    return messageUtils.getMessage(configuration, utils.translate, locale, logger);
+    return messageUtils.getMessage(configuration, utils.translate, locale);
   },
   /*
      * Return true when the recipient phone is not denied.
