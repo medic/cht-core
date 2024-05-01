@@ -11,6 +11,7 @@ const toBikramSambatLetters = require('bikram-sambat').toBik_text;
 const phoneNumber = require('@medic/phone-number');
 const logger = require('@medic/logger');
 const SMS_TRUNCATION_SUFFIX = '...';
+const DEFAULT_LOCALE = 'en';
 
 const getParent = function(doc, type) {
   let facility = doc.parent ? doc : doc.contact;
@@ -175,7 +176,7 @@ const getLocale = function(config, doc) {
           (doc.sms_message && doc.sms_message.locale) ||
           config.locale_outgoing ||
           config.locale ||
-          'en';
+          DEFAULT_LOCALE;
 };
 
 const extractTemplateContext = function(doc) {
@@ -356,6 +357,21 @@ exports.template = function(config, translate, doc, content, extraContext) {
   return render(config, template, context, locale);
 };
 
+const getMessageLegacy = (configuration, locale) => {
+  // otherwise, use the configured messages (deprecated)
+  const messages = configuration.messages || configuration.message;
+  locale = locale || DEFAULT_LOCALE;
+
+  if (!_.isArray(messages) || !messages.length) {
+    logger.warn('Message property should be an array. Please check your configuration.');
+    return messages;
+  }
+
+  // default to first item in messages array in case locale match fails
+  const message = _.find(messages, { locale: locale }) || messages[0];
+  return message?.content.trim();
+};
+
 /*
  * Take message configuration and return message content. The configuration
  * should have either a `messages` property with an array of messages, or
@@ -372,19 +388,7 @@ exports.getMessage = function(configuration, translate, locale) {
     return translate(translationKey, locale);
   }
 
-  // otherwise, use the configured messages (deprecated)
-  const messages = configuration.messages || configuration.message;
-  if (!_.isArray(messages)) {
-    logger.warn('Message property should be an array. Please check your configuration.');
-    return messages || '';
-  }
-  if (!messages.length) {
-    logger.warn('Message property array was empty. Please check your configuration.');
-    return '';
-  }
-  // default to first item in messages array in case locale match fails
-  const message = _.find(messages, { locale: locale || 'en' }) || messages[0];
-  return (message.content && message.content.trim()) || '';
+  return getMessageLegacy(configuration, locale) || '';
 };
 
 /**
