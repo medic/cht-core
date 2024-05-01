@@ -27,11 +27,6 @@ process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
-const ip = () => {
-  const section = () => (Math.floor(Math.random() * 255) + 1);
-  return `${section()}.${section()}.${section()}.${section()}`;
-};
-
 let originalSettings;
 let dockerVersion;
 let infrastructure = 'docker';
@@ -174,9 +169,6 @@ const request = async (options, { debug } = {}) => { //NOSONAR
   if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
     await getSession();
     options.jar = cookieJar;
-  } else {
-    options.headers = options.headers || {};
-    options.headers['X-Forwarded-For'] = ip();
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
