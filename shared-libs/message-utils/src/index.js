@@ -10,6 +10,7 @@ const moment = require('moment');
 const toBikramSambatLetters = require('bikram-sambat').toBik_text;
 const phoneNumber = require('@medic/phone-number');
 const logger = require('@medic/logger');
+const { array } = require('jsverify');
 const SMS_TRUNCATION_SUFFIX = '...';
 const DEFAULT_LOCALE = 'en';
 
@@ -357,19 +358,22 @@ exports.template = function(config, translate, doc, content, extraContext) {
   return render(config, template, context, locale);
 };
 
-const getMessageLegacy = (configuration, locale) => {
-  // otherwise, use the configured messages (deprecated)
+const getMessageLegacy = (configuration, locale = DEFAULT_LOCALE) => {
+  // use the configured messages (deprecated)
   const messages = configuration.messages || configuration.message;
-  locale = locale || DEFAULT_LOCALE;
 
-  if (!_.isArray(messages) || !messages.length) {
+  if (!messages || !messages.length) {
     logger.warn('Message property should be an array. Please check your configuration.');
+    return '';
+  }
+
+  if (!Array.isArray(messages)) {
     return messages;
   }
 
   // default to first item in messages array in case locale match fails
   const message = _.find(messages, { locale: locale }) || messages[0];
-  return message?.content.trim();
+  return message?.content?.trim();
 };
 
 /*
