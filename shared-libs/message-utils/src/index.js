@@ -10,7 +10,6 @@ const moment = require('moment');
 const toBikramSambatLetters = require('bikram-sambat').toBik_text;
 const phoneNumber = require('@medic/phone-number');
 const logger = require('@medic/logger');
-const { array } = require('jsverify');
 const SMS_TRUNCATION_SUFFIX = '...';
 const DEFAULT_LOCALE = 'en';
 
