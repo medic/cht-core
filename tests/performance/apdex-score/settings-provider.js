@@ -7,6 +7,10 @@ const getInstanceURL = () => {
   return SETTINGS_CACHE?.instanceURL;
 };
 
+const getIterations = () => {
+  return SETTINGS_CACHE?.iterations;
+};
+
 const hasPrivacyPolicy = () => {
   return !!SETTINGS_CACHE?.hasPrivacyPolicy;
 };
@@ -24,6 +28,7 @@ const getPage = (name) => {
 };
 
 const settingsProvider = {
+  getIterations,
   getInstanceURL,
   hasPrivacyPolicy,
   getCapabilitiesSettings,

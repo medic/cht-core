@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+const { $ } = require('@wdio/globals');
+const { execSync } = require('child_process');
+
 const loadSettings = require('../../../settings-provider');
 
 const LoadPage = require('../../pageobjects/load.page');
@@ -9,15 +12,13 @@ const TasksPage = require('../../pageobjects/tasks.page');
 const MessagesPage = require('../../pageobjects/messages.page');
 const ReportsPage = require('../../pageobjects/reports.page');
 const PerformancePage = require('../../pageobjects/performance.page');
-const { $ } = require('@wdio/globals');
 
 describe('Apdex Performance Workflows', () => {
-  let settingsProvider;
   const TIME_OUT = 1000 * 60 * 20;
-  const REPETITIONS = 2;
+  const settingsProvider = loadSettings();
+  const REPETITIONS = settingsProvider.getIterations();
 
   before(async () => {
-    settingsProvider = loadSettings();
     const instanceUrl = settingsProvider.getInstanceURL();
     const hasPrivacyPolicy = settingsProvider.hasPrivacyPolicy();
     const user = settingsProvider.getUser('offline', 'chw');
@@ -25,34 +26,51 @@ describe('Apdex Performance Workflows', () => {
     await LoginPage.login(user.username, user.password, hasPrivacyPolicy);
   });
 
-  const waitForDisplayedAndRetry = async (selector, retryTotal = 5, retryCount = 0) => {
-    return (await $(selector))
-      .waitForDisplayed({ timeout: TIME_OUT })
-      .catch(() => {
-        if (retryCount >= retryTotal) {
-          return;
-        }
-        return waitForDisplayedAndRetry(selector, retryTotal, retryCount + 1);
-      });
+  const waitForDisplayedAndRetry = async (selector, retryTotal = 20, retryCount = 0) => {
+    try {
+      return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
+    } catch (error) {
+      if (retryCount >= retryTotal) {
+        return false;
+      }
+      return await waitForDisplayedAndRetry(selector, retryTotal, retryCount + 1);
+    }
   };
 
-  const scrollView = () => {
-    return $('android=new UiScrollable(new UiSelector().scrollable(true)).scrollToEnd(1)');
+  const scrollDown = (swipes = 0) => {
+    for (let i = 0; i < swipes; i++) {
+      execSync('adb shell input swipe 500 1000 300 300');
+    }
+  };
+
+  const scrollUp = (swipes = 0) => {
+    for (let i = 0; i < swipes; i++) {
+      execSync('adb shell input swipe 300 300 500 1000');
+    }
   };
 
   const assertMany = async (asserts = []) => {
     for (const assert of asserts) {
-      if (assert.scrollTo) {
-        await scrollView().catch(() => console.log('ignore'));
+      if (assert.scrollDown) {
+        scrollDown(assert.scrollDown);
       }
+
+      if (assert.scrollUp) {
+        scrollUp(assert.scrollUp);
+      }
+
       await waitForDisplayedAndRetry(assert.selector);
     }
   };
 
   const navigate = async (navigation = []) => {
     for (const navStep of navigation) {
-      if (navStep.scrollTo) {
-        await scrollView().catch(() => console.log('ignore'));
+      if (navStep.scrollDown) {
+        scrollDown(navStep.scrollDown);
+      }
+
+      if (navStep.scrollUp) {
+        scrollUp(navStep.scrollUp);
       }
 
       if (await waitForDisplayedAndRetry(navStep.selector)) {
@@ -69,25 +87,33 @@ describe('Apdex Performance Workflows', () => {
     it('should load contact list', async () => {
       const page = settingsProvider.getPage('contact-list');
       await navigate(page.navigation, page.asserts);
-      await navigate(page.postTestPath);
+      if (page.postTestPath) {
+        await navigate(page.postTestPath);
+      }
     });
 
     it('should load CHW area', async () => {
       const page = settingsProvider.getPage('chw-area');
       await navigate(page.navigation, page.asserts);
-      await navigate(page.postTestPath);
+      if (page.postTestPath) {
+        await navigate(page.postTestPath);
+      }
     });
 
     it('should load Household', async () => {
       const page = settingsProvider.getPage('household');
       await navigate(page.navigation, page.asserts);
-      await navigate(page.postTestPath);
+      if (page.postTestPath) {
+        await navigate(page.postTestPath);
+      }
     });
 
     it('should load patient', async () => {
       const page = settingsProvider.getPage('patient');
       await navigate(page.navigation, page.asserts);
-      await navigate(page.postTestPath);
+      if (page.postTestPath) {
+        await navigate(page.postTestPath);
+      }
     });
   }
 
