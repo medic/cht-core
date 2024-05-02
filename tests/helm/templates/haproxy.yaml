@@ -39,6 +39,7 @@ spec:
             - name: HEALTHCHECK_ADDR
               value: healthcheck.{{ .Values.namespace }}.svc.cluster.local
           image: {{ .Values.upstream_servers.docker_registry }}/cht-haproxy:{{ .Values.cht_image_tag }}
+          imagePullPolicy: Never
           name: cht-haproxy
           ports:
             - containerPort: 5984

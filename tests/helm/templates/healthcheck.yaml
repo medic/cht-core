@@ -33,6 +33,7 @@ spec:
                   name: cht-couchdb-credentials
                   key: COUCHDB_USER
           image: {{ .Values.upstream_servers.docker_registry }}/cht-haproxy-healthcheck:{{ .Values.cht_image_tag }}
+          imagePullPolicy: Never
           name: cht-haproxy-healthcheck
           resources: {}
           ports:

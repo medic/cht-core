@@ -19,6 +19,7 @@ spec:
       containers:
       - name: cht-couchdb-{{ $nodeNumber }}
         image: {{ $.Values.upstream_servers.docker_registry }}/cht-couchdb:{{ $.Values.cht_image_tag }}
+        imagePullPolicy: Never
         ports:
         - containerPort: 5984
         env:

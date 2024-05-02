@@ -27,5 +27,6 @@ spec:
             - name: API_PORT
               value: '5988'
           image: {{ .Values.upstream_servers.docker_registry }}/cht-sentinel:{{ .Values.cht_image_tag }}
+          imagePullPolicy: Never
           name: cht-sentinel
       restartPolicy: Always
