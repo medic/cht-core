@@ -116,7 +116,8 @@ const createPlace = async (place) => {
   }
   if (contactExists) {
     place.contact = contact._id;
-    return await db.medic.post(place);
+    const resp = await db.medic.post(place);
+    return { ...resp, contact: { id: contact._id } };
   }
   const placeResponse = await db.medic.post(place);
   contact.place = placeResponse.id;

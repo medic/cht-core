@@ -404,7 +404,7 @@ describe('places controller', () => {
       });
     });
 
-    it('returns err if contact does not exist', () => {
+    it('returns err if contact does not exist', async () => {
       const place = {
         name: 'HC',
         type: 'district_hospital',
@@ -412,10 +412,13 @@ describe('places controller', () => {
       };
       fetchHydratedDoc.rejects({ status: 404 });
       const post = db.medic.post;
-      return controller._createPlaces(place).catch(err => {
+      try {
+        await controller._createPlaces(place);
+        chai.expect.fail('Call should throw');
+      } catch (err) {
         chai.expect(err.message).to.equal('Failed to find person.');
         chai.expect(post.callCount).to.equal(0);
-      });
+      }
     });
 
     it('rejects contacts with wrong type', done => {
@@ -584,11 +587,14 @@ describe('places controller', () => {
       });
     });
 
-    it('rejects if contact does not exist', () => {
+    it('rejects if contact does not exist', async () => {
       fetchHydratedDoc.rejects({ status: 404 });
-      return controller._preparePlaceContact('test').catch(err => {
+      try {
+        await controller._preparePlaceContact('test');
+        chai.expect.fail('Call should throw');
+      } catch (err) {
         chai.expect(err.message).to.equal('Failed to find person.');
-      });
+      }
     });
   });
 
