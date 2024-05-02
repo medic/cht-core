@@ -1,9 +1,12 @@
-if (!process || process.browser) {
-  module.exports = console;
-} else {
+const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSS';
+
+const create = () => {
+  if (!process || process.browser) {
+    return console;
+  }
+
   const { createLogger, format, transports } = require('winston');
   const env = process.env.NODE_ENV || 'development';
-  const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSS';
 
   const cleanUpErrorsFromSymbolProperties = (info) => {
     if (!info) {
@@ -56,7 +59,7 @@ if (!process || process.browser) {
     return info;
   });
 
-  module.exports = createLogger({
+  return createLogger({
     format: format.combine(
       enumerateErrorFormat(),
       format.splat(),
@@ -78,5 +81,8 @@ if (!process || process.browser) {
       }),
     ],
   });
-  module.exports.DATE_FORMAT = DATE_FORMAT;
-}
+    
+};
+
+module.exports = create();
+module.exports.DATE_FORMAT = DATE_FORMAT;
