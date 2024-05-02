@@ -1,8 +1,75 @@
-const { browser, driver } = require('@wdio/globals');
+const { browser, driver, $ } = require('@wdio/globals');
 const moment = require('moment-timezone');
 const { execSync } = require('child_process');
 
 module.exports = class Page {
+
+  async waitForDisplayedAndRetry(selector, retryTotal = 20, retryCount = 0) {
+    const TIME_OUT = 1000 * 60 * 20;
+    try {
+      return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
+    } catch (error) {
+      if (retryCount >= retryTotal) {
+        return false;
+      }
+      return await this.waitForDisplayedAndRetry(selector, retryTotal, retryCount + 1);
+    }
+  }
+
+  scrollDown(swipes = 0) {
+    for (let i = 0; i < swipes; i++) {
+      execSync('adb shell input swipe 500 1000 300 300');
+    }
+  }
+
+  scrollUp(swipes = 0) {
+    for (let i = 0; i < swipes; i++) {
+      execSync('adb shell input swipe 300 300 500 1000');
+    }
+  }
+
+  async assertMany(asserts = []) {
+    for (const assert of asserts) {
+      if (assert.scrollDown) {
+        this.scrollDown(assert.scrollDown);
+      }
+
+      if (assert.scrollUp) {
+        this.scrollUp(assert.scrollUp);
+      }
+
+      await this.waitForDisplayedAndRetry(assert.selector);
+    }
+  }
+
+  async navigate(navigation = []) {
+    for (const navStep of navigation) {
+      if (navStep.scrollDown) {
+        this.scrollDown(navStep.scrollDown);
+      }
+
+      if (navStep.scrollUp) {
+        this.scrollUp(navStep.scrollUp);
+      }
+
+      if (await this.waitForDisplayedAndRetry(navStep.selector)) {
+        await (await $(navStep.selector)).click();
+      }
+
+      if (navStep.asserts) {
+        await this.assertMany(navStep.asserts);
+      }
+    }
+  }
+
+  async loadAndAssertPage(page) {
+    await this.navigate(page.navigation, page.asserts);
+    if (page.postTestPath) {
+      await this.navigate(page.postTestPath);
+    }
+  }
+
+  // ToDo: clean all these below after settings are done
 
   get btnCustom() {
     return $('//*[@text="Custom"]');
