@@ -71,6 +71,13 @@ Then it can be consumed in the test by getting an element by css. EX: ``element(
 
 Adding a test identifier is a good option for cases where a CSS selector would otherwise be fragile such as selecting based on an assumed element structure or selecting on CSS classes intended for visual design that may change.
 
+### Test tags
+You can tag mocha tests and update suites to only include or exclude certain tags ([Mocha Wiki](https://github.com/mochajs/mocha/wiki/Tagging)).
+
+Existent tags:
+#### @docker
+Tests that should run exclusively when running the suite over docker infrastructure. These tests will fail if run over k3d.
+
 ### Notes:
 
 * We decided to separate every functionality in files/folders because we want to make sure that we can reuse as much code as possible. If something new is implemented and might be used for another test, then please isolate the code in a separate file, so it can be reused in future tests.
