@@ -1,6 +1,6 @@
-# CHT Script API
+# CHT Datasource
 
-The CHT Script API library is intended to be agnostic and simple. It provides a versioned API from feature modules.
+The CHT Datasource library is intended to be agnostic and simple. It provides a versioned API from feature modules.
 
 ## API v1
 

@@ -1,7 +1,7 @@
 {
-  "name": "@medic/cht-script-api",
+  "name": "@medic/cht-datasource",
   "version": "1.0.0",
-  "description": "Provides an API for CHT Scripts",
+  "description": "Provides an API for the CHT data model",
   "main": "src/index.js",
   "scripts": {
     "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"

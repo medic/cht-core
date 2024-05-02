@@ -1,7 +1,7 @@
 const config = require('../config');
 const registrationUtils = require('@medic/registration-utils');
 const serverSidePurgeUtils = require('@medic/purging-utils');
-const chtScriptApi = require('@medic/cht-script-api');
+const chtDatasource = require('@medic/cht-datasource');
 const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
@@ -346,7 +346,7 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
         group.contact,
         group.reports,
         group.messages,
-        chtScriptApi,
+        chtDatasource,
         permissionSettings
       );
       if (!validPurgeResults(idsToPurge)) {
@@ -459,8 +459,8 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
       rolesHashes.forEach(hash => {
         toPurge[hash] = toPurge[hash] || {};
         const purgeIds = doc.form ?
-          purgeFn({ roles: roles[hash] }, {}, [doc], [], chtScriptApi, permissionSettings) :
-          purgeFn({ roles: roles[hash] }, {}, [], [doc], chtScriptApi, permissionSettings);
+          purgeFn({ roles: roles[hash] }, {}, [doc], [], chtDatasource, permissionSettings) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc], chtDatasource, permissionSettings);
 
         if (!validPurgeResults(purgeIds)) {
           return;

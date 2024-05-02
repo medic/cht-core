@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import * as chtScriptApiFactory from '@medic/cht-script-api';
+import * as chtScriptApiFactory from '@medic/cht-datasource';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
