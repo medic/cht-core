@@ -162,6 +162,11 @@ const isLoginRequest = options => {
   return options.path === '/medic/login' && options.body.user !== auth.username;
 };
 
+const randomIp = () => {
+  const section = () => (Math.floor(Math.random() * 255) + 1);
+  return `${section()}.${section()}.${section()}.${section()}`;
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
 const request = async (options, { debug } = {}) => { //NOSONAR
@@ -169,6 +174,9 @@ const request = async (options, { debug } = {}) => { //NOSONAR
   if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
     await getSession();
     options.jar = cookieJar;
+  } else {
+    options.headers = options.headers || {};
+    options.headers['X-Forwarded-For'] = randomIp();
   }
   options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
