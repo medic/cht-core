@@ -70,7 +70,7 @@ const getRoles = req => {
   return roles;
 };
 
-const getInfoUserCtx = req => {
+const getInfoUserCtx = req => { // NOSONAR
   if (!roles.isOnlineOnly(req.userCtx)) {
     return req.userCtx;
   }
@@ -90,7 +90,7 @@ const getInfoUserCtx = req => {
 
   return {
     roles: userRoles,
-    facility_id: params.facility_id,
+    facility_id: Array.isArray(params.facility_id) ? params.facility_id : [params.facility_id],
     contact_id: params.contact_id,
   };
 };
