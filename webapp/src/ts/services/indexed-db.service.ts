@@ -10,7 +10,7 @@ export class IndexedDbService {
   private readonly LOCAL_DOC = '_local/indexeddb-placeholder';
   private loadingLocalDoc: Promise<IndexedDBDoc> | undefined;
   private hasDatabasesFn: boolean;
-  private isUpdatingLocalDoc: boolean;
+  private isUpdatingLocalDoc?: boolean;
 
   constructor(
     private dbService: DbService,
