@@ -184,7 +184,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
       .all([ this.messageContactService.getList(), this.userLineageLevel ])
       .then(([ conversations, userLineageLevel ]) => {
         conversations?.forEach(conversation => {
-          conversation.lineage = this.extractLineageService.removeUserFacility(conversation.lineage, userLineageLevel);
+          const lineage = this.extractLineageService.removeUserFacility(conversation.lineage, userLineageLevel);
+          if (lineage) {
+            conversation.lineage = lineage;
+          }
         });
         this.setConversations(conversations, { merge });
         this.loading = false;

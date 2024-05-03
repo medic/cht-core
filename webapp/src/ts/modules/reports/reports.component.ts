@@ -110,7 +110,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.userLineageLevel = await this.extractLineageService.getUserLineageToRemove();
     await this.checkPermissions();
     this.subscribeSidebarFilter();
-    await this.doInitialSearch();
+    this.doInitialSearch();
   }
 
   ngOnDestroy() {
@@ -253,7 +253,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.heading = this.getReportHeading(form, report);
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
-      report.lineage = this.extractLineageService.removeUserFacility(report.lineage, this.userLineageLevel);
+      if (Array.isArray(report.lineage)) {
+        report.lineage = this.extractLineageService.removeUserFacility(report.lineage, this.userLineageLevel);
+      }
 
       return report;
     });
@@ -346,7 +348,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private async doInitialSearch() {
-    const userParentPlace = this.canDefaultFilter && await this.getUserParentPlace();
+    let userParentPlace;
+    if (this.canDefaultFilter) {
+      userParentPlace = await this.getUserParentPlace();
+    }
+
     if (userParentPlace?._id) {
       // The facility filter will trigger the search.
       this.reportsSidebarFilter?.setDefaultFacilityFilter({ facility: this.userParentPlace });
@@ -465,8 +471,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.filters,
         { limit: this.LIMIT_SELECT_ALL_REPORTS, hydrateContactNames: true }
       );
-
-      const preparedReports = await this.prepareReports(reports, true);
+      const preparedReports = this.prepareReports(reports, true);
       this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 

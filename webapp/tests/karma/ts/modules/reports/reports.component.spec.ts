@@ -38,6 +38,7 @@ import { FastActionButtonService } from '@mm-services/fast-action-button.service
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -56,6 +57,7 @@ describe('Reports Component', () => {
   let xmlFormsService;
   let feedbackService;
   let performanceService;
+  let extractLineageService;
   let stopPerformanceTrackStub;
   let store;
   let route;
@@ -114,6 +116,10 @@ describe('Reports Component', () => {
     };
     xmlFormsService = { subscribe: sinon.stub() };
     feedbackService = { submit: sinon.stub() };
+    extractLineageService = {
+      getUserLineageToRemove: sinon.stub(),
+      removeUserFacility: ExtractLineageService.prototype.removeUserFacility,
+    };
     route = { snapshot: { queryParams: { query: '' } } };
     router = {
       navigate: sinon.stub(),
@@ -165,6 +171,7 @@ describe('Reports Component', () => {
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: ExtractLineageService, useValue: extractLineageService },
         ]
       })
       .compileComponents()
@@ -209,13 +216,17 @@ describe('Reports Component', () => {
     expect(spySubscriptionsAdd.callCount).to.equal(4);
   });
 
-  it('should submit a feedback doc when an error was thrown by UserContactService', async () => {
+  it('should handle error when UserContactService throws', async () => {
+    const consoleErrorStub = sinon.stub(console, 'error');
+    authService.has.withArgs('can_default_facility_filter').resolves(true);
     userContactService.get.resetHistory();
     userContactService.get.rejects(new Error('some error'));
 
     await component.ngAfterViewInit();
 
     expect(userContactService.get.calledOnce).to.be.true;
+    expect(consoleErrorStub.calledOnce).to.be.true;
+    expect(consoleErrorStub.args[0][0]).to.equal('some error');
   });
 
   it('listTrackBy() should return unique identifier', () => {
@@ -279,7 +290,7 @@ describe('Reports Component', () => {
   });
 
   describe('doInitialSearch', () => {
-    it('should set default facility report', async () => {
+    it('should set default facility report', fakeAsync(async () => {
       searchService.search.resetHistory();
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
@@ -288,8 +299,9 @@ describe('Reports Component', () => {
 
       component.ngOnInit();
       await component.ngAfterViewInit();
+      flush();
 
-      expect(setDefaultFacilityFilter.calledOnce).to.be.true;
+      expect(setDefaultFacilityFilter.callCount).to.equal(1);
       expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({
         facility: { _id: 'parent', name: 'parent', parent: { _id: 'grandparent' } }
       });
@@ -298,9 +310,10 @@ describe('Reports Component', () => {
       expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
       expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
       expect(searchService.search.notCalled).to.be.true;
-    });
+    }));
 
-    it('should not set default facility report when it is offline user', async () => {
+    it('should not set default facility report when it is offline user', fakeAsync(async () => {
+      stopPerformanceTrackStub.resetHistory();
       searchService.search.resetHistory();
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
@@ -309,6 +322,7 @@ describe('Reports Component', () => {
 
       component.ngOnInit();
       await component.ngAfterViewInit();
+      flush();
 
       expect(setDefaultFacilityFilter.notCalled).to.be.true;
       expect(authService.has.calledTwice).to.be.true;
@@ -318,9 +332,10 @@ describe('Reports Component', () => {
       expect(stopPerformanceTrackStub.callCount).to.equal(2);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'report_list:load', recordApdex: true });
-    });
+    }));
 
-    it('should not set default facility report when it is admin user', async () => {
+    it('should not set default facility report when it is admin user', fakeAsync(async () => {
+      stopPerformanceTrackStub.resetHistory();
       searchService.search.resetHistory();
       authService.has.resetHistory();
       sessionService.isAdmin.returns(true);
@@ -330,6 +345,7 @@ describe('Reports Component', () => {
 
       component.ngOnInit();
       await component.ngAfterViewInit();
+      flush();
 
       expect(setDefaultFacilityFilter.notCalled).to.be.true;
       expect(authService.has.calledOnce).to.be.true;
@@ -338,9 +354,10 @@ describe('Reports Component', () => {
       expect(stopPerformanceTrackStub.callCount).to.equal(2);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'report_list:load', recordApdex: true });
-    });
+    }));
 
-    it('should not set default facility report when user does not have parent place', async () => {
+    it('should not set default facility report when user does not have parent place', fakeAsync(async () => {
+      stopPerformanceTrackStub.resetHistory();
       userContactService.get.resolves({ _id: 'user-123' });
       searchService.search.resetHistory();
       authService.has.resetHistory();
@@ -350,6 +367,7 @@ describe('Reports Component', () => {
 
       component.ngOnInit();
       await component.ngAfterViewInit();
+      flush();
 
       expect(setDefaultFacilityFilter.notCalled).to.be.true;
       expect(authService.has.calledThrice).to.be.true;
@@ -360,7 +378,7 @@ describe('Reports Component', () => {
       expect(stopPerformanceTrackStub.callCount).to.equal(2);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'report_list:load', recordApdex: true });
-    });
+    }));
   });
 
   describe('selectAllReports', () => {
@@ -402,7 +420,7 @@ describe('Reports Component', () => {
           unread: true,
           summary: { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
           expanded: false,
-          lineage: [],
+          lineage: undefined,
           contact: { _id: 'contact', name: 'person' }
         },
         {
@@ -746,6 +764,7 @@ describe('Reports Component', () => {
   });
 
   describe('Reports breadcrumbs', () => {
+    let updateReportsListStub;
     const reports = [
       {
         _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
@@ -767,26 +786,15 @@ describe('Reports Component', () => {
         _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
       },
     ];
-    const offlineUserContactDoc = {
-      _id: 'user',
-      parent: {
-        _id: 'parent',
-        name: 'CHW Bettys Area',
-        parent: userContactGrandparent,
-      },
-    };
-
-    let updateReportsListStub;
 
     beforeEach(() => {
       updateReportsListStub = sinon.stub(ReportsActions.prototype, 'updateReportsList');
       searchService.search.resolves(reports);
     });
 
-    it('should not change the reports lineage if UserContactService throws error', fakeAsync(async () => {
+    it('should not remove the lineage when user lineage level is undefined', fakeAsync(() => {
       sinon.resetHistory();
-      authService.online.returns(true);
-      userContactService.get.rejects(new Error('some error'));
+      extractLineageService.getUserLineageToRemove.resolves(undefined);
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
@@ -799,7 +807,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
+          lineage: [ 'Chattanooga Village', 'CHW Bettys Area'],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -826,76 +834,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
-          lineage: [],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
           lineage: undefined,
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-      ];
-
-      component.ngOnInit();
-      await component.ngAfterViewInit();
-      flush();
-
-      expect(updateReportsListStub.calledOnce).to.be.true;
-      expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
-      expect(userContactService.get.calledOnce).to.be.true;
-      expect(authService.online.calledOnce).to.be.true;
-    }));
-
-    it('should not change the reports lineage if user is online only', fakeAsync(() => {
-      authService.online.returns(true);
-      const expectedReports = [
-        {
-          _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
-          lineage: [ 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899',
-          lineage: [ 'Chattanooga Village' ],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
-          lineage: [ 'CHW Bettys Area' ],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
-          lineage: [],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -917,13 +856,13 @@ describe('Reports Component', () => {
       component.ngAfterViewInit();
       flush();
 
-      expect(updateReportsListStub.callCount).to.equal(1);
+      expect(component.userLineageLevel).to.be.undefined;
+      expect(updateReportsListStub.calledOnce).to.be.true;
       expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
     }));
 
-    it('should remove current level from reports lineage when user is offline', fakeAsync(() => {
-      userContactService.get.resolves(offlineUserContactDoc);
-      authService.online.returns(false);
+    it('should remove lineage when user lineage level is defined', fakeAsync(() => {
+      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
@@ -965,7 +904,7 @@ describe('Reports Component', () => {
           _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
           heading: 'report.subject.unknown',
           icon: undefined,
-          lineage: [],
+          lineage: undefined,
           summary: undefined,
           expanded: false,
           unread: true,
@@ -985,7 +924,8 @@ describe('Reports Component', () => {
       component.ngAfterViewInit();
       flush();
 
-      expect(updateReportsListStub.callCount).to.equal(1);
+      expect(component.userLineageLevel).to.equal('CHW Bettys Area');
+      expect(updateReportsListStub.calledOnce).to.be.true;
       expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
     }));
 
@@ -1002,10 +942,10 @@ describe('Reports Component', () => {
 
       flush();
 
-      expect(setSelectMode.callCount).to.equal(1);
-      expect(setSelectMode.args[0]).to.deep.equal([true]);
-      expect(unsetComponents.callCount).to.equal(1);
-      expect(router.navigate.callCount).to.equal(1);
+      expect(setSelectMode.calledTwice).to.be.true;
+      expect(setSelectMode.args).to.deep.equal([[true], [true]]);
+      expect(unsetComponents.calledTwice).to.be.true;
+      expect(router.navigate.calledTwice).to.be.true;
       expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
     }));
 
