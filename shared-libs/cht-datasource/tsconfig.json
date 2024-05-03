@@ -10,34 +10,19 @@
   //    "skipLibCheck": true,
   //    "moduleResolution": "node16"
   //  }
-
-
   "compilerOptions": {
-    // "composite": true,                                /* Enable constraints that allow a TypeScript project to be used with project references. */
-    // "rootDir": "./",                                  /* Specify the root folder within your source files. */
-    /* JavaScript Support */
-    "allowJs": true,                                  /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */
-//    "checkJs": true,                                  /* Enable error reporting in type-checked JavaScript files. */
-    // "maxNodeModuleJsDepth": 1,                        /* Specify the maximum folder depth used for checking JavaScript files from 'node_modules'. Only applicable with 'allowJs'. */
-
-    /* Emit */
-     "declaration": true,                              /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
-//     "declarationMap": true,                           /* Create sourcemaps for d.ts files. */
-    // "emitDeclarationOnly": true,                      /* Only output d.ts files and not JavaScript files. */
-    // "sourceMap": true,                                /* Create source map files for emitted JavaScript files. */
-    // "inlineSourceMap": true,                          /* Include sourcemap files inside the emitted JavaScript. */
-    // "outFile": "./",                                  /* Specify a file that bundles all outputs into one JavaScript file. If 'declaration' is true, also designates a file that bundles all .d.ts output. */
-//    "outDir": "../../build/cht-datasource",
-    "outDir": "dist",  /* Specify an output folder for all emitted files. */
-    // "sourceRoot": "",                                 /* Specify the root path for debuggers to find the reference source code. */
-    // "mapRoot": "",                                    /* Specify the location where debugger should locate map files instead of generated locations. */
+    "allowJs": true,
+    "composite": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
   },
-//  "files": [
-//    "src/index.ts",
-//    "test/index.spec.ts"
-//  ],
+  "files": [
+    "src/auth.js"
+  ],
   "include": [
     "src/**/*.ts",
-    "test/**/*.ts",
-  ],
+    "test/**/*.ts"
+  ]
 }
