@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "description": "Provides an API for the CHT data model",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
-    "postinstall": "npm run build",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "postinstall": "npm run clean && npm run build",
+    "build": "tsc -p tsconfig.build.json",
+    "build-watch": "tsc --watch -p tsconfig.build.json",
+    "clean": "rm -rf dist",
     "test": "nyc --nycrcPath='../nyc.config.js' mocha -r ts-node/register ./test/**/*"
   },
   "author": "",
