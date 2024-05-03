@@ -242,7 +242,9 @@ export class GlobalActions {
   }
 
   setUserFacilityId(userFacilityId) {
-    return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
+    const facilityIds = Array.isArray(userFacilityId) ? userFacilityId : [userFacilityId];
+    console.log(facilityIds);
+    return this.store.dispatch(Actions.setUserFacilityId(facilityIds));
   }
 
   setTrainingCardFormId(trainingCard) {

@@ -130,6 +130,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       ])
       .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
         this.usersHomePlace = homePlaceSummary;
+        console.log('homeplace', this.usersHomePlace);
         this.lastVisitedDateExtras = viewLastVisitedDate;
         this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
         if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
@@ -192,6 +193,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       selectedContact,
     ]) => {
       this.contactsList = contactsList;
+      console.log('contactList', this.contactsList);
       this.filters = filters;
       this.listContains = listContains;
       this.selectedContact = selectedContact;
@@ -217,19 +219,24 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        const facilityId: string = homePlaceId ?? userSettings.facility_id;
+        // eslint-disable-next-line max-len
+        const facilityId = Array.isArray(userSettings.facility_id) ? userSettings.facility_id : [userSettings.facility_id];
+        console.log('facility', facilityId);
         if (!facilityId) {
           return;
         }
 
         this.globalActions.setUserFacilityId(facilityId);
         return this.getDataRecordsService
-          .get([ facilityId ])
-          .then(places => places?.length ? places[0] : undefined);
+          .get(facilityId)
+          .then(places => {
+            console.log('places', places); // Log the fetched places.
+            return places;
+          });
       })
       .then((summary) => {
         if (summary) {
-          summary.home = true;
+          summary.forEach(place => place.home = true);
         }
         return summary;
       });
@@ -409,6 +416,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .search('contacts', searchFilters, options, extensions, docIds)
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
+        console.log('contacts in search', updatedContacts);
         if (this.usersHomePlace) {
           const homeIndex = _findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
@@ -430,6 +438,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         updatedContacts = this.formatContacts(updatedContacts);
+        console.log('new contacts in search', updatedContacts);
         this.contactsActions.updateContactsList(updatedContacts);
 
         this.moreItems = updatedContacts.length >= options.limit;

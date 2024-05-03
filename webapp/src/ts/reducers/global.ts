@@ -205,6 +205,7 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
   on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
+    console.log('reducer', userFacilityId);
     return { ...state, userFacilityId };
   }),
   on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {

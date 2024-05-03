@@ -62,7 +62,7 @@ const updateContacts = (state, newContacts) => {
   const contacts = [...state.contacts];
   const contactsById = new Map(state.contactsById);
   const list = new UniqueSortedList(contacts, contactsById, orderBy);
-
+  console.log('contacts in reducer', newContacts);
   newContacts.forEach(contact => {
     list.remove(contact);
     list.add(contact);
