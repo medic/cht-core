@@ -8,7 +8,7 @@
     "npm": ">=10.2.4"
   },
   "dependencies": {
-    "async": "^3.2.4",
+    "async": "^3.2.5",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
     "cron-validator": "^1.3.1",
