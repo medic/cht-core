@@ -10,6 +10,7 @@ module.exports = class Page {
       return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
     } catch (error) {
       if (retryCount >= retryTotal) {
+        console.error(`Element did not display after retrying ${retryTotal}.`, error);
         return false;
       }
       return await this.waitForDisplayedAndRetry(selector, retryTotal, retryCount + 1);
