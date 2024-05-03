@@ -24,6 +24,7 @@ import { ModalService } from '@mm-services/modal.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
@@ -61,7 +62,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
   isExporting = false;
-  userParentPlace;
+  userLineageLevel;
   fastActionList: FastAction[];
 
   LIMIT_SELECT_ALL_REPORTS = 500;
@@ -85,6 +86,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private fastActionButtonService:FastActionButtonService,
     private xmlFormsService:XmlFormsService,
     private performanceService: PerformanceService,
+    private extractLineageService: ExtractLineageService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -105,10 +107,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
-    this.userParentPlace = await this.getUserParentPlace();
+    this.userLineageLevel = await this.extractLineageService.getUserLineageToRemove();
     await this.checkPermissions();
     this.subscribeSidebarFilter();
-    this.doInitialSearch();
+    await this.doInitialSearch();
   }
 
   ngOnDestroy() {
@@ -251,15 +253,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.heading = this.getReportHeading(form, report);
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
-
-      // Remove the lineage level that belongs to the offline logged-in user
-      if (!this.isOnlineOnly && this.userParentPlace?.name && report?.lineage?.length) {
-        report.lineage = report.lineage.filter(level => level);
-        const item = report.lineage[report.lineage.length -1];
-        if (item === this.userParentPlace.name) {
-          report.lineage.pop();
-        }
-      }
+      report.lineage = this.extractLineageService.removeUserFacility(report.lineage, this.userLineageLevel);
 
       return report;
     });
@@ -351,10 +345,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private doInitialSearch() {
-    if (this.canDefaultFilter && this.userParentPlace?._id) {
+  private async doInitialSearch() {
+    const userParentPlace = this.canDefaultFilter && await this.getUserParentPlace();
+    if (userParentPlace?._id) {
       // The facility filter will trigger the search.
-      this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace });
+      this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: userParentPlace });
       return;
     }
 
