@@ -2,9 +2,11 @@
   "name": "@medic/cht-datasource",
   "version": "1.0.0",
   "description": "Provides an API for the CHT data model",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
+    "postinstall": "npm run build",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha -r ts-node/register ./test/**/*"
   },
   "author": "",
   "license": "Apache-2.0"

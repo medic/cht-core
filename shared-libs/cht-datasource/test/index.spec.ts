@@ -1,7 +1,7 @@
-const expect = require('chai').expect;
-const sinon = require('sinon');
-const chtScriptApi = require('../src/index');
-const auth = require('../src/auth');
+import { expect } from 'chai';
+import sinon from 'sinon';
+import chtScriptApi from '../src/index';
+import auth from '../src/auth';
 
 describe('CHT Script API - index', () => {
   afterEach(() => {

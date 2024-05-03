@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  // Flatten output in the dist directory so `src` is not included in the path
+  "compilerOptions": { "rootDir": "./src" },
+  // Exclude test files from the build
+  "exclude": ["test/**/*.ts"],
+}

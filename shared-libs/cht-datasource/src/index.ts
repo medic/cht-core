@@ -3,8 +3,13 @@
  * Builds and exports a versioned API from feature modules.
  * Whenever possible keep this file clean by defining new features in modules.
  */
-const auth = require('./auth');
+import auth from './auth';
 
+interface Auth {
+  hasPermissions: (permissions: string | string[], userRoles: string[], chtPermissionsSettings: object) => boolean
+  hasAnyPermission: (permissionsGroupList: string[][], userRoles: string[], chtPermissionsSettings: object) => boolean
+}
+// TODO why do we even have these functions in here?
 /**
  * Verify if the user's role has the permission(s).
  * @param permissions {string | string[]} Permission(s) to verify
@@ -12,8 +17,12 @@ const auth = require('./auth');
  * @param chtPermissionsSettings {object} Object of configured permissions in CHT-Core's settings.
  * @return {boolean}
  */
-const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
-  return auth.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+const hasPermissions = (
+  permissions: string | string[],
+  userRoles: string[],
+  chtPermissionsSettings: object
+): boolean => {
+  return (auth as Auth).hasPermissions(permissions, userRoles, chtPermissionsSettings);
 };
 
 /**
@@ -23,13 +32,19 @@ const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
  * @param chtPermissionsSettings {object} Object of configured permissions in CHT-Core's settings.
  * @return {boolean}
  */
-const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSettings) => {
-  return auth.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+const hasAnyPermission = (
+  permissionsGroupList: string[][],
+  userRoles: string[],
+  chtPermissionsSettings: object
+): boolean => {
+  return (auth as Auth).hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
 };
 
-module.exports = {
+const index = {
   v1: {
     hasPermissions,
     hasAnyPermission
   }
 };
+module.exports = index;
+export default index;
