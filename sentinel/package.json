@@ -7,6 +7,9 @@
     "node": ">=20.11.0",
     "npm": ">=10.2.4"
   },
+  "scripts": {
+    "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9228 --watch server.js --watch 'src/**' --watch '../shared-libs/**/src/**' --watch '../shared-libs/**/dist/**' server.js"
+  },
   "dependencies": {
     "async": "^3.2.4",
     "bikram-sambat": "^1.7.0",

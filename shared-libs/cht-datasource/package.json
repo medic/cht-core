@@ -8,10 +8,9 @@
     "/dist"
   ],
   "scripts": {
-    "postinstall": "npm run clean && npm run build",
+    "postinstall": "rm -rf dist && npm run build",
     "build": "tsc -p tsconfig.build.json",
     "build-watch": "tsc --watch -p tsconfig.build.json",
-    "clean": "rm -rf dist",
     "test": "nyc --nycrcPath='../nyc.config.js' mocha -r ts-node/register ./test/**/*"
   },
   "author": "",
