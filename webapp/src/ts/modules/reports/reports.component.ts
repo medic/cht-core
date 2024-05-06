@@ -107,7 +107,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
-    this.userLineageLevel = await this.extractLineageService.getUserLineageToRemove();
+    this.userLineageLevel = this.extractLineageService.getUserLineageToRemove();
     await this.checkPermissions();
     this.subscribeSidebarFilter();
     this.doInitialSearch();
@@ -243,7 +243,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private prepareReports(reports, isContent=false) {
+  private async prepareReports(reports, isContent=false) {
+    const userLineageLevel = await this.userLineageLevel;
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
       const subTitle = form ? form.title : report.form;
@@ -254,7 +255,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
       if (Array.isArray(report.lineage)) {
-        report.lineage = this.extractLineageService.removeUserFacility(report.lineage, this.userLineageLevel);
+        report.lineage = this.extractLineageService.removeUserFacility(report.lineage, userLineageLevel);
       }
 
       return report;
@@ -471,7 +472,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.filters,
         { limit: this.LIMIT_SELECT_ALL_REPORTS, hydrateContactNames: true }
       );
-      const preparedReports = this.prepareReports(reports, true);
+      const preparedReports = await this.prepareReports(reports, true);
       this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 
