@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const request = require('@medic/couch-request');
 const secureSettings = require('@medic/settings');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const config = require('../config');
 const db = require('../db');
 

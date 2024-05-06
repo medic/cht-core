@@ -1,6 +1,6 @@
 const bowser = require('bowser');
 
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 const db = require('../../db');
 
 const getBrowser = (userAgent) => {

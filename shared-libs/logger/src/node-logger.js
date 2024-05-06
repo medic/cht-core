@@ -1,10 +1,5 @@
 const { createLogger, format, transports } = require('winston');
 const env = process.env.NODE_ENV || 'development';
-const morgan = require('morgan');
-const moment = require('moment');
-const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSS';
-morgan.token('date', () => moment().format(DATE_FORMAT));
-
 
 const cleanUpErrorsFromSymbolProperties = (info) => {
   if (!info) {
@@ -39,23 +34,25 @@ const enumerateErrorFormat = format(info => {
   cleanUpRequestError(info.message);
 
   if (info.message instanceof Error) {
-    info.message = Object.assign({
+    info.message = {
       message: info.message.message,
-      stack: info.message.stack
-    }, info.message);
+      stack: info.message.stack,
+      ...info.message
+    };
   }
 
   if (info instanceof Error) {
-    return Object.assign({
+    return {
       message: info.message,
-      stack: info.stack
-    }, info);
+      stack: info.stack,
+      ...info
+    };
   }
 
   return info;
 });
 
-const logger = createLogger({
+module.exports.create = (dateFormat) => createLogger({
   format: format.combine(
     enumerateErrorFormat(),
     format.splat(),
@@ -71,11 +68,9 @@ const logger = createLogger({
           info.level = info.level.toUpperCase();
           return info;
         })(),
-        format.timestamp({ format: DATE_FORMAT }),
+        format.timestamp({ format: dateFormat }),
         format.printf(info => `${info.timestamp} ${info.level}: ${info.message} ${info.stack ? info.stack : ''}`)
       ),
     }),
   ],
 });
-
-module.exports = logger;

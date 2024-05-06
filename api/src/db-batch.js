@@ -5,7 +5,7 @@ const url = require('url');
 const path = require('path');
 const request = require('@medic/couch-request');
 const environment = require('./environment');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 const DEFAULT_BATCH_LIMIT = 100; // 100 is a good compromise of performance and stability
 
 const runBatch = (ddoc, view, viewParams, iteratee) => {

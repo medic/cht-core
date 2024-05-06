@@ -1,6 +1,6 @@
 const later = require('later');
 const db = require('../db');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 
 const PURGE_LOG_ID = '_local/purge_log';

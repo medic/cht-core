@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const utils = require('./utils');
 const db = require('../../../src/db');
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 const sinon = require('sinon');
 
 const createUserSettingsDoc = (id, contactId) => {

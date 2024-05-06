@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const utils = require('../../../src/lib/utils');
 const mutingUtils = require('../../../src/lib/muting_utils');
-const logger = require('../../../src/lib/logger.js');
+const logger = require('@medic/logger');
 const config = require('../../../src/config');
 
 describe('update_notifications', () => {
