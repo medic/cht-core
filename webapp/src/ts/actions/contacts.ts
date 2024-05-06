@@ -28,7 +28,6 @@ export class ContactsActions {
   }
 
   updateContactsList(contacts) {
-    console.log('contacts dispatched', contacts);
     return this.store.dispatch(Actions.updateContactsList(contacts));
   }
 
