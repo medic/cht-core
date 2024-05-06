@@ -186,7 +186,7 @@ describe('Places API', () => {
           chai.expect(place).to.deep.include({
             name: 'DS',
             type: 'district_hospital',
-            contact: { _id: contact._id, parent: { _id: contact.parent._id } }
+            contact: 'fixture:user:online'
           });
         });
     });
