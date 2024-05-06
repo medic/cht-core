@@ -199,7 +199,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(reduxSubscription);
   }
 
-  private isRelevantVisitReport(doc) {
+  private isRelevantVisitReport (doc) {
     const isRelevantDelete = doc && doc._deleted && this.isSortedByLastVisited();
     return (
       doc &&
@@ -394,7 +394,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       searchFilters = this.filters;
     }
 
-    const extensions: any = {};
+    const extensions:any = {};
     if (this.lastVisitedDateExtras) {
       extensions.displayLastVisitedDate = true;
       extensions.visitCountSettings = this.visitCountSettings;
@@ -424,7 +424,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
               homeIndex === -1;
 
             if (!this.appending) {
-              if (homeIndex > -1) {
+              if (homeIndex !== -1) {
                 // move it to the top
                 const [homeContact] = updatedContacts.splice(homeIndex, 1);
                 updatedContacts.unshift(homeContact);
