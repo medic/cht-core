@@ -153,8 +153,24 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private manageChangesSubscription() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
-      callback: (change) => {
-        this.handleChange(change).catch(err => console.error(err));
+      callback: async (change) => {
+        const limit = this.contactsList.length;
+        if (change.deleted) {
+          this.contactsActions.removeContactFromList({ _id: change.id });
+          this.hasContacts = this.contactsList.length;
+        }
+        if (this.usersHomePlace.some(homePlace => homePlace._id === change.id)) {
+          this.usersHomePlace = await this.getUserHomePlaceSummary();
+        }
+        const withIds =
+          this.isSortedByLastVisited() &&
+          !!this.isRelevantVisitReport(change.doc) &&
+          !change.deleted;
+        return this.query({
+          limit,
+          withIds,
+          silent: true,
+        });
       },
       filter: (change) => {
         return (
@@ -259,12 +275,14 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private getUserHomePlaceSummary(homePlaceId?: string) {
+  private getUserHomePlaceSummary() {
     return this.userSettingsService
       .get()
       .then((userSettings: any) => {
-        // eslint-disable-next-line max-len
-        const facilityId = Array.isArray(userSettings.facility_id) ? userSettings.facility_id : [userSettings.facility_id];
+        const facilityId = Array.isArray(userSettings.facility_id)
+          ? userSettings.facility_id
+          : [userSettings.facility_id];
+
         if (!facilityId) {
           return;
         }
@@ -378,8 +396,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
       const homeType = this.contactTypesService.getTypeId(this.usersHomePlace[0]);
-      console.log('hometype', homeType);
-      console.log('homeplace', this.usersHomePlace);
       return this.contactTypesService
         .getChildren(homeType)
         .then(filterChildPlaces);
