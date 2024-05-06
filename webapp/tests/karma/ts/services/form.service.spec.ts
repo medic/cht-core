@@ -88,7 +88,7 @@ describe('Form service', () => {
   let consoleErrorMock;
   let consoleWarnMock;
   let feedbackService;
-  let extractLineageService
+  let extractLineageService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();

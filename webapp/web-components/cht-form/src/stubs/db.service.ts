@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class DbService {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public get(context?: { meta?: boolean; remote?: boolean }): any {
     return {
       get: () => Promise.resolve(),
