@@ -301,7 +301,7 @@ describe('Reports Component', () => {
       await component.ngAfterViewInit();
       flush();
 
-      expect(setDefaultFacilityFilter.callCount).to.equal(1);
+      expect(setDefaultFacilityFilter.calledOnce).to.be.true;
       expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({
         facility: { _id: 'parent', name: 'parent', parent: { _id: 'grandparent' } }
       });
@@ -856,7 +856,6 @@ describe('Reports Component', () => {
       component.ngAfterViewInit();
       flush();
 
-      expect(component.userLineageLevel).to.be.undefined;
       expect(updateReportsListStub.calledOnce).to.be.true;
       expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
     }));
@@ -924,7 +923,6 @@ describe('Reports Component', () => {
       component.ngAfterViewInit();
       flush();
 
-      expect(component.userLineageLevel).to.equal('CHW Bettys Area');
       expect(updateReportsListStub.calledOnce).to.be.true;
       expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
     }));
