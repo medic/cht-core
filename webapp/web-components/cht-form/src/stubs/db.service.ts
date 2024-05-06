@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class DbService {
-  public get(): any {
+  public get(context?: { meta?: boolean; remote?: boolean }): any {
     return {
       get: () => Promise.resolve(),
       query: async (selector, options) => {
