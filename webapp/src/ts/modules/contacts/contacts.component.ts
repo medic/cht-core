@@ -166,6 +166,47 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
     this.subscription.add(changesSubscription);
+
+    Promise
+      .all([
+        this.getUserHomePlaceSummary(),
+        this.canViewLastVisitedDate(),
+        this.settingsService.get(),
+        this.contactTypesService.getAll()
+      ])
+      .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
+        this.usersHomePlace = homePlaceSummary;
+        this.lastVisitedDateExtras = viewLastVisitedDate;
+        this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
+        if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+          this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
+        }
+        this.contactTypes = contactTypes;
+        return this.getChildren();
+      })
+      .then((children) => {
+        this.childPlaces = children;
+        this.defaultFilters = {
+          types: {
+            selected: this.childPlaces.map(type => type.id)
+          }
+        };
+
+        this.subscribeToAllContactXmlForms();
+        return this.search();
+      })
+      .catch((err) => {
+        this.error = true;
+        this.loading = false;
+        this.appending = false;
+        console.error('Error searching for contacts', err);
+      })
+      .finally(() => {
+        trackPerformance?.stop({
+          name: 'contact_list:load',
+          recordApdex: true,
+        });
+      });
   }
 
   async ngAfterViewInit() {
@@ -204,7 +245,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(reduxSubscription);
   }
 
-  private isRelevantVisitReport (doc) {
+  private isRelevantVisitReport(doc) {
     const isRelevantDelete = doc && doc._deleted && this.isSortedByLastVisited();
     return (
       doc &&
@@ -221,16 +262,19 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private getUserHomePlaceSummary(homePlaceId?: string) {
     return this.userSettingsService
       .get()
-      .then((userSettings:any) => {
-        const facilityId: string = homePlaceId ?? userSettings.facility_id;
+      .then((userSettings: any) => {
+        // eslint-disable-next-line max-len
+        const facilityId = Array.isArray(userSettings.facility_id) ? userSettings.facility_id : [userSettings.facility_id];
         if (!facilityId) {
           return;
         }
 
         this.globalActions.setUserFacilityId(facilityId);
         return this.getDataRecordsService
-          .get([ facilityId ])
-          .then(places => places?.length ? places[0] : undefined);
+          .get(facilityId)
+          .then(places => {
+            return places;
+          });
       })
       .then((summary) => {
         if (summary) {
@@ -242,7 +286,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private canViewLastVisitedDate() {
     if (this.sessionService.isAdmin()) {
-    // disable UHC for DB admins
+      // disable UHC for DB admins
       return Promise.resolve(false);
     }
     return this.authService.has('can_view_last_visited_date');
@@ -333,7 +377,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
-      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace);
+      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace[0]);
+      console.log('hometype', homeType);
+      console.log('homeplace', this.usersHomePlace);
       return this.contactTypesService
         .getChildren(homeType)
         .then(filterChildPlaces);
@@ -394,7 +440,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       searchFilters = this.filters;
     }
 
-    const extensions:any = {};
+    const extensions: any = {};
     if (this.lastVisitedDateExtras) {
       extensions.displayLastVisitedDate = true;
       extensions.visitCountSettings = this.visitCountSettings;
@@ -415,23 +461,29 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
         if (this.usersHomePlace) {
-          const homeIndex = _findIndex(updatedContacts, (contact:any) => {
-            return contact._id === this.usersHomePlace._id;
-          });
-          this.additionalListItem =
-            !this.filters.search &&
-            (this.additionalListItem || !this.appending) &&
-            homeIndex === -1;
+          this.usersHomePlace.forEach(homePlace => {
+            const homeIndex = _findIndex(updatedContacts, (contact: any) => contact._id === homePlace._id);
 
-          if (!this.appending) {
-            if (homeIndex !== -1) {
-              // move it to the top
-              updatedContacts.splice(homeIndex, 1);
-              updatedContacts.unshift(this.usersHomePlace);
-            } else if (!this.filters.search) {
-              updatedContacts.unshift(this.usersHomePlace);
+            this.additionalListItem =
+              !this.filters.search &&
+              (this.additionalListItem || !this.appending) &&
+              homeIndex === -1;
+
+            if (!this.appending) {
+              if (homeIndex > -1) {
+                // move it to the top
+                const [homeContact] = updatedContacts.splice(homeIndex, 1);
+                updatedContacts.unshift(homeContact);
+              } else if (!this.filters.search) {
+                updatedContacts.unshift(homePlace);
+              }
             }
-          }
+          });
+        }
+        //  only show homeplaces facilities for multi-facility users
+        if (this.usersHomePlace.length > 1) {
+          const homePlaceIds = this.usersHomePlace.map(place => place._id);
+          updatedContacts = updatedContacts.filter(place => homePlaceIds.includes(place._id));
         }
 
         updatedContacts = this.formatContacts(updatedContacts);
