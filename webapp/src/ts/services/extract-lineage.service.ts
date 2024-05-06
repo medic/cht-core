@@ -38,8 +38,7 @@ export class ExtractLineageService {
     }
 
     const { facility_id }:any = await this.userSettingsService.get();
-    console.warn('facility_id', facility_id);
-    if (!facility_id || Array.isArray(facility_id)) {
+    if (!facility_id || (Array.isArray(facility_id) && facility_id.length > 1)) {
       return;
     }
 

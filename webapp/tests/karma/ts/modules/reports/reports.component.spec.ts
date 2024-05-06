@@ -940,10 +940,10 @@ describe('Reports Component', () => {
 
       flush();
 
-      expect(setSelectMode.calledTwice).to.be.true;
-      expect(setSelectMode.args).to.deep.equal([[true], [true]]);
-      expect(unsetComponents.calledTwice).to.be.true;
-      expect(router.navigate.calledTwice).to.be.true;
+      expect(setSelectMode.calledOnce).to.be.true;
+      expect(setSelectMode.args).to.deep.equal([[true]]);
+      expect(unsetComponents.calledOnce).to.be.true;
+      expect(router.navigate.calledOnce).to.be.true;
       expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
     }));
 
