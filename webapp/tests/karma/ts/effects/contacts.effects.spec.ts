@@ -288,7 +288,7 @@ describe('Contacts effects', () => {
       });
 
       it('should not load child places for user facility', async () => {
-        store.overrideSelector(Selectors.getUserFacilityId, 'facility');
+        store.overrideSelector(Selectors.getUserFacilityId, ['facility']);
         store.refreshState();
 
         contactViewModelGeneratorService.getContact.resolves({ _id: 'facility', doc: { _id: 'facility' } });

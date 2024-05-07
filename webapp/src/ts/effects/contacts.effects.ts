@@ -54,6 +54,7 @@ export class ContactsEffects {
         this.store.select(Selectors.getForms),
       ),
       exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
+        console.log('Facility in effects after fetching:', userFacilityId);
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
@@ -134,7 +135,8 @@ export class ContactsEffects {
 
   private loadChildren(contactId, userFacilityId, trackName) {
     const trackPerformance = this.performanceService.track();
-    const getChildPlaces = userFacilityId !== contactId;
+    const getChildPlaces = userFacilityId.length > 1;
+
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
       .then(children => {
