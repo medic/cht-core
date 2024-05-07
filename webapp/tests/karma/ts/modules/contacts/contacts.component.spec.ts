@@ -420,7 +420,7 @@ describe('Contacts component', () => {
       scrollLoaderCallback();
       expect(searchService.search.args[1][2]).to.deep.equal({
         paginating: true,
-        limit: 50,
+        limit: 25,
         skip: 50,
       });
       expect(stopPerformanceTrackStub.calledTwice).to.be.true;
@@ -450,7 +450,7 @@ describe('Contacts component', () => {
       expect(contacts.length).to.equal(51);
       expect(searchService.search.args[1][2]).to.deep.equal({
         paginating: true,
-        limit: 50,
+        limit: 25,
         skip: 50,
       });
       expect(stopPerformanceTrackStub.calledTwice).to.be.true;
@@ -527,7 +527,7 @@ describe('Contacts component', () => {
       const contacts = component.contactsActions.updateContactsList.args[0][0];
 
       expect(contacts.length).to.equal(11);
-      searchResults = Array(50).fill(searchResult);
+      searchResults = Array(25).fill(searchResult);
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       store.refreshState();
@@ -536,24 +536,24 @@ describe('Contacts component', () => {
       component.search();
       flush();
 
-      expect(searchService.search.args[1][2]).to.deep.equal({ limit: 50 });
+      expect(searchService.search.args[1][2]).to.deep.equal({ limit: 25 });
 
       const updatedContacts = component.contactsActions.updateContactsList.args[1][0].length;
-      expect(updatedContacts).to.equal(50);
+      expect(updatedContacts).to.equal(25);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       scrollLoaderCallback();
       store.overrideSelector(Selectors.getContactsList, searchResults);
 
       expect(searchService.search.args[2][2]).to.deep.equal({
-        limit: 50,
+        limit: 25,
         paginating: true,
-        skip: 50,
+        skip: 25,
       });
     }));
 
     it('when paginating, does not modify the skip when it finds homeplace #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
-      searchResults = Array(49).fill(searchResult);
+      searchResults = Array(24).fill(searchResult);
       searchResults.push({ _id: 'district-id' });
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
@@ -564,11 +564,11 @@ describe('Contacts component', () => {
       const contacts = component.contactsActions.updateContactsList.args[0][0];
       scrollLoaderCallback();
 
-      expect(contacts.length).to.equal(50);
+      expect(contacts.length).to.equal(25);
       expect(searchService.search.args[1][2]).to.deep.equal({
-        limit: 50,
+        limit: 25,
         paginating: true,
-        skip: 50,
+        skip: 25,
       });
     }));
 
@@ -580,7 +580,7 @@ describe('Contacts component', () => {
         }
         return result;
       };
-      searchResults = mockResults(50);
+      searchResults = mockResults(25);
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
@@ -588,36 +588,36 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
       const contacts = component.contactsActions.updateContactsList.args[0][0];
-      expect(contacts.length).to.equal(51);
+      expect(contacts.length).to.equal(26);
 
       store.refreshState();
-      searchResults = mockResults(49, 50);
+      searchResults = mockResults(24, 25);
       searchService.search.resolves(searchResults.concat(contacts));
       store.overrideSelector(Selectors.getContactsList, searchResults.concat(contacts));
 
       scrollLoaderCallback();
       flush();
       const updatedContacts = component.contactsActions.updateContactsList.args[1][0];
-      expect(updatedContacts.length).to.equal(100);
+      expect(updatedContacts.length).to.equal(50);
       expect(searchService.search.args[1][2]).to.deep.equal({
-        limit: 50,
+        limit: 25,
         paginating: true,
-        skip: 50,
+        skip: 25,
       });
 
       store.refreshState();
-      searchResults = mockResults(50, 100);
+      searchResults = mockResults(25, 50);
       searchService.search.resolves(searchResults.concat(updatedContacts));
       store.overrideSelector(Selectors.getContactsList, searchResults.concat(updatedContacts));
       scrollLoaderCallback();
       flush();
       expect(searchService.search.args[2][2]).to.deep.equal({
-        limit: 50,
+        limit: 25,
         paginating: true,
-        skip: 100,
+        skip: 50,
       });
       const updateContactsList = component.contactsActions.updateContactsList.args[2][0];
-      expect(updateContactsList.length).to.equal(150);
+      expect(updateContactsList.length).to.equal(75);
     }));
   });
 
@@ -655,7 +655,7 @@ describe('Contacts component', () => {
       flush();
       changesCallback({ doc: { _id: '123' } });
       expect(searchService.search.callCount).to.equal(2);
-      expect(searchService.search.args[1][2].limit).to.equal(50);
+      expect(searchService.search.args[1][2].limit).to.equal(25);
     }));
 
     it('when handling deletes, does not shorten the list #4080', fakeAsync(() => {
@@ -701,7 +701,7 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 50 },
+          { limit: 25 },
           {},
           undefined,
         ]
@@ -724,7 +724,7 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 50 },
+          { limit: 25 },
           {
             displayLastVisitedDate: true,
             visitCountSettings: {},
@@ -763,7 +763,7 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 50 },
+          { limit: 25 },
           {
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
@@ -802,7 +802,7 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 50 },
+          { limit: 25 },
           {
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
@@ -845,7 +845,7 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 50 },
+          { limit: 25 },
           {
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: 25, visitCountGoal: 125 },
@@ -1048,7 +1048,7 @@ describe('Contacts component', () => {
                 expect(searchService.search.args[1]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 49, withIds: true, silent: true },
+                  { limit: 24, withIds: true, silent: true },
                   {
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
@@ -1061,7 +1061,7 @@ describe('Contacts component', () => {
                   expect(searchService.search.args[i]).to.deep.equal([
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 49, withIds: false, silent: true },
+                    { limit: 24, withIds: false, silent: true },
                     {
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
@@ -1101,7 +1101,7 @@ describe('Contacts component', () => {
                 expect(searchService.search.args[i]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 49, withIds: false, silent: true },
+                  { limit: 24, withIds: false, silent: true },
                   {
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
@@ -1138,7 +1138,7 @@ describe('Contacts component', () => {
                 expect(searchService.search.args[1]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 49, withIds: true, silent: true },
+                  { limit: 24, withIds: true, silent: true },
                   {
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
@@ -1151,7 +1151,7 @@ describe('Contacts component', () => {
                   expect(searchService.search.args[i]).to.deep.equal([
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 49, withIds: false, silent: true },
+                    { limit: 24, withIds: false, silent: true },
                     {
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
@@ -1193,7 +1193,7 @@ describe('Contacts component', () => {
                 expect(searchService.search.args[i]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 49, withIds: false, silent: true },
+                  { limit: 24, withIds: false, silent: true },
                   {},
                   undefined,
                 ]);
@@ -1235,7 +1235,7 @@ describe('Contacts component', () => {
                     expect(searchService.search.args[i]).to.deep.equal([
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 49, withIds: false, silent: true },
+                      { limit: 24, withIds: false, silent: true },
                       {},
                       undefined,
                     ]);
@@ -1262,7 +1262,7 @@ describe('Contacts component', () => {
           expect(searchService.search.args[0]).to.deep.equal([
             'contacts',
             { types: { selected: ['childType'] } },
-            { limit: 50 },
+            { limit: 25 },
             {},
             undefined,
           ]);

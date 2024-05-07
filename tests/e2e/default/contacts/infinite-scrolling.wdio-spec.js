@@ -4,7 +4,7 @@ const login = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 25;
 describe('Infinite scrolling', () => {
   before(async () => {
     const type = 'district_hospital';
