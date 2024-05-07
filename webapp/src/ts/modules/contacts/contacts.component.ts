@@ -557,7 +557,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setLeftActionBar({
       exportFn: () => this.exportContacts(),
       hasResults: this.hasContacts,
-      userFacilityId: this.usersHomePlace?._id,
+      userFacilityId: this.usersHomePlace[0]?._id,
       childPlaces: this.allowedChildPlaces,
     });
   }
