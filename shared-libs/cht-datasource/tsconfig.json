@@ -12,6 +12,7 @@
   //  }
   "compilerOptions": {
     "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "composite": true,
     "declarationMap": true,
     "outDir": "dist",

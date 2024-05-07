@@ -14,5 +14,8 @@
     "test": "nyc --nycrcPath='../nyc.config.js' mocha -r ts-node/register ./test/**/*"
   },
   "author": "",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@medic/contact-types-utils": "file:../contact-types-utils"
+  }
 }

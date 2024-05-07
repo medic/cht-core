@@ -13,6 +13,11 @@ module.exports = {
       parserOptions: {
         project: 'tsconfig.json',
         tsconfigRootDir: __dirname
+      },
+      rules: {
+        ['@typescript-eslint/no-empty-interface']: ['error', { allowSingleExtends: true }],
+        ['@typescript-eslint/no-namespace']: 'off',
+        ['@typescript-eslint/no-non-null-assertion']: 'off',
       }
     }
   ]
