@@ -503,10 +503,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.usersHomePlace.forEach(homePlace => {
             const homeIndex = _findIndex(updatedContacts, (contact: any) => contact._id === homePlace._id);
 
-            this.additionalListItem =
-              !this.filters.search &&
-              (this.additionalListItem || !this.appending) &&
-              homeIndex === -1;
+            this.updateAdditionalListItem(homeIndex);
 
             if (!this.appending) {
               if (homeIndex !== -1) {
@@ -519,6 +516,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
             }
           });
         }
+
         //  only show homeplaces facilities for multi-facility users
         if (this.usersHomePlace.length > 1) {
           const homePlaceIds = this.usersHomePlace.map(place => place._id);
