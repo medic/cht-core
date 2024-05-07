@@ -54,6 +54,7 @@ export class ContactsEffects {
         this.store.select(Selectors.getForms),
       ),
       exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
+        console.log('Facility in effects after fetching:', userFacilityId);
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
