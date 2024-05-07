@@ -1,5 +1,5 @@
 import { AfterContentChecked, AfterContentInit, Component, Input, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -12,8 +12,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   subscriptions: Subscription = new Subscription();
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) { }
 
   ngAfterContentInit() {
