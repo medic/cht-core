@@ -26,7 +26,7 @@ export class AnalyticsModulesService {
       id: 'target-aggregates',
       label: 'analytics.target.aggregates',
       route: ['/', 'analytics', 'target-aggregates'],
-      available: () => !!(settings.tasks && settings.tasks.targets && isAggregateEnabled)
+      available: () => !!(settings?.tasks?.targets && isAggregateEnabled)
     };
   }
 
