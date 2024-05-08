@@ -163,7 +163,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.contactsActions.removeContactFromList({ _id: change.id });
           this.hasContacts = this.contactsList.length;
         }
-        if (this.usersHomePlace.some(homePlace => homePlace._id === change.id)) {
+        if (this.usersHomePlace?.some(homePlace => homePlace._id === change.id)) {
           this.usersHomePlace = await this.getUserHomePlaceSummary();
         }
         const withIds =
@@ -300,7 +300,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         return this.getDataRecordsService
           .get(facilityId)
           .then(places => {
-            return places;
+            console.log('places', places);
+            const validPlaces = places.filter(place => place && Object.keys(place).length > 0);
+            console.log('valid places', validPlaces);
+            return validPlaces.length ? validPlaces : undefined;
           });
       })
       .then((homeplaces) => {
@@ -518,7 +521,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         //  only show homeplaces facilities for multi-facility users
-        if (this.usersHomePlace.length > 1) {
+        if (this.usersHomePlace?.length > 1) {
           const homePlaceIds = this.usersHomePlace.map(place => place._id);
           updatedContacts = updatedContacts.filter(place => homePlaceIds.includes(place._id));
         }
