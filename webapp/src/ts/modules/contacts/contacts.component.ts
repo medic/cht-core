@@ -97,8 +97,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.contactsActions.removeContactFromList({ _id: change.id });
           this.hasContacts = this.contactsList.length;
         }
-        if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
-          this.usersHomePlace = await this.getUserHomePlaceSummary(change.id);
+        if (this.usersHomePlace?.some(homePlace => homePlace._id === change.id)) {
+          this.usersHomePlace = await this.getUserHomePlaceSummary();
         }
         const withIds =
           this.isSortedByLastVisited() &&
@@ -213,23 +213,30 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private getUserHomePlaceSummary(homePlaceId?: string) {
+  private getUserHomePlaceSummary() {
     return this.userSettingsService
       .get()
-      .then((userSettings:any) => {
-        const facilityId: string = homePlaceId ?? userSettings.facility_id;
-        if (!facilityId) {
+      .then((userSettings: any) => {
+        const facilityId = Array.isArray(userSettings.facility_id)
+          ? userSettings.facility_id
+          : [userSettings.facility_id];
+
+        if (!facilityId.length || facilityId.some(id => id === undefined)) {
           return;
         }
 
+
         this.globalActions.setUserFacilityId(facilityId);
         return this.getDataRecordsService
-          .get([ facilityId ])
-          .then(places => places?.length ? places[0] : undefined);
+          .get(facilityId)
+          .then(places => {
+            const validPlaces = places?.filter(place => place !== undefined);
+            return validPlaces.length ? validPlaces : undefined;
+          });
       })
       .then((summary) => {
         if (summary) {
-          summary.home = true;
+          summary.forEach(place => place.home = true);
         }
         return summary;
       });
@@ -237,7 +244,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private canViewLastVisitedDate() {
     if (this.sessionService.isAdmin()) {
-    // disable UHC for DB admins
+      // disable UHC for DB admins
       return Promise.resolve(false);
     }
     return this.authService.has('can_view_last_visited_date');
@@ -328,7 +335,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
-      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace);
+      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace[0]);
       return this.contactTypesService
         .getChildren(homeType)
         .then(filterChildPlaces);
@@ -355,6 +362,13 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private isSortedByLastVisited() {
     return this.sortDirection === 'last_visited_date';
+  }
+
+  private updateAdditionalListItem(homeIndex) {
+    this.additionalListItem =
+      !this.filters.search &&
+      (this.additionalListItem || !this.appending) &&
+      homeIndex === -1;
   }
 
   private query(opts?) {
@@ -410,23 +424,27 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
         if (this.usersHomePlace) {
-          const homeIndex = _findIndex(updatedContacts, (contact:any) => {
-            return contact._id === this.usersHomePlace._id;
-          });
-          this.additionalListItem =
-            !this.filters.search &&
-            (this.additionalListItem || !this.appending) &&
-            homeIndex === -1;
+          this.usersHomePlace.forEach(homePlace => {
+            const homeIndex = _findIndex(updatedContacts, (contact: any) => contact._id === homePlace._id);
 
-          if (!this.appending) {
-            if (homeIndex !== -1) {
-              // move it to the top
-              updatedContacts.splice(homeIndex, 1);
-              updatedContacts.unshift(this.usersHomePlace);
-            } else if (!this.filters.search) {
-              updatedContacts.unshift(this.usersHomePlace);
+            this.updateAdditionalListItem(homeIndex);
+
+            if (!this.appending) {
+              if (homeIndex !== -1) {
+                // move it to the top
+                const [homeContact] = updatedContacts.splice(homeIndex, 1);
+                updatedContacts.unshift(homeContact);
+              } else if (!this.filters.search) {
+                updatedContacts.unshift(homePlace);
+              }
             }
-          }
+          });
+        }
+
+        //  only show homeplaces facilities for multi-facility users
+        if (this.usersHomePlace?.length > 1) {
+          const homePlaceIds = this.usersHomePlace.map(place => place._id);
+          updatedContacts = updatedContacts.filter(place => homePlaceIds.includes(place._id));
         }
 
         updatedContacts = this.formatContacts(updatedContacts);
@@ -479,7 +497,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setLeftActionBar({
       exportFn: () => this.exportContacts(),
       hasResults: this.hasContacts,
-      userFacilityId: this.usersHomePlace?._id,
+      userFacilityId: this.usersHomePlace?.[0]?._id,
       childPlaces: this.allowedChildPlaces,
     });
   }
@@ -492,7 +510,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.fastActionList = await this.fastActionButtonService.getContactLeftSideActions({
-      parentFacilityId: this.usersHomePlace?._id,
+      parentFacilityId: this.usersHomePlace?.[0]?._id,
       childContactTypes: this.allowedChildPlaces,
     });
   }

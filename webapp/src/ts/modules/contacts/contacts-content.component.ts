@@ -104,14 +104,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private getUserFacility() {
     this.store.select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
-      .subscribe((userFacilityId) => {
-        const shouldDisplayHomePlace = userFacilityId &&
+      .subscribe((userFacilityIds) => {
+        const shouldDisplayHomePlace = userFacilityIds &&
           !this.filters?.search &&
           !this.route.snapshot.params.id &&
           !this.responsiveService.isMobile();
 
         if (shouldDisplayHomePlace) {
-          this.contactsActions.selectContact(userFacilityId);
+          this.contactsActions.selectContact(userFacilityIds[0]);
         }
       });
   }
