@@ -13,9 +13,10 @@ const roles = require('../../src/roles');
 const { people, places }  = require('@medic/contacts')(config, db);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
-const facilitya = { _id: 'a', name: 'aaron' };
-const facilityb = { _id: 'b', name: 'brian' };
-const facilityc = { _id: 'c', name: 'cathy' };
+const facilityA = { _id: 'a', name: 'aaron' };
+const facilityB = { _id: 'b', name: 'brian' };
+const facilityC = { _id: 'c', name: 'cathy' };
+const facilityD = { _id: 'd', name: 'dorothy' };
 const contactMilan = {
   _id: 'milan-contact',
   type: 'person',
@@ -50,10 +51,11 @@ describe('Users service', () => {
     config.getTransitionsLib.returns({ messages: { addMessage } });
     service = rewire('../../src/users');
     sinon.stub(facility, 'list').resolves([
-      facilitya,
-      facilityb,
-      facilityc,
       contactMilan,
+      facilityA,
+      facilityB,
+      facilityC,
+      facilityD,
     ]);
     sinon.stub(couchSettings, 'getCouchConfig').resolves();
     userData = {
@@ -207,14 +209,24 @@ describe('Users service', () => {
       it('with facility_id', async () => {
         const filters = { facilityId: 'c' };
         const usersResponse = {
-          rows: [{
-            doc: {
-              _id: 'org.couchdb.user:x',
-              name: 'lucas',
-              facility_id: 'c',
-              roles: ['national-admin', 'data-entry'],
+          rows: [
+            {
+              doc: {
+                _id: 'org.couchdb.user:x',
+                name: 'lucas',
+                facility_id: 'c',
+                roles: ['national-admin', 'data-entry'],
+              }
+            },
+            {
+              doc: {
+                _id: 'org.couchdb.user:y',
+                name: 'marvin',
+                facility_id: ['c', 'd'],
+                roles: ['national-admin', 'data-entry'],
+              }
             }
-          }],
+          ],
         };
         db.users.query.withArgs('users/users_by_field', {
           include_docs: true,
@@ -222,29 +234,53 @@ describe('Users service', () => {
         }).resolves(usersResponse);
 
         const userSettingsResponse = {
-          rows: [{
-            doc: {
-              _id: 'org.couchdb.user:x',
-              name: 'lucas',
-              fullname: 'Lucas M',
-              email: 'l@m.com',
-              phone: '123456789',
-              facility_id: 'c',
+          rows: [
+            {
+              doc: {
+                _id: 'org.couchdb.user:x',
+                name: 'lucas',
+                fullname: 'Lucas M',
+                email: 'l@m.com',
+                phone: '123456789',
+                facility_id: 'c',
+              },
             },
-          }],
+            {
+              doc: {
+                _id: 'org.couchdb.user:y',
+                name: 'marvin',
+                fullname: 'Marvin Min',
+                email: 'l@m.com',
+                phone: '123456789',
+                facility_id: ['c', 'd'],
+              },
+            }
+          ],
         };
-        db.medic.allDocs.withArgs({ keys: ['org.couchdb.user:x'], include_docs: true }).resolves(userSettingsResponse);
+        db.medic.allDocs.resolves(userSettingsResponse);
 
         const data = await service.getList(filters);
-        chai.expect(data.length).to.equal(1);
+        chai.expect(data.length).to.equal(2);
         const lucas = data[0];
-        chai.expect(lucas.id).to.equal('org.couchdb.user:x');
-        chai.expect(lucas.username).to.equal('lucas');
-        chai.expect(lucas.fullname).to.equal('Lucas M');
-        chai.expect(lucas.email).to.equal('l@m.com');
-        chai.expect(lucas.phone).to.equal('123456789');
-        chai.expect(lucas.place).to.deep.equal(facilityc);
-        chai.expect(lucas.roles).to.deep.equal(['national-admin', 'data-entry']);
+        chai.expect(lucas).to.deep.include({
+          id: 'org.couchdb.user:x',
+          username: 'lucas',
+          fullname: 'Lucas M',
+          email: 'l@m.com',
+          phone: '123456789',
+          places: [facilityC],
+          roles: ['national-admin', 'data-entry']
+        });
+        const marvin = data[1];
+        chai.expect(marvin).to.deep.include({
+          id: 'org.couchdb.user:y',
+          username: 'marvin',
+          fullname: 'Marvin Min',
+          email: 'l@m.com',
+          phone: '123456789',
+          places: [facilityC, facilityD],
+          roles: ['national-admin', 'data-entry']
+        });
       });
 
       it('with contact_id', async () => {
@@ -290,7 +326,7 @@ describe('Users service', () => {
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
         chai.expect(milan.contact._id).to.equal('milan-contact');
-        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.places).to.deep.equal([facilityB]);
         chai.expect(milan.roles).to.deep.equal(['district-admin']);
       });
 
@@ -302,7 +338,7 @@ describe('Users service', () => {
               doc: {
                 _id: 'org.couchdb.user:y',
                 name: 'milan',
-                facility_id: 'b',
+                facility_id: ['b', 'c'],
                 contact_id: 'milan-contact',
                 roles: ['district-admin'],
               }
@@ -332,7 +368,7 @@ describe('Users service', () => {
               email: 'm@a.com',
               phone: '987654321',
               external_id: 'LTT093',
-              facility_id: 'b',
+              facility_id: ['b', 'c'],
               contact_id: 'milan-contact',
             },
           }],
@@ -349,7 +385,7 @@ describe('Users service', () => {
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
         chai.expect(milan.contact._id).to.equal('milan-contact');
-        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.places).to.deep.equal([facilityB, facilityC]);
         chai.expect(milan.roles).to.deep.equal(['district-admin']);
       });
     });
@@ -399,14 +435,14 @@ describe('Users service', () => {
         chai.expect(lucas.fullname).to.equal('Lucas M');
         chai.expect(lucas.email).to.equal('l@m.com');
         chai.expect(lucas.phone).to.equal('123456789');
-        chai.expect(lucas.place).to.deep.equal(facilityc);
+        chai.expect(lucas.places).to.deep.equal([facilityC]);
         chai.expect(lucas.roles).to.deep.equal([ 'national-admin', 'data-entry' ]);
         chai.expect(milan.id).to.equal('org.couchdb.user:y');
         chai.expect(milan.username).to.equal('milan');
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
-        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.places).to.deep.equal([facilityB]);
         chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
         chai.expect(milan.external_id).to.equal('LTT093');
       });
@@ -461,7 +497,7 @@ describe('Users service', () => {
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
-        chai.expect(milan.place).to.deep.equal(facilityb);
+        chai.expect(milan.places).to.deep.equal([facilityB]);
         chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
       });
 
@@ -532,8 +568,8 @@ describe('Users service', () => {
       db.medic.get.resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'not_steve', roles: ['c'] });
       db.medic.allDocs.resolves({
         rows: [
-          { id: 'steveVille', key: 'steveVille', doc: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' } },
           { id: 'steve', key: 'steve', doc: { _id: 'steve', patient_id: 'steve', name: 'steve' } },
+          { id: 'steveVille', key: 'steveVille', doc: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' } },
         ],
       });
 
@@ -542,10 +578,10 @@ describe('Users service', () => {
         .then(result => {
           chai.expect(result).to.deep.equal({
             name: 'steve',
-            facility_id: 'steveVille',
+            facility_id: ['steveVille'],
             contact_id: 'steve',
             roles: ['b'],
-            facility: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' },
+            facilities: [{ _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' }],
             contact: { _id: 'steve', patient_id: 'steve', name: 'steve' },
           });
 
@@ -554,7 +590,45 @@ describe('Users service', () => {
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
           chai.expect(db.medic.allDocs.callCount).to.equal(1);
-          chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ keys: ['steveVille', 'steve'], include_docs: true }]);
+          chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ keys: ['steve', 'steveVille'], include_docs: true }]);
+          chai.expect(db.medic.query.callCount).to.equal(0);
+        });
+    });
+
+    it('returns medic user doc with facilities from couchdb user doc', () => {
+      db.users.get.resolves({ name: 'steve', facility_id: ['sVille', 'lVille'], contact_id: 'steve', roles: ['b'] });
+      db.medic.get.resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'not_steve', roles: ['c'] });
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: 'steve', key: 'steve', doc: { _id: 'steve', patient_id: 'steve', name: 'steve' } },
+          { id: 'sVille', key: 'sVille', doc: { _id: 'sVille', place_id: 'steve_ville', name: 'steve V' } },
+          { id: 'lVille', key: 'lVille', doc: { _id: 'lVille', place_id: 'lovre_ville', name: 'lovre V' } },
+        ],
+      });
+
+      return service
+        .getUserSettings({ name: 'steve' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            name: 'steve',
+            facility_id: ['sVille', 'lVille'],
+            contact_id: 'steve',
+            roles: ['b'],
+            facilities: [
+              { _id: 'sVille', place_id: 'steve_ville', name: 'steve V' },
+              { _id: 'lVille', place_id: 'lovre_ville', name: 'lovre V' }
+            ],
+            contact: { _id: 'steve', patient_id: 'steve', name: 'steve' },
+          });
+
+          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0]).to.deep.equal(
+            [{ keys: ['steve', 'sVille', 'lVille'], include_docs: true }]
+          );
           chai.expect(db.medic.query.callCount).to.equal(0);
         });
     });
@@ -579,8 +653,8 @@ describe('Users service', () => {
       });
       db.medic.allDocs.resolves({
         rows: [
-          { id: 'myUserVille', key: 'myUserVille', doc: { _id: 'myUserVille', place_id: 'user_ville' } },
           { id: 'my-user-contact', key: 'my-user-contact', doc: { _id: 'my-user-contact', patient_id: 'contact' } },
+          { id: 'myUserVille', key: 'myUserVille', doc: { _id: 'myUserVille', place_id: 'user_ville' } },
         ],
       });
 
@@ -594,8 +668,8 @@ describe('Users service', () => {
             type: 'user-settings',
             some: 'field',
             contact_id: 'my-user-contact',
-            facility_id: 'myUserVille',
-            facility: { _id: 'myUserVille', place_id: 'user_ville' },
+            facility_id: ['myUserVille'],
+            facilities: [{ _id: 'myUserVille', place_id: 'user_ville' }],
             contact: { _id: 'my-user-contact', patient_id: 'contact' },
           });
         });
@@ -633,7 +707,7 @@ describe('Users service', () => {
             type: 'user-settings',
             some: 'field',
             contact_id: 'my-user-contact',
-            facility_id: 'myUserVille',
+            facility_id: ['myUserVille'],
           });
         });
     });
@@ -668,7 +742,7 @@ describe('Users service', () => {
             type: 'user-settings',
             some: 'field',
             contact_id: 'my-user-contact',
-            facility_id: 'myUserVille',
+            facility_id: ['myUserVille'],
           });
         });
     });
@@ -703,7 +777,7 @@ describe('Users service', () => {
             type: 'user-settings',
             some: 'field',
             contact_id: 'my-user-contact',
-            facility_id: 'myUserVille',
+            facility_id: ['myUserVille'],
           });
         });
     });
@@ -738,7 +812,7 @@ describe('Users service', () => {
             type: 'user-settings',
             some: 'field',
             contact_id: 'my-user-contact',
-            facility_id: 'myUserVille',
+            facility_id: ['myUserVille'],
           });
         });
     });
@@ -763,8 +837,8 @@ describe('Users service', () => {
       });
       db.medic.allDocs.resolves({
         rows: [
-          { id: 'myUserVille', key: 'myUserVille', doc: { _id: 'myUserVille' } },
           { key: 'my-user-contact', error: 'not_found' },
+          { id: 'myUserVille', key: 'myUserVille', doc: { _id: 'myUserVille' } },
         ],
       });
 
@@ -778,8 +852,8 @@ describe('Users service', () => {
             type: 'user-settings',
             some: 'field',
             contact_id: 'my-user-contact',
-            facility_id: 'myUserVille',
-            facility: { _id: 'myUserVille' },
+            facility_id: ['myUserVille'],
+            facilities: [{ _id: 'myUserVille' }],
             contact: undefined,
           });
         });
@@ -1315,7 +1389,7 @@ describe('Users service', () => {
           {
             error: {
               message: 'The password is too easy to guess. Include a range of' +
-                ' types of characters to increase the score.',
+                       ' types of characters to increase the score.',
               translationKey: 'password.weak',
               translationParams: undefined
             }
@@ -3253,8 +3327,10 @@ describe('Users service', () => {
 
     it('should parse csv, trim spaces and not split strings with commas inside', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
-        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
-        'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
+                  // eslint-disable-next-line max-len
+                  'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
+                  // eslint-disable-next-line max-len
+                  'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
 
@@ -3281,10 +3357,10 @@ describe('Users service', () => {
     it('should parse csv, trim spaces and not split strings with commas inside', async () => {
       /* eslint-disable max-len */
       const csv = 'password,username,type,place,token_login,contact.name,contact.phone,contact.address\n' +
-        ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
-        'Secret9876,devi,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,truthy mistake,devi,265252,"12 King ST, Kent Town, 55555"\n' +
-        'Secret1144,jeff,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,,jeff,26599102,"27 King ST, Kent Town, 55555"\n' +
-        'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
+                  ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
+                  'Secret9876,devi,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,truthy mistake,devi,265252,"12 King ST, Kent Town, 55555"\n' +
+                  'Secret1144,jeff,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,,jeff,26599102,"27 King ST, Kent Town, 55555"\n' +
+                  'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
       /* eslint-enable max-len */
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
@@ -3339,7 +3415,8 @@ describe('Users service', () => {
 
     it('should ignore empty header columns', async () => {
       const csv = 'password,username,type,,contact.name,,contact.address\n' +
-        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
+                  // eslint-disable-next-line max-len
+                  'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
 
@@ -3357,7 +3434,7 @@ describe('Users service', () => {
 
     it('should keep attributes if there is not value', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
-        'Secret1234,mary,person,,mary,     ,"1 King ST, Kent Town, 55555"\n';
+                  'Secret1234,mary,person,,mary,     ,"1 King ST, Kent Town, 55555"\n';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
 
@@ -3376,9 +3453,9 @@ describe('Users service', () => {
 
     it('should parse csv with deep object structure', async () => {
       const csv = 'password,username,type,place,contact.name,contact.address.country' +
-        ',contact.address.city.street,contact.address.city.name\n' +
-        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,US,"5th ST", Kent Town\n' +
-        'Secret555,peter,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter,CA,,Victoria Town\n';
+                  ',contact.address.city.street,contact.address.city.name\n' +
+                  'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,US,"5th ST", Kent Town\n' +
+                  'Secret555,peter,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter,CA,,Victoria Town\n';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
 
@@ -3422,9 +3499,9 @@ describe('Users service', () => {
 
     it('should parse csv with special characters', async () => {
       const csv = 'password,username,type,place,contact.name,contact.notes\n' +
-        'Secret1234,mary,person,498a394e-f98,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
-        'Secret5678, peter ,person,498a394e-f99,Peter,"ce fût une belle saison, le maïs sera prêt à partir ' +
-        'de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+                  'Secret1234,mary,person,498a394e-f98,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
+                  'Secret5678, peter ,person,498a394e-f99,Peter,"ce fût une belle saison, le maïs sera prêt à partir ' +
+                  'de l’été c’est-à-dire dès demain, d’où l’invaitation"';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
 
@@ -3448,7 +3525,7 @@ describe('Users service', () => {
           contact: {
             name: 'Peter',
             notes: 'ce fût une belle saison, le maïs sera prêt à partir' +
-              ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
+                   ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
           }
         }
       ]);
@@ -3456,9 +3533,11 @@ describe('Users service', () => {
 
     it('should ignore excluded header columns', async () => {
       const csv = 'password,username,type,place,contact.meta:excluded,contact.name,contact.notes\n' +
-        'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
-        'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
-        '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+                  // eslint-disable-next-line max-len
+                  'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
+                  'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
+                  // eslint-disable-next-line max-len
+                  '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
 
@@ -3482,7 +3561,7 @@ describe('Users service', () => {
           contact: {
             name: 'Peter',
             notes: 'ce fût une belle saison, le maïs sera prêt à partir' +
-              ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
+                   ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
           }
         }
       ]);

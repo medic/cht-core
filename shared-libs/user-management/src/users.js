@@ -133,7 +133,10 @@ const getUsers = async (facilityId, contactId) => {
     return usersForContactId;
   }
 
-  return usersForContactId.filter(user => user.facility_id === facilityId);
+  return usersForContactId.filter(user => {
+    return user.facility_id === facilityId ||
+           (Array.isArray(user.facility_id) && user.facility_id.includes(facilityId));
+  });
 };
 
 const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
@@ -365,6 +368,7 @@ const mapUsers = (users, settings, facilities) => {
     .filter(user => user._id.indexOf(USER_PREFIX) === 0)
     .map(user => {
       const setting = getDoc(user._id, settings) || {};
+      const facilityIds = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
       return {
         id: user._id,
         rev: user._rev,
@@ -372,7 +376,7 @@ const mapUsers = (users, settings, facilities) => {
         fullname: setting.fullname,
         email: setting.email,
         phone: setting.phone,
-        place: getDoc(user.facility_id, facilities),
+        places: facilityIds.map(facility => getDoc(facility, facilities)),
         roles: user.roles,
         contact: getDoc(user.contact_id, facilities),
         external_id: setting.external_id,
@@ -595,11 +599,15 @@ const validateUserContact = (data, user, userSettings) => {
  * @param {Object} data
  * @param {string} data.username Identifier used for authentication
  * @param {string[]} data.roles
- * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
- * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
- * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+ * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the
+ *   roles contain an offline role.
+ * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in
+ *   the app. Required if the roles contain an offline role.
+ * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved.
+ *   Required if token_login is not enabled for the user.
  * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
- * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+ * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this
+ *   user.
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -748,18 +756,17 @@ const createRecordBulkLog = (record, status, error, message) => {
 
 const hydrateUserSettings = (userSettings) => {
   return db.medic
-    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .allDocs({ keys: [ userSettings.contact_id, ...userSettings.facility_id ], include_docs: true })
     .then((response) => {
-      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+      if (!response.rows || !Array.isArray(response.rows)) {
+        return userSettings;
+      }
+      const [ contactRow, ...facilityRows ] = response.rows;
+      if (!facilityRows.length || !contactRow) { // malformed response
         return userSettings;
       }
 
-      const [facilityRow, contactRow] = response.rows;
-      if (!facilityRow || !contactRow) { // malformed response
-        return userSettings;
-      }
-
-      userSettings.facility = facilityRow.doc;
+      userSettings.facilities = facilityRows.map(row => row.doc);
       userSettings.contact = contactRow.doc;
 
       return userSettings;
@@ -791,7 +798,8 @@ const getUserDocsByName = (name) => {
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
-  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id', 'contact_id'));
+  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'contact_id'));
+  medicUser.facility_id = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
   return hydrateUserSettings(medicUser);
 };
 
@@ -815,11 +823,15 @@ module.exports = {
    * @param {Object} data
    * @param {string} data.username Identifier used for authentication
    * @param {string[]} data.roles
-   * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
-   * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
-   * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if
+   *   the roles contain an offline role.
+   * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in
+   *   the app. Required if the roles contain an offline role.
+   * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved.
+   *   Required if token_login is not enabled for the user.
    * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
-   * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for
+   *   this user.
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -858,11 +870,15 @@ module.exports = {
    * @param {Object|Object[]} users[]
    * @param {string} users[].username Identifier used for authentication
    * @param {string[]} users[].roles
-   * @param {(Object|string)=} users[].place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
-   * @param {(Object|string)=} users[].contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
-   * @param {string=} users[].password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {(Object|string)=} users[].place Place identifier string (UUID) or object this user resides in. Required if
+   *   the roles contain an offline role.
+   * @param {(Object|string)=} users[].contact A person identifier string (UUID) or object based on the form configured
+   *   in the app. Required if the roles contain an offline role.
+   * @param {string=} users[].password Password string used for authentication. Only allowed to be set, not retrieved.
+   *   Required if token_login is not enabled for the user.
    * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
-   * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for
+   *   this user.
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.

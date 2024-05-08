@@ -3,7 +3,8 @@ const db = require('./db');
 const list = async (users) => {
   const ids = new Set();
   for (const user of users) {
-    ids.add(user?.facility_id);
+    const facilityIds = Array.isArray(user?.facility_id) ? user.facility_id : [user.facility_id];
+    facilityIds.forEach(facilityId => ids.add(facilityId));
     ids.add(user?.contact_id);
   }
   ids.delete(undefined);
