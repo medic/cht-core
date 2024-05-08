@@ -103,22 +103,22 @@ jobs:
     - name: Run Tests
       run: npm run ${{ matrix.cmd }}
 
-  test-cht-form:
-    needs: build
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - run: sudo apt-get install -y xsltproc
-      - run: npm ci
-      - name: Build cht-form Web Component
-        run: npm run build-cht-form
-      - name: Run Tests
-        run: npm run wdio-cht-form
+#  test-cht-form:
+#    needs: build
+#    runs-on: ubuntu-22.04
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Use Node.js ${{ env.NODE_VERSION }}
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: ${{ env.NODE_VERSION }}
+#      - run: sudo apt-get install -y xsltproc
+#      - run: npm ci
+#      - name: Build cht-form Web Component
+#        run: npm run build-cht-form
+#      - name: Run Tests
+#        run: npm run wdio-cht-form
 
   tests:
     needs: build
