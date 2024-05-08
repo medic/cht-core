@@ -4,7 +4,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class DbService {
-  public get(): any {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public get(context?: { meta?: boolean; remote?: boolean }): any {
     return {
       get: () => Promise.resolve(),
       query: async (selector, options) => {

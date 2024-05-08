@@ -88,6 +88,7 @@ describe('Form service', () => {
   let consoleErrorMock;
   let consoleWarnMock;
   let feedbackService;
+  let extractLineageService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -153,6 +154,7 @@ describe('Form service', () => {
     consoleErrorMock = sinon.stub(console, 'error');
     consoleWarnMock = sinon.stub(console, 'warn');
     feedbackService = { submit: sinon.stub() };
+    extractLineageService = { extract: ExtractLineageService.prototype.extract };
 
     TestBed.configureTestingModule({
       providers: [
@@ -181,6 +183,7 @@ describe('Form service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: TrainingCardsService, useValue: trainingCardsService },
         { provide: FeedbackService, useValue: feedbackService },
+        { provide: ExtractLineageService, useValue: extractLineageService },
       ],
     });
 
