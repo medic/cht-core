@@ -291,18 +291,17 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           ? userSettings.facility_id
           : [userSettings.facility_id];
 
-        if (!facilityId) {
+        if (!facilityId.length || facilityId.some(id => id === undefined)) {
           return;
         }
+
 
 
         this.globalActions.setUserFacilityId(facilityId);
         return this.getDataRecordsService
           .get(facilityId)
           .then(places => {
-            console.log('places', places);
-            const validPlaces = places.filter(place => place && Object.keys(place).length > 0);
-            console.log('valid places', validPlaces);
+            const validPlaces = places?.filter(place => place !== undefined);
             return validPlaces.length ? validPlaces : undefined;
           });
       })
