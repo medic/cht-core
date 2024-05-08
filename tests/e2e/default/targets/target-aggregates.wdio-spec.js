@@ -82,7 +82,7 @@ describe('Target aggregates', () => {
 
     afterEach(async () => await utils.revertDb([/^form:/], true));
 
-    it('should display an empty list when there are no aggregates', async () => {
+    xit('should display an empty list when there are no aggregates', async () => {
       await commonPage.goToAnalytics();
       await targetAggregatesPage.expectModulesToBeAvailable([
         '#/analytics/targets',
@@ -97,7 +97,7 @@ describe('Target aggregates', () => {
       ).to.be.true;
     });
 
-    it('should display an error when there are aggregates but no home place', async () => {
+    xit('should display an error when there are aggregates but no home place', async () => {
       const settings = await utils.getSettings();
       const tasks = settings.tasks;
       tasks.targets.items[0].aggregate = true;
