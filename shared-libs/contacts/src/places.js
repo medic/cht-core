@@ -23,6 +23,18 @@ const getPlace = id => {
     });
 };
 
+const placesExist = async (placeIds) => {
+  const result = await db.medic.allDocs({ keys: placeIds, include_docs: true });
+
+  for (const row of result.rows) {
+    if (!row.doc || row.error || !isAPlace(row.doc)) {
+      const err = new Error(`Failed to find place ${row.id}`);
+      err.status = 404;
+      throw err;
+    }
+  }
+};
+
 const isAPlace = place => place && contactTypesUtils.isPlace(config.get(), place);
 const getContactType = place => place && contactTypesUtils.getContactType(config.get(), place);
 
@@ -224,4 +236,5 @@ module.exports = {
   getPlace: getPlace,
   updatePlace: updatePlace,
   getOrCreatePlace: getOrCreatePlace,
+  placesExist,
 };

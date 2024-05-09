@@ -15,6 +15,10 @@ const parentPlace = {
   name: 'Big Parent Hospital'
 };
 
+const randomIp = () => {
+  const section = () => (Math.floor(Math.random() * 255) + 1);
+  return `${section()}.${section()}.${section()}.${section()}`;
+};
 
 describe('Users API', () => {
 
@@ -26,6 +30,7 @@ describe('Users API', () => {
       noAuth: true,
       body: { user: user.username, password: user.password },
       followRedirect: false,
+      headers: { 'X-Forwarded-For': randomIp() },
     };
 
     return utils
@@ -41,6 +46,8 @@ describe('Users API', () => {
       });
   };
 
+
+
   const expectPasswordLoginToFail = (user) => {
     const opts = {
       path: '/login',
@@ -48,6 +55,7 @@ describe('Users API', () => {
       simple: false,
       noAuth: true,
       body: { user: user.username, password: user.password },
+      headers: { 'X-Forwarded-For': randomIp() },
     };
 
     return utils
@@ -57,7 +65,7 @@ describe('Users API', () => {
       });
   };
 
-  describe.skip('POST /api/v1/users/{username}', () => {
+  describe('POST /api/v1/users/{username}', () => {
     const username = 'test' + new Date().getTime();
     const password = 'pass1234!';
     const _usersUser = {
@@ -191,10 +199,10 @@ describe('Users API', () => {
         },
       });
       userSettingsDoc = await utils.getDoc(getUserId(username));
-      chai.expect(userSettingsDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userSettingsDoc.facility_id).to.deep.equal([newPlaceId]);
       chai.expect(userSettingsDoc.contact_id).to.equal(newContactId);
       userDoc = await utils.usersDb.get(getUserId(username));
-      chai.expect(userDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userDoc.facility_id).to.deep.equal([newPlaceId]);
       chai.expect(userDoc.contact_id).to.equal(newContactId);
     });
 
@@ -339,7 +347,7 @@ describe('Users API', () => {
         .then(([userSettings, user]) => {
           chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
           chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
-          chai.expect(userSettings.facility_id).to.equal(user.facility_id);
+          chai.expect(userSettings.facility_id).to.deep.equal(user.facility_id);
 
           return utils.getDocs([userSettings.contact_id, userSettings.facility_id]);
         })
@@ -665,6 +673,7 @@ describe('Users API', () => {
         noAuth: true,
         followRedirect: false,
         body: {},
+        headers: { 'X-Forwarded-For': randomIp() },
       };
       return utils.request(opts).then(response => {
         chai.expect(response).to.include({ statusCode: 302, body: '/' });
@@ -683,6 +692,7 @@ describe('Users API', () => {
         followRedirect: false,
         resolveWithFullResponse: true,
         body: {},
+        headers: { 'X-Forwarded-For': randomIp() },
       };
       return utils.request(opts).then(response => {
         chai.expect(response.headers['set-cookie']).to.be.undefined;
@@ -1636,9 +1646,9 @@ describe('Users API', () => {
         const savedUser = savedUsers.find(savedUser => savedUser.username === user.username);
         expect(savedUser).to.deep.nested.include({
           id: `org.couchdb.user:${user.username}`,
-          'places[0].type': user.place.type,
-          'places[0].name': user.place.name,
-          'places[0].parent._id': parentPlace._id,
+          'place[0].type': user.place.type,
+          'place[0].name': user.place.name,
+          'place[0].parent._id': parentPlace._id,
           'contact.name': user.contact.name,
         });
       }
@@ -1709,14 +1719,14 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
         id: user1Response.user.id,
         'contact._id': contactA.id,
-        'places[0]._id': facilityE.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
         id: user2Response.user.id,
         'contact._id': contactA.id,
-        'places[0]._id': facilityE.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({
@@ -1727,20 +1737,20 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
         id: user1Response.user.id,
         'contact._id': contactA.id,
-        'places[0]._id': facilityE.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
         id: user2Response.user.id,
         'contact._id': contactA.id,
-        'places[0]._id': facilityE.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user3Response.user.id)).to.deep.nested.include({
         id: user3Response.user.id,
         'contact._id': contactB.id,
-        'places[0]._id': facilityE.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({
@@ -1751,14 +1761,14 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
         id: user1Response.user.id,
         'contact._id': contactA.id,
-        'places[0]._id': facilityE.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
         id: user2Response.user.id,
         'contact._id': contactA.id,
-        'places[0]._id': facilityE.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({
@@ -1769,8 +1779,8 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user4Response.user.id)).to.deep.nested.include({
         id: user4Response.user.id,
         'contact._id': contactC.id,
-        'places[0]._id': facilityF.id,
-        'places[0].parent._id': parentPlace._id,
+        'place[0]._id': facilityF.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({

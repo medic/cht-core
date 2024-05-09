@@ -99,10 +99,10 @@ describe('Users service', () => {
         fullname: 'John'
       };
       const settings = service.__get__('getSettingsUpdates')('john', data);
-      chai.expect(settings.place).to.equal(undefined);
-      chai.expect(settings.contact).to.equal(undefined);
+      chai.expect(settings.place).to.equal('abc');
+      chai.expect(settings.contact).to.equal('123');
       chai.expect(settings.contact_id).to.equal('123');
-      chai.expect(settings.facility_id).to.equal('abc');
+      chai.expect(settings.facility_id).to.deep.equal(['abc']);
       chai.expect(settings.fullname).to.equal('John');
     });
 
@@ -143,7 +143,7 @@ describe('Users service', () => {
       const user = service.__get__('getUserUpdates')('john', data);
       chai.expect(user.place).to.equal(undefined);
       chai.expect(user.contact).to.equal(undefined);
-      chai.expect(user.facility_id).to.equal('abc');
+      chai.expect(user.facility_id).to.deep.equal(['abc']);
       chai.expect(user.contact_id).to.equal('xyz');
     });
 
@@ -268,7 +268,7 @@ describe('Users service', () => {
           fullname: 'Lucas M',
           email: 'l@m.com',
           phone: '123456789',
-          places: [facilityC],
+          place: [facilityC],
           roles: ['national-admin', 'data-entry']
         });
         const marvin = data[1];
@@ -278,7 +278,7 @@ describe('Users service', () => {
           fullname: 'Marvin Min',
           email: 'l@m.com',
           phone: '123456789',
-          places: [facilityC, facilityD],
+          place: [facilityC, facilityD],
           roles: ['national-admin', 'data-entry']
         });
       });
@@ -326,7 +326,7 @@ describe('Users service', () => {
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
         chai.expect(milan.contact._id).to.equal('milan-contact');
-        chai.expect(milan.places).to.deep.equal([facilityB]);
+        chai.expect(milan.place).to.deep.equal([facilityB]);
         chai.expect(milan.roles).to.deep.equal(['district-admin']);
       });
 
@@ -385,7 +385,7 @@ describe('Users service', () => {
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
         chai.expect(milan.contact._id).to.equal('milan-contact');
-        chai.expect(milan.places).to.deep.equal([facilityB, facilityC]);
+        chai.expect(milan.place).to.deep.equal([facilityB, facilityC]);
         chai.expect(milan.roles).to.deep.equal(['district-admin']);
       });
     });
@@ -435,14 +435,14 @@ describe('Users service', () => {
         chai.expect(lucas.fullname).to.equal('Lucas M');
         chai.expect(lucas.email).to.equal('l@m.com');
         chai.expect(lucas.phone).to.equal('123456789');
-        chai.expect(lucas.places).to.deep.equal([facilityC]);
+        chai.expect(lucas.place).to.deep.equal([facilityC]);
         chai.expect(lucas.roles).to.deep.equal([ 'national-admin', 'data-entry' ]);
         chai.expect(milan.id).to.equal('org.couchdb.user:y');
         chai.expect(milan.username).to.equal('milan');
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
-        chai.expect(milan.places).to.deep.equal([facilityB]);
+        chai.expect(milan.place).to.deep.equal([facilityB]);
         chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
         chai.expect(milan.external_id).to.equal('LTT093');
       });
@@ -497,7 +497,7 @@ describe('Users service', () => {
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
-        chai.expect(milan.places).to.deep.equal([facilityB]);
+        chai.expect(milan.place).to.deep.equal([facilityB]);
         chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
       });
 
@@ -581,7 +581,7 @@ describe('Users service', () => {
             facility_id: ['steveVille'],
             contact_id: 'steve',
             roles: ['b'],
-            facilities: [{ _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' }],
+            facility: [{ _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' }],
             contact: { _id: 'steve', patient_id: 'steve', name: 'steve' },
           });
 
@@ -614,7 +614,7 @@ describe('Users service', () => {
             facility_id: ['sVille', 'lVille'],
             contact_id: 'steve',
             roles: ['b'],
-            facilities: [
+            facility: [
               { _id: 'sVille', place_id: 'steve_ville', name: 'steve V' },
               { _id: 'lVille', place_id: 'lovre_ville', name: 'lovre V' }
             ],
@@ -669,7 +669,7 @@ describe('Users service', () => {
             some: 'field',
             contact_id: 'my-user-contact',
             facility_id: ['myUserVille'],
-            facilities: [{ _id: 'myUserVille', place_id: 'user_ville' }],
+            facility: [{ _id: 'myUserVille', place_id: 'user_ville' }],
             contact: { _id: 'my-user-contact', patient_id: 'contact' },
           });
         });
@@ -853,7 +853,7 @@ describe('Users service', () => {
             some: 'field',
             contact_id: 'my-user-contact',
             facility_id: ['myUserVille'],
-            facilities: [{ _id: 'myUserVille' }],
+            facility: [{ _id: 'myUserVille' }],
             contact: undefined,
           });
         });
@@ -2356,7 +2356,7 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(places, 'getPlace').resolves();
+      sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -2453,14 +2453,14 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({ facility_id: 'maine' }));
       service.__set__('validateUserSettings', sinon.stub().resolves({ facility_id: 'maine' }));
-      sinon.stub(places, 'getPlace').resolves();
+      sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
-        chai.expect(db.medic.put.args[0][0].facility_id).to.equal('paris');
+        chai.expect(db.medic.put.args[0][0].facility_id).to.deep.equal(['paris']);
         chai.expect(db.users.put.callCount).to.equal(1);
-        chai.expect(db.users.put.args[0][0].facility_id).to.equal('paris');
+        chai.expect(db.users.put.args[0][0].facility_id).to.deep.equal(['paris']);
       });
     });
 
@@ -2509,14 +2509,14 @@ describe('Users service', () => {
         phone: '123',
         known: false
       }));
-      sinon.stub(places, 'getPlace').resolves();
+      sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
       sinon.stub(roles, 'isOffline').withArgs(['rambler']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];
-        chai.expect(settings.facility_id).to.equal('el paso');
+        chai.expect(settings.facility_id).to.deep.equal(['el paso']);
         chai.expect(settings.phone).to.equal('123');
         chai.expect(settings.known).to.equal(false);
         chai.expect(settings.type).to.equal('user-settings');
@@ -2524,7 +2524,7 @@ describe('Users service', () => {
 
         chai.expect(db.users.put.callCount).to.equal(1);
         const user = db.users.put.args[0][0];
-        chai.expect(user.facility_id).to.equal('el paso');
+        chai.expect(user.facility_id).to.deep.equal(['el paso']);
         chai.expect(user.roles).to.deep.equal(['rambler', 'mm-online']);
         chai.expect(user.shoes).to.equal('dusty boots');
         chai.expect(user.password).to.equal(COMPLEX_PASSWORD);
@@ -2549,7 +2549,7 @@ describe('Users service', () => {
         known: false
       }));
       config.get.returns({ chp: { offline: true } });
-      sinon.stub(places, 'getPlace').resolves();
+      sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {

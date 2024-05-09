@@ -288,7 +288,7 @@ describe('Users Controller', () => {
         roles.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
-          userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
+          userCtx: { roles: ['some_role'], facility_id: [req.query.facility_id] },
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
@@ -306,7 +306,7 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
             roles: ['some_role'],
-            facility_id: req.query.facility_id,
+            facility_id: [req.query.facility_id],
             contact_id: undefined
           }]);
           chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
@@ -363,7 +363,7 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
             roles: ['some_role'],
-            facility_id: req.query.facility_id,
+            facility_id: [req.query.facility_id],
             contact_id: req.query.contact_id
           }]);
           chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
@@ -492,7 +492,7 @@ describe('Users Controller', () => {
         roles.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
-          userCtx: { roles: ['role1', 'role2'], facility_id: req.query.facility_id },
+          userCtx: { roles: ['role1', 'role2'], facility_id: [req.query.facility_id ]},
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
@@ -506,7 +506,7 @@ describe('Users Controller', () => {
         return controller.info(req, res).then(() => {
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
             roles: ['role1', 'role2'],
-            facility_id: 'some_facility_id',
+            facility_id: ['some_facility_id'],
             contact_id: undefined,
           }]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);

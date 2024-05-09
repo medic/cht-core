@@ -363,7 +363,7 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
  * @param {string} userCtx.contact_id         the user's contact's uuid
  * @param {[string]} userCtx.facility_id      the user's places' uuids
  * @param {Object|undefined} userCtx.contact  the user's contact
- * @param {Array|undefined} userCtx.facilities the users' places
+ * @param {Array|undefined} userCtx.facility the users' places
  * @param {string|undefined} subject          report's subject
  * @param {string|undefined} submitter        report's submitter
  * @param {boolean} isPrivate                 whether the report is private
@@ -377,7 +377,7 @@ const isSensitive = (userCtx, subject, submitter, isPrivate, allowedSubmitter) =
   }
 
   const sensitiveSubjects = [
-    ...(userCtx.facilities?.map(facility => registrationUtils.getSubjectIds(facility)) || []).flat(),
+    ...(userCtx.facility?.map(facility => registrationUtils.getSubjectIds(facility)) || []).flat(),
     ...registrationUtils.getSubjectIds(userCtx.contact),
     ...userCtx.facility_id,
     userCtx.contact_id,

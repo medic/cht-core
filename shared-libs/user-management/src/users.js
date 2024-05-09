@@ -369,6 +369,7 @@ const mapUsers = (users, settings, facilities) => {
     .map(user => {
       const setting = getDoc(user._id, settings) || {};
       const facilityIds = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
+      const places = facilityIds.map(facility => getDoc(facility, facilities));
       return {
         id: user._id,
         rev: user._rev,
@@ -376,7 +377,7 @@ const mapUsers = (users, settings, facilities) => {
         fullname: setting.fullname,
         email: setting.email,
         phone: setting.phone,
-        places: facilityIds.map(facility => getDoc(facility, facilities)),
+        place: places,
         roles: user.roles,
         contact: getDoc(user.contact_id, facilities),
         external_id: setting.external_id,
@@ -416,7 +417,7 @@ const getSettingsUpdates = (username, data) => {
     }
   }
   if (data.place) {
-    settings.facility_id = getDocID(data.place);
+    settings.facility_id = [getDocID(data.place)];
   }
   if (data.contact) {
     settings.contact_id = getDocID(data.contact);
@@ -447,7 +448,7 @@ const getUserUpdates = (username, data) => {
     user.roles.push(roles.ONLINE_ROLE);
   }
   if (data.place) {
-    user.facility_id = getDocID(data.place);
+    user.facility_id = [getDocID(data.place)];
   }
   if (data.contact) {
     user.contact_id = getDocID(data.contact);
@@ -560,7 +561,7 @@ const saveUserSettingsUpdates = async (userSettings) => {
 const validateUserFacility = (data, user, userSettings) => {
   if (data.place) {
     userSettings.facility_id = user.facility_id;
-    return places.getPlace(user.facility_id);
+    return places.placesExist(user.facility_id);
   }
 
   if (_.isNull(data.place)) {
@@ -578,7 +579,8 @@ const validateUserFacility = (data, user, userSettings) => {
 
 const validateUserContact = (data, user, userSettings) => {
   if (data.contact) {
-    return validateContact(user.contact_id, user.facility_id);
+    userSettings.contact_id = user.contact_id;
+    return validateContact(user.contact_id, user.facility_id[0]);
   }
 
   if (_.isNull(data.contact)) {
@@ -766,7 +768,7 @@ const hydrateUserSettings = (userSettings) => {
         return userSettings;
       }
 
-      userSettings.facilities = facilityRows.map(row => row.doc);
+      userSettings.facility = facilityRows.map(row => row.doc);
       userSettings.contact = contactRow.doc;
 
       return userSettings;

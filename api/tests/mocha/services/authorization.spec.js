@@ -13,14 +13,14 @@ const userCtx = {
   contact_id: 'contact_id',
   facility_id: ['facility_id'],
   contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
-  facilities: [{ _id: 'facility_id', place_id: 'facility_shortcode', name: 'health center', type: 'health_center' }],
+  facility: [{ _id: 'facility_id', place_id: 'facility_shortcode', name: 'health center', type: 'health_center' }],
 };
 const userCtxMultiFacility = {
   name: 'user',
   contact_id: 'contact_id',
   facility_id: ['facility1', 'facility2'],
   contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
-  facilities: [
+  facility: [
     { _id: 'facility1', place_id: 'fac1', name: 'health center', type: 'health_center' },
     { _id: 'facility2', place_id: 'fac2', name: 'health center', type: 'health_center' }
   ],
@@ -403,7 +403,7 @@ describe('Authorization service', () => {
         name: 'user',
         facility_id: ['facility_id'],
         contact_id: 'contact_id',
-        facilities: [{ _id: 'facility_id', place_id: 'facility_sh' }],
+        facility: [{ _id: 'facility_id', place_id: 'facility_sh' }],
         contact: { _id: 'contact_id', patient_id: 'contact_sh' },
       };
       db.medic.query
@@ -448,7 +448,7 @@ describe('Authorization service', () => {
         name: 'user',
         facility_id: ['f1', 'f2'],
         contact_id: 'contact_id',
-        facilities: [{ _id: 'f1', place_id: 'f1_sh' }, { _id: 'f2', place_id: 'f2_sh' }],
+        facility: [{ _id: 'f1', place_id: 'f1_sh' }, { _id: 'f2', place_id: 'f2_sh' }],
         contact: { _id: 'contact_id', patient_id: 'contact_sh' },
       };
       db.medic.query
@@ -1510,10 +1510,10 @@ describe('Authorization service', () => {
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
-        feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facilities[0].place_id ];
+        feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility[0].place_id ];
         viewResults = {
           replicationKeys: [{
-            key: userCtx.facilities[0].place_id,
+            key: userCtx.facility[0].place_id,
             value: { submitter: 'submitter', type: 'data_record', private: true }
           }],
           contactsByDepth: [],
@@ -1543,7 +1543,7 @@ describe('Authorization service', () => {
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
-        const facilityShortcode = userCtx.facilities[0].place_id;
+        const facilityShortcode = userCtx.facility[0].place_id;
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', facilityShortcode ];
         viewResults = {
           replicationKeys: [{ key: facilityShortcode, value: { submitter: 'contact', type: 'data_record' }}],
@@ -1730,8 +1730,8 @@ describe('Authorization service', () => {
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
-        const facility1sh = userCtxMultiFacility.facilities[0].place_id;
-        const facility2sh = userCtxMultiFacility.facilities[0].place_id;
+        const facility1sh = userCtxMultiFacility.facility[0].place_id;
+        const facility2sh = userCtxMultiFacility.facility[0].place_id;
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', facility1sh, facility2sh ];
         viewResults = {
           replicationKeys: [{
@@ -1774,8 +1774,8 @@ describe('Authorization service', () => {
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
-        const facility1sh = userCtxMultiFacility.facilities[0].place_id;
-        const facility2sh = userCtxMultiFacility.facilities[0].place_id;
+        const facility1sh = userCtxMultiFacility.facility[0].place_id;
+        const facility2sh = userCtxMultiFacility.facility[0].place_id;
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', facility1sh, facility2sh ];
         viewResults = {
@@ -3708,9 +3708,9 @@ describe('Authorization service', () => {
     it('should return false when subject is not sensitive', () => {
       const userCtx = {
         name: 'user',
-        facility_id: 'my_facility',
+        facility_id: ['my_facility'],
         contact_id: 'my_contact',
-        facility: { _id: 'my_facility', place_id: 'facility_shortcode' },
+        facility: [{ _id: 'my_facility', place_id: 'facility_shortcode' }],
         contact: { _id: 'my_contact', patient_id: 'patient_shortcode' },
       };
 
@@ -3730,7 +3730,7 @@ describe('Authorization service', () => {
           name: 'user',
           facility_id: ['my_facility'],
           contact_id: 'my_contact',
-          facilities: [{ _id: 'my_facility', place_id: 'facility_shortcode' }],
+          facility: [{ _id: 'my_facility', place_id: 'facility_shortcode' }],
           contact: { _id: 'my_contact', patient_id: 'patient_shortcode' },
         };
       });
@@ -3761,7 +3761,7 @@ describe('Authorization service', () => {
         service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, returnsTrue).should.equal(false);
         service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, true).should.equal(false);
 
-        delete userCtx.facilities; // no longer have facility_shortcode available
+        delete userCtx.facility; // no longer have facility_shortcode available
 
         // with not allowed submitter
         service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, returnsFalse).should.equal(false);
