@@ -287,9 +287,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.userSettingsService
       .get()
       .then((userSettings: any) => {
-        const facilityId = Array.isArray(userSettings.facility_id)
-          ? userSettings.facility_id
-          : [userSettings.facility_id];
+        const facilityId = this.getUserFacilityId(userSettings);
 
         if (!facilityId.length || facilityId.some(id => id === undefined)) {
           return;
@@ -520,7 +518,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         //  only show homeplaces facilities for multi-facility users
-        if (this.usersHomePlace?.length > 1) {
+        if (this.usersHomePlace?.length > 1 && !this.filters.search) {
           const homePlaceIds = this.usersHomePlace.map(place => place._id);
           updatedContacts = updatedContacts.filter(place => homePlaceIds.includes(place._id));
         }
