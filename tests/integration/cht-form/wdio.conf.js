@@ -1,4 +1,4 @@
-const wdioBaseConfig = require('../../e2e/wdio.conf');
+const wdioBaseConfig = require('../../wdio.conf');
 
 const path = require('path');
 const fs = require('fs');
