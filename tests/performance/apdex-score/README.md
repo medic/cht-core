@@ -92,7 +92,23 @@
         ],
         "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ] // Click on the back button after test case is done.
       }
-    }
+    },
+    
+    "forms": {
+        "patientReport": {
+          "selector": "",
+          "readyFormAsserts": [],
+          "pages": [
+            {
+              "asserts": [],
+              "fields": [],
+              "scrollDown": 1
+            }
+          ],
+          "postSubmitAsserts": [],
+          "postTestPath": []
+        }
+      }
 }
 ```
   - Find the android version by running `adb shell getprop | grep ro.build.version.release`

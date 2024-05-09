@@ -70,6 +70,72 @@ module.exports = class Page {
     }
   }
 
+  async enterFieldValue(field) {
+    if (field.scrollDown) {
+      this.scrollDown(field.scrollDown);
+    }
+
+    if (field.scrollUp) {
+      this.scrollUp(field.scrollUp);
+    }
+
+    if (await this.waitForDisplayedAndRetry(field.selector)) {
+      // ToDo: switch to handle each field type
+      console.log(field.value);
+    }
+
+    if (field.asserts) {
+      await this.assertMany(field.asserts);
+    }
+  }
+
+  async fillUpFormPage(formPage) {
+    if (formPage.asserts) {
+      await this.assertMany(formPage.asserts);
+    }
+
+    for (const field of formPage.fields) {
+      await this.enterFieldValue(field);
+    }
+
+    if (formPage.scrollDown) {
+      this.scrollDown(formPage.scrollDown);
+    }
+  }
+
+  async fillUpForm(form){
+    const FAB_SELECTOR = '//android.widget.Button';
+    const FORM_SUBMIT_SELECTOR = '//android.widget.Button[@text="Submit"]';
+    const FORM_PAGE_NEXT_SELECTOR = '//android.widget.Button[@text="Next >"]';
+
+    await this.waitForDisplayedAndRetry(FAB_SELECTOR);
+    // ToDo: In some cases you might need to scroll the popup to find the form, to be implemented in another iteration.
+    await this.waitForDisplayedAndRetry(form.selector);
+    if (form.readyFormAsserts) {
+      await this.assertMany(form.readyFormAsserts);
+    }
+
+    for (const page of form.pages) {
+      await this.fillUpFormPage(page);
+      await this.waitForDisplayedAndRetry(FORM_PAGE_NEXT_SELECTOR);
+    }
+
+    await this.waitForDisplayedAndRetry(FORM_SUBMIT_SELECTOR);
+
+    if (form.postSubmitAsserts) {
+      await this.assertMany(form.postSubmitAsserts);
+    }
+
+    if (form.postTestPath) {
+      await this.navigate(form.postTestPath);
+    }
+  }
+
+
+
+
+
+
   // ToDo: clean all these below after settings are done
 
   get btnCustom() {

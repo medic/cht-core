@@ -27,13 +27,18 @@ const getPage = (name) => {
   return SETTINGS_CACHE?.pages && SETTINGS_CACHE.pages[name];
 };
 
+const getForm = (name) => {
+  return SETTINGS_CACHE?.forms && SETTINGS_CACHE.forms[name];
+};
+
 const settingsProvider = {
   getIterations,
   getInstanceURL,
   hasPrivacyPolicy,
   getCapabilitiesSettings,
   getUser,
-  getPage
+  getPage,
+  getForm,
 };
 
 module.exports = () => {

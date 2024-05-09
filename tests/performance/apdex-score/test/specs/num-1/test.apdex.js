@@ -40,6 +40,10 @@ describe('Apdex Performance Workflows', () => {
     it('should load patient', async () => {
       await contactsPage.loadPatient(settingsProvider);
     });
+
+    it('should submit patient report', async () => {
+      await contactsPage.submitPatientReport(settingsProvider);
+    });
   }
 
   // ToDo: clean all these below after settings are done.
