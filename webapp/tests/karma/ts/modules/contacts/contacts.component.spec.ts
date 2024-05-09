@@ -1270,4 +1270,53 @@ describe('Contacts component', () => {
       });
     });
   });
+
+  describe('Facility ID', () => {
+    it('supports user with multi-facility homeplaces', fakeAsync(() => {
+      sinon.resetHistory();
+      const multi_facility = [{
+        _id: 'district-id-1',
+        name: 'My District 1',
+        type: 'district_hospital'
+      },
+      {
+        _id: 'district-id-2',
+        name: 'My District 2',
+        type: 'district_hospital'
+      }];
+
+      userSettingsService.get.resolves({ facility_id: [multi_facility[0]._id, multi_facility[1]._id] });
+      getDataRecordsService.get.resolves(multi_facility);
+
+      sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      component.ngOnInit();
+      flush();
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
+
+      expect(contacts.length).to.equal(2);
+      expect(contacts[0]._id).to.equal('district-id-2');
+      expect(contacts[1]._id).to.equal('district-id-1');
+      expect(contacts[0].home).to.equal(true);
+      expect(contacts[1].home).to.equal(true);
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
+    }));
+
+    it('supports user with one facility homeplace', fakeAsync(() => {
+      sinon.resetHistory();
+      sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      component.ngOnInit();
+      flush();
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
+      expect(contacts.length).to.equal(1);
+      expect(contacts[0]._id).to.equal('district-id');
+      expect(contacts[0].home).to.equal(true);
+      expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
+    }));
+  });
 });
