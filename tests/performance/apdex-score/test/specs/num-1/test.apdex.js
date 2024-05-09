@@ -42,7 +42,7 @@ describe('Apdex Performance Workflows', () => {
     });
   }
 
-  // ToDo: clean all these below after settings are done
+  // ToDo: clean all these below after settings are done.
 
   /*
   it('should submit a report for a newly created person', async () => {
