@@ -1,7 +1,30 @@
 const { $, driver } = require('@wdio/globals');
 const Page = require('./page');
 
-class PeoplePage extends Page {
+class ContactsPage extends Page {
+
+  async loadContactList(settingsProvider) {
+    const page = settingsProvider.getPage('contact-list');
+    await super.loadAndAssertPage(page);
+  }
+
+  async loadCHWArea(settingsProvider) {
+    const page = settingsProvider.getPage('chw-area');
+    await super.loadAndAssertPage(page);
+  }
+
+  async loadHousehold(settingsProvider) {
+    const page = settingsProvider.getPage('household');
+    await super.loadAndAssertPage(page);
+  }
+
+  async loadPatient(settingsProvider) {
+    const page = settingsProvider.getPage('patient');
+    await super.loadAndAssertPage(page);
+  }
+
+
+  // ToDo: clean all these below after settings are done
    
   get btnSearch() {
     return $('//*[@text="Performance"]');
@@ -1180,4 +1203,4 @@ class PeoplePage extends Page {
 
 }
 
-module.exports = new PeoplePage();
+module.exports = new ContactsPage();

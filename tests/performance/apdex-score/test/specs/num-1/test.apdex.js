@@ -2,17 +2,21 @@ require('dotenv').config();
 
 const loadSettings = require('../../../settings-provider');
 
-const LoadPage = require('../../pageobjects/load.page');
-const LoginPage = require('../../pageobjects/login.page');
-const PeoplePage = require('../../pageobjects/people.page');
-const TasksPage = require('../../pageobjects/tasks.page');
-const MessagesPage = require('../../pageobjects/messages.page');
-const ReportsPage = require('../../pageobjects/reports.page');
-const PerformancePage = require('../../pageobjects/performance.page');
+const LoadPage = require('../../page-objects/load.page');
+const LoginPage = require('../../page-objects/login.page');
+const contactsPage = require('../../page-objects/contacts.page');
+/*
+const TasksPage = require('../../page-objects/tasks.page');
+const MessagesPage = require('../../page-objects/messages.page');
+const ReportsPage = require('../../page-objects/reports.page');
+const PerformancePage = require('../../page-objects/performance.page');
+*/
 
 describe('Apdex Performance Workflows', () => {
+  const settingsProvider = loadSettings();
+  const REPETITIONS = settingsProvider.getIterations();
+
   before(async () => {
-    const settingsProvider = loadSettings();
     const instanceUrl = settingsProvider.getInstanceURL();
     const hasPrivacyPolicy = settingsProvider.hasPrivacyPolicy();
     const user = settingsProvider.getUser('offline', 'chw');
@@ -20,6 +24,27 @@ describe('Apdex Performance Workflows', () => {
     await LoginPage.login(user.username, user.password, hasPrivacyPolicy);
   });
 
+  for (let i = 0; i < REPETITIONS; i++) {
+    it('should load contact list', async () => {
+      await contactsPage.loadContactList(settingsProvider);
+    });
+
+    it('should load CHW area', async () => {
+      await contactsPage.loadCHWArea(settingsProvider);
+    });
+
+    it('should load Household', async () => {
+      await contactsPage.loadHousehold(settingsProvider);
+    });
+
+    it('should load patient', async () => {
+      await contactsPage.loadPatient(settingsProvider);
+    });
+  }
+
+  // ToDo: clean all these below after settings are done.
+
+  /*
   it('should submit a report for a newly created person', async () => {
     const firstName = 'Roy';
     const lastName = 'Caxton';
@@ -52,5 +77,5 @@ describe('Apdex Performance Workflows', () => {
     await PerformancePage.viewPerformance();
     await PerformancePage.relaunchApp();
   });
-
+*/
 });
