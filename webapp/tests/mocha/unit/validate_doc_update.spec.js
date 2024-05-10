@@ -62,7 +62,8 @@ describe('validate doc update', () => {
     return forbidden(clientFn, msg, userCtx, newDoc, oldDoc, secObj);
   };
 
-  describe('only db and national admins are allowed to change...', () => {
+  describe('only db and national admins are allowed to create...', () => {
+    const adminCtx = userCtx({ roles: [ '_admin' ] });
     const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
     const testUserCtx = userCtx({ roles: [ 'test' ] });
     Object.entries({
@@ -76,9 +77,46 @@ describe('validate doc update', () => {
       'partners': { _id: 'partners' }
     }).forEach(([ name, doc ]) => {
       it(name, () => {
-        allowedOnServer(userCtx({ roles: [ '_admin' ] }), doc);
+        allowedOnServer(adminCtx, doc);
         forbiddenOnServer('You are not authorized to edit admin only docs', nationalAdminCtx, doc);
         forbiddenOnServer('You are not authorized to edit admin only docs', testUserCtx, doc);
+      });
+    });
+  });
+
+  describe('only db and national admins are allowed to update...', () => {
+    const adminCtx = userCtx({ roles: [ '_admin' ] });
+    const testUserCtx = userCtx({ roles: [ 'test' ] });
+    [
+      {
+        name: 'forms',
+        oldDoc: { _id: 'a', type: 'form' },
+        newDoc: { _id: 'a', type: 'feedback' }
+      },
+      {
+        name: 'translations',
+        oldDoc: { _id: 'messages-en', type: 'translations' },
+        newDoc: { _id: 'messages-en', type: 'feedback' }
+      },
+      {
+        name: 'extension-libs',
+        oldDoc: { _id: 'extension-libs' },
+        newDoc: { _id: 'extension-libs', field: 'mine' }
+      },
+      {
+        name: 'branding',
+        oldDoc: { _id: 'branding' },
+        newDoc: { _id: 'branding', field: 'mine' }
+      },
+      {
+        name: 'partners',
+        oldDoc: { _id: 'partners' },
+        newDoc: { _id: 'partners', field: 'mine' }
+      },
+    ].forEach(({ name, oldDoc, newDoc }) => {
+      it(name, () => {
+        allowedOnServer(adminCtx, newDoc, oldDoc);
+        forbiddenOnServer('You are not authorized to edit admin only docs', testUserCtx, newDoc, oldDoc);
       });
     });
   });
