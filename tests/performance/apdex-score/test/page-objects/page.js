@@ -17,6 +17,22 @@ module.exports = class Page {
     }
   }
 
+  async clickElement(selector) {
+    if (await this.waitForDisplayedAndRetry(selector)) {
+      await (await $(selector)).click();
+    }
+  }
+
+  scrollToElement(context) {
+    if (context.scrollDown) {
+      this.scrollDown(context.scrollDown);
+    }
+
+    if (context.scrollUp) {
+      this.scrollUp(context.scrollUp);
+    }
+  }
+
   scrollDown(swipes = 0) {
     for (let i = 0; i < swipes; i++) {
       execSync('adb shell input swipe 500 1000 300 300');
@@ -29,106 +45,73 @@ module.exports = class Page {
     }
   }
 
-  async assertMany(asserts = []) {
+  async assertMany(asserts) {
+    if (!asserts?.length) {
+      return;
+    }
+
     for (const assert of asserts) {
-      if (assert.scrollDown) {
-        this.scrollDown(assert.scrollDown);
-      }
-
-      if (assert.scrollUp) {
-        this.scrollUp(assert.scrollUp);
-      }
-
+      this.scrollToElement(assert);
       await this.waitForDisplayedAndRetry(assert.selector);
     }
   }
 
-  async navigate(navigation = []) {
+  async navigate(navigation) {
+    if (!navigation?.length) {
+      return;
+    }
+
     for (const navStep of navigation) {
-      if (navStep.scrollDown) {
-        this.scrollDown(navStep.scrollDown);
-      }
-
-      if (navStep.scrollUp) {
-        this.scrollUp(navStep.scrollUp);
-      }
-
-      if (await this.waitForDisplayedAndRetry(navStep.selector)) {
-        await (await $(navStep.selector)).click();
-      }
-
-      if (navStep.asserts) {
-        await this.assertMany(navStep.asserts);
-      }
+      this.scrollToElement(navStep);
+      await this.clickElement(navStep.selector);
+      await this.assertMany(navStep.asserts);
     }
   }
 
   async loadAndAssertPage(page) {
     await this.navigate(page.navigation, page.asserts);
-    if (page.postTestPath) {
-      await this.navigate(page.postTestPath);
-    }
+    await this.navigate(page.postTestPath);
   }
 
   async enterFieldValue(field) {
-    if (field.scrollDown) {
-      this.scrollDown(field.scrollDown);
-    }
-
-    if (field.scrollUp) {
-      this.scrollUp(field.scrollUp);
-    }
+    this.scrollToElement(field);
 
     if (await this.waitForDisplayedAndRetry(field.selector)) {
       // ToDo: switch to handle each field type
       console.log(field.value);
     }
 
-    if (field.asserts) {
-      await this.assertMany(field.asserts);
-    }
+    await this.assertMany(field.asserts);
   }
 
   async fillUpFormPage(formPage) {
-    if (formPage.asserts) {
-      await this.assertMany(formPage.asserts);
-    }
+    await this.assertMany(formPage.asserts);
 
     for (const field of formPage.fields) {
       await this.enterFieldValue(field);
     }
 
-    if (formPage.scrollDown) {
-      this.scrollDown(formPage.scrollDown);
-    }
+    this.scrollToElement(formPage);
   }
 
-  async fillUpForm(form){
-    const FAB_SELECTOR = '//android.widget.Button';
-    const FORM_SUBMIT_SELECTOR = '//android.widget.Button[@text="Submit"]';
-    const FORM_PAGE_NEXT_SELECTOR = '//android.widget.Button[@text="Next >"]';
+  async fillUpForm(form, commonElements){
+    const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
+    const FAB_LIST_TITLE = commonElements?.fabListTitle || '//android.widget.TextView[@text="New"]';
+    const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
+    const FORM_PAGE_NEXT_SELECTOR = commonElements?.formNext || '//android.widget.Button[@text="Next >"]';
 
-    await this.waitForDisplayedAndRetry(FAB_SELECTOR);
-    // ToDo: In some cases you might need to scroll the popup to find the form, to be implemented in another iteration.
-    await this.waitForDisplayedAndRetry(form.selector);
-    if (form.readyFormAsserts) {
-      await this.assertMany(form.readyFormAsserts);
-    }
+    await this.clickElement(FAB_SELECTOR);
+    await this.waitForDisplayedAndRetry(FAB_LIST_TITLE);
+    await this.navigate(form.navigation);
 
     for (const page of form.pages) {
       await this.fillUpFormPage(page);
-      await this.waitForDisplayedAndRetry(FORM_PAGE_NEXT_SELECTOR);
+      await this.clickElement(FORM_PAGE_NEXT_SELECTOR);
     }
 
-    await this.waitForDisplayedAndRetry(FORM_SUBMIT_SELECTOR);
-
-    if (form.postSubmitAsserts) {
-      await this.assertMany(form.postSubmitAsserts);
-    }
-
-    if (form.postTestPath) {
-      await this.navigate(form.postTestPath);
-    }
+    await this.clickElement(FORM_SUBMIT_SELECTOR);
+    await this.assertMany(form.postSubmitAsserts);
+    await this.navigate(form.postTestPath);
   }
 
 

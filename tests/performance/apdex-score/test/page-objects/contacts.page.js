@@ -25,7 +25,8 @@ class ContactsPage extends Page {
 
   async submitPatientReport(settingsProvider) {
     const form = settingsProvider.getForm('patientReport');
-    await super.fillUpForm(form);
+    const commonElements = settingsProvider.getCommonElements();
+    await super.fillUpForm(form, commonElements);
   }
 
 

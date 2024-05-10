@@ -5,7 +5,7 @@
 1. Enable the developer mode in your phone and enable the USB Debugger mode.
 2. Connect the phone to the computer
 3. Create a settings file:
-```
+```json
 {
     "iterations": <number - times to run the test cases>,
     "instanceURL": <string, instance url>,
@@ -24,6 +24,11 @@
         "password": <password>
       }
     ],
+    "commonElements": { // Optional
+      "fab": <selector>,
+      "formSubmit": <selector>,
+      "formNext": <selector>
+    },
   
     "pages": {
       "contact-list": {

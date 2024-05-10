@@ -31,6 +31,10 @@ const getForm = (name) => {
   return SETTINGS_CACHE?.forms && SETTINGS_CACHE.forms[name];
 };
 
+const getCommonElements = () => {
+  return SETTINGS_CACHE?.commonElements;
+};
+
 const settingsProvider = {
   getIterations,
   getInstanceURL,
@@ -39,6 +43,7 @@ const settingsProvider = {
   getUser,
   getPage,
   getForm,
+  getCommonElements,
 };
 
 module.exports = () => {
