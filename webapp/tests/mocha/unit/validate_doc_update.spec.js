@@ -17,7 +17,7 @@ describe('validate doc update', () => {
       type: 'user-settings',
       roles: []
     };
-  }
+  };
 
   const userCtx = (additions) => {
     additions = additions || {};
@@ -28,7 +28,7 @@ describe('validate doc update', () => {
     oldDoc = oldDoc || newDoc;
     try {
       fn(newDoc, oldDoc, userCtx, secObj);
-    } catch(err) {
+    } catch (err) {
       if (err.forbidden) {
         throw new Error(`Expected pass but got: "${err.forbidden}"`);
       }
@@ -41,17 +41,27 @@ describe('validate doc update', () => {
     try {
       fn(newDoc, oldDoc, userCtx, secObj);
       assert.fail('expected error to be thrown');
-    } catch(err) {
+    } catch (err) {
       assert.equal(msg, err.forbidden);
     }
   };
 
-  const allowedOnServer = (userCtx, newDoc, oldDoc, secObj) => allowed(serverFn, userCtx, newDoc, oldDoc, secObj);
-  const allowedOnClient = (userCtx, newDoc, oldDoc, secObj) => allowed(clientFn, userCtx, newDoc, oldDoc, secObj);
-  const forbiddenOnServer = (msg, userCtx, newDoc, oldDoc, secObj) => forbidden(serverFn, msg, userCtx, newDoc, oldDoc, secObj);
-  const forbiddenOnClient = (msg, userCtx, newDoc, oldDoc, secObj) => forbidden(clientFn, msg, userCtx, newDoc, oldDoc, secObj);
+  const allowedOnServer = (userCtx, newDoc, oldDoc, secObj) => {
+    return allowed(serverFn, userCtx, newDoc, oldDoc, secObj);
+  }
+  const allowedOnClient = (userCtx, newDoc, oldDoc, secObj) => {
+    return allowed(clientFn, userCtx, newDoc, oldDoc, secObj);
+  }
+  const forbiddenOnServer = (msg, userCtx, newDoc, oldDoc, secObj) => {
+    return forbidden(serverFn, msg, userCtx, newDoc, oldDoc, secObj);
+  }
+  const forbiddenOnClient = (msg, userCtx, newDoc, oldDoc, secObj) => {
+    return forbidden(clientFn, msg, userCtx, newDoc, oldDoc, secObj);
+  }
 
   describe('only db and national admins are allowed to change...', () => {
+    const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
+    const testuserCtx = userCtx({ roles: [ 'test' ] });
     Object.entries({
       'ddocs': { _id: '_design/something' },
       'resources doc': { _id: 'resources' },
@@ -64,18 +74,21 @@ describe('validate doc update', () => {
     }).forEach(([ name, doc ]) => {
       it(name, () => {
         allowedOnServer(userCtx({ roles: [ '_admin' ] }), doc);
-        forbiddenOnServer('You are not authorized to edit admin only docs', userCtx({ roles: [ 'national_admin' ] }), doc);
-        forbiddenOnServer('You are not authorized to edit admin only docs', userCtx({ roles: [ 'test' ] }), doc);
+        forbiddenOnServer('You are not authorized to edit admin only docs', nationalAdminCtx, doc);
+        forbiddenOnServer('You are not authorized to edit admin only docs', testuserCtx, doc);
       });
     });
   });
 
   it('only db admins are allowed change their own place', () => {
     const doc = { _id: 'abc', type: 'clinic' };
-    allowedOnServer(userCtx({ roles: [ '_admin' ], facility_id: 'abc' }), doc);
-    allowedOnServer(userCtx({ roles: [ 'national_admin' ], facility_id: 'abc' }), doc, doc, { admins: { roles: [ 'national_admin' ] } });
-    allowedOnClient(userCtx({ roles: [ 'national_admin' ], facility_id: 'abc' }), doc, doc, { admins: { roles: [ 'national_admin' ] } });
-    forbiddenOnClient('You are not authorized to edit your own place', userCtx({roles: [ 'district_admin' ], facility_id: 'abc' }), doc);
+    const adminCtx = userCtx({ roles: [ '_admin' ], facility_id: 'abc' });
+    const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
+    const districtAdminCtx = userCtx({ roles: [ 'test' ] });
+    allowedOnServer(adminCtx, doc);
+    allowedOnServer(nationalAdminCtx, doc, doc, { admins: { roles: [ 'national_admin' ] } });
+    allowedOnClient(nationalAdminCtx, doc, doc, { admins: { roles: [ 'national_admin' ] } });
+    forbiddenOnClient('You are not authorized to edit your own place', districtAdminCtx, doc);
   });
 
   it('allowed returns false on empty userCtx', () => {
@@ -99,25 +112,41 @@ describe('validate doc update', () => {
     it('fails if no name is defined', () => {
       const userSettings = getUserSettings();
       delete userSettings.name;
-      forbiddenOnClient('name property must be equivalent to username. e.g. "org.couchdb.user:sally"', userCtx(), userSettings);
+      forbiddenOnClient(
+        'name property must be equivalent to username. e.g. "org.couchdb.user:sally"',
+        userCtx(),
+        userSettings
+      );
     });
 
     it('_id prefix must be org.couchdb.user', () => {
       const userSettings = getUserSettings();
       userSettings._id = 'org.couchdb.foo:sally';
-      forbiddenOnClient('_id must be prefixed with "org.couchdb.user:". e.g. "org.couchdb.user:sally"', userCtx(), userSettings);
+      forbiddenOnClient(
+        '_id must be prefixed with "org.couchdb.user:". e.g. "org.couchdb.user:sally"',
+        userCtx(),
+        userSettings
+      );
     });
 
     it('_id must define a value after :', () => {
       const userSettings = getUserSettings();
       userSettings._id = 'org.couchdb.user:';
-      forbiddenOnClient('_id must define a value after "org.couchdb.user:". e.g. "org.couchdb.user:sally"', userCtx(), userSettings);
+      forbiddenOnClient(
+        '_id must define a value after "org.couchdb.user:". e.g. "org.couchdb.user:sally"',
+        userCtx(),
+        userSettings
+      );
     });
 
     it('name and username must match', () => {
       const userSettings = getUserSettings();
       userSettings.name = 'foo';
-      forbiddenOnClient('name property must be equivalent to username. e.g. "org.couchdb.user:sally"', userCtx(), userSettings);
+      forbiddenOnClient(
+        'name property must be equivalent to username. e.g. "org.couchdb.user:sally"',
+        userCtx(),
+        userSettings
+      );
     });
 
     it('known must be boolean', () => {
@@ -138,7 +167,12 @@ describe('validate doc update', () => {
       const oldUserSettings = getUserSettings();
       const newUserSettings = getUserSettings();
       newUserSettings.roles.push('SUPER_ADMIN');
-      forbiddenOnClient('You are not authorized to edit roles', userCtx(), newUserSettings, oldUserSettings);
+      forbiddenOnClient(
+        'You are not authorized to edit roles',
+        userCtx(),
+        newUserSettings,
+        oldUserSettings
+      );
     });
 
     it('allows admins to change roles', () => {
