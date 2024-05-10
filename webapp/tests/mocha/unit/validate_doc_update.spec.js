@@ -42,26 +42,29 @@ describe('validate doc update', () => {
       fn(newDoc, oldDoc, userCtx, secObj);
       assert.fail('expected error to be thrown');
     } catch (err) {
-      assert.equal(msg, err.forbidden);
+      assert.equal(err.forbidden, msg);
     }
   };
 
   const allowedOnServer = (userCtx, newDoc, oldDoc, secObj) => {
     return allowed(serverFn, userCtx, newDoc, oldDoc, secObj);
-  }
+  };
+
   const allowedOnClient = (userCtx, newDoc, oldDoc, secObj) => {
     return allowed(clientFn, userCtx, newDoc, oldDoc, secObj);
-  }
+  };
+
   const forbiddenOnServer = (msg, userCtx, newDoc, oldDoc, secObj) => {
     return forbidden(serverFn, msg, userCtx, newDoc, oldDoc, secObj);
-  }
+  };
+
   const forbiddenOnClient = (msg, userCtx, newDoc, oldDoc, secObj) => {
     return forbidden(clientFn, msg, userCtx, newDoc, oldDoc, secObj);
-  }
+  };
 
   describe('only db and national admins are allowed to change...', () => {
     const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
-    const testuserCtx = userCtx({ roles: [ 'test' ] });
+    const testUserCtx = userCtx({ roles: [ 'test' ] });
     Object.entries({
       'ddocs': { _id: '_design/something' },
       'resources doc': { _id: 'resources' },
@@ -75,7 +78,7 @@ describe('validate doc update', () => {
       it(name, () => {
         allowedOnServer(userCtx({ roles: [ '_admin' ] }), doc);
         forbiddenOnServer('You are not authorized to edit admin only docs', nationalAdminCtx, doc);
-        forbiddenOnServer('You are not authorized to edit admin only docs', testuserCtx, doc);
+        forbiddenOnServer('You are not authorized to edit admin only docs', testUserCtx, doc);
       });
     });
   });
@@ -84,7 +87,7 @@ describe('validate doc update', () => {
     const doc = { _id: 'abc', type: 'clinic' };
     const adminCtx = userCtx({ roles: [ '_admin' ], facility_id: 'abc' });
     const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
-    const districtAdminCtx = userCtx({ roles: [ 'test' ] });
+    const districtAdminCtx = userCtx({roles: [ 'district_admin' ], facility_id: 'abc' });
     allowedOnServer(adminCtx, doc);
     allowedOnServer(nationalAdminCtx, doc, doc, { admins: { roles: [ 'national_admin' ] } });
     allowedOnClient(nationalAdminCtx, doc, doc, { admins: { roles: [ 'national_admin' ] } });
@@ -183,10 +186,32 @@ describe('validate doc update', () => {
       allowedOnClient(adminUserCtx, newUserSettings, oldUserSettings);
     });
 
+    it('allows everyone to update their own privacy policy acceptance', () => {
+      const oldUserSettings = getUserSettings();
+      const newUserSettings = getUserSettings();
+      newUserSettings.privacy_policy_acceptance_log = [
+        { language: 'en', digest: 'abc', accepted_at: new Date().getTime() }
+      ];
+      const adminCtx = userCtx({ roles: [ '_admin' ] });
+      allowedOnClient(adminCtx, newUserSettings, oldUserSettings);
+      const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
+      allowedOnClient(nationalAdminCtx, newUserSettings, oldUserSettings);
+      const districtAdminCtx = userCtx({ roles: [ 'test' ] });
+      allowedOnClient(districtAdminCtx, newUserSettings, oldUserSettings);
+    });
+
+    it('allows everyone to update their own known status', () => {
+      const oldUserSettings = getUserSettings();
+      const newUserSettings = getUserSettings();
+      newUserSettings.known = true;
+      const adminCtx = userCtx({ roles: [ '_admin' ] });
+      allowedOnClient(adminCtx, newUserSettings, oldUserSettings);
+      const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
+      allowedOnClient(nationalAdminCtx, newUserSettings, oldUserSettings);
+      const districtAdminCtx = userCtx({ roles: [ 'test' ] });
+      allowedOnClient(districtAdminCtx, newUserSettings, oldUserSettings);
+    });
+
   });
 
 });
-
-// allowed:
-// - privacy_policy_acceptance_log
-// - known
