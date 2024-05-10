@@ -1,7 +1,3 @@
-export type Nullable<T> = T | null;
-
-export type NonEmptyArray<T> = [T, ...T[]];
-
 export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };

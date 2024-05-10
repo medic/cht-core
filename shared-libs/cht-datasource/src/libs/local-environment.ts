@@ -1,5 +1,4 @@
-import { Doc, getDocById } from './doc';
-import { Nullable } from './core';
+import { getDocById } from './doc';
 
 const SETTINGS_DOC_ID = 'settings';
 
@@ -20,8 +19,6 @@ const initFeed = (medicDb: PouchDB.Database<Doc>) => medicDb.changes({ since: 'n
       settings = await getSettingsDoc(medicDb);
     }
   });
-
-export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
 
 export interface LocalEnvironment {
   medicDb: PouchDB.Database<Doc>;

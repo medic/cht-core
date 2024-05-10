@@ -17,12 +17,19 @@
     "declarationMap": true,
     "outDir": "dist",
     "sourceMap": true,
-    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo",
+//    "typeRoots": [
+//      "node_modules/@types",
+//      "../../node_modules/@types",
+//      "./types"
+//    ]
   },
   "files": [
     "src/auth.js"
   ],
   "include": [
+//    "./ambient.d.ts",
+    "./global.d.ts",
     "src/**/*.ts",
     "test/**/*.ts"
   ]

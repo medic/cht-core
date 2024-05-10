@@ -4,10 +4,10 @@
  * Whenever possible keep this file clean by defining new features in modules.
  */
 import { hasAnyPermission, hasPermissions } from './auth';
-import { V1 as PersonV1 } from './person';
-import { V1 as DocV1 } from './libs/doc';
-import { Nullable as _Nullable } from './libs/core';
-import getLocalEnvironment, { LocalEnvironment, SourceDatabases as _SourceDatabases } from './libs/local-environment';
+import { v1 as personV1 } from './person';
+import { v1 as docV1 } from './libs/doc';
+import getLocalEnvironment, { LocalEnvironment } from './libs/local-environment';
+// import { AnotherTestType } from './cht-datasource';
 
 const adapt = <T>(
   localEnv: Nullable<LocalEnvironment>,
@@ -20,26 +20,25 @@ const adapt = <T>(
   return remoteAdapter;
 };
 
-export type SourceDatabases = _SourceDatabases;
-export type Nullable<T> = _Nullable<T>;
+// declare namespace 'V1' {
+//   export const byUuid = docV1.byUuid;
+//   export import Person = PersonV1.Person;
+//   export import UuidIdentifier = DocV1.UuidIdentifier;
+//   export import byUuid = DocV1.byUuid;
+// }
 
-export namespace V1 {
-  export import Person = PersonV1.Person;
-  export import UuidIdentifier = DocV1.UuidIdentifier;
-  export import byUuid = DocV1.byUuid;
-}
-
-const getDataSource = async (sourceDatabases?: SourceDatabases) => {
+export const getDataSource = async (sourceDatabases?: SourceDatabases) => {
   const localEnv = await getLocalEnvironment(sourceDatabases);
 
   return {
     v1: {
       hasPermissions,
       hasAnyPermission,
-      person: adapt(localEnv, PersonV1.remote, PersonV1.local),
+      byUuid: docV1.byUuid,
+      person: adapt(localEnv, personV1.remote, personV1.local),
     }
   };
 };
 
-module.exports = getDataSource;
-export default getDataSource;
+module.exports = { getDataSource };
+// export default { getDataSource };

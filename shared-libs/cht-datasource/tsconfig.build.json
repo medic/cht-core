@@ -3,5 +3,7 @@
   // Flatten output in the dist directory so `src` is not included in the path
   "compilerOptions": { "rootDir": "./src" },
   // Do not include the test files
-  "include": ["src/**/*.ts"],
+  "include": [
+//    "./src/types/ambient.d.ts",
+    "src/**/*.ts"],
 }
