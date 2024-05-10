@@ -4,9 +4,11 @@
  * Whenever possible keep this file clean by defining new features in modules.
  */
 import { hasAnyPermission, hasPermissions } from './auth';
-import { v1 as personV1 } from './person';
 import { v1 as docV1 } from './libs/doc';
-import getLocalEnvironment, { LocalEnvironment } from './libs/local-environment';
+import { getLocalEnvironment, LocalEnvironment } from './local/libs/local-environment';
+import { v1 as remoteV1 } from './remote';
+import { v1 as localV1 } from './local';
+
 // import { AnotherTestType } from './cht-datasource';
 
 const adapt = <T>(
@@ -27,6 +29,7 @@ const adapt = <T>(
 //   export import byUuid = DocV1.byUuid;
 // }
 
+
 export const getDataSource = async (sourceDatabases?: SourceDatabases) => {
   const localEnv = await getLocalEnvironment(sourceDatabases);
 
@@ -35,7 +38,7 @@ export const getDataSource = async (sourceDatabases?: SourceDatabases) => {
       hasPermissions,
       hasAnyPermission,
       byUuid: docV1.byUuid,
-      person: adapt(localEnv, personV1.remote, personV1.local),
+      person: adapt(localEnv, remoteV1.personSource, localV1.personSource),
     }
   };
 };

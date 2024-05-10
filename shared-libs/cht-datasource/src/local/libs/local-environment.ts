@@ -1,4 +1,4 @@
-import { getDocById } from './doc';
+import { getDocById } from '../../libs/doc';
 
 const SETTINGS_DOC_ID = 'settings';
 
@@ -25,7 +25,7 @@ export interface LocalEnvironment {
   getSettings: () => Doc;
 }
 
-export default async function(sourceDatabases?: SourceDatabases): Promise<Nullable<LocalEnvironment>> {
+export const getLocalEnvironment = async function(sourceDatabases?: SourceDatabases): Promise<Nullable<LocalEnvironment>> {
   if (!sourceDatabases) {
     return null;
   }
