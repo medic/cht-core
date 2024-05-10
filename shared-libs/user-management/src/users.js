@@ -45,6 +45,7 @@ const RESTRICTED_USER_EDITABLE_FIELDS = [
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
+  'places',
   'contact',
   'type',
   'roles',
@@ -58,8 +59,6 @@ const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
 ];
 
 const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
-  'place',
-  'contact',
   'external_id',
   'type',
   'roles',
@@ -386,8 +385,64 @@ const mapUsers = (users, settings, facilities) => {
     });
 };
 
+const hydratePayload = (data) => {
+  if (data.type) {
+    // deprecated: use 'roles' instead
+    data.roles = getRoles(data.type);
+  }
+
+  if (data.place) {
+    data.facility_id = [getDocID(data.place)];
+  }
+
+  if (data.places) {
+    data.facility_id = data.places.map(place => getDocID(place));
+  }
+
+  if (_.isNull(data.places) || _.isNull(data.place)) {
+    data.facility_id = null;
+  }
+
+  if (data.contact) {
+    data.contact_id = getDocID(data.contact);
+  }
+
+  if (_.isNull(data.contact)) {
+    data.contact_id = null;
+  }
+};
+
+const getCommonFieldsUpdates = (userDoc, data) => {
+  if (data.type) {
+    // deprecated: use 'roles' instead
+    userDoc.roles = getRoles(data.type);
+  }
+
+  if (data.roles) {
+    const index = data.roles.indexOf(roles.ONLINE_ROLE);
+    if (roles.isOffline(data.roles)) {
+      if (index !== -1) {
+        // remove the online role
+        data.roles.splice(index, 1);
+      }
+    } else if (index === -1) {
+      // add the online role
+      data.roles.push(roles.ONLINE_ROLE);
+    }
+    userDoc.roles = data.roles;
+  }
+
+  if (!_.isUndefined(data.place) || !_.isUndefined(data.places)) {
+    userDoc.facility_id = data.facility_id;
+  }
+
+  if (!_.isUndefined(data.contact)) {
+    userDoc.contact_id = data.contact_id;
+  }
+};
+
 const getSettingsUpdates = (username, data) => {
-  const ignore = ['type', 'place', 'contact'];
+  const ignore = ['type', 'place', 'contact', 'places'];
 
   const settings = {
     name: username,
@@ -400,34 +455,13 @@ const getSettingsUpdates = (username, data) => {
     }
   });
 
-  if (data.type) {
-    // deprecated: use 'roles' instead
-    settings.roles = getRoles(data.type);
-  }
-  if (settings.roles) {
-    const index = settings.roles.indexOf(roles.ONLINE_ROLE);
-    if (roles.isOffline(settings.roles)) {
-      if (index !== -1) {
-        // remove the online role
-        settings.roles.splice(index, 1);
-      }
-    } else if (index === -1) {
-      // add the online role
-      settings.roles.push(roles.ONLINE_ROLE);
-    }
-  }
-  if (data.place) {
-    settings.facility_id = [getDocID(data.place)];
-  }
-  if (data.contact) {
-    settings.contact_id = getDocID(data.contact);
-  }
+  getCommonFieldsUpdates(settings, data);
 
   return settings;
 };
 
 const getUserUpdates = (username, data) => {
-  const ignore = ['type', 'place', 'contact'];
+  const ignore = ['type', 'place', 'contact', 'places'];
 
   const user = {
     name: username,
@@ -440,19 +474,7 @@ const getUserUpdates = (username, data) => {
     }
   });
 
-  if (data.type) {
-    // deprecated: use 'roles' instead
-    user.roles = getRoles(data.type);
-  }
-  if (user.roles && !roles.isOffline(user.roles)) {
-    user.roles.push(roles.ONLINE_ROLE);
-  }
-  if (data.place) {
-    user.facility_id = [getDocID(data.place)];
-  }
-  if (data.contact) {
-    user.contact_id = getDocID(data.contact);
-  }
+  getCommonFieldsUpdates(user, data);
 
   return user;
 };
@@ -558,41 +580,37 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
-const validateUserFacility = (data, user, userSettings) => {
-  if (data.place) {
-    userSettings.facility_id = user.facility_id;
-    return places.placesExist(user.facility_id);
+const validateUserFacility = (data, user) => {
+  if (data.place || data.places) {
+    return places.placesExist(data.facility_id);
   }
 
-  if (_.isNull(data.place)) {
-    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
+  if (_.isNull(data.place) && _.isNull(data.places)) {
+    const userRoles = user?.roles || data.roles;
+    if (userRoles && roles.isOffline(userRoles)) {
       return Promise.reject(error400(
         'Place field is required for offline users',
         'field is required',
         {'field': 'Place'}
       ));
     }
-    user.facility_id = null;
-    userSettings.facility_id = null;
   }
 };
 
-const validateUserContact = (data, user, userSettings) => {
+const validateUserContact = (data, user) => {  // NOSONAR
   if (data.contact) {
-    userSettings.contact_id = user.contact_id;
-    return validateContact(user.contact_id, user.facility_id[0]);
+    return validateContact(data.contact_id, data.facility_id?.[0]);
   }
 
   if (_.isNull(data.contact)) {
-    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
+    const userRoles = user?.roles || data.roles;
+    if (userRoles.roles && roles.isOffline(userRoles.roles)) {
       return Promise.reject(error400(
         'Contact field is required for offline users',
         'field is required',
         {'field': 'Contact'}
       ));
     }
-    user.contact_id = null;
-    userSettings.contact_id = null;
   }
 };
 
@@ -628,6 +646,7 @@ const createUserEntities = async (data, appUrl) => {
   await setContactParent(data);
   await createContact(data, response);
   await storeUpdatedPlace(data, preservePrimaryContact);
+  hydratePayload(data);
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
@@ -675,7 +694,7 @@ const parseCsvRow = (data, header, value, valueIdx) => {
   return data;
 };
 
-const parseCsv = async (csv, logId) => {
+const parseCsv = async (csv, logId) => {  // NOSONAR
   if (!csv || !csv.length) {
     throw new Error('CSV is empty.');
   }
@@ -805,10 +824,75 @@ const getUserSettings = async({ name }) => {
   return hydrateUserSettings(medicUser);
 };
 
+const createMultiFacilityUser = async (data, appUrl) => {
+  const missing = missingFields(data);
+  if (missing.length > 0) {
+    return Promise.reject(error400(
+      'Missing required fields: ' + missing.join(', '),
+      'fields.required',
+      { 'fields': missing.join(', ') }
+    ));
+  }
+  hydratePayload(data);
+
+  const tokenLoginError = tokenLogin.validateTokenLogin(data, true);
+  if (tokenLoginError) {
+    return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+  }
+  const passwordError = validatePassword(data.password);
+  if (passwordError) {
+    return Promise.reject(passwordError);
+  }
+
+  const response = {};
+  await validateNewUsername(data.username);
+  await validateUserFacility(data);
+  await validateUserContact(data);
+
+  await createUser(data, response);
+  await createUserSettings(data, response);
+  await tokenLogin.manageTokenLogin(data, appUrl, response);
+  return response;
+};
+
+const validateUpdateAttempt = (data, fullAccess) => { // NOSONAR
+  // Reject update attempts that try to modify data they're not allowed to
+  if (!fullAccess) {
+    const illegalAttempts = illegalDataModificationAttempts(data);
+    if (illegalAttempts.length) {
+      const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
+      err.status = 401;
+      throw err;
+    }
+  }
+
+  const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
+
+  // Online users can remove place or contact
+  if (!_.isNull(data.places) &&
+      !_.isNull(data.place) &&
+      !_.isNull(data.contact) &&
+      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
+  ) {
+    throw error400(
+      'One of the following fields are required: ' + props.join(', '),
+      'fields.one.required',
+      { 'fields': props.join(', ') }
+    );
+  }
+
+  if (data.password) {
+    const passwordError = validatePassword(data.password);
+    if (passwordError) {
+      throw passwordError;
+    }
+  }
+};
+
 /*
- * Everything not exported directly is private.  Underscore prefix is only used
- * to export functions needed for testing.
- */
+   * Everything not exported directly is private.  Underscore prefix is only used
+   * to export functions needed for testing.
+   */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
   getList: async (filters) => {
@@ -922,6 +1006,7 @@ module.exports = {
         if (missing.length > 0) {
           throw new Error('Missing required fields: ' + missing.join(', '));
         }
+        hydratePayload(user);
 
         const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
         if (tokenLoginError) {
@@ -989,36 +1074,8 @@ module.exports = {
    * @param      {String}    appUrl      request protocol://hostname
    */
   updateUser: async (username, data, fullAccess, appUrl) => {
-    // Reject update attempts that try to modify data they're not allowed to
-    if (!fullAccess) {
-      const illegalAttempts = illegalDataModificationAttempts(data);
-      if (illegalAttempts.length) {
-        const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
-        err.status = 401;
-        return Promise.reject(err);
-      }
-    }
-
-    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
-
-    // Online users can remove place or contact
-    if (!_.isNull(data.place) &&
-      !_.isNull(data.contact) &&
-      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
-    ) {
-      return Promise.reject(error400(
-        'One of the following fields are required: ' + props.join(', '),
-        'fields.one.required',
-        { 'fields': props.join(', ') }
-      ));
-    }
-
-    if (data.password) {
-      const passwordError = validatePassword(data.password);
-      if (passwordError) {
-        return Promise.reject(passwordError);
-      }
-    }
+    await validateUpdateAttempt(data, fullAccess);
+    hydratePayload(data);
 
     const [user, userSettings] = await Promise.all([
       getUpdatedUserDoc(username, data),
@@ -1030,8 +1087,9 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    await validateUserFacility(data, user, userSettings);
-    await validateUserContact(data, user, userSettings);
+    await validateUserFacility(data, user);
+    await validateUserContact(data, user);
+
     const response = {
       user: await saveUserUpdates(user),
       'user-settings': await saveUserSettingsUpdates(userSettings),
@@ -1060,4 +1118,6 @@ module.exports = {
    * @param {string} csv CSV of users.
    */
   parseCsv,
+
+  createMultiFacilityUser,
 };

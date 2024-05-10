@@ -349,7 +349,7 @@ describe('Users API', () => {
           chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
           chai.expect(userSettings.facility_id).to.deep.equal(user.facility_id);
 
-          return utils.getDocs([userSettings.contact_id, userSettings.facility_id]);
+          return utils.getDocs([userSettings.contact_id, ...userSettings.facility_id]);
         })
         .then(([ contact, place ]) => {
           chai.expect(contact.patient_id).to.not.be.undefined;
@@ -417,7 +417,7 @@ describe('Users API', () => {
           _id: 'fixture:user:offlineonline',
           name: 'OnlineUser'
         },
-        roles: ['district_admin', 'mm-online']
+        roles: ['data_entry']
       },
     ];
 

@@ -96,11 +96,14 @@ describe('Users service', () => {
       const data = {
         place: 'abc',
         contact: '123',
-        fullname: 'John'
+        fullname: 'John',
+        contact_id: '123',
+        facility_id: ['abc']
+
       };
       const settings = service.__get__('getSettingsUpdates')('john', data);
-      chai.expect(settings.place).to.equal('abc');
-      chai.expect(settings.contact).to.equal('123');
+      chai.expect(settings.place).to.equal(undefined);
+      chai.expect(settings.contact).to.equal(undefined);
       chai.expect(settings.contact_id).to.equal('123');
       chai.expect(settings.facility_id).to.deep.equal(['abc']);
       chai.expect(settings.fullname).to.equal('John');
@@ -138,7 +141,9 @@ describe('Users service', () => {
     it('reassigns place and contact fields', () => {
       const data = {
         place: 'abc',
-        contact: 'xyz'
+        contact: 'xyz',
+        facility_id: ['abc'],
+        contact_id: 'xyz'
       };
       const user = service.__get__('getUserUpdates')('john', data);
       chai.expect(user.place).to.equal(undefined);
