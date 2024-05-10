@@ -30,7 +30,7 @@ describe('validate doc update', () => {
       fn(newDoc, oldDoc, userCtx, secObj);
     } catch(err) {
       if (err.forbidden) {
-        throw new Error(`Expected pass but got: "${err?.forbidden}"`);
+        throw new Error(`Expected pass but got: "${err.forbidden}"`);
       }
       throw err;
     }
@@ -74,7 +74,8 @@ describe('validate doc update', () => {
     const doc = { _id: 'abc', type: 'clinic' };
     allowedOnServer(userCtx({ roles: [ '_admin' ], facility_id: 'abc' }), doc);
     allowedOnServer(userCtx({ roles: [ 'national_admin' ], facility_id: 'abc' }), doc, doc, { admins: { roles: [ 'national_admin' ] } });
-    forbiddenOnServer('You are not authorized to edit your own place', userCtx({roles: [ 'district_admin' ], facility_id: 'abc' }), doc);
+    allowedOnClient(userCtx({ roles: [ 'national_admin' ], facility_id: 'abc' }), doc, doc, { admins: { roles: [ 'national_admin' ] } });
+    forbiddenOnClient('You are not authorized to edit your own place', userCtx({roles: [ 'district_admin' ], facility_id: 'abc' }), doc);
   });
 
   it('allowed returns false on empty userCtx', () => {

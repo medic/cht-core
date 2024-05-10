@@ -13,6 +13,37 @@ function(newDoc, oldDoc, userCtx, secObj) {
     throw({ forbidden: msg });
   };
 
+  var hasRole = function(roles, role) {
+    if (roles) {
+      for (var i = 0; i < roles.length; i++) {
+        if (roles[i] === role) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  var isDbAdmin = function(userCtx, secObj) {
+    if (hasRole(userCtx.roles, '_admin')) {
+      return true;
+    }
+
+    if (secObj.admins && secObj.admins.names && secObj.admins.names.indexOf(userCtx.name) !== -1) {
+      return true;
+    }
+
+    if (secObj.admins && secObj.admins.roles) {
+      for (var i = 0; i < userCtx.roles.length; i++) {
+        if (hasRole(secObj.admins.roles, userCtx.roles[i])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   /**
    * Ensure that type='form' documents are created with correctly formatted _id
    * property.
@@ -77,6 +108,10 @@ function(newDoc, oldDoc, userCtx, secObj) {
     }
   }
 
+  // admins can do anything
+  if (isDbAdmin(userCtx, secObj)) {
+    return;
+  }
   if (userCtx.facility_id === newDoc._id) {
     _err('You are not authorized to edit your own place');
   }
