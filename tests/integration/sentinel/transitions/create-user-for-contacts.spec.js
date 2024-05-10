@@ -167,7 +167,7 @@ describe('create_user_for_contacts', () => {
     assert.deepInclude(newUserSettings, {
       roles: ORIGINAL_USER.roles,
       phone: NEW_PERSON.phone,
-      facility_id: NEW_PERSON.parent._id,
+      facility_id: [NEW_PERSON.parent._id],
       contact_id: NEW_PERSON._id,
       fullname: NEW_PERSON.name,
     });
@@ -248,7 +248,7 @@ describe('create_user_for_contacts', () => {
       assert.deepInclude(newUserSettings, {
         roles: ORIGINAL_USER.roles,
         phone: NEW_PERSON.phone,
-        facility_id: NEW_PERSON.parent._id,
+        facility_id: [NEW_PERSON.parent._id],
         contact_id: NEW_PERSON._id,
         fullname: NEW_PERSON.name,
       });
@@ -303,7 +303,7 @@ describe('create_user_for_contacts', () => {
       assert.deepInclude(newUserSettings, {
         roles: ORIGINAL_USER.roles,
         phone: NEW_PERSON.phone,
-        facility_id: NEW_PERSON.parent._id,
+        facility_id: [NEW_PERSON.parent._id],
         contact_id: NEW_PERSON._id,
         fullname: NEW_PERSON.name,
       });
@@ -375,7 +375,7 @@ describe('create_user_for_contacts', () => {
         assert.deepInclude(newUserSettings, {
           roles: ORIGINAL_USER.roles,
           phone: NEW_PERSON.phone,
-          facility_id: NEW_PERSON.parent._id,
+          facility_id: [NEW_PERSON.parent._id],
           contact_id: NEW_PERSON._id,
           fullname: NEW_PERSON.name,
         });
