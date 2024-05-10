@@ -3,6 +3,9 @@ const serverChecks = require('@medic/server-checks');
 const logger = require('@medic/logger');
 const express = require('express');
 const apiPort = process.env.API_PORT || 5988;
+const tracing = require('./tracing');
+const otReceiver = process.env.OT_RECEIVER_URL || false;
+tracing.load(otReceiver);
 
 let router;
 

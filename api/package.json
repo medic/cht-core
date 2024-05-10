@@ -17,6 +17,10 @@
   },
   "dependencies": {
     "@medic/logger": "file:../shared-libs/logger",
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.46.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.51.1",
+    "@opentelemetry/sdk-node": "^0.51.1",
     "async": "^3.2.1",
     "bikram-sambat": "^1.7.0",
     "body-parser": "^1.20.2",
