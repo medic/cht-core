@@ -99,7 +99,6 @@
     "allure-commandline": "^2.24.0",
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.8.3",
-    "bikram-sambat": "^1.7.0",
     "browserify": "^17.0.0",
     "browserify-ngannotate": "^2.0.0",
     "chai": "^4.3.8",
@@ -139,7 +138,6 @@
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-spec-reporter": "^0.0.36",
     "less": "^4.2.0",
-    "lodash": "^4.17.21",
     "loose-envify": "^1.4.0",
     "mocha": "^10.2.0",
     "module-alias": "^2.2.3",
@@ -178,6 +176,10 @@
     }
   },
   "dependencies": {
-    "google-libphonenumber": "^3.2.31"
+    "async": "^3.2.1",
+    "bikram-sambat": "^1.7.0",
+    "body-parser": "^1.20.2",
+    "google-libphonenumber": "^3.2.31",
+    "lodash": "^4.17.21"
   }
 }
