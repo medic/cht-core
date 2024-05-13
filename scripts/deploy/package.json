@@ -2,9 +2,16 @@
   "name": "cht-deploy",
   "version": "1.0.0",
   "description": "## Deploy the CHT",
-  "main": "cht-deploy",
+  "main": "src/install.js",
   "directories": {
     "test": "tests"
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.2.4"
+  },
+  "bin": {
+    "cht-deploy": "./cht-deploy"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,13 +19,14 @@
   "keywords": [],
   "author": "",
   "license": "AGPL-3.0-only",
+  "type": "module",
   "devDependencies": {
     "@kubernetes/client-node": "^0.19.0",
     "chai": "^4.3.10",
     "mocha": "^10.2.0"
   },
   "dependencies": {
-    "axios": "^1.6.8",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "node-fetch": "^3.3.2"
   }
 }
