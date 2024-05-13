@@ -75,7 +75,8 @@ function helmInstallOrUpdate(valuesFile, namespace, values, image_tag) {
             console.log(`Instance at ${values.ingress.host} installed successfully.`);
         }
     } catch (err) {
-        console.error(err.message);
+        console.error(JSON.stringify(err));
+        procedss.exit(1);
     }
 }
 
@@ -91,8 +92,8 @@ function ensureMedicHelmRepo() {
             throw new UserRuntimeError(`Medic repo found but url not matching '${MEDIC_REPO_URL}', see: helm repo list`);
         }
     } catch (err) {
-        console.error(err.message);
-        if (err instanceof UserRuntimeError) throw err;
+        console.error(JSON.stringify(err));
+        process.exit(1);
     }
 }
 

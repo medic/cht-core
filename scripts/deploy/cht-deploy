@@ -40,4 +40,5 @@ async function main() {
 
 main().catch((err) => {
     console.error('An error occurred:', err.message);
+    console.error(JSON.stringify(err));
 });
