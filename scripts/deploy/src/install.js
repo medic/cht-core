@@ -7,7 +7,7 @@ const path = require('path');
 const MEDIC_REPO_NAME = "medic";
 const MEDIC_REPO_URL = "https://docs.communityhealthtoolkit.org/helm-charts";
 const CHT_CHART_NAME = `${MEDIC_REPO_NAME}/cht-chart-4x`;
-const DEFAULT_CHART_VERSION = "0.2.3";
+const DEFAULT_CHART_VERSION = "1.0.*";
 
 class UserRuntimeError extends Error {
     constructor(message) {
