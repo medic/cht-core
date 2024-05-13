@@ -1,13 +1,19 @@
-const fs = require('fs');
-const { execSync } = require('child_process');
-const fetch = require('node-fetch');
-const yaml = require('js-yaml');
-const path = require('path');
+import fs from 'fs';
+import { execSync } from 'child_process';
+import fetch from 'node-fetch';
+import yaml from 'js-yaml';
+import path from 'path';
 
 const MEDIC_REPO_NAME = "medic";
 const MEDIC_REPO_URL = "https://docs.communityhealthtoolkit.org/helm-charts";
 const CHT_CHART_NAME = `${MEDIC_REPO_NAME}/cht-chart-4x`;
 const DEFAULT_CHART_VERSION = "1.0.*";
+
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 class UserRuntimeError extends Error {
     constructor(message) {
@@ -143,4 +149,4 @@ async function install(f) {
     helmInstallOrUpdate(f, namespace, values, image_tag);
 }
 
-module.exports = { install };
+export default install;
