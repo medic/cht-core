@@ -18,12 +18,11 @@ export namespace V1 {
    */
   export interface Person extends Contact, AbstractPerson { }
 
-  const validateQualifier = (qualifier: unknown): qualifier is UuidQualifier => {
-    if (isUuidQualifier(qualifier)) {
-      return true;
+  const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
+    if (!isUuidQualifier(qualifier)) {
+      throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
     }
-    throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
-  };
+  }
 
   /**
    * Returns a person for the given qualifier.
@@ -31,7 +30,7 @@ export namespace V1 {
    * @returns the person or <code>null</code> if no person is found for the qualifier
    */
   export const get = (context: DataContext) => async (qualifier: UuidQualifier): Promise<Nullable<Person>> => {
-    validateQualifier(qualifier);
+    assertPersonQualifier(qualifier);
     if (isLocalDataContext(context)) {
       return Local.Person.V1.get(context, qualifier);
     }

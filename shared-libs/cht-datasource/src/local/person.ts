@@ -1,9 +1,10 @@
-import { Doc, getDocById } from '../libs/doc';
+import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { Nullable } from '../libs/core';
 import { UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { LocalDataContext } from '../libs/context';
+import { getDocById } from './libs/doc';
 
 export namespace V1 {
   const isPerson = (settings: Doc, doc: Doc): doc is Person.V1.Person => contactTypeUtils.isPerson(settings, doc);
