@@ -196,6 +196,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       ])
       .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
         this.usersHomePlace = homePlaceSummary;
+        if (this.usersHomePlace && this.usersHomePlace.length > 1) {
+          this.isAllowedToSort = false;
+        }
         this.lastVisitedDateExtras = viewLastVisitedDate;
         this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
         if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
