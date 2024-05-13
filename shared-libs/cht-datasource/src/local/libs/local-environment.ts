@@ -1,5 +1,6 @@
-import { Doc, getDocById } from '../../libs/doc';
+import { Doc } from '../../libs/doc';
 import { LocalDataContext, SourceDatabases } from '../../libs/context';
+import { getDocById } from './doc';
 
 const SETTINGS_DOC_ID = 'settings';
 
@@ -14,14 +15,15 @@ const getSettingsDoc = async (medicDb: PouchDB.Database<Doc>) => {
   return settingsDoc;
 };
 
-const initFeed = (medicDb: PouchDB.Database<Doc>) => medicDb.changes({ since: 'now', live: true })
+const initFeed = (medicDb: PouchDB.Database<Doc>) => medicDb
+  .changes({ since: 'now', live: true })
   .on('change', async (change) => {
     if (change.id === SETTINGS_DOC_ID) {
       settings = await getSettingsDoc(medicDb);
     }
   });
 
-export const getLocalDataContext = async function(sourceDatabases: SourceDatabases): Promise<LocalDataContext> {
+export const getLocalDataContext = async (sourceDatabases: SourceDatabases): Promise<LocalDataContext> => {
   if (!settings) {
     await initFeed(sourceDatabases.medic);
     settings = await getSettingsDoc(sourceDatabases.medic);
@@ -30,4 +32,4 @@ export const getLocalDataContext = async function(sourceDatabases: SourceDatabas
     medicDb: sourceDatabases.medic,
     settings: settings,
   };
-}
+};
