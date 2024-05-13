@@ -10,7 +10,7 @@ export async function obtainCertificateAndKey(values) {
         const crtFilePath = values.certificate_crt_file_path;
         const keyFilePath = values.certificate_key_file_path;
         if (!crtFilePath || !keyFilePath) {
-            throw new Error("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'");
+            return Promise.reject(Error("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'"));
         }
         fs.copyFileSync(crtFilePath, 'certificate.crt');
         fs.copyFileSync(keyFilePath, 'private.key');
@@ -22,7 +22,7 @@ export async function obtainCertificateAndKey(values) {
         fs.writeFileSync('certificate.crt', crtData);
         fs.writeFileSync('private.key', keyData);
     } else if (certSource !== 'eks-medic') {
-        throw new UserRuntimeError("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'");
+        return Promise.reject(UserRuntimeError("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'"));
     }
 }
 
