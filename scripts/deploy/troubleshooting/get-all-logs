@@ -17,8 +17,10 @@ if [ "$#" -ne 1 ]; then
 fi
 
 NAMESPACE=$1
+TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+LOG_DIR="$NAMESPACE-logs_$TIMESTAMP"
 
-mkdir -p "$NAMESPACE-logs"
+mkdir -p "$LOG_DIR"
 if [ $? -ne 0 ]; then
   echo "Failed to create directory for logs."
   exit 1
@@ -29,18 +31,18 @@ PODS=$(kubectl -n $NAMESPACE get pods -o jsonpath="{.items[*].metadata.name}")
 
 if [ -z "$PODS" ]; then
   echo "No Pods found in Namespace $NAMESPACE."
-  rm -rf "$NAMESPACE-logs"
+  rm -rf "$LOG_DIR"
   exit 1
 fi
 
 # Loop through all pod names and fetch logs, saving them to individual files
 for POD in $PODS; do
-  kubectl -n $NAMESPACE logs $POD > "$NAMESPACE-logs/$POD.log"
+  kubectl -n $NAMESPACE logs $POD > "$LOG_DIR/$POD.log"
 done
 
 # Create a tar.gz archive of the log files
-tar -czf "$NAMESPACE-logs.tar.gz" -C "$NAMESPACE-logs" .
+tar -czf "$LOG_DIR.tar.gz" -C "$LOG_DIR" .
 
-rm -rf "$NAMESPACE-logs"
+rm -rf "$LOG_DIR"
 
-echo "Logs archived in $NAMESPACE-logs.tar.gz"
+echo "Logs archived in $LOG_DIR.tar.gz"
