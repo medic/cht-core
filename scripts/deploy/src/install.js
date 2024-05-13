@@ -54,7 +54,7 @@ async function get_image_tag(chtversion) {
     const response = await fetch(`https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${chtversion}`);
     const data = await response.json();
     const tag = data.tags.find(tag => tag.container_name === 'cht-api');
-    if (!tag) throw new Error('cht image tag not found');
+    if (!tag) return Promise.reject(new UserRuntimeError('cht image tag not found'));
     return tag.image.split(':').pop();
 }
 
