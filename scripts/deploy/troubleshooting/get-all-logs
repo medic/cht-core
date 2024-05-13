@@ -18,13 +18,7 @@ fi
 
 NAMESPACE=$1
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-LOG_DIR="$NAMESPACE-logs_$TIMESTAMP"
-
-mkdir -p "$LOG_DIR"
-if [ $? -ne 0 ]; then
-  echo "Failed to create directory for logs."
-  exit 1
-fi
+LOG_DIR=$(mktemp -d "${NAMESPACE}-logs_${TIMESTAMP}-XXXXXX")
 
 # Get a list of all pod names in the namespace
 PODS=$(kubectl -n $NAMESPACE get pods -o jsonpath="{.items[*].metadata.name}")
@@ -41,8 +35,12 @@ for POD in $PODS; do
 done
 
 # Create a tar.gz archive of the log files
-tar -czf "$LOG_DIR.tar.gz" -C "$LOG_DIR" .
-
-rm -rf "$LOG_DIR"
-
-echo "Logs archived in $LOG_DIR.tar.gz"
+tar -czf "$NAMESPACE-logs_$TIMESTAMP.tar.gz" -C "$LOG_DIR" .
+if [ $? -eq 0 ]; then
+  echo "Logs archived in $NAMESPACE-logs_$TIMESTAMP.tar.gz"
+  rm -rf "$LOG_DIR"
+else
+  echo "Failed to create archive."
+  rm -rf "$LOG_DIR"
+  exit 1
+fi
