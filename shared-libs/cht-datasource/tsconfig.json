@@ -1,15 +1,5 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
-  //  "compilerOptions": {
-  //    "lib": ["es2023"],
-  //    "module": "node16",
-  //    "target": "es2022",
-  //
-  //    "strict": true,
-  //    "esModuleInterop": true,
-  //    "skipLibCheck": true,
-  //    "moduleResolution": "node16"
-  //  }
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -18,18 +8,11 @@
     "outDir": "dist",
     "sourceMap": true,
     "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo",
-//    "typeRoots": [
-//      "node_modules/@types",
-//      "../../node_modules/@types",
-//      "./types"
-//    ]
   },
   "files": [
     "src/auth.js"
   ],
   "include": [
-//    "./ambient.d.ts",
-    "./global.d.ts",
     "src/**/*.ts",
     "test/**/*.ts"
   ]

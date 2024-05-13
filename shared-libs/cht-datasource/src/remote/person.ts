@@ -1,10 +1,11 @@
 import { fetchIdentifiedResource } from './libs/remote-environment';
-import { validateIdentifier } from '../libs/person';
-import PersonSource = V1.PersonSource;
+import { Nullable } from '../libs/core';
+import { UuidQualifier } from '../qualifier';
+import * as Person from '../person';
 
-export const v1: PersonSource = {
-  get: async (identifier: V1.UuidIdentifier): Promise<Nullable<V1.Person>> => {
-    validateIdentifier(identifier);
-    return fetchIdentifiedResource('api/v1/person', identifier.uuid);
-  }
-};
+export namespace V1 {
+  export const get = async (identifier: UuidQualifier): Promise<Nullable<Person.V1.Person>> => fetchIdentifiedResource(
+    'api/v1/person',
+    identifier.uuid
+  );
+}

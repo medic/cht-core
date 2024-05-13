@@ -1,4 +1,5 @@
-import { getDocById } from '../../libs/doc';
+import { Doc, getDocById } from '../../libs/doc';
+import { LocalDataContext, SourceDatabases } from '../../libs/context';
 
 const SETTINGS_DOC_ID = 'settings';
 
@@ -20,21 +21,13 @@ const initFeed = (medicDb: PouchDB.Database<Doc>) => medicDb.changes({ since: 'n
     }
   });
 
-export interface LocalEnvironment {
-  medicDb: PouchDB.Database<Doc>;
-  getSettings: () => Doc;
-}
-
-export const getLocalEnvironment = async function(sourceDatabases?: SourceDatabases): Promise<Nullable<LocalEnvironment>> {
-  if (!sourceDatabases) {
-    return null;
-  }
+export const getLocalDataContext = async function(sourceDatabases: SourceDatabases): Promise<LocalDataContext> {
   if (!settings) {
     await initFeed(sourceDatabases.medic);
     settings = await getSettingsDoc(sourceDatabases.medic);
   }
   return {
     medicDb: sourceDatabases.medic,
-    getSettings: (): Doc => settings!,
+    settings: settings,
   };
 }

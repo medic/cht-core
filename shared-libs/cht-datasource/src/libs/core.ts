@@ -1,3 +1,13 @@
+/**
+ * A value that could be <code>null</code>.
+ */
+export type Nullable<T> = T | null;
+
+/**
+ * An array that is guaranteed to have at least one element.
+ */
+export type NonEmptyArray<T> = [T, ...T[]];
+
 export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };

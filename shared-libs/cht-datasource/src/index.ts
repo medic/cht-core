@@ -4,44 +4,37 @@
  * Whenever possible keep this file clean by defining new features in modules.
  */
 import { hasAnyPermission, hasPermissions } from './auth';
-import { v1 as docV1 } from './libs/doc';
-import { getLocalEnvironment, LocalEnvironment } from './local/libs/local-environment';
-import { v1 as remoteV1 } from './remote';
-import { v1 as localV1 } from './local';
+import { getDataContext as _getDataContext, SourceDatabases } from './libs/context';
+import * as Person from './person';
+import * as Qualifier from './qualifier';
 
-// import { AnotherTestType } from './cht-datasource';
+export { Nullable, NonEmptyArray } from './libs/core';
+export const getDataContext = _getDataContext;
+export * as Person from './person';
+export * as Qualifier from './qualifier';
 
-const adapt = <T>(
-  localEnv: Nullable<LocalEnvironment>,
-  remoteAdapter: T,
-  localAdapter: (localEnv: LocalEnvironment) => T,
-) => {
-  if (localEnv) {
-    return localAdapter(localEnv);
-  }
-  return remoteAdapter;
-};
-
-// declare namespace 'V1' {
-//   export const byUuid = docV1.byUuid;
-//   export import Person = PersonV1.Person;
-//   export import UuidIdentifier = DocV1.UuidIdentifier;
-//   export import byUuid = DocV1.byUuid;
-// }
-
-
-export const getDataSource = async (sourceDatabases?: SourceDatabases) => {
-  const localEnv = await getLocalEnvironment(sourceDatabases);
-
+/**
+ * Returns the source for CHT data. If local source databases are provided, these will be used to interact with the
+ * data. This functionality is intended for use cases requiring offline functionality. For all other use cases, no
+ * source databases should be provided and instead the library will use the remote API to interact with the data.
+ * @param sourceDatabases the PouchDB databases to use as the local datasource. Required for offline functionality.
+ * @returns the CHT datasource API
+ */
+export const getDatasource = async (sourceDatabases?: SourceDatabases) => {
+  const ctx = await getDataContext(sourceDatabases);
   return {
     v1: {
       hasPermissions,
       hasAnyPermission,
-      byUuid: docV1.byUuid,
-      person: adapt(localEnv, remoteV1.personSource, localV1.personSource),
+      person: {
+        /**
+         * Returns a person by their UUID.
+         * @param uuid the UUID of the person to retrieve
+         * @returns the person or <code>null</code> if no person is found for the UUID
+         */
+        getByUuid: (uuid: string) => Person.V1.get(ctx)(Qualifier.byUuid(uuid)),
+      }
     }
   };
 };
 
-module.exports = { getDataSource };
-// export default { getDataSource };

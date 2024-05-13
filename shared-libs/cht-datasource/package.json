@@ -3,12 +3,7 @@
   "version": "1.0.0",
   "description": "Provides an API for the CHT data model",
   "main": "dist/index.js",
-  "types": "./global.d.ts",
-  "files": [
-    "/dist",
-    "./src/types",
-    "./global.d.ts"
-  ],
+  "files": [ "/dist" ],
   "scripts": {
     "postinstall": "rm -rf dist && npm run build",
     "build": "tsc -p tsconfig.build.json",

@@ -1,5 +1,1 @@
-import { v1 as personV1 } from './person';
-
-export const v1 = {
-  personSource: personV1
-};
+export * as Person from './person';

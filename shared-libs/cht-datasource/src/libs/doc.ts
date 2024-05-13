@@ -1,4 +1,12 @@
-import { hasField, hasFields, isRecord } from './core';
+import { hasFields, isRecord, NonEmptyArray, Nullable } from './core';
+
+type DataPrimitive = string | number | boolean | Date | null | undefined;
+interface DocArray extends Readonly<(DataPrimitive | DocArray | Doc)[]> { }
+
+export interface Doc extends Readonly<Record<string, DataPrimitive | DocArray | Doc>> {
+  _id: string;
+  _rev: string;
+}
 
 const isDoc = (value: unknown): value is Doc => isRecord(value) && hasFields(value, [
   { name: '_id', type: 'string' },
@@ -14,11 +22,4 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (ids: NonEmptyA
 
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => {
   return (await getDocsByIds(db)([uuid]))[0];
-};
-
-export const v1 = {
-  byUuid: (uuid: string): V1.UuidIdentifier => ({ uuid }),
-  isUuidIdentifier: (identifier: unknown): identifier is V1.UuidIdentifier => {
-    return isRecord(identifier) && hasField(identifier, { name: 'uuid', type: 'string' });
-  }
 };
