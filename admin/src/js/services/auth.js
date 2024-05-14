@@ -1,4 +1,5 @@
-const chtDatasource = require('@medic/cht-datasource');
+const cht = require('@medic/cht-datasource');
+const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
 
 angular.module('inboxServices').factory('Auth',
   function(

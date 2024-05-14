@@ -15,9 +15,9 @@ export namespace V1 {
   ): Promise<Nullable<Person.V1.Person>> => {
     const { medicDb, settings } = localContext;
     const doc = await getDocById(medicDb)(identifier.uuid);
-    if (!doc || !isPerson(settings, doc)) {
+    if (!doc || !isPerson(settings.getAll(), doc)) {
       return null;
     }
     return doc;
-  }
+  };
 }

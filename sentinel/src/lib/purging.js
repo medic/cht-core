@@ -1,11 +1,13 @@
 const config = require('../config');
 const registrationUtils = require('@medic/registration-utils');
 const serverSidePurgeUtils = require('@medic/purging-utils');
-const chtDatasource = require('@medic/cht-datasource');
+const cht = require('@medic/cht-datasource');
 const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 const moment = require('moment');
+
+const dataContext = cht.getRemoteDataContext();
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
@@ -346,7 +348,7 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
         group.contact,
         group.reports,
         group.messages,
-        chtDatasource,
+        cht.getDatasource(dataContext),
         permissionSettings
       );
       if (!validPurgeResults(idsToPurge)) {
@@ -459,8 +461,8 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
       rolesHashes.forEach(hash => {
         toPurge[hash] = toPurge[hash] || {};
         const purgeIds = doc.form ?
-          purgeFn({ roles: roles[hash] }, {}, [doc], [], chtDatasource, permissionSettings) :
-          purgeFn({ roles: roles[hash] }, {}, [], [doc], chtDatasource, permissionSettings);
+          purgeFn({ roles: roles[hash] }, {}, [doc], [], cht.getDatasource(dataContext), permissionSettings) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc], cht.getDatasource(dataContext), permissionSettings);
 
         if (!validPurgeResults(purgeIds)) {
           return;

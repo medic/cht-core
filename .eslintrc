@@ -18,8 +18,7 @@
     "shared-libs/cht-datasource/dist/**",
     "tests/scalability/report*/**",
     "tests/scalability/jmeter/**",
-    "webapp/src/ts/providers/xpath-element-path.provider.ts",
-    "**/*.d.ts"
+    "webapp/src/ts/providers/xpath-element-path.provider.ts"
   ],
   "plugins": ["promise", "node"],
   "rules": {

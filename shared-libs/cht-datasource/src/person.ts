@@ -22,7 +22,7 @@ export namespace V1 {
     if (!isUuidQualifier(qualifier)) {
       throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
     }
-  }
+  };
 
   /**
    * Returns a person for the given qualifier.

@@ -10,7 +10,7 @@ export type UuidQualifier = Readonly<{ uuid: string }>;
  * @param uuid { string } the UUID of the entity
  * @return { UuidQualifier } the qualifier
  */
-export const byUuid = (uuid: string): UuidQualifier => ({ uuid })
+export const byUuid = (uuid: string): UuidQualifier => ({ uuid });
 
 /**
  * Returns <code>true</code> if the given qualifier is a <code>UuidQualifier</code>, otherwise <code>false</code>.
