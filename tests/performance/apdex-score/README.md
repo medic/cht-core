@@ -99,14 +99,21 @@
     "patientReport": {
       "navigation": [{
         "scrollDown": 1,
-        "selector": "//*[@text=\"Sexual and Gender Based Violence\"]"
+        "selector": "//*[@text=\"<a report name>\"]"
       }],
       "pages": [
         {
           "asserts": [
-            { "selector": "//*[contains(@text, \"Observe for signs of\")]" }
+            { "selector": "//*[contains(@text, \"<a text in the page>\")]" }
           ],
-          "fields": [],
+          "fields": [
+            {
+              "selector": "<field element to click>",
+              // If input field, it types on the keyboard. 
+              // Key codes: https://developer.android.com/reference/android/view/KeyEvent.html#KEYCODE_A
+              "keycodes": [ 36, 43, 40, 29 ]
+            }
+          ],
           "scrollDown": 1
         }
       ],
