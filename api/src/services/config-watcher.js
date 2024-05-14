@@ -3,7 +3,7 @@ const configUpdatesEvents = new EventEmitter();
 
 const db = require('../db');
 const dbWatcher = require('./db-watcher');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
@@ -42,7 +42,7 @@ const loadTranslations = () => {
 };
 
 const initTransitionLib = () => {
-  const transitionsLib = require('@medic/transitions')(db, config, logger);
+  const transitionsLib = require('@medic/transitions')(db, config);
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);

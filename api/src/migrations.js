@@ -6,7 +6,7 @@ const db = require('./db');
 const MIGRATION_LOG_ID = 'migration-log';
 const MIGRATION_LOG_TYPE = 'meta';
 const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 
 const hasRun = (log, migration) => {
   if (!log || !log.migrations) {

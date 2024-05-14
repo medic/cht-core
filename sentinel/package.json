@@ -11,6 +11,7 @@
     "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9228 --watch server.js --watch 'src/**' --watch '../shared-libs/**/src/**' --watch '../shared-libs/**/dist/**' server.js"
   },
   "dependencies": {
+    "@medic/logger": "file:../shared-libs/logger",
     "async": "^3.2.4",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",

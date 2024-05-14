@@ -1,4 +1,4 @@
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const messaging = require('../services/messaging');
 const serverUtils = require('../server-utils');
 const secureSettings = require('@medic/settings');

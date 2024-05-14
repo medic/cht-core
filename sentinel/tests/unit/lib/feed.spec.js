@@ -7,7 +7,7 @@ const assert = require('chai').assert;
 const db = require('../../../src/db');
 const feed = require('../../../src/lib/feed');
 const metadata = require('../../../src/lib/metadata');
-const logger = require('../../../src/lib/logger');
+const logger = require('@medic/logger');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const changeRetryHistory = require('../../../src/lib/change-retry-history');
 

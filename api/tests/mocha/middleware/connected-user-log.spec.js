@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const auth = require('../../../src/auth');
 const middleware = require('../../../src/middleware/connected-user-log');
 const connectedUserLogService = require('../../../src/services/connected-user-log');
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 
 let req;
 let res;

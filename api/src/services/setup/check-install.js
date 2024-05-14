@@ -1,4 +1,4 @@
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 const upgradeUtils = require('./utils');
 const upgradeSteps = require('./upgrade-steps');
 const ddocsService = require('./ddocs');

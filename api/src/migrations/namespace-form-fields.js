@@ -4,7 +4,7 @@ const async = require('async');
 const _ = require('lodash');
 const { promisify } = require('util');
 const db = require('../db');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const settingsService = require('../services/settings');
 let forms;
 

@@ -4,7 +4,7 @@ const _ = require('lodash');
 const request = require('@medic/couch-request');
 
 const db = require('../../db');
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 const environment = require('../../environment');
 const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');

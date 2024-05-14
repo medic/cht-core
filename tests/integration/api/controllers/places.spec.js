@@ -97,6 +97,40 @@ describe('Places API', () => {
         });
     });
 
+    it('#8985 should create place if parent has invalid contact', () => {
+      const parentDoc = {
+        _id: 'parent',
+        type: 'district_hospital',
+        name: 'A Place',
+        contact: {
+          _id: ''
+        }
+      };
+      return utils.saveDoc(parentDoc).then(() => {
+        onlineRequestOptions.body = {
+          name: 'CHP Area One',
+          type: 'health_center',
+          parent: parentDoc._id
+        };
+        return utils.request(onlineRequestOptions);
+      })
+        .then(result => {
+          chai.expect(result.id).to.not.be.undefined;
+          return utils.getDoc(result.id);
+        })
+        .then((place) => {
+          chai.expect(place).to.deep.include({
+            name: 'CHP Area One',
+            type: 'health_center',
+          });
+          expect(place.parent._id).to.be.a('string');
+          return utils.getDoc(place.parent._id);
+        })
+        .then((parent) => {
+          chai.expect(parent).to.deep.include(parentDoc);
+        });
+    });
+
     it('should create place with contact', () => {
       onlineRequestOptions.body = {
         name: 'CHP Area One',
@@ -152,7 +186,7 @@ describe('Places API', () => {
           chai.expect(place).to.deep.include({
             name: 'DS',
             type: 'district_hospital',
-            contact: { _id: contact._id, parent: { _id: contact.parent._id } }
+            contact: 'fixture:user:online'
           });
         });
     });

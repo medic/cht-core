@@ -10,7 +10,7 @@ const path = require('path');
 const auth = require('./auth');
 const prometheusMiddleware = require('prometheus-api-metrics');
 const rateLimiterMiddleware = require('./middleware/rate-limiter');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 const isClientHuman = require('./is-client-human');
 
 const port = typeof environment.port !== 'undefined' && environment.port !== null ? `:${environment.port}` : '';
@@ -73,6 +73,7 @@ const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
 const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
+const moment = require('moment');
 const MAX_REQUEST_SIZE = '32mb';
 
 // requires content-type application/x-www-form-urlencoded header
@@ -158,6 +159,7 @@ app.use((req, res, next) => {
 app.use(getLocale);
 
 morgan.token('id', req => req.id);
+morgan.token('date', () => moment().format(logger.DATE_FORMAT));
 
 app.use(
   morgan(':date REQ: :id :remote-addr :remote-user :method :url HTTP/:http-version', {

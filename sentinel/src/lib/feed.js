@@ -1,5 +1,5 @@
 const async = require('async');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 const db = require('../db');
 const metadata = require('./metadata');
 const changeRetryHistory = require('./change-retry-history');

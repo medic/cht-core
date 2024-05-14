@@ -3,7 +3,7 @@
 // it into the new singular value style.
 //
 const db = require('../db');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const TRANSITION_SEQ_DOCUMENT = '_local/transitions-seq';
 const BACKGROUND_CLEANUP_SEQ_DOCUMENT = '_local/background-seq';
