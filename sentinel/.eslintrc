@@ -19,6 +19,7 @@
           "@medic/couch-request",
           "@medic/infodoc",
           "@medic/lineage",
+          "@medic/logger",
           "@medic/message-utils",
           "@medic/outbound",
           "@medic/phone-number",
