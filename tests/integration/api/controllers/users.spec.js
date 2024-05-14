@@ -1799,4 +1799,18 @@ describe('Users API', () => {
       expect(allUsers.map(user => user.id)).to.not.include(user5Response.user.id);
     });
   });
+
+  describe('POST api/v3/users', () => {
+    it('should create users with multiple facilities', async () => {
+      //create three facilities and one contact
+      // create offline user with these facilities and contact
+      // create online user with these facilities and contact
+    });
+
+    it('should edit users to add multiple facilities', async () => {
+      // create user normally
+      // create additional facility
+      //
+    });
+  });
 });
