@@ -2,6 +2,32 @@
 
 import { install } from './src/install.js';
 import fs from 'fs';
+import semver from 'semver';
+import path from 'path';
+
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+function validateNodeVersion() {
+    const packageJsonPath = path.resolve(__dirname, 'package.json');
+    let packageJson;
+
+    try {
+        packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    } catch (err) {
+        return;
+    }
+
+    const requiredNodeVersion = packageJson.engines && packageJson.engines.node;
+
+    if (requiredNodeVersion && !semver.satisfies(process.version, requiredNodeVersion)) {
+        console.error(`Invalid Node.js version. Required: ${requiredNodeVersion}. Current: ${process.version}`);
+        process.exit(1);
+    }
+}
 
 function validateArguments() {
     const args = process.argv.slice(2);
@@ -33,6 +59,7 @@ async function runInstallScript(args) {
 }
 
 async function main() {
+    validateNodeVersion();
     const args = validateArguments();
     validateFileExists(args[1]);
     await runInstallScript(args);
