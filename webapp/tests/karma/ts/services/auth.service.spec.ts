@@ -9,6 +9,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('Auth Service', () => {
   let service:AuthService;
@@ -29,6 +30,7 @@ describe('Auth Service', () => {
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
         { provide: ChangesService, useValue: changesService },
+        { provide: DbService, useValue: { get: sinon.stub().resolves({}) } },
         { provide: HttpClient, useValue: http },
       ]
     });

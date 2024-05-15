@@ -8,18 +8,21 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('CHTScriptApiService service', () => {
   let service: CHTScriptApiService;
   let sessionService;
   let settingsService;
   let changesService;
+  let dbService;
   let http;
 
   beforeEach(() => {
-    sessionService = { userCtx: sinon.stub() };
+    sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    dbService = { get: sinon.stub().resolves({}) };
     http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
@@ -27,6 +30,7 @@ describe('CHTScriptApiService service', () => {
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
         { provide: ChangesService, useValue: changesService },
+        { provide: DbService, useValue: dbService },
         { provide: HttpClient, useValue: http },
       ]
     });
@@ -40,9 +44,11 @@ describe('CHTScriptApiService service', () => {
 
   describe('init', () => {
 
-    it('should initialise service', async () => {
+    it('should initialise service for offline user', async () => {
       settingsService.get.resolves();
-      sessionService.userCtx.returns();
+      const userCtx = { hello: 'world' };
+      sessionService.userCtx.returns(userCtx);
+      sessionService.isOnlineOnly.returns(false);
 
       await service.isInitialized();
 
@@ -51,6 +57,25 @@ describe('CHTScriptApiService service', () => {
       expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(settingsService.get.callCount).to.equal(1);
+      expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+    });
+
+    it('should initialise service for online user', async () => {
+      settingsService.get.resolves();
+      const userCtx = { hello: 'world' };
+      sessionService.userCtx.returns(userCtx);
+      sessionService.isOnlineOnly.returns(true);
+
+      await service.isInitialized();
+
+      expect(changesService.subscribe.callCount).to.equal(1);
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
+      expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
     });
 
     it('should return versioned api', async () => {
@@ -59,11 +84,12 @@ describe('CHTScriptApiService service', () => {
 
       const result = await service.getApi();
 
-      expect(result).to.have.all.keys([ 'v1' ]);
-      expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib' ]);
+      expect(result).to.contain.keys([ 'v1' ]);
+      expect(result.v1).to.contain.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib', 'person' ]);
       expect(result.v1.hasPermissions).to.be.a('function');
       expect(result.v1.hasAnyPermission).to.be.a('function');
       expect(result.v1.getExtensionLib).to.be.a('function');
+      expect(result.v1.person).to.be.a('object');
     });
 
     it('should initialize extension libs', async () => {
