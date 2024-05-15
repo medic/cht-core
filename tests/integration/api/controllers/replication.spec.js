@@ -442,7 +442,9 @@ describe('replication', () => {
             // depth = 2
             _id: 'steveville_patient',
             type: 'person',
-            parent: { _id: 'steveville_clinic', parent: { _id: 'fixture:steveville', parent: { _id: parentPlace._id } } },
+            parent: {
+              _id: 'steveville_clinic', parent: { _id: 'fixture:steveville', parent: { _id: parentPlace._id } }
+            },
             name: 'patient',
           }
         ];
@@ -496,7 +498,15 @@ describe('replication', () => {
         await utils.saveDocs(contacts);
         await utils.saveDocs(reports);
         const response = await requestDocs('steveclare');
-        assertDocIds(response, ...steveClaresIds, 'steveville_clinic', 'steveville_patient', 'valid_1', 'valid_2', 'valid_3');
+        assertDocIds(
+          response,
+          ...steveClaresIds,
+          'steveville_clinic',
+          'steveville_patient',
+          'valid_1',
+          'valid_2',
+          'valid_3'
+        );
       });
 
       it('users should replicate tasks and targets correctly', async () => {
@@ -888,7 +898,7 @@ describe('replication', () => {
       assertDocIds(response, ...chwIds, ...expectedReports);
     });
 
-    it('should not return sensitive reports about your place by someone above you in the hierarchy multifacility', async () => {
+    it('should not return sensitive reports for multifacility', async () => {
       const docs = [
         {
           // report about home place submitted by logged in user

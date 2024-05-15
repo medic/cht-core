@@ -367,18 +367,14 @@ describe('bulk-docs handler', () => {
     ];
 
     await utils.saveDocsRevs(existentDocs);
-    multiRequestOptions.body = { docs: existentDocs };
+    multiRequestOptions.body = { docs: [ ...existentDocs, ...docs] };
     const updates = await utils.requestOnTestDb(multiRequestOptions);
 
     expect(updates[0].ok).to.equal(true);
     expect(updates[1].ok).to.equal(true);
     expect(updates[2].error).to.equal('forbidden');
-
-    multiRequestOptions.body = { docs };
-    const creates = await utils.requestOnTestDb(multiRequestOptions);
-
-    expect(creates[0].ok).to.equal(true);
-    expect(creates[1].error).to.equal('forbidden');
+    expect(updates[3].ok).to.equal(true);
+    expect(updates[4].error).to.equal('forbidden');
   });
 
   it('filters offline tasks and targets', () => {
