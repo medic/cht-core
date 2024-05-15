@@ -279,28 +279,8 @@ module.exports = {
         serverUtils.error(error, req, res);
       }
     },
-    update: async (req, res) => {
-      if (_.isEmpty(req.body)) {
-        return serverUtils.emptyJSONBodyError(req, res);
-      }
-
-      try {
-        const { fullPermission } = await verifyUpdateRequest(req);
-        const requesterContext = await auth.getUserCtx(req);
-
-        const username = req.params.username;
-        const result = await users.updateUser(username, req.body, !!fullPermission, getAppUrl(req));
-
-        const body = Object.keys(req.body).join(',');
-        logger.info(
-          `REQ ${req.id} - Updated user '${username}'. ` +
-          `Setting field(s) '${body}'. ` +
-          `Requested by '${requesterContext?.name}'.`
-        );
-        res.json(result);
-      } catch (err) {
-        serverUtils.error(err, req, res);
-      }
+    update: (req, res) => {
+      return module.exports.update(req, res);
     },
   }
 };

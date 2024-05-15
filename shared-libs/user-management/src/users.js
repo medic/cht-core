@@ -45,7 +45,6 @@ const RESTRICTED_USER_EDITABLE_FIELDS = [
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
-  'places',
   'contact',
   'type',
   'roles',
@@ -392,14 +391,10 @@ const hydratePayload = (data) => {
   }
 
   if (data.place) {
-    data.facility_id = [getDocID(data.place)];
+    data.facility_id = Array.isArray(data.place) ? data.place.map(place => getDocID(place)) :  [getDocID(data.place)];
   }
 
-  if (data.places) {
-    data.facility_id = data.places.map(place => getDocID(place));
-  }
-
-  if (_.isNull(data.places) || _.isNull(data.place)) {
+  if (_.isNull(data.place)) {
     data.facility_id = null;
   }
 
@@ -432,7 +427,7 @@ const getCommonFieldsUpdates = (userDoc, data) => {
     userDoc.roles = data.roles;
   }
 
-  if (!_.isUndefined(data.place) || !_.isUndefined(data.places)) {
+  if (!_.isUndefined(data.place)) {
     userDoc.facility_id = data.facility_id;
   }
 
@@ -442,7 +437,7 @@ const getCommonFieldsUpdates = (userDoc, data) => {
 };
 
 const getSettingsUpdates = (username, data) => {
-  const ignore = ['type', 'place', 'contact', 'places'];
+  const ignore = ['type', 'place', 'contact'];
 
   const settings = {
     name: username,
@@ -461,7 +456,7 @@ const getSettingsUpdates = (username, data) => {
 };
 
 const getUserUpdates = (username, data) => {
-  const ignore = ['type', 'place', 'contact', 'places'];
+  const ignore = ['type', 'place', 'contact'];
 
   const user = {
     name: username,
@@ -581,11 +576,11 @@ const saveUserSettingsUpdates = async (userSettings) => {
 };
 
 const validateUserFacility = (data, user) => {
-  if (data.place || data.places) {
+  if (data.place) {
     return places.placesExist(data.facility_id);
   }
 
-  if (_.isNull(data.place) && _.isNull(data.places)) {
+  if (_.isNull(data.place)) {
     const userRoles = user?.roles || data.roles;
     if (userRoles && roles.isOffline(userRoles)) {
       return Promise.reject(error400(
@@ -599,7 +594,11 @@ const validateUserFacility = (data, user) => {
 
 const validateUserContact = (data, user) => {  // NOSONAR
   if (data.contact) {
-    return validateContact(data.contact_id, data.facility_id?.[0]);
+    return Promise
+      .any(data.facility_id.map(facility_id => validateContact(data.contact_id, facility_id)))
+      .catch(errors => {
+        throw errors.errors[0];
+      });
   }
 
   if (_.isNull(data.contact)) {
@@ -869,8 +868,7 @@ const validateUpdateAttempt = (data, fullAccess) => { // NOSONAR
   const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
 
   // Online users can remove place or contact
-  if (!_.isNull(data.places) &&
-      !_.isNull(data.place) &&
+  if (!_.isNull(data.place) &&
       !_.isNull(data.contact) &&
       !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
   ) {

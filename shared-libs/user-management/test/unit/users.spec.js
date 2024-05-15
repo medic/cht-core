@@ -1,4 +1,5 @@
 const chai = require('chai');
+chai.use(require('chai-as-promised'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 
@@ -1963,6 +1964,161 @@ describe('Users service', () => {
     });
   });
 
+  describe('createMultiFacilityUser', () => {
+    it('returns error if missing fields', async () => {
+      await chai.expect(service.createMultiFacilityUser({}))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      await chai.expect(service.createMultiFacilityUser({ password: 'x', place: 'x', contact: 'y' }))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      await chai.expect(service.createMultiFacilityUser({ username: 'x', place: 'x', contact: 'y' }))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      await chai.expect(service.createMultiFacilityUser({ username: 'x', password: 'x', contact: 'y' }))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      await chai.expect(service.createMultiFacilityUser({ username: 'x', password: 'x', place: 'x' }))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+    });
+
+    it('returns error if short password', async () => {
+      const data = {
+        username: 'x',
+        place: 'x',
+        contact: 't',
+        type: 'national-manager',
+        password: 'short'
+      };
+      await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+        .and.have.property('code', 400);
+    });
+
+    it('returns error if weak password', async () => {
+      const data = {
+        username: 'x',
+        place: 'x',
+        contact: 'y',
+        type: 'national-manager',
+        password: 'password'
+      };
+      await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+        .and.have.property('code', 400);
+    });
+
+    it('returns error if place lookup fails', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(places, 'placesExist').rejects(new Error('missing'));
+
+      const data = {
+        username: 'x',
+        place: 'x',
+        contact: 'y',
+        type: 'national-manager',
+        password: 'password.123'
+      };
+
+      await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith('missing');
+
+      chai.expect(places.placesExist.args[0]).to.deep.equal([['x']]);
+    });
+
+    it('returns error if places lookup fails', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(places, 'placesExist').rejects(new Error('missing'));
+
+      const data = {
+        username: 'x',
+        place: ['x', 'y', 'z'],
+        contact: 'y',
+        type: 'national-manager',
+        password: 'password.123'
+      };
+      await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith('missing');
+
+      chai.expect(places.placesExist.args[0]).to.deep.equal([['x', 'y', 'z']]);
+    });
+
+    it('returns error if contact is not within place', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(places, 'placesExist').resolves();
+      const data = {
+        username: 'x',
+        place: ['x', 'y', 'z'],
+        contact: 'h',
+        type: 'national-manager',
+        password: 'password.123'
+      };
+
+      db.medic.get.withArgs('h').resolves({ parent: { _id: 'u', parent: { _id: 't' } } });
+
+      await chai.expect(service.createMultiFacilityUser(data))
+        .to.be.eventually.rejectedWith(Error)
+        .and.have.property('code', 400);
+    });
+
+    it('fails if new username does not validate', async () => {
+      service.__set__('validateNewUsername', sinon.stub().rejects(new Error('sorry')));
+
+      await chai.expect(service.createMultiFacilityUser(userData)).to.be.eventually.rejectedWith('sorry');
+    });
+
+    it('errors if username exists in _users db', async () => {
+      db.users.get.resolves('bob lives here already.');
+      db.medic.get.resolves();
+      await chai.expect(service.createMultiFacilityUser(userData)).to.be.eventually.rejectedWith(Error)
+        .and.have.deep.property('message', {
+          message: 'Username "x" already taken.',
+          translationKey: 'username.taken',
+          translationParams: { username: 'x' }
+        });
+    });
+
+    it('errors if username exists in medic db', async () => {
+      db.users.get.resolves();
+      db.medic.get.resolves('jane lives here too.');
+      await chai.expect(service.createMultiFacilityUser(userData)).to.be.eventually.rejectedWith(Error)
+        .and.have.deep.property('message', {
+          message: 'Username "x" already taken.',
+          translationKey: 'username.taken',
+          translationParams: { username: 'x' }
+        });
+    });
+
+    it('succeeds if contact is within place', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(places, 'placesExist').resolves();
+      sinon.stub(people, 'isAPerson').returns(true);
+      db.medic.put.resolves({ id: 'success' });
+      db.users.put.resolves({ id: 'success' });
+
+      const userData = {
+        username: 'x',
+        place: ['x', 'y', 'z'],
+        contact: 'h',
+        roles: ['national-manager'],
+        password: 'password.123'
+      };
+      db.medic.get.withArgs('h').resolves({ parent: { _id: 'u', parent: { _id: 'z' } } });
+
+      await service.createMultiFacilityUser(userData);
+      chai.expect(db.medic.put.args).to.deep.equal([[{
+        facility_id: ['x', 'y', 'z'],
+        contact_id: 'h',
+        roles: ['national-manager'],
+        type: 'user-settings',
+        _id: 'org.couchdb.user:x',
+        name: 'x'
+      }]]);
+
+      chai.expect(db.users.put.args).to.deep.equal([[{
+        facility_id: ['x', 'y', 'z'],
+        contact_id: 'h',
+        roles: ['national-manager'],
+        type: 'user',
+        _id: 'org.couchdb.user:x',
+        name: 'x',
+        password: 'password.123'
+      }]]);
+    });
+  });
+
   describe('setContactParent', () => {
 
     it('resolves contact parent in waterfall', () => {
@@ -2370,6 +2526,32 @@ describe('Users service', () => {
       });
     });
 
+    it('succeeds if places are defined and found', () => {
+      const data = {
+        place: ['x', 'y', 'z']
+      };
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(places, 'placesExist').resolves();
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
+      return service.updateUser('paul', data, true).then(() => {
+        chai.expect(db.medic.put.args).to.deep.equal([[{
+          _id: 'org.couchdb.user:paul',
+          facility_id: [ 'x', 'y', 'z' ],
+          name: 'paul',
+          type: 'user-settings',
+        }]]);
+
+        chai.expect(db.users.put.args).to.deep.equal([[{
+          _id: 'org.couchdb.user:paul',
+          facility_id: [ 'x', 'y', 'z' ],
+          name: 'paul',
+          type: 'user',
+        }]]);
+      });
+    });
+
     it('roles param updates roles on user and user-settings doc', () => {
       const data = {
         roles: [ 'rebel' ]
@@ -2477,7 +2659,7 @@ describe('Users service', () => {
       service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
         contact_id: 1,
-        roles: ['mm-online']
+        roles: ['rambler', 'mm-online']
       }));
       service.__set__('validateUserSettings', sinon.stub().resolves({
         facility_id: 'maine',
@@ -2485,6 +2667,8 @@ describe('Users service', () => {
       }));
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      sinon.stub(roles, 'isOffline').withArgs(['rambler']).returns(false);
+
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];

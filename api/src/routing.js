@@ -418,7 +418,9 @@ app.get('/api/v1/users', users.get);
 app.get('/api/v2/users', users.v2.get);
 app.postJson('/api/v1/users', users.create);
 app.postJsonOrCsv('/api/v2/users', users.v2.create);
+app.postJson('/api/v3/users', users.v3.create);
 app.postJson('/api/v1/users/:username', users.update);
+app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
