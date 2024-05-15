@@ -95,7 +95,7 @@
     "allure-commandline": "^2.24.0",
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.8.3",
-    "appium-uiautomator2-driver": "^3.5.0",
+    "appium-uiautomator2-driver": "^3.0.0",
     "bikram-sambat": "^1.7.0",
     "browserify": "^17.0.0",
     "browserify-ngannotate": "^2.0.0",
