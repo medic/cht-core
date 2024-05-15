@@ -15,6 +15,7 @@ module.exports = {
         tsconfigRootDir: __dirname
       },
       rules: {
+        ['@typescript-eslint/no-confusing-void-expression']: ['error', { ignoreArrowShorthand: true }],
         ['@typescript-eslint/no-empty-interface']: ['error', { allowSingleExtends: true }],
         ['@typescript-eslint/no-namespace']: 'off',
         ['@typescript-eslint/no-non-null-assertion']: 'off',

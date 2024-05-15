@@ -1,4 +1,5 @@
 import { Doc } from './doc';
+import { hasField, isRecord } from './core';
 
 export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
 
@@ -13,6 +14,19 @@ export interface LocalDataContext extends DataContext {
   medicDb: PouchDB.Database<Doc>;
   settings: SettingsService;
 }
+
+const assertSettingsService: (settings: unknown) => asserts settings is SettingsService = (settings: unknown) => {
+  if (!isRecord(settings) || !hasField(settings, {name: 'getAll', type: 'function'})) {
+    throw new Error(`Invalid settings service [${JSON.stringify(settings)}].`);
+  }
+};
+
+const assertSourceDatabases: (sourceDatabases: unknown) => asserts sourceDatabases is SourceDatabases =
+  (sourceDatabases: unknown) => {
+    if (!isRecord(sourceDatabases) || !hasField(sourceDatabases, {name: 'medic', type: 'object'})) {
+      throw new Error(`Invalid source databases [${JSON.stringify(sourceDatabases)}].`);
+    }
+  };
 
 export const isLocalDataContext = (context: DataContext): context is LocalDataContext => {
   return 'settings' in context && 'medicDb' in context;
@@ -29,6 +43,8 @@ export const isLocalDataContext = (context: DataContext): context is LocalDataCo
  * @return {Promise<DataContext>} the data context
  */
 export const getLocalDataContext = (settings: SettingsService, sourceDatabases: SourceDatabases): DataContext => {
+  assertSettingsService(settings);
+  assertSourceDatabases(sourceDatabases);
   return {
     medicDb: sourceDatabases.medic,
     settings

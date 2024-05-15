@@ -9,7 +9,9 @@ export interface Doc extends Readonly<Record<string, DataPrimitive | DocArray | 
   _rev: string;
 }
 
-export const isDoc = (value: unknown): value is Doc => isRecord(value) && hasFields(value, [
-  { name: '_id', type: 'string' },
-  { name: '_rev', type: 'string' }
-]);
+export const isDoc = (value: unknown): value is Doc => {
+  return isRecord(value) && hasFields(value, [
+    { name: '_id', type: 'string' },
+    { name: '_rev', type: 'string' }
+  ]);
+};

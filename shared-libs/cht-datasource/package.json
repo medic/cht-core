@@ -8,7 +8,7 @@
     "postinstall": "rm -rf dist && npm run build",
     "build": "tsc -p tsconfig.build.json",
     "build-watch": "tsc --watch -p tsconfig.build.json",
-    "test": "nyc --nycrcPath='../nyc.config.js' mocha -r ts-node/register ./test/**/*"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha \"test/**/*\""
   },
   "author": "",
   "license": "Apache-2.0",

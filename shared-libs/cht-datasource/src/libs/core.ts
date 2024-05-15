@@ -8,6 +8,10 @@ export type Nullable<T> = T | null;
  */
 export type NonEmptyArray<T> = [T, ...T[]];
 
+export const isString = (value: unknown): value is string => {
+  return typeof value === 'string';
+};
+
 export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };

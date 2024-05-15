@@ -1,4 +1,4 @@
-import { hasField, isRecord } from './libs/core';
+import { isString, hasField, isRecord } from './libs/core';
 
 /**
  * A qualifier that identifies an entity by its UUID.
@@ -10,7 +10,12 @@ export type UuidQualifier = Readonly<{ uuid: string }>;
  * @param uuid { string } the UUID of the entity
  * @return { UuidQualifier } the qualifier
  */
-export const byUuid = (uuid: string): UuidQualifier => ({ uuid });
+export const byUuid = (uuid: string): UuidQualifier => {
+  if (!isString(uuid) || uuid.length === 0) {
+    throw new Error(`Invalid UUID [${JSON.stringify(uuid)}].`);
+  }
+  return { uuid };
+};
 
 /**
  * Returns <code>true</code> if the given qualifier is a <code>UuidQualifier</code>, otherwise <code>false</code>.
