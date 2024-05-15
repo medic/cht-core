@@ -1,6 +1,6 @@
 {
   "name": "@medic/cht-deploy",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "## Deploy the CHT",
   "main": "src/install.js",
   "directories": {
@@ -11,6 +11,7 @@
     "npm": ">=10.2.4"
   },
   "bin": {
+    "cht-deploy": "./cht-deploy",
     "upload": "./cht-deploy",
     "get-all-logs": "./troubleshooting/get-all-logs",
     "describe-deployment": "./troubleshooting/describe-deployment",
