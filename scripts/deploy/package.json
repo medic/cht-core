@@ -11,7 +11,7 @@
     "npm": ">=10.2.4"
   },
   "bin": {
-    "cht-deploy": "./cht-deploy",
+    "upload": "./cht-deploy",
     "get-all-logs": "./troubleshooting/get-all-logs",
     "describe-deployment": "./troubleshooting/describe-deployment",
     "list-all-resources": "./troubleshooting/list-all-resources",
