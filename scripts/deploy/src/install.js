@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { execSync } from 'child_process';
+import child_process from 'child_process';
 import fetch from 'node-fetch';
 import yaml from 'js-yaml';
 import path from 'path';
@@ -30,7 +30,7 @@ function prepare(f) {
     const values = readFile(f);
     const environment = values.environment || '';
     const scriptPath = path.join(__dirname, 'prepare.sh');
-    execSync(`${scriptPath} ${environment}`, { stdio: 'inherit' });
+    child_process.execSync(`${scriptPath} ${environment}`, { stdio: 'inherit' });
 }
 
 function loadValues(f) {
@@ -63,33 +63,36 @@ function helmInstallOrUpdate(valuesFile, namespace, values, image_tag) {
     ensureMedicHelmRepo();
     const project_name = values.project_name || "";
     try {
-        const releaseExists = execSync(`helm list -n ${namespace}`).toString();
+        const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString();
         if (releaseExists.includes(project_name)) {
             console.log("Release exists. Performing upgrade.");
-            execSync(
+            child_process.execSync(
                 `helm upgrade --install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
             console.log(`Instance at ${values.ingress.host} upgraded successfully.`);
         } else {
             console.log("Release does not exist. Performing install.");
-            execSync(`helm install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --create-namespace --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
+            child_process.execSync(`helm install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --create-namespace --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
             console.log(`Instance at ${values.ingress.host} installed successfully.`);
         }
     } catch (err) {
         console.error(JSON.stringify(err));
-        procedss.exit(1);
+        process.exit(1);
     }
 }
 
 function ensureMedicHelmRepo() {
     try {
-        const repoList = execSync(`helm repo list -o json`).toString();
+        const repoList = child_process.execSync(`helm repo list -o json`).toString();
         const repos = JSON.parse(repoList);
         const medicRepo = repos.find(repo => repo.name === MEDIC_REPO_NAME);
         if (!medicRepo) {
             console.log(`Helm repo ${MEDIC_REPO_NAME} not found, adding..`);
-            execSync(`helm repo add ${MEDIC_REPO_NAME} ${MEDIC_REPO_URL}`, { stdio: 'inherit' });
+            child_process.execSync(`helm repo add ${MEDIC_REPO_NAME} ${MEDIC_REPO_URL}`, { stdio: 'inherit' });
         } else if (medicRepo.url.trim('/') !== MEDIC_REPO_URL) {
             throw new UserRuntimeError(`Medic repo found but url not matching '${MEDIC_REPO_URL}', see: helm repo list`);
+        } else {
+            // Always get the latest
+            child_process.execSync(`helm repo update ${MEDIC_REPO_NAME}`, { stdio: 'inherit' });
         }
     } catch (err) {
         console.error(JSON.stringify(err));
@@ -109,4 +112,4 @@ async function install(f) {
     helmInstallOrUpdate(f, namespace, values, image_tag);
 }
 
-export default { install, helmInstallOrUpdate };
+export { install, helmInstallOrUpdate, ensureMedicHelmRepo };

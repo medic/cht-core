@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import install from './src/install.js';
+import { install } from './src/install.js';
 import fs from 'fs';
 
 function validateArguments() {
