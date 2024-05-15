@@ -1,5 +1,5 @@
 {
-  "name": "cht-deploy",
+  "name": "@medic/cht-deploy",
   "version": "1.0.0",
   "description": "## Deploy the CHT",
   "main": "src/install.js",
