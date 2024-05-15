@@ -335,13 +335,17 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.contactTypesService.getTypeById(this.contactTypes, typeId);
   }
 
+  private isPrimaryContact(contact) {
+    return this.usersHomePlace && this.usersHomePlace.length === 1 && contact.home;
+  }
+
   private populateContactDetails(contact, type) {
     contact.route = 'contacts';
     contact.icon = type?.icon;
     contact.heading = contact.name || '';
     contact.valid = true;
     contact.summary = null;
-    contact.primary = contact.home;
+    contact.primary = this.isPrimaryContact(contact);
     contact.dod = contact.date_of_death;
   }
 
