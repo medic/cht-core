@@ -24,6 +24,10 @@ const getPlace = id => {
 };
 
 const placesExist = async (placeIds) => {
+  if (!Array.isArray(placeIds)) {
+    throw new Error('Invalid place ids list');
+  }
+
   const result = await db.medic.allDocs({ keys: placeIds, include_docs: true });
 
   for (const row of result.rows) {
@@ -33,6 +37,8 @@ const placesExist = async (placeIds) => {
       throw err;
     }
   }
+
+  return true;
 };
 
 const isAPlace = place => place && contactTypesUtils.isPlace(config.get(), place);
