@@ -1,9 +1,15 @@
 import { Doc } from './doc';
+import { DataObject } from './core';
+
+interface DehydratedParent extends DataObject {
+  _id: string;
+  parent?: DehydratedParent;
+}
 
 export interface Contact extends Doc {
   contact_type?: string;
   name?: string;
-  parent_id?: string;
+  parent?: DehydratedParent;
   reported_date?: Date;
   type: string;
 }

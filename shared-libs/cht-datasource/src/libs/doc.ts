@@ -1,10 +1,6 @@
-import { hasFields, isRecord } from './core';
+import { DataObject, hasFields, isRecord } from './core';
 
-type DataPrimitive = string | number | boolean | Date | null | undefined;
-
-interface DocArray extends Readonly<(DataPrimitive | DocArray | Doc)[]> { }
-
-export interface Doc extends Readonly<Record<string, DataPrimitive | DocArray | Doc>> {
+export interface Doc extends DataObject {
   _id: string;
   _rev: string;
 }

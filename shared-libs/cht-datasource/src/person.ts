@@ -1,6 +1,6 @@
 import { Nullable } from './libs/core';
 import { isUuidQualifier, UuidQualifier } from './qualifier';
-import { DataContext, isLocalDataContext } from './libs/context';
+import { assertDataContext, DataContext, isLocalDataContext } from './libs/context';
 import { Contact } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
@@ -29,11 +29,14 @@ export namespace V1 {
    * @param context the current data context
    * @returns the person or <code>null</code> if no person is found for the qualifier
    */
-  export const get = (context: DataContext) => async (qualifier: UuidQualifier): Promise<Nullable<Person>> => {
-    assertPersonQualifier(qualifier);
-    if (isLocalDataContext(context)) {
-      return Local.Person.V1.get(context, qualifier);
-    }
-    return Remote.Person.V1.get(qualifier);
+  export const get = (context: DataContext) => {
+    assertDataContext(context);
+    return async (qualifier: UuidQualifier): Promise<Nullable<Person>> => {
+      assertPersonQualifier(qualifier);
+      if (isLocalDataContext(context)) {
+        return Local.Person.V1.get(context, qualifier);
+      }
+      return Remote.Person.V1.get(qualifier);
+    };
   };
 }

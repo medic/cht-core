@@ -28,6 +28,12 @@ const assertSourceDatabases: (sourceDatabases: unknown) => asserts sourceDatabas
     }
   };
 
+export const assertDataContext: (context: unknown) => asserts context is DataContext = (context: unknown) => {
+  if (!isRecord(context)) {
+    throw new Error(`Invalid data context [${JSON.stringify(context)}].`);
+  }
+};
+
 export const isLocalDataContext = (context: DataContext): context is LocalDataContext => {
   return 'settings' in context && 'medicDb' in context;
 };
@@ -38,9 +44,9 @@ export const isLocalDataContext = (context: DataContext): context is LocalDataCo
  * For all other use cases, no source databases should be provided and instead the library will use the remote API to
  * interact with the data.
  * @param settings service that provides access to the app settings
- * @param sourceDatabases { SourceDatabases? } the PouchDB databases to use as the local datasource. Required for
+ * @param sourceDatabases the PouchDB databases to use as the local datasource. Required for
  * offline functionality.
- * @return {Promise<DataContext>} the data context
+ * @return the data context
  */
 export const getLocalDataContext = (settings: SettingsService, sourceDatabases: SourceDatabases): DataContext => {
   assertSettingsService(settings);
@@ -54,7 +60,7 @@ export const getLocalDataContext = (settings: SettingsService, sourceDatabases: 
 /**
  * Returns the data context based on a remote CHT API server. This function should not be used when offline
  * functionality is required.
- * @return {Promise<DataContext>} the data context
+ * @return the data context
  */
 export const getRemoteDataContext = (): DataContext => {
   // TODO Need to determine what initial arguments are needed for the remote data context (e.g. session cookie...)

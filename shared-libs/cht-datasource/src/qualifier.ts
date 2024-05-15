@@ -7,8 +7,8 @@ export type UuidQualifier = Readonly<{ uuid: string }>;
 
 /**
  * Builds a qualifier that identifies an entity by its UUID.
- * @param uuid { string } the UUID of the entity
- * @return { UuidQualifier } the qualifier
+ * @param uuid the UUID of the entity
+ * @return the qualifier
  */
 export const byUuid = (uuid: string): UuidQualifier => {
   if (!isString(uuid) || uuid.length === 0) {
@@ -20,7 +20,7 @@ export const byUuid = (uuid: string): UuidQualifier => {
 /**
  * Returns <code>true</code> if the given qualifier is a <code>UuidQualifier</code>, otherwise <code>false</code>.
  * @param identifier the identifier to check
- * @return { boolean } <code>true</code> if the given identifier is a <code>UuidQualifier</code>, otherwise
+ * @return <code>true</code> if the given identifier is a <code>UuidQualifier</code>, otherwise
  * <code>false</code>
  */
 export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifier => {

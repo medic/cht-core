@@ -4,7 +4,7 @@
  * Whenever possible keep this file clean by defining new features in modules.
  */
 import { hasAnyPermission, hasPermissions } from './auth';
-import { DataContext } from './libs/context';
+import { assertDataContext, DataContext } from './libs/context';
 import * as Person from './person';
 import * as Qualifier from './qualifier';
 
@@ -19,6 +19,7 @@ export * as Qualifier from './qualifier';
  * @returns the CHT datasource API
  */
 export const getDatasource = (ctx: DataContext) => {
+  assertDataContext(ctx);
   return {
     v1: {
       hasPermissions,

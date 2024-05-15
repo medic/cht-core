@@ -5,7 +5,7 @@ import * as Qualifier from '../src/qualifier';
 import * as Context from '../src/libs/context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
-import { LocalDataContext } from '../src/libs/context';
+import { DataContext, LocalDataContext } from '../src/libs/context';
 
 describe('person', () => {
   const dataContext = { };
@@ -58,6 +58,10 @@ describe('person', () => {
 
         expect(isUuidQualifier.calledOnceWithExactly(qualifier)).to.be.true;
         expect(isLocalDataContext.notCalled).to.be.true;
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        expect(() => Person.V1.get(null as unknown as DataContext)).to.throw(`Invalid data context [null].`);
       });
     });
   });

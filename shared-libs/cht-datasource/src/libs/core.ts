@@ -8,6 +8,10 @@ export type Nullable<T> = T | null;
  */
 export type NonEmptyArray<T> = [T, ...T[]];
 
+type DataPrimitive = string | number | boolean | Date | null | undefined;
+interface DataArray extends Readonly<(DataPrimitive | DataArray | DataObject)[]> { }
+export interface DataObject extends Readonly<Record<string, DataPrimitive | DataArray | DataObject>> { }
+
 export const isString = (value: unknown): value is string => {
   return typeof value === 'string';
 };
@@ -16,11 +20,12 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };
 
-export const hasField = (value: Record<string, unknown>, field: { name: string, type: string }) => {
+export const hasField = (value: Record<string, unknown>, field: { name: string, type: string }): boolean => {
   const valueField = value[field.name];
   return typeof valueField === field.type;
 };
 
-export const hasFields = (value: Record<string, unknown>, fields: NonEmptyArray<{ name: string, type: string }>) => {
-  return fields.every(field => hasField(value, field));
-};
+export const hasFields = (
+  value: Record<string, unknown>,
+  fields: NonEmptyArray<{ name: string, type: string }>
+): boolean => fields.every(field => hasField(value, field));

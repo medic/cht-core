@@ -4,6 +4,7 @@ import { hasAnyPermission, hasPermissions } from '../src/auth';
 import * as Person from '../src/person';
 import * as Qualifier from '../src/qualifier';
 import sinon from 'sinon';
+import { DataContext } from '../src';
 
 describe('CHT Script API - getDatasource', () => {
   const dataContext = { };
@@ -13,6 +14,10 @@ describe('CHT Script API - getDatasource', () => {
 
   it('contains expected keys', () => {
     expect(datasource).to.have.all.keys([ 'v1' ]);
+  });
+
+  it('throws an error if the data context is invalid', () => {
+    expect(() => Index.getDatasource(null as unknown as DataContext)).to.throw('Invalid data context [null].');
   });
 
   describe('v1', () => {
