@@ -8,7 +8,6 @@ chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { offlineUserFirewall } = require('../../../../api/src/middleware/authorization');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
