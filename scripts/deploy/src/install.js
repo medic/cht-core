@@ -9,7 +9,7 @@ const MEDIC_REPO_URL = "https://docs.communityhealthtoolkit.org/helm-charts";
 const CHT_CHART_NAME = `${MEDIC_REPO_NAME}/cht-chart-4x`;
 const DEFAULT_CHART_VERSION = "1.0.*";
 
-import { dirname, join } from 'path';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { obtainCertificateAndKey, createSecret } from './certificate.js';
 import UserRuntimeError from './error.js';
@@ -109,4 +109,4 @@ async function install(f) {
     helmInstallOrUpdate(f, namespace, values, image_tag);
 }
 
-export default install;
+export default { install, helmInstallOrUpdate };
