@@ -556,7 +556,7 @@ describe('Users service', () => {
         _id: userId,
         _rev: 'steve-user-rev',
         name: 'steve',
-        facility_id: facilitya._id,
+        facility_id: facilityA._id,
         roles: ['a', 'b'],
         contact_id: contactMilan._id,
         known: 'true'
@@ -566,9 +566,9 @@ describe('Users service', () => {
         _id: 'org.couchdb.user:steve (settings)',
         _rev: 'steve-user-settings-rev',
         name: 'steve settings',
-        facility_id: facilityb._id,
+        facility_id: facilityB._id,
         roles: ['c'],
-        contact_id: facilityc._id,
+        contact_id: facilityC._id,
         fullname: 'Steve Full Name',
         email: 'steve@mail.com',
         phone: '123456789',
@@ -584,7 +584,7 @@ describe('Users service', () => {
         fullname: 'Steve Full Name',
         email: 'steve@mail.com',
         phone: '123456789',
-        place: facilitya,
+        place: [facilityA],
         roles: ['a', 'b'],
         contact: contactMilan,
         external_id: 'CHP020',
@@ -620,7 +620,7 @@ describe('Users service', () => {
         fullname: undefined,
         email: undefined,
         phone: undefined,
-        place: undefined,
+        place: [undefined],
         roles: undefined,
         contact: undefined,
         external_id: undefined,
@@ -2658,8 +2658,8 @@ describe('Users service', () => {
       const data = {
         place: ['x', 'y', 'z']
       };
-      service.__set__('validateUser', sinon.stub().resolves({}));
-      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      db.medic.get.resolves({});
+      db.users.get.resolves({});
       sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
@@ -2825,7 +2825,7 @@ describe('Users service', () => {
         facility_id: 'maine',
         phone: '123',
         known: false
-      }));
+      });
       sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
