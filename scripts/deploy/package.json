@@ -20,6 +20,13 @@
     "timeout": 5000,
     "recursive": true
   },
+  "files": [
+    "src",
+    "cht-deploy",
+    "troubleshooting",
+    "README.md",
+    "package.json"
+  ],
   "keywords": [],
   "author": "",
   "license": "AGPL-3.0-only",
