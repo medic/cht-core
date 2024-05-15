@@ -13,17 +13,20 @@ describe('db-sync', () => {
   const restrictedUserName = uuid();
   const restrictedPass = uuid();
   const restrictedFacilityId = uuid();
+  const restrictedFacilityId2 = uuid();
   const restrictedContactId = uuid();
   const patientId = uuid();
+  const patientId2 = uuid();
   const report1 = uuid();
   const report2 = uuid();
   const report3 = uuid();
+  const report4 = uuid();
   const restrictedUser = {
     _id: `org.couchdb.user:${restrictedUserName}`,
     type: 'user',
     name: restrictedUserName,
     password: restrictedPass,
-    facility_id: restrictedFacilityId,
+    facility_id: [restrictedFacilityId, restrictedFacilityId2],
     roles: ['chw']
   };
 
@@ -75,6 +78,18 @@ describe('db-sync', () => {
       type: 'person',
       parent: {
         _id: restrictedFacilityId,
+        parent: {
+          _id: 'this-does-not-matter'
+        }
+      }
+    },
+    {
+      _id: patientId2,
+      name: 'A patient',
+      reported_date: Date.now(),
+      type: 'person',
+      parent: {
+        _id: restrictedFacilityId2,
         parent: {
           _id: 'this-does-not-matter'
         }
@@ -146,6 +161,27 @@ describe('db-sync', () => {
         some: 'data',
       }
     },
+    {
+      _id: report4,
+      form: 'form_type_3',
+      type: 'data_record',
+      content_type: 'xml',
+      reported_date: Date.now(),
+      contact: {
+        _id: restrictedContactId,
+        parent: {
+          _id: restrictedFacilityId,
+          parent: {
+            _id: 'this-does-not-matter'
+          }
+        }
+      },
+      fields: {
+        patient_id: patientId2,
+        patient_name: 'A patient',
+        some: 'data',
+      }
+    },
   ];
 
   const getServerRevs = async (docIds) => {
@@ -169,6 +205,8 @@ describe('db-sync', () => {
     await chtDbUtils.updateDoc(report1, { extra: '1' });
     await chtDbUtils.updateDoc(report2, { extra: '2' });
     await chtDbUtils.updateDoc(patientId, { extra: '3' });
+    await chtDbUtils.updateDoc(report4, { extra: '2' });
+    await chtDbUtils.updateDoc(patientId2, { extra: '3' });
     const newReport = { ...initialReports[0], _id: uuid(), extra: '4' };
     const { rev } = await chtDbUtils.createDoc(newReport);
     newReport._rev = rev;
@@ -181,12 +219,16 @@ describe('db-sync', () => {
       updatedReport2,
       updatedPatient,
       updatedNewReport,
-    ] = await utils.getDocs([report1, report2, patientId, newReport._id]);
+      updatedReport4,
+      updatedPatient2,
+    ] = await utils.getDocs([report1, report2, patientId, newReport._id, report4, patientId2]);
 
     chai.expect(updatedReport1.extra).to.equal('1');
     chai.expect(updatedReport2.extra).to.equal('2');
     chai.expect(updatedPatient.extra).to.equal('3');
     chai.expect(updatedNewReport).to.deep.equal(newReport);
+    chai.expect(updatedReport4.extra).to.equal('2');
+    chai.expect(updatedPatient2.extra).to.equal('3');
   });
 
   it('should not filter deletes', async () => {
@@ -282,7 +324,7 @@ describe('db-sync', () => {
     it('should replicate meta db down', async () => {
       await browser.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
-      expect(await reportsPage.getUnreadCount()).to.equal('2');
+      expect(await reportsPage.getUnreadCount()).to.equal('3');
 
       const readReport = { _id: `read:report:${report2}` };
       await utils.saveMetaDocs(restrictedUserName, [readReport]);
