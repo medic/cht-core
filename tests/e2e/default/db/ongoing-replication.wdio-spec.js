@@ -25,8 +25,6 @@ describe('ongoing replication', function() {
   this.timeout(4 * 60 * 1000); // Sometimes the tests take longer to complete than the original 2 minutes timeout.
 
   before(async () => {
-    await sentinelUtils.skipToSeq();
-
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
@@ -35,12 +33,18 @@ describe('ongoing replication', function() {
   });
 
   after(async () => {
+    await utils.stopSentinel();
     await sentinelUtils.skipToSeq();
-    await sentinelUtils.waitForSentinel();
+    await utils.startSentinel();
   });
 
   afterEach(async () => {
     await browser.throttle('online');
+    const isRevertingSettings = utils.revertSettings(true);
+    if (isRevertingSettings) {
+      await isRevertingSettings;
+      await commonPage.sync(true);
+    }
   });
 
   it('should download new documents ', async () => {
@@ -156,7 +160,6 @@ describe('ongoing replication', function() {
       'messages-rnd'
     ];
     await utils.deleteDocs(docIdsToDelete);
-    await sentinelUtils.waitForSentinel();
     await waitForServiceWorker.promise;
 
     await commonPage.sync(true);
@@ -172,9 +175,6 @@ describe('ongoing replication', function() {
     await commonPage.sync(true);
     const [settings] = await chtDbUtils.getDocs(['settings']);
     expect(settings.settings.test).to.equal(true);
-
-    await utils.revertSettings(true);
-    await commonPage.sync(true);
   });
 
   it('should handle conflicts', async () => {

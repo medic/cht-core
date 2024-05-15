@@ -50,7 +50,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private childTypesBySelectedContact: Record<string, any>[] = [];
   private filters;
   canDeleteContact = false; // this disables the "Delete" button until children load
-  fastActionList: FastAction[];
+  fastActionList?: FastAction[];
   relevantReportForms;
   childContactTypes;
   filteredTasks = [];

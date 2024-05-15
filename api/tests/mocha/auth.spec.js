@@ -1,4 +1,4 @@
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 const url = require('url');
 const chai = require('chai');
 const sinon = require('sinon');
@@ -29,7 +29,7 @@ describe('Auth', () => {
   describe('check', () => {
 
     it('returns error when not logged in', () => {
-      const get = sinon.stub(rpn, 'get').rejects({ statusCode: 401 });
+      const get = sinon.stub(request, 'get').rejects({ statusCode: 401 });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
@@ -39,7 +39,7 @@ describe('Auth', () => {
     });
 
     it('returns error with incomplete session', () => {
-      const get = sinon.stub(rpn, 'get').resolves();
+      const get = sinon.stub(request, 'get').resolves();
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
@@ -49,7 +49,7 @@ describe('Auth', () => {
     });
 
     it('returns error when no user context', () => {
-      const get = sinon.stub(rpn, 'get').resolves({ roles: [] });
+      const get = sinon.stub(request, 'get').resolves({ roles: [] });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(err.message).to.equal('Failed to authenticate');
@@ -58,7 +58,7 @@ describe('Auth', () => {
     });
 
     it('returns error when request errors', () => {
-      const get = sinon.stub(rpn, 'get').rejects({ error: 'boom' });
+      const get = sinon.stub(request, 'get').rejects({ error: 'boom' });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
@@ -68,7 +68,7 @@ describe('Auth', () => {
 
     it('returns error when it has insufficient privilege', () => {
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz' ] } };
-      const get = sinon.stub(rpn, 'get').resolves(userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({ can_edit: ['abc'] });
       return auth.check({headers: []}, 'can_edit').catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -79,7 +79,7 @@ describe('Auth', () => {
 
     it('returns username for admin', () => {
       const userCtx = { userCtx: { name: 'steve', roles: [ '_admin' ] } };
-      const get = sinon.stub(rpn, 'get').resolves(userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       return auth.check({headers: []}, 'can_edit').then(ctx => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(ctx.name).to.equal('steve');
@@ -88,7 +88,7 @@ describe('Auth', () => {
 
     it('returns username of non-admin user', () => {
       const userCtx = { userCtx: { name: 'laura', roles: [ 'xyz', 'district_admin' ] } };
-      const get = sinon.stub(rpn, 'get').resolves(userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
       return auth.check({headers: []}, 'can_edit').then(ctx => {
         chai.expect(get.callCount).to.equal(1);
@@ -99,7 +99,7 @@ describe('Auth', () => {
     it('accepts multiple required roles', () => {
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
-      const get = sinon.stub(rpn, 'get').resolves(userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({
         can_export_messages: ['district_admin'],
         can_export_contacts: ['district_admin'],
@@ -113,7 +113,7 @@ describe('Auth', () => {
     it('checks all required roles', () => {
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
-      const get = sinon.stub(rpn, 'get').resolves(userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({
         can_export_messages: ['district_admin'],
         can_export_server_logs: ['national_admin'],
@@ -128,11 +128,11 @@ describe('Auth', () => {
 
   describe('getUserCtx', () => {
     it('should return userCtx when authentication is successful', async () => {
-      sinon.stub(rpn, 'get').resolves({ userCtx: { name: 'user', roles: ['userrole'] }});
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'user', roles: ['userrole'] }});
 
       const result = await auth.getUserCtx(req);
       chai.expect(result).to.deep.equal({ name: 'user', roles: ['userrole'] });
-      chai.expect(rpn.get.args).to.deep.equal([[{
+      chai.expect(request.get.args).to.deep.equal([[{
         url: 'http://abc.com/_session',
         json: true,
         headers: {
@@ -145,7 +145,7 @@ describe('Auth', () => {
     });
 
     it('should clean content-length headers before forwarding', async () => {
-      sinon.stub(rpn, 'get').resolves({ userCtx: { name: 'theuser', roles: ['userrole'] }});
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'theuser', roles: ['userrole'] }});
 
       req.headers['content-length'] = 100;
       req.headers['Content-Length'] = 22;
@@ -155,7 +155,7 @@ describe('Auth', () => {
 
       const result = await auth.getUserCtx(req);
       chai.expect(result).to.deep.equal({ name: 'theuser', roles: ['userrole'] });
-      chai.expect(rpn.get.args).to.deep.equal([[{
+      chai.expect(request.get.args).to.deep.equal([[{
         url: 'http://abc.com/_session',
         json: true,
         headers: {
@@ -168,7 +168,7 @@ describe('Auth', () => {
     });
 
     it('should throw a custom 401 error', async () => {
-      sinon.stub(rpn, 'get').rejects({ statusCode: 401, error: 'not logged in' });
+      sinon.stub(request, 'get').rejects({ statusCode: 401, error: 'not logged in' });
 
       await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         code: 401,
@@ -176,29 +176,29 @@ describe('Auth', () => {
         err: { statusCode: 401, error: 'not logged in' }
       });
 
-      chai.expect(rpn.get.callCount).to.equal(1);
+      chai.expect(request.get.callCount).to.equal(1);
     });
 
     it('should throw non-401 errors', async () => {
-      sinon.stub(rpn, 'get').rejects({ statusCode: 400, error: 'invalid' });
+      sinon.stub(request, 'get').rejects({ statusCode: 400, error: 'invalid' });
 
       await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         statusCode: 400,
         error: 'invalid'
       });
 
-      chai.expect(rpn.get.callCount).to.equal(1);
+      chai.expect(request.get.callCount).to.equal(1);
     });
 
     it('should throw 500 when auth is invalid', async () => {
-      sinon.stub(rpn, 'get').resolves({ userCtx: { invalid: 'userctx' }});
+      sinon.stub(request, 'get').resolves({ userCtx: { invalid: 'userctx' }});
 
       await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         code: 500,
         message: 'Failed to authenticate'
       });
 
-      chai.expect(rpn.get.callCount).to.equal(1);
+      chai.expect(request.get.callCount).to.equal(1);
     });
   });
 

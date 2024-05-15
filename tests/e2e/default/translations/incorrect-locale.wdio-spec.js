@@ -7,6 +7,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const sentinelUtils = require('@utils/sentinel');
 
 const languageCode = 'hil';
+
 const createLanguage = async () =>  {
   await utils.addTranslations(languageCode, {
     'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
@@ -21,21 +22,30 @@ const createLanguage = async () =>  {
   await utils.enableLanguage(languageCode);
 };
 
-const contact = placeFactory.place().build({
-  _id: 'district_hil_locale',
-  name: 'hil district',
-  type: 'district_hospital',
-  reported_date: 1000,
-  parent: '',
-});
+const createContact = () => {
+  return placeFactory.place().build({
+    name: 'hil district',
+    type: 'district_hospital',
+    reported_date: 1000,
+    parent: '',
+  });
+};
+
+let contact;
 
 describe('Testing Incorrect locale', () => {
-  after(async () => {
-    await browser.setCookies({ name: 'locale', value: 'en' });
-    await utils.revertSettings(true);
+
+  beforeEach(() => {
+    contact = createContact();
   });
 
-  before(async () => {
+  afterEach(async () => {
+    await utils.deleteDocs([ contact._id, `messages-${languageCode}` ]);
+    await utils.revertSettings(true);
+    await browser.setCookies({ name: 'locale', value: 'en' });
+  });
+  
+  it('should work with incorrect locale', async () => {
     await loginPage.cookieLogin();
     await utils.saveDoc(contact);
     await sentinelUtils.waitForSentinel();
@@ -43,9 +53,7 @@ describe('Testing Incorrect locale', () => {
     await createLanguage();
     await waitForServiceWorker.promise;
     await commonElements.closeReloadModal(true);
-  });
 
-  it('should work with incorrect locale', async () => {
     await userSettingsElements.setLanguage(languageCode);
 
     const text = await commonElements.getReportsButtonLabel().getText();

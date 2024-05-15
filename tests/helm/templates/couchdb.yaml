@@ -1,0 +1,135 @@
+{{- range $i, $e := until 3 }}
+{{ $nodeNumber := add $i 1 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: couchdb-{{ $nodeNumber }}
+  name: cht-couchdb-{{ $nodeNumber }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: couchdb-{{ $nodeNumber }}
+  template:
+    metadata:
+      labels:
+        cht.service: couchdb-{{ $nodeNumber }}
+    spec:
+      containers:
+      - name: cht-couchdb-{{ $nodeNumber }}
+        image: {{ $.Values.upstream_servers.docker_registry }}/cht-couchdb:{{ $.Values.cht_image_tag }}
+        ports:
+        - containerPort: 5984
+        env:
+        {{- if ne $nodeNumber 1 }}
+        - name: COUCHDB_SYNC_ADMINS_NODE
+          valueFrom:
+            configMapKeyRef:
+              name: couchdb-servers-configmap
+              key: COUCHDB_SYNC_ADMINS_NODE
+        {{- else }}
+        - name: CLUSTER_PEER_IPS
+          valueFrom:
+            configMapKeyRef:
+              name: couchdb-servers-configmap
+              key: CLUSTER_PEER_IPS
+        {{- end }}
+        - name: COUCHDB_LOG_LEVEL
+          value: info
+        - name: COUCHDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_PASSWORD
+        - name: COUCHDB_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_SECRET
+        - name: COUCHDB_USER
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_USER
+        - name: COUCHDB_UUID
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_UUID
+        - name: SVC_NAME
+          value: couchdb-{{ $nodeNumber }}.{{ $.Values.namespace }}.svc.cluster.local
+        - name: NODE_COUNT
+          value: '3'
+        volumeMounts:
+        - mountPath: /opt/couchdb/data
+          name: couchdb-{{ $nodeNumber }}-claim0
+          subPath: data
+        - mountPath: /opt/couchdb/etc/local.d
+          name: couchdb-{{ $nodeNumber }}-claim0
+          subPath: local.d
+      restartPolicy: Always
+      volumes:
+      - name: couchdb-{{ $nodeNumber }}-claim0
+        persistentVolumeClaim:
+          claimName: couchdb-{{ $nodeNumber }}-claim0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cht.service: couchdb-{{ $nodeNumber }}
+  name: couchdb-{{ $nodeNumber }}
+spec:
+  ports:
+    - name: couchdb{{ $nodeNumber }}-service
+      port: 5984
+      protocol: TCP
+      targetPort: 5984
+    - name: cluster-api
+      port: 5986
+      protocol: TCP
+      targetPort: 5986
+    - name: epmd
+      port: 4369
+      protocol: TCP
+      targetPort: 4369
+    - name: erlang
+      port: 9100
+      protocol: TCP
+      targetPort: 9100
+  selector:
+    cht.service: couchdb-{{ $nodeNumber }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
+spec:
+  capacity:
+    storage: 100Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  hostPath:
+    path: {{ index $.Values.local_path (printf "preExistingDiskPath-%d" $nodeNumber) }}
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    cht.service: couchdb-{{ $nodeNumber }}-claim0
+  name: couchdb-{{ $nodeNumber }}-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: local-path
+  volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
+---
+{{- end }}

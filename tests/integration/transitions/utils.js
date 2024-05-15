@@ -13,7 +13,8 @@ const getApiSmsChanges = (messages) => {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       listener.cancel();
-      reject('timer expired');
+      console.error('still expecting', expectedMessages);
+      reject(new Error('Did not receive all expected messages in 10s'));
     }, 10000);
     listener.on('change', change => {
       if (change.doc.sms_message) {

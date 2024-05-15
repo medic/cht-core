@@ -1,6 +1,6 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
-const logger = require('./src/logger');
+const logger = require('@medic/logger');
 const express = require('express');
 const apiPort = process.env.API_PORT || 5988;
 

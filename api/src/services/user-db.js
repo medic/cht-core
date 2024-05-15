@@ -1,7 +1,7 @@
 /**
  * @module user-db
  */
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const url = require('url');
 const db = require('../db');
 const environment = require('../environment');

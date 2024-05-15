@@ -166,20 +166,20 @@ describe('ContactsEdit component', () => {
   });
 
   describe('initialization', () => {
-    it('should initialize the component', async () => {
+    it('should initialize the component', fakeAsync(async () => {
       const setLoadingContent = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
       const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
       await createComponent();
+      flushMicrotasks();
 
       expect(component.routeSnapshot).to.equal(routeSnapshot);
-      // Set loading content before and after form initialization.
       expect(setLoadingContent.args).to.deep.equal([[true], [false]]);
       expect(setShowContent.args).to.deep.equal([[true]]);
       expect(unsetSelected.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
-    });
+    }));
 
     it('should unsubscribe on destroy', async () => {
       await createComponent();

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messages = require('../lib/messages');
