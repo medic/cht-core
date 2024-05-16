@@ -255,23 +255,33 @@ angular
     };
 
     const validateContactIsInPlace = () => {
-      const placeId = $scope.editUserModel.place;
+      const placeIds = $scope.editUserModel.place;
       const contactId = $scope.editUserModel.contact;
-      if (!placeId || !contactId) {
+      if (!placeIds || !contactId) {
         return $q.resolve(true);
       }
-      return DB()
-        .get(contactId)
-        .then(function(contact) {
-          let parent = contact.parent;
-          let valid = false;
-          while (parent) {
-            if (parent._id === placeId) {
-              valid = true;
-              break;
-            }
-            parent = parent.parent;
-          }
+
+      const getParent = (contactId) => {
+        return DB()
+          .get(contactId)
+          .then(function(contact) {
+            return contact.parent;
+          });
+      };
+
+      const checkParent = (parent, placeIds) => {
+        if (!parent) {
+          return false;
+        }
+        if (placeIds.includes(parent._id)) {
+          return true;
+        }
+        return checkParent(parent.parent, placeIds);
+      };
+
+      return getParent(contactId)
+        .then(function(parent) {
+          const valid = placeIds.some((placeId) => checkParent(parent, [placeId]));
           if (!valid) {
             $translate('configuration.user.place.contact').then(value => {
               $scope.errors.contact = value;
