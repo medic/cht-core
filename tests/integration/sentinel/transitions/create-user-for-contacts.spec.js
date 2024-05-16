@@ -661,7 +661,7 @@ describe('create_user_for_contacts', () => {
       assert.deepInclude(newUserSettings, {
         roles: originalContact.roles,
         phone: originalContact.phone,
-        facility_id: originalContact.parent._id,
+        facility_id: [originalContact.parent._id],
         contact_id: originalContact._id,
         fullname: originalContact.name,
       });
@@ -703,7 +703,7 @@ describe('create_user_for_contacts', () => {
       assert.deepInclude(newUserSettings, {
         roles: [originalContact.role],
         phone: originalContact.phone,
-        facility_id: originalContact.parent._id,
+        facility_id: [originalContact.parent._id],
         contact_id: originalContact._id,
         fullname: originalContact.name,
       });
