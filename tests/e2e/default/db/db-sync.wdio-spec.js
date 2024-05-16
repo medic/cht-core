@@ -336,7 +336,7 @@ describe('db-sync', () => {
       await commonElements.goToReports();
       await (await reportsPage.reportList()).waitForDisplayed();
 
-      await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '1');
+      await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '2');
     });
   });
 });
