@@ -74,7 +74,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
       return;
     }
 
-    if (isAdminOnlyDoc(newDoc)) {
+    if (isAdminOnlyDoc(newDoc) || (oldDoc && isAdminOnlyDoc(oldDoc))) {
       _err('You are not authorized to edit admin only docs');
     }
 
