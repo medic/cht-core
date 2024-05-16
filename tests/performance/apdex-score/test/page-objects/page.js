@@ -17,6 +17,33 @@ module.exports = class Page {
     }
   }
 
+  async clickElement(selector) {
+    if (await this.waitForDisplayedAndRetry(selector)) {
+      await (await $(selector)).click();
+    }
+  }
+
+  async setValue(selector, value) {
+    // Empty strings or zeros are fine.
+    if (value === undefined) {
+      return;
+    }
+
+    if (await this.waitForDisplayedAndRetry(selector)) {
+      await (await $(selector)).setValue(value);
+    }
+  }
+
+  scrollToElement(context) {
+    if (context.scrollDown) {
+      this.scrollDown(context.scrollDown);
+    }
+
+    if (context.scrollUp) {
+      this.scrollUp(context.scrollUp);
+    }
+  }
+
   scrollDown(swipes = 0) {
     for (let i = 0; i < swipes; i++) {
       execSync('adb shell input swipe 500 1000 300 300');
@@ -29,46 +56,109 @@ module.exports = class Page {
     }
   }
 
-  async assertMany(asserts = []) {
+  async enterKeycodes(keycodes) {
+    const WAIT_ANIMATION = 300;
+    if (!keycodes?.length) {
+      return;
+    }
+
+    let shown = await driver.isKeyboardShown();
+    if (!shown) {
+      await browser.pause(WAIT_ANIMATION);
+    }
+
+    for (const keycode of keycodes) {
+      await driver.pressKeyCode(keycode);
+    }
+
+    await driver.hideKeyboard();
+    shown = await driver.isKeyboardShown();
+    if (shown) {
+      await browser.pause(WAIT_ANIMATION);
+    }
+  }
+
+  async assertMany(asserts) {
+    if (!asserts?.length) {
+      return;
+    }
+
     for (const assert of asserts) {
-      if (assert.scrollDown) {
-        this.scrollDown(assert.scrollDown);
-      }
-
-      if (assert.scrollUp) {
-        this.scrollUp(assert.scrollUp);
-      }
-
+      this.scrollToElement(assert);
       await this.waitForDisplayedAndRetry(assert.selector);
     }
   }
 
-  async navigate(navigation = []) {
+  async navigate(navigation) {
+    if (!navigation?.length) {
+      return;
+    }
+
     for (const navStep of navigation) {
-      if (navStep.scrollDown) {
-        this.scrollDown(navStep.scrollDown);
-      }
-
-      if (navStep.scrollUp) {
-        this.scrollUp(navStep.scrollUp);
-      }
-
-      if (await this.waitForDisplayedAndRetry(navStep.selector)) {
-        await (await $(navStep.selector)).click();
-      }
-
-      if (navStep.asserts) {
-        await this.assertMany(navStep.asserts);
-      }
+      this.scrollToElement(navStep);
+      await this.clickElement(navStep.selector);
+      await this.assertMany(navStep.asserts);
     }
   }
 
   async loadAndAssertPage(page) {
     await this.navigate(page.navigation, page.asserts);
-    if (page.postTestPath) {
-      await this.navigate(page.postTestPath);
-    }
+    await this.navigate(page.postTestPath);
   }
+
+  async enterFieldValue(field) {
+    this.scrollToElement(field);
+
+    await this.clickElement(field.selector);
+    await this.enterKeycodes(field.keycodes);
+    await this.setValue(field.selector, field.value);
+
+    if (field.dropdownOption) {
+      await this.clickElement(field.dropdownOption);
+    }
+
+    await this.assertMany(field.asserts);
+  }
+
+  async fillUpFormPage(formPage) {
+    if (!formPage.fields) {
+      return;
+    }
+
+    await this.assertMany(formPage.asserts);
+
+    for (const field of formPage.fields) {
+      await this.enterFieldValue(field);
+    }
+
+    this.scrollToElement(formPage);
+  }
+
+  async fillUpForm(form, commonElements){
+    const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
+    const FAB_LIST_TITLE = commonElements?.fabListTitle || '//android.widget.TextView[@text="New"]';
+    const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
+    const FORM_PAGE_NEXT_SELECTOR = commonElements?.formNext || '//android.widget.Button[@text="Next >"]';
+
+    await this.clickElement(FAB_SELECTOR);
+    await this.waitForDisplayedAndRetry(FAB_LIST_TITLE);
+    await this.navigate(form.navigation);
+
+    for (let i = 0; i < form.pages?.length; i++) {
+      const page = form.pages[i];
+
+      if (i > 0) {
+        await this.clickElement(FORM_PAGE_NEXT_SELECTOR);
+      }
+
+      await this.fillUpFormPage(page);
+    }
+
+    await this.clickElement(FORM_SUBMIT_SELECTOR);
+    await this.assertMany(form.postSubmitAsserts);
+    await this.navigate(form.postTestPath);
+  }
+
 
   // ToDo: clean all these below after settings are done
 

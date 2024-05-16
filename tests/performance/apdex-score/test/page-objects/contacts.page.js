@@ -23,6 +23,21 @@ class ContactsPage extends Page {
     await super.loadAndAssertPage(page);
   }
 
+  async submitPatientReport(settingsProvider) {
+    const form = settingsProvider.getForm('patientReport');
+    const commonElements = settingsProvider.getCommonElements();
+    await super.fillUpForm(form, commonElements);
+  }
+
+  async createPatient(settingsProvider) {
+    const page = settingsProvider.getPage('household');
+    await super.loadAndAssertPage(page);
+
+    const form = settingsProvider.getForm('patientContact');
+    const commonElements = settingsProvider.getCommonElements();
+    await super.fillUpForm(form, commonElements);
+  }
+
 
   // ToDo: clean all these below after settings are done
    
