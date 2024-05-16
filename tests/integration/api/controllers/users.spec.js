@@ -1655,7 +1655,7 @@ describe('Users API', () => {
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: facility,
+        place: [facility],
         contact: person,
       });
     });
@@ -1668,7 +1668,7 @@ describe('Users API', () => {
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: facility,
+        place: [facility],
         contact: person,
       });
     });
@@ -1711,7 +1711,7 @@ describe('Users API', () => {
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: facility,
+        place: [facility],
         contact: person,
       });
     });
