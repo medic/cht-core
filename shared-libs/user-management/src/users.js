@@ -368,35 +368,36 @@ const mapUsers = (users, settings, facilities) => {
     });
 };
 
+const getFacilityId = (data) => {
+  if (data.place) {
+    return Array.isArray(data.place) ? data.place.map(place => getDocID(place)) :  [getDocID(data.place)];
+  }
+
+  if (_.isNull(data.place)) {
+    return null;
+  }
+};
+const getContactId = (data) => {
+  if (data.contact) {
+    return getDocID(data.contact);
+  }
+
+  if (_.isNull(data.contact)) {
+    return null;
+  }
+};
+
 const hydratePayload = (data) => {
   if (data.type) {
     // deprecated: use 'roles' instead
     data.roles = getRoles(data.type);
   }
 
-  if (data.place) {
-    data.facility_id = Array.isArray(data.place) ? data.place.map(place => getDocID(place)) :  [getDocID(data.place)];
-  }
-
-  if (_.isNull(data.place)) {
-    data.facility_id = null;
-  }
-
-  if (data.contact) {
-    data.contact_id = getDocID(data.contact);
-  }
-
-  if (_.isNull(data.contact)) {
-    data.contact_id = null;
-  }
+  data.facility_id = getFacilityId(data);
+  data.contact_id = getContactId(data);
 };
 
 const getCommonFieldsUpdates = (userDoc, data) => {
-  if (data.type) {
-    // deprecated: use 'roles' instead
-    userDoc.roles = getRoles(data.type);
-  }
-
   if (data.roles) {
     const index = data.roles.indexOf(roles.ONLINE_ROLE);
     if (roles.isOffline(data.roles)) {
@@ -493,6 +494,7 @@ const validatePassword = (password) => {
   }
 };
 
+const getDataRoles = (data) => data.roles || (data.type && getRoles(data.type));
 const missingFields = data => {
   const required = ['username'];
 
@@ -502,17 +504,14 @@ const missingFields = data => {
     required.push('password');
   }
 
-  if (data.roles && roles.isOffline(data.roles)) {
+  const userRoles = getDataRoles(data);
+  if (!userRoles) {
+    required.push('type or roles');
+  } else if (roles.isOffline(userRoles)) {
     required.push('place', 'contact');
   }
 
-  const missing = required.filter(prop => !data[prop]);
-
-  if (!data.type && !data.roles) {
-    missing.push('type or roles');
-  }
-
-  return missing;
+  return required.filter(prop => !data[prop]);
 };
 
 const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
@@ -560,20 +559,23 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
+const validateFacilityIsNeeded = (data, user) => {
+  const userRoles = data.roles || user?.roles;
+  if (userRoles && roles.isOffline(userRoles)) {
+    return Promise.reject(error400(
+      'Place field is required for offline users',
+      'field is required',
+      {'field': 'Place'}
+    ));
+  }
+};
 const validateUserFacility = (data, user) => {
   if (data.place) {
     return places.placesExist(data.facility_id);
   }
 
   if (_.isNull(data.place)) {
-    const userRoles = user?.roles || data.roles;
-    if (userRoles && roles.isOffline(userRoles)) {
-      return Promise.reject(error400(
-        'Place field is required for offline users',
-        'field is required',
-        {'field': 'Place'}
-      ));
-    }
+    return validateFacilityIsNeeded(data, user);
   }
 };
 

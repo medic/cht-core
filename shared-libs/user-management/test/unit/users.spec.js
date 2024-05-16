@@ -2766,16 +2766,16 @@ describe('Users service', () => {
       const data = {
         place: 'paris'
       };
-      db.users.get.resolves({ facility_id: 'maine' });
-      db.medic.get.resolves({ facility_id: 'maine' });
+      db.users.get.resolves({ facility_id: 'maine', contact_id: 'june' });
+      db.medic.get.resolves({ facility_id: 'maine', contact_id: 'june' });
       sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
-        chai.expect(db.medic.put.args[0][0].facility_id).to.deep.equal(['paris']);
+        chai.expect(db.medic.put.args[0][0]).to.deep.include({ facility_id: ['paris'], contact_id: 'june' });
         chai.expect(db.users.put.callCount).to.equal(1);
-        chai.expect(db.users.put.args[0][0].facility_id).to.deep.equal(['paris']);
+        chai.expect(db.users.put.args[0][0]).to.deep.include({ facility_id: ['paris'], contact_id: 'june' });
       });
     });
 
