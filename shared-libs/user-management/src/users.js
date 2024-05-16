@@ -397,21 +397,28 @@ const hydratePayload = (data) => {
   data.contact_id = getContactId(data);
 };
 
-const getCommonFieldsUpdates = (userDoc, data) => {
-  if (data.roles) {
-    const index = data.roles.indexOf(roles.ONLINE_ROLE);
-    if (roles.isOffline(data.roles)) {
-      if (index !== -1) {
-        // remove the online role
-        data.roles.splice(index, 1);
-      }
-    } else if (index === -1) {
-      // add the online role
-      data.roles.push(roles.ONLINE_ROLE);
+const getRolesUpdates = (data) => {
+  if (!data.roles) {
+    return;
+  }
+  const index = data.roles.indexOf(roles.ONLINE_ROLE);
+  if (roles.isOffline(data.roles)) {
+    if (index !== -1) {
+      // remove the online role
+      data.roles.splice(index, 1);
     }
+  } else if (index === -1) {
+    // add the online role
+    data.roles.push(roles.ONLINE_ROLE);
+  }
+};
+
+const getCommonFieldsUpdates = (userDoc, data) => {
+  getRolesUpdates(data);
+  if (data.roles) {
     userDoc.roles = data.roles;
   }
-
+  
   if (!_.isUndefined(data.place)) {
     userDoc.facility_id = data.facility_id;
   }
