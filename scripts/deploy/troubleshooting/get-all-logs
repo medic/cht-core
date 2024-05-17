@@ -1,22 +1,24 @@
 #!/bin/bash
 
 function usage() {
-  echo "Usage: $0 <namespace>"
+  echo "Usage: $0 <namespace> [since]"
   echo
   echo "This script saves logs from all pods within the specified namespace into local files and then creates a tar.gz archive of these logs."
   echo
   echo "Arguments:"
   echo "  namespace   - The namespace from which to retrieve and archive pod logs."
+  echo "  since       - (Optional) Only return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to all logs."
   echo
-  echo "Example: $0 mynamespace"
+  echo "Example: $0 mynamespace 24h"
   exit 1
 }
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   usage
 fi
 
 NAMESPACE=$1
+SINCE=${2:-} # Optional since parameter
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 LOG_DIR=$(mktemp -d "${NAMESPACE}-logs_${TIMESTAMP}-XXXXXX")
 
@@ -32,7 +34,11 @@ fi
 
 # Loop through all pod names and fetch logs, saving them to individual files
 for POD in $PODS; do
-  kubectl -n $NAMESPACE logs $POD > "$LOG_DIR/$POD.log"
+  if [ -z "$SINCE" ]; then
+    kubectl -n $NAMESPACE logs $POD > "$LOG_DIR/$POD.log"
+  else
+    kubectl -n $NAMESPACE logs --since=$SINCE $POD > "$LOG_DIR/$POD.log"
+  fi
 done
 
 # Create a tar.gz archive of the log files
