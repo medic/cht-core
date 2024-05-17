@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable no-console */
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
@@ -6,6 +7,7 @@ const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 const ADMIN_ROLE = '_admin';
+const CAN_HAVE_MULTIPLE_PLACES = 'can_have_multiple_places';
 const FIELDS_TO_IGNORE = [
   'currentPassword',
   'passwordConfirm',
@@ -24,6 +26,7 @@ angular
     $scope,
     $translate,
     $uibModalInstance,
+    // Auth,
     ContactTypes,
     CreateUser,
     DB,
@@ -67,7 +70,9 @@ angular
       // If $scope.model === {}, we're creating a new user.
       return Settings()
         .then(settings => {
+          $scope.permissions = settings.permissions;
           $scope.roles = settings.roles;
+          $scope.allowMultipleFacilities = false;
           $scope.allowTokenLogin = allowTokenLogin(settings);
           if (!$scope.model) {
             return $q.resolve({});
@@ -233,6 +238,14 @@ angular
       return true;
     };
 
+    const validatePermission = () => {
+      const allowedRoles = $scope.permissions.can_have_multiple_places;
+      const userRoles = $scope.editUserModel.roles;
+
+      return userRoles.some((role) => allowedRoles.includes(role));
+    };
+
+
     const isOnlineUser = (roles) => {
       if (!$scope.roles) {
         return true;
@@ -255,11 +268,30 @@ angular
       return hasPlace && hasContact;
     };
 
+
+    const validateFacilityHeirarchy = (places) => {
+      //validate the places are in the same heirarchy
+      const place = places[0];
+      const showPlace = (placeId) => {
+        return DB()
+          .get(placeId)
+          .then(function(place) {
+            console.log('place', place);
+          });
+      };
+
+      showPlace(place);
+    };
+
     const validateContactIsInPlace = () => {
       const placeIds = $scope.editUserModel.place;
       const contactId = $scope.editUserModel.contact;
       if (!placeIds || !contactId) {
         return $q.resolve(true);
+      }
+
+      if (placeIds.length > 1) {
+        return validateFacilityHeirarchy(placeIds);
       }
 
       const getParent = (contactId) => {
@@ -388,7 +420,6 @@ angular
       $scope.editUserModel.contact = $(
         '#edit-user-profile [name=contactSelect]'
       ).val();
-      console.log('Selected facility:', $scope.editUserModel.place);
     };
 
     const haveUpdates = updates => Object.keys(updates).length;
@@ -411,6 +442,7 @@ angular
     const updateUser = () => {
       return changedUpdates($scope.editUserModel)
         .then(updates => {
+          console.log('updates', updates);
           if (!haveUpdates(updates)) {
             return;
           }
@@ -458,6 +490,7 @@ angular
       computeFields();
 
       const synchronousValidations = validateName() &&
+                                     validatePermission() &&
                                      validateRole() &&
                                      validateContactAndFacility() &&
                                      validatePasswordForEditUser() &&
