@@ -118,7 +118,7 @@ jobs:
       - name: Build cht-form Web Component
         run: npm run build-cht-form
       - name: Run Tests
-        run: npm run wdio-cht-form
+        run: npm run integration-cht-form
 
   tests-k3d:
     needs: build

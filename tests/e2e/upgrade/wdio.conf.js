@@ -11,7 +11,7 @@ chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
 const utils = require('@utils');
-const wdioBaseConfig = require('../wdio.conf');
+const wdioBaseConfig = require('../../wdio.conf');
 
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
@@ -31,7 +31,7 @@ const getUpgradeServiceDockerCompose = async () => {
 const getLatestRelease = async () => {
   const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
   const query = {
-    startKey: [ 'release', 'medic', 'medic', {}],
+    startKey: ['release', 'medic', 'medic', {}],
     descending: true,
     limit: 1,
   };
@@ -70,8 +70,8 @@ const dockerComposeCmd = (...params) => {
   params.unshift('-p', 'upgrade');
 
   return new Promise((resolve, reject) => {
-    console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params ]);
-    const cmd = spawn('docker-compose', [ '-f', UPGRADE_SERVICE_DC, ...params ], { env });
+    console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params]);
+    const cmd = spawn('docker-compose', ['-f', UPGRADE_SERVICE_DC, ...params], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -107,8 +107,8 @@ const servicesStartTimeout = () => {
   return setTimeout(async () => {
     console.warn('Services took too long to start. Shutting down...');
     console.info(`
-      If you are seeing this locally, it can mean that your internet is too slow to download all images in the 
-      allotted time. 
+      If you are seeing this locally, it can mean that your internet is too slow to download all images in the
+      allotted time.
       Either run the test multiple times until you load all images, download images manually or increase this timeout.
     `);
     await utils.tearDownServices();
@@ -119,10 +119,10 @@ const servicesStartTimeout = () => {
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs:
-   [
-     'upgrade.wdio-spec.js',
-     '*.wdio-spec.js'
-   ],
+    [
+      'upgrade.wdio-spec.js',
+      '*.wdio-spec.js'
+    ],
   exclude: [],
 
   onPrepare: async () => {
