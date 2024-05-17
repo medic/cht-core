@@ -100,7 +100,7 @@ function ensureMedicHelmRepo() {
         if (!medicRepo) {
             console.log(`Helm repo ${MEDIC_REPO_NAME} not found, adding..`);
             child_process.execSync(`helm repo add ${MEDIC_REPO_NAME} ${MEDIC_REPO_URL}`, { stdio: 'inherit' });
-        } else if (medicRepo.url.trim('/') !== MEDIC_REPO_URL) {
+        } else if (medicRepo.url.replace(/\/$/, '') !== MEDIC_REPO_URL) {
             throw new UserRuntimeError(`Medic repo found but url not matching '${MEDIC_REPO_URL}', see: helm repo list`);
         } else {
             // Always get the latest
