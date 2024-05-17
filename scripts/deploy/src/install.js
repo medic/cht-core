@@ -62,6 +62,8 @@ function helmInstallOrUpdate(valuesFile, namespace, values, image_tag) {
     const chart_version = values.cht_chart_version || DEFAULT_CHART_VERSION;
     ensureMedicHelmRepo();
     const project_name = values.project_name || "";
+    const namespaceExists = checkNamespaceExists(namespace);
+
     try {
         const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString();
         if (releaseExists.includes(project_name)) {
@@ -71,12 +73,22 @@ function helmInstallOrUpdate(valuesFile, namespace, values, image_tag) {
             console.log(`Instance at ${values.ingress.host} upgraded successfully.`);
         } else {
             console.log("Release does not exist. Performing install.");
-            child_process.execSync(`helm install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --create-namespace --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
+            const createNamespaceFlag = namespaceExists ? '' : '--create-namespace';
+            child_process.execSync(`helm install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} ${createNamespaceFlag} --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' });
             console.log(`Instance at ${values.ingress.host} installed successfully.`);
         }
     } catch (err) {
         console.error(JSON.stringify(err));
         process.exit(1);
+    }
+}
+
+function checkNamespaceExists(namespace) {
+    try {
+        const result = child_process.execSync(`kubectl get namespace ${namespace}`).toString();
+        return result.includes(namespace);
+    } catch (err) {
+        return false;
     }
 }
 
