@@ -245,11 +245,13 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
             return validPlaces.length ? validPlaces : undefined;
           });
       })
-      .then((summary) => {
-        if (summary) {
-          summary.home = true;
+      .then((homeplaces) => {
+        if (homeplaces) {
+          homeplaces.forEach(homeplace => {
+            homeplace.home = true;
+          });
         }
-        return summary;
+        return homeplaces;
       });
   }
 
