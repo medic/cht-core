@@ -41,7 +41,7 @@ describe('EditUserCtrl controller', () => {
       fullname: 'user.fullname',
       email: 'user@email.com',
       phone: 'user.phone',
-      facility_id: 'abc',
+      facility_id: ['abc'],
       contact_id: 'xyz',
       roles: [ 'district-manager', 'supervisor' ],
       language: 'zz',
