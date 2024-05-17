@@ -5,6 +5,9 @@ import { Contact } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
 
+/**
+ * Version 1 of the person API.
+ */
 export namespace V1 {
   interface AbstractPerson {
     date_of_birth?: Date;
@@ -27,7 +30,8 @@ export namespace V1 {
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
-   * @returns the person or <code>null</code> if no person is found for the qualifier
+   * @returns the person or `null` if no person is found for the qualifier
+   * @throws Error if the provided context or qualifier is invalid
    */
   export const get = (context: DataContext) => {
     assertDataContext(context);

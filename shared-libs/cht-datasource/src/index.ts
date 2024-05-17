@@ -1,7 +1,27 @@
 /**
- * CHT Script API - Index
- * Builds and exports a versioned API from feature modules.
- * Whenever possible keep this file clean by defining new features in modules.
+ * CHT datasource.
+ *
+ * This module provides a simple API for interacting with CHT data. To get started, obtain a {@link DataContext}. Then
+ * use the context to perform data operations. There are two different usage modes available for performing the same
+ * operations.
+ * @example Get Data Context:
+ * import { getRemoteDataContext, getLocalDataContext } from '@medic/cht-datasource';
+ *
+ * const dataContext = isOnlineOnly
+ *   ? getRemoteDataContext(...)
+ *   : getLocalDataContext(...);
+ * @example Declarative usage mode:
+ * import { Person, Qualifier } from '@medic/cht-datasource';
+ *
+ * const getPerson = Person.V1.get(dataContext);
+ * const myUuid = 'my-uuid';
+ * const myPerson = await getPerson(Qualifier.byUuid(uuid));
+ * @example Imperative usage mode:
+ * import { getDatasource } from '@medic/cht-datasource';
+ *
+ * const datasource = getDatasource(dataContext);
+ * const myUuid = 'my-uuid';
+ * const myPerson = await datasource.v1.person.getByUuid(myUuid);
  */
 import { hasAnyPermission, hasPermissions } from './auth';
 import { assertDataContext, DataContext } from './libs/context';
@@ -17,18 +37,25 @@ export * as Qualifier from './qualifier';
  * Returns the source for CHT data.
  * @param ctx the current data context
  * @returns the CHT datasource API
+ * @throws Error if the provided context is invalid
  */
 export const getDatasource = (ctx: DataContext) => {
   assertDataContext(ctx);
   return {
+    /**
+     * Version 1 of the datasource.
+     */
     v1: {
       hasPermissions,
       hasAnyPermission,
+      /**
+       * Person datasource.
+       */
       person: {
         /**
          * Returns a person by their UUID.
          * @param uuid the UUID of the person to retrieve
-         * @returns the person or <code>null</code> if no person is found for the UUID
+         * @returns the person or `null` if no person is found for the UUID
          */
         getByUuid: (uuid: string) => Person.V1.get(ctx)(Qualifier.byUuid(uuid)),
       }

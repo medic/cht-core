@@ -6,6 +6,7 @@ interface DehydratedParent extends DataObject {
   parent?: DehydratedParent;
 }
 
+/** @internal */
 export interface Contact extends Doc {
   contact_type?: string;
   name?: string;

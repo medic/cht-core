@@ -6,9 +6,11 @@ import * as Person from '../person';
 import { LocalDataContext } from '../libs/context';
 import { getDocById } from './libs/doc';
 
+/** @internal */
 export namespace V1 {
   const isPerson = (settings: Doc, doc: Doc): doc is Person.V1.Person => contactTypeUtils.isPerson(settings, doc);
 
+  /** @internal */
   export const get = async (
     localContext: LocalDataContext,
     identifier: UuidQualifier

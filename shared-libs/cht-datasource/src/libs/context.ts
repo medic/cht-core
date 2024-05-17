@@ -1,15 +1,23 @@
 import { Doc } from './doc';
 import { hasField, isRecord } from './core';
 
+/**
+ * {@link PouchDB.Database}s to be used as the local data source.
+ */
 export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
 
-export interface SettingsService {
-  getAll: () => Doc;
-}
+/**
+ * Service providing access to the app settings.
+ */
+export type SettingsService = Readonly<{ getAll: () => Doc }>;
 
+/**
+ * Context for interacting with the data.
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface DataContext {}
 
+/** @internal */
 export interface LocalDataContext extends DataContext {
   medicDb: PouchDB.Database<Doc>;
   settings: SettingsService;
@@ -28,25 +36,25 @@ const assertSourceDatabases: (sourceDatabases: unknown) => asserts sourceDatabas
     }
   };
 
+/** @internal */
 export const assertDataContext: (context: unknown) => asserts context is DataContext = (context: unknown) => {
   if (!isRecord(context)) {
     throw new Error(`Invalid data context [${JSON.stringify(context)}].`);
   }
 };
 
+/** @internal */
 export const isLocalDataContext = (context: DataContext): context is LocalDataContext => {
   return 'settings' in context && 'medicDb' in context;
 };
 
 /**
- * Returns the data context based on the source databases (if provided). If local source databases are provided, these
- * will be used to interact with the data. This functionality is intended for use cases requiring offline functionality.
- * For all other use cases, no source databases should be provided and instead the library will use the remote API to
- * interact with the data.
- * @param settings service that provides access to the app settings
- * @param sourceDatabases the PouchDB databases to use as the local datasource. Required for
- * offline functionality.
- * @return the data context
+ * Returns the data context for accessing data via the provided local sources This functionality is intended for use
+ * cases requiring offline functionality. For all other use cases, use {@link getRemoteDataContext}.
+ * @param settings service providing access to the app settings
+ * @param sourceDatabases the PouchDB databases to use as the local datasource
+ * @returns the local data context
+ * @throws Error if the provided settings or source databases are invalid
  */
 export const getLocalDataContext = (settings: SettingsService, sourceDatabases: SourceDatabases): DataContext => {
   assertSettingsService(settings);
@@ -60,7 +68,7 @@ export const getLocalDataContext = (settings: SettingsService, sourceDatabases: 
 /**
  * Returns the data context based on a remote CHT API server. This function should not be used when offline
  * functionality is required.
- * @return the data context
+ * @returns the data context
  */
 export const getRemoteDataContext = (): DataContext => {
   // TODO Need to determine what initial arguments are needed for the remote data context (e.g. session cookie...)

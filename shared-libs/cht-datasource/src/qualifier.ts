@@ -8,7 +8,8 @@ export type UuidQualifier = Readonly<{ uuid: string }>;
 /**
  * Builds a qualifier that identifies an entity by its UUID.
  * @param uuid the UUID of the entity
- * @return the qualifier
+ * @returns the qualifier
+ * @throws Error if the UUID is invalid
  */
 export const byUuid = (uuid: string): UuidQualifier => {
   if (!isString(uuid) || uuid.length === 0) {
@@ -18,10 +19,10 @@ export const byUuid = (uuid: string): UuidQualifier => {
 };
 
 /**
- * Returns <code>true</code> if the given qualifier is a <code>UuidQualifier</code>, otherwise <code>false</code>.
+ * Returns `true` if the given qualifier is a {@link UuidQualifier}, otherwise `false`.
  * @param identifier the identifier to check
- * @return <code>true</code> if the given identifier is a <code>UuidQualifier</code>, otherwise
- * <code>false</code>
+ * @returns `true` if the given identifier is a {@link UuidQualifier}, otherwise
+ * `false`
  */
 export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifier => {
   return isRecord(identifier) && hasField(identifier, { name: 'uuid', type: 'string' });
