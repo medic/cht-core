@@ -142,6 +142,7 @@
     "module-alias": "^2.2.3",
     "moment": "^2.29.4",
     "moment-locales-webpack-plugin": "^1.2.0",
+    "moment-timezone": "^0.5.45",
     "mustache": "^4.2.0",
     "nodemon": "^3.0.1",
     "nyc": "^15.1.0",
