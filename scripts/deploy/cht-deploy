@@ -53,7 +53,7 @@ async function runInstallScript(args) {
         await install(valuesFilePath);
     } catch (err) {
         console.error('Error executing the install script:');
-        console.error(err.message);
+        console.error(JSON.stringify(err));
         process.exit(1);
     }
 }
