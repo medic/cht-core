@@ -118,7 +118,6 @@ require('./services/lineage-model-generator');
 require('./services/location');
 require('./services/modal');
 require('./services/moment-locale-data');
-require('./services/privacy-policies');
 require('./services/resource-icons');
 require('./services/search');
 require('./services/select2-search');

@@ -25,10 +25,10 @@ function(newDoc, oldDoc, userCtx, secObj) {
     throw({ forbidden: msg });
   };
 
-  var hasRole = function(userCtx, role) {
-    if (userCtx.roles) {
-      for (var i = 0; i < userCtx.roles.length; i++) {
-        if (userCtx.roles[i] === role) {
+  var hasRole = function(roles, role) {
+    if (roles) {
+      for (var i = 0; i < roles.length; i++) {
+        if (roles[i] === role) {
           return true;
         }
       }
@@ -37,18 +37,17 @@ function(newDoc, oldDoc, userCtx, secObj) {
   };
 
   var isDbAdmin = function(userCtx, secObj) {
-    if (hasRole(userCtx, '_admin')) {
+    if (hasRole(userCtx.roles, '_admin')) {
       return true;
     }
 
-    if (secObj.admins && secObj.admins.names &&
-        secObj.admins.names.indexOf(userCtx.name) !== -1) {
+    if (secObj.admins && secObj.admins.names && secObj.admins.names.indexOf(userCtx.name) !== -1) {
       return true;
     }
 
     if (secObj.admins && secObj.admins.roles) {
-      for (var i = 0; i < userCtx.roles; i++) {
-        if (hasRole(secObj.admins, userCtx.roles[i])) {
+      for (var i = 0; i < userCtx.roles.length; i++) {
+        if (hasRole(secObj.admins.roles, userCtx.roles[i])) {
           return true;
         }
       }
@@ -75,7 +74,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
       return;
     }
 
-    if (isAdminOnlyDoc(newDoc)) {
+    if (isAdminOnlyDoc(newDoc) || (oldDoc && isAdminOnlyDoc(oldDoc))) {
       _err('You are not authorized to edit admin only docs');
     }
 
