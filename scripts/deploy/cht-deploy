@@ -13,19 +13,17 @@ const __dirname = dirname(__filename);
 
 function validateNodeVersion() {
     const packageJsonPath = path.resolve(__dirname, 'package.json');
-    let packageJson;
 
     try {
-        packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        const requiredNodeVersion = packageJson.engines && packageJson.engines.node;
+
+        if (requiredNodeVersion && !semver.satisfies(process.version, requiredNodeVersion)) {
+            console.error(`Invalid Node.js version. Required: ${requiredNodeVersion}. Current: ${process.version}`);
+            process.exit(1);
+        }
     } catch (err) {
         return;
-    }
-
-    const requiredNodeVersion = packageJson.engines && packageJson.engines.node;
-
-    if (requiredNodeVersion && !semver.satisfies(process.version, requiredNodeVersion)) {
-        console.error(`Invalid Node.js version. Required: ${requiredNodeVersion}. Current: ${process.version}`);
-        process.exit(1);
     }
 }
 
