@@ -79,7 +79,7 @@ const resolveUrl = (requested) => {
     // invalid url
     return;
   }
-}
+};
 
 const sanitizeRequestedRedirect = (requested) => {
   const resolved = resolveUrl(requested);
