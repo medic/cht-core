@@ -63,19 +63,47 @@ const getHomeUrl = userCtx => {
   return '/';
 };
 
-const getRedirectUrl = (userCtx, requested) => {
-  const root = getHomeUrl(userCtx);
-  if (!requested) {
-    return root;
+const hasDoubleSlash = (path) => {
+  const decoded = decodeURIComponent(path);
+  if (decoded.length !== path.length) {
+    // it was encoded - check if it's double encoded
+    return hasDoubleSlash(decoded);
   }
+  return /\/\//g.test(decoded);
+};
+
+const resolveUrl = (requested) => {
   try {
-    requested = url.resolve('/', requested);
+    return url.resolve('/', requested);
   } catch (e) {
-    // invalid url - return the default
-    return root;
+    // invalid url
+    return;
   }
-  const parsed = new URL(requested, 'resolve://');
-  return parsed.pathname + (parsed.hash || '');
+}
+
+const sanitizeRequestedRedirect = (requested) => {
+  const resolved = resolveUrl(requested);
+  if (!resolved) {
+    return;
+  }
+  const parsed = new URL(resolved, 'resolve://');
+  const path = parsed.pathname + (parsed.hash || '');
+  if (hasDoubleSlash(path)) {
+    // double slash can be abused to redirect to another host
+    // https://github.com/medic/cht-core/issues/9122
+    return;
+  }
+  return path;
+};
+
+const getRedirectUrl = (userCtx, requested) => {
+  if (requested) {
+    const redirect = sanitizeRequestedRedirect(requested);
+    if (redirect) {
+      return redirect;
+    }
+  }
+  return getHomeUrl(userCtx);
 };
 
 const getEnabledLocales = () => {
