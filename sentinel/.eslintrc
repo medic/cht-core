@@ -16,6 +16,7 @@
           "@medic/cht-script-api",
           "@medic/contact-types-utils",
           "@medic/contacts",
+          "@medic/couch-request",
           "@medic/infodoc",
           "@medic/lineage",
           "@medic/message-utils",

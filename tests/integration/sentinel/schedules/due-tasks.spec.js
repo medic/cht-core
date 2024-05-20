@@ -80,7 +80,7 @@ const contacts = [
     reported_date: reportedDate,
   },
   {
-    _id: 'patient1',
+    _id: 'patient_1',
     patient_id: 'patient1',
     name: 'Patient1',
     type: 'contact',
@@ -89,7 +89,7 @@ const contacts = [
     reported_date: reportedDate,
   },
   {
-    _id: 'patient2',
+    _id: 'patient_2',
     patient_id: 'patient2',
     name: 'Patient2',
     type: 'contact',
@@ -297,6 +297,50 @@ const reports = [
       },
     ],
   },
+  {
+    _id: 'report7',
+    type: 'data_record',
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
+    fields: { patient_id: '', value: 2, patient_uuid: 'patient_2' },
+    reported_date: oneMonthAgo,
+    scheduled_tasks: [
+      {
+        due: twoDaysAgo, // task with translation sent to "clinic"
+        message_key: 'messages.one',
+        recipient: 'clinic',
+        state_history: [],
+        state: 'scheduled',
+      },
+      {
+        due: threeDaysAgo, // task with translation sent to "sender"
+        message_key: 'messages.two',
+        recipient: 'reporting_unit',
+        state_history: [],
+        state: 'scheduled',
+      },
+      {
+        due: threeDaysAgo, // task with text
+        message: [{
+          content: 'THREE. Reported by {{contact.name}}. Patient {{patient_name}}({{patient_id}}). ' +
+            'Value {{fields.value}}',
+          locale: 'test'
+        }],
+        recipient: 'health_center',
+        state_history: [],
+        state: 'scheduled',
+      },
+      {
+        due: threeDaysAgo, // task with missing translation key
+        message_key: 'non.exisiting.key',
+        recipient: 'clinic',
+        state_history: [],
+        state: 'scheduled',
+      },
+    ],
+  },
 ];
 
 const settings = {
@@ -323,108 +367,134 @@ describe('Due Tasks', () => {
     .then(() => utils.updateSettings(settings, 'sentinel')));
   after(() => utils.revertDb([], true));
 
-  it('should process scheduled messages correctly', () => {
-    return sentinelUtils
-      .waitForSentinel()
-      .then(() => utils.stopSentinel())
-      .then(() => utils.saveDocs(reports))
-      .then(() => utils.startSentinel())
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      // we can't reliably *know* when the scheduler has finished processing the docs,
-      // so I'm just waiting for the revs to change
-      .then(() => utils.waitForDocRev([
-        { id: 'report3', rev: 2 }, { id: 'report4', rev: 2 }, { id: 'report5', rev: 2 }, { id: 'report6', rev: 2 }
-      ]))
-      .then(() => utils.getDocs(ids))
-      .then(updatedReports => {
-        // report1 should not have been changed
-        chai.expect(reports[0]._id).to.equal('report1');
-        chai.expect(reports[0].scheduled_tasks).to.equal(undefined);
+  it('should process scheduled messages correctly', async () => {
+    await sentinelUtils.waitForSentinel();
+    await utils.stopSentinel();
+    await utils.saveDocs(reports);
+    await utils.startSentinel();
+    await sentinelUtils.waitForSentinel(ids);
+    // we can't reliably *know* when the scheduler has finished processing the docs,
+    // so I'm just waiting for the revs to change
 
-        // report2 should not have been changed
-        chai.expect(updatedReports[1]).to.deep.nested.include({
-          _id: 'report2',
-          'scheduled_tasks[0].state': 'scheduled',
-          'scheduled_tasks[1].state': 'scheduled',
-          'scheduled_tasks[2].state': 'other_than_scheduled',
-        });
-        chai.expect(updatedReports[1].scheduled_tasks.every(task => !task.messages)).to.be.true;
+    await utils.waitForDocRev([
+      { id: 'report3', rev: 2 },
+      { id: 'report4', rev: 2 },
+      { id: 'report5', rev: 2 },
+      { id: 'report6', rev: 2 },
+      { id: 'report7', rev: 2 }
+    ]);
 
-        // report 3 should have been edited
-        chai.expect(updatedReports[2]).to.deep.nested.include({
-          _id: 'report3',
-          'scheduled_tasks[0].state': 'scheduled',
-          'scheduled_tasks[1].state': 'scheduled',
-          'scheduled_tasks[2].state': 'sent',
-          'scheduled_tasks[3].state': 'pending',
-        });
+    const [ report1, report2, report3, report4, report5, report6, report7 ] = await utils.getDocs(ids);
+    chai.expect(report1._id).to.equal('report1');
+    chai.expect(report1.scheduled_tasks).to.equal(undefined);
 
-        chai.expect(updatedReports[2].scheduled_tasks[3].messages[0]).to.include({
-          message: 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 2',
-          to: '555666' // ancestor:health_center
-        });
-        chai.expect(updatedReports[2].scheduled_tasks[0].messages).to.equal(undefined);
-        chai.expect(updatedReports[2].scheduled_tasks[1].messages).to.equal(undefined);
-        chai.expect(updatedReports[2].scheduled_tasks[2].messages).to.equal(undefined);
+    // report2 should not have been changed
+    chai.expect(report2).to.deep.nested.include({
+      _id: 'report2',
+      'scheduled_tasks[0].state': 'scheduled',
+      'scheduled_tasks[1].state': 'scheduled',
+      'scheduled_tasks[2].state': 'other_than_scheduled',
+    });
+    chai.expect(report2.scheduled_tasks.every(task => !task.messages)).to.be.true;
 
-        // report 4 should have been edited
-        chai.expect(updatedReports[3]).to.deep.nested.include({
-          _id: 'report4',
-          'scheduled_tasks[0].state': 'pending',
-          'scheduled_tasks[1].state': 'pending',
-          'scheduled_tasks[2].state': 'pending',
-          'scheduled_tasks[3].state': 'scheduled',
-        });
-        chai.expect(updatedReports[3].scheduled_tasks[0].messages[0]).to.include({
-          message: 'ONE. Reported by Chw1. Patient Patient2 (patient2). Value 2',
-          to: '222333' // clinic
-        });
+    // report 3 should have been edited
+    chai.expect(report3).to.deep.nested.include({
+      _id: 'report3',
+      'scheduled_tasks[0].state': 'scheduled',
+      'scheduled_tasks[1].state': 'scheduled',
+      'scheduled_tasks[2].state': 'sent',
+      'scheduled_tasks[3].state': 'pending',
+    });
 
-        chai.expect(updatedReports[3].scheduled_tasks[1].messages[0]).to.include({
-          message: 'TWO. Reported by Chw1. Patient Patient2 (patient2). Value 2',
-          to: '111222' // reporting_unit
-        });
+    chai.expect(report3.scheduled_tasks[3].messages[0]).to.include({
+      message: 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 2',
+      to: '555666' // ancestor:health_center
+    });
+    chai.expect(report3.scheduled_tasks[0].messages).to.equal(undefined);
+    chai.expect(report3.scheduled_tasks[1].messages).to.equal(undefined);
+    chai.expect(report3.scheduled_tasks[2].messages).to.equal(undefined);
 
-        chai.expect(updatedReports[3].scheduled_tasks[2].messages[0]).to.include({
-          message: 'THREE. Reported by Chw1. Patient Patient2(patient2). Value 2',
-          to: '555666' // health_center
-        });
+    // report 4 should have been edited
+    chai.expect(report4).to.deep.nested.include({
+      _id: 'report4',
+      'scheduled_tasks[0].state': 'pending',
+      'scheduled_tasks[1].state': 'pending',
+      'scheduled_tasks[2].state': 'pending',
+      'scheduled_tasks[3].state': 'scheduled',
+    });
+    chai.expect(report4.scheduled_tasks[0].messages[0]).to.include({
+      message: 'ONE. Reported by Chw1. Patient Patient2 (patient2). Value 2',
+      to: '222333' // clinic
+    });
 
-        chai.expect(updatedReports[3].scheduled_tasks[3].messages).to.equal(undefined);
+    chai.expect(report4.scheduled_tasks[1].messages[0]).to.include({
+      message: 'TWO. Reported by Chw1. Patient Patient2 (patient2). Value 2',
+      to: '111222' // reporting_unit
+    });
 
-        // report 5 should have been edited
-        chai.expect(updatedReports[4]).to.deep.nested.include({
-          _id: 'report5',
-          'scheduled_tasks[0].state': 'pending',
-          'scheduled_tasks[1].state': 'pending',
-          'scheduled_tasks[2].state': 'pending',
+    chai.expect(report4.scheduled_tasks[2].messages[0]).to.include({
+      message: 'THREE. Reported by Chw1. Patient Patient2(patient2). Value 2',
+      to: '555666' // health_center
+    });
 
-          'scheduled_tasks[0].messages[0].message': 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 3',
-          'scheduled_tasks[0].messages[0].to': '111222', // clinic
+    chai.expect(report4.scheduled_tasks[3].messages).to.equal(undefined);
 
-          'scheduled_tasks[1].messages[0].message': 'TWO. Reported by Chw1. Patient Patient1 (patient1). Value 3',
-          'scheduled_tasks[1].messages[0].to': '111222', // clinic
+    // report 5 should have been edited
+    chai.expect(report5).to.deep.nested.include({
+      _id: 'report5',
+      'scheduled_tasks[0].state': 'pending',
+      'scheduled_tasks[1].state': 'pending',
+      'scheduled_tasks[2].state': 'pending',
 
-          'scheduled_tasks[2].messages[0].message': 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 3',
-          'scheduled_tasks[2].messages[0].to': '555666', // health_center
-        });
+      'scheduled_tasks[0].messages[0].message': 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 3',
+      'scheduled_tasks[0].messages[0].to': '111222', // clinic
 
-        // report 6 should have been edited
-        chai.expect(updatedReports[5]).to.deep.nested.include({
-          _id: 'report6',
-          'scheduled_tasks[0].state': 'pending',
-          'scheduled_tasks[1].state': 'pending',
-          'scheduled_tasks[2].state': 'pending',
+      'scheduled_tasks[1].messages[0].message': 'TWO. Reported by Chw1. Patient Patient1 (patient1). Value 3',
+      'scheduled_tasks[1].messages[0].to': '111222', // clinic
 
-          'scheduled_tasks[0].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
-          'scheduled_tasks[0].messages[0].to': '111222', // clinic
+      'scheduled_tasks[2].messages[0].message': 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 3',
+      'scheduled_tasks[2].messages[0].to': '555666', // health_center
+    });
 
-          'scheduled_tasks[1].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
-          'scheduled_tasks[1].messages[0].to': '111222', // clinic
+    // report 6 should have been edited
+    chai.expect(report6).to.deep.nested.include({
+      _id: 'report6',
+      'scheduled_tasks[0].state': 'pending',
+      'scheduled_tasks[1].state': 'pending',
+      'scheduled_tasks[2].state': 'pending',
 
-          'scheduled_tasks[2].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
-          'scheduled_tasks[2].messages[0].to': '555666', // health_center
-        });
-      });
+      'scheduled_tasks[0].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
+      'scheduled_tasks[0].messages[0].to': '111222', // clinic
+
+      'scheduled_tasks[1].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
+      'scheduled_tasks[1].messages[0].to': '111222', // clinic
+
+      'scheduled_tasks[2].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
+      'scheduled_tasks[2].messages[0].to': '555666', // health_center
+    });
+
+    // report 7 should have been edited
+    chai.expect(report7).to.deep.nested.include({
+      _id: 'report7',
+      'scheduled_tasks[0].state': 'pending',
+      'scheduled_tasks[1].state': 'pending',
+      'scheduled_tasks[2].state': 'pending',
+      'scheduled_tasks[3].state': 'scheduled',
+    });
+    chai.expect(report7.scheduled_tasks[0].messages[0]).to.include({
+      message: 'ONE. Reported by Chw1. Patient Patient2 (patient2). Value 2',
+      to: '222333' // clinic
+    });
+
+    chai.expect(report7.scheduled_tasks[1].messages[0]).to.include({
+      message: 'TWO. Reported by Chw1. Patient Patient2 (patient2). Value 2',
+      to: '111222' // reporting_unit
+    });
+
+    chai.expect(report7.scheduled_tasks[2].messages[0]).to.include({
+      message: 'THREE. Reported by Chw1. Patient Patient2(patient2). Value 2',
+      to: '555666' // health_center
+    });
+    chai.expect(report7.scheduled_tasks[3].messages).to.equal(undefined);
   });
 });

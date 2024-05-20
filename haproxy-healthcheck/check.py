@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 import os
+import urllib.parse
 from typing import List
 
 import httpx
@@ -10,7 +11,7 @@ from logger import log
 couchdb_servers: List[str] = os.environ["COUCHDB_SERVERS"].split(",")
 # Example: COUCHDB_SERVERS="couchdb.1,couchdb.2,couchdb.3"
 username: str = os.environ["COUCHDB_USER"]
-password: str = os.environ["COUCHDB_PASSWORD"]
+password: str = urllib.parse.quote(os.environ["COUCHDB_PASSWORD"])
 
 
 def get_membership_endpoint(couchdb_url: str) -> str:

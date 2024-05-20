@@ -37,8 +37,8 @@ import { PerformanceService } from '@mm-services/performance.service';
 })
 export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;
-  private globalActions: GlobalActions;
-  private messagesActions: MessagesActions;
+  private globalActions!: GlobalActions;
+  private messagesActions!: MessagesActions;
   loadingContent;
   loadingMoreContent = false;
   selectedConversation;

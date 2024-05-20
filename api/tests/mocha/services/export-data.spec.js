@@ -1,7 +1,7 @@
 require('chai').should();
 
 const db = require('../../../src/db');
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 const service = require('../../../src/services/export-data');
 const sinon = require('sinon');
 

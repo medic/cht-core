@@ -2,7 +2,7 @@
  * @module transitions
  */
 const feed = require('./lib/feed');
-const logger = require('./lib/logger');
+const logger = require('@medic/logger');
 const transitionsLib = require('./config').getTransitionsLib();
 
 const loadTransitions = () => {

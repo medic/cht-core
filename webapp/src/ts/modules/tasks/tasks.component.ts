@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
-import * as moment from 'moment';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -119,36 +118,14 @@ export class TasksComponent implements OnInit, OnDestroy {
     window.location.reload();
   }
 
-  private hydrateEmissions(taskDocs) {
-    return taskDocs.map(taskDoc => {
-      const emission = { ...taskDoc.emission };
-      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
-      emission.date = new Date(dueDate.valueOf());
-      emission.overdue = dueDate.isBefore(moment());
-      emission.owner = taskDoc.owner;
-
-      return emission;
-    });
-  }
-
   private async refreshTasks() {
     try {
-      const isEnabled = await this.rulesEngineService.isEnabled();
-      this.tasksDisabled = !isEnabled;
-      const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-
+      this.tasksDisabled = !(await this.rulesEngineService.isEnabled());
+      const taskDocs = this.tasksDisabled ? [] : await this.rulesEngineService.fetchTaskDocsForAllContacts() || [];
       this.hasTasks = taskDocs.length > 0;
-
-      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
-      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
-      if (subjects?.size) {
-        const userLineageLevel = await this.userLineageLevel;
-        hydratedTasks.forEach(task => {
-          task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
-        });
-      }
-
-      this.tasksActions.setTasksList(hydratedTasks);
+      const userLineageLevel = await this.userLineageLevel;
+      const taskEmissions = await this.getTasksWithLineage(taskDocs, userLineageLevel);
+      this.tasksActions.setTasksList(taskEmissions);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
@@ -172,17 +149,25 @@ export class TasksComponent implements OnInit, OnDestroy {
     return task?._id;
   }
 
-  private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
-    return this.lineageModelGeneratorService
-      .reportSubjects(ids)
-      .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
-  }
+  private async getTasksWithLineage(taskDocs, userLineageLevel) {
+    const ownerIds = [ ...new Set(taskDocs.map(task => task.owner)) ];
+    const subjects = await this.lineageModelGeneratorService.reportSubjects(ownerIds);
+    const subjectLineageMap = new Map();
+    subjects.forEach(subject => {
+      const taskLineage = subject.lineage
+        ?.filter(level => level?.name)
+        .map(level => level.name);
 
-  private getTaskLineage(subjects, task, userLineageLevel) {
-    const lineage = subjects
-      .get(task.owner)
-      ?.map(lineage => lineage?.name);
-    return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
+      if (taskLineage?.length) {
+        subjectLineageMap.set(subject._id, taskLineage);
+      }
+    });
+
+    return taskDocs.map(task => {
+      return {
+        ...task.emission,
+        lineage: this.extractLineageService.removeUserFacility(subjectLineageMap.get(task.owner), userLineageLevel),
+      };
+    });
   }
 }

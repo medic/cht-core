@@ -1,6 +1,6 @@
 const db = require('../db');
 const config = require('../config');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const NAME = 'update_scheduled_reports';

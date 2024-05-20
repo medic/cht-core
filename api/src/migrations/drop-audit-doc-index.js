@@ -1,7 +1,7 @@
 const db = require('../db');
 const { promisify } = require('util');
 const async = require('async');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const _ = require('lodash');
 const environment = require('../environment');
 const DDOC_ID = '_design/medic';

@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const rewire = require('rewire');
 const db = require('../../../src/db');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 let reminders;
 let clock;
@@ -379,9 +379,12 @@ describe('reminders', () => {
             assert.equal(places.length, 1);
             assert.deepEqual(places, [{ _id: 'xxx', contact: 'maria' }]);
             assert.equal(request.get.callCount, 1);
-            assert.deepEqual(request.get.args[0], [
-              'someURL/_design/medic-client/_view/contacts_by_type',
-              { qs: { limit: 1000, keys: '[["clinic"]]' }, json: true },
+            assert.deepEqual(request.get.args[0], [            
+              { 
+                url: 'someURL/_design/medic-client/_view/contacts_by_type',
+                qs: { limit: 1000, keys: '[["clinic"]]' },
+                json: true 
+              },
             ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(
@@ -447,8 +450,12 @@ describe('reminders', () => {
             assert.deepEqual(places, [{ _id: 'xxx', contact: 'maria' }]);
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [
-              'someURL/_design/medic-client/_view/contacts_by_type',
-              { qs: { limit: 1000, keys: '[["clinic"]]', start_key_doc_id: 'somedocid' }, json: true },
+              { 
+                url: 'someURL/_design/medic-client/_view/contacts_by_type',
+                qs: { limit: 1000, keys: '[["clinic"]]',
+                  start_key_doc_id: 'somedocid' },
+                json: true 
+              },
             ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(
@@ -478,8 +485,11 @@ describe('reminders', () => {
           assert.equal(messages.addMessage.callCount, 0);
           assert.equal(request.get.callCount, 1);
           assert.deepEqual(request.get.args[0], [
-            'someURL/_design/medic-client/_view/contacts_by_type',
-            { qs: { limit: 1000, keys: JSON.stringify([['tier2']]) }, json: true },
+            { 
+              url: 'someURL/_design/medic-client/_view/contacts_by_type',
+              qs: { limit: 1000, keys: JSON.stringify([['tier2']]) },
+              json: true 
+            },
           ]);
         });
     });
@@ -654,12 +664,19 @@ describe('reminders', () => {
         assert.deepEqual(db.medic.allDocs.args[1], [{ keys: ['doc2', 'doc3'], include_docs: true }]);
         assert.equal(request.get.callCount, 2);
         assert.deepEqual(request.get.args[0], [
-          'someURL/_design/medic-client/_view/contacts_by_type',
-          { qs: { limit: 1000, keys: JSON.stringify([['tier2']]) }, json: true },
+          { 
+            url: 'someURL/_design/medic-client/_view/contacts_by_type',
+            qs: { limit: 1000, keys: JSON.stringify([['tier2']]) },
+            json: true 
+          },
         ]);
         assert.deepEqual(request.get.args[1], [
-          'someURL/_design/medic-client/_view/contacts_by_type',
-          { qs: { limit: 1000, keys: JSON.stringify([['tier2']]), start_key_doc_id: 'doc3' }, json: true },
+          {  
+            url: 'someURL/_design/medic-client/_view/contacts_by_type',
+            qs: { limit: 1000, keys: JSON.stringify([['tier2']]),
+              start_key_doc_id: 'doc3' },
+            json: true 
+          },
         ]);
 
         assert.equal(db.medic.query.callCount, 1);
@@ -825,7 +842,7 @@ describe('reminders', () => {
         { id: `reminder:frm:${reminderDate}:doc3`, value: { rev: '1-something' } },
       ]});
       return reminders.__get__('sendReminders')(reminder, moment(reminderDate)).then(() => {
-        assert.equal(request.get.args[0][1].qs.keys, '[["health_center"]]');
+        assert.equal(request.get.args[0][0].qs.keys, '[["health_center"]]');
       });
     });
 
@@ -850,7 +867,7 @@ describe('reminders', () => {
         { id: `reminder:frm:${reminderDate}:doc3`, value: { rev: '1-something' } },
       ]});
       return reminders.__get__('sendReminders')(reminder, moment(reminderDate)).then(() => {
-        assert.equal(request.get.args[0][1].qs.keys, '[["tier2"],["tier3"]]');
+        assert.equal(request.get.args[0][0].qs.keys, '[["tier2"],["tier3"]]');
       });
     });
 
@@ -1058,21 +1075,21 @@ describe('reminders', () => {
 
         return reminders.__get__('sendReminders')({ form: 'form' }, moment(reminderDate)).then(() => {
           assert.equal(request.get.callCount, 5);
-          assert.deepEqual(request.get.args[0][1].qs, { limit: 1000, keys: JSON.stringify([['tier2']]) });
+          assert.deepEqual(request.get.args[0][0].qs, { limit: 1000, keys: JSON.stringify([['tier2']]) });
           assert.deepEqual(
-            request.get.args[1][1].qs,
+            request.get.args[1][0].qs,
             { start_key_doc_id: 'doc5', limit: 1000, keys: JSON.stringify([['tier2']]) }
           );
           assert.deepEqual(
-            request.get.args[2][1].qs,
+            request.get.args[2][0].qs,
             { start_key_doc_id: 'doc9', limit: 1000, keys: JSON.stringify([['tier2']]) }
           );
           assert.deepEqual(
-            request.get.args[3][1].qs,
+            request.get.args[3][0].qs,
             { start_key_doc_id: 'doc13', limit: 1000, keys: JSON.stringify([['tier2']]) }
           );
           assert.deepEqual(
-            request.get.args[4][1].qs,
+            request.get.args[4][0].qs,
             { start_key_doc_id: 'doc17', limit: 1000, keys: JSON.stringify([['tier2']]) }
           );
           assert.equal(db.medic.bulkDocs.callCount, 4);
@@ -1172,15 +1189,15 @@ describe('reminders', () => {
         assert.deepEqual(err.message, 'Errors saving reminders');
         assert.equal(request.get.callCount, 3);
         assert.deepEqual(
-          request.get.args[0][1].qs,
+          request.get.args[0][0].qs,
           { limit: 1000, keys: JSON.stringify([['tier2']]) }
         );
         assert.deepEqual(
-          request.get.args[1][1].qs,
+          request.get.args[1][0].qs,
           { start_key_doc_id: 'doc5', limit: 1000, keys: JSON.stringify([['tier2']]) }
         );
         assert.deepEqual(
-          request.get.args[2][1].qs,
+          request.get.args[2][0].qs,
           { start_key_doc_id: 'doc9', limit: 1000, keys: JSON.stringify([['tier2']]) }
         );
 

@@ -16,6 +16,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@medic/logger": "file:../shared-libs/logger",
     "async": "^3.2.1",
     "bikram-sambat": "^1.7.0",
     "body-parser": "^1.20.2",

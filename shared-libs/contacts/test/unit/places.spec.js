@@ -1,4 +1,5 @@
 const chai = require('chai');
+chai.use(require('chai-as-promised'));
 const sinon = require('sinon');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
@@ -6,6 +7,7 @@ const controller = require('../../src/places');
 const people = require('../../src/people');
 const cutils = require('../../src/libs/utils');
 const lineage = require('../../src/libs/lineage');
+const contactTypesUtils = require('@medic/contact-types-utils');
 
 let examplePlace;
 
@@ -63,7 +65,7 @@ describe('places controller', () => {
 
   beforeEach(() => {
     config.init({ get: sinon.stub() });
-    db.init({ medic: { post: sinon.stub() } });
+    db.init({ medic: { post: sinon.stub(), allDocs: sinon.stub() } });
     examplePlace = {
       type: 'clinic',
       name: 'St. Paul',
@@ -404,6 +406,23 @@ describe('places controller', () => {
       });
     });
 
+    it('returns err if contact does not exist', async () => {
+      const place = {
+        name: 'HC',
+        type: 'district_hospital',
+        contact: 'person'
+      };
+      fetchHydratedDoc.rejects({ status: 404 });
+      const post = db.medic.post;
+      try {
+        await controller._createPlaces(place);
+        chai.expect.fail('Call should throw');
+      } catch (err) {
+        chai.expect(err.message).to.equal('Failed to find person.');
+        chai.expect(post.callCount).to.equal(0);
+      }
+    });
+
     it('rejects contacts with wrong type', done => {
       const place = {
         name: 'HC',
@@ -559,6 +578,87 @@ describe('places controller', () => {
       });
     });
 
+  });
+
+  describe('placesExist', () => {
+    it('should throw error on invalid input', async () => {
+      await chai.expect(controller.placesExist()).to.be.eventually.rejectedWith('Invalid place ids list');
+      await chai.expect(controller.placesExist({})).to.be.eventually.rejectedWith('Invalid place ids list');
+      await chai.expect(controller.placesExist('a')).to.be.eventually.rejectedWith('Invalid place ids list');
+    });
+
+    it('should throw an error if a place has an error', async () => {
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: '1', error: 'not found' },
+          { id: '2', doc: { _id: '2' } },
+        ]
+      });
+
+      await chai.expect(controller.placesExist(['1', '2'])).to.be.eventually.rejectedWith(`Failed to find place 1`);
+      chai.expect(db.medic.allDocs.args).to.deep.equal([[{ keys: ['1', '2'], include_docs: true }]]);
+    });
+
+    it('should throw an error if a place is not found', async () => {
+      sinon.stub(contactTypesUtils, 'isPlace').returns(true);
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: '2', doc: { _id: '2' } },
+          { id: '1' },
+        ]
+      });
+
+      await chai.expect(controller.placesExist(['1', '2'])).to.be.eventually.rejectedWith(`Failed to find place 1`);
+    });
+
+    it('should throw an error if any result is not a place', async () => {
+      sinon.stub(contactTypesUtils, 'isPlace').returns(false);
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: '2', doc: { _id: '2' } },
+          { id: '1', doc: { _id: '1' } },
+        ]
+      });
+
+      await chai.expect(controller.placesExist(['1', '2'])).to.be.eventually.rejectedWith(`Failed to find place 2`);
+      chai.expect(contactTypesUtils.isPlace.args[0][1]).to.deep.equal({ _id: '2' });
+    });
+
+    it('should succeed if all places are found', async () => {
+      sinon.stub(contactTypesUtils, 'isPlace').returns(true);
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: '2', doc: { _id: '2' } },
+          { id: '1', doc: { _id: '1' } },
+          { id: '3', doc: { _id: '3' } },
+        ]
+      });
+
+      chai.expect(await controller.placesExist(['1', '2', '3'])).to.equal(true);
+      chai.expect(contactTypesUtils.isPlace.args[0][1]).to.deep.equal({ _id: '2' });
+      chai.expect(contactTypesUtils.isPlace.args[1][1]).to.deep.equal({ _id: '1' });
+      chai.expect(contactTypesUtils.isPlace.args[2][1]).to.deep.equal({ _id: '3' });
+    });
+  });
+
+  describe('preparePlaceContact', () => {
+    it('adds default person type', () => {
+      return controller._preparePlaceContact({ name: 'test' }).then(({ exists, contact }) => {
+        chai.expect(exists).to.equal(false);
+        chai.expect(contact).to.have.property('type');
+        chai.expect(contact).property('type').equal('person');
+      });
+    });
+
+    it('rejects if contact does not exist', async () => {
+      fetchHydratedDoc.rejects({ status: 404 });
+      try {
+        await controller._preparePlaceContact('test');
+        chai.expect.fail('Call should throw');
+      } catch (err) {
+        chai.expect(err.message).to.equal('Failed to find person.');
+      }
+    });
   });
 
 });

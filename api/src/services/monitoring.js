@@ -1,9 +1,9 @@
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const moment = require('moment');
 
 const db = require('../db');
 const environment = require('../environment');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const deployInfoService = require('./deploy-info');
 
 const DBS_TO_MONITOR = {

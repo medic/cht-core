@@ -37,11 +37,15 @@ module.exports = {
       // Only include the jquery version from the package.json (and not any different versions pulled in transitively).
       // Once https://github.com/select2/select2/issues/5993 is resolved, we should try to coalesce back on one version
       // of jquery and remove this alias.
-      'jquery': __dirname + '/node_modules/jquery'
+      'jquery': __dirname + '/node_modules/jquery',
     },
     fallback: {
       path: false,
       fs: false,
+      winston: false,
+      zlib: false,
+      http: false,
+      https: false
     }
   },
   plugins: [

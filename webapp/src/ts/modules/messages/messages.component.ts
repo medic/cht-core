@@ -26,7 +26,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private destroyed = false;
 
   subscriptions: Subscription = new Subscription();
-  fastActionList: FastAction[];
+  fastActionList?: FastAction[];
   loading = true;
   loadingContent = false;
   conversations: Record<string, any>[] = [];

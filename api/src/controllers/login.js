@@ -1,12 +1,12 @@
 const path = require('path');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 const _ = require('lodash');
 const url = require('node:url');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
 const privacyPolicy = require('../services/privacy-policy');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const db = require('../db');
 const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
 const localeUtils = require('locale');

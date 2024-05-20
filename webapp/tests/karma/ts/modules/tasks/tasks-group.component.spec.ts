@@ -467,10 +467,10 @@ describe('TasksGroupComponent', () => {
       expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
 
       expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
-      expect(tasksForContactService.getTasksBreakdown.args[0]).excluding('getChildren$').to.deep.equal([{
-        ...contactModel,
-        children: { some: 'children' },
-      }]);
+      expect(tasksForContactService.getTasksBreakdown.args[0]).excluding('getChildren$').to.deep.equal([
+        { ...contactModel, children: { some: 'children' } },
+        [ 'a', 'b', 'c' ],
+      ]);
       expect(telemetryService.record.callCount).to.equal(5);
       expect(telemetryService.record.args).to.deep.equal([
         ['tasks:group:all-tasks', 22],
@@ -540,10 +540,10 @@ describe('TasksGroupComponent', () => {
 
       // telemetry only reporded once
       expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
-      expect(tasksForContactService.getTasksBreakdown.args[0]).excluding('getChildren$').to.deep.equal([{
-        ...contactModel,
-        children: 'children',
-      }]);
+      expect(tasksForContactService.getTasksBreakdown.args[0]).excluding('getChildren$').to.deep.equal([
+        { ...contactModel, children: 'children' },
+        [ 'contact1', 'contact2' ]
+      ]);
       expect(telemetryService.record.callCount).to.equal(7);
       expect(telemetryService.record.args).to.deep.equal([
         ['tasks:group:all-tasks', 36],

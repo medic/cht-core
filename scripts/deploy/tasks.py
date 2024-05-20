@@ -6,6 +6,18 @@ import requests
 import re
 import json
 
+MEDIC_REPO_NAME = "medic"
+MEDIC_REPO_URL = "https://docs.communityhealthtoolkit.org/helm-charts"
+CHT_CHART_NAME = f"{MEDIC_REPO_NAME}/cht-chart-4x"
+DEFAULT_CHART_VERSION = "0.2.3"
+
+class UserRuntimeError(RuntimeError):
+    """
+    An unrecoverable RuntimeError due to an users configuration or environment
+    that the user is expected to address
+    """
+    pass
+
 @task
 def prepare(c, f):
     with open(f, 'r') as stream:
@@ -75,7 +87,7 @@ def obtain_certificate_and_key(c, values): # NOSONAR
     elif values.get('cert_source', '') == 'eks-medic':
         print("Moving on. Certificate provided by the eks cluster.")
     else:
-        raise Exception("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'") # NOSONAR
+        raise UserRuntimeError("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'")
 
 @task
 def create_secret(c, namespace, values):
@@ -143,17 +155,53 @@ def add_route53_entry(c, f):  # NOSONAR
             print(f"Route53 entry for {host} already exists")
 
 @task
-def helm_install_or_upgrade(c, f, namespace, values, image_tag): # NOSONAR
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    chart_filename = "cht-chart-4.x.tgz"
-    project_name = values.get('project_name', '')
-    release_exists = subprocess.run(["helm", "list", "-n", namespace], capture_output=True, text=True).stdout
+def helm_install_or_upgrade(c, f, namespace, values, image_tag):  # NOSONAR
+    chart_version = _get_chart_version(values)
+    _ensure_medic_helm_repo(chart_version)
+    project_name = values.get("project_name", "")
+    release_exists = subprocess.run(
+        ["helm", "list", "-n", namespace], capture_output=True, text=True
+    ).stdout
     if project_name in release_exists:
         print("Release exists. Performing upgrade.")
-        subprocess.run(["helm", "upgrade", "--install", project_name, os.path.join(script_dir, "helm", chart_filename), "--namespace", namespace, "--values", f, "--set", f"cht_image_tag={image_tag}"], check=True)
+        subprocess.run(
+            [
+                "helm",
+                "upgrade",
+                "--install",
+                project_name,
+                CHT_CHART_NAME,
+                "--version",
+                chart_version,
+                "--namespace",
+                namespace,
+                "--values",
+                f,
+                "--set",
+                f"cht_image_tag={image_tag}",
+            ],
+            check=True,
+        )
     else:
         print("Release does not exist. Performing install.")
-        subprocess.run(["helm", "install", project_name, os.path.join(script_dir, "helm", chart_filename), "--namespace", namespace, "--values", f, "--set", f"cht_image_tag={image_tag}"], check=True)
+        subprocess.run(
+            [
+                "helm",
+                "install",
+                project_name,
+                CHT_CHART_NAME,
+                "--version",
+                chart_version,
+                "--namespace",
+                namespace,
+                "--values",
+                f,
+                "--set",
+                f"cht_image_tag={image_tag}",
+            ],
+            check=True,
+        )
+
 
 @task
 def install(c, f):
@@ -169,3 +217,24 @@ def install(c, f):
     image_tag = get_image_tag(c, values.get('chtversion', ''))
     helm_install_or_upgrade(c, f, namespace, values, image_tag)
     add_route53_entry(c, f)
+
+
+def _ensure_medic_helm_repo(chart_version):
+    "Make sure helm repo 'medic' is added and updated if needed"
+    repo_list_command = subprocess.run(["helm", "repo", "list", "-o", "json"], capture_output=True, check=True)
+    repo_list = json.loads(repo_list_command.stdout)
+    medic_repo = next((i for i in repo_list if i["name"] == MEDIC_REPO_NAME), None)
+    if medic_repo is None:
+        print(f"Helm repo {MEDIC_REPO_NAME} not found, adding..")
+        subprocess.run(["helm", "repo", "add", MEDIC_REPO_NAME, MEDIC_REPO_URL], check=True)
+    elif medic_repo["url"].rstrip("/") != MEDIC_REPO_URL:
+        raise UserRuntimeError(f"Medic repo found but url not matching '{MEDIC_REPO_URL}', see: helm repo list")
+
+    show_chart_command = subprocess.run(["helm", "pull", CHT_CHART_NAME, "--version", chart_version], check=False)
+    if show_chart_command.returncode != 0:
+        print(f"Chart version {chart_version} not found, trying repo update...")
+        subprocess.run(["helm", "repo", "update", MEDIC_REPO_NAME], check=True)
+
+
+def _get_chart_version(values):
+    return values.get("cht_chart_version", DEFAULT_CHART_VERSION)
