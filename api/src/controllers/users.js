@@ -3,7 +3,7 @@ const db = require('../db');
 const config = require('../config');
 const { bulkUploadLog, roles, users } = require('@medic/user-management')(config, db);
 const auth = require('../auth');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const serverUtils = require('../server-utils');
 const replication = require('../services/replication');
 
@@ -19,14 +19,14 @@ const hasFullPermission = req => {
     });
 };
 
-const isUpdatingSelf = (req, credentials, username) => {
-  return auth.getUserCtx(req).then(userCtx => {
-    return (
-      userCtx.name === username &&
-      (!credentials || credentials.username === username)
-    );
-  });
-};
+const isReferencingSelf = (userCtx, credentials, username) => (
+  userCtx.name === username &&
+  (!credentials || credentials.username === username)
+);
+
+const isUpdatingSelf = (req, credentials, username) => auth
+  .getUserCtx(req)
+  .then(userCtx => isReferencingSelf(userCtx, credentials, username));
 
 const basicAuthValid = (credentials, username) => {
   if (!credentials) {
@@ -70,7 +70,7 @@ const getRoles = req => {
   return roles;
 };
 
-const getInfoUserCtx = req => {
+const getInfoUserCtx = req => { // NOSONAR
   if (!roles.isOnlineOnly(req.userCtx)) {
     return req.userCtx;
   }
@@ -90,7 +90,7 @@ const getInfoUserCtx = req => {
 
   return {
     roles: userRoles,
-    facility_id: params.facility_id,
+    facility_id: Array.isArray(params.facility_id) ? params.facility_id : [params.facility_id],
     contact_id: params.contact_id,
   };
 };
@@ -134,8 +134,49 @@ const convertUserListToV1 = (users=[]) => {
   return users;
 };
 
+const verifyUpdateRequest = async (req) => {
+  const username = req.params.username;
+  const credentials = auth.basicAuthCredentials(req);
+
+  const basic = await basicAuthValid(credentials, username);
+  if (basic === false) {
+    // If you're passing basic auth we're going to validate it, even if we
+    // technicaly don't need to (because you already have a valid cookie and
+    // full permission).
+    // This is to maintain consistency in the personal change password UI:
+    // we want to validate the password you pass regardless of your permissions
+    return Promise.reject({
+      message: 'Bad username / password',
+      code: 401,
+    });
+  }
+
+  const fullPermission = await hasFullPermission(req);
+  if (fullPermission) {
+    return { fullPermission };
+  }
+
+  const updatingSelf = await isUpdatingSelf(req, credentials, username);
+  if (!updatingSelf) {
+    return Promise.reject({
+      message: 'You do not have permissions to modify this person',
+      code: 403,
+    });
+  }
+
+  const changingPassword = isChangingPassword(req);
+  if (_.isUndefined(basic) && changingPassword) {
+    return Promise.reject({
+      message: 'You must authenticate with Basic Auth to modify your password',
+      code: 403,
+    });
+  }
+
+  return { fullPermission };
+};
+
 module.exports = {
-  get: (req, res) => {
+  list: (req, res) => {
     return getUserList(req)
       .then(list => convertUserListToV1(list))
       .then(body => res.json(body))
@@ -148,72 +189,28 @@ module.exports = {
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
-  update: (req, res) => {
+  update: async (req, res) => {
     if (_.isEmpty(req.body)) {
       return serverUtils.emptyJSONBodyError(req, res);
     }
 
-    const username = req.params.username;
-    const credentials = auth.basicAuthCredentials(req);
+    try {
+      const { fullPermission } = await verifyUpdateRequest(req);
+      const requesterContext = await auth.getUserCtx(req);
 
-    return Promise.all([
-      hasFullPermission(req),
-      isUpdatingSelf(req, credentials, username),
-      basicAuthValid(credentials, username),
-      isChangingPassword(req),
-      auth.getUserCtx(req),
-    ])
-      .then(
-        ([
-          fullPermission,
-          updatingSelf,
-          basic,
-          changingPassword,
-          requesterContext,
-        ]) => {
-          if (basic === false) {
-            // If you're passing basic auth we're going to validate it, even if we
-            // technicaly don't need to (because you already have a valid cookie and
-            // full permission).
-            // This is to maintain consistency in the personal change password UI:
-            // we want to validate the password you pass regardless of your permissions
-            return Promise.reject({
-              message: 'Bad username / password',
-              code: 401,
-            });
-          }
+      const username = req.params.username;
+      const result = await users.updateUser(username, req.body, !!fullPermission, getAppUrl(req));
 
-          if (!fullPermission) {
-            if (!updatingSelf) {
-              return Promise.reject({
-                message: 'You do not have permissions to modify this person',
-                code: 403,
-              });
-            }
-
-            if (_.isUndefined(basic) && changingPassword) {
-              return Promise.reject({
-                message: 'You must authenticate with Basic Auth to modify your password',
-                code: 403,
-              });
-            }
-          }
-
-          return users
-            .updateUser(username, req.body, !!fullPermission, getAppUrl(req))
-            .then(result => {
-              const body = Object.keys(req.body).join(',');
-              logger.info(
-                `REQ ${req.id} - Updated user '${username}'. ` +
-                `Setting field(s) '${body}'. ` +
-                `Requested by '${requesterContext?.name}'.`
-              );
-              return result;
-            });
-        }
-      )
-      .then(body => res.json(body))
-      .catch(err => serverUtils.error(err, req, res));
+      const body = Object.keys(req.body).join(',');
+      logger.info(
+        `REQ ${req.id} - Updated user '${username}'. ` +
+        `Setting field(s) '${body}'. ` +
+        `Requested by '${requesterContext?.name}'.`
+      );
+      res.json(result);
+    } catch (err) {
+      serverUtils.error(err, req, res);
+    }
   },
   delete: (req, res) => {
     auth
@@ -236,6 +233,20 @@ module.exports = {
 
   v2: {
     get: async (req, res) => {
+      try {
+        const userCtx = await auth.getUserCtx(req);
+        const hasPermission = auth.hasAllPermissions(userCtx, 'can_view_users');
+        if (!hasPermission && !isReferencingSelf(userCtx, auth.basicAuthCredentials(req), req.params.username)) {
+          serverUtils.error({ message: 'Insufficient privileges', code: 403 }, req, res);
+          return;
+        }
+        const user  = await users.getUser(req.params.username);
+        return res.json(user);
+      } catch (err) {
+        serverUtils.error(err, req, res);
+      }
+    },
+    list: async (req, res) => {
       try {
         const body = await getUserList(req);
         res.json(body);
@@ -269,6 +280,21 @@ module.exports = {
       } catch (error) {
         serverUtils.error(error, req, res);
       }
+    },
+  },
+  v3: {
+    create: async (req, res) => {
+      try {
+        await auth.check(req, ['can_edit', 'can_create_users']);
+
+        const response = await users.createMultiFacilityUser(req.body, getAppUrl(req));
+        res.json(response);
+      } catch (error) {
+        serverUtils.error(error, req, res);
+      }
+    },
+    update: (req, res) => {
+      return module.exports.update(req, res);
     },
   }
 };

@@ -31,7 +31,10 @@
       "@mm-services/*": ["src/ts/services/*"]
     },
     "strictNullChecks": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

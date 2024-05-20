@@ -14,7 +14,7 @@ export class MessagesMoreMenuComponent implements OnInit {
   @Output() exportMessages: EventEmitter<any> = new EventEmitter();
 
   private hasExportPermission = false;
-  private isOnlineOnly: boolean;
+  private isOnlineOnly?: boolean;
 
   useOldActionBar = false;
 

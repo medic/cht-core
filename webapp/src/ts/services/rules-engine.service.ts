@@ -3,6 +3,7 @@ import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
+import * as moment from 'moment';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
@@ -286,14 +287,19 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private translateTaskDocs(taskDocs: { emission?: any }[] = []) {
+  private hydrateTaskDocs(taskDocs: { emission?: any; owner: string }[] = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
-
-      if (emission) {
-        emission.title = this.translateProperty(emission.title, emission);
-        emission.priorityLabel = this.translateProperty(emission.priorityLabel, emission);
+      if (!emission) {
+        return;
       }
+
+      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
+      emission.overdue = dueDate.isBefore(moment());
+      emission.date = new Date(dueDate.valueOf());
+      emission.title = this.translateProperty(emission.title, emission);
+      emission.priorityLabel = this.translateProperty(emission.priorityLabel, emission);
+      emission.owner = taskDoc.owner;
     });
 
     return taskDocs;
@@ -336,9 +342,8 @@ export class RulesEngineService implements OnDestroy {
           trackPerformanceRunning = this.performanceService.track();
         }
         trackPerformanceRunning.stop({ name: trackName.join(':') });
-        return taskDocs;
-      })
-      .then(taskDocs => this.translateTaskDocs(taskDocs));
+        return this.hydrateTaskDocs(taskDocs);
+      });
   }
 
   fetchTaskDocsFor(contactIds) {
@@ -370,9 +375,8 @@ export class RulesEngineService implements OnDestroy {
           trackPerformanceRunning = this.performanceService.track();
         }
         trackPerformanceRunning?.stop({ name: trackName.join(':') });
-        return taskDocs;
-      })
-      .then(taskDocs => this.translateTaskDocs(taskDocs));
+        return this.hydrateTaskDocs(taskDocs);
+      });
   }
 
   fetchTasksBreakdown(contactIds?) {

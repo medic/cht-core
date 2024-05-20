@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import * as moment from 'moment';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -20,7 +19,7 @@ export class TasksForContactService {
   }
 
   getIdsForTasks(model) {
-    const contactIds: any[] = [];
+    const contactIds: string[] = [];
     if (!model?.type?.person && model?.children) {
       model.children.forEach(child => {
         if (child?.type?.person && child?.contacts?.length) {
@@ -60,41 +59,22 @@ export class TasksForContactService {
       .then(leafPlaceTypes => this.contactTypesService.isLeafPlaceType(leafPlaceTypes, type.id));
   }
 
-  private decorateAndSortTasks(tasks) {
-    tasks.forEach((task) => {
-      const dueDate = moment(task.emission.dueDate, 'YYYY-MM-DD');
-      task.emission.overdue = dueDate.isBefore(moment());
-    });
+  async get(model) {
+    const enabled = await this.areTasksEnabled(model.type);
+    if (!enabled) {
+      return [];
+    }
 
-    tasks.sort((a, b) => {
-      return a.emission.dueDate < b.emission.dueDate ? -1 : 1;
-    });
-
-    return tasks;
+    const contactIds = this.getIdsForTasks(model);
+    const tasks = await this.rulesEngineService.fetchTaskDocsFor(contactIds);
+    return tasks.sort((a, b) => a.emission.dueDate < b.emission.dueDate ? -1 : 1);
   }
 
-  get(model) {
-    return this
-      .areTasksEnabled(model.type)
-      .then(enabled => {
-        if (!enabled) {
-          return [];
-        }
-
-        const contactIds = this.getIdsForTasks(model);
-        return this.rulesEngineService
-          .fetchTaskDocsFor(contactIds)
-          .then(tasks => this.decorateAndSortTasks(tasks));
-      });
-  }
-
-  async getTasksBreakdown(model) {
+  async getTasksBreakdown(model, contactIds) {
     const enabled = await this.areTasksEnabled(model.type);
     if (!enabled) {
       return;
     }
-
-    const contactIds = this.getIdsForTasks(model);
     return this.rulesEngineService.fetchTasksBreakdown(contactIds);
   }
 

@@ -55,3 +55,4 @@ webapp/analyzer.report.html
 .nyc_output
 user-password-change.txt
 user-password-change.csv
+/tests/helm/values.yaml

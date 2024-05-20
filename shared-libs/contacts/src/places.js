@@ -23,8 +23,32 @@ const getPlace = id => {
     });
 };
 
+const placesExist = async (placeIds) => {
+  if (!Array.isArray(placeIds)) {
+    throw new Error('Invalid place ids list');
+  }
+
+  const result = await db.medic.allDocs({ keys: placeIds, include_docs: true });
+
+  for (const row of result.rows) {
+    if (!row.doc || row.error || !isAPlace(row.doc)) {
+      const err = new Error(`Failed to find place ${row.id}`);
+      err.status = 404;
+      throw err;
+    }
+  }
+
+  return true;
+};
+
 const isAPlace = place => place && contactTypesUtils.isPlace(config.get(), place);
 const getContactType = place => place && contactTypesUtils.getContactType(config.get(), place);
+const err = (msg, code) => {
+  return Promise.reject({
+    code: code || 400,
+    message: msg
+  });
+};
 
 /*
  * Validate the basic data structure for a place.  Not checking against the
@@ -36,12 +60,6 @@ const getContactType = place => place && contactTypesUtils.getContactType(config
  *     fetchHydratedDoc().
  */
 const validatePlace = place => {
-  const err = (msg, code) => {
-    return Promise.reject({
-      code: code || 400,
-      message: msg
-    });
-  };
   if (!_.isObject(place)) {
     return err('Place must be an object.');
   }
@@ -75,12 +93,6 @@ const validatePlace = place => {
     if (!_.isString(place.contact) && !_.isObject(place.contact)) {
       return err(`Property "contact" on place ${placeId} must be an object or string.`);
     }
-    if (_.isObject(place.contact)) {
-      const errStr = people._validatePerson(place.contact);
-      if (errStr) {
-        return err(errStr);
-      }
-    }
   }
   if (place.parent && !_.isEmpty(place.parent)) {
     // validate parents
@@ -89,30 +101,46 @@ const validatePlace = place => {
   return Promise.resolve();
 };
 
-const createPlace = async (place) => {
-  if (place.contact && !place.contact.type) {
-    place.contact.type = people._getDefaultPersonType();
+const preparePlaceContact = async contact => {
+  if (!contact) {
+    return {};
   }
+  if (_.isString(contact)) {
+    const person = await people.getOrCreatePerson(contact);
+    return { exists: true, contact: person };
+  }
+  if (!_.isObject(contact)) {
+    return err();
+  }
+  contact.type = contact.type ?? people._getDefaultPersonType();
+  const errStr = people._validatePerson(contact);
+  if (errStr) {
+    return err(errStr);
+  }
+  return { exists: false, contact: contact };
+};
+
+const createPlace = async (place) => {
   await module.exports._validatePlace(place);
-
-  const contact = place.contact;
+  const { exists: contactExists, contact } = await preparePlaceContact(place.contact);
   delete place.contact;
-
   const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
   place.reported_date = date.valueOf();
   if (place.parent) {
     place.parent = lineage.minifyLineage(place.parent);
   }
-
-  const response = await db.medic.post(place);
   if (!contact) {
-    return response;
+    return await db.medic.post(place);
   }
-  const placeUUID = response.id;
-
-  contact.place = placeUUID;
+  if (contactExists) {
+    place.contact = contact._id;
+    const resp = await db.medic.post(place);
+    return { ...resp, contact: { id: contact._id } };
+  }
+  const placeResponse = await db.medic.post(place);
+  contact.place = placeResponse.id;
   const person = await people.getOrCreatePerson(contact);
-  const result = await updatePlace(placeUUID, { contact: person._id });
+  const result = await updatePlace(placeResponse.id, { contact: person._id });
   return { ...result, contact: { id: person._id } };
 };
 
@@ -220,8 +248,10 @@ module.exports = {
   _createPlaces: createPlaces,
   _updateFields: updateFields,
   _validatePlace: validatePlace,
+  _preparePlaceContact: preparePlaceContact,
   createPlace: createPlaces,
   getPlace: getPlace,
   updatePlace: updatePlace,
   getOrCreatePlace: getOrCreatePlace,
+  placesExist,
 };

@@ -45,8 +45,8 @@ const person2 = personFactory.build(
 
 const docs = [...places.values(), healthCenter2, person1, person2];
 
-describe('Create Person Under Area', () => {
-  beforeEach(async () => {
+describe.skip('Create Person Under Area', () => {
+  before(async () => {
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();
   });

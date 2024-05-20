@@ -19,8 +19,8 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class FastActionButtonComponent implements OnInit, OnDestroy {
 
-  @Input() config: FastActionConfig;
-  @Input() fastActions: FastAction[];
+  @Input() config?: FastActionConfig;
+  @Input() fastActions?: FastAction[];
   @ViewChild('contentWrapper') contentWrapper;
 
   private subscriptions: Subscription = new Subscription();
@@ -75,7 +75,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
    * Returns a Fast Action that can be executed right away without opening the dialog or bottom sheet.
    */
   getFastExecutableAction(): FastAction | undefined {
-    if (this.fastActions.length === 1 && !this.fastActions[0]?.alwaysOpenInPanel) {
+    if (this.fastActions?.length === 1 && !this.fastActions[0]?.alwaysOpenInPanel) {
       return this.fastActions[0];
     }
     return;

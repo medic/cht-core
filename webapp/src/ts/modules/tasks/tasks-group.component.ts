@@ -173,13 +173,13 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       }
 
       const idsForTasks = this.tasksForContactService.getIdsForTasks(this.contactModel);
-      if (!idsForTasks || !idsForTasks.length) {
+      if (!idsForTasks?.length) {
         this.navigationCancel();
         return;
       }
 
       const filteredTasks = this.cherryPickTasks(idsForTasks);
-      this.recordTaskCountTelemetry(this.contactModel);
+      this.recordTaskCountTelemetry(this.contactModel, idsForTasks);
       if (!filteredTasks || !filteredTasks.length) {
         this.navigationCancel(true);
         return;
@@ -196,14 +196,14 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     }
   }
 
-  private recordTaskCountTelemetry(contactModel) {
+  private recordTaskCountTelemetry(contactModel, contactIds) {
     if (this.telemetryRecorded) {
       return;
     }
 
     this.ngZone.runOutsideAngular(async () => {
       this.telemetryRecorded = true;
-      const taskCounts = await this.tasksForContactService.getTasksBreakdown(contactModel);
+      const taskCounts = await this.tasksForContactService.getTasksBreakdown(contactModel, contactIds);
       let allTasksCount = 0;
       Object.keys(taskCounts).forEach(state => {
         // when cherry picking, we might exclude the last completed task, if still present in the list

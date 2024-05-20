@@ -19,7 +19,7 @@ describe('Export Messages', () => {
   });
   const today = moment();
 
-  beforeEach(async () => {
+  before(async () => {
     await fileDownloadUtils.setupDownloadFolder();
     await utils.saveDocs([ ...places.values(), patient ]);
     await utils.createUsers([ onlineUser ]);

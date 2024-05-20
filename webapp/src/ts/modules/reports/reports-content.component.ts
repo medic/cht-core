@@ -30,7 +30,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   selectMode;
   validChecks;
   summaries;
-  fastActionList: FastAction[];
+  fastActionList?: FastAction[];
 
   constructor(
     private changesService:ChangesService,

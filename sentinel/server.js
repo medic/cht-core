@@ -1,7 +1,7 @@
 const request = require('request');
 
 const db = require('./src/db');
-const logger = require('./src/lib/logger');
+const logger = require('@medic/logger');
 const serverChecks = require('@medic/server-checks');
 
 process

@@ -1,8 +1,17 @@
 const path = require('path');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 
-const { UNIT_TEST_ENV, COUCH_URL, BUILDS_URL } = process.env;
+const { 
+  UNIT_TEST_ENV,
+  COUCH_URL,
+  BUILDS_URL, 
+  PROXY_CHANGE_ORIGIN = false
+} = process.env;
+
 const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds_4';
+
+const isString = value => typeof value === 'string' || value instanceof String;
+const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
 
 if (UNIT_TEST_ENV) {
   module.exports = {
@@ -15,6 +24,9 @@ if (UNIT_TEST_ENV) {
     host: '',
     protocol: '',
     buildsUrl: '',
+    proxies: {
+      changeOrigin: isTrue(PROXY_CHANGE_ORIGIN)
+    }
   };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
@@ -36,7 +48,14 @@ if (UNIT_TEST_ENV) {
     db: parsedUrl.pathname.replace('/', ''),
     ddoc: 'medic',
     username: parsedUrl.username,
-    password: parsedUrl.password
+    password: parsedUrl.password,
+    proxies: {
+      // See http-proxy (https://www.npmjs.com/package/http-proxy#options) 
+      // "changeOrigin: true/false, Default: false - changes the origin of the host header to the target URL"
+      // This allows proxying from HTTP to HTTPS without encountering certificate issues 
+      // for environments where TLS termination happens elsewhere.
+      changeOrigin: isTrue(PROXY_CHANGE_ORIGIN)
+    }
   };
 } else {
   logger.error(

@@ -6,9 +6,9 @@ import { AuthService } from '../services/auth.service';
   selector: '[mmAuth]'
 })
 export class AuthDirective implements OnChanges {
-  @Input() mmAuth: string;
-  @Input() mmAuthAny: any;
-  @Input() mmAuthOnline: boolean;
+  @Input() mmAuth?: string;
+  @Input() mmAuthAny?: any;
+  @Input() mmAuthOnline?: boolean;
 
   private hidden = true;
 

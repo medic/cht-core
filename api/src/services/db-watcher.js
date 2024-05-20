@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 const db = require('../db');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const OPTS = { live: true, since: 'now', return_docs: false };
 const databases = [

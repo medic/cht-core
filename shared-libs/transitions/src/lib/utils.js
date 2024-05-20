@@ -8,7 +8,7 @@ const registrationUtils = require('@medic/registration-utils');
 const messageUtils = require('@medic/message-utils');
 const db = require('../db');
 const config = require('../config');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 
 /*
  * Get desired locale

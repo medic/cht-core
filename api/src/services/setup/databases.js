@@ -34,7 +34,7 @@ const DATABASES = [
     jsonFileName: 'users-meta.json',
   },
   {
-    name: `${environment.db}-users`,
+    name: `_users`,
     db: db.users,
     jsonFileName: 'users.json',
   },

@@ -137,6 +137,7 @@ const submitLoginRequest = ({ username, password }) => {
     body: { user: username, password, locale: 'en' },
     method: 'POST',
     simple: false,
+    noAuth: true,
   };
   return utils.request(opts);
 };
@@ -164,7 +165,7 @@ const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
   expect(newUserSettings).to.deep.include({
     roles: originalUser.roles,
     phone: newContact.phone,
-    facility_id: newContact.parent._id,
+    facility_id: [newContact.parent._id],
     contact_id: newContact._id,
     fullname: newContact.name,
   });

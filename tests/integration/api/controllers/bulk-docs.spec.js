@@ -60,10 +60,18 @@ const users = [
     },
     roles: ['district_admin'],
   },
+  {
+    username: 'multi',
+    password: password,
+    place: ['fixture:offline', 'fixture:online'],
+    contact: 'fixture:user:offline',
+    roles: ['district_admin'],
+  }
 ];
 
 let offlineRequestOptions;
 let onlineRequestOptions;
+let multiRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -89,6 +97,12 @@ describe('bulk-docs handler', () => {
     offlineRequestOptions = {
       path: '/_bulk_docs',
       auth: { username: 'offline', password },
+      method: 'POST',
+    };
+
+    multiRequestOptions = {
+      path: '/_bulk_docs',
+      auth: { username: 'multi', password },
       method: 'POST',
     };
 
@@ -313,6 +327,54 @@ describe('bulk-docs handler', () => {
             chai.expect(result[6]).to.be.ok;
           });
       });
+  });
+
+  it('should filter offline user requests with multi facility', async () => {
+    const existentDocs = [
+      {
+        _id: 'ac1',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'Allowed Contact 1',
+      },
+      {
+        _id: 'ac2',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'Allowed Contact 2',
+      },
+      {
+        _id: 'dc1',
+        type: 'clinic',
+        parent: { _id: parentPlace._id },
+        name: 'Denied Contact 1',
+      },
+    ];
+
+    const docs = [
+      {
+        _id: 'nac1',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'New Allowed Contact',
+      },
+      {
+        _id: 'ndc1',
+        type: 'clinic',
+        parent: { _id: parentPlace._id },
+        name: 'New Denied Contact',
+      },
+    ];
+
+    await utils.saveDocsRevs(existentDocs);
+    multiRequestOptions.body = { docs: [ ...existentDocs, ...docs] };
+    const updates = await utils.requestOnTestDb(multiRequestOptions);
+
+    expect(updates[0].ok).to.equal(true);
+    expect(updates[1].ok).to.equal(true);
+    expect(updates[2].error).to.equal('forbidden');
+    expect(updates[3].ok).to.equal(true);
+    expect(updates[4].error).to.equal('forbidden');
   });
 
   it('filters offline tasks and targets', () => {

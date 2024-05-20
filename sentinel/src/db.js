@@ -1,5 +1,5 @@
-const logger = require('../src/lib/logger');
-const request = require('request-promise-native');
+const logger = require('@medic/logger');
+const request = require('@medic/couch-request');
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 

@@ -12,6 +12,9 @@ describe('medic-xpath-extensions', function () {
   };
 
   describe('getTimezoneOffsetAsTime()', function () {
+    const getTimeZoneOffset = Date.prototype.getTimezoneOffset;
+    afterEach(() => Date.prototype.getTimezoneOffset = getTimeZoneOffset);
+
     it('returns the time zone offset in hours when given a time zone difference in minutes', function () {
       Date.prototype.getTimezoneOffset = () => -60;
       assert.equal(medicXpathExtensions.getTimezoneOffsetAsTime(new Date()), '+01:00');
@@ -24,6 +27,9 @@ describe('medic-xpath-extensions', function () {
   });
 
   describe('toISOLocalString()', function () {
+    const getTimeZoneOffset = Date.prototype.getTimezoneOffset;
+    afterEach(() => Date.prototype.getTimezoneOffset = getTimeZoneOffset);
+
     it('returns the ISO local string consistent with the time zone offset', function () {
       const date = new Date('August 19, 1975 23:15:30 GMT+07:00');
       Date.prototype.getTimezoneOffset = () => -60;
@@ -93,7 +99,7 @@ describe('medic-xpath-extensions', function () {
       ['2015-10-01T11:11:11.111', '2014-10-01T11:11:11.111', -12,],
       ['2014-10-01T00:00:00.000', '2015-10-01T00:00:00.000', 12,],
       ['August 19, 1975 00:00:00 GMT', 'August 18, 1976 23:15:30 GMT+07:00', 11],
-      ['Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2300', 0],
+      ['Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 21:00:00 GMT+2300', 0],
       ['Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2200', 1]
     ].forEach(function (example) {
       const d1 = { t: 'str', v: example[0] };
@@ -106,8 +112,8 @@ describe('medic-xpath-extensions', function () {
     });
 
     it('should report difference between date objects', function () {
-      const d1 = { t: 'date', v: new Date('2015-09-22') };
-      const d2 = { t: 'date', v: new Date('2014-09-22') };
+      const d1 = { t: 'date', v: moment('2015-09-22').toDate() };
+      const d2 = { t: 'date', v: moment('2014-09-22').toDate() };
 
       assert.equal(diffInMonths(d1, d2).v, -12);
     });
@@ -199,14 +205,18 @@ describe('medic-xpath-extensions', function () {
 
   describe('#to-bikram-sambat()', () => {
     [
-      [{ t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२'],
-      [{ t: 'str', v: '1999-12-12' }, '२६ मंसिर २०५६'],
-      [{ t: 'date', v: new Date('2015-10-01T00:00:00.000') }, '१४ असोज २०७२'],
-      [{ t: 'num', v: 11111 }, '२१ जेठ २०५७'],
-      [{ t: 'arr', v: [{ textContent: '2014-09-22' }] }, '६ असोज २०७१'],
-    ].forEach(([date, expected]) => {
+      [{ t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२', '१५ भदौ २०७२'],
+      [{ t: 'str', v: '1999-12-12' }, '२६ मंसिर २०५६', '२५ मंसिर २०५६'],
+      [{ t: 'date', v: new Date('2015-10-01T00:00:00.000') }, '१४ असोज २०७२', '१३ असोज २०७२'],
+      [{ t: 'num', v: 11111 }, '२१ जेठ २०५७', '२० जेठ २०५७'],
+      [{ t: 'arr', v: [{ textContent: '2014-09-22' }] }, '६ असोज २०७१', '५ असोज २०७१'],
+    ].forEach(([date, expected, offsetExpected]) => {
       it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the Bikram Sambat calendar`, () => {
-        assert.equal(func['to-bikram-sambat'](date).v, expected);
+        // The resolved Bikram Sambat date for input that does not have a time+TZ value will be different in
+        // environments where the timezone offset is 12 hours or greater (e.g. `Pacific/Auckland`)
+        const offsetHrs = new Date().getTimezoneOffset() / 60;
+        const tzDateOffset = offsetHrs <= -12;
+        assert.equal(func['to-bikram-sambat'](date).v, tzDateOffset ? offsetExpected : expected);
       });
     });
 
@@ -235,7 +245,7 @@ describe('medic-xpath-extensions', function () {
     [
       [
         [{ t: 'num', v: 1 }],
-        { t: 'date', v: new Date('2015-10-01') },
+        { t: 'date', v: moment('2015-10-01').toDate() },
         '2016-10-01'
       ],
       [
@@ -265,7 +275,7 @@ describe('medic-xpath-extensions', function () {
       ],
       [
         [{ t: 'num', v: -1 }],
-        { t: 'date', v: new Date('2015-10-01') },
+        { t: 'date', v: moment('2015-10-01').toDate() },
         '2014-10-01'
       ],
       [
@@ -310,28 +320,28 @@ describe('medic-xpath-extensions', function () {
       ],
       [
         [{ t: 'arr', v: [{ textContent: '1' }] }],
-        { t: 'date', v: new Date('2015-10-01') },
+        { t: 'date', v: moment('2015-10-01').toDate() },
         '2016-10-01'
       ],
       [
         [{ t: 'num', v: 0 }, { t: 'num', v: 0 }, { t: 'num', v: 0 }, { t: 'num', v: 0 }, { t: 'num', v: 0 }],
-        { t: 'date', v: new Date('2015-10-01') },
+        { t: 'date', v: moment('2015-10-01').toDate() },
         '2015-10-01'
       ],
       [
         [],
-        { t: 'date', v: new Date('2015-10-01') },
+        { t: 'date', v: moment('2015-10-01').toDate() },
         '2015-10-01'
       ]
     ].forEach(([[year, month, day, hour, minute], date, expected]) => {
       const valuesDisplay = `[${display(year)},${display(month)},${display(day)},${display(hour)},${display(minute)}]`;
       it(`should add ${valuesDisplay} to ${date.t} [${JSON.stringify(date.v)}]`, () => {
-        assert.deepEqual(func['add-date'](date, year, month, day, hour, minute).v, new Date(expected));
+        assert.deepEqual(func['add-date'](date, year, month, day, hour, minute).v, moment(expected).toDate());
       });
     });
 
     it(`should throw an error when providing too many number parameters`, () => {
-      const date = { t: 'date', v: new Date('2015-10-01') };
+      const date = { t: 'date', v: moment('2015-10-01').toDate() };
       assert.throws(() => func['add-date'](date, 1, 2, 3, 4, 5, 6), 'Too many arguments.');
     });
 
@@ -339,14 +349,14 @@ describe('medic-xpath-extensions', function () {
       { t: 'str', v: '' },
       { t: 'bool', v: 'true' },
       { t: 'str', v: 'invalid' },
-      { t: 'date', v: new Date('2015-10-01') },
+      { t: 'date', v: moment('2015-10-01').toDate() },
       { t: 'num', v: 'one' },
       { t: 'num', v: 'NaN' },
       { t: 'num', v: NaN },
       { t: 'arr', v: [{ textContent: '2015-10-01' }] }
     ].forEach(year => {
       it(`should not modify the date when given ${year.t} [${JSON.stringify(year.v)}] as a number parameter`, () => {
-        const date = { t: 'date', v: new Date('2015-10-01') };
+        const date = { t: 'date', v: moment('2015-10-01').toDate() };
         assert.deepEqual(func['add-date'](date, year).v, date.v);
       });
     });
