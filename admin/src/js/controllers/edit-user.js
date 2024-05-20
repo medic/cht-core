@@ -23,7 +23,6 @@ angular
     $scope,
     $translate,
     $uibModalInstance,
-    // Auth,
     ContactTypes,
     CreateUser,
     DB,
@@ -69,7 +68,6 @@ angular
         .then(settings => {
           $scope.permissions = settings.permissions;
           $scope.roles = settings.roles;
-          $scope.allowMultipleFacilities = false;
           $scope.allowTokenLogin = allowTokenLogin(settings);
           if (!$scope.model) {
             return $q.resolve({});
@@ -239,7 +237,7 @@ angular
       const allowedRoles = $scope.permissions.can_have_multiple_places;
       const userRoles = $scope.editUserModel.roles;
 
-      return userRoles.some((role) => allowedRoles.includes(role));
+      return userRoles.some(role => allowedRoles.includes(role));
     };
 
 
@@ -279,20 +277,17 @@ angular
 
       return Promise.all(placeIds.map(getPlace))
         .then((places) => {
-          const contactTypes = places.map((place) => place.contact_type);
-          const isSameHeirarchy = contactTypes.every(
-            (type) => type === contactTypes[0]
-          );
+          const contactTypes = places.map(place => place.contact_type);
+          const isSameHeirarchy = contactTypes.every(type => type === contactTypes[0]);
+
           if (!isSameHeirarchy) {
-            $translate('permission.can_have_multiple_places.not_allowed').then(
-              (value) => {
-                $scope.errors.place = value;
-              }
-            );
+            $translate('permission.can_have_multiple_places.not_allowed').then(value => {
+              $scope.errors.place = value;
+            });
           }
           return isSameHeirarchy;
         })
-        .catch((err) => {
+        .catch(err => {
           $log.error('Error validating facility hierarchy', err);
           return false;
         });
