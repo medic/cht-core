@@ -269,18 +269,36 @@ angular
     };
 
 
-    const validateFacilityHeirarchy = (places) => {
-      //validate the places are in the same heirarchy
-      const place = places[0];
-      const showPlace = (placeId) => {
-        return DB()
-          .get(placeId)
-          .then(function(place) {
-            console.log('place', place);
-          });
+    const validateFacilityHeirarchy = () => {
+      const placeIds = $scope.editUserModel.place;
+
+      if (placeIds.length === 1) {
+        return true;
+      }
+
+      const getPlace = (placeId) => {
+        return DB().get(placeId);
       };
 
-      showPlace(place);
+      return Promise.all(placeIds.map(getPlace))
+        .then((places) => {
+          const contactTypes = places.map((place) => place.contact_type);
+          const isSameHeirarchy = contactTypes.every(
+            (type) => type === contactTypes[0]
+          );
+          if (!isSameHeirarchy) {
+            $translate('permission.can_have_multiple_places.not_allowed').then(
+              (value) => {
+                $scope.errors.place = value;
+              }
+            );
+          }
+          return isSameHeirarchy;
+        })
+        .catch((err) => {
+          $log.error('Error validating facility hierarchy', err);
+          return false;
+        });
     };
 
     const validateContactIsInPlace = () => {
@@ -288,10 +306,6 @@ angular
       const contactId = $scope.editUserModel.contact;
       if (!placeIds || !contactId) {
         return $q.resolve(true);
-      }
-
-      if (placeIds.length > 1) {
-        return validateFacilityHeirarchy(placeIds);
       }
 
       const getParent = (contactId) => {
@@ -442,7 +456,6 @@ angular
     const updateUser = () => {
       return changedUpdates($scope.editUserModel)
         .then(updates => {
-          console.log('updates', updates);
           if (!haveUpdates(updates)) {
             return;
           }
@@ -503,6 +516,7 @@ angular
 
       const asynchronousValidations = $q
         .all([
+          validateFacilityHeirarchy(),
           validateContactIsInPlace(),
           validateTokenLogin(),
         ])
