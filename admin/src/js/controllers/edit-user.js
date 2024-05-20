@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable no-console */
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
@@ -7,7 +5,6 @@ const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 const ADMIN_ROLE = '_admin';
-const CAN_HAVE_MULTIPLE_PLACES = 'can_have_multiple_places';
 const FIELDS_TO_IGNORE = [
   'currentPassword',
   'passwordConfirm',

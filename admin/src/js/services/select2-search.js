@@ -6,6 +6,7 @@ angular.module('inboxServices').factory('Select2Search',
   function(
     $log,
     $q,
+    $timeout,
     $translate,
     ContactMuted,
     LineageModelGenerator,
@@ -148,7 +149,9 @@ angular.module('inboxServices').factory('Select2Search',
         }
 
         return resolution.then(function() {
-          selectEl.trigger('change');
+          $timeout(() => {
+            selectEl.trigger('change');
+          }, 1000);
           return selectEl;
         });
       };
@@ -187,7 +190,9 @@ angular.module('inboxServices').factory('Select2Search',
             if (docId) {
               getDoc(docId).then(function(doc) {
                 selectEl.select2('data')[0].doc = doc;
-                selectEl.trigger('change');
+                $timeout(() => {
+                  selectEl.trigger('change');
+                }, 1000);
               })
                 .catch(err => $log.error('Select2 failed to get document', err));
             }
