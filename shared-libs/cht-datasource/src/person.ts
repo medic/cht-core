@@ -1,9 +1,10 @@
 import { Nullable } from './libs/core';
 import { isUuidQualifier, UuidQualifier } from './qualifier';
-import { assertDataContext, DataContext, isLocalDataContext } from './libs/context';
+import { assertDataContext, DataContext } from './libs/context';
 import { Contact } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
+import { isLocalDataContext } from './local/libs/data-context';
 
 export namespace V1 {
   /** @internal */

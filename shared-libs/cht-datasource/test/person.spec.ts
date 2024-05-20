@@ -2,10 +2,11 @@ import * as Person from '../src/person';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
-import * as Context from '../src/libs/context';
+import * as LocalContext from '../src/local/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
-import { DataContext, LocalDataContext } from '../src/libs/context';
+import { DataContext } from '../src';
+import { LocalDataContext } from '../src/local/libs/data-context';
 
 describe('person', () => {
   const dataContext = { };
@@ -14,7 +15,7 @@ describe('person', () => {
 
   beforeEach(() => {
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
-    isLocalDataContext = sinon.stub(Context, 'isLocalDataContext');
+    isLocalDataContext = sinon.stub(LocalContext, 'isLocalDataContext');
   });
 
   afterEach(() => sinon.restore());

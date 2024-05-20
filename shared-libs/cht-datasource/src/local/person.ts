@@ -3,8 +3,8 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { Nullable } from '../libs/core';
 import { UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { LocalDataContext } from '../libs/context';
 import { getDocById } from './libs/doc';
+import { LocalDataContext } from './libs/data-context';
 
 export namespace V1 {
   /** @internal */
