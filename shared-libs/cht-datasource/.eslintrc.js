@@ -21,7 +21,6 @@ module.exports = {
             'VariableDeclaration',
             'TSInterfaceDeclaration',
             'TSTypeAliasDeclaration',
-            'TSModuleDeclaration',
             'TSEnumDeclaration',
             // 'TSPropertySignature', This will require doc on interface properties
             'TSMethodSignature'

@@ -42,15 +42,9 @@ export * as Qualifier from './qualifier';
 export const getDatasource = (ctx: DataContext) => {
   assertDataContext(ctx);
   return {
-    /**
-     * Version 1 of the datasource.
-     */
     v1: {
       hasPermissions,
       hasAnyPermission,
-      /**
-       * Person datasource.
-       */
       person: {
         /**
          * Returns a person by their UUID.

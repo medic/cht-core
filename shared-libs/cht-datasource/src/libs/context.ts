@@ -7,12 +7,16 @@ import { hasField, isRecord } from './core';
 export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
 
 /**
- * Service providing access to the app settings.
+ * Service providing access to the app settings. These settings must be guaranteed to remain current for as long as the
+ * service is used. Settings data returned from future calls to service methods should reflect the current state of the
+ * system's settings at the time and not just the state of the settings when the service was first created.
  */
 export type SettingsService = Readonly<{ getAll: () => Doc }>;
 
 /**
- * Context for interacting with the data.
+ * Context for interacting with the data. This may represent a local data context where data can be accessed even while
+ * offline. Or it may represent a remote data context where all data operations are performed against a remote CHT
+ * instance.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface DataContext {}

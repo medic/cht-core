@@ -5,10 +5,8 @@ import { Contact } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
 
-/**
- * Version 1 of the person API.
- */
 export namespace V1 {
+  /** @internal */
   interface AbstractPerson {
     date_of_birth?: Date;
     phone?: string;
@@ -21,6 +19,7 @@ export namespace V1 {
    */
   export interface Person extends Contact, AbstractPerson { }
 
+  /** @internal */
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
       throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
