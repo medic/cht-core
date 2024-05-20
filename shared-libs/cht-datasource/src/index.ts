@@ -29,8 +29,9 @@ import * as Person from './person';
 import * as Qualifier from './qualifier';
 
 export { Nullable, NonEmptyArray } from './libs/core';
-export { DataContext, getRemoteDataContext } from './libs/context';
+export { DataContext } from './libs/context';
 export { getLocalDataContext } from './local';
+export { getRemoteDataContext } from './remote';
 export * as Person from './person';
 export * as Qualifier from './qualifier';
 

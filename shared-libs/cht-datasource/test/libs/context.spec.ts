@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import {
-  assertDataContext,
-  getRemoteDataContext
+  assertDataContext
 } from '../../src/libs/context';
 
 describe('context lib', () => {
@@ -19,9 +18,5 @@ describe('context lib', () => {
         expect(() => assertDataContext(context)).to.throw(`Invalid data context [${JSON.stringify(context)}].`);
       });
     });
-  });
-
-  it('getRemoteDataContext', () => {
-    expect(getRemoteDataContext()).to.deep.equal({});
   });
 });
