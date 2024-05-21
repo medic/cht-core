@@ -116,7 +116,11 @@ angular
         const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
         Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
         const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
-        Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes);
+        Select2Search(
+          $('#edit-user-profile [name=facilitySelect]'),
+          placeTypes,
+          { initialValue: $scope.editUserModel.facilitySelect }
+        );
       });
 
     const validateRequired = (fieldName, fieldDisplayName) => {
