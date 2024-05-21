@@ -72,7 +72,7 @@ const validateCardFields = async (values) => {
   }
 };
 
-describe.skip('Target aggregates', () => {
+describe('Target aggregates', () => {
 
   describe('as a db admin', () => {
     before(async () => await loginPage.cookieLogin());
