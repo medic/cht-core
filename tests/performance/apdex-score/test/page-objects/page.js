@@ -1,5 +1,4 @@
 const { browser, driver, $ } = require('@wdio/globals');
-const moment = require('moment-timezone');
 const { execSync } = require('child_process');
 
 module.exports = class Page {
@@ -268,50 +267,50 @@ module.exports = class Page {
     await this.tabDropdown.click();
   }
 
-  async extractCurrentDate(days) {
-    const dateTimeString = await driver.getDeviceTime();
-    let dateTime = moment(dateTimeString);
-    dateTime = moment(dateTime).add(days, 'days');
+  // async extractCurrentDate(days) {
+  //   const dateTimeString = await driver.getDeviceTime();
+  //   let dateTime = moment(dateTimeString);
+  //   dateTime = moment(dateTime).add(days, 'days');
 
-    const year = dateTime.format('YY');
-    const month = dateTime.format('MM');
-    const day = dateTime.format('DD');
-    const hour = dateTime.format('HH');
-    const minute = dateTime.format('mm');
+  //   const year = dateTime.format('YY');
+  //   const month = dateTime.format('MM');
+  //   const day = dateTime.format('DD');
+  //   const hour = dateTime.format('HH');
+  //   const minute = dateTime.format('mm');
 
-    return {year, month, day, hour, minute};
-  }
+  //   return {year, month, day, hour, minute};
+  // }
 
-  async updateCurrentDate (days) {
-    const extractCurrentDate = await this.extractCurrentDate(days);
-    console.log('TIME::: Year:', extractCurrentDate.year);
-    console.log('TIME::: Month:', extractCurrentDate.month);
-    console.log('TIME::: Day:', extractCurrentDate.day);
-    console.log('TIME::: Hour:', extractCurrentDate.hour);
-    console.log('TIME::: Minute:', extractCurrentDate.minute);
-    console.log('TIME::: Extracted Components:', extractCurrentDate);
-    const adbDateFormat = `${extractCurrentDate.month}${extractCurrentDate.day}${extractCurrentDate.hour}
-    ${extractCurrentDate.minute}${extractCurrentDate.year}`;
-    execSync('adb shell su root date ' + adbDateFormat, { stdio: 'inherit' });
-    browser.pause(10000);
-  }
+  // async updateCurrentDate (days) {
+  //   const extractCurrentDate = await this.extractCurrentDate(days);
+  //   console.log('TIME::: Year:', extractCurrentDate.year);
+  //   console.log('TIME::: Month:', extractCurrentDate.month);
+  //   console.log('TIME::: Day:', extractCurrentDate.day);
+  //   console.log('TIME::: Hour:', extractCurrentDate.hour);
+  //   console.log('TIME::: Minute:', extractCurrentDate.minute);
+  //   console.log('TIME::: Extracted Components:', extractCurrentDate);
+  //   const adbDateFormat = `${extractCurrentDate.month}${extractCurrentDate.day}${extractCurrentDate.hour}
+  //   ${extractCurrentDate.minute}${extractCurrentDate.year}`;
+  //   execSync('adb shell su root date ' + adbDateFormat, { stdio: 'inherit' });
+  //   browser.pause(10000);
+  // }
 
-  async getLmpDate () {
-    const extractLmpDate = await this.extractCurrentDate(-62);
-    const lmpDate = `20${extractLmpDate.year}-${extractLmpDate.month}-${extractLmpDate.day}`;
-    return lmpDate;
-  }
+  // async getLmpDate () {
+  //   const extractLmpDate = await this.extractCurrentDate(-62);
+  //   const lmpDate = `20${extractLmpDate.year}-${extractLmpDate.month}-${extractLmpDate.day}`;
+  //   return lmpDate;
+  // }
 
-  async getFollowUpDate () {
-    const extractNextDate = await this.extractCurrentDate(1);
-    const followUpDate = `20${extractNextDate.year}-${extractNextDate.month}-${extractNextDate.day}`;
-    return followUpDate;
-  }
+  // async getFollowUpDate () {
+  //   const extractNextDate = await this.extractCurrentDate(1);
+  //   const followUpDate = `20${extractNextDate.year}-${extractNextDate.month}-${extractNextDate.day}`;
+  //   return followUpDate;
+  // }
 
-  async getVHTVisitDate () {
-    const extractPreviousDate = await this.extractCurrentDate(-1);
-    const visitDate = `20${extractPreviousDate.year}-${extractPreviousDate.month}-${extractPreviousDate.day}`;
-    return visitDate;
-  }
+  // async getVHTVisitDate () {
+  //   const extractPreviousDate = await this.extractCurrentDate(-1);
+  //   const visitDate = `20${extractPreviousDate.year}-${extractPreviousDate.month}-${extractPreviousDate.day}`;
+  //   return visitDate;
+  // }
 
 };

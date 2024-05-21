@@ -70,7 +70,7 @@ exports.config = {
     'appium:disableIdLocatorAutocompletion': true,
     'appium:appPackage': 'org.medicmobile.webapp.mobile',
     'appium:appActivity': 'org.medicmobile.webapp.mobile.StartupActivity',
-    'appium:app': 'apk/CHTAndroid.apk',
+    'appium:app': 'tests/performance/apdex-score/apk/CHTAndroid.apk',
     'appium:automationName': 'UiAutomator2'
   }],
 
