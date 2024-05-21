@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const _ = require('lodash/core');
 const format = require('../modules/format');
 const phoneNumber = require('@medic/phone-number');
@@ -139,14 +138,12 @@ angular.module('inboxServices').factory('Select2Search',
       const resolveInitialValue = function(selectEl, initialValue) {
         if (initialValue) {
           if (Array.isArray(initialValue)) {
-            console.log('Initial value is an array:', initialValue);
             initialValue.forEach(function (val) {
               if (!selectEl.children('option[value="' + val + '"]').length) {
                 selectEl.append($('<option value="' + val + '"/>'));
               }
             });
           } else {
-            console.log('Initial value is a single value:', initialValue);
             if (
               !selectEl.children('option[value="' + initialValue + '"]').length
             ) {
