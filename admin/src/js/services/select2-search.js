@@ -164,8 +164,7 @@ angular.module('inboxServices').factory('Select2Search',
           resolution = $q.resolve();
         } else {
           if (Array.isArray(value)) {
-            // NB: For now we only support resolving one initial value
-            // multiple is not an existing use case for us
+            // NB: We now support an Array of IDs for places
             const docPromises = value.map(function (val) {
               return getDoc(val).then(function (doc) {
                 return { id: val, doc: doc };
