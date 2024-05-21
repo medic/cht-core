@@ -1067,7 +1067,7 @@ describe('replication', () => {
       expect(response.doc_ids).to.have.members(deletedIds);
     });
 
-    xit('should return purged docs', async () => {
+    it('should return purged docs', async () => {
       await utils.saveDocs(reports);
 
       const seq = await sentinelUtils.getCurrentSeq();
@@ -1080,7 +1080,7 @@ describe('replication', () => {
       expect(response.doc_ids).to.have.members(['purged_1', 'purged_2']);
     });
 
-    xit('should return purged and deleted docs', async () => {
+    it('should return purged and deleted docs', async () => {
       const contacts = createSomeContacts(3, 'fixture:bobville');
       const irrelevant = createSomeContacts(3, 'irrelevant');
       await utils.saveDocs([...contacts, ...irrelevant]);

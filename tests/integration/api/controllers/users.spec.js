@@ -68,7 +68,7 @@ describe('Users API', () => {
       });
   };
 
-  describe.skip('POST /api/v1/users/{username}', () => {
+  describe('POST /api/v1/users/{username}', () => {
     const username = 'test' + new Date().getTime();
     const password = 'pass1234!';
     const _usersUser = {
@@ -370,7 +370,7 @@ describe('Users API', () => {
 
   });
 
-  describe.skip('/api/v1/users-info', () => {
+  describe('/api/v1/users-info', () => {
     const users = [
       {
         username: 'offline',
@@ -602,7 +602,7 @@ describe('Users API', () => {
     });
   });
 
-  describe.skip('token-login', () => {
+  describe('token-login', () => {
     let user;
 
     const getUser = (user) => {
