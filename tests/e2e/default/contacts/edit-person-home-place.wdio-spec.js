@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 
-describe.skip('Edit Person Under Area', () => {
+describe('Edit Person Under Area', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
 
