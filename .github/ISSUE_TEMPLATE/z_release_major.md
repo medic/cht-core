@@ -18,12 +18,12 @@ assignees: ''
 
 When development is ready to begin one of the engineers should be nominated as a Release Engineer. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
-- [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
+- [ ] Set the version number in the `package.json` and `package-lock.json`, then submit a PR to `master` branch. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
 - [ ] Ensure that issues from merged commits are closed and mapped to a milestone.
 
 # Releasing - Release Engineer
 
-Once all issues have been merged into `master` then the release process can start:
+Once all issues have been merged into `master`, and the `master` branch has the new version number, then the release process can start:
 
 - [ ] Create a new release branch from `master` named `<major>.<minor>.x` in `cht-core`. Post a message to #development Slack channel using this template:
 ```
@@ -54,7 +54,7 @@ If all is good, then in 24h, I will start the release. Thanks!
 
 New features include {{key_features}}. We've also implemented loads of other improvements and fixed a heap of bugs.
 
-Read the [release notes]({{url}}) for full details.
+Read the [release notes]({{<paste-url>}}) for full details.
 
 Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions).
 
