@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const _ = require('lodash/core');
 const format = require('../modules/format');
 const phoneNumber = require('@medic/phone-number');
@@ -27,11 +28,31 @@ angular.module('inboxServices').factory('Select2Search',
       return $(format.sender(row.doc, $translate));
     };
 
-    const defaultTemplateSelection = function(row) {
-      if (row.doc) {
-        return row.doc.name + (row.doc.muted ? ' (' + $translate.instant('contact.muted') + ')': '');
+    const defaultTemplateSelection = function (selection) {
+      if (Array.isArray(selection)) {
+        return selection
+          .map(function (row) {
+            if (row.doc) {
+              return (
+                row.doc.name +
+                (row.doc.muted
+                  ? ' (' + $translate.instant('contact.muted') + ')'
+                  : '')
+              );
+            }
+            return row.text;
+          })
+          .join(', ');
       }
-      return row.text;
+      if (selection.doc) {
+        return (
+          selection.doc.name +
+          (selection.doc.muted
+            ? ' (' + $translate.instant('contact.muted') + ')'
+            : '')
+        );
+      }
+      return selection.text;
     };
 
     const defaultSendMessageExtras = function(row) {
@@ -117,8 +138,20 @@ angular.module('inboxServices').factory('Select2Search',
 
       const resolveInitialValue = function(selectEl, initialValue) {
         if (initialValue) {
-          if (!selectEl.children('option[value="' + initialValue + '"]').length) {
-            selectEl.append($('<option value="' + initialValue + '"/>'));
+          if (Array.isArray(initialValue)) {
+            console.log('Initial value is an array:', initialValue);
+            initialValue.forEach(function (val) {
+              if (!selectEl.children('option[value="' + val + '"]').length) {
+                selectEl.append($('<option value="' + val + '"/>'));
+              }
+            });
+          } else {
+            console.log('Initial value is a single value:', initialValue);
+            if (
+              !selectEl.children('option[value="' + initialValue + '"]').length
+            ) {
+              selectEl.append($('<option value="' + initialValue + '"/>'));
+            }
           }
           selectEl.val(initialValue);
         } else {
@@ -126,14 +159,37 @@ angular.module('inboxServices').factory('Select2Search',
         }
 
         let resolution;
-        let value = selectEl.val();
+        const value = selectEl.val();
         if (!(value && value.length)) {
           resolution = $q.resolve();
         } else {
           if (Array.isArray(value)) {
             // NB: For now we only support resolving one initial value
             // multiple is not an existing use case for us
-            value = value[0];
+            const docPromises = value.map(function (val) {
+              return getDoc(val).then(function (doc) {
+                return { id: val, doc: doc };
+              });
+            });
+
+            resolution = $q
+              .all(docPromises)
+              .then(function(docs) {
+                const select2Data = selectEl.select2('data') || [];
+                docs.forEach(function (doc) {
+                  const selected = select2Data.find((d) => d.id === doc.id);
+                  if (selected) {
+                    selected.doc = doc.doc;
+                  } else {
+                    select2Data.push({
+                      id: doc.id,
+                      doc: doc.doc,
+                      text: doc.doc.name,
+                    });
+                  }
+                });
+              })
+              .catch((err) => $log.error('Select2 failed to get documents', err));
           }
           if (phoneNumber.validate(Settings, value)) {
             // Raw phone number, don't resolve from DB
@@ -190,9 +246,7 @@ angular.module('inboxServices').factory('Select2Search',
             if (docId) {
               getDoc(docId).then(function(doc) {
                 selectEl.select2('data')[0].doc = doc;
-                $timeout(() => {
-                  selectEl.trigger('change');
-                }, 1000);
+                selectEl.trigger('change');
               })
                 .catch(err => $log.error('Select2 failed to get document', err));
             }
