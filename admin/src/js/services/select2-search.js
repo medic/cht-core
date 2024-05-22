@@ -3,7 +3,6 @@ const format = require('../modules/format');
 const phoneNumber = require('@medic/phone-number');
 
 angular.module('inboxServices').factory('Select2Search',
-// BEGIN-NOSCAN
   function(
     $log,
     $q,
@@ -136,6 +135,7 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
+      // BEGIN-NOSCAN
       const resolveInitialValue = function(selectEl, initialValue) {
         if (initialValue) {
           if (Array.isArray(initialValue)) {
@@ -167,6 +167,7 @@ angular.module('inboxServices').factory('Select2Search',
               });
             });
 
+            // BEGIN-NOSCAN
             resolution = $q
               .all(docPromises)
               .then(function(docs) {
@@ -186,6 +187,8 @@ angular.module('inboxServices').factory('Select2Search',
               })
               .catch((err) => $log.error('Select2 failed to get documents', err));
           }
+          // END-NOSCAN
+
           if (phoneNumber.validate(Settings, value)) {
             // Raw phone number, don't resolve from DB
             const text = templateSelection({ text: value });
@@ -206,7 +209,9 @@ angular.module('inboxServices').factory('Select2Search',
           return selectEl;
         });
       };
+      // END-NOSCAN
 
+      // BEGIN-NOSCAN
       const initSelect2 = function(selectEl) {
         selectEl.select2({
           ajax: {
@@ -254,10 +259,9 @@ angular.module('inboxServices').factory('Select2Search',
           });
         }
       };
-
+      // END-NOSCAN
 
       initSelect2(selectEl);
       return resolveInitialValue(selectEl, initialValue);
     };
   });
-// END-NOSCAN
