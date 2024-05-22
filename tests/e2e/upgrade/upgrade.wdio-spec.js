@@ -71,8 +71,7 @@ describe('Performing an upgrade', () => {
     });
   });
 
-  // TODO Enable this test after 4.6.0 is released
-  xit('should have valid semver after installing', async () => {
+  it('should have valid semver after installing', async () => {
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });
@@ -105,7 +104,8 @@ describe('Performing an upgrade', () => {
     const staged = ddocs.filter(ddoc => ddoc._id.includes('staged'));
     expect(staged.length).to.equal(0);
 
-    ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
+    // For tags (betas and releases) we don't actually show the build number on the upgrade page
+    ddocs.forEach(ddoc => expect(ddoc.version).to.include(currentBuild));
 
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
