@@ -16,3 +16,9 @@ When adding a new API to cht-datasource (whether it is a new concept or just a n
 2) Expose a unified interface for the interaction from the relevant top-level [concept module](./src).
 3) Expose the new concept interaction by adding it to the datasource returned from the [index.ts](./src/index.ts).
 4) Implement the necessary endpoint(s) in [api](../../api) to support the new interaction (these are the endpoints called by the remote adapter code).
+
+### Updating functionality
+
+Only passive changes should be made to the versioned public API's exposed by cht-datasource. Besides their usage in cht-core, these API's are available to custom configuration code for things like purging, tasks, targets, etc. If a non-passive change is needed, it should be made on a new version of the API.
+
+The previous version of the functionality should be marked as `@deprecated` and, where possible, all usages in the cht-core code should be updated to use the new API.
