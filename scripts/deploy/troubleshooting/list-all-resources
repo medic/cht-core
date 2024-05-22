@@ -18,9 +18,7 @@ fi
 
 NAMESPACE=$1
 
-kubectl -n $NAMESPACE get all
-
-if [ $? -ne 0 ]; then
+if ! kubectl -n "$NAMESPACE" get all ; then
   echo "An error occurred while trying to retrieve resources for namespace $NAMESPACE. Please verify that the namespace exists and that you have permissions to view its contents."
   exit 1
 fi

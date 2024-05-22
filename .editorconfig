@@ -1,0 +1,9 @@
+# Ignore checking third-party libraries, used by shfmt
+[scripts/docker-helper/simple_curses.sh]
+ignore = true
+[**/node_modules/*]
+ignore = true
+[**/bats-{assert,support}/*]
+ignore = true
+[.husky/_/*]
+ignore = true
