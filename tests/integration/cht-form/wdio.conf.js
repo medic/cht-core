@@ -1,4 +1,4 @@
-const wdioBaseConfig = require('../wdio.conf');
+const wdioBaseConfig = require('../../wdio.conf');
 
 const path = require('path');
 const fs = require('fs');
@@ -48,9 +48,9 @@ const defaultConfig = {
     mockConfig.stopMockApp();
   },
 
-  afterTest: () => {},
+  afterTest: () => { },
 
-  onComplete: () => {},
+  onComplete: () => { },
 };
 
 exports.config = defaultConfig;
