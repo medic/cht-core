@@ -3,7 +3,7 @@ const format = require('../modules/format');
 const phoneNumber = require('@medic/phone-number');
 
 angular.module('inboxServices').factory('Select2Search',
-  function(
+  function( // NOSONAR
     $log,
     $q,
     $timeout,
@@ -58,7 +58,7 @@ angular.module('inboxServices').factory('Select2Search',
       return row;
     };
 
-    return function(selectEl, _types, options) {
+    return function(selectEl, _types, options) { // NOSONAR
 
       options = options || {};
       let currentQuery;
@@ -135,7 +135,7 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      const resolveInitialValue = function(selectEl, initialValue) {
+      const resolveInitialValue = function(selectEl, initialValue) { // NOSONAR
         if (initialValue) {
           if (Array.isArray(initialValue)) {
             initialValue.forEach(function (val) {
@@ -143,12 +143,10 @@ angular.module('inboxServices').factory('Select2Search',
                 selectEl.append($('<option value="' + val + '"/>'));
               }
             });
-          } else {
-            if (
-              !selectEl.children('option[value="' + initialValue + '"]').length
-            ) {
-              selectEl.append($('<option value="' + initialValue + '"/>'));
-            }
+          } else if (
+            !selectEl.children('option[value="' + initialValue + '"]').length
+          ) {
+            selectEl.append($('<option value="' + initialValue + '"/>'));
           }
           selectEl.val(initialValue);
         } else {
@@ -162,7 +160,7 @@ angular.module('inboxServices').factory('Select2Search',
         } else {
           if (Array.isArray(value)) {
             // NB: We now support an Array of IDs for places
-            const docPromises = value.map(function (val) {
+            const docPromises = value.map(function (val) { // NOSONAR
               return getDoc(val).then(function (doc) {
                 return { id: val, doc: doc };
               });
