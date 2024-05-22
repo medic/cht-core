@@ -1,68 +1,73 @@
 import * as Doc from '../../../src/libs/doc';
 import sinon, { SinonStub } from 'sinon';
+import logger from '@medic/logger';
 import { getDocById } from '../../../src/local/libs/doc';
 import { expect } from 'chai';
 
 describe('local doc lib', () => {
-  const db = { get: sinon.stub() };
-  const pouchDb = db as unknown as PouchDB.Database<Doc.Doc>;
+  let dbGet: SinonStub;
+  let db: PouchDB.Database<Doc.Doc>;
   let isDoc: SinonStub;
+  let error: SinonStub;
 
   beforeEach(() => {
+    dbGet = sinon.stub();
+    db = { get: dbGet } as unknown as PouchDB.Database<Doc.Doc>;
     isDoc = sinon.stub(Doc, 'isDoc');
+    error = sinon.stub(logger, 'error');
   });
 
-  afterEach(() => {
-    sinon.restore();
-    db.get.reset();
-  });
+  afterEach(() => sinon.restore());
 
   describe('getDocById', () => {
     it('returns a doc by id', async () => {
       const uuid = 'uuid';
       const doc = { type: 'doc' };
-      db.get.resolves(doc);
+      dbGet.resolves(doc);
       isDoc.returns(true);
 
-      const result = await getDocById(pouchDb)(uuid);
+      const result = await getDocById(db)(uuid);
 
       expect(result).to.equal(doc);
-      expect(db.get.calledOnceWithExactly(uuid)).to.be.true;
+      expect(dbGet.calledOnceWithExactly(uuid)).to.be.true;
       expect(isDoc.calledOnceWithExactly(doc)).to.be.true;
     });
 
     it('returns null if the result is not a doc', async () => {
       const uuid = 'uuid';
       const doc = { type: 'not-doc' };
-      db.get.resolves(doc);
+      dbGet.resolves(doc);
       isDoc.returns(false);
 
-      const result = await getDocById(pouchDb)(uuid);
+      const result = await getDocById(db)(uuid);
 
       expect(result).to.be.null;
-      expect(db.get.calledOnceWithExactly(uuid)).to.be.true;
+      expect(dbGet.calledOnceWithExactly(uuid)).to.be.true;
       expect(isDoc.calledOnceWithExactly(doc)).to.be.true;
     });
 
     it('returns null if the doc is not found', async () => {
       const uuid = 'uuid';
-      db.get.rejects({ status: 404 });
+      dbGet.rejects({ status: 404 });
 
-      const result = await getDocById(pouchDb)(uuid);
+      const result = await getDocById(db)(uuid);
 
       expect(result).to.be.null;
-      expect(db.get.calledOnceWithExactly(uuid)).to.be.true;
+      expect(dbGet.calledOnceWithExactly(uuid)).to.be.true;
       expect(isDoc.notCalled).to.be.true;
+      expect(error.notCalled).to.be.true;
     });
 
     it('throws an error if an unexpected error occurs', async () => {
       const uuid = 'uuid';
-      db.get.rejects(new Error('unexpected error'));
+      const err = new Error('unexpected error');
+      dbGet.rejects(err);
 
-      await expect(getDocById(pouchDb)(uuid)).to.be.rejectedWith('unexpected error');
+      await expect(getDocById(db)(uuid)).to.be.rejectedWith(err);
 
-      expect(db.get.calledOnceWithExactly(uuid)).to.be.true;
+      expect(dbGet.calledOnceWithExactly(uuid)).to.be.true;
       expect(isDoc.notCalled).to.be.true;
+      expect(error.calledOnceWithExactly(`Failed to fetch doc with id [${uuid}]`, err)).to.be.true;
     });
   });
 });

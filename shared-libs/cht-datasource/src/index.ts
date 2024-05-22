@@ -24,12 +24,12 @@
  * const myPerson = await datasource.v1.person.getByUuid(myUuid);
  */
 import { hasAnyPermission, hasPermissions } from './auth';
-import { assertDataContext, DataContext } from './libs/context';
+import { assertDataContext, DataContext } from './libs/data-context';
 import * as Person from './person';
 import * as Qualifier from './qualifier';
 
 export { Nullable, NonEmptyArray } from './libs/core';
-export { DataContext } from './libs/context';
+export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
 export * as Person from './person';

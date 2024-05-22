@@ -4,11 +4,17 @@ import { hasAnyPermission, hasPermissions } from '../src/auth';
 import * as Person from '../src/person';
 import * as Qualifier from '../src/qualifier';
 import sinon from 'sinon';
-import { DataContext } from '../src';
+import * as Context from '../src/libs/data-context';
 
 describe('CHT Script API - getDatasource', () => {
-  const dataContext = { };
-  const datasource = Index.getDatasource(dataContext);
+  const dataContext = { } as const;
+  let assertDataContext: sinon.SinonStub;
+  let datasource: ReturnType<typeof Index.getDatasource>;
+
+  beforeEach(() => {
+    assertDataContext = sinon.stub(Context, 'assertDataContext');
+    datasource = Index.getDatasource(dataContext);
+  });
 
   afterEach(() => sinon.restore());
 
@@ -17,11 +23,14 @@ describe('CHT Script API - getDatasource', () => {
   });
 
   it('throws an error if the data context is invalid', () => {
-    expect(() => Index.getDatasource(null as unknown as DataContext)).to.throw('Invalid data context [null].');
+    assertDataContext.throws(new Error(`Invalid data context [null].`));
+    expect(() => Index.getDatasource(dataContext)).to.throw('Invalid data context [null].');
   });
 
   describe('v1', () => {
-    const { v1 } = datasource;
+    let v1: typeof datasource.v1;
+
+    beforeEach(() => v1 = datasource.v1);
 
     it('contains expected keys', () => expect(v1).to.have.all.keys([
       'hasPermissions', 'hasAnyPermission', 'person'
@@ -33,7 +42,9 @@ describe('CHT Script API - getDatasource', () => {
     });
 
     describe('person', () => {
-      const { person } = v1;
+      let person: typeof v1.person;
+
+      beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
         expect(person).to.have.all.keys(['getByUuid']);

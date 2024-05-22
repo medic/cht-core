@@ -1,11 +1,12 @@
 import { Doc } from '../../libs/doc';
 import { hasField, isRecord } from '../../libs/core';
-import { DataContext } from '../../libs/context';
+import { DataContext } from '../../libs/data-context';
 
 /**
  * {@link PouchDB.Database}s to be used as the local data source.
  */
 export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
+
 /**
  * Service providing access to the app settings. These settings must be guaranteed to remain current for as long as the
  * service is used. Settings data returned from future calls to service methods should reflect the current state of the
@@ -15,8 +16,8 @@ export type SettingsService = Readonly<{ getAll: () => Doc }>;
 
 /** @internal */
 export interface LocalDataContext extends DataContext {
-  medicDb: PouchDB.Database<Doc>;
-  settings: SettingsService;
+  readonly medicDb: PouchDB.Database<Doc>;
+  readonly settings: SettingsService;
 }
 
 const assertSettingsService: (settings: unknown) => asserts settings is SettingsService = (settings: unknown) => {
@@ -24,16 +25,19 @@ const assertSettingsService: (settings: unknown) => asserts settings is Settings
     throw new Error(`Invalid settings service [${JSON.stringify(settings)}].`);
   }
 };
+
 const assertSourceDatabases: (sourceDatabases: unknown) => asserts sourceDatabases is SourceDatabases =
   (sourceDatabases: unknown) => {
     if (!isRecord(sourceDatabases) || !hasField(sourceDatabases, { name: 'medic', type: 'object' })) {
       throw new Error(`Invalid source databases [${JSON.stringify(sourceDatabases)}].`);
     }
   };
+
 /** @internal */
 export const isLocalDataContext = (context: DataContext): context is LocalDataContext => {
   return 'settings' in context && 'medicDb' in context;
 };
+
 /**
  * Returns the data context for accessing data via the provided local sources This functionality is intended for use
  * cases requiring offline functionality. For all other use cases, use {@link getRemoteDataContext}.

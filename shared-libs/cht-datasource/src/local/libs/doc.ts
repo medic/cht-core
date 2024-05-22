@@ -1,3 +1,4 @@
+import logger from '@medic/logger';
 import { Nullable } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 
@@ -9,5 +10,7 @@ export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): P
     if ((err as PouchDB.Core.Error).status === 404) {
       return null;
     }
+
+    logger.error(`Failed to fetch doc with id [${uuid}]`, err);
     throw err;
   });

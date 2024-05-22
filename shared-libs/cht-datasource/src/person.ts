@@ -1,10 +1,9 @@
 import { Nullable } from './libs/core';
 import { isUuidQualifier, UuidQualifier } from './qualifier';
-import { assertDataContext, DataContext } from './libs/context';
+import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Contact } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
-import { isLocalDataContext } from './local/libs/data-context';
 
 export namespace V1 {
   /** @internal */
@@ -35,12 +34,10 @@ export namespace V1 {
    */
   export const get = (context: DataContext) => {
     assertDataContext(context);
+    const getPerson = adapt(context, Local.Person.V1.get, Remote.Person.V1.get);
     return async (qualifier: UuidQualifier): Promise<Nullable<Person>> => {
       assertPersonQualifier(qualifier);
-      if (isLocalDataContext(context)) {
-        return Local.Person.V1.get(context, qualifier);
-      }
-      return Remote.Person.V1.get(qualifier);
+      return getPerson(qualifier);
     };
   };
 }

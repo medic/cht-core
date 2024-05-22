@@ -33,7 +33,7 @@ describe('core lib', () => {
   });
 
   describe('hasField', () => {
-    const cases: [Record<string, unknown>, { name: string, type: string }, boolean][] = [
+    ([
       [{}, { name: 'uuid', type: 'string' }, false],
       [{ uuid: 'uuid' }, { name: 'uuid', type: 'string' }, true],
       [{ uuid: 'uuid' }, { name: 'uuid', type: 'number' }, false],
@@ -41,8 +41,7 @@ describe('core lib', () => {
       [{ uuid: 'uuid', other: 1 }, { name: 'other', type: 'string' }, false],
       [{ uuid: 'uuid', other: 1 }, { name: 'other', type: 'number' }, true],
       [{ getUuid: () => 'uuid' }, { name: 'getUuid', type: 'function' }, true],
-    ];
-    cases.forEach(([record, field, expected]) => {
+    ] as [Record<string, unknown>, { name: string, type: string }, boolean][]).forEach(([record, field, expected]) => {
       it(`evaluates ${JSON.stringify(record)} with ${JSON.stringify(field)}`, () => {
         expect(hasField(record, field)).to.equal(expected);
       });
@@ -50,7 +49,7 @@ describe('core lib', () => {
   });
 
   describe('hasFields', () => {
-    const cases: [Record<string, unknown>, NonEmptyArray<{ name: string, type: string }>, boolean][] = [
+    ([
       [{}, [{ name: 'uuid', type: 'string' }], false],
       [{ uuid: 'uuid' }, [{ name: 'uuid', type: 'string' }], true],
       [{ getUuid: () => 'uuid' }, [{ name: 'getUuid', type: 'function' }, { name: 'uuid', type: 'string' }], false],
@@ -59,11 +58,12 @@ describe('core lib', () => {
         [{ name: 'getUuid', type: 'function' }, { name: 'uuid', type: 'string' }],
         true
       ],
-    ];
-    cases.forEach(([record, fields, expected]) => {
-      it(`evaluates ${JSON.stringify(record)} with ${JSON.stringify(fields)}`, () => {
-        expect(hasFields(record, fields)).to.equal(expected);
-      });
-    });
+    ] as [Record<string, unknown>, NonEmptyArray<{ name: string, type: string }>, boolean][]).forEach(
+      ([record, fields, expected]) => {
+        it(`evaluates ${JSON.stringify(record)} with ${JSON.stringify(fields)}`, () => {
+          expect(hasFields(record, fields)).to.equal(expected);
+        });
+      }
+    );
   });
 });

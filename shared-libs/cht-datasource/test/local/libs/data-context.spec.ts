@@ -8,13 +8,13 @@ import {
 
 describe('local context lib', () => {
   describe('isLocalDataContext', () => {
-    [
+    ([
       [{ medicDb: {}, settings: {} }, true],
       [{ medicDb: {}, settings: {}, hello: 'world' }, true],
       [{ medicDb: {} }, false],
       [{ settings: {} }, false],
       [{}, false]
-    ].forEach(([context, expected]) => {
+    ] as [object, boolean][]).forEach(([context, expected]) => {
       it(`evaluates ${JSON.stringify(context)}`, () => {
         expect(isLocalDataContext(context)).to.equal(expected);
       });
@@ -25,28 +25,24 @@ describe('local context lib', () => {
     const settingsService = { getAll: () => ({}) } as SettingsService;
     const sourceDatabases = { medic: {} } as SourceDatabases;
 
-    [
+    ([
       null,
       {},
       { getAll: 'not a function' },
       'hello'
-    ].forEach((settings) => {
-      const settingsService = settings as unknown as SettingsService;
-
+    ] as unknown as SettingsService[]).forEach((settingsService) => {
       it('throws an error if the settings service is invalid', () => {
         expect(() => getLocalDataContext(settingsService, sourceDatabases))
           .to.throw(`Invalid settings service [${JSON.stringify(settingsService)}].`);
       });
     });
 
-    [
+    ([
       null,
       {},
       { medic: () => 'a function' },
       'hello'
-    ].forEach((sourceDbs) => {
-      const sourceDatabases = sourceDbs as unknown as SourceDatabases;
-
+    ] as unknown as SourceDatabases[]).forEach((sourceDatabases) => {
       it('throws an error if the source databases are invalid', () => {
         expect(() => getLocalDataContext(settingsService, sourceDatabases))
           .to.throw(`Invalid source databases [${JSON.stringify(sourceDatabases)}].`);

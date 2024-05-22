@@ -4,22 +4,26 @@ import { Doc } from '../../src/libs/doc';
 import * as Person from '../../src/local/person';
 import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
+import { LocalDataContext } from '../../src/local/libs/data-context';
 
 describe('local person', () => {
-  const localContext = {
-    medicDb: {} as PouchDB.Database<Doc>,
-    settings: { getAll: sinon.stub() }
-  };
+  let localContext: LocalDataContext;
+  let settingsGetAll: SinonStub;
 
-  afterEach(() => {
-    sinon.restore();
-    localContext.settings.getAll.reset();
+  beforeEach(() => {
+    settingsGetAll = sinon.stub();
+    localContext = {
+      medicDb: {} as PouchDB.Database<Doc>,
+      settings: { getAll: settingsGetAll }
+    };
   });
+
+  afterEach(() => sinon.restore());
 
   describe('V1', () => {
     describe('get', () => {
-      const identifier = { uuid: 'uuid' };
-      const settings = { hello: 'world' };
+      const identifier = { uuid: 'uuid' } as const;
+      const settings = { hello: 'world' } as const;
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
       let isPerson: SinonStub;
@@ -33,10 +37,10 @@ describe('local person', () => {
       it('returns a person by UUID', async () => {
         const doc = { type: 'person' };
         getDocByIdInner.resolves(doc);
-        localContext.settings.getAll.returns(settings);
+        settingsGetAll.returns(settings);
         isPerson.returns(true);
 
-        const result = await Person.V1.get(localContext, identifier);
+        const result = await Person.V1.get(localContext)(identifier);
 
         expect(result).to.equal(doc);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -47,10 +51,10 @@ describe('local person', () => {
       it('returns null if the identified doc is not a person', async () => {
         const doc = { type: 'not-person' };
         getDocByIdInner.resolves(doc);
-        localContext.settings.getAll.returns(settings);
+        settingsGetAll.returns(settings);
         isPerson.returns(false);
 
-        const result = await Person.V1.get(localContext, identifier);
+        const result = await Person.V1.get(localContext)(identifier);
 
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -61,12 +65,12 @@ describe('local person', () => {
       it('returns null if the identified doc is not found', async () => {
         getDocByIdInner.resolves(null);
 
-        const result = await Person.V1.get(localContext, identifier);
+        const result = await Person.V1.get(localContext)(identifier);
 
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(localContext.settings.getAll.notCalled).to.be.true;
+        expect(settingsGetAll.notCalled).to.be.true;
         expect(isPerson.notCalled).to.be.true;
       });
     });
