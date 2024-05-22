@@ -1,7 +1,7 @@
 (function () {
 
   'use strict';
-  const URL = '/api/v2/users';
+  const URL = '/api/v3/users';
 
   angular.module('services').factory('CreateUser',
     function (

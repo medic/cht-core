@@ -238,10 +238,24 @@ angular
     };
 
     const validatePermission = () => {
-      const allowedRoles = $scope.permissions.can_have_multiple_places;
       const userRoles = $scope.editUserModel.roles;
 
-      return userRoles.some(role => allowedRoles.includes(role));
+      if ($scope.editUserModel.place === 1) {
+        return true;
+      }
+
+      const allowedRoles = $scope.permissions.can_have_multiple_places;
+
+      const userHasPermission = userRoles.some(role => allowedRoles.includes(role));
+
+      if (!userHasPermission) {
+        $translate('permission.can_have_multiple_places.not_allowed').then(
+          (value) => {
+            $scope.errors.multiFacility = value;
+          }
+        );
+      }
+      return userHasPermission;
     };
 
 
@@ -286,7 +300,7 @@ angular
 
           if (!isSameHeirarchy) {
             $translate('permission.can_have_multiple_places.not_allowed').then(value => {
-              $scope.errors.place = value;
+              $scope.errors.multiFacility = value;
             });
           }
           return isSameHeirarchy;

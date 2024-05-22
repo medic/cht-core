@@ -226,7 +226,10 @@ angular.module('inboxServices').factory('Select2Search',
           const button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
             .on('click', function() {
               selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
-              selectEl.trigger('change');
+              $timeout(() => {
+                selectEl.trigger('change');
+              }, 1000);
+              return selectEl;
             });
           selectEl.after(button);
         }
@@ -242,7 +245,10 @@ angular.module('inboxServices').factory('Select2Search',
             if (docId) {
               getDoc(docId).then(function(doc) {
                 selectEl.select2('data')[0].doc = doc;
-                selectEl.trigger('change');
+                $timeout(() => {
+                  selectEl.trigger('change');
+                }, 1000);
+                return selectEl;
               })
                 .catch(err => $log.error('Select2 failed to get document', err));
             }
