@@ -7,8 +7,6 @@ const { performance } = require('perf_hooks');
 const db = require('../db');
 const moment = require('moment');
 
-const dataContext = cht.getRemoteDataContext(db.couchUrl);
-
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
 
@@ -17,6 +15,8 @@ const VIEW_LIMIT = 100 * 1000;
 const MAX_BATCH_SIZE = 20 * 1000;
 const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
+
+const dataContext = cht.getLocalDataContext(config, db);
 let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 let skippedContacts = [];
 
@@ -456,13 +456,14 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
 
   const getIdsToPurge = (rolesHashes, rows) => {
     const toPurge = {};
+    const datasource = cht.getDatasource(dataContext);
     rows.forEach(row => {
       const doc = row.doc;
       rolesHashes.forEach(hash => {
         toPurge[hash] = toPurge[hash] || {};
         const purgeIds = doc.form ?
-          purgeFn({ roles: roles[hash] }, {}, [doc], [], cht.getDatasource(dataContext), permissionSettings) :
-          purgeFn({ roles: roles[hash] }, {}, [], [doc], cht.getDatasource(dataContext), permissionSettings);
+          purgeFn({ roles: roles[hash] }, {}, [doc], [], datasource, permissionSettings) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc], datasource, permissionSettings);
 
         if (!validPurgeResults(purgeIds)) {
           return;
