@@ -96,6 +96,7 @@ angular
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
+            multiFacilityPermission: $scope.permissions.can_have_multiple_places,
             tokenLoginEnabled: tokenLoginEnabled,
           });
         });
@@ -244,7 +245,7 @@ angular
         return true;
       }
 
-      const allowedRoles = $scope.permissions.can_have_multiple_places;
+      const allowedRoles = $scope.editUserModel.multiFacilityPermission;
 
       const userHasPermission = userRoles.some(role => allowedRoles.includes(role));
 
