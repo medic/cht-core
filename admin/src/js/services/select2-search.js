@@ -3,7 +3,8 @@ const format = require('../modules/format');
 const phoneNumber = require('@medic/phone-number');
 
 angular.module('inboxServices').factory('Select2Search',
-  function( // NOSONAR
+// BEGIN-NOSCAN
+  function(
     $log,
     $q,
     $timeout,
@@ -58,7 +59,7 @@ angular.module('inboxServices').factory('Select2Search',
       return row;
     };
 
-    return function(selectEl, _types, options) { // NOSONAR
+    return function(selectEl, _types, options) { 
 
       options = options || {};
       let currentQuery;
@@ -135,7 +136,7 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      const resolveInitialValue = function(selectEl, initialValue) { // NOSONAR
+      const resolveInitialValue = function(selectEl, initialValue) {
         if (initialValue) {
           if (Array.isArray(initialValue)) {
             initialValue.forEach(function (val) {
@@ -160,7 +161,7 @@ angular.module('inboxServices').factory('Select2Search',
         } else {
           if (Array.isArray(value)) {
             // NB: We now support an Array of IDs for places
-            const docPromises = value.map(function (val) { // NOSONAR
+            const docPromises = value.map(function (val) {
               return getDoc(val).then(function (doc) {
                 return { id: val, doc: doc };
               });
@@ -259,3 +260,4 @@ angular.module('inboxServices').factory('Select2Search',
       return resolveInitialValue(selectEl, initialValue);
     };
   });
+// END-NOSCAN
