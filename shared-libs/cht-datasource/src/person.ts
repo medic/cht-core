@@ -5,7 +5,7 @@ import { Contact } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
 
-export namespace V1 {
+export namespace v1 {
   /** @internal */
   interface AbstractPerson {
     date_of_birth?: Date;
@@ -34,7 +34,7 @@ export namespace V1 {
    */
   export const get = (context: DataContext) => {
     assertDataContext(context);
-    const getPerson = adapt(context, Local.Person.V1.get, Remote.Person.V1.get);
+    const getPerson = adapt(context, Local.Person.v1.get, Remote.Person.v1.get);
     return async (qualifier: UuidQualifier): Promise<Nullable<Person>> => {
       assertPersonQualifier(qualifier);
       return getPerson(qualifier);

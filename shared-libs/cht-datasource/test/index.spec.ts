@@ -53,7 +53,7 @@ describe('CHT Script API - getDatasource', () => {
       it('getByUuid', async () => {
         const expectedPerson = {};
         const personGetInner = sinon.stub().resolves(expectedPerson);
-        const personGetOuter = sinon.stub(Person.V1, 'get').returns(personGetInner);
+        const personGetOuter = sinon.stub(Person.v1, 'get').returns(personGetInner);
         const qualifier = { uuid: 'my-persons-uuid' };
         const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
 

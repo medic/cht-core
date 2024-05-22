@@ -13,7 +13,7 @@
  * @example Declarative usage mode:
  * import { Person, Qualifier } from '@medic/cht-datasource';
  *
- * const getPerson = Person.V1.get(dataContext);
+ * const getPerson = Person.v1.get(dataContext);
  * const myUuid = 'my-uuid';
  * const myPerson = await getPerson(Qualifier.byUuid(uuid));
  * @example Imperative usage mode:
@@ -53,7 +53,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @param uuid the UUID of the person to retrieve
          * @returns the person or `null` if no person is found for the UUID
          */
-        getByUuid: (uuid: string) => Person.V1.get(ctx)(Qualifier.byUuid(uuid)),
+        getByUuid: (uuid: string) => Person.v1.get(ctx)(Qualifier.byUuid(uuid)),
       }
     }
   };

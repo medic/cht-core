@@ -22,20 +22,20 @@ describe('person', () => {
 
   afterEach(() => sinon.restore());
 
-  describe('V1', () => {
+  describe('v1', () => {
     describe('get', () => {
-      const person = { _id: 'my-person' } as Person.V1.Person;
+      const person = { _id: 'my-person' } as Person.v1.Person;
       const qualifier = { uuid: person._id } as const;
 
       it('retrieves the person for the given qualifier from the data context', async () => {
         isUuidQualifier.returns(true);
         getPerson.resolves(person);
 
-        const result = await Person.V1.get(dataContext)(qualifier);
+        const result = await Person.v1.get(dataContext)(qualifier);
 
         expect(result).to.equal(person);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.V1.get, Remote.Person.V1.get)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.get, Remote.Person.v1.get)).to.be.true;
         expect(isUuidQualifier.calledOnceWithExactly(qualifier)).to.be.true;
         expect(getPerson.calledOnceWithExactly(qualifier)).to.be.true;
       });
@@ -43,11 +43,11 @@ describe('person', () => {
       it('throws an error if the qualifier is invalid', async () => {
         isUuidQualifier.returns(false);
 
-        await expect(Person.V1.get(dataContext)(qualifier))
+        await expect(Person.v1.get(dataContext)(qualifier))
           .to.be.rejectedWith(`Invalid identifier [${JSON.stringify(qualifier)}].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.V1.get, Remote.Person.V1.get)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.get, Remote.Person.v1.get)).to.be.true;
         expect(isUuidQualifier.calledOnceWithExactly(qualifier)).to.be.true;
         expect(getPerson.notCalled).to.be.true;
       });
@@ -55,7 +55,7 @@ describe('person', () => {
       it('throws an error if the data context is invalid', () => {
         assertDataContext.throws(new Error(`Invalid data context [null].`));
 
-        expect(() => Person.V1.get(dataContext)).to.throw(`Invalid data context [null].`);
+        expect(() => Person.v1.get(dataContext)).to.throw(`Invalid data context [null].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.notCalled).to.be.true;

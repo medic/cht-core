@@ -20,7 +20,7 @@ describe('local person', () => {
 
   afterEach(() => sinon.restore());
 
-  describe('V1', () => {
+  describe('v1', () => {
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
       const settings = { hello: 'world' } as const;
@@ -40,7 +40,7 @@ describe('local person', () => {
         settingsGetAll.returns(settings);
         isPerson.returns(true);
 
-        const result = await Person.V1.get(localContext)(identifier);
+        const result = await Person.v1.get(localContext)(identifier);
 
         expect(result).to.equal(doc);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -54,7 +54,7 @@ describe('local person', () => {
         settingsGetAll.returns(settings);
         isPerson.returns(false);
 
-        const result = await Person.V1.get(localContext)(identifier);
+        const result = await Person.v1.get(localContext)(identifier);
 
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -65,7 +65,7 @@ describe('local person', () => {
       it('returns null if the identified doc is not found', async () => {
         getDocByIdInner.resolves(null);
 
-        const result = await Person.V1.get(localContext)(identifier);
+        const result = await Person.v1.get(localContext)(identifier);
 
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;

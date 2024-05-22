@@ -6,6 +6,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
+import { LocationService } from '@mm-services/location.service';
 
 import { lastValueFrom } from 'rxjs';
 
@@ -24,7 +25,8 @@ export class CHTScriptApiService {
     private sessionService: SessionService,
     private settingsService: SettingsService,
     private changesService: ChangesService,
-    private dbService: DbService
+    private dbService: DbService,
+    private locationService: LocationService
   ) { }
 
   isInitialized() {
@@ -44,7 +46,7 @@ export class CHTScriptApiService {
 
   private async getDataContext() {
     if (this.sessionService.isOnlineOnly(this.userCtx)) {
-      return getRemoteDataContext();
+      return getRemoteDataContext(this.locationService.url);
     }
 
     const settingsService = { getAll: () => this.settings };

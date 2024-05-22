@@ -16,7 +16,7 @@ describe('remote person', () => {
 
   afterEach(() => sinon.restore());
 
-  describe('V1', () => {
+  describe('v1', () => {
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
 
@@ -24,7 +24,7 @@ describe('remote person', () => {
         const doc = { type: 'person' };
         remoteInnerGet.resolves(doc);
 
-        const result = await Person.V1.get(remoteContext)(identifier);
+        const result = await Person.v1.get(remoteContext)(identifier);
 
         expect(result).to.equal(doc);
         expect(remoteOuterGet.calledOnceWithExactly(remoteContext, 'api/v1/person/')).to.be.true;
@@ -34,7 +34,7 @@ describe('remote person', () => {
       it('returns null if the identified doc is not found', async () => {
         remoteInnerGet.resolves(null);
 
-        const result = await Person.V1.get(remoteContext)(identifier);
+        const result = await Person.v1.get(remoteContext)(identifier);
 
         expect(result).to.be.null;
         expect(remoteOuterGet.calledOnceWithExactly(remoteContext, 'api/v1/person/')).to.be.true;

@@ -1,15 +1,17 @@
 const cht = require('@medic/cht-datasource');
-const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
 
 angular.module('inboxServices').factory('Auth',
   function(
     $log,
+    Location,
     Session,
     Settings
   ) {
 
     'use strict';
     'ngInject';
+
+    const chtDatasource = cht.getDatasource(cht.getRemoteDataContext(Location.url));
 
     /**
      * Receives a list of groups of permissions and returns a promise that will be resolved if the

@@ -7,7 +7,7 @@ const { performance } = require('perf_hooks');
 const db = require('../db');
 const moment = require('moment');
 
-const dataContext = cht.getRemoteDataContext();
+const dataContext = cht.getRemoteDataContext(db.couchUrl);
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
