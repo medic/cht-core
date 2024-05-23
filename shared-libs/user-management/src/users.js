@@ -576,8 +576,25 @@ const validateFacilityIsNeeded = (data, user) => {
     ));
   }
 };
+
+const validateAllowedMultipleFacilities = (data, user) => {
+  if (!Array.isArray(data.place) || data.place.length === 1) {
+    return true;
+  }
+
+  const userRoles = data.roles || user?.roles;
+  if (!userRoles || !roles.hasAllPermissions(userRoles, ['can_have_multiple_places'])) {
+    throw error400(
+      'This user cannot have multiple places',
+      'field is required',
+      {'field': 'Place'}
+    );
+  }
+};
+
 const validateUserFacility = (data, user) => {
   if (data.place) {
+    validateAllowedMultipleFacilities(data, user);
     return places.placesExist(data.facility_id);
   }
 
@@ -586,7 +603,7 @@ const validateUserFacility = (data, user) => {
   }
 };
 
-const validateUserContact = (data, user) => {  // NOSONAR
+const validateUserContact = (data, user) => {
   if (data.contact) {
     return Promise
       .any(data.facility_id.map(facility_id => validateContact(data.contact_id, facility_id)))
@@ -687,7 +704,7 @@ const parseCsvRow = (data, header, value, valueIdx) => {
   return data;
 };
 
-const parseCsv = async (csv, logId) => {  // NOSONAR
+const parseCsv = async (csv, logId) => {
   if (!csv || !csv.length) {
     throw new Error('CSV is empty.');
   }
@@ -836,7 +853,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   return response;
 };
 
-const validateUpdateAttempt = (data, fullAccess) => { // NOSONAR
+const validateUpdateAttempt = (data, fullAccess) => {
   // Reject update attempts that try to modify data they're not allowed to
   if (!fullAccess) {
     const illegalAttempts = illegalDataModificationAttempts(data);
@@ -867,6 +884,10 @@ const validateUpdateAttempt = (data, fullAccess) => { // NOSONAR
       throw passwordError;
     }
   }
+};
+
+const checkPayloadFacilityCount = (data) => {
+  return Array.isArray(data.place) && data.place.length > 1;
 };
 
 /*
@@ -1109,4 +1130,6 @@ module.exports = {
   parseCsv,
 
   createMultiFacilityUser,
+
+  checkPayloadFacilityCount,
 };
