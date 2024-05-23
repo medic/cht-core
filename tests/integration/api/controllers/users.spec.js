@@ -1923,7 +1923,12 @@ describe('Users API', () => {
       await utils.saveDocs([...places, contact]);
     });
 
+    afterEach(async () => {
+      await utils.revertSettings(true);
+    });
+
     it('should create users with multiple facilities', async () => {
+      await utils.updatePermissions(['national_admin', 'chw'], ['can_have_multiple_places'], [], true);
       const onlineUserPayload = {
         username: uuid(),
         password: password,
@@ -1973,7 +1978,26 @@ describe('Users API', () => {
       });
     });
 
+    it('should not allow creating users with multiple places without correct permission', async () => {
+      const offlineUserPayload = {
+        username: uuid(),
+        password: password,
+        place: places.map(place => place._id),
+        contact: contact._id,
+        roles: ['chw']
+      };
+
+      try {
+        await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
+        expect.fail('Should have thrown');
+      } catch (error) {
+        expect(error.statusCode).to.equal(400);
+        expect(error.error.error.message).to.equal('This user cannot have multiple places');
+      }
+    });
+
     it('should edit users to add multiple facilities', async () => {
+      await utils.updatePermissions(['national_admin'], ['can_have_multiple_places']);
       const onlineUserPayload = {
         username: uuid(),
         password: password,
