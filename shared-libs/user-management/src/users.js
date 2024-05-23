@@ -853,17 +853,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   return response;
 };
 
-const validateUpdateAttempt = (data, fullAccess) => {
-  // Reject update attempts that try to modify data they're not allowed to
-  if (!fullAccess) {
-    const illegalAttempts = illegalDataModificationAttempts(data);
-    if (illegalAttempts.length) {
-      const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
-      err.status = 401;
-      throw err;
-    }
-  }
-
+const validateUpgradeAttemptFields = (data) => {
   const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
 
   // Online users can remove place or contact
@@ -877,13 +867,30 @@ const validateUpdateAttempt = (data, fullAccess) => {
       { 'fields': props.join(', ') }
     );
   }
+};
 
+const validateUpgradeAtetmptPassword = (data) => {
   if (data.password) {
     const passwordError = validatePassword(data.password);
     if (passwordError) {
       throw passwordError;
     }
   }
+};
+
+const validateUpdateAttempt = (data, fullAccess) => {
+  // Reject update attempts that try to modify data they're not allowed to
+  if (!fullAccess) {
+    const illegalAttempts = illegalDataModificationAttempts(data);
+    if (illegalAttempts.length) {
+      const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
+      err.status = 401;
+      throw err;
+    }
+  }
+
+  validateUpgradeAttemptFields(data);
+  validateUpgradeAtetmptPassword(data);
 };
 
 const checkPayloadFacilityCount = (data) => {
