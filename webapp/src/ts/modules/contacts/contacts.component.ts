@@ -29,19 +29,19 @@ import { PerformanceService } from '@mm-services/performance.service';
   templateUrl: './contacts.component.html'
 })
 export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
-  private readonly PAGE_SIZE = 50;
+  private readonly PAGE_SIZE = 25;
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
   private contactsActions: ContactsActions;
   private listContains;
-  private destroyed: boolean;
-  private isOnlineOnly: boolean;
+  private destroyed?: boolean;
+  private isOnlineOnly?: boolean;
 
-  fastActionList: FastAction[];
+  fastActionList?: FastAction[];
   contactsList;
   loading = false;
   error;
-  appending: boolean;
+  appending?: boolean;
   hasContacts = true;
   filters: Filter = {};
   defaultFilters: Filter = {};
@@ -56,7 +56,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
   useSearchNewDesign = true;
-  enketoEdited: boolean;
+  enketoEdited?: boolean;
   selectedContact;
 
   constructor(
@@ -83,32 +83,78 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.contactsActions = new ContactsActions(store);
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     const trackPerformance = this.performanceService.track();
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
     this.globalActions.clearFilters(); // clear any global filters first
     this.subscribeToStore();
+    this.manageChangesSubscription();
 
+    try {
+      const [settings, homePlaceSummary, viewLastVisitedDate, contactTypes] = await Promise.all([
+        this.settingsService.get(),
+        this.getUserHomePlaceSummary(),
+        this.canViewLastVisitedDate(),
+        this.contactTypesService.getAll(),
+      ]);
+
+      this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
+      this.usersHomePlace = homePlaceSummary;
+      this.lastVisitedDateExtras = viewLastVisitedDate;
+      this.contactTypes = contactTypes;
+
+      if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+        this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
+      }
+
+      const children = await this.getChildren();
+      this.childPlaces = children;
+      this.defaultFilters = {
+        types: {
+          selected: this.childPlaces.map(type => type.id),
+        },
+      };
+
+      this.subscribeToAllContactXmlForms();
+      await this.search();
+    } catch (err) {
+      this.error = true;
+      this.loading = false;
+      this.appending = false;
+      console.error('Error initializing contacts component', err);
+    } finally {
+      trackPerformance?.stop({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
+    }
+  }
+
+  private async handleChange(change): Promise<void> {
+    const limit = this.contactsList.length;
+    if (change.deleted) {
+      this.contactsActions.removeContactFromList({ _id: change.id });
+      this.hasContacts = !!this.contactsList.length;
+    }
+    if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
+      this.usersHomePlace = await this.getUserHomePlaceSummary(change.id);
+    }
+    const withIds =
+      this.isSortedByLastVisited() &&
+      !!this.isRelevantVisitReport(change.doc) &&
+      !change.deleted;
+    await this.query({
+      limit,
+      withIds,
+      silent: true,
+    });
+  }
+
+  private manageChangesSubscription() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
-      callback: async (change) => {
-        const limit = this.contactsList.length;
-        if (change.deleted) {
-          this.contactsActions.removeContactFromList({ _id: change.id });
-          this.hasContacts = this.contactsList.length;
-        }
-        if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
-          this.usersHomePlace = await this.getUserHomePlaceSummary(change.id);
-        }
-        const withIds =
-          this.isSortedByLastVisited() &&
-          !!this.isRelevantVisitReport(change.doc) &&
-          !change.deleted;
-        return this.query({
-          limit,
-          withIds,
-          silent: true,
-        });
+      callback: (change) => {
+        this.handleChange(change).catch(err => console.error(err));
       },
       filter: (change) => {
         return (
@@ -120,47 +166,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
     this.subscription.add(changesSubscription);
-
-    Promise
-      .all([
-        this.getUserHomePlaceSummary(),
-        this.canViewLastVisitedDate(),
-        this.settingsService.get(),
-        this.contactTypesService.getAll()
-      ])
-      .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
-        this.usersHomePlace = homePlaceSummary;
-        this.lastVisitedDateExtras = viewLastVisitedDate;
-        this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
-        if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
-          this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
-        }
-        this.contactTypes = contactTypes;
-        return this.getChildren();
-      })
-      .then((children) => {
-        this.childPlaces = children;
-        this.defaultFilters = {
-          types: {
-            selected: this.childPlaces.map(type => type.id)
-          }
-        };
-
-        this.subscribeToAllContactXmlForms();
-        return this.search();
-      })
-      .catch((err) => {
-        this.error = true;
-        this.loading = false;
-        this.appending = false;
-        console.error('Error searching for contacts', err);
-      })
-      .finally(() => {
-        trackPerformance?.stop({
-          name: 'contact_list:load',
-          recordApdex: true,
-        });
-      });
   }
 
   async ngAfterViewInit() {

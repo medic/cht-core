@@ -1,6 +1,6 @@
 const request = require('@medic/couch-request');
 const secureSettings = require('@medic/settings');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const config = require('../config');
 
 // Map of sending statuses to Medic statuses

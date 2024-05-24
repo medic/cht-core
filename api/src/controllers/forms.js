@@ -4,7 +4,7 @@ const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const formsService = require('../services/forms');
 const generateXform = require('../services/generate-xform');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const XML_RESPONSE_HEADERS = {
   'Content-Type': 'text/xml; charset=utf-8',

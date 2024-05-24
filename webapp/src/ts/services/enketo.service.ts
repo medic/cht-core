@@ -664,10 +664,10 @@ export class EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
   type: string; // 'contact'|'report'|'task'|'training-card'
-  editing: boolean;
+  editing?: boolean;
   instanceData: null | string | Record<string, any>;
-  editedListener: () => void;
-  valuechangeListener: () => void;
+  editedListener?: () => void;
+  valuechangeListener?: () => void;
   titleKey?: string;
   isFormInModal?: boolean;
   userContact?: Record<string, any>;

@@ -22,7 +22,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   private globalActions;
   private subscription: Subscription = new Subscription();
   inputLabel;
-  error: string;
+  error?: string;
   dateRange = {
     from: undefined as any,
     to: undefined as any,

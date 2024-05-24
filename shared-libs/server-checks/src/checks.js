@@ -1,26 +1,14 @@
 const request = require('@medic/couch-request');
 
 const MIN_COUCHDB_VERSION = { major: 3, minor: 3 };
+const SYSTEM_DBS = [ '_users', '_replicator', '_global_changes' ];
 
 /* eslint-disable no-console */
 
-const nodeVersionCheck = () => {
-  try {
-    console.log(`Node Version: ${process.versions.node}`);
-    console.log(`Node Mode: "${process.env.NODE_ENV || 'development'}"`);
-    console.log(`Node Environment Options: '${process.env.NODE_OPTIONS}'`);
-  } catch (err) {
-    console.error('Fatal error checking node version');
-    console.log(err);
-    process.exit(1);
-  }
-};
-
-const getNoAuthURL = (couchUrl) => {
-  const noAuthUrl = new URL(couchUrl);
-  noAuthUrl.password = '';
-  noAuthUrl.username = '';
-  return noAuthUrl;
+const checkNodeVersion = () => {
+  console.log(`Node Version: ${process.versions.node}`);
+  console.log(`Node Mode: "${process.env.NODE_ENV || 'development'}"`);
+  console.log(`Node Environment Options: '${process.env.NODE_OPTIONS}'`);
 };
 
 const checkServerUrl = (serverUrl) => {
@@ -28,6 +16,7 @@ const checkServerUrl = (serverUrl) => {
   try {
     couchUrl = new URL(serverUrl);
   } catch (err){
+    console.log(err);
     throw new Error('Environment variable "COUCH_URL" is required. ' +
                     'Please make sure your CouchDb is accessible through a URL that matches: ' +
                     '<protocol>://<username>:<password>@<host>:<port>/<db name>');
@@ -42,7 +31,14 @@ const checkServerUrl = (serverUrl) => {
   }
 };
 
-const couchDbNoAdminPartyModeCheck = (couchUrl) => {
+const getNoAuthURL = (couchUrl) => {
+  const noAuthUrl = new URL(couchUrl);
+  noAuthUrl.password = '';
+  noAuthUrl.username = '';
+  return noAuthUrl;
+};
+
+const checkCouchDbNoAdminPartyMode = (couchUrl) => {
   const noAuthUrl = getNoAuthURL(couchUrl);
 
   // require either 'http' or 'https' by removing the ":" from noAuthUrl.protocol
@@ -54,10 +50,9 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
       if (statusCode === 401) {
         resolve();
       } else {
-        console.error('Expected a 401 when accessing db without authentication.');
-        console.error(`Instead we got a ${statusCode}`);
-        reject(new Error('CouchDB security seems to be misconfigured, ' +
-          'see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
+        reject(new Error('CouchDB security seems to be misconfigured. ' +
+          `Accessing the db without authentication returned a ${statusCode} when a 401 was expected. ` +
+          'See: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
       }
     }).on('error', (e) => {
       reject(`CouchDB doesn't seem to be running on ${noAuthUrl.toString()}. ` +
@@ -77,7 +72,7 @@ const sameMembershipResult = (result1, result2) => {
          arrayEqual(result1.all_nodes, result2.all_nodes);
 };
 
-const checkCluster = async (couchUrl) => {
+const checkCouchDbCluster = async (couchUrl) => {
   const membershipResults = [
     await request.get({ url: `${couchUrl}_membership`, json: true }),
     await request.get({ url: `${couchUrl}_membership`, json: true }),
@@ -91,16 +86,16 @@ const checkCluster = async (couchUrl) => {
   if (!consistentMembership) {
     throw new Error('Cluster not ready');
   }
+};
 
+const checkCouchDbSystemDbs = async (couchUrl) => {
   try {
-    await request.get({ url: `${couchUrl}_users`, json: true });
-    await request.get({ url: `${couchUrl}_replicator`, json: true });
-    await request.get({ url: `${couchUrl}_global_changes`, json: true });
+    for (const db of SYSTEM_DBS) {
+      await request.get({ url: `${couchUrl}${db}`, json: true });
+    }
   } catch (err) {
     throw new Error('System databases do not exist');
   }
-
-  console.log('CouchDb Cluster ready');
 };
 
 const getCouchDbVersion = async (couchUrl) => {
@@ -108,7 +103,7 @@ const getCouchDbVersion = async (couchUrl) => {
   return response.version;
 };
 
-const couchDbVersionCheck = async (couchUrl) => {
+const checkCouchDbVersion = async (couchUrl) => {
   const version = await getCouchDbVersion(couchUrl);
   const [ major, minor ] = version.split('.').map(Number);
   if (major < MIN_COUCHDB_VERSION.major || minor < MIN_COUCHDB_VERSION.minor) {
@@ -118,40 +113,11 @@ const couchDbVersionCheck = async (couchUrl) => {
   console.log(`CouchDB Version: ${version}`);
 };
 
-const logRequestError = (error) => {
-  delete error.options;
-  delete error.request;
-  delete error.response;
-
-  console.error(error);
-};
-
-const couchDbCheck = async (couchUrl) => {
-  const retryTimeout = () => new Promise(resolve => setTimeout(resolve, 1000));
-  const serverUrl = new URL(couchUrl);
-  serverUrl.pathname = '/';
-
-  do {
-    try {
-      await couchDbVersionCheck(serverUrl.toString());
-      await couchDbNoAdminPartyModeCheck(serverUrl.toString());
-      await checkCluster(serverUrl.toString());
-      return;
-    } catch (err) {
-      logRequestError(err);
-      await retryTimeout();
-    }
-    // eslint-disable-next-line no-constant-condition
-  } while (true);
-};
-
-const check = async (couchUrl) => {
-  await nodeVersionCheck();
-  await checkServerUrl(couchUrl);
-  await couchDbCheck(couchUrl);
-};
-
 module.exports = {
-  check: (couchUrl) => check(couchUrl),
-  getCouchDbVersion: (couchUrl) => getCouchDbVersion(couchUrl),
+  checkNodeVersion,
+  checkServerUrl,
+  checkCouchDbVersion,
+  checkCouchDbNoAdminPartyMode,
+  checkCouchDbCluster,
+  checkCouchDbSystemDbs,
 };

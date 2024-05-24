@@ -2,7 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const replicationLimitLogService = require('../../../src/services/replication-limit-log');
 const db = require('../../../src/db');
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 
 describe('Replication Limit Log service', () => {
   afterEach(() => {

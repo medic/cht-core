@@ -96,6 +96,14 @@ describe('login controller', () => {
         given: '/lg/_design/medic/_rewrite/../../../../../.htpasswd',
         expected: '/.htpasswd'
       },
+      {
+        given: 'https://demo-cht.dev.medicmobile.org//MYFAKESITE.com/phishing-example/login/',
+        expected: '/'
+      },
+      {
+        given: 'https://demo-cht.dev.medicmobile.org/%2F%61%6C%78%6E%64%72%73%6E%2E%67%69%74%68%75%62%2E%69%6F%2F%70%68%69%73%68%69%6E%67%2D%65%78%61%6D%70%6C%65%2F%6C%6F%67%69%6E%26%75%73%65%72%6E%61%6D%65%3D%67%61%72%65%74%68',
+        expected: '/'
+      },
     ].forEach(({given, expected}) => {
       it(`Bad URL "${given}" should redirect to root`, () => {
         chai.expect(controller.__get__('getRedirectUrl')({}, given)).to.equal(expected);

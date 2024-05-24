@@ -8,7 +8,7 @@ const db = require('../db');
 const scheduling = require('../lib/scheduling');
 const later = require('later');
 const lineage = require('@medic/lineage')(Promise, db.medic);
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const messages = config.getTransitionsLib().messages;
 const contactTypesUtils = require('@medic/contact-types-utils');
 

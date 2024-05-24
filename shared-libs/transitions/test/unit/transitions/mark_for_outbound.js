@@ -1,19 +1,19 @@
-const rewire = require('rewire');
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../../src/config');
-const logger = require('../../../src/lib/logger');
+const logger = require('@medic/logger');
 const db = require('../../../src/db');
+const { stub } = require('sinon');
+const outbound = require('@medic/outbound');
+const markForOutbound = require('../../../src/transitions/mark_for_outbound');
 
 config.init();
 
 describe('mark for outbound', () => {
   describe('onMatch', () => {
     const RECORD_NAME = 'known_record';
-    let mockOutbound;
     let change;
     let clock;
-    let markForOutbound;
 
     beforeEach(() => {
       change = {
@@ -26,13 +26,7 @@ describe('mark for outbound', () => {
 
       sinon.stub(db.sentinel, 'put');
       sinon.stub(db.sentinel, 'get');
-
-      mockOutbound = {
-        send: sinon.stub(),
-      };
-
-      markForOutbound = rewire('../../../src/transitions/mark_for_outbound');
-      markForOutbound.__set__('outbound', mockOutbound);
+      stub(outbound, 'send');
     });
 
     afterEach(() => {
@@ -56,14 +50,14 @@ describe('mark for outbound', () => {
       };
 
       config.get.returns(configDoc);
-      mockOutbound.send.resolves(true);
+      outbound.send.resolves(true);
       db.sentinel.put.resolves(true);
       db.sentinel.get.resolves({});
 
       return markForOutbound
         .onMatch(change)
         .then(() => {
-          assert.equal(mockOutbound.send.callCount, 1);
+          assert.equal(outbound.send.callCount, 1);
           assert.equal(db.sentinel.put.callCount, 1);
           assert.equal(db.sentinel.get.callCount, 1);
           assert.equal(logger.info.callCount, 1);
@@ -86,7 +80,7 @@ describe('mark for outbound', () => {
       };
 
       config.get.returns(configDoc);
-      mockOutbound.send.rejects();
+      outbound.send.rejects();
       db.sentinel.get.rejects({ status: 404 });
 
       clock = sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
@@ -94,7 +88,7 @@ describe('mark for outbound', () => {
       return markForOutbound
         .onMatch(change)
         .then(() => {
-          assert.equal(mockOutbound.send.callCount, 2);
+          assert.equal(outbound.send.callCount, 2);
           assert.equal(db.sentinel.put.callCount, 1);
           assert.equal(db.sentinel.get.callCount, 1);
           assert.equal(logger.info.callCount, 1);

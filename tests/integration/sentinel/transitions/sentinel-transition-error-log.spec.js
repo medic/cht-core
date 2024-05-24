@@ -12,7 +12,7 @@ describe('Sentinel transition error log', function() {
       }
     };
 
-    const waitForLogs = await utils.waitForSentinelLogs(unknownTransitionPattern);
+    const waitForLogs = await utils.waitForSentinelLogs(true, unknownTransitionPattern);
     await utils.updateSettings(settings, 'sentinel');
     await waitForLogs.promise;
   });

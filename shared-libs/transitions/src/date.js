@@ -2,7 +2,7 @@ const DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/;
 const config = require('./config');
 const start_date = new Date();
 const moment = require('moment');
-const logger = require('./lib/logger');
+const logger = require('@medic/logger');
 let synth_start_date;
 
 const load = () => {
@@ -20,7 +20,6 @@ const load = () => {
       synth_start_date.setFullYear(year, month - 1, day);
       synth_start_date.setHours(hours, minutes, 0, 0);
       logger.info(`synthetic_date is: ${synth_start_date}`);
-      return;
     }
   }
 };
@@ -34,12 +33,7 @@ const getTimestamp = () => {
   }
   return now;
 };
-const isSynthetic = () => {
-  if (synth_start_date) {
-    return true;
-  }
-  return false;
-};
+const isSynthetic = () => !!synth_start_date;
 const getDate = () => {
   if (synth_start_date) {
     return new Date(synth_start_date.valueOf());

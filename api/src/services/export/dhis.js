@@ -3,7 +3,7 @@ const moment = require('moment');
 
 const db = require('../../db');
 const config = require('../../config');
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 
 /**
  * @param {string} filters.dataSet

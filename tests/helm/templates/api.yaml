@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: api
+  name: cht-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: api
+  template:
+    metadata:
+      labels:
+        cht.service: api
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - env:
+            - name: BUILDS_URL
+              value: 'https://staging.dev.medicmobile.org/_couch/builds_4'
+            - name: COUCH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCH_URL
+            - name: API_PORT
+              value: '5988'
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-api:{{ .Values.cht_image_tag }}
+          name: cht-api
+          ports:
+            - containerPort: 5988
+      restartPolicy: Always
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: api
+                port:
+                  number: 5988
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cht.service: api
+  name: api
+spec:
+  ports:
+    - port: 5988
+      targetPort: 5988
+  selector:
+    cht.service: api
+
