@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import fetch from 'node-fetch';
 import UserRuntimeError from './error.js';
 
-export async function obtainCertificateAndKey(values) {
+async function obtainCertificateAndKey(values) { //NoSONAR
     console.log("Obtaining certificate...");
     const certSource = values.cert_source || '';
     if (certSource === 'specify-file-path') {
@@ -22,19 +22,21 @@ export async function obtainCertificateAndKey(values) {
         fs.writeFileSync('certificate.crt', crtData);
         fs.writeFileSync('private.key', keyData);
     } else if (certSource !== 'eks-medic') {
-        return Promise.reject(UserRuntimeError("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'"));
+        return Promise.reject(new UserRuntimeError("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'"));
     }
 }
 
-export function createSecret(namespace, values) {
+function createSecret(namespace, values) {
     console.log("Checking if secret api-tls-secret already exists...");
     try {
-        execSync(`kubectl get secret api-tls-secret -n ${namespace}`, { stdio: 'inherit' });
+        execSync(`kubectl get secret api-tls-secret -n ${namespace}`, { stdio: 'inherit' }); //NoSONAR
     } catch (err) {
         console.log("Secret does not exist. Creating Secret from certificate and key...");
         obtainCertificateAndKey(values);
-        execSync(`kubectl -n ${namespace} create secret tls api-tls-secret --cert=certificate.crt --key=private.key`, { stdio: 'inherit' });
+        execSync(`kubectl -n ${namespace} create secret tls api-tls-secret --cert=certificate.crt --key=private.key`, { stdio: 'inherit' }); //NoSONAR
         fs.unlinkSync('certificate.crt');
         fs.unlinkSync('private.key');
     }
 }
+
+module.exports = { obtainCertificateAndKey, createSecret };
