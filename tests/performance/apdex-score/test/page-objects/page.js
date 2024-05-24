@@ -158,6 +158,13 @@ module.exports = class Page {
     await this.navigate(form.postTestPath);
   }
 
+  async relaunchApp (commonElements) {
+    const MENU_LIST_TITLE = commonElements?.menuListTitle || '//*[@text=\"People\"]';
+    await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
+    await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
+    await this.waitForDisplayedAndRetry(MENU_LIST_TITLE);
+  }
+
 
   // ToDo: clean all these below after settings are done
 
@@ -249,12 +256,6 @@ module.exports = class Page {
       .catch(error => {
         console.error('Error: ', error);
       });
-  }
-
-  async relaunchApp () {
-    await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
-    await browser.pause(2000);
-    await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
   }
 
   async syncData () {
