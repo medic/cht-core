@@ -52,13 +52,26 @@ If all is good, then in 24h, I will start the release. Thanks!
 ```
 *We're excited to announce the release of {{version}} of {{product}}*
 
-New features include {{key_features}}. We've also implemented loads of other improvements and fixed a heap of bugs.
-
-Read the [release notes]({{<paste-url>}}) for full details.
+See below for some highlights, read the [release notes]({{<paste-url>}}) for full details.
 
 Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions).
 
-Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what we're working on next.
+Check out our [roadmap](https://github.com/orgs/medic/projects/112/views/21) to see what else is currently being working on.
+
+## {{version}} Highlights
+
+### [{{Highlight 1}}]({{<paste-url to section>}})
+
+{{description of highlight section}}
+
+### ### [{{Highlight 2}}]({{<paste-url to section>}})
+
+{{description of highlight section}}
+
+### [And more...]({{paste-url to section}})
+
+We’ve also implemented loads of other improvements and fixed a heap of bugs.
+
 ```
 - [ ] Add one last update to the #product-team Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
 - [ ] Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.  
