@@ -5,9 +5,10 @@ import * as Qualifier from '../src/qualifier';
 import * as Context from '../src/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
+import { DataContext } from '../src';
 
 describe('person', () => {
-  const dataContext = { } as const;
+  const dataContext = { } as DataContext;
   let assertDataContext: SinonStub;
   let getPerson: SinonStub;
   let adapt: SinonStub;

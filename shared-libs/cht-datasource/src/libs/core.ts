@@ -1,3 +1,5 @@
+import { DataContext } from './data-context';
+
 /**
  * A value that could be `null`.
  */
@@ -10,6 +12,7 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 type DataPrimitive = string | number | boolean | Date | null | undefined;
 interface DataArray extends Readonly<(DataPrimitive | DataArray | DataObject)[]> { }
+
 /** @internal */
 export interface DataObject extends Readonly<Record<string, DataPrimitive | DataArray | DataObject>> { }
 
@@ -34,3 +37,8 @@ export const hasFields = (
   value: Record<string, unknown>,
   fields: NonEmptyArray<{ name: string, type: string }>
 ): boolean => fields.every(field => hasField(value, field));
+
+/** @internal */
+export abstract class AbstractDataContext implements DataContext {
+  readonly get = <T>(fn: (ctx: DataContext) => T): T => fn(this);
+}

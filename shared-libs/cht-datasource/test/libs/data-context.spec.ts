@@ -3,10 +3,11 @@ import { adapt, assertDataContext } from '../../src/libs/data-context';
 import * as LocalContext from '../../src/local/libs/data-context';
 import * as RemoteContext from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
+import { DataContext } from '../../dist';
 
 
 describe('context lib', () => {
-  const context = {} as const;
+  const context = { get: sinon.stub() } as DataContext;
   let isLocalDataContext: SinonStub;
   let isRemoteDataContext: SinonStub;
   let assertRemoteDataContext: SinonStub;
@@ -56,7 +57,8 @@ describe('context lib', () => {
     [
       null,
       1,
-      'hello'
+      'hello',
+      {}
     ].forEach((context) => {
       it(`throws an error if the data context is invalid [${JSON.stringify(context)}]`, () => {
         expect(() => assertDataContext(context)).to.throw(`Invalid data context [${JSON.stringify(context)}].`);

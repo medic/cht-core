@@ -1,10 +1,13 @@
 import logger from '@medic/logger';
 import { DataContext } from '../../libs/data-context';
-import { isString, Nullable } from '../../libs/core';
+import { AbstractDataContext, isString, Nullable } from '../../libs/core';
 
 /** @internal */
-export interface RemoteDataContext extends DataContext {
-  readonly url: string
+export class RemoteDataContext extends AbstractDataContext {
+  /** @internal */
+  constructor(readonly url: string) {
+    super();
+  }
 }
 
 /** @internal */
@@ -31,7 +34,7 @@ export const getRemoteDataContext = (url = ''): DataContext => {
     throw new Error(`Invalid URL [${JSON.stringify(url)}].`);
   }
 
-  return { url };
+  return new RemoteDataContext(url);
 };
 
 /** @internal */

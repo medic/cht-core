@@ -15,7 +15,7 @@ describe('local person', () => {
     localContext = {
       medicDb: {} as PouchDB.Database<Doc>,
       settings: { getAll: settingsGetAll }
-    };
+    } as unknown as LocalDataContext;
   });
 
   afterEach(() => sinon.restore());

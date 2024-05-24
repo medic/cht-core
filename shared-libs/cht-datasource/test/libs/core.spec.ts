@@ -1,7 +1,10 @@
 import { expect } from 'chai';
-import { hasField, hasFields, isRecord, isString, NonEmptyArray } from '../../src/libs/core';
+import { AbstractDataContext, hasField, hasFields, isRecord, isString, NonEmptyArray } from '../../src/libs/core';
+import sinon from 'sinon';
 
 describe('core lib', () => {
+  afterEach(() => sinon.restore());
+
   describe('isString', () => {
     [
       [null, false],
@@ -65,5 +68,19 @@ describe('core lib', () => {
         });
       }
     );
+  });
+
+  describe('AbstractDataContext', () => {
+    class TestDataContext extends AbstractDataContext { }
+
+    it('get', () => {
+      const ctx = new TestDataContext();
+      const testFn = sinon.stub().returns('test');
+
+      const result = ctx.get<string>(testFn);
+
+      expect(result).to.equal('test');
+      expect(testFn.calledOnceWithExactly(ctx)).to.be.true;
+    });
   });
 });

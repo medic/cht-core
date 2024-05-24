@@ -1,4 +1,4 @@
-import { isRecord } from './core';
+import { hasField, isRecord } from './core';
 import { isLocalDataContext, LocalDataContext } from '../local/libs/data-context';
 import { assertRemoteDataContext, isRemoteDataContext, RemoteDataContext } from '../remote/libs/data-context';
 
@@ -7,11 +7,22 @@ import { assertRemoteDataContext, isRemoteDataContext, RemoteDataContext } from 
  * offline. Or it may represent a remote data context where all data operations are performed against a remote CHT
  * instance.
  */
-export type DataContext = Readonly<object>;
+export interface DataContext {
+  /**
+   * Executes the provided function with this data context as the argument.
+   * @param fn the function to execute
+   * @returns the result of the function
+   */
+  get: <T>(fn: (ctx: DataContext) => T) => T
+}
+
+const isDataContext = (context: unknown): context is DataContext => {
+  return isRecord(context) && hasField(context, { name: 'get', type: 'function' });
+};
 
 /** @internal */
 export const assertDataContext: (context: unknown) => asserts context is DataContext = (context: unknown) => {
-  if (!isRecord(context) || !(isLocalDataContext(context) || isRemoteDataContext(context))) {
+  if (!isDataContext(context) || !(isLocalDataContext(context) || isRemoteDataContext(context))) {
     throw new Error(`Invalid data context [${JSON.stringify(context)}].`);
   }
 };

@@ -1,5 +1,5 @@
 import { Doc } from '../../libs/doc';
-import { hasField, isRecord } from '../../libs/core';
+import { AbstractDataContext, hasField, isRecord } from '../../libs/core';
 import { DataContext } from '../../libs/data-context';
 
 /**
@@ -15,9 +15,14 @@ export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
 export type SettingsService = Readonly<{ getAll: () => Doc }>;
 
 /** @internal */
-export interface LocalDataContext extends DataContext {
-  readonly medicDb: PouchDB.Database<Doc>;
-  readonly settings: SettingsService;
+export class LocalDataContext extends AbstractDataContext {
+  /** @internal */
+  constructor(
+    readonly medicDb: PouchDB.Database<Doc>,
+    readonly settings: SettingsService
+  ) {
+    super();
+  }
 }
 
 const assertSettingsService: (settings: unknown) => asserts settings is SettingsService = (settings: unknown) => {
@@ -49,8 +54,5 @@ export const isLocalDataContext = (context: DataContext): context is LocalDataCo
 export const getLocalDataContext = (settings: SettingsService, sourceDatabases: SourceDatabases): DataContext => {
   assertSettingsService(settings);
   assertSourceDatabases(sourceDatabases);
-  return {
-    medicDb: sourceDatabases.medic,
-    settings
-  };
+  return new LocalDataContext(sourceDatabases.medic, settings);
 };

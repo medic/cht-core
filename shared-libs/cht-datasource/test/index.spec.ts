@@ -3,15 +3,19 @@ import * as Index from '../src';
 import { hasAnyPermission, hasPermissions } from '../src/auth';
 import * as Person from '../src/person';
 import * as Qualifier from '../src/qualifier';
-import sinon from 'sinon';
+import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
+import { DataContext } from '../src';
 
 describe('CHT Script API - getDatasource', () => {
-  const dataContext = { } as const;
-  let assertDataContext: sinon.SinonStub;
+  let dataContext: DataContext;
+  let dataContextGet: SinonStub;
+  let assertDataContext: SinonStub;
   let datasource: ReturnType<typeof Index.getDatasource>;
 
   beforeEach(() => {
+    dataContextGet = sinon.stub();
+    dataContext = { get: dataContextGet };
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     datasource = Index.getDatasource(dataContext);
   });
@@ -52,16 +56,16 @@ describe('CHT Script API - getDatasource', () => {
 
       it('getByUuid', async () => {
         const expectedPerson = {};
-        const personGetInner = sinon.stub().resolves(expectedPerson);
-        const personGetOuter = sinon.stub(Person.v1, 'get').returns(personGetInner);
+        const personGet = sinon.stub().resolves(expectedPerson);
+        dataContextGet.returns(personGet);
         const qualifier = { uuid: 'my-persons-uuid' };
         const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
 
         const returnedPerson = await person.getByUuid(qualifier.uuid);
 
         expect(returnedPerson).to.equal(expectedPerson);
-        expect(personGetOuter.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(personGetInner.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextGet.calledOnceWithExactly(Person.v1.get)).to.be.true;
+        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
     });

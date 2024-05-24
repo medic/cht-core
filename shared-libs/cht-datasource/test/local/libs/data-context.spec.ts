@@ -5,6 +5,7 @@ import {
   SettingsService,
   SourceDatabases
 } from '../../../src/local/libs/data-context';
+import { DataContext } from '../../../src';
 
 describe('local context lib', () => {
   describe('isLocalDataContext', () => {
@@ -14,7 +15,7 @@ describe('local context lib', () => {
       [{ medicDb: {} }, false],
       [{ settings: {} }, false],
       [{}, false]
-    ] as [object, boolean][]).forEach(([context, expected]) => {
+    ] as [DataContext, boolean][]).forEach(([context, expected]) => {
       it(`evaluates ${JSON.stringify(context)}`, () => {
         expect(isLocalDataContext(context)).to.equal(expected);
       });
@@ -51,7 +52,7 @@ describe('local context lib', () => {
 
     it('returns the local data context', () => {
       const dataContext = getLocalDataContext(settingsService, sourceDatabases);
-      expect(dataContext).to.deep.equal({ medicDb: sourceDatabases.medic, settings: settingsService });
+      expect(dataContext).to.deep.include({ medicDb: sourceDatabases.medic, settings: settingsService });
     });
   });
 });

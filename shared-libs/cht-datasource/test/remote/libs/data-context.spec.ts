@@ -43,15 +43,15 @@ describe('remote context lib', () => {
 
   describe('assertRemoteDataContext', () => {
     it('asserts a remote data context', () => {
-      const context = { url: 'hello.world' };
+      const context = getRemoteDataContext('hello.world');
 
       expect(() => assertRemoteDataContext(context)).to.not.throw();
     });
 
-    [
+    ([
       { hello: 'world' },
       { },
-    ].forEach(context => {
+    ] as DataContext[]).forEach(context => {
       it(`throws an error for ${JSON.stringify(context)}`, () => {
         expect(() => assertRemoteDataContext(context))
           .to.throw(`Invalid remote data context [${JSON.stringify(context)}].`);
@@ -70,7 +70,7 @@ describe('remote context lib', () => {
         const context = getRemoteDataContext(url);
 
         expect(isRemoteDataContext(context)).to.be.true;
-        expect(context).to.deep.equal({ url: url ?? '' });
+        expect(context).to.deep.include({ url: url ?? '' });
       });
     });
 

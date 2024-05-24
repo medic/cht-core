@@ -14,6 +14,9 @@
  * import { Person, Qualifier } from '@medic/cht-datasource';
  *
  * const getPerson = Person.v1.get(dataContext);
+ * // Or
+ * const getPerson = dataContext.get(Person.v1.get);
+ *
  * const myUuid = 'my-uuid';
  * const myPerson = await getPerson(Qualifier.byUuid(uuid));
  * @example Imperative usage mode:
@@ -53,7 +56,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @param uuid the UUID of the person to retrieve
          * @returns the person or `null` if no person is found for the UUID
          */
-        getByUuid: (uuid: string) => Person.v1.get(ctx)(Qualifier.byUuid(uuid)),
+        getByUuid: (uuid: string) => ctx.get(Person.v1.get)(Qualifier.byUuid(uuid)),
       }
     }
   };
