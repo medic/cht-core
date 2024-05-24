@@ -1457,7 +1457,7 @@ const getContainerName = (service, project = PROJECT_NAME) => {
   return `deployment/cht-${service}`;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
+const getUpdatedPermissions  = async (roles, addPermissions, removePermissions) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {
@@ -1467,7 +1467,12 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
   });
 
   (removePermissions || []).forEach(permission => settings.permissions[permission] = []);
-  await updateSettings({ permissions: settings.permissions }, ignoreReload);
+  return settings.permissions;
+};
+
+const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
+  const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
+  await updateSettings({ permissions }, ignoreReload);
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
@@ -1578,6 +1583,7 @@ module.exports = {
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
+  getUpdatedPermissions,
   formDocProcessing,
   getSentinelDate,
   logFeedbackDocs,

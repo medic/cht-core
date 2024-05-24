@@ -193,6 +193,7 @@ describe('replication', () => {
   ];
 
   before(async () => {
+    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], true);
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users, true);
   });
@@ -491,8 +492,12 @@ describe('replication', () => {
           },
         ];
 
+        const permissions = await utils.getUpdatedPermissions(['district_admin'], ['can_have_multiple_places'], []);
         await utils.updateSettings(
-          { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] },
+          {
+            replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }],
+            permissions,
+          },
           true
         );
         await utils.saveDocs(contacts);
@@ -1067,7 +1072,7 @@ describe('replication', () => {
       expect(response.doc_ids).to.have.members(deletedIds);
     });
 
-    xit('should return purged docs', async () => {
+    it('should return purged docs', async () => {
       await utils.saveDocs(reports);
 
       const seq = await sentinelUtils.getCurrentSeq();
@@ -1080,7 +1085,7 @@ describe('replication', () => {
       expect(response.doc_ids).to.have.members(['purged_1', 'purged_2']);
     });
 
-    xit('should return purged and deleted docs', async () => {
+    it('should return purged and deleted docs', async () => {
       const contacts = createSomeContacts(3, 'fixture:bobville');
       const irrelevant = createSomeContacts(3, 'irrelevant');
       await utils.saveDocs([...contacts, ...irrelevant]);
