@@ -21,29 +21,29 @@ describe('Apdex Performance Workflows', () => {
   });
 
   for (let i = 0; i < REPETITIONS; i++) {
-    // it('should load contact list', async () => {
-    //   await contactsPage.loadContactList(settingsProvider);
-    // });
+    it('should load contact list', async () => {
+      await contactsPage.loadContactList(settingsProvider);
+    });
 
-    // it('should load CHW area', async () => {
-    //   await contactsPage.loadCHWArea(settingsProvider);
-    // });
+    it('should load CHW area', async () => {
+      await contactsPage.loadCHWArea(settingsProvider);
+    });
 
-    // it('should load Household', async () => {
-    //   await contactsPage.loadHousehold(settingsProvider);
-    // });
+    it('should load Household', async () => {
+      await contactsPage.loadHousehold(settingsProvider);
+    });
 
-    // it('should load patient', async () => {
-    //   await contactsPage.loadPatient(settingsProvider);
-    // });
+    it('should load patient', async () => {
+      await contactsPage.loadPatient(settingsProvider);
+    });
 
-    // it('should submit patient report', async () => {
-    //   await contactsPage.submitPatientReport(settingsProvider);
-    // });
+    it('should submit patient report', async () => {
+      await contactsPage.submitPatientReport(settingsProvider);
+    });
 
-    // it('should create patient', async () => {
-    //   await contactsPage.createPatient(settingsProvider);
-    // });
+    it('should create patient', async () => {
+      await contactsPage.createPatient(settingsProvider);
+    });
 
     it('should load message list and view a message', async () => {
       await messagesPage.loadMessageList(settingsProvider);

@@ -159,12 +159,11 @@ module.exports = class Page {
   }
 
   async relaunchApp (commonElements) {
-    const MENU_LIST_TITLE = commonElements?.menuListTitle || '//*[@text=\"People\"]';
+    const MENU_LIST_TITLE = commonElements?.menuListTitle || '//*[@text="People"]';
     await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await this.waitForDisplayedAndRetry(MENU_LIST_TITLE);
   }
-
 
   // ToDo: clean all these below after settings are done
 
