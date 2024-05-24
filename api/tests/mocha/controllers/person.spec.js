@@ -22,9 +22,7 @@ describe('Person Controller', () => {
     };
   });
 
-  afterEach(() => {
-    sinon.restore();
-  });
+  afterEach(() => sinon.restore());
 
   describe('v1', () => {
     describe('get', () => {

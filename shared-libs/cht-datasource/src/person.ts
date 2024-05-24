@@ -6,18 +6,15 @@ import * as Remote from './remote';
 import * as Local from './local';
 
 export namespace v1 {
-  /** @internal */
-  interface AbstractPerson {
-    date_of_birth?: Date;
-    phone?: string;
-    patient_id?: string;
-    sex?: string;
-  }
-
   /**
    * Immutable data about a person contact.
    */
-  export interface Person extends Contact, AbstractPerson { }
+  export interface Person extends Contact {
+    readonly date_of_birth?: Date;
+    readonly phone?: string;
+    readonly patient_id?: string;
+    readonly sex?: string;
+  }
 
   /** @internal */
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {

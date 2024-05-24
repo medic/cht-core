@@ -4,8 +4,8 @@ import { DataObject, hasFields, isRecord } from './core';
  * A document from the database.
  */
 export interface Doc extends DataObject {
-  _id: string;
-  _rev: string;
+  readonly _id: string;
+  readonly _rev: string;
 }
 
 /** @internal */
