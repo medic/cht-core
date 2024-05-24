@@ -71,8 +71,7 @@ function helmInstallOrUpdate(valuesFile, namespace, values, image_tag) { //NoSON
         const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString(); //NoSONAR
         if (releaseExists.includes(project_name)) { //NoSONAR
             console.log("Release exists. Performing upgrade.");
-            child_process.execSync(
-                `helm upgrade --install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' }); //NoSONAR
+            child_process.execSync(`helm upgrade --install ${project_name} ${CHT_CHART_NAME} --version ${chart_version} --namespace ${namespace} --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' }); //NoSONAR
             console.log(`Instance at ${values.ingress.host} upgraded successfully.`);
         } else {
             console.log("Release does not exist. Performing install.");
