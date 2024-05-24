@@ -84,6 +84,7 @@ describe('bulk-docs handler', () => {
   before(async () => {
     await utils.saveDoc(parentPlace);
     await sUtils.waitForSentinel();
+    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], true);
     await utils.createUsers(users);
   });
 
