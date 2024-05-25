@@ -1,6 +1,6 @@
 {
   "name": "@medic/cht-deploy",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "## Deploy the CHT",
   "main": "src/install.js",
   "directories": {
