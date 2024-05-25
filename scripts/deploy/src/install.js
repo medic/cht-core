@@ -73,16 +73,16 @@ const helmInstallOrUpdate = function(valuesFile, namespace, values, image_tag) {
     const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString(); //NoSONAR
     if (releaseExists.includes(project_name)) { //NoSONAR
       console.log('Release exists. Performing upgrade.');
-      child_process.execSync(`helm upgrade` +
-        ` --install ${project_name} ${CHT_CHART_NAME}` +
-        ` --version ${chart_version} --namespace ${namespace}` +
+      child_process.execSync(`helm upgrade` + //NoSONAR
+        ` --install ${project_name} ${CHT_CHART_NAME}` + //NoSONAR
+        ` --version ${chart_version} --namespace ${namespace}` + //NoSONAR
         ` --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' }); //NoSONAR
       console.log(`Instance at ${values.ingress.host} upgraded successfully.`);
     } else {
       console.log('Release does not exist. Performing install.');
       const createNamespaceFlag = namespaceExists ? '' : '--create-namespace';
-      child_process.execSync(`helm install ${project_name} ${CHT_CHART_NAME}` +
-        ` --version ${chart_version} --namespace ${namespace} ${createNamespaceFlag}` +
+      child_process.execSync(`helm install ${project_name} ${CHT_CHART_NAME}` + //NoSONAR
+        ` --version ${chart_version} --namespace ${namespace} ${createNamespaceFlag}` + //NoSONAR
         ` --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' }); //NoSONAR
       console.log(`Instance at ${values.ingress.host} installed successfully.`);
     }
