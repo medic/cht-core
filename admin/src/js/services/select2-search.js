@@ -58,7 +58,7 @@ angular.module('inboxServices').factory('Select2Search',
       return row;
     };
 
-    return function(selectEl, _types, options) { 
+    return function(selectEl, _types, options) {
 
       options = options || {};
       let currentQuery;
@@ -135,8 +135,7 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      // BEGIN-NOSCAN
-      const resolveInitialValue = function(selectEl, initialValue) {
+      const resolveInitialValue = function(selectEl, initialValue) { //NoSONAR
         if (initialValue) {
           if (Array.isArray(initialValue)) {
             initialValue.forEach(function (val) {
@@ -161,18 +160,17 @@ angular.module('inboxServices').factory('Select2Search',
         } else {
           if (Array.isArray(value)) {
             // NB: We now support an Array of IDs for places
-            const docPromises = value.map(function (val) {
-              return getDoc(val).then(function (doc) {
+            const docPromises = value.map(function (val) { //NoSONAR
+              return getDoc(val).then(function (doc) { //NoSONAR
                 return { id: val, doc: doc };
               });
             });
 
-            // BEGIN-NOSCAN
-            resolution = $q
+            resolution = $q //NoSONAR
               .all(docPromises)
-              .then(function(docs) {
+              .then(function(docs) { //NoSONAR
                 const select2Data = selectEl.select2('data') || [];
-                docs.forEach(function (doc) {
+                docs.forEach(function (doc) { //NoSONAR
                   const selected = select2Data.find((d) => d.id === doc.id);
                   if (selected) {
                     selected.doc = doc.doc;
@@ -187,7 +185,6 @@ angular.module('inboxServices').factory('Select2Search',
               })
               .catch((err) => $log.error('Select2 failed to get documents', err));
           }
-          // END-NOSCAN
 
           if (phoneNumber.validate(Settings, value)) {
             // Raw phone number, don't resolve from DB
@@ -202,16 +199,14 @@ angular.module('inboxServices').factory('Select2Search',
           }
         }
 
-        return resolution.then(function() {
+        return resolution.then(function() { //NoSONAR
           $timeout(() => {
             selectEl.trigger('change');
           }, 1000);
           return selectEl;
         });
       };
-      // END-NOSCAN
 
-      // BEGIN-NOSCAN
       const initSelect2 = function(selectEl) {
         selectEl.select2({
           ajax: {
@@ -259,7 +254,6 @@ angular.module('inboxServices').factory('Select2Search',
           });
         }
       };
-      // END-NOSCAN
 
       initSelect2(selectEl);
       return resolveInitialValue(selectEl, initialValue);

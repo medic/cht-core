@@ -1,7 +1,7 @@
 (function () {
 
   'use strict';
-  let URL = '/api/v2/users';
+  const URL = '/api/v3/users';
 
   angular.module('services').factory('CreateUser',
     function (
@@ -43,8 +43,6 @@
        * @param      {Object}  data        content of the csv file
        */
       const createMultipleUsers = (data) => {
-        URL = '/api/v3/users';
-        
         $log.debug('CreateMultipleUsers', URL, data);
 
         return $http({
@@ -63,6 +61,6 @@
         createMultipleUsers
       };
     });
-  
+
 }()
 );
