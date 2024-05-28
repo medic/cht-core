@@ -282,7 +282,6 @@ angular
       return hasPlace && hasContact;
     };
 
-
     const validateFacilityHeirarchy = () => {
       const placeIds = $scope.editUserModel.place;
 
