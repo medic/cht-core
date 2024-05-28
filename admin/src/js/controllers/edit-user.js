@@ -238,7 +238,7 @@ angular
       return true;
     };
 
-    const validatePermission = () => {
+    const validatePlacesPermission = () => {
       const userRoles = $scope.editUserModel.roles;
 
       if ($scope.editUserModel.place === 1) {
@@ -250,7 +250,7 @@ angular
       const userHasPermission = userRoles.some(role => allowedRoles.includes(role));
 
       if (!userHasPermission) {
-        $translate('permission.can_have_multiple_places.not_allowed').then(
+        $translate('permission.description.can_have_multiple_places.not_allowed').then(
           (value) => {
             $scope.errors.multiFacility = value;
           }
@@ -300,7 +300,7 @@ angular
           const isSameHeirarchy = contactTypes.every(type => type === contactTypes[0]);
 
           if (!isSameHeirarchy) {
-            $translate('permission.can_have_multiple_places.not_allowed').then(value => {
+            $translate('permission.description.can_have_multiple_places.incompatible_place').then(value => {
               $scope.errors.multiFacility = value;
             });
           }
@@ -514,7 +514,7 @@ angular
       computeFields();
 
       const synchronousValidations = validateName() &&
-                                     validatePermission() &&
+                                     validatePlacesPermission() &&
                                      validateRole() &&
                                      validateContactAndFacility() &&
                                      validatePasswordForEditUser() &&
