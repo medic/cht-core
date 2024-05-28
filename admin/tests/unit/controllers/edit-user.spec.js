@@ -32,7 +32,10 @@ describe('EditUserCtrl controller', () => {
         'data-entry': { name: 'abc' },
         supervisor: { name: 'qrt', offline: true },
         'national-manager': { name: 'national-manager', offline: false },
-      }
+      },
+      permissions: {
+        can_have_multiple_places: ['community-health-assistant'],
+      },
     });
     http = { get: sinon.stub() };
     userToEdit = {
@@ -363,7 +366,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.fullname = 'fullname';
           scope.editUserModel.email = 'email@email.com';
           scope.editUserModel.phone = 'phone';
-          scope.editUserModel.facilitySelect = 'facility_id';
+          scope.editUserModel.facilitySelect = ['facility_id'];
           scope.editUserModel.contactSelect = 'contact_id';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
@@ -443,7 +446,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.fullname = 'fullname';
           scope.editUserModel.email = 'email@email.com';
           scope.editUserModel.phone = 'phone';
-          scope.editUserModel.facilitySelect = 'facility_id';
+          scope.editUserModel.facilitySelect = ['facility_id'];
           scope.editUserModel.contactSelect = 'contact_id';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
@@ -469,7 +472,7 @@ describe('EditUserCtrl controller', () => {
 
     it('should not save user if offline and is warned by users-info', () => {
       mockContact('new_contact_id');
-      mockFacility('new_facility_id');
+      mockFacility(['new_facility_id']);
       mockContactGet('new_facility_id');
       http.get
         .withArgs('/api/v1/users-info')
@@ -481,7 +484,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.fullname = 'fullname';
           scope.editUserModel.email = 'email@email.com';
           scope.editUserModel.phone = 'phone';
-          scope.editUserModel.facilitySelect = 'new_facility';
+          scope.editUserModel.facilitySelect = ['new_facility'];
           scope.editUserModel.contactSelect = 'new_contact';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
@@ -495,7 +498,7 @@ describe('EditUserCtrl controller', () => {
           chai.expect(http.get.callCount).to.equal(1);
           chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { params: { role: [ 'supervisor' ], facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
+            { params: { role: [ 'supervisor' ], facility_id: ['new_facility_id'], contact_id: 'new_contact_id' }}
           ]);
           chai.expect(scope.setError.callCount).to.equal(1);
           chai.expect(scope.setError.args[0]).to.deep.equal([
@@ -515,7 +518,7 @@ describe('EditUserCtrl controller', () => {
 
     it('should save user if offline and warned when user clicks on submit the 2nd time', () => {
       mockContact('new_contact_id');
-      mockFacility('new_facility_id');
+      mockFacility(['new_facility_id']);
       mockContactGet('new_facility_id');
       http.get
         .withArgs('/api/v1/users-info')
@@ -528,7 +531,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.fullname = 'fullname';
           scope.editUserModel.email = 'email@email.com';
           scope.editUserModel.phone = 'phone';
-          scope.editUserModel.facilitySelect = 'new_facility';
+          scope.editUserModel.facilitySelect = ['new_facility'];
           scope.editUserModel.contactSelect = 'new_contact';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
@@ -541,7 +544,7 @@ describe('EditUserCtrl controller', () => {
           chai.expect(http.get.callCount).to.equal(1);
           chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { params: { role: [ 'supervisor' ], facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
+            { params: { role: [ 'supervisor' ], facility_id: ['new_facility_id'], contact_id: 'new_contact_id' }}
           ]);
 
           chai.expect(translate.callCount).to.equal(1);

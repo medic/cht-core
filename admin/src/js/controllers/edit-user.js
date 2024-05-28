@@ -96,7 +96,6 @@ angular
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
-            multiFacilityPermission: $scope.permissions.can_have_multiple_places,
             tokenLoginEnabled: tokenLoginEnabled,
           });
         });
@@ -241,11 +240,11 @@ angular
     const validatePlacesPermission = () => {
       const userRoles = $scope.editUserModel.roles;
 
-      if ($scope.editUserModel.place === 1) {
-        return true;
+      if (!$scope.editUserModel.place || $scope.editUserModel.place.length === 1) {
+        return $q.resolve(true);
       }
 
-      const allowedRoles = $scope.editUserModel.multiFacilityPermission;
+      const allowedRoles = $scope.permissions.can_have_multiple_places;
 
       const userHasPermission = userRoles.some(role => allowedRoles.includes(role));
 
@@ -256,7 +255,7 @@ angular
           }
         );
       }
-      return userHasPermission;
+      return $q.resolve(userHasPermission);
     };
 
 
@@ -285,8 +284,8 @@ angular
     const validateFacilityHeirarchy = () => {
       const placeIds = $scope.editUserModel.place;
 
-      if (placeIds.length === 1) {
-        return true;
+      if (!placeIds || placeIds.length === 1) {
+        return $q.resolve(true);
       }
 
       const getPlace = (placeId) => {
@@ -513,7 +512,6 @@ angular
       computeFields();
 
       const synchronousValidations = validateName() &&
-                                     validatePlacesPermission() &&
                                      validateRole() &&
                                      validateContactAndFacility() &&
                                      validatePasswordForEditUser() &&
@@ -527,6 +525,7 @@ angular
       const asynchronousValidations = $q
         .all([
           validateFacilityHeirarchy(),
+          validatePlacesPermission(),
           validateContactIsInPlace(),
           validateTokenLogin(),
         ])
