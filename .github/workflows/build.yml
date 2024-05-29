@@ -23,6 +23,7 @@ jobs:
   build:
     name: Compile the app
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
     steps:
     - name: Install bats
@@ -88,6 +89,8 @@ jobs:
     needs: build
     name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    
     strategy:
       fail-fast: false
       matrix:
@@ -124,6 +127,7 @@ jobs:
     needs: build
     name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
@@ -184,6 +188,8 @@ jobs:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    
     env:
       CHROME_VERSION: ${{ matrix.chrome-version }}
       JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
@@ -343,6 +349,8 @@ jobs:
     needs: [tests, config-tests, test-cht-form]
     name: Publish branch build
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
@@ -392,6 +400,8 @@ jobs:
     needs: [publish]
     name: Upgrade from latest release
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
