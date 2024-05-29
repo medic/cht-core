@@ -29,6 +29,7 @@ describe('EditUserCtrl controller', () => {
     Settings = sinon.stub().resolves({
       roles: {
         'district-manager': { name: 'xyz', offline: true },
+        'community-health-assistant': { name: 'xyz', offline: true },
         'data-entry': { name: 'abc' },
         supervisor: { name: 'qrt', offline: true },
         'national-manager': { name: 'national-manager', offline: false },
@@ -351,6 +352,24 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
+    it('should allow only user with permission to have multiple places', () => {
+      return mockEditAUser(userToEdit)
+        .setupPromise.then(() => {
+          mockContact(userToEdit.contact_id);
+          mockFacility(['facility_id', 'facility_id_2']);
+          mockContactGet(userToEdit.contact_id);
+          translate.withArgs('permission.description.can_have_multiple_places.not_allowed')
+            .resolves('The person with selected role cannot have multiple places');
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(scope.errors.multiFacility).to.equal(
+            'The person with selected role cannot have multiple places'
+          );
+        });
+    });
+
     it('user is updated', () => {
 
       mockContact(userToEdit.contact_id);
@@ -396,6 +415,57 @@ describe('EditUserCtrl controller', () => {
               facility_id: scope.editUserModel.place,
               contact_id: scope.editUserModel.contact
             }}
+          ]);
+        });
+    });
+
+    it('user is updated with multiple places', () => {
+      mockContact(userToEdit.contact_id);
+      mockFacility(['facility_id', 'facility_id_2']);
+      mockContactGet(userToEdit.contact_id);
+      http.get.withArgs('/api/v1/users-info').resolves({
+        data: { total_docs: 20000, warn_docs: 800, warn: false, limit: 10000 },
+      });
+
+      return mockEditAUser(userToEdit)
+        .setupPromise.then(() => {
+          scope.editUserModel.fullname = 'fullname';
+          scope.editUserModel.email = 'email@email.com';
+          scope.editUserModel.phone = 'phone';
+          scope.editUserModel.facilitySelect = ['facility_id', 'facility_id_2'];
+          scope.editUserModel.contactSelect = 'contact_id';
+          scope.editUserModel.password = 'medic.1234';
+          scope.editUserModel.passwordConfirm = 'medic.1234';
+          scope.editUserModel.roles = ['community-health-assistant'];
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.called).to.equal(true);
+          const updateUserArgs = UpdateUser.getCall(0).args;
+
+          chai.expect(updateUserArgs[0]).to.equal('user.name');
+
+          const updates = updateUserArgs[1];
+          chai.expect(updates.fullname).to.equal(scope.editUserModel.fullname);
+          chai.expect(updates.email).to.equal(scope.editUserModel.email);
+          chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
+          chai
+            .expect(updates.place)
+            .to.deep.equal(['facility_id', 'facility_id_2']);
+          chai.expect(updates.contact).to.equal(scope.editUserModel.contact_id);
+          chai.expect(updates.roles).to.deep.equal(scope.editUserModel.roles);
+          chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
+          chai.expect(http.get.callCount).to.equal(1);
+          chai.expect(http.get.args[0]).to.deep.equal([
+            '/api/v1/users-info',
+            {
+              params: {
+                role: ['community-health-assistant'],
+                facility_id: scope.editUserModel.place,
+                contact_id: scope.editUserModel.contact,
+              },
+            },
           ]);
         });
     });
