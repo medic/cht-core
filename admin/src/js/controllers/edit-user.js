@@ -124,11 +124,11 @@ angular
       });
 
     const validateRequired = (fieldName, fieldDisplayName) => {
-      if (!$scope.editUserModel[fieldName]) {
-        Translate.fieldIsRequired(fieldDisplayName)
-          .then(function(value) {
-            $scope.errors[fieldName] = value;
-          });
+      const field = $scope.editUserModel[fieldName];
+      if (!field || (Array.isArray(field) && !field.length)) {
+        Translate.fieldIsRequired(fieldDisplayName).then((value) => {
+          $scope.errors[fieldName] = value;
+        });
         return false;
       }
       return true;
@@ -512,10 +512,10 @@ angular
 
       const synchronousValidations = validateName() &&
                                      validateRole() &&
-                                     validatePlacesPermission() &&
                                      validateContactAndFacility() &&
                                      validatePasswordForEditUser() &&
-                                     validateEmailAddress();
+                                     validateEmailAddress() &&
+                                     validatePlacesPermission();
 
       if (!synchronousValidations) {
         $scope.setError();

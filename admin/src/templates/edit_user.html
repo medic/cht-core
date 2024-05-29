@@ -58,7 +58,7 @@
     <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place || errors.multiFacility, 'required': roles[editUserModel.role].offline || !!editUserModel.contact}">
       <label for="facilitySelect" translate>Facility</label>
       <select id="facilitySelect" name="facilitySelect" multiple="multiple" ng-model="editUserModel.facilitySelect">
-        <option ng-repeat="facility in facilities" value="{{facility.id}}">
+        <option ng-repeat="facility in facilities" value="{{facility.id}}" ng-if="editUserModel.facilitySelect">
           {{facility.name}}</option>
       </select>
       <span class="help-block" ng-if="errors.place">{{errors.place}}</span>
