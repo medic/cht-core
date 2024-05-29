@@ -1,7 +1,7 @@
 (function () {
 
   'use strict';
-  const URL = '/api/v3/users';
+  let URL = '/api/v2/users';
 
   angular.module('services').factory('CreateUser',
     function (
@@ -20,6 +20,7 @@
        * @param      {Object}  updates        Updates you wish to make
        */
       const createSingleUser = (updates) => {
+        URL = '/api/v3/users';
         if (!updates.username) {
           return $q.reject('You must provide a username to create a user');
         }

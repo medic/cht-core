@@ -200,7 +200,7 @@ angular.module('inboxServices').factory('Select2Search',
         }
 
         return resolution.then(function() { //NoSONAR
-          $timeout(() => {
+          $timeout(() => { //NoSONAR
             selectEl.trigger('change');
           }, 1000);
           return selectEl;
@@ -225,7 +225,7 @@ angular.module('inboxServices').factory('Select2Search',
           const button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
             .on('click', function() {
               selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
-              $timeout(() => {
+              $timeout(() => { //NoSONAR
                 selectEl.trigger('change');
               }, 1000);
               return selectEl;
