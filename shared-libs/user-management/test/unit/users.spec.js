@@ -620,7 +620,7 @@ describe('Users service', () => {
         fullname: undefined,
         email: undefined,
         phone: undefined,
-        place: [undefined],
+        place: null,
         roles: undefined,
         contact: undefined,
         external_id: undefined,
@@ -1299,15 +1299,15 @@ describe('Users service', () => {
     it('returns error if missing fields', () => {
       return service.createUser({})
         .catch(err => chai.expect(err.code).to.equal(400)) // empty
-        .then(() => service.createUser({ password: 'x', place: 'x', contact: { parent: 'x' }})) // missing username
+        .then(() => service.createUser({ password: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'})) // missing username
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }})) // missing password
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'})) // missing password
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', password: 'x', contact: { parent: 'x' }})) // missing place
+        .then(() => service.createUser({ username: 'x', password: 'x', contact: { parent: 'x' }, type: 'a'})) // missing place
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }})) // missing contact
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'})) // missing contact
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: {}})) // missing contact.parent
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: {}, type: 'a'})) // missing contact.parent
         .catch(err => chai.expect(err.code).to.equal(400));
     });
 
@@ -2094,6 +2094,7 @@ describe('Users service', () => {
 
   describe('createMultiFacilityUser', () => {
     it('returns error if missing fields', async () => {
+      const pwd = 'medic.123456';
       await chai.expect(service.createMultiFacilityUser({}))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
       await chai.expect(service.createMultiFacilityUser({ password: 'x', place: 'x', contact: 'y' }))
@@ -2103,6 +2104,15 @@ describe('Users service', () => {
       await chai.expect(service.createMultiFacilityUser({ username: 'x', password: 'x', contact: 'y' }))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
       await chai.expect(service.createMultiFacilityUser({ username: 'x', password: 'x', place: 'x' }))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      let payload = { username: 'x', password: pwd, place: '', type: 'user', contact: 'z' };
+      await chai.expect(service.createMultiFacilityUser(payload))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      payload = { username: 'x', password: pwd, place: [], type: 'user', contact: 'z' };
+      await chai.expect(service.createMultiFacilityUser(payload))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      payload = { username: 'x', password: pwd, place: [''], type: 'user', contact: 'z' };
+      await chai.expect(service.createMultiFacilityUser(payload))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
     });
 

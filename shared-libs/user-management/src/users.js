@@ -342,7 +342,7 @@ const hasParent = (facility, id) => {
  */
 const mapUser = (user, setting, facilities) => {
   const facilityIds = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
-  const places = facilityIds.map(facility => getDoc(facility, facilities));
+  const places = facilityIds.filter(facilityId => facilityId).map(facility => getDoc(facility, facilities));
   return {
     id: user._id,
     rev: user._rev,
@@ -350,7 +350,7 @@ const mapUser = (user, setting, facilities) => {
     fullname: setting.fullname,
     email: setting.email,
     phone: setting.phone,
-    place: places,
+    place: places.length ? places : null,
     roles: user.roles,
     contact: getDoc(user.contact_id, facilities),
     external_id: setting.external_id,
@@ -370,7 +370,9 @@ const mapUsers = (users, settings, facilities) => {
 
 const getFacilityId = (data) => {
   if (data.place) {
-    return Array.isArray(data.place) ? data.place.map(place => getDocID(place)) :  [getDocID(data.place)];
+    let facilities = Array.isArray(data.place) ? data.place.map(place => getDocID(place)) :  [getDocID(data.place)];
+    facilities = facilities.filter(Boolean);
+    return facilities.length ? facilities : null;
   }
 
   if (_.isNull(data.place)) {
@@ -518,7 +520,23 @@ const missingFields = data => {
     required.push('place', 'contact');
   }
 
-  return required.filter(prop => !data[prop]);
+  const isInvalidProp = (prop) => {
+    if (!data[prop]) {
+      return true;
+    }
+
+    if (Array.isArray(data[prop])) {
+      return data[prop].filter(value => value).length === 0;
+    }
+
+    if (typeof data[prop] === 'object') {
+      return Object.values(data[prop]).filter(value => value).length === 0;
+    }
+
+    return false;
+  };
+
+  return required.filter(prop => isInvalidProp(prop));
 };
 
 const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
@@ -594,6 +612,13 @@ const validateAllowedMultipleFacilities = (data, user) => {
 
 const validateUserFacility = (data, user) => {
   if (data.place) {
+    if (!data.facility_id) {
+      throw error400(
+        'Invalid facilities list',
+        'field is required',
+        {'field': 'Place'}
+      );
+    }
     validateAllowedMultipleFacilities(data, user);
     return places.placesExist(data.facility_id);
   }
@@ -824,6 +849,7 @@ const getUserSettings = async({ name }) => {
 
 const createMultiFacilityUser = async (data, appUrl) => {
   const missing = missingFields(data);
+  console.log('missing fields', missing);
   if (missing.length > 0) {
     return Promise.reject(error400(
       'Missing required fields: ' + missing.join(', '),
@@ -832,14 +858,15 @@ const createMultiFacilityUser = async (data, appUrl) => {
     ));
   }
   hydratePayload(data);
+  console.log(data);
 
   const tokenLoginError = tokenLogin.validateTokenLogin(data, true);
   if (tokenLoginError) {
-    return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+    throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
   const passwordError = validatePassword(data.password);
   if (passwordError) {
-    return Promise.reject(passwordError);
+    throw passwordError;
   }
 
   const response = {};
