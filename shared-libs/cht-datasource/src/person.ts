@@ -1,9 +1,10 @@
 import { Nullable } from './libs/core';
 import { isUuidQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
-import { Contact } from './libs/contact';
+import { Contact, NormalizedParent } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
+import * as Place from './place';
 
 export namespace v1 {
   /**
@@ -14,6 +15,13 @@ export namespace v1 {
     readonly phone?: string;
     readonly patient_id?: string;
     readonly sex?: string;
+  }
+
+  /**
+   * Immutable data about a person contact, including the full records of the parent place lineage.
+   */
+  export interface PersonWithLineage extends Person {
+    readonly parent?: Place.v1.PlaceWithLineage | NormalizedParent,
   }
 
   /** @internal */
