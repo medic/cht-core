@@ -182,6 +182,10 @@ angular.module('inboxServices').factory('Select2Search',
                     });
                   }
                 });
+                selectEl.select2('data', select2Data);
+                $timeout(() => { //NoSONAR
+                  selectEl.trigger('change');
+                }, 1000);
               })
               .catch((err) => $log.error('Select2 failed to get documents', err));
           }
@@ -225,9 +229,8 @@ angular.module('inboxServices').factory('Select2Search',
           const button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
             .on('click', function() {
               selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
-              $timeout(() => { //NoSONAR
-                selectEl.trigger('change');
-              }, 1000);
+              selectEl.trigger('change');
+
               return selectEl;
             });
           selectEl.after(button);
@@ -243,10 +246,22 @@ angular.module('inboxServices').factory('Select2Search',
 
             if (docId) {
               getDoc(docId).then(function(doc) {
-                selectEl.select2('data')[0].doc = doc;
-                $timeout(() => {
+                const select2Data = selectEl.select2('data') || [];
+                const selected = select2Data.find((d) => d.id === docId);
+                if (selected) {
+                  selected.doc = doc;
+                } else {
+                  select2Data.push({
+                    id: docId,
+                    doc: doc,
+                    text: doc.name,
+                  });
+                }
+                selectEl.select2('data', select2Data);
+                $timeout(() => { //NoSONAR
                   selectEl.trigger('change');
                 }, 1000);
+
                 return selectEl;
               })
                 .catch(err => $log.error('Select2 failed to get document', err));
