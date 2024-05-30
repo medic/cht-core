@@ -1299,15 +1299,20 @@ describe('Users service', () => {
     it('returns error if missing fields', () => {
       return service.createUser({})
         .catch(err => chai.expect(err.code).to.equal(400)) // empty
-        .then(() => service.createUser({ password: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'})) // missing username
+        // missing username
+        .then(() => service.createUser({ password: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'})) // missing password
+        // missing password
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', password: 'x', contact: { parent: 'x' }, type: 'a'})) // missing place
+        // missing place
+        .then(() => service.createUser({ username: 'x', password: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'})) // missing contact
+        // missing contact
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: {}, type: 'a'})) // missing contact.parent
+        // missing contact.parent
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: {}, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400));
     });
 

@@ -849,7 +849,6 @@ const getUserSettings = async({ name }) => {
 
 const createMultiFacilityUser = async (data, appUrl) => {
   const missing = missingFields(data);
-  console.log('missing fields', missing);
   if (missing.length > 0) {
     return Promise.reject(error400(
       'Missing required fields: ' + missing.join(', '),
@@ -858,7 +857,6 @@ const createMultiFacilityUser = async (data, appUrl) => {
     ));
   }
   hydratePayload(data);
-  console.log(data);
 
   const tokenLoginError = tokenLogin.validateTokenLogin(data, true);
   if (tokenLoginError) {
