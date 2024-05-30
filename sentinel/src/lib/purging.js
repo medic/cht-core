@@ -3,6 +3,7 @@ const registrationUtils = require('@medic/registration-utils');
 const serverSidePurgeUtils = require('@medic/purging-utils');
 const chtScriptApi = require('@medic/cht-script-api');
 const logger = require('@medic/logger');
+const environment = require('@medic/environment');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 const moment = require('moment');
@@ -30,7 +31,7 @@ const purgeDbs = {};
 let currentlyPurging = false;
 const getPurgeDb = (hash, refresh) => {
   if (!purgeDbs[hash] || refresh) {
-    purgeDbs[hash] = db.get(serverSidePurgeUtils.getPurgeDbName(db.medicDbName, hash));
+    purgeDbs[hash] = db.get(serverSidePurgeUtils.getPurgeDbName(environment.db, hash));
   }
   return purgeDbs[hash];
 };

@@ -5,7 +5,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const request = require('@medic/couch-request');
 
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 const auth = require('../../../src/auth');
 const cookie = require('../../../src/services/cookie');
 const branding = require('../../../src/services/branding');

@@ -4,7 +4,7 @@
 const request = require('@medic/couch-request');
 const url = require('url');
 const db = require('../db');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 
 // Regex to test for characters that are invalid in db names
 // Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed.

@@ -5,7 +5,7 @@ should();
 
 const service = require('../../../src/services/settings');
 const db = require('../../../src/db');
-const environment = require('../../../src/environment');
+const resources = require('../../../src/resources');
 // eslint-disable-next-line node/no-missing-require
 const defaults = require('../../../build/default-docs/settings.doc.json');
 const config = require('../../../src/config');
@@ -20,7 +20,7 @@ describe('settings service', () => {
     sinon.stub(db.medic, 'get').resolves({ settings });
 
     const defaultDocsPath = path.resolve(__dirname, '../../../build/default-docs');
-    sinon.stub(environment, 'defaultDocsPath').value(defaultDocsPath);
+    sinon.stub(resources, 'defaultDocsPath').value(defaultDocsPath);
   });
 
   afterEach(function() {

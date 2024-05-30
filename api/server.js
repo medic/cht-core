@@ -1,4 +1,4 @@
-const environment = require('./src/environment');
+const environment = require('@medic/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('@medic/logger');
 const express = require('express');
