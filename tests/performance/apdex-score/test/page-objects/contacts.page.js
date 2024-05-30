@@ -1,4 +1,3 @@
-const { $, driver } = require('@wdio/globals');
 const Page = require('./page');
 
 class ContactsPage extends Page {
@@ -42,7 +41,7 @@ class ContactsPage extends Page {
     const form = settingsProvider.getForm('patientSearch');
     await super.searchContact(form);
   }
-  
+
 }
 
 module.exports = new ContactsPage();
