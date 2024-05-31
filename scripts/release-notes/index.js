@@ -311,7 +311,7 @@ ${formatCommits(commits)}
 };
 
 const getCommits = async () => {
-  const latestReleaseName = '4.7.0'; //await getLatestReleaseName();
+  const latestReleaseName = await getLatestReleaseName();
   const milestoneBranch = await getMilestoneBranch();
   const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
   validateCommits(commitsForRelease);
