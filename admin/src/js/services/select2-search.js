@@ -6,6 +6,7 @@ angular.module('inboxServices').factory('Select2Search',
   function(
     $log,
     $q,
+    $timeout,
     $translate,
     ContactMuted,
     LineageModelGenerator,
@@ -26,11 +27,31 @@ angular.module('inboxServices').factory('Select2Search',
       return $(format.sender(row.doc, $translate));
     };
 
-    const defaultTemplateSelection = function(row) {
-      if (row.doc) {
-        return row.doc.name + (row.doc.muted ? ' (' + $translate.instant('contact.muted') + ')': '');
+    const defaultTemplateSelection = function (selection) {
+      if (Array.isArray(selection)) {
+        return selection
+          .map(function (row) {
+            if (row.doc) {
+              return (
+                row.doc.name +
+                (row.doc.muted
+                  ? ' (' + $translate.instant('contact.muted') + ')'
+                  : '')
+              );
+            }
+            return row.text;
+          })
+          .join(', ');
       }
-      return row.text;
+      if (selection.doc) {
+        return (
+          selection.doc.name +
+          (selection.doc.muted
+            ? ' (' + $translate.instant('contact.muted') + ')'
+            : '')
+        );
+      }
+      return selection.text;
     };
 
     const defaultSendMessageExtras = function(row) {
@@ -114,9 +135,17 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      const resolveInitialValue = function(selectEl, initialValue) {
+      const resolveInitialValue = function(selectEl, initialValue) { //NoSONAR
         if (initialValue) {
-          if (!selectEl.children('option[value="' + initialValue + '"]').length) {
+          if (Array.isArray(initialValue)) {
+            initialValue.forEach(function (val) {
+              if (!selectEl.children('option[value="' + val + '"]').length) {
+                selectEl.append($('<option value="' + val + '"/>'));
+              }
+            });
+          } else if (
+            !selectEl.children('option[value="' + initialValue + '"]').length
+          ) {
             selectEl.append($('<option value="' + initialValue + '"/>'));
           }
           selectEl.val(initialValue);
@@ -125,15 +154,42 @@ angular.module('inboxServices').factory('Select2Search',
         }
 
         let resolution;
-        let value = selectEl.val();
+        const value = selectEl.val();
         if (!(value && value.length)) {
           resolution = $q.resolve();
         } else {
           if (Array.isArray(value)) {
-            // NB: For now we only support resolving one initial value
-            // multiple is not an existing use case for us
-            value = value[0];
+            // NB: We now support an Array of IDs for places
+            const docPromises = value.map(function (val) { //NoSONAR
+              return getDoc(val).then(function (doc) { //NoSONAR
+                return { id: val, doc: doc };
+              });
+            });
+
+            resolution = $q //NoSONAR
+              .all(docPromises)
+              .then(function(docs) { //NoSONAR
+                const select2Data = selectEl.select2('data') || [];
+                docs.forEach(function (doc) { //NoSONAR
+                  const selected = select2Data.find((d) => d.id === doc.id);
+                  if (selected) {
+                    selected.doc = doc.doc;
+                  } else {
+                    select2Data.push({
+                      id: doc.id,
+                      doc: doc.doc,
+                      text: doc.doc.name,
+                    });
+                  }
+                });
+                selectEl.select2('data', select2Data);
+                $timeout(() => { //NoSONAR
+                  selectEl.trigger('change');
+                }, 1000);
+              })
+              .catch((err) => $log.error('Select2 failed to get documents', err));
           }
+
           if (phoneNumber.validate(Settings, value)) {
             // Raw phone number, don't resolve from DB
             const text = templateSelection({ text: value });
@@ -147,8 +203,10 @@ angular.module('inboxServices').factory('Select2Search',
           }
         }
 
-        return resolution.then(function() {
-          selectEl.trigger('change');
+        return resolution.then(function() { //NoSONAR
+          $timeout(() => { //NoSONAR
+            selectEl.trigger('change');
+          }, 1000);
           return selectEl;
         });
       };
@@ -172,6 +230,8 @@ angular.module('inboxServices').factory('Select2Search',
             .on('click', function() {
               selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
               selectEl.trigger('change');
+
+              return selectEl;
             });
           selectEl.after(button);
         }
@@ -186,15 +246,29 @@ angular.module('inboxServices').factory('Select2Search',
 
             if (docId) {
               getDoc(docId).then(function(doc) {
-                selectEl.select2('data')[0].doc = doc;
-                selectEl.trigger('change');
+                const select2Data = selectEl.select2('data') || [];
+                const selected = select2Data.find((d) => d.id === docId);
+                if (selected) {
+                  selected.doc = doc;
+                } else {
+                  select2Data.push({
+                    id: docId,
+                    doc: doc,
+                    text: doc.name,
+                  });
+                }
+                selectEl.select2('data', select2Data);
+                $timeout(() => { //NoSONAR
+                  selectEl.trigger('change');
+                }, 1000);
+
+                return selectEl;
               })
                 .catch(err => $log.error('Select2 failed to get document', err));
             }
           });
         }
       };
-
 
       initSelect2(selectEl);
       return resolveInitialValue(selectEl, initialValue);

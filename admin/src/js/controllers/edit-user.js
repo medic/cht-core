@@ -66,6 +66,7 @@ angular
       // If $scope.model === {}, we're creating a new user.
       return Settings()
         .then(settings => {
+          $scope.permissions = settings.permissions;
           $scope.roles = settings.roles;
           $scope.allowTokenLogin = allowTokenLogin(settings);
           if (!$scope.model) {
@@ -115,15 +116,18 @@ angular
         const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
         Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
         const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
-        Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes);
+        Select2Search(
+          $('#edit-user-profile [name=facilitySelect]'),
+          placeTypes,
+          { initialValue: $scope.editUserModel.facilitySelect }
+        );
       });
 
     const validateRequired = (fieldName, fieldDisplayName) => {
       if (!$scope.editUserModel[fieldName]) {
-        Translate.fieldIsRequired(fieldDisplayName)
-          .then(function(value) {
-            $scope.errors[fieldName] = value;
-          });
+        Translate.fieldIsRequired(fieldDisplayName).then(function (value) {
+          $scope.errors[fieldName] = value;
+        });
         return false;
       }
       return true;
@@ -232,6 +236,27 @@ angular
       return true;
     };
 
+    const validatePlacesPermission = () => {
+      const userRoles = $scope.editUserModel.roles;
+
+      if (!$scope.editUserModel.place || $scope.editUserModel.place.length <= 1) {
+        return true;
+      }
+
+      const allowedRoles = $scope.permissions.can_have_multiple_places;
+
+      const userHasPermission = userRoles.some(role => allowedRoles.includes(role));
+
+      if (!userHasPermission) {
+        $translate('permission.description.can_have_multiple_places.not_allowed').then(value => {
+          $scope.errors.multiFacility = value;
+        });
+        return false;
+      }
+      return userHasPermission;
+    };
+
+
     const isOnlineUser = (roles) => {
       if (!$scope.roles) {
         return true;
@@ -254,24 +279,63 @@ angular
       return hasPlace && hasContact;
     };
 
-    const validateContactIsInPlace = () => {
-      const placeId = $scope.editUserModel.place;
-      const contactId = $scope.editUserModel.contact;
-      if (!placeId || !contactId) {
+    const validateFacilityHierarchy = () => {
+      const placeIds = $scope.editUserModel.place;
+
+      if (!placeIds || placeIds.length === 1) {
         return $q.resolve(true);
       }
-      return DB()
-        .get(contactId)
-        .then(function(contact) {
-          let parent = contact.parent;
-          let valid = false;
-          while (parent) {
-            if (parent._id === placeId) {
-              valid = true;
-              break;
-            }
-            parent = parent.parent;
+
+      const getPlace = (placeId) => {
+        return DB().get(placeId);
+      };
+
+      return Promise.all(placeIds.map(getPlace))
+        .then((places) => {
+          const contactTypes = places.map(place => place.contact_type);
+          const isSameHeirarchy = contactTypes.every(type => type === contactTypes[0]);
+
+          if (!isSameHeirarchy) {
+            $translate('permission.description.can_have_multiple_places.incompatible_place').then(value => {
+              $scope.errors.multiFacility = value;
+            });
           }
+          return isSameHeirarchy;
+        })
+        .catch(err => {
+          $log.error('Error validating facility hierarchy', err);
+          return false;
+        });
+    };
+
+    const validateContactIsInPlace = () => {
+      const placeIds = $scope.editUserModel.place;
+      const contactId = $scope.editUserModel.contact;
+      if (!placeIds || !contactId) {
+        return $q.resolve(true);
+      }
+
+      const getParent = (contactId) => {
+        return DB()
+          .get(contactId)
+          .then(function (contact) {
+            return contact.parent;
+          });
+      };
+
+      const checkParent = (parent, placeIds) => {
+        if (!parent) {
+          return false;
+        }
+        if (placeIds.includes(parent._id)) {
+          return true;
+        }
+        return checkParent(parent.parent, placeIds);
+      };
+
+      return getParent(contactId)
+        .then(function (parent) {
+          const valid = placeIds.some((placeId) => checkParent(parent, [placeId]));
           if (!valid) {
             $translate('configuration.user.place.contact').then(value => {
               $scope.errors.contact = value;
@@ -371,9 +435,8 @@ angular
     };
 
     const computeFields = () => {
-      $scope.editUserModel.place = $(
-        '#edit-user-profile [name=facilitySelect]'
-      ).val();
+      const placeValue = $('#edit-user-profile [name=facilitySelect]').val();
+      $scope.editUserModel.place = Array.isArray(placeValue) && placeValue.length === 0 ? null : placeValue;
       $scope.editUserModel.contact = $(
         '#edit-user-profile [name=contactSelect]'
       ).val();
@@ -449,7 +512,8 @@ angular
                                      validateRole() &&
                                      validateContactAndFacility() &&
                                      validatePasswordForEditUser() &&
-                                     validateEmailAddress();
+                                     validateEmailAddress() &&
+                                     validatePlacesPermission();
 
       if (!synchronousValidations) {
         $scope.setError();
@@ -458,6 +522,7 @@ angular
 
       const asynchronousValidations = $q
         .all([
+          validateFacilityHierarchy(),
           validateContactIsInPlace(),
           validateTokenLogin(),
         ])

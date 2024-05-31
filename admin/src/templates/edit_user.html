@@ -55,12 +55,14 @@
       <span class="help-block">{{errors.roles}}</span>
     </div>
 
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place, 'required': roles[editUserModel.role].offline || !!editUserModel.contact}">
+    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place || errors.multiFacility, 'required': roles[editUserModel.role].offline || !!editUserModel.contact}">
       <label for="facilitySelect" translate>Facility</label>
-      <select id="facilitySelect" name="facilitySelect">
-        <option ng-value="editUserModel.facilitySelect" ng-if="editUserModel.facilitySelect"></option>
+      <select id="facilitySelect" name="facilitySelect" multiple="multiple" ng-model="editUserModel.facilitySelect">
+        <option ng-repeat="facility in facilities" value="{{facility.id}}" ng-if="editUserModel.facilitySelect">
+          {{facility.name}}</option>
       </select>
-      <span class="help-block">{{errors.place}}</span>
+      <span class="help-block" ng-if="errors.place">{{errors.place}}</span>
+      <span class="help-block" ng-if="errors.multiFacility">{{errors.multiFacility}}</span>
       <span class="help-block" translate>user.place.help</span>
     </div>
 
