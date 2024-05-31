@@ -8,6 +8,7 @@ const octokit = new ExtendedOctokit({
 });
 
 const OWNER = 'medic';
+const BOTS = ['dependabot[bot]'];
 
 const argv = minimist(process.argv.slice(2));
 if (argv.help) {
@@ -100,6 +101,7 @@ const getCommitsForRelease = async (release, milestoneBranch) => queryRepoPagina
           nodes {
             oid
             messageHeadline
+            author { user { login, name, url } }
             associatedPullRequests(first: 50) {
               nodes {
                 milestone { id }
@@ -159,13 +161,10 @@ const findCommitsWithoutMilestone = async (commitsForRelease) => {
   return commitsWithoutMilestone;
 };
 
-const validateCommits = async () => {
+const validateCommits = async (commitsForRelease) => {
   if (argv['skip-commit-validation']) {
     return;
   }
-  const latestReleaseName = await getLatestReleaseName();
-  const milestoneBranch = await getMilestoneBranch();
-  const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
   const commitsWithoutMilestone = await findCommitsWithoutMilestone(commitsForRelease);
 
   if (commitsWithoutMilestone.length) {
@@ -179,7 +178,6 @@ Some commits included in the release are not associated with a milestone. Commit
 Commits:
 `);
     commitsWithoutMilestone.forEach(commit => console.error(`- ${commit.oid}: ${commit.messageHeadline}`));
-
     throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
   }
 };
@@ -231,7 +229,6 @@ const validateIssues = issues => {
     console.error(JSON.stringify(errors, null, 2));
     throw new Error('Some issues are in an invalid state');
   }
-  return issues;
 };
 
 const filterIssues = issues => {
@@ -260,11 +257,26 @@ const format = issue => `- [#${issue.number}](${issue.url}): ${issue.title}\n`;
 
 const formatAll = issues => issues.length ? issues.map(format).join('') : 'None.\n';
 
-const outputGroups = (groups) => {
-  return groups.map(group => `### ${group.title}\n\n${formatAll(group.issues)}\n`).join('');
+const formatGroups = (groups) => {
+  return groups
+    .map(group => `### ${group.title}\n\n${formatAll(group.issues)}\n`)
+    .join('');
 };
 
-const output = ({ warnings, types }) => {
+const formatCommits = (commits) => {
+  const ignoreLogins = BOTS;
+  const lines = [];
+  for (const commit of commits) {
+    const login = commit.author?.user?.login;
+    if (login && !ignoreLogins.includes(login)) {
+      ignoreLogins.push(login);
+      lines.push(`- [${commit.author.user.name}](${commit.author.user.url})`);
+    }
+  }
+  return lines.join('\n');
+};
+
+const output = ({ warnings, types }, commits) => {
   console.log(`
 ---
 title: "${MILESTONE_NAME} release notes"
@@ -281,22 +293,40 @@ Check the repository for the [latest known issues](https://github.com/medic/cht-
 
 ## Upgrade notes
 
-${outputGroups(warnings)}
+${formatGroups(warnings)}
 ## Highlights
 
 <<< TODO >>>
 
 ## And more...
 
-${outputGroups(types)}`);
+${formatGroups(types)}
+
+## Contributors
+
+Thanks to all who committed changes for this release!
+
+${formatCommits(commits)}
+`);
 };
 
-Promise.resolve()
-  .then(validateCommits)
-  .then(getMilestoneNumber)
-  .then(getMilestoneIssues)
-  .then(validateIssues)
-  .then(filterIssues)
-  .then(groupIssues)
-  .then(output)
+const getCommits = async () => {
+  const latestReleaseName = '4.7.0'; //await getLatestReleaseName();
+  const milestoneBranch = await getMilestoneBranch();
+  const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
+  validateCommits(commitsForRelease);
+  return commitsForRelease;
+};
+
+const getIssues = async () => {
+  const milestoneNumber = await getMilestoneNumber();
+  const issues = await getMilestoneIssues(milestoneNumber);
+  await validateIssues(issues);
+  const filtered = await filterIssues(issues);
+  const grouped = await groupIssues(filtered);
+  return grouped;
+};
+
+Promise.all([ getIssues(), getCommits() ])
+  .then(([ issues, commits ]) => output(issues, commits))
   .catch(console.error);
