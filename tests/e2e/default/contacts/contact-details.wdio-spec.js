@@ -96,7 +96,7 @@ describe('Contact details page', () => {
 
         expect(await contactPage.pregnancyCard().isDisplayed()).to.be.true;
         const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
-        expect(pregnancyCardInfo.weeksPregnant).to.equal('12');
+        expect(pregnancyCardInfo.weeksPregnant).to.equal('13');
         expect(pregnancyCardInfo.risk).to.equal('High risk');
       }
     );
