@@ -124,9 +124,8 @@ angular
       });
 
     const validateRequired = (fieldName, fieldDisplayName) => {
-      const field = $scope.editUserModel[fieldName];
-      if (!field || (Array.isArray(field) && !field.length)) {
-        Translate.fieldIsRequired(fieldDisplayName).then((value) => {
+      if (!$scope.editUserModel[fieldName]) {
+        Translate.fieldIsRequired(fieldDisplayName).then(function (value) {
           $scope.errors[fieldName] = value;
         });
         return false;
@@ -240,7 +239,7 @@ angular
     const validatePlacesPermission = () => {
       const userRoles = $scope.editUserModel.roles;
 
-      if (!$scope.editUserModel.place || $scope.editUserModel.place.length === 1) {
+      if (!$scope.editUserModel.place || $scope.editUserModel.place.length <= 1) {
         return true;
       }
 
@@ -436,9 +435,8 @@ angular
     };
 
     const computeFields = () => {
-      $scope.editUserModel.place = $(
-        '#edit-user-profile [name=facilitySelect]'
-      ).val();
+      const placeValue = $('#edit-user-profile [name=facilitySelect]').val();
+      $scope.editUserModel.place = Array.isArray(placeValue) && placeValue.length === 0 ? null : placeValue;
       $scope.editUserModel.contact = $(
         '#edit-user-profile [name=contactSelect]'
       ).val();
