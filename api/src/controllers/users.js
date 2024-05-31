@@ -70,7 +70,7 @@ const getRoles = req => {
   return roles;
 };
 
-const getInfoUserCtx = req => { // NOSONAR
+const getInfoUserCtx = req => {
   if (!roles.isOnlineOnly(req.userCtx)) {
     return req.userCtx;
   }

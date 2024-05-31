@@ -620,7 +620,7 @@ describe('Users service', () => {
         fullname: undefined,
         email: undefined,
         phone: undefined,
-        place: [undefined],
+        place: null,
         roles: undefined,
         contact: undefined,
         external_id: undefined,
@@ -1299,15 +1299,20 @@ describe('Users service', () => {
     it('returns error if missing fields', () => {
       return service.createUser({})
         .catch(err => chai.expect(err.code).to.equal(400)) // empty
-        .then(() => service.createUser({ password: 'x', place: 'x', contact: { parent: 'x' }})) // missing username
+        // missing username
+        .then(() => service.createUser({ password: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }})) // missing password
+        // missing password
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', password: 'x', contact: { parent: 'x' }})) // missing place
+        // missing place
+        .then(() => service.createUser({ username: 'x', password: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }})) // missing contact
+        // missing contact
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400))
-        .then(() => service.createUser({ username: 'x', place: 'x', contact: {}})) // missing contact.parent
+        // missing contact.parent
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: {}, type: 'a'}))
         .catch(err => chai.expect(err.code).to.equal(400));
     });
 
@@ -2094,6 +2099,7 @@ describe('Users service', () => {
 
   describe('createMultiFacilityUser', () => {
     it('returns error if missing fields', async () => {
+      const pwd = 'medic.123456';
       await chai.expect(service.createMultiFacilityUser({}))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
       await chai.expect(service.createMultiFacilityUser({ password: 'x', place: 'x', contact: 'y' }))
@@ -2103,6 +2109,15 @@ describe('Users service', () => {
       await chai.expect(service.createMultiFacilityUser({ username: 'x', password: 'x', contact: 'y' }))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
       await chai.expect(service.createMultiFacilityUser({ username: 'x', password: 'x', place: 'x' }))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      let payload = { username: 'x', password: pwd, place: '', type: 'user', contact: 'z' };
+      await chai.expect(service.createMultiFacilityUser(payload))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      payload = { username: 'x', password: pwd, place: [], type: 'user', contact: 'z' };
+      await chai.expect(service.createMultiFacilityUser(payload))
+        .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
+      payload = { username: 'x', password: pwd, place: [''], type: 'user', contact: 'z' };
+      await chai.expect(service.createMultiFacilityUser(payload))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
     });
 
@@ -2130,13 +2145,32 @@ describe('Users service', () => {
         .and.have.property('code', 400);
     });
 
-    it('returns error if place lookup fails', async () => {
+    it('returns error if has multiple facilities but does not have role', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
-      sinon.stub(places, 'placesExist').rejects(new Error('missing'));
+      sinon.stub(roles, 'hasAllPermissions').returns(false);
 
       const data = {
         username: 'x',
-        place: 'x',
+        place: ['x', 'z'],
+        contact: 'y',
+        password: 'password.123',
+        roles: ['a', 'b']
+      };
+
+      await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+        .and.have.property('code', 400);
+
+      chai.expect(roles.hasAllPermissions.args).to.deep.equal([[['a', 'b'], ['can_have_multiple_places']]]);
+    });
+
+    it('returns error if place lookup fails', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(places, 'placesExist').rejects(new Error('missing'));
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
+
+      const data = {
+        username: 'x',
+        place: ['x', 'z'],
         contact: 'y',
         type: 'national-manager',
         password: 'password.123'
@@ -2144,12 +2178,13 @@ describe('Users service', () => {
 
       await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith('missing');
 
-      chai.expect(places.placesExist.args[0]).to.deep.equal([['x']]);
+      chai.expect(places.placesExist.args[0]).to.deep.equal([['x', 'z']]);
     });
 
     it('returns error if places lookup fails', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(places, 'placesExist').rejects(new Error('missing'));
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
 
       const data = {
         username: 'x',
@@ -2166,6 +2201,7 @@ describe('Users service', () => {
     it('returns error if contact is not within place', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(places, 'placesExist').resolves();
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
       const data = {
         username: 'x',
         place: ['x', 'y', 'z'],
@@ -2215,6 +2251,7 @@ describe('Users service', () => {
       sinon.stub(people, 'isAPerson').returns(true);
       db.medic.put.resolves({ id: 'success' });
       db.users.put.resolves({ id: 'success' });
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
 
       const userData = {
         username: 'x',
@@ -2237,6 +2274,44 @@ describe('Users service', () => {
 
       chai.expect(db.users.put.args).to.deep.equal([[{
         facility_id: ['x', 'y', 'z'],
+        contact_id: 'h',
+        roles: ['national-manager'],
+        type: 'user',
+        _id: 'org.couchdb.user:x',
+        name: 'x',
+        password: 'password.123'
+      }]]);
+      chai.expect(roles.hasAllPermissions.args).to.deep.equal([[['national-manager'], ['can_have_multiple_places']]]);
+    });
+
+    it('succeeds without permission for single facility', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(places, 'placesExist').resolves();
+      sinon.stub(people, 'isAPerson').returns(true);
+      db.medic.put.resolves({ id: 'success' });
+      db.users.put.resolves({ id: 'success' });
+
+      const userData = {
+        username: 'x',
+        place: ['x'],
+        contact: 'h',
+        roles: ['national-manager'],
+        password: 'password.123'
+      };
+      db.medic.get.withArgs('h').resolves({ parent: { _id: 'u', parent: { _id: 'x' } } });
+
+      await service.createMultiFacilityUser(userData);
+      chai.expect(db.medic.put.args).to.deep.equal([[{
+        facility_id: ['x'],
+        contact_id: 'h',
+        roles: ['national-manager'],
+        type: 'user-settings',
+        _id: 'org.couchdb.user:x',
+        name: 'x'
+      }]]);
+
+      chai.expect(db.users.put.args).to.deep.equal([[{
+        facility_id: ['x'],
         contact_id: 'h',
         roles: ['national-manager'],
         type: 'user',
@@ -2658,9 +2733,10 @@ describe('Users service', () => {
       const data = {
         place: ['x', 'y', 'z']
       };
-      db.medic.get.resolves({});
-      db.users.get.resolves({});
+      db.medic.get.resolves({ roles: ['a'] });
+      db.users.get.resolves({ roles: ['a'] });
       sinon.stub(places, 'placesExist').resolves();
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -2669,6 +2745,7 @@ describe('Users service', () => {
           facility_id: [ 'x', 'y', 'z' ],
           name: 'paul',
           type: 'user-settings',
+          roles: ['a']
         }]]);
 
         chai.expect(db.users.put.args).to.deep.equal([[{
@@ -2676,6 +2753,7 @@ describe('Users service', () => {
           facility_id: [ 'x', 'y', 'z' ],
           name: 'paul',
           type: 'user',
+          roles: ['a']
         }]]);
       });
     });
@@ -2769,6 +2847,7 @@ describe('Users service', () => {
       db.users.get.resolves({ facility_id: 'maine', contact_id: 'june' });
       db.medic.get.resolves({ facility_id: 'maine', contact_id: 'june' });
       sinon.stub(places, 'placesExist').resolves();
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {

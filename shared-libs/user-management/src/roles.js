@@ -26,6 +26,14 @@ const hasOnlineRole = roles => {
   return roles.some(role => onlineRoles.includes(role));
 };
 
+const hasPermission = (roles, permission) => {
+  const rolesWithPermission = config.get('permissions')[permission];
+  if (!rolesWithPermission) {
+    return false;
+  }
+  return _.some(rolesWithPermission, role => _.includes(roles, role));
+};
+
 module.exports = {
   hasOnlineRole,
   isOnlineOnly: userCtx => {
@@ -38,5 +46,21 @@ module.exports = {
       (!configuredRole || roles.some(role => configured[role] && configured[role].offline));
   },
   isDbAdmin,
-  ONLINE_ROLE
+  ONLINE_ROLE,
+
+  hasAllPermissions: (roles, permissions) => {
+    if (module.exports.isDbAdmin({ roles })) {
+      return true;
+    }
+
+    if (!permissions || !roles) {
+      return false;
+    }
+
+    if (!_.isArray(permissions)) {
+      permissions = [ permissions ];
+    }
+
+    return _.every(permissions, _.partial(hasPermission, roles));
+  }
 };
