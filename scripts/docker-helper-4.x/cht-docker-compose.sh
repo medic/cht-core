@@ -351,13 +351,14 @@ if [[ -z "$projectName" ]]; then
   fi
 
   echo
-  read -pr "Would you like to initialize a new project [y/N]? " yn
+  # thanks for the pr vs rp!! https://unix.stackexchange.com/a/677805
+  read -rp "Would you like to initialize a new project [y/N]?" yn
   case $yn in
   [Yy]*)
     while [[ -z "$projectName" ]]; do
       preferredRelease=$(get_latest_version_string)
       echo
-      read -pr "Do you want to run the latest CHT Core version (${preferredRelease}) [Y/n]? " runLatest
+      read -rp "Do you want to run the latest CHT Core version (${preferredRelease}) [Y/n]? " runLatest
       case $runLatest in
       [nN]*)
         allKnownVersions=$(get_all_known_versions)
@@ -368,7 +369,7 @@ if [[ -z "$projectName" ]]; then
         done
       esac
       echo
-      read -pr "How do you want to name the project? " projectName
+      read -rp "How do you want to name the project? " projectName
 
       projectName="${projectName//[^[:alnum:]]/_}"
       projectName=$(echo "$projectName" | tr '[:upper:]' '[:lower:]')
