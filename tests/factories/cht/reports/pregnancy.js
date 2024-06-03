@@ -18,7 +18,8 @@ const defaultSubmitter = {
 };
 
 const nextANCVisit = moment().add(2, 'day');
-const lmp = moment().subtract(3, 'months');
+const fixedPregDate = moment('2024-06-03');
+const lmp = fixedPregDate.subtract(84, 'days');
 
 const defaultFields = {
   'inputs': {
