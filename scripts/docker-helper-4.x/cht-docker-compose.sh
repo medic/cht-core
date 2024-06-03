@@ -413,11 +413,11 @@ fi
 source "./$projectFile"
 
 projectURL=$(get_local_ip_url "$(get_lan_ip)")
-if [ -n "$DEBUG" ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 
 echo "";echo "homedir: $homeDir"
 docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
-if [ -n "$DEBUG" ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
@@ -426,7 +426,7 @@ nginxContainerId=$(get_nginx_container_id)
 running=$(is_nginx_running "$nginxContainerId")
 i=0
 
-if [ -n "$DEBUG" ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 while [[ "$running" != "true" ]]; do
   if [[ $i -gt 300 ]]; then
     echo ""
@@ -438,7 +438,7 @@ while [[ "$running" != "true" ]]; do
     exit 1
   fi
 
-  if [ -n "$DEBUG" ];then
+  if [[ -n ${DEBUG+x} ]];then
     clear;get_system_and_docker_info
   else
   	echo '.' | tr -d '\n'
@@ -475,5 +475,5 @@ echo ""
 echo -e "${green} Have a great day!${noColor} "
 echo ""
 
-if [ -n "$DEBUG" ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 set -e
