@@ -33,16 +33,16 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.loadHousehold(settingsProvider);
     });
 
+    it('should create patient', async () => {
+      await contactsPage.createPatient(settingsProvider);
+    });
+
     it('should load patient', async () => {
       await contactsPage.loadPatient(settingsProvider);
     });
 
     it('should submit patient report', async () => {
       await contactsPage.submitPatientReport(settingsProvider);
-    });
-
-    it('should create patient', async () => {
-      await contactsPage.createPatient(settingsProvider);
     });
 
     it('should search patient', async () => {
