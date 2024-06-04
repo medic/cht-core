@@ -33,6 +33,10 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.loadHousehold(settingsProvider);
     });
 
+    it('should create patient', async () => {
+      await contactsPage.createPatient(settingsProvider);
+    });
+
     it('should load patient', async () => {
       await contactsPage.loadPatient(settingsProvider);
     });
@@ -41,8 +45,8 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.submitPatientReport(settingsProvider);
     });
 
-    it('should create patient', async () => {
-      await contactsPage.createPatient(settingsProvider);
+    it('should search patient', async () => {
+      await contactsPage.searchPatient(settingsProvider);
     });
 
     it('should load message list and view a message', async () => {
@@ -63,15 +67,4 @@ describe('Apdex Performance Workflows', () => {
 
   }
 
-  // ToDo: clean all these below after settings are done.
-
-  /*
-  it('should submit a report for a newly created person', async () => {
-    const firstName = 'Roy';
-    const lastName = 'Caxton';
-    await PeoplePage.createPersonKE(firstName, lastName, '1988-02-20');
-    await PeoplePage.createDefaulterReport();
-    await PeoplePage.searchPerson(firstName);
-  });
-*/
 });

@@ -165,6 +165,17 @@ module.exports = class Page {
     await this.waitForDisplayedAndRetry(MENU_LIST_TITLE);
   }
 
+  async searchContact (form) {
+    const page = form.pages[0];
+
+    await this.navigate(form.navigation);
+    await this.fillUpFormPage(page);
+    await this.assertMany(form.postSubmitAsserts);
+
+    await this.navigate(form.postTestPath);
+    await this.assertMany(form.postSubmitAssert);
+  }
+
   // ToDo: clean all these below after settings are done
 
   get btnCustom() {
