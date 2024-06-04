@@ -286,7 +286,8 @@ if [[ -n "${2-}" && -n $projectName ]]; then
   case $2 in
   "stop")
     echo "Stopping project \"${projectName}\"..." | tr -d '\n'
-    docker kill "$containerIds" 1>/dev/null
+    # shellcheck disable=SC2086
+    docker kill $containerIds 1>/dev/null
     echo -e "${green} done${noColor} "
     exit 0
     ;;
@@ -295,8 +296,10 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 
     if [[ -n $containerIds ]]; then
       echo "Removing project's docker containers..." | tr -d '\n'
-      docker kill "$containerIds" 1>/dev/null
-      docker rm "$containerIds" 1>/dev/null
+      # shellcheck disable=SC2086
+      docker kill $containerIds 1>/dev/null
+      # shellcheck disable=SC2086
+      docker rm $containerIds 1>/dev/null
       echo -e "${green} done${noColor} "
     else
       echo "No docker container found, skipping."
@@ -305,7 +308,8 @@ if [[ -n "${2-}" && -n $projectName ]]; then
     networks=$(docker network ls --filter "name=${projectName}" --quiet)
     if [[ -n $networks ]]; then
       echo "Removing project's docker networks..." | tr -d '\n'
-      docker network rm "$networks" 1>/dev/null
+      # shellcheck disable=SC2086
+      docker network rm $networks 1>/dev/null
       echo -e "${green} done${noColor} "
     else
       echo "No docker network found, skipping."
@@ -314,7 +318,8 @@ if [[ -n "${2-}" && -n $projectName ]]; then
     volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
     if [[ -n $volumes ]]; then
       echo "Removing project's docker volumes..." | tr -d '\n'
-      docker volume rm "$volumes" 1>/dev/null
+      # shellcheck disable=SC2086
+      docker volume rm $volumes 1>/dev/null
       echo -e "${green} done${noColor} "
     else
       echo "No docker container volume, skipping."
