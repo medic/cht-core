@@ -18,8 +18,8 @@ assignees: ''
 
 When development is ready to begin one of the engineers should be nominated as a Release Engineer. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
-- [ ] Checkout to a new `<major>.<minor>.<patch>-release` branch (eg 4.4.x-release) and set the version number in the `package.json` and `package-lock.json`. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`. Once the version is updated, submit a PR to `master` branch.
-- [ ] Ensure that issues associated with merged commits to `master` are closed and mapped to a milestone.
+- [ ] Checkout to a new `<issue>-update-version` branch (eg: `1234-update-version`) and set the version number in the `package.json` and `package-lock.json`. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`. Once the version is updated, submit a PR to `master` branch.
+- [ ] Ensure that issues associated with commits merged to `master` since the last release are closed and mapped to the milestone.
 
 # Releasing - Release Engineer
 
@@ -29,7 +29,7 @@ Once the PR has been merged into `master`, and the `master` branch has the new v
 ```
 @core_devs I've just created the `<major>.<minor>.x` release branch. Please be aware that any further changes intended for this release will have to be merged to `master` then backported. Thanks!
 ```
-- [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`) and then push the created tag.
+- [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by creating a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`) and then push the created tag.
 - [ ] Once the CI completes successfully notify the team by writing a message in the #product-team Slack channel:
 ```
 @product_team, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
