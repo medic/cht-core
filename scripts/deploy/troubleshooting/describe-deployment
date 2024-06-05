@@ -20,9 +20,7 @@ fi
 NAMESPACE=$1
 DEPLOYMENT=$2
 
-kubectl -n $NAMESPACE describe deployment $DEPLOYMENT
-
-if [ $? -ne 0 ]; then
+if ! kubectl -n "$NAMESPACE" describe deployment "$DEPLOYMENT" ; then
   echo "An error occurred while trying to describe deployment $DEPLOYMENT in namespace $NAMESPACE. Please verify that the deployment and namespace exist and that you have permissions to view their contents."
   exit 1
 fi
