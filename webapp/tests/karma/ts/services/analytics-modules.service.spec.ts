@@ -3,23 +3,23 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
-import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
 describe('AnalyticsModulesService', () => {
   let service: AnalyticsModulesService;
-  let authService;
+  let targetAggregatesService;
   let settingsService;
 
   beforeEach(() => {
-    authService = { has: sinon.stub() };
+    targetAggregatesService = { isEnabled: sinon.stub() };
     settingsService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: authService },
+        { provide: TargetAggregatesService, useValue: targetAggregatesService },
         { provide: SettingsService, useValue: settingsService },
-      ]
+      ],
     });
 
     service = TestBed.inject(AnalyticsModulesService);
@@ -31,7 +31,7 @@ describe('AnalyticsModulesService', () => {
 
   it('should throw an error when settings fails', () => {
     settingsService.get.rejects({ some: 'err' });
-    authService.has.resolves(true);
+    targetAggregatesService.isEnabled.resolves(true);
 
     return service
       .get()
@@ -41,7 +41,7 @@ describe('AnalyticsModulesService', () => {
 
   it('should enable targets when configured', () => {
     settingsService.get.resolves({ tasks: { targets: { enabled: true } } });
-    authService.has.resolves(false);
+    targetAggregatesService.isEnabled.resolves(false);
 
     return service
       .get()
@@ -57,7 +57,7 @@ describe('AnalyticsModulesService', () => {
 
   it('should enable target aggregates when configured', () => {
     settingsService.get.resolves({ tasks: { targets: { enabled: true } } });
-    authService.has.resolves(true);
+    targetAggregatesService.isEnabled.resolves(true);
 
     return service
       .get()
