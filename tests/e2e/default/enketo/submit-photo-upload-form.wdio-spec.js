@@ -27,7 +27,9 @@ describe('Submit Photo Upload form', () => {
   it('submit and edit (no changes)', async () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
-    expect(Object.keys(initialReport._attachments)).to.deep.equal(['user-file/photo-upload/my_photo']);
+    const attachmentNames = Object.keys(initialReport._attachments);
+    expect(attachmentNames).to.have.lengthOf(1);
+    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d_\d\d_\d\d\.png$/);
 
     await reportsPage.openReport(reportId);
     await reportsPage.editReport();
@@ -44,7 +46,9 @@ describe('Submit Photo Upload form', () => {
   it('submit and edit (with changes)', async () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
-    expect(Object.keys(initialReport._attachments)).to.deep.equal(['user-file/photo-upload/my_photo']);
+    const attachmentNames = Object.keys(initialReport._attachments);
+    expect(attachmentNames).to.have.lengthOf(1);
+    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d_\d\d_\d\d\.png$/);
 
     await reportsPage.openReport(reportId);
     await reportsPage.editReport();
