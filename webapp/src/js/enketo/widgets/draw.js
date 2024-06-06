@@ -1,5 +1,7 @@
 // Copied from https://github.com/enketo/enketo/blob/main/packages/enketo-core/src/widget/draw/draw-widget.js
 // After upgrading to enekto-core 8.1+, this widget should be removed and we should use the one from enketo-core.
+// NOSONAR_BEGIN
+/* eslint-disable */
 
 const $ = require( 'jquery' );
 const fileManager = require('enketo/file-manager');
@@ -446,13 +448,15 @@ class DrawWidget extends Widget {
   _updateValue(changed = true) {
     const newValue = this.pad.toDataURL();
     if (this.value !== newValue) {
-      const now = new Date();
-      const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`;
-      this.element.dataset.filenamePostfix = postfix;
       // Note that this.element has become a text input.
       // When a default file is loaded this function is called by the canvasreload handler, but the user hasn't changed anything.
       // We want to make sure the model remains unchanged in that case.
       if (changed) {
+        // This code is slightly different from the Enekto draw widget since it contains a bug fix for:
+        // https://github.com/enketo/enketo/issues/1323
+        const now = new Date();
+        const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`;
+        this.element.dataset.filenamePostfix = postfix;
         this.originalInputValue = this.props.filename;
       }
       // pad.toData() doesn't seem to work when redrawing on a smaller canvas. Doesn't scale.
@@ -707,3 +711,4 @@ class DrawWidget extends Widget {
 }
 
 module.exports = DrawWidget;
+// NOSONAR_END

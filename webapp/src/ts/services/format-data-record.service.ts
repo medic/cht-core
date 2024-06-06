@@ -456,6 +456,23 @@ export class FormatDataRecordService {
     return result;
   }
 
+  private getImagePath(doc, label, value) {
+    if (!doc?._attachments) {
+      return undefined;
+    }
+    const isImagePath = filePath => doc._attachments[filePath]?.content_type?.startsWith('image/');
+    const filePath = 'user-file-' + value;
+    if (isImagePath(filePath)) {
+      return filePath;
+    }
+    // Fall back to the old style of naming image attachments
+    const legacyFilePath = 'user-file/' + label.split('.').slice(1).join('/');
+    if (isImagePath(legacyFilePath)) {
+      return legacyFilePath;
+    }
+    return undefined;
+  }
+
   private getFields(doc, results, values, labelPrefix, depth) {
     if (depth > 3) {
       depth = 3;
@@ -469,23 +486,13 @@ export class FormatDataRecordService {
           results.push({ label, depth });
           this.getFields(doc, results, value, label, depth + 1);
         } else {
-          const result:any = {
+          results.push({
             label,
             value,
             depth,
             target: this.getClickTarget(key, doc),
-          };
-
-          const filePath = 'user-file/' + label.split('.').slice(1).join('/');
-          if (doc &&
-            doc._attachments &&
-            doc._attachments[filePath] &&
-            doc._attachments[filePath].content_type &&
-            doc._attachments[filePath].content_type.startsWith('image/')) {
-            result.imagePath = filePath;
-          }
-
-          results.push(result);
+            imagePath: this.getImagePath(doc, label, value),
+          });
         }
       });
     return results;

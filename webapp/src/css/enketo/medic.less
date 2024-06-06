@@ -60,13 +60,17 @@
   .btn-primary {
     background-color: @button-color;
   }
-  .btn-icon-only {
+  .btn-icon-only:not(.draw-widget__undo) {
     padding: 0;
     width: inherit;
   }
-  .icon {
+  .icon:not(.draw-widget__undo .icon-undo) {
     position: relative;
     top: 1px;
+  }
+  // Hide download button for draw widget
+  .draw-widget__footer .btn-download {
+    display: none;
   }
   .or-group {
     margin: 15px 0 0 0;

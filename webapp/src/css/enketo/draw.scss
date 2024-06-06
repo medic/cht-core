@@ -1,5 +1,6 @@
 // Copied from https://github.com/enketo/enketo/blob/main/packages/enketo-core/src/widget/draw/draw-widget.scss
 // After upgrading to enekto-core 8.1+, this widget should be removed and we should use the one from enketo-core.
+// NOSONAR_BEGIN
 
 /*
  * To save headaches with resizing canvases, it is important to maintain fixed aspect
@@ -234,3 +235,4 @@ $picker-border: 2px solid grey;
     margin-top: $fullscreen-margin-v;
   }
 }
+// NOSONAR_END

@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
+import * as FileManager from '../../js/enketo/file-manager.js';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import { AttachmentService } from '@mm-services/attachment.service';
@@ -460,69 +461,27 @@ export class EnketoService {
     }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
 
-    const attach = (elem, file, type, alreadyEncoded, xpath?) => {
-      xpath = xpath || Xpath.getElementXPath(elem);
+    FileManager
+      .getCurrentFiles()
+      .forEach(file => this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false));
+
+    const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
+      const xpath = Xpath.getElementXPath(elem);
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
       this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
     };
 
-    const dataURLtoBlob = (dataURL) => {
-      const parts = dataURL.split(';base64,');
-      const contentType = parts[0].split(':')[1];
-      const byteString = atob(parts[1]);
-      const arrayBuffer = new ArrayBuffer(byteString.length);
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      for (let i = 0; i < byteString.length; i++) {
-        uint8Array[i] = byteString.charCodeAt(i);
-      }
-
-      return new Blob([arrayBuffer], { type: contentType });
-    };
-
-    const convertDrawDataToFile = (xpath): File | undefined => {
-      try {
-        const canvasElement = <HTMLCanvasElement>document.querySelector('.draw-widget__body__canvas');
-        const imageDataURL = canvasElement.toDataURL('image/png'); // convert to base64
-        const blob = dataURLtoBlob(imageDataURL);
-
-        const parts = xpath.split('/');
-        const tagName = parts[parts.length - 1];
-
-        return new File([blob], `${tagName}.png`, { type: 'image/png' });
-      } catch (error) {
-        console.error('Error while processing draw widget data:', error);
-      }
-    };
-
-    $record
-      .find('[type=file]')
-      .each((idx, element) => {
-        const xpath = Xpath.getElementXPath(element);
-        const $input: any = $('input[type=file][name="' + xpath + '"]');
-        const inputElement = $input[0];
-        let file: File | undefined | null;
-
-        if (inputElement?.files?.length > 0 && inputElement.files[0]) {
-          file = inputElement.files[0];
-        } else {
-          file = convertDrawDataToFile(xpath);
-        }
-
-        if (file) {
-          attach(element, file, file.type, false, xpath);
-        }
-      });
-
     $record
       .find('[type=binary]')
       .each((idx, element) => {
         const file = $(element).text();
         if (file) {
-          $(element).text('');
-          attach(element, file, 'image/png', true);
+          // Attach binary file with legacy-style filename because the actual filename is not stored as the question
+          // value in the form model (and so there is currently no way to map the answer in a saved report to the
+          // associated file attachment).
+          attachLegacyFile(element, file, 'image/png', true);
         }
       });
 
