@@ -12,8 +12,8 @@
 #
 # See https://github.com/medic/cht-core/issues/7218 for more info
 
-# shellcheck disable=SC2046
-. $(dirname $0)/simple_curses.sh
+# shellcheck disable=SC1091
+. "$(dirname "$0")"/simple_curses.sh
 
 # todo maybe check to see if docker is running? avoid this error:
 # Error response from daemon: dial unix docker.raw.sock: connect: connection refused
@@ -30,10 +30,10 @@ get_lan_ip() {
     #       Device "" does not exist.
     routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
     subnet=$(echo "$routerIP" | cut -d'.' -f1,2,3)
-    if [ -z $subnet ]; then
+    if [ -z "$subnet" ]; then
       subnet=127.0.0
     fi
-    lanInterface=$(ip r | grep $subnet | grep default | head -n1 | cut -d' ' -f 5)
+    lanInterface=$(ip r | grep "$subnet" | grep default | head -n1 | cut -d' ' -f 5)
     lanAddress=$(ip a s "$lanInterface" | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
     if [ -z "$lanAddress" ]; then
       lanAddress=127.0.0.1
@@ -108,7 +108,7 @@ cht_healthy(){
 
 validate_env_file(){
   envFile=$1
-  if [ ! -f "$envFile" ] || [[ ! "$(file $envFile)" == *"ASCII text"* ]]; then
+  if [ ! -f "$envFile" ] || [[ ! "$(file "$envFile")" == *"ASCII text"* ]]; then
     echo "File not found or not a text file: $envFile"
     echo ""
     echo " Start CHT with: ./cht-docker-compose.sh -d up -e ../PATH_TO_CONFIG/.env_docker"
@@ -150,7 +150,7 @@ get_images_count(){
   IFS=' ' read -ra imagesArray <<< "$images"
   for image in "${imagesArray[@]}"
   do
-    if [ "$( docker image ls --format {{.Repository}}:{{.Tag}} | grep -c "${image}" )" -eq 1 ]; then
+    if [ "$( docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -c "${image}" )" -eq 1 ]; then
         (( result++ ))
     fi
   done
@@ -297,13 +297,13 @@ log_iteration(){
   last_msg=$(echo "$3" | tr -d '"')
   docker_call=$4
   line_head="$(date) pid=\"$$\" count=\"${counter}\""
-  load_now=$(echo $(get_load_avg)|cut -d" " -f 1)
+  load_now=$(get_load_avg | cut -d" " -f 1)
 
   # output the log in the same directory as the env file
-  log_location=$(dirname $envFile)
+  log_location=$(dirname "$envFile")
   logname="${log_location}/cht-docker-compose.log"
 
-  full_url=$(get_local_ip_url $lanAddress)
+  full_url=$(get_local_ip_url "$lanAddress")
   portIsOpen=$(port_open "$lanAddress" "$CHT_HTTPS")
   if [ "$portIsOpen" = "0" ]; then
     port_status='open'
@@ -320,7 +320,7 @@ log_iteration(){
     ssl_verify='no'
   fi
 
-  if [ $counter -eq 0 ]; then
+  if [ "$counter" -eq 0 ]; then
 
     echo "$(date) pid=\"$$\" \
 item=\"end\" \
@@ -330,7 +330,7 @@ project_name=\"$COMPOSE_PROJECT_NAME\" \
 
   fi
 
-  if [ $counter -eq 1 ]; then
+  if [ "$counter" -eq 1 ]; then
 
     echo "${line_head} \
 item=\"start\" \
@@ -360,7 +360,7 @@ total_containers=\"$(get_global_running_container_count)\"\
       logs="NA"
     fi
 
-    echo "${line_head} item=\"docker_logs\" container=\"${container}\" processes=\"$(get_container_process_count ${container})\" last_log=\"$logs\"" >& 1 >> $logname
+    echo "${line_head} item=\"docker_logs\" container=\"${container}\" processes=\"$(get_container_process_count "${container}")\" last_log=\"$logs\"" >& 1 >> "$logname"
     container_stat="${container}=\"${RUNNING}\" ${container_stat}"
   done
 
@@ -375,7 +375,7 @@ docker_call=\"$docker_call\" \
 last_msg=\"$last_msg\" \
 load_now=\"$load_now\" \
 $container_stat\
-" >& 1 >> $logname
+" >& 1 >> "$logname"
 
 }
 
@@ -435,7 +435,7 @@ main (){
   loadAvg=$(get_load_avg)
   chtVersion="NA"
 
-  log_iteration $counter $reboot_count "${last_action}" $docker_action
+  log_iteration "$counter" "$reboot_count" "${last_action}" "$docker_action"
   (( counter++ ))
 
   # if we're exiting, call down or destroy and quit proper
@@ -463,7 +463,7 @@ main (){
   # derive overall healthy
   if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ] && [ "$expired_cert" = "0" ]; then
     overAllHealth="Good"
-  elif [[ "$sleepFor" > 0 ]]; then
+  elif [[ "$sleepFor" -gt 0 ]]; then
     overAllHealth="Booting..."
   else
     overAllHealth="!= Bad =!"
@@ -535,7 +535,7 @@ main (){
     (( reboot_count++ ))
   fi
 
-  if [[ "$sleepFor" > 0 ]] && [ -n "$health" ]; then
+  if [[ "$sleepFor" -gt 0 ]] && [ -n "$health" ]; then
     window "Attempt number $reboot_count / $MAX_REBOOTS to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
     append "Waiting $sleepFor..."
     endwin
@@ -590,7 +590,7 @@ main (){
   fi
 
   # if we're here, we're happy! Show happy sign and exit next iteration via exitNext
-  script_path1=$(dirname $0)
+  script_path1=$(dirname "$0")
   last_action=" :) "
   window "Successfully started ${COMPOSE_PROJECT_NAME} " "green" "100%"
   append "login: medic"
@@ -605,4 +605,4 @@ main (){
 
 }
 
-main_loop -t .5 $@
+main_loop -t .5 "$@"

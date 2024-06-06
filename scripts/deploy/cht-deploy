@@ -37,4 +37,5 @@ if [[ $1 != "-f" || -z $2 ]]; then
 fi
 
 # Pass command line arguments to invoke script
+# shellcheck disable=SC2068 # wontfix script will be replaced "soon"
 invoke install $@

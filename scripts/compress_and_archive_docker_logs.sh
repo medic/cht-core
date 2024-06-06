@@ -44,7 +44,7 @@ docker ps> ${tmp}/docker_ps.log
 docker ps  --format '{{ .Names }}' | xargs -I % sh -c "docker logs --since ${HOURS}h %  > ${tmp}/%.log 2>&1"
 
 cd /tmp/cht-docker-log-tmp
-tar -czf ${log_archive} *
+tar -czf "${log_archive}" ./*
 
 rm /tmp/cht-docker-log-tmp/*
 

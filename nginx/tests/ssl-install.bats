@@ -1,21 +1,17 @@
+# shellcheck disable=SC2030,SC2031 # exports doesn't need to leave subshell
 setup() {
     load 'test_helper/bats-support/load'
     load 'test_helper/bats-assert/load'
     load '/app/bash-shellmock/shellmock'
-    # get the containing directory of this file
-    # use $BATS_TEST_FILENAME instead of ${BASH_SOURCE[0]} or $0,
-    # as those will point to the bats executable's location or the preprocessed file respectively
-    DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
 
-     #shellcheck
+    # shellcheck disable=SC1091 # not testing third party scripts
     . shellmock
 
     #create temp cert files
     base_temp_path="$TEST_TEMP_DIR/tmp/bats/etc/nginx/private"
-    mkdir -p $base_temp_path
+    mkdir -p "$base_temp_path"
     export SSL_CERT_FILE_PATH="$base_temp_path/cert.pem"
     export SSL_KEY_FILE_PATH="$base_temp_path/key.pem"
-
 
 }
 
@@ -28,7 +24,7 @@ teardown()
         rm -rf "$TEST_TEMP_DIR"
     fi
 
-    rm -rf $base_temp_path
+    rm -rf "$base_temp_path"
 }
 
 

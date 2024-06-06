@@ -128,6 +128,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 
 	chown -f couchdb:couchdb $CLUSTER_CREDENTIALS || true
 
+	# shellcheck disable=SC2145 # needs additional investigation about intention before I'm confident in changing
 	su -c "ulimit -n 100000 && exec $@" couchdb
 else
 	exec "$@"
