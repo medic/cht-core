@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
@@ -237,12 +238,11 @@ angular
     };
 
     const validatePlacesPermission = () => {
-      const userRoles = $scope.editUserModel.roles;
-
       if (!$scope.editUserModel.place || $scope.editUserModel.place.length <= 1) {
         return true;
       }
 
+      const userRoles = $scope.editUserModel.roles;
       const allowedRoles = $scope.permissions.can_have_multiple_places;
 
       const userHasPermission = userRoles.some(role => allowedRoles.includes(role));
@@ -251,7 +251,6 @@ angular
         $translate('permission.description.can_have_multiple_places.not_allowed').then(value => {
           $scope.errors.multiFacility = value;
         });
-        return false;
       }
       return userHasPermission;
     };
@@ -292,8 +291,8 @@ angular
 
       return Promise.all(placeIds.map(getPlace))
         .then((places) => {
-          const contactTypes = places.map(place => place.contact_type);
-          const isSameHeirarchy = contactTypes.every(type => type === contactTypes[0]);
+          const contactTypes = new Set(places.map(place => place.contact_type));
+          const isSameHeirarchy = contactTypes.size === 1;
 
           if (!isSameHeirarchy) {
             $translate('permission.description.can_have_multiple_places.incompatible_place').then(value => {
@@ -316,11 +315,7 @@ angular
       }
 
       const getParent = (contactId) => {
-        return DB()
-          .get(contactId)
-          .then(function (contact) {
-            return contact.parent;
-          });
+        return DB().get(contactId).then(contact => contact.parent);
       };
 
       const checkParent = (parent, placeIds) => {
@@ -335,7 +330,7 @@ angular
 
       return getParent(contactId)
         .then(function (parent) {
-          const valid = placeIds.some((placeId) => checkParent(parent, [placeId]));
+          const valid = checkParent(parent, placeIds);
           if (!valid) {
             $translate('configuration.user.place.contact').then(value => {
               $scope.errors.contact = value;

@@ -27,31 +27,22 @@ angular.module('inboxServices').factory('Select2Search',
       return $(format.sender(row.doc, $translate));
     };
 
-    const defaultTemplateSelection = function (selection) {
+    const defaultTemplateSelection = (selection) => {
+      const formatRow = (row) => {
+        if (!row.doc) {
+          return row.text;
+        }
+
+        let formatted = row.doc.name;
+        if (row.doc.muted) {
+          formatted += `(${$translate.instant('contact.muted')})`;
+        }
+        return formatted;
+      };
       if (Array.isArray(selection)) {
-        return selection
-          .map(function (row) {
-            if (row.doc) {
-              return (
-                row.doc.name +
-                (row.doc.muted
-                  ? ' (' + $translate.instant('contact.muted') + ')'
-                  : '')
-              );
-            }
-            return row.text;
-          })
-          .join(', ');
+        return selection.map((row) => formatRow(row)).join(', ');
       }
-      if (selection.doc) {
-        return (
-          selection.doc.name +
-          (selection.doc.muted
-            ? ' (' + $translate.instant('contact.muted') + ')'
-            : '')
-        );
-      }
-      return selection.text;
+      return formatRow(selection);
     };
 
     const defaultSendMessageExtras = function(row) {
@@ -135,18 +126,25 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
+      const addValue = (val) => {
+        if (!selectEl.children('option[value="' + val + '"]').length) {
+          selectEl.append($('<option value="' + val + '"/>'));
+        }
+      };
+
+      const populateSelectWithDocs = function (selectEl, docs) {
+        docs.forEach((doc) => {
+          updateSelect2DataWithDoc(selectEl, doc.id, doc.doc);
+        });
+      };
+
+
       const resolveInitialValue = function(selectEl, initialValue) { //NoSONAR
         if (initialValue) {
           if (Array.isArray(initialValue)) {
-            initialValue.forEach(function (val) {
-              if (!selectEl.children('option[value="' + val + '"]').length) {
-                selectEl.append($('<option value="' + val + '"/>'));
-              }
-            });
-          } else if (
-            !selectEl.children('option[value="' + initialValue + '"]').length
-          ) {
-            selectEl.append($('<option value="' + initialValue + '"/>'));
+            initialValue.forEach((val) => addValue(val));
+          } else {
+            addValue(initialValue);
           }
           selectEl.val(initialValue);
         } else {
@@ -168,26 +166,8 @@ angular.module('inboxServices').factory('Select2Search',
 
             resolution = $q //NoSONAR
               .all(docPromises)
-              .then(function(docs) { //NoSONAR
-                const select2Data = selectEl.select2('data') || [];
-                docs.forEach(function (doc) { //NoSONAR
-                  const selected = select2Data.find((d) => d.id === doc.id);
-                  if (selected) {
-                    selected.doc = doc.doc;
-                  } else {
-                    select2Data.push({
-                      id: doc.id,
-                      doc: doc.doc,
-                      text: doc.doc.name,
-                    });
-                  }
-                });
-                selectEl.select2('data', select2Data);
-                $timeout(() => { //NoSONAR
-                  selectEl.trigger('change');
-                }, 1000);
-              })
-              .catch((err) => $log.error('Select2 failed to get documents', err));
+              .then(docs => populateSelectWithDocs(selectEl, docs))
+              .catch(err => $log.error('Select2 failed to get documents', err));
           }
 
           if (phoneNumber.validate(Settings, value)) {
@@ -209,6 +189,35 @@ angular.module('inboxServices').factory('Select2Search',
           }, 1000);
           return selectEl;
         });
+      };
+
+      const updateSelect2DataWithDoc = function (selectEl, docId, doc) {
+        const select2Data = selectEl.select2('data') || [];
+        const selected = select2Data.find((d) => d.id === docId);
+        if (selected) {
+          selected.doc = doc;
+        } else {
+          select2Data.push({
+            id: docId,
+            doc: doc,
+            text: doc.name,
+          });
+        }
+        selectEl.select2('data', select2Data);
+        $timeout(() => { //NoSONAR
+          selectEl.trigger('change');
+        }, 1000);
+      };
+
+      const updateDocument = function (selectEl, docId) {
+        return getDoc(docId)
+          .then((doc) => {
+            updateSelect2DataWithDoc(selectEl, docId, doc);
+            return selectEl;
+          })
+          .catch((err) => {
+            $log.error('Select2 failed to get document', err);
+          });
       };
 
       const initSelect2 = function(selectEl) {
@@ -245,26 +254,7 @@ angular.module('inboxServices').factory('Select2Search',
                         e.params.data.id;
 
             if (docId) {
-              getDoc(docId).then(function(doc) {
-                const select2Data = selectEl.select2('data') || [];
-                const selected = select2Data.find((d) => d.id === docId);
-                if (selected) {
-                  selected.doc = doc;
-                } else {
-                  select2Data.push({
-                    id: docId,
-                    doc: doc,
-                    text: doc.name,
-                  });
-                }
-                selectEl.select2('data', select2Data);
-                $timeout(() => { //NoSONAR
-                  selectEl.trigger('change');
-                }, 1000);
-
-                return selectEl;
-              })
-                .catch(err => $log.error('Select2 failed to get document', err));
+              updateDocument(selectEl, docId);
             }
           });
         }

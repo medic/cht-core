@@ -1,7 +1,6 @@
 (function () {
 
   'use strict';
-  let URL = '/api/v2/users';
 
   angular.module('services').factory('CreateUser',
     function (
@@ -20,7 +19,7 @@
        * @param      {Object}  updates        Updates you wish to make
        */
       const createSingleUser = (updates) => {
-        URL = '/api/v3/users';
+        const URL = '/api/v3/users';
         if (!updates.username) {
           return $q.reject('You must provide a username to create a user');
         }
@@ -44,6 +43,7 @@
        * @param      {Object}  data        content of the csv file
        */
       const createMultipleUsers = (data) => {
+        const URL = '/api/v2/users';
         $log.debug('CreateMultipleUsers', URL, data);
 
         return $http({
