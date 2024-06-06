@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
