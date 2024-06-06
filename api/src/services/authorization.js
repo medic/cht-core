@@ -75,10 +75,10 @@ const excludeSubjects = (authorizationContext, ...subjectIds) => {
   authorizationContext.subjectIds = _.without(authorizationContext.subjectIds, ...subjectIds);
 };
 
-// gets the depth of a contact, relative to the user's facility
+// gets the depth of a contact, relative to the user's facilities
 const getContactDepth = (authorizationContext, contactsByDepth) => {
   const depthEntry = contactsByDepth.find(entry => {
-    return entry.key.length === 2 && entry.key[0] === authorizationContext.userCtx.facility_id;
+    return entry.key.length === 2 && authorizationContext.userCtx.facility_id.includes(entry.key[0]);
   });
   return depthEntry && depthEntry.key[1];
 };
@@ -187,13 +187,13 @@ const alwaysAllowCreate = doc => {
 
 const getContactsByDepthKeys = (userCtx, depth) => {
   const keys = [];
-  if (depth >= 0) {
-    for (let i = 0; i <= depth; i++) {
-      keys.push([ userCtx.facility_id, i ]);
+  for (const facilityId of userCtx.facility_id) {
+    if (depth >= 0) {
+      keys.push(...Array.from({ length: depth + 1 }).map((_, i) => [facilityId, i]));
+    } else {
+      // no configured depth limit
+      keys.push([ facilityId ]);
     }
-  } else {
-    // no configured depth limit
-    keys.push([ userCtx.facility_id ]);
   }
 
   return keys;
@@ -361,9 +361,9 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
  * Method to ensure users don't see private reports submitted by their boss about the user's contact
  * @param {Object} userCtx                    User context object
  * @param {string} userCtx.contact_id         the user's contact's uuid
- * @param {string} userCtx.facility_id        the user's place's uuid
+ * @param {[string]} userCtx.facility_id      the user's places' uuids
  * @param {Object|undefined} userCtx.contact  the user's contact
- * @param {Object|undefined} userCtx.facility the user's place
+ * @param {Array|undefined} userCtx.facility the users' places
  * @param {string|undefined} subject          report's subject
  * @param {string|undefined} submitter        report's submitter
  * @param {boolean} isPrivate                 whether the report is private
@@ -377,9 +377,9 @@ const isSensitive = (userCtx, subject, submitter, isPrivate, allowedSubmitter) =
   }
 
   const sensitiveSubjects = [
-    ...registrationUtils.getSubjectIds(userCtx.facility),
+    ...(userCtx.facility?.map(facility => registrationUtils.getSubjectIds(facility)) || []).flat(),
     ...registrationUtils.getSubjectIds(userCtx.contact),
-    userCtx.facility_id,
+    ...userCtx.facility_id,
     userCtx.contact_id,
   ];
 
