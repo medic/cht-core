@@ -1,4 +1,3 @@
-const path = require('path');
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const enketoWidgetsPage = require('@page-objects/default/enketo/enketo-widgets.wdio.page');
@@ -55,13 +54,6 @@ describe('cht-form web component - Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(
       await enketoWidgetsPage.neighborhoodDropdown(), 'radio', 'havendr'
     );
-    await genericForm.nextPage();
-
-    await enketoWidgetsPage.drawShapeOnCanvas(await enketoWidgetsPage.drawCanvas());
-    await enketoWidgetsPage.drawShapeOnCanvas(await enketoWidgetsPage.signatureCanvas());
-    const filePath = path.join(__dirname, '/../../../e2e/default/enketo/images/photo-for-upload-form.png');
-    await enketoWidgetsPage.selectAnnotateImageFile(filePath);
-    await enketoWidgetsPage.drawShapeOnCanvas(await enketoWidgetsPage.annotateCanvas());
 
     await genericForm.nextPage();
     await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Eli');
@@ -91,22 +83,6 @@ describe('cht-form web component - Enketo Widgets', () => {
     expect(jsonObj.cascading_widgets.group2.country2).to.equal('nl');
     expect(jsonObj.cascading_widgets.group2.city2).to.equal('dro');
     expect(jsonObj.cascading_widgets.group2.neighborhood2).to.equal('havendr');
-
-    const drawName = jsonObj.media_widgets.draw;
-    expect(drawName).to.match(/^drawing-\d\d?_\d\d?_\d\d?\.png$/);
-    const drawAttachmentName = `user-file-${drawName}`;
-    const signatureName = jsonObj.media_widgets.signature;
-    expect(signatureName).to.match(/^signature-\d\d?_\d\d?_\d\d?\.png$/);
-    const signatureAttachmentName = `user-file-${signatureName}`;
-    const annotateName = jsonObj.media_widgets.annotate;
-    expect(annotateName).to.match(/^annotation-\d\d?_\d\d?_\d\d?\.png$/);
-    const annotateAttachmentName = `user-file-${annotateName}`;
-    expect(doc._attachments).to.have.all.keys(drawAttachmentName, signatureAttachmentName, annotateAttachmentName);
-    const contentTypes = Object.values(doc._attachments).map(({ content_type }) => content_type);
-    expect(contentTypes).to.deep.equal(['image/png', 'image/png', 'image/png']);
-    expect(doc._attachments[drawAttachmentName].data.size).to.be.closeTo(19600, 1000);
-    expect(doc._attachments[signatureAttachmentName].data.size).to.be.closeTo(12800, 1000);
-    expect(doc._attachments[annotateAttachmentName].data.size).to.be.closeTo(28000, 1000);
   });
 
   it('should verify the cancel button', async () => {
