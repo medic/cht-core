@@ -10,6 +10,7 @@ import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulatio
 import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 
 describe('Enketo service', () => {
@@ -40,6 +41,7 @@ describe('Enketo service', () => {
   let EnketoForm;
   let EnketoPrepopulationData;
   let translateService;
+  let extractLineageService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -74,6 +76,7 @@ describe('Enketo service', () => {
       instant: sinon.stub().returnsArg(0),
       get: sinon.stub(),
     };
+    extractLineageService = { extract: ExtractLineageService.prototype.extract };
 
     TestBed.configureTestingModule({
       providers: [
@@ -88,6 +91,7 @@ describe('Enketo service', () => {
         { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
         { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         { provide: TranslateService, useValue: translateService },
+        { provide: ExtractLineageService, useValue: extractLineageService },
       ],
     });
 

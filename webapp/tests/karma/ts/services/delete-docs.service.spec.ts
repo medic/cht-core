@@ -6,6 +6,7 @@ import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 describe('DeleteDocs service', () => {
 
@@ -14,6 +15,7 @@ describe('DeleteDocs service', () => {
   let bulkDocs;
   let isOnlineOnly;
   let server;
+  let extractLineageService;
 
   beforeEach(() => {
     get = sinon.stub();
@@ -21,12 +23,14 @@ describe('DeleteDocs service', () => {
     isOnlineOnly = sinon.stub().returns(false);
     const Changes = () => undefined;
     Changes.killWatchers = () => undefined;
+    extractLineageService = { extract: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => ({ bulkDocs, get }) } },
         { provide: SessionService, useValue: { isOnlineOnly } },
         { provide: ChangesService, useValue: Changes },
+        { provide: ExtractLineageService, useValue: extractLineageService },
       ]
     });
     service = TestBed.inject(DeleteDocsService);
