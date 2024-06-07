@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
+import * as moment from 'moment';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -118,10 +119,24 @@ export class TasksComponent implements OnInit, OnDestroy {
     window.location.reload();
   }
 
+  private hydrateEmissions(taskDocs) {
+    return taskDocs.map(taskDoc => {
+      const emission = { ...taskDoc.emission };
+      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
+      emission.date = new Date(dueDate.valueOf());
+      emission.overdue = dueDate.isBefore(moment());
+      emission.owner = taskDoc.owner;
+
+      return emission;
+    });
+  }
+
   private async refreshTasks() {
     try {
-      this.tasksDisabled = !(await this.rulesEngineService.isEnabled());
-      const taskDocs = this.tasksDisabled ? [] : await this.rulesEngineService.fetchTaskDocsForAllContacts() || [];
+      const isEnabled = await this.rulesEngineService.isEnabled();
+      this.tasksDisabled = !isEnabled;
+      const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
+
       this.hasTasks = taskDocs.length > 0;
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];

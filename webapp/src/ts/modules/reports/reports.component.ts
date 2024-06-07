@@ -64,6 +64,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isExporting = false;
   userParentPlace;
   fastActionList?: FastAction[];
+  userLineageLevel;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
