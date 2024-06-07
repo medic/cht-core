@@ -70,6 +70,41 @@ const selectImage = async (formId, filePath) => {
 
 const reportImagePreview = () => $('.report-image');
 
+const drawCanvas = () => {
+  return $(`label[data-contains-ref-target="/enketo_widgets_test/media_widgets/draw"] canvas`);
+};
+
+const signatureCanvas = () => {
+  return $(`label[data-contains-ref-target="/enketo_widgets_test/media_widgets/signature"] canvas`);
+};
+
+const annotateFileInput = () => {
+  return $(`label[data-contains-ref-target="/enketo_widgets_test/media_widgets/annotate"] input[type=file]`);
+};
+
+const annotateCanvas = () => {
+  return $(`label[data-contains-ref-target="/enketo_widgets_test/media_widgets/annotate"] canvas`);
+};
+
+const drawShapeOnCanvas = async (canvas) => {
+  await canvas.waitForDisplayed();
+  await browser.action('pointer')
+    .move({ origin: canvas })
+    .down()
+    .move({ origin: canvas, x: 50, y: 0 })
+    .move({ origin: canvas, x: 50, y: 50 })
+    .move({ origin: canvas, x: 0, y: 50 })
+    .move({ origin: canvas, x: 0, y: 0 })
+    .move({ origin: canvas, x: 50, y: 0 })
+    .up()
+    .perform();
+};
+
+const selectAnnotateImageFile = async (filePath) => {
+  const input = await annotateFileInput();
+  await input.addValue(filePath);
+};
+
 module.exports = {
   selectMultipleDropdown,
   selectOneDropdown,
@@ -87,4 +122,9 @@ module.exports = {
   imagePreview,
   selectImage,
   reportImagePreview,
+  drawCanvas,
+  signatureCanvas,
+  annotateCanvas,
+  drawShapeOnCanvas,
+  selectAnnotateImageFile,
 };

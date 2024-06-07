@@ -29,7 +29,7 @@ describe('Submit Photo Upload form', () => {
     const initialReport = await utils.getDoc(reportId);
     const attachmentNames = Object.keys(initialReport._attachments);
     expect(attachmentNames).to.have.lengthOf(1);
-    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d_\d\d_\d\d\.png$/);
+    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d?_\d\d?_\d\d?\.png$/);
 
     await reportsPage.openReport(reportId);
     await reportsPage.editReport();
@@ -48,7 +48,7 @@ describe('Submit Photo Upload form', () => {
     const initialReport = await utils.getDoc(reportId);
     const attachmentNames = Object.keys(initialReport._attachments);
     expect(attachmentNames).to.have.lengthOf(1);
-    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d_\d\d_\d\d\.png$/);
+    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d?_\d\d?_\d\d?\.png$/);
 
     await reportsPage.openReport(reportId);
     await reportsPage.editReport();

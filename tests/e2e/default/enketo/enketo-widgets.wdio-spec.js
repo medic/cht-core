@@ -117,6 +117,8 @@ describe('Enketo Widgets', () => {
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('usa', 'nyc', 'bronx', 3, 2);
+    await genericForm.nextPage();
+    // Skip testing draw widgets since those are covered in cht-form integration tests
     await genericForm.submitForm();
 
     await commonPage.goToReports();
@@ -153,6 +155,8 @@ describe('Enketo Widgets', () => {
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('nl', 'dro', 'havendr', 3, 1);
+    await genericForm.nextPage();
+    // Skip testing draw widgets since those are covered in cht-form integration tests
     await genericForm.nextPage();
     await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Eli');
     await commonEnketoPage.setInputValue('What is the patient\'s uuid?', '123 456 789');
