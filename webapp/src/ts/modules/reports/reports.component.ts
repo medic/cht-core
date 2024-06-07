@@ -350,12 +350,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private async doInitialSearch() {
-    let userParentPlace;
     if (this.canDefaultFilter) {
-      userParentPlace = await this.getUserParentPlace();
+      this.userParentPlace = await this.getUserParentPlace();
     }
 
-    if (userParentPlace?._id) {
+    if (this.userParentPlace?._id) {
       // The facility filter will trigger the search.
       this.reportsSidebarFilter?.setDefaultFacilityFilter({ facility: this.userParentPlace });
       return;

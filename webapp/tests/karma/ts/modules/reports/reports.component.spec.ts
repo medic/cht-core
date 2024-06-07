@@ -940,7 +940,7 @@ describe('Reports Component', () => {
 
       flush();
 
-      expect(setSelectMode.calledOnce).to.be.true;
+      expect(setSelectMode.callCount).to.equal(1);
       expect(setSelectMode.args).to.deep.equal([[true]]);
       expect(unsetComponents.calledOnce).to.be.true;
       expect(router.navigate.calledOnce).to.be.true;
