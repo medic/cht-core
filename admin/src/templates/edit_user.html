@@ -63,7 +63,7 @@
       </select>
       <span class="help-block" ng-if="errors.place">{{errors.place}}</span>
       <span class="help-block" ng-if="errors.multiFacility">{{errors.multiFacility}}</span>
-      <span class="help-block" translate>user.place.help</span>
+      <span class="text-muted" translate>user.place.help</span>
     </div>
 
     <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact, 'required': roles[editUserModel.role].offline}">
