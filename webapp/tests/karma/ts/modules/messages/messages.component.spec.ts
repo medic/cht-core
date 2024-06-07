@@ -15,38 +15,28 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ModalService } from '@mm-services/modal.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { NavigationService } from '@mm-services/navigation.service';
-import { UserContactService } from '@mm-services/user-contact.service';
-import { AuthService } from '@mm-services/auth.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
 import { SessionService } from '@mm-services/session.service';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ExportService } from '@mm-services/export.service';
+import { AuthService } from '@mm-services/auth.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
   let fixture: ComponentFixture<MessagesComponent>;
   let messageContactService;
   let changesService;
-  let exportService;
   let modalService;
-  let userContactService;
   let fastActionButtonService;
   let authService;
   let sessionService;
   let performanceService;
+  let extractLineageService;
   let stopPerformanceTrackStub;
-
-  const userContactGrandparent = { _id: 'grandparent' };
-  const userContactDoc = {
-    _id: 'user',
-    parent: {
-      _id: 'parent',
-      name: 'parent',
-      parent: userContactGrandparent,
-    },
-  };
 
   beforeEach(waitForAsync(() => {
     stopPerformanceTrackStub = sinon.stub();
@@ -57,9 +47,6 @@ describe('Messages Component', () => {
       isRelevantChange: sinon.stub()
     };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
-    userContactService = {
-      get: sinon.stub().resolves(userContactDoc),
-    };
     fastActionButtonService = {
       getMessageActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
@@ -70,6 +57,10 @@ describe('Messages Component', () => {
       has: sinon.stub()
     };
     sessionService = { isAdmin: sinon.stub() };
+    extractLineageService = {
+      getUserLineageToRemove: sinon.stub(),
+      removeUserFacility: ExtractLineageService.prototype.removeUserFacility,
+    };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
       { selector: 'getLoadingContent', value: false },
@@ -94,14 +85,14 @@ describe('Messages Component', () => {
           { provide: ChangesService, useValue: changesService },
           { provide: MessageContactService, useValue: messageContactService },
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
-          { provide: exportService, useValue: {} },
+          { provide: ExportService, useValue: {} },
           { provide: SessionService, useValue: sessionService },
           { provide: ModalService, useValue: modalService },
           { provide: NavigationService, useValue: {} },
-          { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: PerformanceService, useValue: performanceService },
+          { provide: ExtractLineageService, useValue: extractLineageService },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
@@ -244,15 +235,7 @@ describe('Messages Component', () => {
   });
 
   describe('Messages breadcrumbs', () => {
-    const bettyOfflineUserContactDoc = {
-      _id: 'user',
-      parent: {
-        _id: 'parent',
-        name: 'CHW Bettys Area',
-        parent: userContactGrandparent,
-      },
-    };
-    const conversations =  [
+    const conversations = [
       { key: 'a',
         message: { inAllMessages: true },
         lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
@@ -274,33 +257,20 @@ describe('Messages Component', () => {
       },
     ];
 
-    it('it should retrieve the hierarchy level of the connected user', async () => {
-      expect(await component.currentLevel).to.equal('parent');
-    });
+    it('it should retrieve the hierarchy level of the connected user', fakeAsync(async () => {
+      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
 
-    it('should not alter conversations when user is offline and parent place is not relevant to the conversation',
-      fakeAsync(() => {
-        sinon.resetHistory();
+      component.ngOnInit();
+      tick();
 
-        messageContactService.getList.resolves(conversations);
-        userContactService.get.resolves(userContactDoc);
-        authService.online.returns(false);
+      expect(await component.userLineageLevel).to.equal('CHW Bettys Area');
+    }));
 
-        component.ngOnInit();
-        tick();
-        component.updateConversations({ merge: true });
-        tick();
-
-        expect(component.conversations).to.deep.equal(conversations);
-      }));
-
-    it('should not change the conversations lineage if the connected user is online only', fakeAsync(() => {
+    it('should not remove the lineage when user lineage level is undefined', fakeAsync(() => {
       sinon.resetHistory();
 
       messageContactService.getList.resolves(conversations);
-      userContactService.get.resolves(bettyOfflineUserContactDoc);
-      authService.online.returns(true);
-
+      extractLineageService.getUserLineageToRemove.resolves(undefined);
       component.ngOnInit();
       tick();
       component.updateConversations({ merge: true });
@@ -309,42 +279,39 @@ describe('Messages Component', () => {
       expect(component.conversations).to.deep.equal(conversations);
     }));
 
-    it('should remove current level from lineage when user is offline and parent place relevant to the conversation',
-      fakeAsync(() => {
-        sinon.resetHistory();
-        const updatedConversations = [
-          { key: 'a',
-            message: { inAllMessages: true },
-            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
-          },
-          { key: 'b',
-            message: { inAllMessages: true },
-            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
-          },
-          { key: 'c',
-            message: { inAllMessages: true },
-            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
-          },
-          { key: 'd',
-            message: { inAllMessages: true },
-            lineage: []
-          },
-          { key: 'e',
-            message: { inAllMessages: true },
-          },
-        ];
+    it('should remove lineage when user lineage level is defined', fakeAsync(() => {
+      sinon.resetHistory();
+      const updatedConversations = [
+        { key: 'a',
+          message: { inAllMessages: true },
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        },
+        { key: 'b',
+          message: { inAllMessages: true },
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        },
+        { key: 'c',
+          message: { inAllMessages: true },
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
+        },
+        { key: 'd',
+          message: { inAllMessages: true },
+          lineage: []
+        },
+        { key: 'e',
+          message: { inAllMessages: true },
+        },
+      ];
 
-        messageContactService.getList.resolves(conversations);
-        userContactService.get.resolves(bettyOfflineUserContactDoc);
-        authService.online.returns(false);
+      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
+      messageContactService.getList.resolves(conversations);
+      component.ngOnInit();
+      tick();
+      component.updateConversations({ merge: true });
+      tick();
 
-        component.ngOnInit();
-        tick();
-        component.updateConversations({ merge: true });
-        tick();
-
-        expect(component.conversations).to.deep.equal(updatedConversations);
-      }));
+      expect(component.conversations).to.deep.equal(updatedConversations);
+    }));
   });
 });
 

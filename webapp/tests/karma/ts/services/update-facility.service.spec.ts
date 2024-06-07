@@ -8,16 +8,18 @@ import { UpdateFacilityService } from '@mm-services/update-facility.service';
 
 describe('UpdateFacility service', () => {
   let service;
+  let extractLineageService;
   let get;
   let put;
 
   beforeEach(() => {
     get = sinon.stub();
     put = sinon.stub();
+    extractLineageService = { extract: ExtractLineageService.prototype.extract };
 
     TestBed.configureTestingModule({
       providers: [
-        ExtractLineageService,
+        { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: DbService, useValue: { get: () => ({ get, put }) } },
       ],
     });

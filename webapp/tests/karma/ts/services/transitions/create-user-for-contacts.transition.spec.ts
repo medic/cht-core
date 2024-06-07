@@ -6,6 +6,7 @@ import { CreateUserForContactsTransition } from '@mm-services/transitions/create
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 const deepFreeze = obj => {
   Object
@@ -67,6 +68,7 @@ describe('Create User for Contacts Transition', () => {
   let dbService;
   let createUserForContactsService;
   let userContactService;
+  let extractLineageService;
   let transition;
 
   beforeEach(() => {
@@ -82,6 +84,7 @@ describe('Create User for Contacts Transition', () => {
       getReplacedBy: sinon.stub(),
     };
     userContactService = { get: sinon.stub() };
+    extractLineageService = { extract: ExtractLineageService.prototype.extract };
 
     TestBed.configureTestingModule({
       providers: [
@@ -89,6 +92,7 @@ describe('Create User for Contacts Transition', () => {
         { provide: DbService, useValue: dbService },
         { provide: CreateUserForContactsService, useValue: createUserForContactsService },
         { provide: UserContactService, useValue: userContactService },
+        { provide: ExtractLineageService, useValue: extractLineageService },
       ]
     });
 
