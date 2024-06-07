@@ -11,7 +11,7 @@
     <mm-navigation></mm-navigation>
     <mm-search-bar
       *ngIf="useSearchNewDesign"
-      [showSort]="true"
+      [showSort]="isAllowedToSort"
       [sortDirection]="sortDirection"
       [lastVisitedDateExtras]="lastVisitedDateExtras"
       (sort)="sort($event)"
