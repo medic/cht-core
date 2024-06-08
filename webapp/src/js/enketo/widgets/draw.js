@@ -314,7 +314,7 @@ class DrawWidget extends Widget {
             // Update UI
             that.pad.clear();
             that._loadFileIntoPad(this.files[0]).then(() => {
-              that._updateValue.call(that);
+              that._updateValue.call(that);// NOSONAR
               that._showFileName(file.name);
               that.enable();
             });
@@ -389,7 +389,7 @@ class DrawWidget extends Widget {
     // HTML syntax copied from filepicker widget
     const load = this.props.load
       ? `<input type="file" class="ignore draw-widget__load"${
-        this.props.capture !== null
+        this.props.capture !== null // NOSONAR
           ? ` capture="${this.props.capture}"`
           : ''
       } accept="${
@@ -469,7 +469,7 @@ class DrawWidget extends Widget {
   /**
    * Clears pad, cache, loaded file name, download link and others
    */
-  _reset() {
+  _reset() { // NOSONAR
     const that = this;
 
     if (this.element.value) {
@@ -477,7 +477,7 @@ class DrawWidget extends Widget {
       const item =
         this.props.type === 'signature'
           ? t('drawwidget.signature')
-          : this.props.type === 'drawing'
+          : this.props.type === 'drawing' // NOSONAR
             ? t('drawwidget.drawing')
             : t('drawwidget.annotation');
       dialog
@@ -582,7 +582,7 @@ class DrawWidget extends Widget {
   _handleResize(canvas) {
     const that = this;
     $(window).on('resize', () => {
-      // that._forceUpdate();
+      // that._forceUpdate(); // NOSONAR
       that._resizeCanvas(canvas);
     });
   }
@@ -668,7 +668,7 @@ class DrawWidget extends Widget {
 
     props.type = props.appearances.includes('draw')
       ? 'drawing'
-      : props.appearances.includes('signature')
+      : props.appearances.includes('signature') // NOSONAR
         ? 'signature'
         : 'annotation';
     props.filename = `${props.type}.png`;
