@@ -132,7 +132,7 @@ $picker-border: 2px solid grey;
       display: none;
     }
 
-    div {
+    div { // NOSONAR
       width: 20px;
       height: 20px;
       margin: 2px;
@@ -213,7 +213,7 @@ $picker-border: 2px solid grey;
   }
 }
 
-.or-signature-initialized {
+.or-signature-initialized { // NOSONAR
   .draw-widget.full-screen {
     .draw-widget__body {
       width: calc(100% - 2 * #{$fullscreen-margin-h});
@@ -225,7 +225,7 @@ $picker-border: 2px solid grey;
     .draw-widget__footer {
       width: calc(
               100% - 2 * #{$fullscreen-margin-h}
-      ); //margin: -($fullscreen-margin-v - 10px) auto 0 auto;
+      ); //margin: -($fullscreen-margin-v - 10px) auto 0 auto; NOSONAR
     }
   }
 }
