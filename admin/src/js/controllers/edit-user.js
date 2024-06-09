@@ -279,17 +279,15 @@ angular
 
     const validateFacilityHierarchy = () => {
       const placeIds = $scope.editUserModel.place;
+      const docsFetched = 10;
 
       if (!placeIds || placeIds.length === 1) {
         return $q.resolve(true);
       }
 
-      const getPlace = (placeId) => {
-        return DB().get(placeId);
-      };
-
-      return Promise.all(placeIds.map(getPlace))
-        .then((places) => {
+      return DB().allDocs({ keys: placeIds, include_docs: true, limit: docsFetched })
+        .then(result => {
+          const places = result.rows.map(row => row.doc);
           const contactTypes = new Set(places.map(place => place.contact_type));
           const isSameHeirarchy = contactTypes.size === 1;
 
