@@ -8,9 +8,12 @@ function(doc) {
     doc.metadata.month &&
     doc.metadata.day
   ) {
-    const pad = number => number.toString().padStart(2, '0');
+    var pad = function (number) {
+      return number.toString().padStart(2, '0');
+    };
+
     emit([doc.metadata.user, doc.metadata.deviceId], {
-      date: `${doc.metadata.year}-${pad(doc.metadata.month)}-${pad(doc.metadata.day)}`,
+      date: doc.metadata.year + '-' + pad(doc.metadata.month) + '-' + pad(doc.metadata.day),
       id: doc._id,
       device: {
         userAgent: doc.device && doc.device.userAgent,
