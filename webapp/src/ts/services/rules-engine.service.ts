@@ -104,7 +104,7 @@ export class RulesEngineService implements OnDestroy {
             this.settingsService.get(),
             this.userContactService.get(),
             this.userSettingsService.get(),
-            this.chtDatasourceService.getApi()
+            this.chtDatasourceService.get()
           ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc, chtScriptApi]) => {
             const rulesEngineContext = this.getRulesEngineContext(

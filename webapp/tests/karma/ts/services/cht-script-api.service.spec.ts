@@ -82,7 +82,7 @@ describe('CHTScriptApiService service', () => {
       settingsService.get.resolves();
       await service.isInitialized();
 
-      const result = await service.getApi();
+      const result = await service.get();
 
       expect(result).to.contain.keys([ 'v1' ]);
       expect(result.v1).to.contain.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib', 'person' ]);
@@ -104,7 +104,7 @@ describe('CHTScriptApiService service', () => {
       expect(http.get.args[1][0]).to.equal('/extension-libs/bar.js');
       expect(http.get.args[2][0]).to.equal('/extension-libs/foo.js');
 
-      const result = await service.getApi();
+      const result = await service.get();
 
       const foo = result.v1.getExtensionLib('foo.js');
       expect(foo).to.be.a('function');
@@ -131,7 +131,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_edit');
 
@@ -147,7 +147,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_create_people');
 
@@ -164,7 +164,7 @@ describe('CHTScriptApiService service', () => {
       sessionService.userCtx.returns({ roles: [ 'nurse' ] });
       await service.isInitialized();
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      const api = await service.getApi();
+      const api = await service.get();
 
       const permissionNotFound = api.v1.hasPermissions('can_create_people');
 
@@ -196,7 +196,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ '_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_create_people');
 
@@ -212,7 +212,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_configure');
 
@@ -233,7 +233,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'district_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([
         [ 'can_backup_facilities' ],
@@ -253,7 +253,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'district_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([
         [ 'can_backup_facilities', 'can_backup_people' ],
@@ -274,7 +274,7 @@ describe('CHTScriptApiService service', () => {
       sessionService.userCtx.returns({ roles: [ 'nurse' ] });
       await service.isInitialized();
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      const api = await service.getApi();
+      const api = await service.get();
 
       const permissionNotFound = api.v1.hasAnyPermission([[ 'can_create_people' ], [ '!can_edit' ]]);
 
@@ -306,7 +306,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ '_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([[ 'can_create_people' ], [ 'can_edit', 'can_configure' ]]);
 
@@ -324,7 +324,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([[ 'can_configure', 'can_create_people' ], [ 'can_backup_facilities' ] ]);
 

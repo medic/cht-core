@@ -22,7 +22,7 @@ export class AuthService {
    */
   has(permissions?: string | string[]): Promise<boolean> {
     return this.chtDatasourceService
-      .getApi()
+      .get()
       .then(chtApi => {
         const userCtx = this.session.userCtx();
 
@@ -54,7 +54,7 @@ export class AuthService {
     }
 
     return this.chtDatasourceService
-      .getApi()
+      .get()
       .then(chtApi => {
         const userCtx = this.session.userCtx();
 

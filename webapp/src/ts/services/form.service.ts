@@ -73,7 +73,7 @@ export class FormService {
     }
     return Promise.all([
       this.zScoreService.getScoreUtil(),
-      this.chtDatasourceService.getApi()
+      this.chtDatasourceService.get()
     ])
       .then(([zscoreUtil, api]) => {
         medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);

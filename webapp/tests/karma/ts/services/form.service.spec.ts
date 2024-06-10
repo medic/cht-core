@@ -143,7 +143,7 @@ describe('Form service', () => {
     zScoreUtil = sinon.stub();
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
     chtScriptApi = sinon.stub();
-    chtDatasourceService = { getApi: sinon.stub().resolves(chtScriptApi) };
+    chtDatasourceService = { get: sinon.stub().resolves(chtScriptApi) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     trainingCardsService = {
@@ -202,7 +202,7 @@ describe('Form service', () => {
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
-      expect(chtDatasourceService.getApi.callCount).to.equal(1);
+      expect(chtDatasourceService.get.callCount).to.equal(1);
       expect(medicXpathExtensions.init.callCount).to.equal(1);
       expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment, chtScriptApi]);
     });

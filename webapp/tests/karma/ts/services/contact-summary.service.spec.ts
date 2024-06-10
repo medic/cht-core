@@ -32,7 +32,7 @@ describe('ContactSummary service', () => {
       }
     };
     chtDatasourceService = {
-      getApi: sinon.stub().returns(chtScriptApi)
+      get: sinon.stub().returns(chtScriptApi)
     };
 
     const pipesTransform = (name, value) => {

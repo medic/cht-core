@@ -115,7 +115,7 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
-    chtDatasourceService = { getApi: sinon.stub().returns(chtScriptApi) };
+    chtDatasourceService = { get: sinon.stub().returns(chtScriptApi) };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 

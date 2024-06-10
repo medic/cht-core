@@ -97,7 +97,7 @@ export class CHTDatasourceService {
     return user?.roles || this.userCtx?.roles;
   }
 
-  async getApi() {
+  async get() {
     await this.isInitialized();
     const dataSource = getDatasource(this.dataContext);
     return {
