@@ -8,6 +8,7 @@ describe('EditUserCtrl controller', () => {
   let mockEditCurrentUser;
   let scope;
   let dbGet;
+  let dbAllDocs;
   let UpdateUser;
   let CreateUser;
   let UserSettings;
@@ -21,6 +22,7 @@ describe('EditUserCtrl controller', () => {
     module('adminApp');
 
     dbGet = sinon.stub();
+    dbAllDocs = sinon.stub();
     UpdateUser = sinon.stub().resolves();
     CreateUser = {
       createSingleUser: sinon.stub().resolves()
@@ -68,6 +70,7 @@ describe('EditUserCtrl controller', () => {
         'DB',
         KarmaUtils.mockDB({
           get: dbGet,
+          allDocs: dbAllDocs,
         })
       );
       $provide.value('UpdateUser', UpdateUser);
@@ -425,6 +428,13 @@ describe('EditUserCtrl controller', () => {
       mockContactGet(userToEdit.contact_id);
       http.get.withArgs('/api/v1/users-info').resolves({
         data: { total_docs: 20000, warn_docs: 800, warn: false, limit: 10000 },
+      });
+
+      dbAllDocs.resolves({
+        rows: [
+          { doc: { _id: 'facility_id' } },
+          { doc: { _id: 'facility_id_2' } },
+        ],
       });
 
       return mockEditAUser(userToEdit)
