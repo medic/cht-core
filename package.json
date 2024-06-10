@@ -25,7 +25,7 @@
     "build-webapp-dev": "cd webapp && npm run build -- --configuration=development && npm run compile",
     "build-cht-form": "./scripts/build/build-prepare.sh && cd webapp && npm run build:cht-form",
     "copy-api-resources": "cp -r api/src/public/* api/build/static/",
-    "dev-api": "./scripts/build/copy-static-files.sh && TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'api/build/static' --ignore 'api/build/public' --watch api --watch 'shared-libs/**/src/**' api/server.js -- --allow-cors",
+    "dev-api": "./scripts/build/copy-static-files.sh && (npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix api run-watch)",
     "dev-sentinel": "npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix sentinel run-watch",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && node scripts/build/cli localDockerComposeFiles",
     "update-service-worker": "node scripts/build/cli updateServiceWorker",
