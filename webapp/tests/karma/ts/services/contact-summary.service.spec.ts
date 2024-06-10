@@ -8,14 +8,14 @@ import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
 
 describe('ContactSummary service', () => {
   let service;
   let Settings;
   let feedbackService;
   let uhcStatsService;
-  let chtScriptApiService;
+  let chtDatasourceService;
   let chtScriptApi;
 
   beforeEach(() => {
@@ -31,7 +31,7 @@ describe('ContactSummary service', () => {
         hasAnyPermission: sinon.stub()
       }
     };
-    chtScriptApiService = {
+    chtDatasourceService = {
       getApi: sinon.stub().returns(chtScriptApi)
     };
 
@@ -48,7 +48,7 @@ describe('ContactSummary service', () => {
         { provide: PipesService, useValue: { transform: pipesTransform } },
         { provide: FeedbackService, useValue: feedbackService },
         { provide: UHCStatsService, useValue: uhcStatsService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService }
+        { provide: CHTDatasourceService, useValue: chtDatasourceService }
       ]
     });
     service = TestBed.inject(ContactSummaryService);

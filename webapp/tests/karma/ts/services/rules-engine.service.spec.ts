@@ -17,7 +17,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -32,7 +32,7 @@ describe('RulesEngineService', () => {
   let translateFromService;
   let rulesEngineCoreStubs;
   let pipesService;
-  let chtScriptApiService;
+  let chtDatasourceService;
   let performanceService;
   let stopPerformanceTrackStub;
   let clock;
@@ -115,7 +115,7 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
-    chtScriptApiService = { getApi: sinon.stub().returns(chtScriptApi) };
+    chtDatasourceService = { getApi: sinon.stub().returns(chtScriptApi) };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 
@@ -176,7 +176,7 @@ describe('RulesEngineService', () => {
         { provide: TranslateFromService, useValue: translateFromService },
         { provide: RulesEngineCoreFactoryService, useValue: rulesEngineCoreFactory },
         { provide: PipesService, useValue: pipesService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService }
+        { provide: CHTDatasourceService, useValue: chtDatasourceService }
       ]
     });
   });

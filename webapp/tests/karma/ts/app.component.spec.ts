@@ -40,7 +40,7 @@ import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
@@ -80,7 +80,7 @@ describe('AppComponent', () => {
   let translateLocaleService;
   let telemetryService;
   let transitionsService;
-  let chtScriptApiService;
+  let chtDatasourceService;
   let analyticsModulesService;
   let trainingCardsService;
   // End Services
@@ -119,7 +119,7 @@ describe('AppComponent', () => {
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
     browserDetectorService = { isUsingOutdatedBrowser: sinon.stub().returns(false) };
-    chtScriptApiService = { isInitialized: sinon.stub() };
+    chtDatasourceService = { isInitialized: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
     databaseConnectionMonitorService = {
       listenForDatabaseClosed: sinon.stub().returns(of())
@@ -213,7 +213,7 @@ describe('AppComponent', () => {
           { provide: TranslateLocaleService, useValue: translateLocaleService },
           { provide: TelemetryService, useValue: telemetryService },
           { provide: TransitionsService, useValue: transitionsService },
-          { provide: CHTScriptApiService, useValue: chtScriptApiService },
+          { provide: CHTDatasourceService, useValue: chtDatasourceService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: Router, useValue: router  },
@@ -250,7 +250,7 @@ describe('AppComponent', () => {
     // init rules engine
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     // init CHTScriptApiService
-    expect(chtScriptApiService.isInitialized.callCount).to.equal(1);
+    expect(chtDatasourceService.isInitialized.callCount).to.equal(1);
     // init unread count
     expect(unreadRecordsService.init.callCount).to.equal(1);
     expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');
@@ -643,7 +643,7 @@ describe('AppComponent', () => {
     }));
 
     it('should redirect to the error page when there is an exception', fakeAsync(async () => {
-      chtScriptApiService.isInitialized.throws({ error: 'some error'});
+      chtDatasourceService.isInitialized.throws({ error: 'some error'});
 
       await getComponent();
       tick();

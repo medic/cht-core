@@ -4,14 +4,14 @@ import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 
 describe('CHTScriptApiService service', () => {
-  let service: CHTScriptApiService;
+  let service: CHTDatasourceService;
   let sessionService;
   let settingsService;
   let changesService;
@@ -35,7 +35,7 @@ describe('CHTScriptApiService service', () => {
       ]
     });
 
-    service = TestBed.inject(CHTScriptApiService);
+    service = TestBed.inject(CHTDatasourceService);
   });
 
   afterEach(() => {

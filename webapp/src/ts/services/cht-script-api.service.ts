@@ -12,7 +12,7 @@ import { lastValueFrom } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class CHTScriptApiService {
+export class CHTDatasourceService {
   private userCtx;
   private dataContext!: DataContext;
   private settings;
