@@ -150,24 +150,20 @@ angular.module('inboxServices').factory('Select2Search',
       const hydrateDocs = function(docIds) {
         return $q
           .all(docIds.map(id => LineageModelGenerator.contact(id, { merge: true })))
-          .then(contacts => {
-            muteContacts(contacts);
+          .then((contacts) => {
+            contacts.forEach((contact) => {
+              contact.doc.muted = ContactMuted(contact.doc);
+            });
+
+            return contacts.map(doc => ({
+              id: doc._id,
+              doc: doc.doc,
+            }));
           });
       };
 
-      const muteContacts = function(contacts) {
-        contacts.forEach(contact => {
-          contact.doc.muted = ContactMuted(contact.doc);
-        });
-
-        return contacts.map(doc => ({
-          id: doc._id,
-          doc: doc.doc,
-        }));
-      };
-
       const populateSelectWithDocs = function (selectEl, docs) {
-        docs.forEach(doc => {
+        docs.forEach((doc) => {
           updateSelect2DataWithDoc(selectEl, doc.id, doc.doc);
         });
       };
