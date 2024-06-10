@@ -9,6 +9,7 @@ angular.module('inboxServices').factory('Select2Search',
     $timeout,
     $translate,
     ContactMuted,
+    DB,
     LineageModelGenerator,
     Search,
     Session,
@@ -132,6 +133,30 @@ angular.module('inboxServices').factory('Select2Search',
         }
       };
 
+      const getDocs = function (ids) {
+        const docsFetched = 10;
+
+        return DB()
+          .allDocs({ keys: ids, include_docs: true, limit: docsFetched })
+          .then((result) => {
+            const docs = result.rows.map((row) => row.doc);
+            const docIds = docs.map((doc) => doc._id);
+
+            return $q
+              .all(docIds.map((id) => LineageModelGenerator.contact(id, { merge: true })))
+              .then((contacts) => {
+                contacts.forEach((contact) => {
+                  contact.doc.muted = ContactMuted(contact.doc);
+                });
+
+                return contacts.map((doc) => ({
+                  id: doc._id,
+                  doc: doc.doc,
+                }));
+              });
+          });
+      };
+
       const populateSelectWithDocs = function (selectEl, docs) {
         docs.forEach((doc) => {
           updateSelect2DataWithDoc(selectEl, doc.id, doc.doc);
@@ -157,15 +182,7 @@ angular.module('inboxServices').factory('Select2Search',
           resolution = $q.resolve();
         } else {
           if (Array.isArray(value)) {
-            // NB: We now support an Array of IDs for places
-            const docPromises = value.map(function (val) { //NoSONAR
-              return getDoc(val).then(function (doc) { //NoSONAR
-                return { id: val, doc: doc };
-              });
-            });
-
-            resolution = $q //NoSONAR
-              .all(docPromises)
+            resolution = getDocs(value)
               .then(docs => populateSelectWithDocs(selectEl, docs))
               .catch(err => $log.error('Select2 failed to get documents', err));
           }
