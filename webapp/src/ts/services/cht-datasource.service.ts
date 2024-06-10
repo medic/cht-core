@@ -54,9 +54,9 @@ export class CHTDatasourceService {
 
   private async loadScripts() {
     try {
-      const request = this.http.get<String[]>('/extension-libs', { responseType: 'json' });
+      const request = this.http.get<string[]>('/extension-libs', { responseType: 'json' });
       const extensionLibs = await lastValueFrom(request);
-      if (extensionLibs && extensionLibs.length) {
+      if (extensionLibs?.length) {
         return Promise.all(extensionLibs.map(name => this.loadScript(name)));
       }
     } catch (e) {
