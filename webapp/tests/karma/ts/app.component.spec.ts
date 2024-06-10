@@ -40,7 +40,7 @@ import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';

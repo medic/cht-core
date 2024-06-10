@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { SessionService } from '@mm-services/session.service';
-import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'

@@ -18,7 +18,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
-import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';

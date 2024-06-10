@@ -8,7 +8,7 @@ import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
-import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { DbService } from '@mm-services/db.service';
 
 describe('Auth Service', () => {

@@ -8,7 +8,7 @@ import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
-import { CHTDatasourceService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('ContactSummary service', () => {
   let service;
