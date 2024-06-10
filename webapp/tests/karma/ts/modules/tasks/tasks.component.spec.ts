@@ -3,6 +3,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
+import * as moment from 'moment';
 import sinon from 'sinon';
 
 import { ChangesService } from '@mm-services/changes.service';
@@ -14,9 +15,8 @@ import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
-import { UserContactService } from '@mm-services/user-contact.service';
-import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -25,21 +25,13 @@ describe('TasksComponent', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let contactTypesService;
+  let extractLineageService;
+  let clock;
   let store;
-  let sessionService;
-  let userContactService;
   let lineageModelGeneratorService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
-
-  const userContactDoc = {
-    _id: 'user',
-    parent: {
-      _id: 'parent',
-      name: 'parent',
-    },
-  };
 
   beforeEach(async () => {
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
@@ -53,14 +45,11 @@ describe('TasksComponent', () => {
     contactTypesService = {
       includes: sinon.stub(),
     };
-    sessionService = {
-      isOnlineOnly: sinon.stub().returns(false),
-      userCtx: sinon.stub()
-    };
-    userContactService = {
-      get: sinon.stub().resolves(),
-    };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
+    extractLineageService = {
+      getUserLineageToRemove: sinon.stub(),
+      removeUserFacility: ExtractLineageService.prototype.removeUserFacility,
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -74,8 +63,7 @@ describe('TasksComponent', () => {
         { provide: PerformanceService, useValue: performanceService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
-        { provide: SessionService, useValue: sessionService },
-        { provide: UserContactService, useValue: userContactService },
+        { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
       ],
       declarations: [
@@ -97,6 +85,7 @@ describe('TasksComponent', () => {
   afterEach(() => {
     store.resetSelectors();
     sinon.restore();
+    clock?.restore();
   });
 
   it('should ngOnDestroy should unsubscribe and clear state', async () => {
@@ -160,54 +149,32 @@ describe('TasksComponent', () => {
   });
 
   it('tasks render', async () => {
+    const now = moment('2020-10-20');
+    const futureDate = now.clone().add(3, 'days');
+    const pastDate = now.clone().subtract(3, 'days');
+    clock = sinon.useFakeTimers(now.valueOf());
     const taskDocs = [
-      {
-        _id: '1',
-        owner: 'a',
-        emission: {
-          _id: 'e1',
-          dueDate: '2030-10-24',
-          date: new Date('2023-10-24T17:00:00.000Z'),
-          overdue: false,
-          owner: 'a',
-        },
-      },
-      {
-        _id: '2',
-        owner: 'b',
-        emission: {
-          _id: 'e2',
-          dueDate: '2023-10-24',
-          date: new Date('2023-10-24T17:00:00.000Z'),
-          overdue: true,
-          owner: 'b',
-        },
-      },
+      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
     ];
     const expectedTasks = [
       {
         _id: 'e1',
-        dueDate: '2030-10-24',
-        date: new Date('2023-10-24T17:00:00.000Z'),
+        dueDate: futureDate.format('YYYY-MM-DD'),
         overdue: false,
+        date: new Date(futureDate.valueOf()),
         owner: 'a',
-        lineage: [ 'lineage-a' ]
       },
       {
         _id: 'e2',
-        dueDate: '2023-10-24',
-        date: new Date('2023-10-24T17:00:00.000Z'),
+        dueDate: pastDate.format('YYYY-MM-DD'),
         overdue: true,
+        date: new Date(pastDate.valueOf()),
         owner: 'b',
-        lineage: [ 'lineage-b' ]
       },
     ];
-    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-    lineageModelGeneratorService.reportSubjects.resolves([
-      { _id: 'a', lineage: [ { name: 'lineage-a' } ] },
-      { _id: 'b', lineage: [ { name: 'lineage-b' } ] },
-    ]);
 
+    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
@@ -322,39 +289,6 @@ describe('TasksComponent', () => {
   });
 
   describe('lineage and breadcrumbs', () => {
-    const bettysContactDoc = {
-      _id: 'user',
-      parent: {
-        _id: 'parent',
-        name: 'CHW Bettys Area',
-      },
-    };
-    const taskDocs = [
-      {
-        _id: '1',
-        forId: 'a',
-        owner: 'a',
-        emission: {
-          _id: 'e1',
-          dueDate: '2020-10-20',
-          date: new Date('2020-10-20T17:00:00.000Z'),
-          overdue: true,
-          owner: 'a',
-        },
-      },
-      {
-        _id: '2',
-        forId: 'b',
-        owner: 'b',
-        emission: {
-          _id: 'e2',
-          dueDate: '2020-10-20',
-          date: new Date('2020-10-20T17:00:00.000Z'),
-          overdue: true,
-          owner: 'b',
-        },
-      },
-    ];
     const taskLineages = [
       {
         _id: 'a',
@@ -377,12 +311,16 @@ describe('TasksComponent', () => {
         ],
       },
     ];
+    const taskDocs = [
+      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+    ];
 
-    it('should not alter tasks lineage if user is online only', async () => {
+    it('should not remove the lineage when user lineage level is undefined', async () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: new Date('2020-10-20T17:00:00.000Z'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
@@ -390,15 +328,14 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
-          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
         },
       ];
-      userContactService.get.resolves(bettysContactDoc);
-      sessionService.isOnlineOnly.returns(true);
+      extractLineageService.getUserLineageToRemove.resolves(undefined);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
 
@@ -407,48 +344,15 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(await component.currentLevel).to.be.undefined;
+      expect(await component.userLineageLevel).to.be.undefined;
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
 
-    it('should not change the tasks lineage if user is offline with unrelated lineage', async () => {
+    it('should remove lineage when user lineage level is defined', async () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: new Date('2020-10-20T17:00:00.000Z'),
-          dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
-          overdue: true,
-          owner: 'a',
-        },
-        {
-          _id: 'e2',
-          dueDate: '2020-10-20',
-          date: new Date('2020-10-20T17:00:00.000Z'),
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
-          overdue: true,
-          owner: 'b',
-        },
-      ];
-      userContactService.get.resolves(userContactDoc);
-      sessionService.isOnlineOnly.returns(false);
-      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
-
-      await new Promise(resolve => {
-        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
-        getComponent();
-      });
-
-      expect(await component.currentLevel).to.equal('parent');
-      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
-    });
-
-    it('should update the tasks lineage if user is offline with related place to lineage', async () => {
-      const expectedTasks = [
-        {
-          _id: 'e1',
-          date: new Date('2020-10-20T17:00:00.000Z'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
@@ -456,15 +360,14 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
-          date: new Date('2020-10-20T17:00:00.000Z'),
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
         },
       ];
-      userContactService.get.resolves(bettysContactDoc);
-      sessionService.isOnlineOnly.returns(false);
+      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
 
@@ -473,7 +376,7 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(await component.currentLevel).to.equal('CHW Bettys Area');
+      expect(await component.userLineageLevel).to.equal('CHW Bettys Area');
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
   });

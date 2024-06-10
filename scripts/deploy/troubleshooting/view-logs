@@ -21,11 +21,11 @@ fi
 NAMESPACE=$1
 DEPLOYMENT=$2
 SERVICE=${DEPLOYMENT#cht-}
-POD_NAME=$(kubectl -n $NAMESPACE get pods -l cht.service=$SERVICE -o jsonpath="{.items[0].metadata.name}")
+POD_NAME=$(kubectl -n "$NAMESPACE" get pods -l cht.service="$SERVICE" -o jsonpath="{.items[0].metadata.name}")
 
 if [ -z "$POD_NAME" ]; then
   echo "No Pods found for deployment $DEPLOYMENT in Namespace $NAMESPACE."
   exit 1
 fi
 
-kubectl -n $NAMESPACE logs $POD_NAME
+kubectl -n "$NAMESPACE" logs "$POD_NAME"

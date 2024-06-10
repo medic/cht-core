@@ -287,8 +287,8 @@ describe('Contacts effects', () => {
         ]]);
       });
 
-      it('should not load child places for user facility', async () => {
-        store.overrideSelector(Selectors.getUserFacilityId, 'facility');
+      it('should not load child places for user with one facility', async () => {
+        store.overrideSelector(Selectors.getUserFacilityId, ['facility']);
         store.refreshState();
 
         contactViewModelGeneratorService.getContact.resolves({ _id: 'facility', doc: { _id: 'facility' } });
@@ -305,6 +305,30 @@ describe('Contacts effects', () => {
           { getChildPlaces: false },
         ]);
         const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        expect(receiveSelectedContactChildren.args[0]).to.deep.equal([[
+          { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
+        ]]);
+      });
+
+      it('should load child places for multi-facility user', async () => {
+        store.overrideSelector(Selectors.getUserFacilityId, ['facility-1', 'facility-2' ]);
+        store.refreshState();
+
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'facility-1', doc: { _id: 'facility-1' } });
+        contactViewModelGeneratorService.loadChildren.resolves([
+          { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
+        ]);
+
+        actions$ = of(ContactActionList.selectContact({ id: 'facility-1' }));
+        await effects.selectContact.toPromise();
+
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
+          { _id: 'facility-1', doc: { _id: 'facility-1' } },
+          { getChildPlaces: true },
+        ]);
+        const receiveSelectedContactChildren: any = ContactsActions.prototype.receiveSelectedContactChildren;
         expect(receiveSelectedContactChildren.callCount).to.equal(1);
         expect(receiveSelectedContactChildren.args[0]).to.deep.equal([[
           { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },

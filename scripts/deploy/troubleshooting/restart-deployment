@@ -21,11 +21,8 @@ fi
 NAMESPACE=$1
 DEPLOYMENT=$2
 
-# Restart the deployment
-kubectl -n $NAMESPACE rollout restart deployment/$DEPLOYMENT
 
-# Check if the restart was successful
-if [ $? -eq 0 ]; then
+if kubectl -n "$NAMESPACE" rollout restart deployment/"$DEPLOYMENT" ; then
   echo "Successfully restarted deployment $DEPLOYMENT in namespace $NAMESPACE."
 else
   echo "Failed to restart deployment $DEPLOYMENT in namespace $NAMESPACE."
