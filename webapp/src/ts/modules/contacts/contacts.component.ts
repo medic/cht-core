@@ -236,8 +236,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
 
-
-
         this.globalActions.setUserFacilityId(facilityId);
         return this.getDataRecordsService
           .get(facilityId)
