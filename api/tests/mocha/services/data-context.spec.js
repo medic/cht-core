@@ -8,7 +8,7 @@ describe('Data context service', () => {
   it('is initialized with the methods from the data context', () => {
     const expectedDataContext = dataSource.getLocalDataContext(config, db);
 
-    expect(dataContext.get).is.a('function');
-    expect(dataContext).excluding('get').to.deep.equal(expectedDataContext);
+    expect(dataContext.bind).is.a('function');
+    expect(dataContext).excluding('bind').to.deep.equal(expectedDataContext);
   });
 });

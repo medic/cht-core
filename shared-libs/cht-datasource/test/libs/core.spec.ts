@@ -73,11 +73,11 @@ describe('core lib', () => {
   describe('AbstractDataContext', () => {
     class TestDataContext extends AbstractDataContext { }
 
-    it('get', () => {
+    it('bind', () => {
       const ctx = new TestDataContext();
       const testFn = sinon.stub().returns('test');
 
-      const result = ctx.get<string>(testFn);
+      const result = ctx.bind<string>(testFn);
 
       expect(result).to.equal('test');
       expect(testFn.calledOnceWithExactly(ctx)).to.be.true;

@@ -8,14 +8,14 @@ const serverUtils = require('../../../src/server-utils');
 
 describe('Person Controller', () => {
   let authCheck;
-  let dataContextGet;
+  let dataContextBind;
   let serverUtilsError;
   let req;
   let res;
 
   beforeEach(() => {
     authCheck = sinon.stub(auth, 'check');
-    dataContextGet = sinon.stub(dataContext, 'get');
+    dataContextBind = sinon.stub(dataContext, 'bind');
     serverUtilsError = sinon.stub(serverUtils, 'error');
     res = {
       json: sinon.stub(),
@@ -36,7 +36,7 @@ describe('Person Controller', () => {
           .stub(Qualifier, 'byUuid')
           .returns(qualifier);
         personGet = sinon.stub();
-        dataContextGet
+        dataContextBind
           .withArgs(Person.v1.get)
           .returns(personGet);
       });
@@ -48,7 +48,7 @@ describe('Person Controller', () => {
         await controller.v1.get(req, res);
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
-        expect(dataContextGet.calledOnceWithExactly(Person.v1.get)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
@@ -61,7 +61,7 @@ describe('Person Controller', () => {
         await controller.v1.get(req, res);
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
-        expect(dataContextGet.calledOnceWithExactly(Person.v1.get)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -79,7 +79,7 @@ describe('Person Controller', () => {
         await controller.v1.get(req, res);
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
-        expect(dataContextGet.notCalled).to.be.true;
+        expect(dataContextBind.notCalled).to.be.true;
         expect(byUuid.notCalled).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;

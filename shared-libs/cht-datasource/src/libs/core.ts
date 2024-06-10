@@ -40,5 +40,5 @@ export const hasFields = (
 
 /** @internal */
 export abstract class AbstractDataContext implements DataContext {
-  readonly get = <T>(fn: (ctx: DataContext) => T): T => fn(this);
+  readonly bind = <T>(fn: (ctx: DataContext) => T): T => fn(this);
 }

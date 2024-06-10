@@ -13,11 +13,11 @@ export interface DataContext {
    * @param fn the function to execute
    * @returns the result of the function
    */
-  get: <T>(fn: (ctx: DataContext) => T) => T
+  bind: <T>(fn: (ctx: DataContext) => T) => T
 }
 
 const isDataContext = (context: unknown): context is DataContext => {
-  return isRecord(context) && hasField(context, { name: 'get', type: 'function' });
+  return isRecord(context) && hasField(context, { name: 'bind', type: 'function' });
 };
 
 /** @internal */

@@ -3,7 +3,7 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
 
-const getPerson = (qualifier) => ctx.get(Person.v1.get)(qualifier);
+const getPerson = (qualifier) => ctx.bind(Person.v1.get)(qualifier);
 
 module.exports = {
   v1: {

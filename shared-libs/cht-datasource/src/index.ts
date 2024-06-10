@@ -56,7 +56,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @param uuid the UUID of the person to retrieve
          * @returns the person or `null` if no person is found for the UUID
          */
-        getByUuid: (uuid: string) => ctx.get(Person.v1.get)(Qualifier.byUuid(uuid)),
+        getByUuid: (uuid: string) => ctx.bind(Person.v1.get)(Qualifier.byUuid(uuid)),
       }
     }
   };

@@ -7,7 +7,7 @@ import { DataContext } from '../../dist';
 
 
 describe('context lib', () => {
-  const context = { get: sinon.stub() } as DataContext;
+  const context = { bind: sinon.stub() } as DataContext;
   let isLocalDataContext: SinonStub;
   let isRemoteDataContext: SinonStub;
   let assertRemoteDataContext: SinonStub;
