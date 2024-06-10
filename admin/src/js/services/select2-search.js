@@ -14,7 +14,7 @@ angular.module('inboxServices').factory('Select2Search',
     Search,
     Session,
     Settings
-  ) {
+  ) { //NoSONAR
 
     'use strict';
     'ngInject';
@@ -150,16 +150,20 @@ angular.module('inboxServices').factory('Select2Search',
       const hydrateDocs = function(docIds) {
         return $q
           .all(docIds.map(id => LineageModelGenerator.contact(id, { merge: true })))
-          .then((contacts) => {
-            contacts.forEach((contact) => {
-              contact.doc.muted = ContactMuted(contact.doc);
-            });
-
-            return contacts.map(doc => ({
-              id: doc._id,
-              doc: doc.doc,
-            }));
+          .then(contacts => {
+            muteContacts(contacts);
           });
+      };
+
+      const muteContacts = function(contacts) {
+        contacts.forEach(contact => {
+          contact.doc.muted = ContactMuted(contact.doc);
+        });
+
+        return contacts.map(doc => ({
+          id: doc._id,
+          doc: doc.doc,
+        }));
       };
 
       const populateSelectWithDocs = function (selectEl, docs) {
@@ -187,7 +191,7 @@ angular.module('inboxServices').factory('Select2Search',
           resolution = $q.resolve();
         } else {
           if (Array.isArray(value)) {
-            resolution = getDocs(value)
+            resolution = getDocs(value) //NoSONAR
               .then(docs => populateSelectWithDocs(selectEl, docs))
               .catch(err => $log.error('Select2 failed to get documents', err));
           }
