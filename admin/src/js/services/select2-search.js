@@ -50,7 +50,7 @@ angular.module('inboxServices').factory('Select2Search',
       return row;
     };
 
-    return function(selectEl, _types, options) {
+    return function(selectEl, _types, options) { //NoSONAR
 
       options = options || {};
       let currentQuery;
@@ -138,27 +138,32 @@ angular.module('inboxServices').factory('Select2Search',
 
         return DB()
           .allDocs({ keys: ids, include_docs: true, limit: docsFetched })
-          .then((result) => {
-            const docs = result.rows.map((row) => row.doc);
-            const docIds = docs.map((doc) => doc._id);
+          .then((docs) => processDocs(docs));
+      };
 
-            return $q
-              .all(docIds.map((id) => LineageModelGenerator.contact(id, { merge: true })))
-              .then((contacts) => {
-                contacts.forEach((contact) => {
-                  contact.doc.muted = ContactMuted(contact.doc);
-                });
+      const processDocs = function(result) {
+        const docs = result.rows.map(row => row.doc);
+        const docIds = docs.map(doc => doc._id);
+        return hydrateDocs(docIds);
+      };
 
-                return contacts.map((doc) => ({
-                  id: doc._id,
-                  doc: doc.doc,
-                }));
-              });
+      const hydrateDocs = function(docIds) {
+        return $q
+          .all(docIds.map(id => LineageModelGenerator.contact(id, { merge: true })))
+          .then((contacts) => {
+            contacts.forEach((contact) => {
+              contact.doc.muted = ContactMuted(contact.doc);
+            });
+
+            return contacts.map(doc => ({
+              id: doc._id,
+              doc: doc.doc,
+            }));
           });
       };
 
       const populateSelectWithDocs = function (selectEl, docs) {
-        docs.forEach((doc) => {
+        docs.forEach(doc => {
           updateSelect2DataWithDoc(selectEl, doc.id, doc.doc);
         });
       };
