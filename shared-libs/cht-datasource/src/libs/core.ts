@@ -16,6 +16,7 @@ export type NonEmptyArray<T> = [T, ...T[]];
 /** @internal */
 export const isNonEmptyArray = <T>(value: T[]): value is NonEmptyArray<T> => !!value.length;
 
+type DataValue = DataPrimitive | DataArray | DataObject;
 type DataPrimitive = string | number | boolean | Date | null | undefined;
 
 const isDataPrimitive = (value: unknown): value is DataPrimitive => {
@@ -27,14 +28,14 @@ const isDataPrimitive = (value: unknown): value is DataPrimitive => {
     || value instanceof Date;
 };
 
-interface DataArray extends Readonly<(DataPrimitive | DataArray | DataObject)[]> { }
+interface DataArray extends Readonly<DataValue[]> { }
 
 const isDataArray = (value: unknown): value is DataArray => {
   return Array.isArray(value) && value.every(v => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
 };
 
 /** @internal */
-export interface DataObject extends Readonly<Record<string, DataPrimitive | DataArray | DataObject>> { }
+export interface DataObject extends Readonly<Record<string, DataValue>> { }
 
 /** @internal */
 export const isDataObject = (value: unknown): value is DataObject => {
