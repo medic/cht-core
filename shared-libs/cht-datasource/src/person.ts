@@ -45,4 +45,19 @@ export namespace v1 {
       return getPerson(qualifier);
     };
   };
+
+  /**
+   * Returns a person for the given qualifier with the person's hierarchy lineage included.
+   * @param context the current data context
+   * @returns the person or `null` if no person is found for the qualifier
+   * @throws Error if the provided context or qualifier is invalid
+   */
+  export const getWithLineage = (context: DataContext) => {
+    assertDataContext(context);
+    const getPerson = adapt(context, Local.Person.v1.getWithLineage, Remote.Person.v1.getWithLineage);
+    return async (qualifier: UuidQualifier): Promise<Nullable<PersonWithLineage>> => {
+      assertPersonQualifier(qualifier);
+      return getPerson(qualifier);
+    };
+  };
 }

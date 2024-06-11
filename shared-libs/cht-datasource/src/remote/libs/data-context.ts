@@ -38,12 +38,13 @@ export const getRemoteDataContext = (url = ''): DataContext => {
 };
 
 /** @internal */
-export const get = (
-  context: RemoteDataContext,
-  path = ''
-) => async <T>(resource: string): Promise<Nullable<T>> => {
+export const getResource = (context: RemoteDataContext, path: string) => async <T>(
+  identifier: string,
+  queryParams?: Record<string, string>
+): Promise<Nullable<T>> => {
+  const params = new URLSearchParams(queryParams).toString();
   try {
-    const response = await fetch(`${context.url}/${path}${resource}`);
+    const response = await fetch(`${context.url}/${path}/${identifier}?${params}`);
     if (!response.ok) {
       if (response.status === 404) {
         return null;
@@ -53,7 +54,7 @@ export const get = (
 
     return (await response.json()) as T;
   } catch (error) {
-    logger.error(`Failed to fetch ${resource} from ${context.url}`, error);
+    logger.error(`Failed to fetch ${identifier} from ${context.url}/${path}`, error);
     throw error;
   }
 };

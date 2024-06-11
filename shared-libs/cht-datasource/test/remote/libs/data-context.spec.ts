@@ -3,7 +3,7 @@ import logger from '@medic/logger';
 import sinon, { SinonStub } from 'sinon';
 import {
   assertRemoteDataContext,
-  get,
+  getResource,
   getRemoteDataContext,
   isRemoteDataContext,
   RemoteDataContext
@@ -88,69 +88,62 @@ describe('remote context lib', () => {
     });
   });
 
-  describe('get', () => {
+  describe('getResource', () => {
     it('fetches a resource with a path', async () => {
-      const path = 'path/';
-      const resourceName = 'resource';
+      const path = 'path';
+      const resourceId = 'resource';
       const resource = { hello: 'world' };
       fetchResponse.json.resolves(resource);
 
-      const response = await get(context, path)(resourceName);
+      const response = await getResource(context, path)(resourceId);
 
       expect(response).to.equal(resource);
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}${resourceName}`)).to.be.true;
-      expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
-    });
-
-    it('fetches a resource without a path', async () => {
-      const resourceName = 'path/resource';
-      const resource = { hello: 'world' };
-      fetchResponse.json.resolves(resource);
-
-      const response = await get(context)(resourceName);
-
-      expect(response).to.equal(resource);
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${resourceName}`)).to.be.true;
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}/${resourceId}?`)).to.be.true;
       expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
     });
 
     it('returns null if the resource is not found', async () => {
-      const resourceName = 'path/resource';
+      const path = 'path';
+      const resourceId = 'resource';
       fetchResponse.ok = false;
       fetchResponse.status = 404;
 
-      const response = await get(context)(resourceName);
+      const response = await getResource(context, path)(resourceId);
 
       expect(response).to.be.null;
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${resourceName}`)).to.be.true;
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}/${resourceId}?`)).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.notCalled).to.be.true;
     });
 
     it('throws an error if the resource fetch rejects', async () => {
-      const resourceName = 'path/resource';
+      const path = 'path';
+      const resourceId = 'resource';
       const expectedError = new Error('unexpected error');
       fetchStub.rejects(expectedError);
 
-      await expect(get(context)(resourceName)).to.be.rejectedWith(expectedError);
+      await expect(getResource(context, path)(resourceId)).to.be.rejectedWith(expectedError);
 
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${resourceName}`)).to.be.true;
-      expect(loggerError.calledOnceWithExactly(`Failed to fetch ${resourceName} from ${context.url}`, expectedError))
-        .to.be.true;
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}/${resourceId}?`)).to.be.true;
+      expect(loggerError.calledOnceWithExactly(
+        `Failed to fetch ${resourceId} from ${context.url}/${path}`,
+        expectedError
+      )).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
     });
 
     it('throws an error if the resource fetch resolves an error status', async () => {
-      const resourceName = 'path/resource';
-      fetchResponse.ok = false;
+      const path = 'path';
+      const resourceId = 'resource';      fetchResponse.ok = false;
       fetchResponse.status = 501;
       fetchResponse.statusText = 'Not Implemented';
 
-      await expect(get(context)(resourceName)).to.be.rejectedWith(fetchResponse.statusText);
+      await expect(getResource(context, path)(resourceId)).to.be.rejectedWith(fetchResponse.statusText);
 
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${resourceName}`)).to.be.true;
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}/${resourceId}?`)).to.be.true;
       expect(loggerError.calledOnce).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to fetch ${resourceName} from ${context.url}`,
+        `Failed to fetch ${resourceId} from ${context.url}/${path}`,
         new Error(fetchResponse.statusText)
       ]);
       expect(fetchResponse.json.notCalled).to.be.true;

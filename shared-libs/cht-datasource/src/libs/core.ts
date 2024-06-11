@@ -5,6 +5,9 @@ import { DataContext } from './data-context';
  */
 export type Nullable<T> = T | null;
 
+/** @internal */
+export const isNotNull = <T>(value: T | null): value is T => value !== null;
+
 /**
  * An array that is guaranteed to have at least one element.
  */
@@ -38,10 +41,17 @@ export const isDataObject = (value: unknown): value is DataObject => {
   if (!isRecord(value)) {
     return false;
   }
-  return Object.values(value).every((v) => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
+  return Object
+    .values(value)
+    .every((v) => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
 };
 
-/** @internal */
+/**
+ * Ideally, this function should only be used at the edge of this library (when returning potentially cross-referenced
+ * data objects) to avoid unintended consequences if any of the objects are edited in-place. This function should not
+ * be used for logic internal to this library since all data objects are marked as immutable.
+ * @internal
+ */
 export const deepCopy = <T extends DataObject | DataArray | DataPrimitive>(value: T): T => {
   if (isDataPrimitive(value)) {
     return value;
@@ -49,7 +59,12 @@ export const deepCopy = <T extends DataObject | DataArray | DataPrimitive>(value
   if (isDataArray(value)) {
     return value.map(deepCopy) as unknown as T;
   }
-  return { ...Object.values(value).map(deepCopy) } as unknown as T;
+
+  return Object.fromEntries(
+    Object
+      .entries(value)
+      .map(([key, value]) => [key, deepCopy(value)])
+  ) as unknown as T;
 };
 
 /** @internal */
@@ -73,6 +88,17 @@ export const hasFields = (
   value: Record<string, unknown>,
   fields: NonEmptyArray<{ name: string, type: string }>
 ): boolean => fields.every(field => hasField(value, field));
+
+/** @internal */
+export interface Identifiable { readonly _id: string }
+
+/** @internal */
+export const isIdentifiable = (value: unknown): value is { readonly _id: string } => isRecord(value)
+  && hasField(value, { name: '_id', type: 'string' });
+
+/** @internal */
+export const findById = <T extends Identifiable>(values: T[], id: string): Nullable<T> => values
+  .find(v => v._id === id) ?? null;
 
 /** @internal */
 export abstract class AbstractDataContext implements DataContext {

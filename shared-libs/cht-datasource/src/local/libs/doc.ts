@@ -18,28 +18,24 @@ export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): P
 /** @internal */
 export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[]): Promise<Doc[]> => {
   const keys = Array.from(new Set(uuids.filter(uuid => uuid.length)));
-  if (keys.length === 0) {
+  if (!keys.length) {
     return [];
   }
   const response = await db.allDocs({ keys, include_docs: true });
   return response.rows
-    .filter(row => isDoc(row.doc))
-    .map(row => row.doc as Doc);
+    .map(({ doc }) => doc)
+    .filter((doc): doc is Doc => isDoc(doc));
 };
 
-/**
- * Returns the identified document along with the parent documents recorded for its lineage. The returned array is
- * sorted such that the identified document is the first element and the parent documents are in order of lineage.
- * @internal
- */
-export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>) => (
-  uuid: string
-): Promise<Nullable<Doc>[]> => medicDb
-  .query('medic-client/docs_by_id_lineage', {
-    startkey: [uuid],
-    endkey: [uuid, {}],
+/** @internal */
+export const queryDocsByKey = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (key: string): Promise<Nullable<Doc>[]> => db
+  .query(view, {
+    startkey: [key],
+    endkey: [key, {}],
     include_docs: true
   })
-  .then(({ rows }) => rows
-    .map(({ doc }) => doc ?? null)
-    .filter((doc): doc is Nullable<Doc> => doc === null || isDoc(doc)));
+  .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
+
