@@ -1,6 +1,6 @@
 const utils = require('@utils');
 
-const { BRANCH, TAG } = process.env;
+const { BRANCH, TAG, BASE_VERSION } = process.env;
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -52,8 +52,10 @@ describe('Performing an upgrade', () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
 
-    await loginPage.login(docs.user);
-    await commonPage.logout();
+    if (!BASE_VERSION) {
+      await loginPage.login(docs.user);
+      await commonPage.logout();
+    }
 
     await loginPage.cookieLogin({
       username: constants.USERNAME,
@@ -72,6 +74,10 @@ describe('Performing an upgrade', () => {
   });
 
   it('should have valid semver after installing', async () => {
+    if (BASE_VERSION) {
+      return;
+    }
+
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });

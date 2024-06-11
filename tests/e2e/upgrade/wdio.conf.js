@@ -13,7 +13,7 @@ const rpn = require('request-promise-native');
 const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
 
-const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
+const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT, BASE_VERSION } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
 const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service-');
@@ -29,6 +29,10 @@ const getUpgradeServiceDockerCompose = async () => {
 };
 
 const getLatestRelease = async () => {
+  if (BASE_VERSION) {
+    return `medic:medic:${BASE_VERSION}`;
+  }
+
   const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
   const query = {
     startKey: ['release', 'medic', 'medic', {}],
