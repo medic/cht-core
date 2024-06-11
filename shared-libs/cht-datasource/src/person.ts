@@ -53,7 +53,7 @@ export namespace v1 {
   export const get = getPerson(Local.Person.v1.get, Remote.Person.v1.get);
 
   /**
-   * Returns a person for the given qualifier with the person's hierarchy lineage included.
+   * Returns a person for the given qualifier with the person's parent lineage.
    * @param context the current data context
    * @returns the person or `null` if no person is found for the qualifier
    * @throws Error if the provided context or qualifier is invalid
