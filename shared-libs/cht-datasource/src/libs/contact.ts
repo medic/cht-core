@@ -1,16 +1,15 @@
 import { Doc } from './doc';
-import { DataObject, hasField, isDataObject } from './core';
+import { DataObject, Identifiable, isDataObject, isIdentifiable } from './core';
 
 /** @internal */
-export interface NormalizedParent extends DataObject {
-  readonly _id: string;
+export interface NormalizedParent extends DataObject, Identifiable {
   readonly parent?: NormalizedParent;
 }
 
 /** @internal */
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value)
-    && hasField(value, { name: '_id', type: 'string' })
+    && isIdentifiable(value)
     && (!value.parent || isNormalizedParent(value.parent));
 };
 

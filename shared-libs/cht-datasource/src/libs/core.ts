@@ -91,10 +91,12 @@ export const hasFields = (
 ): boolean => fields.every(field => hasField(value, field));
 
 /** @internal */
-export interface Identifiable { readonly _id: string }
+export interface Identifiable extends DataObject {
+  readonly _id: string
+}
 
 /** @internal */
-export const isIdentifiable = (value: unknown): value is { readonly _id: string } => isRecord(value)
+export const isIdentifiable = (value: unknown): value is Identifiable => isRecord(value)
   && hasField(value, { name: '_id', type: 'string' });
 
 /** @internal */

@@ -1,6 +1,7 @@
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Person from './person';
 
+/** */
 export namespace v1 {
 
   /**
