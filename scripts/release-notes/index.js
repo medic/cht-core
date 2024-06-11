@@ -270,7 +270,10 @@ const formatCommits = (commits) => {
     const login = commit.author?.user?.login;
     if (login && !ignoreLogins.includes(login)) {
       ignoreLogins.push(login);
-      lines.push(`- [${commit.author.user.name}](${commit.author.user.url})`);
+      const user = commit.author.user;
+      const name = user.name || user.login;
+      const profileUrl = user.url;
+      lines.push(`- [${name}](${profileUrl})`);
     }
   }
   return lines.join('\n');
