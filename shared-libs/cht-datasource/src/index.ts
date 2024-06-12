@@ -29,6 +29,7 @@
 import { hasAnyPermission, hasPermissions } from './auth';
 import { assertDataContext, DataContext } from './libs/data-context';
 import * as Person from './person';
+import * as Place from './place';
 import * as Qualifier from './qualifier';
 
 export { Nullable, NonEmptyArray } from './libs/core';
@@ -36,6 +37,7 @@ export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
 export * as Person from './person';
+export * as Place from './place';
 export * as Qualifier from './qualifier';
 
 /**
@@ -50,6 +52,15 @@ export const getDatasource = (ctx: DataContext) => {
     v1: {
       hasPermissions,
       hasAnyPermission,
+      place: {
+        /**
+         * Returns a place by its UUID.
+         * @param uuid the UUID of the place to retrieve
+         * @returns the place or `null` if no place is found for the UUID
+         * @throws Error if no UUID is provided
+         */
+        getByUuid: (uuid: string) => ctx.bind(Place.v1.get)(Qualifier.byUuid(uuid)),
+      },
       person: {
         /**
          * Returns a person by their UUID.

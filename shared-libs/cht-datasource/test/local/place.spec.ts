@@ -41,7 +41,7 @@ describe('local place', () => {
         getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
       });
 
-      it('returns a person by UUID', async () => {
+      it('returns a place by UUID', async () => {
         const doc = { type: 'clinic' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
