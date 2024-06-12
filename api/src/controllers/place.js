@@ -3,7 +3,11 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
 
-const getPlace = () => ctx.bind(Place.v1.get);
+const getPlace = ({ withLineage }) => ctx.bind(
+  withLineage
+    ? Place.v1.getWithLineage
+    : Place.v1.get
+);
 
 module.exports = {
   v1: {
