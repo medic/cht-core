@@ -11,6 +11,8 @@ const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
 const semver = require('semver');
 
+const testFrontend = !BASE_VERSION;
+
 const docs = dataFactory.createHierarchy({
   name: 'offlineupgrade',
   user: true,
@@ -52,7 +54,9 @@ describe('Performing an upgrade', () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
 
-    if (!BASE_VERSION) {
+    if (testFrontend) {
+      // a variety of selectors that we use in e2e tests to interact with webapp
+      // are not compatible with older versions of the app.
       await loginPage.login(docs.user);
       await commonPage.logout();
     }
@@ -74,7 +78,7 @@ describe('Performing an upgrade', () => {
   });
 
   it('should have valid semver after installing', async () => {
-    if (BASE_VERSION) {
+    if (!testFrontend) {
       return;
     }
 
@@ -122,6 +126,10 @@ describe('Performing an upgrade', () => {
       action: 'upgrade',
       state: 'finalized',
     });
+
+    if (!testFrontend) {
+      return;
+    }
 
     await adminPage.logout();
     await loginPage.login(docs.user);
