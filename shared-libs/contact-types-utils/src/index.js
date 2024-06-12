@@ -68,8 +68,8 @@ const isPlace = (config, contact) => {
 };
 
 const isSamePlaceType = (places) => {
-  const contactTypes = new Set(places.map((place) => place.contact_type));
-  return contactTypes.size === 1;
+  const placeTypes = new Set(places.map((place) => getTypeId(place)));
+  return placeTypes.size === 1;
 };
 
 const isHardcodedType = type => HARDCODED_TYPES.includes(type);
