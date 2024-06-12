@@ -72,7 +72,7 @@ describe('Person API', () => {
       });
     });
 
-    it('returns null when no user is found for the UUID', async () => {
+    it('returns null when no person is found for the UUID', async () => {
       const person = await getPerson(Qualifier.byUuid('invalid-uuid'));
       expect(person).to.be.null;
     });
