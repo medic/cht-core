@@ -1,4 +1,5 @@
-const chtScriptApi = require('@medic/cht-script-api');
+const cht = require('@medic/cht-datasource');
+const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
 
 angular.module('inboxServices').factory('Auth',
   function(
@@ -36,7 +37,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return chtScriptApi.v1.hasAnyPermission(permissionsGroupList, userCtx.roles, settings.permissions);
+          return chtDatasource.v1.hasAnyPermission(permissionsGroupList, userCtx.roles, settings.permissions);
         })
         .catch(() => false);
     };
@@ -62,7 +63,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return chtScriptApi.v1.hasPermissions(permissions, userCtx.roles, settings.permissions);
+          return chtDatasource.v1.hasPermissions(permissions, userCtx.roles, settings.permissions);
         })
         .catch(() => false);
     };

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { SessionService } from '@mm-services/session.service';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ export class AuthService {
 
   constructor(
     private session: SessionService,
-    private chtScriptApiService: CHTScriptApiService
+    private chtDatasourceService: CHTDatasourceService
   ) { }
 
   /**
@@ -21,8 +21,8 @@ export class AuthService {
    * @param permissions {string | string[]}
    */
   has(permissions?: string | string[]): Promise<boolean> {
-    return this.chtScriptApiService
-      .getApi()
+    return this.chtDatasourceService
+      .get()
       .then(chtApi => {
         const userCtx = this.session.userCtx();
 
@@ -53,8 +53,8 @@ export class AuthService {
       return this.has(permissionsGroupList);
     }
 
-    return this.chtScriptApiService
-      .getApi()
+    return this.chtDatasourceService
+      .get()
       .then(chtApi => {
         const userCtx = this.session.userCtx();
 

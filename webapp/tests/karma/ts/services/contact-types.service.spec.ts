@@ -55,7 +55,7 @@ describe('ContactTypes service', () => {
       ];
       Settings.resolves({ contact_types: types });
       return service.get('something').then(type => {
-        expect(type.id).to.equal('something');
+        expect(type?.id).to.equal('something');
       });
     });
   });

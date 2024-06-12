@@ -167,7 +167,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         throw new Error('Unknown form');
       }
 
-      const titleKey = contact ? contactType.edit_key : contactType.create_key;
+      const titleKey = (contact ? contactType.edit_key : contactType.create_key) as string;
       this.setTitle(titleKey);
       const formInstance = await this.renderForm(formId, titleKey);
       this.setEnketoContact(formInstance);

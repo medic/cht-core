@@ -27,7 +27,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { cloneDeep } from 'lodash-es';
@@ -81,7 +81,7 @@ describe('Form service', () => {
   let xmlFormGetWithAttachment;
   let zScoreService;
   let zScoreUtil;
-  let chtScriptApiService;
+  let chtDatasourceService;
   let chtScriptApi;
   let globalActions;
   let trainingCardsService;
@@ -144,7 +144,7 @@ describe('Form service', () => {
     zScoreUtil = sinon.stub();
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
     chtScriptApi = sinon.stub();
-    chtScriptApiService = { getApi: sinon.stub().resolves(chtScriptApi) };
+    chtDatasourceService = { get: sinon.stub().resolves(chtScriptApi) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     trainingCardsService = {
@@ -178,7 +178,7 @@ describe('Form service', () => {
         { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: ZScoreService, useValue: zScoreService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
         { provide: TrainingCardsService, useValue: trainingCardsService },
@@ -205,7 +205,7 @@ describe('Form service', () => {
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
-      expect(chtScriptApiService.getApi.callCount).to.equal(1);
+      expect(chtDatasourceService.get.callCount).to.equal(1);
       expect(medicXpathExtensions.init.callCount).to.equal(1);
       expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment, chtScriptApi]);
     });
@@ -1320,7 +1320,7 @@ describe('Form service', () => {
           { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: ZScoreService, useValue: zScoreService },
-          { provide: CHTScriptApiService, useValue: chtScriptApiService },
+          { provide: CHTDatasourceService, useValue: chtDatasourceService },
           { provide: TransitionsService, useValue: transitionsService },
           { provide: TranslateService, useValue: translateService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
