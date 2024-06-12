@@ -7,11 +7,14 @@ import * as Place from '../../src/local/place';
 import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
+import * as Lineage from '../../src/local/libs/lineage';
+import * as Core from '../../src/libs/core';
 
 describe('local place', () => {
   let localContext: LocalDataContext;
   let settingsGetAll: SinonStub;
   let warn: SinonStub;
+  let debug: SinonStub;
   let isPlace: SinonStub;
   let isNormalizedParent: SinonStub;
 
@@ -22,6 +25,7 @@ describe('local place', () => {
       settings: { getAll: settingsGetAll }
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
+    debug = sinon.stub(logger, 'debug');
     isPlace = sinon.stub(contactTypeUtils, 'isPlace');
     isNormalizedParent = sinon.stub(Contact, 'isNormalizedParent');
   });
@@ -103,6 +107,156 @@ describe('local place', () => {
         expect(isPlace.notCalled).to.be.true;
         expect(isNormalizedParent.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No place found for identifier [${identifier.uuid}].`)).to.be.true;
+      });
+    });
+
+    describe('getWithLineage', () => {
+      const identifier = { uuid: 'place0' } as const;
+      let getLineageDocsByIdInner: SinonStub;
+      let getLineageDocsByIdOuter: SinonStub;
+      let getDocsByIdsInner: SinonStub;
+      let getDocsByIdsOuter: SinonStub;
+      let getPrimaryContactIds: SinonStub;
+      let hydratePrimaryContactInner: SinonStub;
+      let hydratePrimaryContactOuter: SinonStub;
+      let hydrateLineage: SinonStub;
+      let deepCopy: SinonStub;
+
+      beforeEach(() => {
+        getLineageDocsByIdInner = sinon.stub();
+        getLineageDocsByIdOuter = sinon
+          .stub(Lineage, 'getLineageDocsById')
+          .returns(getLineageDocsByIdInner);
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon
+          .stub(LocalDoc, 'getDocsByIds')
+          .returns(getDocsByIdsInner);
+        getPrimaryContactIds = sinon.stub(Lineage, 'getPrimaryContactIds');
+        hydratePrimaryContactInner = sinon.stub();
+        hydratePrimaryContactOuter = sinon
+          .stub(Lineage, 'hydratePrimaryContact')
+          .returns(hydratePrimaryContactInner);
+        hydrateLineage = sinon.stub(Lineage, 'hydrateLineage');
+        deepCopy = sinon.stub(Core, 'deepCopy');
+      });
+
+      afterEach(() => {
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+      });
+
+      it('returns a place with lineage', async () => {
+        const place0 = { _id: 'place0', _rev: 'rev' };
+        const place1 = { _id: 'place1', _rev: 'rev' };
+        const place2 = { _id: 'place2', _rev: 'rev' };
+        const contact0 = { _id: 'contact0', _rev: 'rev' };
+        const contact1 = { _id: 'contact1', _rev: 'rev' };
+        getLineageDocsByIdInner.resolves([place0, place1, place2]);
+        isPlace.returns(true);
+        settingsGetAll.returns(settings);
+        isNormalizedParent.returns(true);
+        getPrimaryContactIds.returns([contact0._id, contact1._id]);
+        getDocsByIdsInner.resolves([contact0, contact1]);
+        const place0WithContact = { ...place0, contact: contact0 };
+        const place1WithContact = { ...place1, contact: contact1 };
+        hydratePrimaryContactInner.onFirstCall().returns(place0WithContact);
+        hydratePrimaryContactInner.onSecondCall().returns(place1WithContact);
+        hydratePrimaryContactInner.onThirdCall().returns(place2);
+        const place0WithLineage = { ...place0WithContact, lineage: true };
+        hydrateLineage.returns(place0WithLineage);
+        const copiedPlace = { ...place0WithLineage };
+        deepCopy.returns(copiedPlace);
+
+        const result = await Place.v1.getWithLineage(localContext)(identifier);
+
+        expect(result).to.equal(copiedPlace);
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
+        expect(isNormalizedParent.calledOnceWithExactly(place0)).to.be.true;
+        expect(warn.notCalled).to.be.true;
+        expect(debug.notCalled).to.be.true;
+        expect(getPrimaryContactIds.calledOnceWithExactly([place0, place1, place2])).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id])).to.be.true;
+        expect(hydratePrimaryContactOuter.calledOnceWithExactly([contact0, contact1])).to.be.true;
+        expect(hydratePrimaryContactInner.calledThrice).to.be.true;
+        expect(hydratePrimaryContactInner.calledWith(place0)).to.be.true;
+        expect(hydratePrimaryContactInner.calledWith(place1)).to.be.true;
+        expect(hydratePrimaryContactInner.calledWith(place2)).to.be.true;
+        expect(hydrateLineage.calledOnceWithExactly(place0WithContact, [place1WithContact, place2])).to.be.true;
+        expect(deepCopy.calledOnceWithExactly(place0WithLineage)).to.be.true;
+      });
+
+      it('returns null when no place or lineage is found', async () => {
+        getLineageDocsByIdInner.resolves([]);
+
+        const result = await Place.v1.getWithLineage(localContext)(identifier);
+
+        expect(result).to.be.null;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPlace.notCalled).to.be.true;
+        expect(isNormalizedParent.notCalled).to.be.true;
+        expect(warn.calledOnceWithExactly(`No place found for identifier [${identifier.uuid}].`)).to.be.true;
+        expect(debug.notCalled).to.be.true;
+        expect(getPrimaryContactIds.notCalled).to.be.true;
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+        expect(hydratePrimaryContactOuter.notCalled).to.be.true;
+        expect(hydratePrimaryContactInner.notCalled).to.be.true;
+        expect(hydrateLineage.notCalled).to.be.true;
+        expect(deepCopy.notCalled).to.be.true;
+      });
+
+      [false, true].forEach((isPlaceResult) => {
+        it('returns null if the doc returned is not a place', async () => {
+          const place0 = { _id: 'place0', _rev: 'rev' };
+          const place1 = { _id: 'place1', _rev: 'rev' };
+          const place2 = { _id: 'place2', _rev: 'rev' };
+          getLineageDocsByIdInner.resolves([place0, place1, place2]);
+          isPlace.returns(isPlaceResult);
+          settingsGetAll.returns(settings);
+          isNormalizedParent.returns(false);
+
+          const result = await Place.v1.getWithLineage(localContext)(identifier);
+
+          expect(result).to.be.null;
+          expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+          expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
+          if (isPlaceResult) {
+            expect(isNormalizedParent.calledOnceWithExactly(place0)).to.be.true;
+          } else {
+            expect(isNormalizedParent.notCalled).to.be.true;
+          }
+          expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
+          expect(debug.notCalled).to.be.true;
+          expect(getPrimaryContactIds.notCalled).to.be.true;
+          expect(getDocsByIdsInner.notCalled).to.be.true;
+          expect(hydratePrimaryContactOuter.notCalled).to.be.true;
+          expect(hydratePrimaryContactInner.notCalled).to.be.true;
+          expect(hydrateLineage.notCalled).to.be.true;
+          expect(deepCopy.notCalled).to.be.true;
+        });
+      });
+
+      it('returns a place if no lineage is found', async () => {
+        const place = { _id: 'place0', _rev: 'rev' };
+        getLineageDocsByIdInner.resolves([place]);
+        isPlace.returns(true);
+        settingsGetAll.returns(settings);
+        isNormalizedParent.returns(true);
+
+        const result = await Place.v1.getWithLineage(localContext)(identifier);
+
+        expect(result).to.equal(place);
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPlace.calledOnceWithExactly(settings, place)).to.be.true;
+        expect(isNormalizedParent.calledOnceWithExactly(place)).to.be.true;
+        expect(warn.notCalled).to.be.true;
+        expect(debug.calledOnceWithExactly(`No lineage places found for place [${identifier.uuid}].`)).to.be.true;
+        expect(getPrimaryContactIds.notCalled).to.be.true;
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+        expect(hydratePrimaryContactOuter.notCalled).to.be.true;
+        expect(hydratePrimaryContactInner.notCalled).to.be.true;
+        expect(hydrateLineage.notCalled).to.be.true;
+        expect(deepCopy.notCalled).to.be.true;
       });
     });
   });

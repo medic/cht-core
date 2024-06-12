@@ -1,12 +1,13 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { Nullable } from '../libs/core';
+import { deepCopy, isNonEmptyArray, NonEmptyArray, Nullable } from '../libs/core';
 import { UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import { getDocById } from './libs/doc';
+import { getDocById, getDocsByIds } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { isNormalizedParent } from '../libs/contact';
+import { Contact, isNormalizedParent } from '../libs/contact';
 import logger from '@medic/logger';
+import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
@@ -30,6 +31,30 @@ export namespace v1 {
       const doc = await getMedicDocById(identifier.uuid);
       const validPlace = isPlace(settings, identifier.uuid, doc);
       return validPlace ? doc : null;
+    };
+  };
+
+  /** @internal */
+  export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
+    const getLineageDocs = getLineageDocsById(medicDb);
+    const getMedicDocsById = getDocsByIds(medicDb);
+    return async (identifier: UuidQualifier): Promise<Nullable<Place.v1.PlaceWithLineage>> => {
+      const [place, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
+      if (!isPlace(settings, identifier.uuid, place)) {
+        return null;
+      }
+      // Intentionally not further validating lineage. For passivity, lineage problems should not block retrieval.
+      if (!isNonEmptyArray(lineagePlaces)) {
+        logger.debug(`No lineage places found for place [${identifier.uuid}].`);
+        return place;
+      }
+
+      const places: NonEmptyArray<Nullable<Doc>> = [place, ...lineagePlaces];
+      const contactUuids = getPrimaryContactIds(places);
+      const contacts = await getMedicDocsById(contactUuids);
+      const [placeWithContact, ...linagePlacesWithContact] = places.map(hydratePrimaryContact(contacts));
+      const placeWithLineage = hydrateLineage(placeWithContact as Contact, linagePlacesWithContact);
+      return deepCopy(placeWithLineage);
     };
   };
 }

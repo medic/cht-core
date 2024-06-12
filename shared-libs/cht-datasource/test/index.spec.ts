@@ -52,7 +52,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys(['getByUuid']);
+        expect(place).to.have.all.keys(['getByUuid', 'getByUuidWithLineage']);
       });
 
       it('getByUuid', async () => {
@@ -66,6 +66,21 @@ describe('CHT Script API - getDatasource', () => {
 
         expect(returnedPlace).to.equal(expectedPlace);
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
+        expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getByUuidWithLineage', async () => {
+        const expectedPlace = {};
+        const placeGet = sinon.stub().resolves(expectedPlace);
+        dataContextBind.returns(placeGet);
+        const qualifier = { uuid: 'my-places-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedPlace = await place.getByUuidWithLineage(qualifier.uuid);
+
+        expect(returnedPlace).to.equal(expectedPlace);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
         expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });

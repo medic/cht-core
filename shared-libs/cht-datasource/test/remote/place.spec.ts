@@ -41,5 +41,28 @@ describe('remote place', () => {
         expect(getResourceInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
       });
     });
+
+    describe('getWithLineage', () => {
+      it('returns a place with lineage by UUID', async () => {
+        const doc = { type: 'clinic' };
+        getResourceInner.resolves(doc);
+
+        const result = await Place.v1.getWithLineage(remoteContext)(identifier);
+
+        expect(result).to.equal(doc);
+        expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { withLineage: 'true' })).to.be.true;
+      });
+
+      it('returns null if the identified doc is not found', async () => {
+        getResourceInner.resolves(null);
+
+        const result = await Place.v1.getWithLineage(remoteContext)(identifier);
+
+        expect(result).to.be.null;
+        expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { withLineage: 'true' })).to.be.true;
+      });
+    });
   });
 });

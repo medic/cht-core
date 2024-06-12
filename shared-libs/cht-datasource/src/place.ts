@@ -52,4 +52,12 @@ export namespace v1 {
    * @throws Error if the provided context or qualifier is invalid
    */
   export const get = getPlace(Local.Place.v1.get, Remote.Place.v1.get);
+
+  /**
+   * Returns a place for the given qualifier with the place's parent lineage.
+   * @param context the current data context
+   * @returns the place or `null` if no place is found for the qualifier
+   * @throws Error if the provided context or qualifier is invalid
+   */
+  export const getWithLineage = getPlace(Local.Place.v1.getWithLineage, Remote.Place.v1.getWithLineage);
 }

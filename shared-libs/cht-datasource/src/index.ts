@@ -60,6 +60,14 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws Error if no UUID is provided
          */
         getByUuid: (uuid: string) => ctx.bind(Place.v1.get)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns a place by its UUID along with the place's parent lineage.
+         * @param uuid the UUID of the place to retrieve
+         * @returns the place or `null` if no place is found for the UUID
+         * @throws Error if no UUID is provided
+         */
+        getByUuidWithLineage: (uuid: string) => ctx.bind(Place.v1.getWithLineage)(Qualifier.byUuid(uuid)),
       },
       person: {
         /**

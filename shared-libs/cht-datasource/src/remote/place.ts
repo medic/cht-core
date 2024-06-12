@@ -11,4 +11,12 @@ export namespace v1 {
   export const get = (remoteContext: RemoteDataContext) => (
     identifier: UuidQualifier
   ): Promise<Nullable<Place.v1.Place>> => getPlace(remoteContext)(identifier.uuid);
+
+  /** @internal */
+  export const getWithLineage = (remoteContext: RemoteDataContext) => (
+    identifier: UuidQualifier
+  ): Promise<Nullable<Place.v1.PlaceWithLineage>> => getPlace(remoteContext)(
+    identifier.uuid,
+    { withLineage: 'true' }
+  );
 }
