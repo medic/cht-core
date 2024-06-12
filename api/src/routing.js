@@ -36,6 +36,7 @@ const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
 const person = require('./controllers/person');
+const place = require('./controllers/place');
 const { people, places } = require('@medic/contacts')(config, db);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
@@ -463,6 +464,8 @@ app.postJson('/api/v1/places/:id', function(req, res) {
     })
     .catch(err => serverUtils.error(err, req, res));
 });
+
+app.get('/api/v1/place/:uuid', place.v1.get);
 
 app.postJson('/api/v1/people', function(req, res) {
   auth
