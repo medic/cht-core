@@ -67,7 +67,7 @@ describe('Place Controller', () => {
       it('returns a place with lineage when the query parameter is set', async () => {
         const place = { name: 'John Doe Castle' };
         placeGetWithLineage.resolves(place);
-        req.query.withLineage = 'true';
+        req.query.with_lineage = 'true';
 
         await controller.v1.get(req, res);
 

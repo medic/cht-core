@@ -3,8 +3,8 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
 
-const getPlace = ({ withLineage }) => ctx.bind(
-  withLineage
+const getPlace = ({ with_lineage }) => ctx.bind(
+  with_lineage
     ? Place.v1.getWithLineage
     : Place.v1.get
 );

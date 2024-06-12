@@ -17,6 +17,6 @@ export namespace v1 {
     identifier: UuidQualifier
   ): Promise<Nullable<Place.v1.PlaceWithLineage>> => getPlace(remoteContext)(
     identifier.uuid,
-    { withLineage: 'true' }
+    { with_lineage: 'true' }
   );
 }
