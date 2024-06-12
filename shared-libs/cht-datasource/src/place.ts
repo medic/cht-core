@@ -37,13 +37,13 @@ export namespace v1 {
     localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
     remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
   ) => (context: DataContext) => {
-    assertDataContext(context);
-    const fn = adapt(context, localFn, remoteFn);
-    return async (qualifier: UuidQualifier): Promise<T> => {
-      assertPlaceQualifier(qualifier);
-      return fn(qualifier);
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+      return async (qualifier: UuidQualifier): Promise<T> => {
+        assertPlaceQualifier(qualifier);
+        return fn(qualifier);
+      };
     };
-  };
 
   /**
    * Returns a place for the given qualifier.
