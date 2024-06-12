@@ -1,0 +1,29 @@
+{
+  "type": "clinic",
+  "parent": {
+    "type": "health_center",
+    "parent": {
+      "type": "district_hospital",
+      "parent": "",
+      "is_name_generated": "false",
+      "name": "Immunizations",
+      "external_id": "",
+      "notes": "",
+      "geolocation": "",
+      "reported_date": 1702971155715,
+      "_id": "8ee7d50c-4757-5504-8e70-5c37a55bcd76"
+    },
+    "is_name_generated": "FALSE",
+    "name": "Health Center With Immunizations 2",
+    "reported_date": "1702971155715",
+    "imported_date": "2018-12-11T15:41:42.751Z",
+    "contact": "{}",
+    "generated_name": "",
+    "use_cases": "anc pnc imm",
+    "vaccines": "bcg flu polio typhoid",
+    "_id": "446b65d9-6e68-56a9-b8cf-9ec434b89aff"
+  },
+  "name": "Immune Area 37",
+  "reported_date": 1702978562000,
+  "_id": "098029c1-f294-5884-bcab-ff836abc0e4f"
+}

@@ -1,0 +1,35 @@
+{
+  "type": "person",
+  "patient_id": "52246",
+  "parent": {
+    "type": "clinic",
+    "parent": {
+      "type": "health_center",
+      "parent": {
+        "type": "district_hospital",
+        "parent": "",
+        "is_name_generated": "false",
+        "name": "Pregnancies",
+        "external_id": "",
+        "notes": "",
+        "geolocation": "",
+        "reported_date": 1702971155715,
+        "_id": "e871aa56-ec6c-5490-a37f-afd8ac6279bf"
+      },
+      "is_name_generated": "FALSE",
+      "name": "HC5",
+      "reported_date": 1702971155715,
+      "_id": "a1e164af-8bd0-5e90-8ca4-a134b097078d"
+    },
+    "is_name_generated": "FALSE",
+    "name": "Clinic_15",
+    "reported_date": 1702971155715,
+    "_id": "38e7c2f5-2c80-5822-84eb-2930fa65baea"
+  },
+  "name": "la personne 2247",
+  "date_of_birth": "2000-02-01",
+  "phone": "16145552247",
+  "sex": "male",
+  "reported_date": "1702978398000",
+  "_id": "00c512d6-7b41-578c-9392-d3d7036ca52b"
+}
