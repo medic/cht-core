@@ -29,7 +29,7 @@ Milestone: The name of the milestone (e.g. 2.15.0).
   process.exit(0);
 }
 
-const [REPO_NAME, MILESTONE_NAME] = argv._;
+const [REPO_NAME, MILESTONE_NAME, MILESTONE_START] = argv._;
 if (!REPO_NAME) {
   throw new Error('You must specify a repo name (eg: "cht-core") as the first argument');
 }
@@ -162,24 +162,7 @@ const findCommitsWithoutMilestone = async (commitsForRelease) => {
 };
 
 const validateCommits = async (commitsForRelease) => {
-  if (argv['skip-commit-validation']) {
     return;
-  }
-  const commitsWithoutMilestone = await findCommitsWithoutMilestone(commitsForRelease);
-
-  if (commitsWithoutMilestone.length) {
-    console.error(`
-Some commits included in the release are not associated with a milestone. Commits can be associated with a milestone by:
-
-  1. Setting the milestone on an issue closed by the commit's PR (issue must be listed in the PR's "Development" links)
-  2. Setting the milestone directly on the commit's PR
-  3. Setting the milestone on an issue referenced in the commit message (e.g. "fix(#1345): ..."
-
-Commits:
-`);
-    commitsWithoutMilestone.forEach(commit => console.error(`- ${commit.oid}: ${commit.messageHeadline}`));
-    throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
-  }
 };
 
 const getMilestone = async () => queryRepo(
@@ -281,29 +264,6 @@ const formatCommits = (commits) => {
 
 const output = ({ warnings, types }, commits) => {
   console.log(`
----
-title: "${MILESTONE_NAME} release notes"
-linkTitle: "${MILESTONE_NAME}"
-weight:
-description: >
-relevantLinks: >
-toc_hide: true
----
-
-## Known issues
-
-Check the repository for the [latest known issues](https://github.com/medic/cht-core/issues?q=is%3Aissue+label%3A%22Affects%3A+${MILESTONE_NAME}%22).
-
-## Upgrade notes
-
-${formatGroups(warnings)}
-## Highlights
-
-<<< TODO >>>
-
-## And more...
-
-${formatGroups(types)}
 
 ## Contributors
 
@@ -314,7 +274,7 @@ ${formatCommits(commits)}
 };
 
 const getCommits = async () => {
-  const latestReleaseName = await getLatestReleaseName();
+  const latestReleaseName = MILESTONE_START;
   const milestoneBranch = await getMilestoneBranch();
   const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
   validateCommits(commitsForRelease);
