@@ -5,6 +5,7 @@ const SUPPORTED_LANGUAGES = [ 'en', 'es', 'fr', /*'ne',*/ 'sw' ]; // TODO add ne
 
 const run = async () => {
   try {
+    console.log('Linting translation files...');
     await checkTranslations(
       TRANSLATION_DIR,
       {
@@ -15,6 +16,7 @@ const run = async () => {
         languages: SUPPORTED_LANGUAGES
       }
     );
+    console.log('Linting translation files passed');
   } catch (err) {
     if (err instanceof TranslationException) {
       if (!err.errors) {
