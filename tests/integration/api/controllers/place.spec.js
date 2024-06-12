@@ -5,7 +5,7 @@ const { getRemoteDataContext, Place, Qualifier } = require('@medic/cht-datasourc
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
-describe.only('Place API', () => {
+describe('Place API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
   const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw_supervisor' }));
   const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'program_officer' }));
@@ -41,10 +41,27 @@ describe.only('Place API', () => {
 
   describe('GET /api/v1/place/:uuid', async () => {
     const getPlace = Place.v1.get(dataContext);
+    const getPlaceWithLineage = Place.v1.getWithLineage(dataContext);
 
     it('returns the place matching the provided UUID', async () => {
       const place = await getPlace(Qualifier.byUuid(place0._id));
       expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
+    });
+
+    it('returns the place with lineage when the withLineage query parameter is provided', async () => {
+      const place = await getPlaceWithLineage(Qualifier.byUuid(place0._id));
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        ...place0,
+        contact: contact0,
+        parent: {
+          ...place1,
+          contact: contact1,
+          parent: {
+            ...place2,
+            contact: contact2
+          }
+        }
+      });
     });
 
     it('returns null when no place is found for the UUID', async () => {
