@@ -5,11 +5,18 @@ import {
   hydrateLineage,
   hydratePrimaryContact
 } from '../../../src/local/libs/lineage';
-import sinon from 'sinon';
+import sinon, { SinonStub } from 'sinon';
 import * as LocalDoc from '../../../src/local/libs/doc';
 import { Doc } from '../../../src/libs/doc';
+import logger from '@medic/logger';
 
 describe('local lineage lib', () => {
+  let debug: SinonStub;
+
+  beforeEach(() => {
+    debug = sinon.stub(logger, 'debug');
+  });
+
   afterEach(() => sinon.restore());
 
   it('getLineageDocsById', () => {
@@ -58,6 +65,7 @@ describe('local lineage lib', () => {
       const result = hydratePrimaryContact(contacts)(place0);
 
       expect(result).to.deep.equal({ ...place0, contact });
+      expect(debug.notCalled).to.be.true;
     });
 
     it('returns a place unchanged if no contacts are provided', () => {
@@ -66,6 +74,9 @@ describe('local lineage lib', () => {
       const result = hydratePrimaryContact([])(place0);
 
       expect(result).to.equal(place0);
+      expect(debug.calledOnceWithExactly(
+        `No contact found with identifier [${place0.contact._id}] for the place [${place0._id}].`
+      )).to.be.true;
     });
 
     it('returns a place unchanged if no matching contact could be found', () => {
@@ -78,6 +89,9 @@ describe('local lineage lib', () => {
       const result = hydratePrimaryContact(contacts)(place0);
 
       expect(result).to.equal(place0);
+      expect(debug.calledOnceWithExactly(
+        `No contact found with identifier [${place0.contact._id}] for the place [${place0._id}].`
+      )).to.be.true;
     });
 
     it('returns a place unchanged if its contact is not identifiable', () => {
@@ -90,6 +104,7 @@ describe('local lineage lib', () => {
       const result = hydratePrimaryContact(contacts)(place0);
 
       expect(result).to.equal(place0);
+      expect(debug.notCalled).to.be.true;
     });
 
     it('returns null if no place is provided', () => {
@@ -101,6 +116,7 @@ describe('local lineage lib', () => {
       const result = hydratePrimaryContact(contacts)(null);
 
       expect(result).to.be.null;
+      expect(debug.notCalled).to.be.true;
     });
   });
 
@@ -124,6 +140,7 @@ describe('local lineage lib', () => {
           }
         }
       });
+      expect(debug.notCalled).to.be.true;
     });
 
     it('fills in missing lineage gaps from contact\'s denormalized parent data', () => {
@@ -158,6 +175,13 @@ describe('local lineage lib', () => {
           }
         }
       });
+      expect(debug.calledTwice).to.be.true;
+      expect(debug.firstCall.calledWithExactly(
+        `Lineage place with identifier [place-1] was not found when getting lineage for [${contact._id}].`
+      )).to.be.true;
+      expect(debug.secondCall.calledWithExactly(
+        `Lineage place with identifier [] was not found when getting lineage for [${contact._id}].`
+      )).to.be.true;
     });
   });
 });

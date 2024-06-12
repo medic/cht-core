@@ -47,6 +47,7 @@ export namespace v1 {
       }
       // Intentionally not further validating lineage. For passivity, lineage problems should not block retrieval.
       if (!isNonEmptyArray(lineagePlaces)) {
+        logger.debug(`No lineage places found for person [${identifier.uuid}].`);
         return person;
       }
 

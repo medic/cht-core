@@ -14,6 +14,7 @@ describe('local person', () => {
   let localContext: LocalDataContext;
   let settingsGetAll: SinonStub;
   let warn: SinonStub;
+  let debug: SinonStub;
   let isPerson: SinonStub;
   let isNormalizedParent: SinonStub;
 
@@ -24,6 +25,7 @@ describe('local person', () => {
       settings: { getAll: settingsGetAll }
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
+    debug = sinon.stub(logger, 'debug');
     isPerson = sinon.stub(contactTypeUtils, 'isPerson');
     isNormalizedParent = sinon.stub(Contact, 'isNormalizedParent');
   });
@@ -173,6 +175,7 @@ describe('local person', () => {
         expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
         expect(isNormalizedParent.calledOnceWithExactly(person)).to.be.true;
         expect(warn.notCalled).to.be.true;
+        expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.calledOnceWithExactly([place0, place1, place2])).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id])).to.be.true;
         expect(hydratePrimaryContactOuter.calledOnceWithExactly([person, contact0, contact1])).to.be.true;
@@ -194,6 +197,7 @@ describe('local person', () => {
         expect(isPerson.notCalled).to.be.true;
         expect(isNormalizedParent.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No person found for identifier [${identifier.uuid}].`)).to.be.true;
+        expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;
         expect(getDocsByIdsInner.notCalled).to.be.true;
         expect(hydratePrimaryContactOuter.notCalled).to.be.true;
@@ -224,6 +228,7 @@ describe('local person', () => {
             expect(isNormalizedParent.notCalled).to.be.true;
           }
           expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
+          expect(debug.notCalled).to.be.true;
           expect(getPrimaryContactIds.notCalled).to.be.true;
           expect(getDocsByIdsInner.notCalled).to.be.true;
           expect(hydratePrimaryContactOuter.notCalled).to.be.true;
@@ -247,6 +252,7 @@ describe('local person', () => {
         expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
         expect(isNormalizedParent.calledOnceWithExactly(person)).to.be.true;
         expect(warn.notCalled).to.be.true;
+        expect(debug.calledOnceWithExactly(`No lineage places found for person [${identifier.uuid}].`)).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;
         expect(getDocsByIdsInner.notCalled).to.be.true;
         expect(hydratePrimaryContactOuter.notCalled).to.be.true;

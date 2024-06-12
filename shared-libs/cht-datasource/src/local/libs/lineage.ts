@@ -10,6 +10,7 @@ import {
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
 import { queryDocsByKey } from './doc';
+import logger from '@medic/logger';
 
 /**
  * Returns the identified document along with the parent documents recorded for its lineage. The returned array is
@@ -35,6 +36,7 @@ export const hydratePrimaryContact = (contacts: Doc[]) => (place: Nullable<Doc>)
   }
   const contact = findById(contacts, place.contact._id);
   if (!contact) {
+    logger.debug(`No contact found with identifier [${place.contact._id}] for the place [${place._id}].`);
     return place;
   }
   return {
@@ -75,8 +77,12 @@ export const hydrateLineage = (
       if (place) {
         return place;
       }
+      const parentId = getParentUuid(index, contact.parent);
       // If no doc was found, just add a placeholder object with the id from the contact
-      return { _id: getParentUuid(index, contact.parent) };
+      logger.debug(
+        `Lineage place with identifier [${parentId ?? ''}] was not found when getting lineage for [${contact._id}].`
+      );
+      return { _id: parentId };
     });
   const hierarchy = [contact, ...fullLineage];
   return mergeLineage(hierarchy.slice(0, -1), hierarchy.at(-1)!) as Contact;
