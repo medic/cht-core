@@ -398,11 +398,16 @@ jobs:
 
   upgrade:
     needs: [publish]
-    name: Upgrade from latest release
+    name: Upgrade from ${{ matrix.version }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
-    
+
     if: ${{ github.event_name != 'pull_request' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '4.2.4', 'latest' ]
 
     steps:
       - name: Configure AWS credentials Public
@@ -423,6 +428,7 @@ jobs:
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+          echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
       - run: npm ci
       - name: Create logs directory
         run: mkdir tests/logs
@@ -433,51 +439,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Upgrade
-          path: |
-            allure-results
-            allure-report
-            tests/logs
-            tests/results/
-        if: ${{ failure() }}
-
-  upgrade-old:
-    needs: [ publish ]
-    name: Upgrade from 4.2
-    runs-on: ubuntu-22.04
-    timeout-minutes: 60
-
-    if: ${{ github.event_name != 'pull_request' }}
-
-    steps:
-      - name: Configure AWS credentials Public
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Login to Public Amazon ECR
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registry-type: public
-          mask-password: 'true'
-      - uses: actions/checkout@v4
-      - name: Set ENV
-        run: |
-          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
-          echo "BASE_VERSION=4.2.4" >> $GITHUB_ENV
-      - run: npm ci
-      - name: Create logs directory
-        run: mkdir tests/logs
-      - name: Upgrade
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        run: npm run upgrade-wdio
-      - name: Archive Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: Upgrade-old
           path: |
             allure-results
             allure-report

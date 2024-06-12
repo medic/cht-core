@@ -11,7 +11,7 @@ const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
 const semver = require('semver');
 
-const testFrontend = !BASE_VERSION;
+const testFrontend = BASE_VERSION === 'latest';
 
 const docs = dataFactory.createHierarchy({
   name: 'offlineupgrade',

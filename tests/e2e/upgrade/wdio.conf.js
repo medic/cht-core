@@ -28,8 +28,8 @@ const getUpgradeServiceDockerCompose = async () => {
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
-const getLatestRelease = async () => {
-  if (BASE_VERSION) {
+const getRelease = async () => {
+  if (BASE_VERSION !== 'latest') {
     return `medic:medic:${BASE_VERSION}`;
   }
 
@@ -47,9 +47,9 @@ const getLatestRelease = async () => {
 };
 
 const getMainCHTDockerCompose = async () => {
-  const latestRelease = await getLatestRelease();
+  const release = await getRelease();
   for (const composeFile of COMPOSE_FILES) {
-    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${latestRelease}/docker-compose/${composeFile}.yml`;
+    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${release}/docker-compose/${composeFile}.yml`;
     const contents = await rpn.get(composeFileUrl);
     const filePath = path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`);
     await fs.promises.writeFile(filePath, contents);
