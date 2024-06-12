@@ -1,12 +1,14 @@
 const Gaze = require('gaze').Gaze;
 const { spawn } = require('child_process');
-const rootdir = __dirname + '/../../';
+const path = require('path');
+const rootdir = path.resolve(__dirname, '../../');
 
 const watchers = [];
 
 const DEBOUNCE = 10; // 10 ms
 const GAZE_OPTIONS = {
-  interval: 1000 // how often the target should be polled in milliseconds
+  interval: 1000, // how often the target should be polled in milliseconds
+  cwd: rootdir
 };
 
 const configs = [
