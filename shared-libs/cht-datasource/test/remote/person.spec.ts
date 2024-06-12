@@ -51,7 +51,7 @@ describe('remote person', () => {
 
         expect(result).to.equal(doc);
         expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
-        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { withLineage: 'true' })).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -61,7 +61,7 @@ describe('remote person', () => {
 
         expect(result).to.be.null;
         expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
-        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { withLineage: 'true' })).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
       });
     });
   });

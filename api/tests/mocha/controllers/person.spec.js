@@ -67,7 +67,7 @@ describe('Person Controller', () => {
       it('returns a person with lineage when the query parameter is set', async () => {
         const person = { name: 'John Doe' };
         personGetWithLineage.resolves(person);
-        req.query.withLineage = 'true';
+        req.query.with_lineage = 'true';
 
         await controller.v1.get(req, res);
 

@@ -17,6 +17,6 @@ export namespace v1 {
     identifier: UuidQualifier
   ): Promise<Nullable<Person.v1.PersonWithLineage>> => getPerson(remoteContext)(
     identifier.uuid,
-    { withLineage: 'true' }
+    { with_lineage: 'true' }
   );
 }
