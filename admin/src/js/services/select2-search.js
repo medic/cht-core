@@ -134,16 +134,14 @@ angular.module('inboxServices').factory('Select2Search',
       };
 
       const getDocs = function (ids) {
-        const docsFetched = 10;
 
         return DB()
-          .allDocs({ keys: ids, include_docs: true, limit: docsFetched })
+          .allDocs({ keys: ids, include_docs: true })
           .then((docs) => processDocs(docs));
       };
 
       const processDocs = function(result) {
-        const docs = result.rows.map(row => row.doc);
-        const docIds = docs.map(doc => doc._id);
+        const docIds = result.rows.map((row) => row.doc._id);
         return hydrateDocs(docIds);
       };
 
@@ -209,7 +207,7 @@ angular.module('inboxServices').factory('Select2Search',
         return resolution.then(function() { //NoSONAR
           $timeout(() => { //NoSONAR
             selectEl.trigger('change');
-          }, 1000);
+          });
           return selectEl;
         });
       };
@@ -229,7 +227,7 @@ angular.module('inboxServices').factory('Select2Search',
         selectEl.select2('data', select2Data);
         $timeout(() => { //NoSONAR
           selectEl.trigger('change');
-        }, 1000);
+        });
       };
 
       const updateDocument = function (selectEl, docId) {

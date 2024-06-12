@@ -67,6 +67,11 @@ const isPlace = (config, contact) => {
   return isPlaceType(type);
 };
 
+const isSamePlaceType = (places) => {
+  const contactTypes = new Set(places.map((place) => place.contact_type));
+  return contactTypes.size === 1;
+};
+
 const isHardcodedType = type => HARDCODED_TYPES.includes(type);
 
 const isOrphan = (type) => !type.parents || !type.parents.length;
@@ -93,6 +98,7 @@ module.exports = {
   getContactType,
   isPerson,
   isPlace,
+  isSamePlaceType,
   isHardcodedType,
   HARDCODED_TYPES,
   getContactTypes,

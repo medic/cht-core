@@ -1,6 +1,7 @@
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
+const chtScriptApi = require('@medic/cht-script-api');
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
@@ -241,10 +242,9 @@ angular
         return true;
       }
 
-      const userRoles = $scope.editUserModel.roles;
-      const allowedRoles = $scope.permissions.can_have_multiple_places;
-
-      const userHasPermission = userRoles.some(role => allowedRoles.includes(role));
+      const userHasPermission = chtScriptApi.v1.hasPermissions(
+        ['can_have_multiple_places'], $scope.editUserModel.roles, $scope.permissions
+      );
 
       if (!userHasPermission) {
         $translate('permission.description.can_have_multiple_places.not_allowed').then(value => {
@@ -279,24 +279,22 @@ angular
 
     const validateFacilityHierarchy = () => {
       const placeIds = $scope.editUserModel.place;
-      const docsFetched = 10;
 
       if (!placeIds || placeIds.length === 1) {
         return $q.resolve(true);
       }
 
-      return DB().allDocs({ keys: placeIds, include_docs: true, limit: docsFetched })
+      return DB().allDocs({ keys: placeIds, include_docs: true })
         .then(result => {
           const places = result.rows.map(row => row.doc);
-          const contactTypes = new Set(places.map(place => place.contact_type));
-          const isSameHeirarchy = contactTypes.size === 1;
+          const isSameHierarchy = ContactTypes.getPlacesHierarchy(places);
 
-          if (!isSameHeirarchy) {
+          if (!isSameHierarchy) {
             $translate('permission.description.can_have_multiple_places.incompatible_place').then(value => {
               $scope.errors.multiFacility = value;
             });
           }
-          return isSameHeirarchy;
+          return isSameHierarchy;
         })
         .catch(err => {
           $log.error('Error validating facility hierarchy', err);

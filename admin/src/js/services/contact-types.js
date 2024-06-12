@@ -50,6 +50,11 @@ angular.module('inboxServices').service('ContactTypes', function(
     getPlaceTypes: () => Settings().then(config => contactTypesUtils.getPlaceTypes(config)),
 
     /**
+     *  @returns {boolean} returns whether the provided places have the same contact_type
+     */
+    getPlacesHierarchy: (places) => contactTypesUtils.isSamePlaceType(places),
+
+    /**
      * Returns a Promise to resolve all the configured person contact types
      */
     getPersonTypes: () => Settings().then(config => contactTypesUtils.getPersonTypes(config)),

@@ -257,7 +257,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private canViewLastVisitedDate() {
     if (this.sessionService.isAdmin()) {
       // disable UHC for DB admins
-      // disable UHC for DB admins
       return Promise.resolve(false);
     }
     return this.authService.has('can_view_last_visited_date');
