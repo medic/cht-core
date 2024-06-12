@@ -27,6 +27,7 @@ dist
 api/**/extracted-resources/**/*
 api/build/**/*
 jsdocs
+shared-libs/**/docs
 config/*/.gdrive.*.json
 config/*/.snapshots/*
 config/*/backups/*
