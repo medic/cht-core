@@ -21,13 +21,15 @@ const startContainer = async (useAuthentication) => {
   if (useAuthentication) {
     env.COUCH_AUTH = `${constants.USERNAME}:${constants.PASSWORD}`;
   }
-  await runDockerCommand('docker-compose', ['up', '--build', '--force-recreate'], env);
+  const t = await runDockerCommand('docker-compose', ['up', '--build', '--force-recreate'], env);
+  console.log(t);
 };
 
 const getLogs = async () => {
   const containerName = (await runDockerCommand('docker-compose', ['ps', '-q', '-a']))[0];
   const logs = await runDockerCommand('docker', ['logs', containerName]);
   try {
+    console.log(logs);
     return logs?.filter(log => log).map(log => JSON.parse(log));
   } catch (err) {
     console.log(logs);
