@@ -11,3 +11,4 @@ services:
 networks:
   net:
     name: cht-net-e2e
+    external: true
