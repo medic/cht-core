@@ -25,6 +25,7 @@ const startContainer = async (useAuthentication) => {
   console.log(s);
 };
 const getLogs = async () => {
+  console.log(await runDockerCommand('docker-compose', ['ps', '-q', '-a']));
   const containerName = (await runDockerCommand('docker-compose', ['ps', '-q', '-a']))[0];
   const logs = await runDockerCommand('docker', ['logs', containerName]);
   try {
