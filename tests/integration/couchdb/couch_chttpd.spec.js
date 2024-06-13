@@ -25,6 +25,10 @@ const startContainer = async (useAuthentication) => {
   console.log(t);
 };
 
+const stopContainer = async () => {
+  await runDockerCommand('docker-compose', ['down', '--remove-orphans']);
+};
+
 const getLogs = async () => {
   const containerName = (await runDockerCommand('docker-compose', ['ps', '-q', '-a']))[0];
   const logs = await runDockerCommand('docker', ['logs', containerName]);
@@ -49,6 +53,10 @@ const expectCorrectMetadata = (metadata) => {
 };
 
 describe('accessing couch clustering endpoint', () => {
+  afterEach(async () => {
+    await stopContainer();
+  });
+
   it('should block unauthenticated access through the host network', async () => {
     await expect(
       utils.request({ uri: `https://${constants.API_HOST}/_node/_local/_dbs/${constants.DB_NAME}`, noAuth: true })
