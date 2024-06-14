@@ -19,6 +19,7 @@
     "unit:cht-form": "ng test cht-form",
     "unit": "UNIT_TEST_ENV=1 ng test webapp",
     "build": "ng build",
+    "build-watch": "npm run build -- --configuration=development --watch=true",
     "build:cht-form": "ng build cht-form",
     "compile": "ngc"
   },

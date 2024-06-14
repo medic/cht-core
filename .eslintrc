@@ -15,6 +15,7 @@
     "api/src/public/login/lib-bowser.js",
     "build/**",
     "jsdocs/**",
+    "shared-libs/cht-datasource/dist/**",
     "tests/scalability/report*/**",
     "tests/scalability/jmeter/**",
     "webapp/src/ts/providers/xpath-element-path.provider.ts"

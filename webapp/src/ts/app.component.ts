@@ -39,7 +39,7 @@ import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-m
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
@@ -131,7 +131,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private performanceService:PerformanceService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
-    private chtScriptApiService: CHTScriptApiService,
+    private chtDatasourceService: CHTDatasourceService,
     private analyticsModulesService: AnalyticsModulesService,
     private trainingCardsService: TrainingCardsService,
     private matIconRegistry: MatIconRegistry,
@@ -279,7 +279,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = Promise.resolve()
-      .then(() => this.chtScriptApiService.isInitialized())
+      .then(() => this.chtDatasourceService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => (this.initialisationComplete = true))
       .then(() => this.initRulesEngine())

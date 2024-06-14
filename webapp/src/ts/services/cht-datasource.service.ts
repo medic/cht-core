@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import * as chtScriptApiFactory from '@medic/cht-script-api';
+import { DataContext, getDatasource, getLocalDataContext, getRemoteDataContext } from '@medic/cht-datasource';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
 
 import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CHTScriptApiService {
+export class CHTDatasourceService {
   private userCtx;
+  private dataContext!: DataContext;
   private settings;
   private initialized;
   private extensionLibs = {};
@@ -21,7 +23,8 @@ export class CHTScriptApiService {
     private http: HttpClient,
     private sessionService: SessionService,
     private settingsService: SettingsService,
-    private changesService: ChangesService
+    private changesService: ChangesService,
+    private dbService: DbService
   ) { }
 
   isInitialized() {
@@ -35,14 +38,25 @@ export class CHTScriptApiService {
   private async init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    await Promise.all([ this.getSettings(), this.loadScripts() ]);
+    await Promise.all([this.getSettings(), this.loadScripts()]);
+    this.dataContext = await this.getDataContext();
+  }
+
+  private async getDataContext() {
+    if (this.sessionService.isOnlineOnly(this.userCtx)) {
+      return getRemoteDataContext();
+    }
+
+    const settingsService = { getAll: () => this.settings };
+    const sourceDatabases = { medic: await this.dbService.get() };
+    return getLocalDataContext(settingsService, sourceDatabases);
   }
 
   private async loadScripts() {
     try {
-      const request = this.http.get<String[]>('/extension-libs', { responseType: 'json' });
+      const request = this.http.get<string[]>('/extension-libs', { responseType: 'json' });
       const extensionLibs = await lastValueFrom(request);
-      if (extensionLibs && extensionLibs.length) {
+      if (extensionLibs?.length) {
         return Promise.all(extensionLibs.map(name => this.loadScript(name)));
       }
     } catch (e) {
@@ -83,19 +97,22 @@ export class CHTScriptApiService {
     return user?.roles || this.userCtx?.roles;
   }
 
-  async getApi() {
+  async get() {
     await this.isInitialized();
+    const dataSource = getDatasource(this.dataContext);
     return {
+      ...dataSource,
       v1: {
+        ...dataSource.v1,
         hasPermissions: (permissions, user?, chtSettings?) => {
           const userRoles = this.getRolesFromUser(user);
           const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+          return dataSource.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
         },
         hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
           const userRoles = this.getRolesFromUser(user);
           const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+          return dataSource.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
         },
         getExtensionLib: (id) => {
           return this.extensionLibs[id];

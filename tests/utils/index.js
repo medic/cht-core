@@ -63,6 +63,9 @@ const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
 const cookieJar = rpn.jar();
 
+// Cookies from the jar will be included on Node `fetch` calls
+global.fetch = require('fetch-cookie').default(global.fetch, cookieJar);
+
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
   ...process.env,

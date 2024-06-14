@@ -11,7 +11,7 @@ const registrationUtils = require('@medic/registration-utils');
 const config = require('../../../src/config');
 const purgingUtils = require('@medic/purging-utils');
 const db = require('../../../src/db');
-const chtScriptApi = require('@medic/cht-script-api');
+const chtDatasource = require('@medic/cht-datasource');
 
 let service;
 let clock;
@@ -2532,13 +2532,14 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
       sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});
-      sinon.stub(chtScriptApi.v1, 'hasPermissions');
+      const mockDatasource = { v1: { hasPermissions: sinon.stub() } };
+      sinon.stub(chtDatasource, 'getDatasource').returns(mockDatasource);
 
       return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
-        chai.expect(chtScriptApi.v1.hasPermissions.args[0]).to.deep.equal(
+        chai.expect(mockDatasource.v1.hasPermissions.args[0]).to.deep.equal(
           [ 'can_export_messages', [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
         );
-        chai.expect(chtScriptApi.v1.hasPermissions.args[1]).to.deep.equal(
+        chai.expect(mockDatasource.v1.hasPermissions.args[1]).to.deep.equal(
           [ 'can_export_messages', [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
         );
       });
@@ -2558,13 +2559,14 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
       sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});
-      sinon.stub(chtScriptApi.v1, 'hasAnyPermission');
+      const mockDatasource = { v1: { hasAnyPermission: sinon.stub() } };
+      sinon.stub(chtDatasource, 'getDatasource').returns(mockDatasource);
 
       return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
-        chai.expect(chtScriptApi.v1.hasAnyPermission.args[0]).to.deep.equal(
+        chai.expect(mockDatasource.v1.hasAnyPermission.args[0]).to.deep.equal(
           [ ['can_export_messages', 'can_edit'], [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
         );
-        chai.expect(chtScriptApi.v1.hasAnyPermission.args[1]).to.deep.equal(
+        chai.expect(mockDatasource.v1.hasAnyPermission.args[1]).to.deep.equal(
           [ ['can_export_messages', 'can_edit'], [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
         );
       });
