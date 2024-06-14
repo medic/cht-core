@@ -6,30 +6,36 @@ const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Person API', () => {
-  const places = utils.deepFreeze(placeFactory.generateHierarchy());
+  const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
+  const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw_supervisor' }));
+  const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'program_officer' }));
+  const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
+  const place0 = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact0._id } });
+  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
+  const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
+
   const patient = utils.deepFreeze(personFactory.build({
     parent: {
-      _id: places.get('clinic')._id,
+      _id: place0._id,
       parent: {
-        _id: places.get('health_center')._id,
+        _id: place1._id,
         parent: {
-          _id: places.get('district_hospital')._id
+          _id: place2._id
         }
       },
     },
     phone: '1234567890',
-    reported_date: '2024-05-24T18:40:34.694Z',
     role: 'patient',
     short_name: 'Mary'
   }));
   const userNoPerms = utils.deepFreeze(userFactory.build({
-    place: places.get('clinic')._id,
+    place: place0._id,
     roles: ['no_perms']
   }));
   const dataContext = getRemoteDataContext(utils.getOrigin());
 
   before(async () => {
-    await utils.saveDocs([...places.values(), patient]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, patient]);
     await utils.createUsers([userNoPerms]);
   });
 
@@ -40,10 +46,30 @@ describe('Person API', () => {
 
   describe('GET /api/v1/person/:uuid', async () => {
     const getPerson = Person.v1.get(dataContext);
+    const getPersonWithLineage = Person.v1.getWithLineage(dataContext);
 
     it('returns the person matching the provided UUID', async () => {
       const person = await getPerson(Qualifier.byUuid(patient._id));
-      expect(person).excluding('_rev').to.deep.equal(patient);
+      expect(person).excluding(['_rev', 'reported_date']).to.deep.equal(patient);
+    });
+
+    it('returns the person with lineage when the withLineage query parameter is provided', async () => {
+      const person = await getPersonWithLineage(Qualifier.byUuid(patient._id));
+      expect(person).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        ...patient,
+        parent: {
+          ...place0,
+          contact: contact0,
+          parent: {
+            ...place1,
+            contact: contact1,
+            parent: {
+              ...place2,
+              contact: contact2
+            }
+          }
+        }
+      });
     });
 
     it('returns null when no user is found for the UUID', async () => {

@@ -55,8 +55,17 @@ export const getDatasource = (ctx: DataContext) => {
          * Returns a person by their UUID.
          * @param uuid the UUID of the person to retrieve
          * @returns the person or `null` if no person is found for the UUID
+         * @throws Error if no UUID is provided
          */
         getByUuid: (uuid: string) => ctx.bind(Person.v1.get)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns a person by their UUID along with the person's parent lineage.
+         * @param uuid the UUID of the person to retrieve
+         * @returns the person or `null` if no person is found for the UUID
+         * @throws Error if no UUID is provided
+         */
+        getByUuidWithLineage: (uuid: string) => ctx.bind(Person.v1.getWithLineage)(Qualifier.byUuid(uuid)),
       }
     }
   };

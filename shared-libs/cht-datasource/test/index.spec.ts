@@ -51,7 +51,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByUuid']);
+        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage']);
       });
 
       it('getByUuid', async () => {
@@ -65,6 +65,21 @@ describe('CHT Script API - getDatasource', () => {
 
         expect(returnedPerson).to.equal(expectedPerson);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getByUuidWithLineage', async () => {
+        const expectedPerson = {};
+        const personGet = sinon.stub().resolves(expectedPerson);
+        dataContextBind.returns(personGet);
+        const qualifier = { uuid: 'my-persons-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedPerson = await person.getByUuidWithLineage(qualifier.uuid);
+
+        expect(returnedPerson).to.equal(expectedPerson);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
