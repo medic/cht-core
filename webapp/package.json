@@ -38,7 +38,7 @@
     "@messageformat/core": "^3.2.0",
     "@ngrx/effects": "^17.1.1",
     "@ngrx/store": "^17.1.1",
-    "@ngx-translate/core": "^14.0.0",
+    "@ngx-translate/core": "^15.0.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.6.0",
