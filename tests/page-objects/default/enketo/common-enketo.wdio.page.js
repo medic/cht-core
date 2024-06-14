@@ -9,6 +9,8 @@ const getCurrentPageSection = async () => await currentSection().isExisting() ? 
 
 const enabledFieldset = (section) => section.$$('fieldset.or-branch:not(.disabled)');
 
+const addRepeatSectionButton = () => $(`button.add-repeat-btn`);
+
 const getCorrectFieldsetSection = async (section) => {
   const countFieldset = await enabledFieldset(section).length;
   if (countFieldset){
@@ -60,6 +62,13 @@ const setTextareaValue = async (question, value) => {
   await setValue('textarea', question, value);
 };
 
+const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
+  const element = await (await getCurrentPageSection())
+    .$$(`label*=${question}`)[repeatIndex]
+    .$('input[type=file]');
+  await element.addValue(value);
+};
+
 const validateSummaryReport = async (textArray) => {
   const element = await getCurrentPageSection();
   for (const text of textArray) {
@@ -94,6 +103,28 @@ const getInputValue = async (question) => {
     .getValue();
 };
 
+const addRepeatSection = async () => {
+  const repeatButton  = await addRepeatSectionButton();
+  await repeatButton.click();
+};
+
+const drawShapeOnCanvas = async (question) => {
+  const canvas = await (await getCurrentPageSection())
+    .$(`label*=${question}`)
+    .$('canvas');
+  await canvas.waitForDisplayed();
+  await browser.action('pointer')
+    .move({ origin: canvas })
+    .down()
+    .move({ origin: canvas, x: 50, y: 0 })
+    .move({ origin: canvas, x: 50, y: 50 })
+    .move({ origin: canvas, x: 0, y: 50 })
+    .move({ origin: canvas, x: 0, y: 0 })
+    .move({ origin: canvas, x: 50, y: 0 })
+    .up()
+    .perform();
+};
+
 module.exports = {
   isElementDisplayed,
   selectRadioButton,
@@ -101,7 +132,10 @@ module.exports = {
   setInputValue,
   setDateValue,
   setTextareaValue,
+  addFileInputValue,
   validateSummaryReport,
   uploadForm,
   getInputValue,
+  addRepeatSection,
+  drawShapeOnCanvas,
 };

@@ -33,6 +33,7 @@ import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { cloneDeep } from 'lodash-es';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -1051,16 +1052,11 @@ describe('Form service', () => {
     });
 
     describe('Saving attachments', () => {
-      it('should save attachments', () => {
-        const jqFind = $.fn.find;
-        sinon.stub($.fn, 'find');
-        //@ts-ignore
-        $.fn.find.callsFake(jqFind);
-
-        $.fn.find
-          //@ts-ignore
-          .withArgs('input[type=file][name="/my-form/my_file"]')
-          .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+      it('should save attachments', async () => {
+        const file = { name: 'my_file', type: 'image', foo: 'bar'  };
+        sinon
+          .stub(FileManager, 'getCurrentFiles')
+          .returns([file]);
 
         form.validate.resolves(true);
         const content = loadXML('file-field');
@@ -1072,18 +1068,15 @@ describe('Form service', () => {
         // @ts-ignore
         const saveDocsSpy = sinon.spy(FormService.prototype, 'saveDocs');
 
-        return service
-          .save('my-form', form, () => Promise.resolve(true))
-          .then(() => {
-            expect(AddAttachment.calledOnce);
-            expect(saveDocsSpy.calledOnce);
+        await service.save('my-form', form, () => Promise.resolve(true));
+        expect(AddAttachment.calledOnce).to.be.true;
+        expect(saveDocsSpy.calledOnce).to.be.true;
 
-            expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-            expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-            expect(AddAttachment.args[0][3]).to.equal('image');
+        expect(AddAttachment.args[0][1]).to.equal(`user-file-${file.name}`);
+        expect(AddAttachment.args[0][2]).to.deep.equal(file);
+        expect(AddAttachment.args[0][3]).to.equal(file.type);
 
-            expect(globalActions.setSnackbarContent.notCalled);
-          });
+        expect(globalActions.setSnackbarContent.notCalled).to.be.true;
       });
 
       it('should throw exception if attachments are big', () => {

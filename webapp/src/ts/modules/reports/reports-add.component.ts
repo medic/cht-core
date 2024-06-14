@@ -167,30 +167,64 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  private getAttachment(docId, attachmentName) {
+    return this.dbService
+      .get()
+      .getAttachment(docId, attachmentName)
+      .catch(e => {
+        if (e.status === 404) {
+          console.error(`Could not find attachment [${attachmentName}] on doc [${docId}].`);
+        } else {
+          throw e;
+        }
+      });
+  }
+
+  private async getAttachmentForElement(docId, $element) {
+    const fileName = $element.data('loaded-file-name');
+    if (fileName) {
+      const attachmentName = `user-file-${fileName}`;
+      const attachment = await this.getAttachment(docId, attachmentName);
+      if (attachment) {
+        return attachment;
+      }
+    }
+
+    const legacyAttachmentName = `user-file${$element.attr('name')}`;
+    return this.getAttachment(docId, legacyAttachmentName);
+  }
+
   private renderAttachmentPreviews(model) {
     return Promise
       .resolve()
       .then(() => Promise
-        .all($('#report-form input[type=file]')
-          .map((idx, element) => {
+        .all($('#report-form input[type="file"]:not(.draw-widget__load)')
+          .map(async (idx, element) => {
             const $element = $(element);
-            const attachmentName = 'user-file' + $element.attr('name');
+            const $picker = $element
+              .closest('.question')
+              .find('.widget.file-picker');
 
-            return this.dbService
-              .get()
-              .getAttachment(model.doc._id, attachmentName)
-              .then(blob => this.fileReaderService.base64(blob))
-              .then((base64) => {
-                const $picker = $element
-                  .closest('.question')
-                  .find('.widget.file-picker');
+            $picker
+              .find('.file-feedback')
+              .empty();
 
-                $picker.find('.file-feedback').empty();
+            // Currently only support rendering image previews when editing reports
+            // https://github.com/medic/cht-core/issues/9165
+            if ($element.attr('accept') !== 'image/*') {
+              return;
+            }
 
-                const $preview = $picker.find('.file-preview');
-                $preview.empty();
-                $preview.append('<img src="data:' + base64 + '">');
-              });
+            const attachmentBlob = await this.getAttachmentForElement(model.doc._id, $element);
+            if (!attachmentBlob) {
+              return;
+            }
+
+            const base64 = await this.fileReaderService.base64(attachmentBlob);
+
+            const $preview = $picker.find('.file-preview');
+            $preview.empty();
+            $preview.append('<img src="data:' + base64 + '">');
           })));
   }
 
