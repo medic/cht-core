@@ -1,47 +1,37 @@
 import { Injectable } from '@angular/core';
+import { Person, Qualifier } from '@medic/cht-datasource';
 
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { DbService } from '@mm-services/db.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserContactService {
   constructor(
-    private dbService: DbService,
     private userSettingsService: UserSettingsService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private chtDatasourceService: CHTDatasourceService,
   ) {
   }
 
   async get({ hydrateLineage = true } = {}) {
-    try {
-      const user: any = await this.userSettingsService.get();
-      if (!user.contact_id) {
-        return;
-      }
-      if (hydrateLineage) {
-        return await this.getContactWithLineage(user.contact_id);
-      }
+    const user: any = await this.getUserSettings();
+    if (!user?.contact_id) {
+      return null;
+    }
+    const dataContext = await this.chtDatasourceService.getDataContext();
+    const getPerson = dataContext.bind(hydrateLineage ? Person.v1.getWithLineage : Person.v1.get);
+    return await getPerson(Qualifier.byUuid(user.contact_id));
+  }
 
-      return await this.getContact(user.contact_id);
+  private getUserSettings = async () => {
+    try {
+      return await this.userSettingsService.get();
     } catch (err) {
       if (err.code === 404) {
-        return;
+        return null;
       }
       throw err;
     }
-  }
-
-  private async getContact(contactId) {
-    return this.dbService
-      .get()
-      .get(contactId);
-  }
-
-  private async getContactWithLineage(contactId) {
-    const contact = await this.lineageModelGeneratorService.contact(contactId, { merge: true });
-    return contact && contact.doc;
-  }
+  };
 }

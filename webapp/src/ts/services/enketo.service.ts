@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
+import { Nullable, Person } from '@medic/cht-datasource';
 import type JQuery from 'jquery';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
@@ -633,7 +634,7 @@ export class EnketoFormContext {
   valuechangeListener?: () => void;
   titleKey?: string;
   isFormInModal?: boolean;
-  userContact?: Record<string, any>;
+  userContact?: Nullable<Person.v1.Person>;
   contactSummary? :Record<string, any>;
 
   constructor(selector:string, type:string, formDoc:Record<string, any>, instanceData?) {

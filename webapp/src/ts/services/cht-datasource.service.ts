@@ -39,10 +39,10 @@ export class CHTDatasourceService {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
     await Promise.all([this.getSettings(), this.loadScripts()]);
-    this.dataContext = await this.getDataContext();
+    this.dataContext = await this.createDataContext();
   }
 
-  private async getDataContext() {
+  private async createDataContext() {
     if (this.sessionService.isOnlineOnly(this.userCtx)) {
       return getRemoteDataContext();
     }
@@ -95,6 +95,11 @@ export class CHTDatasourceService {
 
   private getRolesFromUser(user) {
     return user?.roles || this.userCtx?.roles;
+  }
+
+  async getDataContext() {
+    await this.isInitialized();
+    return this.dataContext;
   }
 
   async get() {

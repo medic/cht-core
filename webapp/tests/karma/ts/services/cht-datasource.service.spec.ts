@@ -120,6 +120,34 @@ describe('CHTScriptApiService service', () => {
 
   });
 
+  describe('getDataContext()', () => {
+    [true, false].forEach((isOnlineOnly) => {
+      it(`resolves a data context when isOnlineOnly is ${isOnlineOnly}`, async () => {
+        const settings = { hello: 'settings' } as const;
+        settingsService.get.resolves(settings);
+        const userCtx = { hello: 'world' };
+        sessionService.userCtx.returns(userCtx);
+        sessionService.isOnlineOnly.returns(isOnlineOnly);
+        const expectedDb = { hello: 'medic' };
+        dbService.get.resolves(expectedDb);
+
+        const context = await service.getDataContext();
+
+        expect(context).to.equal(await service.getDataContext());
+        expect(context.bind).to.be.a('function');
+        expect(changesService.subscribe.calledOnce).to.be.true;
+        expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+        expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
+        expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
+        expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
+        expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+        expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+        expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 0 : 1);
+      });
+    });
+  });
+
   describe('v1.hasPermissions()', () => {
 
     it('should return true when user has the permission', async () => {
