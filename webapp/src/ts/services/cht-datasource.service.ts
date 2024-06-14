@@ -97,9 +97,9 @@ export class CHTDatasourceService {
     return user?.roles || this.userCtx?.roles;
   }
 
-  async getDataContext() {
+  async bind <T>(fn: (ctx: DataContext) => T): Promise<T> {
     await this.isInitialized();
-    return this.dataContext;
+    return this.dataContext.bind(fn);
   }
 
   async get() {

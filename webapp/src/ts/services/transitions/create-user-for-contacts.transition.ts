@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
+import { DataContext, Person, Place, Qualifier } from '@medic/cht-datasource';
 
-import { DbService } from '@mm-services/db.service';
-import { Transition, Doc } from '@mm-services/transitions/transition';
+import { Doc, Transition } from '@mm-services/transitions/transition';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CreateUserForContactsTransition extends Transition {
   constructor(
-    private dbService: DbService,
+    private chtDatasourceService: CHTDatasourceService,
     private createUserForContactsService: CreateUserForContactsService,
     private extractLineageService: ExtractLineageService,
     private userContactService: UserContactService,
@@ -112,52 +113,42 @@ export class CreateUserForContactsTransition extends Transition {
       throw new Error('Only the contact associated with the currently logged in user can be replaced.');
     }
     const newContact = await this.getNewContact(docs, replacementContactId);
-    if (!newContact) {
-      throw new Error(`The new contact could not be found [${replacementContactId}].`);
-    }
     this.createUserForContactsService.setReplaced(originalContact, newContact);
     docs.push(originalContact);
     await this.setPrimaryContactForParent(newContact, originalContactId, docs);
   }
 
-  private async setPrimaryContactForParent(newContact: ContactDoc, originalContactId: string, docs: Doc[]) {
+  private async setPrimaryContactForParent(newContact: Person.v1.Person, originalContactId: string, docs: Doc[]) {
     const parentPlace = await this.getParentDoc(newContact);
     if (parentPlace?.contact?._id === originalContactId) {
-      parentPlace.contact = this.extractLineageService.extract(newContact);
-      docs.push(parentPlace);
+      docs.push({
+        ...parentPlace,
+        contact: this.extractLineageService.extract(newContact)
+      });
     }
   }
 
-  private async getParentDoc(doc: ContactDoc) {
+  private async getParentDoc(doc: Person.v1.Person) {
     if (!doc.parent?._id) {
       return;
     }
 
-    return this.dbService
-      .get()
-      .get(doc.parent._id)
-      .catch(err => {
-        if (err.status === 404) {
-          return;
-        }
-        throw err;
-      }) as ContactDoc;
+    const getPlace = await this.chtDatasourceService.bind(Place.v1.get);
+    return getPlace(Qualifier.byUuid(doc.parent._id));
   }
 
-  private async getNewContact(docs: Doc[], newContactId: string): Promise<ContactDoc> {
+  private async getNewContact(docs: Doc[], newContactId: string) {
     const newContact = docs.find(doc => doc._id === newContactId);
     if (newContact) {
-      return newContact as ContactDoc;
+      return newContact as Person.v1.Person;
     }
-    return this.dbService
-      .get()
-      .get(newContactId)
-      .catch(err => {
-        if (err.status === 404) {
-          return;
-        }
-        throw err;
-      });
+
+    const getPerson = await this.chtDatasourceService.bind(Person.v1.get);
+    const person = await getPerson(Qualifier.byUuid(newContactId));
+    if (!person) {
+      throw new Error(`The new contact could not be found [${newContactId}].`);
+    }
+    return person;
   }
 
   private getReportDocsForContact(docs: Doc[], originalContactId: string) {
@@ -188,12 +179,6 @@ interface UserReplaceDoc extends ReportDoc {
 
 interface ReportDoc extends Doc {
   contact: {
-    _id: string;
-  };
-}
-
-interface ContactDoc extends ReportDoc {
-  parent: {
     _id: string;
   };
 }

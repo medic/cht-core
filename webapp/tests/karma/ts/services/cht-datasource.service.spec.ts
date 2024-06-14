@@ -120,9 +120,9 @@ describe('CHTScriptApiService service', () => {
 
   });
 
-  describe('getDataContext()', () => {
+  describe('bind()', () => {
     [true, false].forEach((isOnlineOnly) => {
-      it(`resolves a data context when isOnlineOnly is ${isOnlineOnly}`, async () => {
+      it(`binds to a data context when isOnlineOnly is ${isOnlineOnly}`, async () => {
         const settings = { hello: 'settings' } as const;
         settingsService.get.resolves(settings);
         const userCtx = { hello: 'world' };
@@ -130,11 +130,19 @@ describe('CHTScriptApiService service', () => {
         sessionService.isOnlineOnly.returns(isOnlineOnly);
         const expectedDb = { hello: 'medic' };
         dbService.get.resolves(expectedDb);
+        const innerFn = sinon.stub();
+        const outerFn = sinon
+          .stub()
+          .returns(innerFn);
 
-        const context = await service.getDataContext();
+        const result = await service.bind(outerFn);
 
-        expect(context).to.equal(await service.getDataContext());
-        expect(context.bind).to.be.a('function');
+        expect(outerFn.calledOnce).to.be.true;
+        const [dataContext, ...other] = outerFn.args[0];
+        expect(other).to.be.empty;
+        expect(dataContext.bind).to.be.a('function');
+        expect(result).to.equal(innerFn);
+        expect(innerFn.notCalled).to.be.true;
         expect(changesService.subscribe.calledOnce).to.be.true;
         expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
         expect(changesService.subscribe.args[0][0].filter).to.be.a('function');

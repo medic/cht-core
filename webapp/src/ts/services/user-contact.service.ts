@@ -19,8 +19,7 @@ export class UserContactService {
     if (!user?.contact_id) {
       return null;
     }
-    const dataContext = await this.chtDatasourceService.getDataContext();
-    const getPerson = dataContext.bind(hydrateLineage ? Person.v1.getWithLineage : Person.v1.get);
+    const getPerson = await this.chtDatasourceService.bind(hydrateLineage ? Person.v1.getWithLineage : Person.v1.get);
     return await getPerson(Qualifier.byUuid(user.contact_id));
   }
 

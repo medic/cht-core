@@ -27,7 +27,7 @@ describe('UserContact service', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: CHTDatasourceService, useValue: { getDataContext: sinon.stub().resolves({ bind }), } },
+        { provide: CHTDatasourceService, useValue: { bind } },
         { provide: UserSettingsService, useValue: { get: UserSettings } },
       ],
     });
