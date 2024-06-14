@@ -102,6 +102,10 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
     this.globalActions.deleteDocConfirm(this.selectedContactDoc);
   }
 
+  isContactInUserFacility() {
+    return this.userSettings?.facility_id.includes(this.selectedContactDoc?._id);
+  }
+
   displayEditOption() {
     return this.selectedContactDoc
       && !this.loadingContent

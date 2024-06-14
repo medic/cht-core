@@ -52,7 +52,7 @@ angular.module('inboxServices').service('ContactTypes', function(
     /**
      *  @returns {boolean} returns whether the provided places have the same contact_type
      */
-    getPlacesHierarchy: (places) => contactTypesUtils.isSamePlaceType(places),
+    isSameContactType: (places) => contactTypesUtils.isSameContactType(places),
 
     /**
      * Returns a Promise to resolve all the configured person contact types

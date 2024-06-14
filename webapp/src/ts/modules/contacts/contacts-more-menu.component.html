@@ -12,7 +12,7 @@
       <mat-icon fontIcon="fa-pencil"></mat-icon>
       <span>{{ 'Edit' | translate }}</span>
     </a>
-    <button mat-menu-item test-id="delete-contacts" *ngIf="displayDeleteOption()" [disabled]="hasNestedContacts" (click)="deleteContact()">
+    <button mat-menu-item test-id="delete-contacts" *ngIf="displayDeleteOption()" [disabled]="hasNestedContacts || isContactInUserFacility()" (click)="deleteContact()">
       <mat-icon fontIcon="fa-trash"></mat-icon>
       <span>{{ 'Delete' | translate }}</span>
     </button>

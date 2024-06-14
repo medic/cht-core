@@ -287,7 +287,7 @@ angular
       return DB().allDocs({ keys: placeIds, include_docs: true })
         .then(result => {
           const places = result.rows.map(row => row.doc);
-          const isSameHierarchy = ContactTypes.getPlacesHierarchy(places);
+          const isSameHierarchy = ContactTypes.isSameContactType(places);
 
           if (!isSameHierarchy) {
             $translate('permission.description.can_have_multiple_places.incompatible_place').then(value => {
