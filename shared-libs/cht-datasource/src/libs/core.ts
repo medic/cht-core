@@ -16,6 +16,9 @@ export type NonEmptyArray<T> = [T, ...T[]];
 /** @internal */
 export const isNonEmptyArray = <T>(value: T[]): value is NonEmptyArray<T> => !!value.length;
 
+/** @internal */
+export const getLastElement = <T>(array: NonEmptyArray<T>): T => array[array.length - 1];
+
 type DataValue = DataPrimitive | DataArray | DataObject;
 type DataPrimitive = string | number | boolean | Date | null | undefined;
 

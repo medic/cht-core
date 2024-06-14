@@ -2,6 +2,7 @@ import { Contact, NormalizedParent } from '../../libs/contact';
 import {
   DataObject,
   findById,
+  getLastElement,
   isIdentifiable,
   isNonEmptyArray,
   isNotNull,
@@ -59,7 +60,7 @@ const mergeLineage = (lineage: DataObject[], parent: DataObject): DataObject => 
   if (!isNonEmptyArray(lineage)) {
     return parent;
   }
-  const child = lineage.at(-1)!;
+  const child = getLastElement(lineage);
   const mergedChild = {
     ...child,
     parent: parent
@@ -84,6 +85,6 @@ export const hydrateLineage = (
       );
       return { _id: parentId };
     });
-  const hierarchy = [contact, ...fullLineage];
-  return mergeLineage(hierarchy.slice(0, -1), hierarchy.at(-1)!) as Contact;
+  const hierarchy: NonEmptyArray<DataObject> = [contact, ...fullLineage];
+  return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact;
 };

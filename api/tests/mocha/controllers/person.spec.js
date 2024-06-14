@@ -64,7 +64,7 @@ describe('Person Controller', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('returns a person with lineage when the query parameter is set', async () => {
+      it('returns a person with lineage when the query parameter is set to "true"', async () => {
         const person = { name: 'John Doe' };
         personGetWithLineage.resolves(person);
         req.query.with_lineage = 'true';
@@ -76,6 +76,22 @@ describe('Person Controller', () => {
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(res.json.calledOnceWithExactly(person)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns a person without lineage when the query parameter is set something else', async () => {
+        const person = { name: 'John Doe' };
+        personGet.resolves(person);
+        req.query.with_lineage = '1';
+
+        await controller.v1.get(req, res);
+
+        expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
+        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });

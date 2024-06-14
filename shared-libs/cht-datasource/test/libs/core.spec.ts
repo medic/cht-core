@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import {
-  AbstractDataContext, deepCopy, findById,
+  AbstractDataContext, deepCopy, findById, getLastElement,
   hasField,
   hasFields, isDataObject, isIdentifiable,
   isNonEmptyArray,
@@ -21,6 +21,17 @@ describe('core lib', () => {
     ] as [unknown[], boolean][]).forEach(([value, expected]) => {
       it(`evaluates ${JSON.stringify(value)}`, () => {
         expect(isNonEmptyArray(value)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('getLastElement', () => {
+    ([
+      [1, 2, 3],
+      ['hello', 'world'],
+    ] as NonEmptyArray<number | string>[]).forEach(value => {
+      it(`returns the last element of ${JSON.stringify(value)}`, () => {
+        expect(getLastElement(value)).to.equal(value[value.length - 1]);
       });
     });
   });
