@@ -1,7 +1,7 @@
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
-const chtScriptApi = require('@medic/cht-script-api');
+const chtDatasource = require('@medic/datasource');
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
@@ -242,8 +242,10 @@ angular
         return true;
       }
 
-      const userHasPermission = chtScriptApi.v1.hasPermissions(
-        ['can_have_multiple_places'], $scope.editUserModel.roles, $scope.permissions
+      const userHasPermission = chtDatasource.v1.hasPermissions(
+        ['can_have_multiple_places'],
+        $scope.editUserModel.roles,
+        $scope.permissions
       );
 
       if (!userHasPermission) {
