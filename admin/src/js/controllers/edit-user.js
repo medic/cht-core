@@ -1,7 +1,8 @@
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
-const chtDatasource = require('@medic/datasource');
+const cht = require('@medic/cht-datasource');
+const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
@@ -243,9 +244,7 @@ angular
       }
 
       const userHasPermission = chtDatasource.v1.hasPermissions(
-        ['can_have_multiple_places'],
-        $scope.editUserModel.roles,
-        $scope.permissions
+        ['can_have_multiple_places'], $scope.editUserModel.roles, $scope.permissions
       );
 
       if (!userHasPermission) {
