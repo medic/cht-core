@@ -4,7 +4,7 @@ const serverUtils = require('../server-utils');
 const auth = require('../auth');
 
 const getPlace = ({ with_lineage }) => ctx.bind(
-  with_lineage
+  with_lineage === 'true'
     ? Place.v1.getWithLineage
     : Place.v1.get
 );

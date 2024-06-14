@@ -64,7 +64,7 @@ describe('Place Controller', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('returns a place with lineage when the query parameter is set', async () => {
+      it('returns a place with lineage when the query parameter is set to "true"', async () => {
         const place = { name: 'John Doe Castle' };
         placeGetWithLineage.resolves(place);
         req.query.with_lineage = 'true';
@@ -76,6 +76,22 @@ describe('Place Controller', () => {
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(res.json.calledOnceWithExactly(place)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns a place without lineage when the query parameter is set something else', async () => {
+        const place = { name: 'John Doe Castle' };
+        placeGet.resolves(place);
+        req.query.with_lineage = '1';
+
+        await controller.v1.get(req, res);
+
+        expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
+        expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(place)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
