@@ -4,22 +4,25 @@ import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('CHTScriptApiService service', () => {
-  let service: CHTScriptApiService;
+  let service: CHTDatasourceService;
   let sessionService;
   let settingsService;
   let changesService;
+  let dbService;
   let http;
 
   beforeEach(() => {
-    sessionService = { userCtx: sinon.stub() };
+    sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    dbService = { get: sinon.stub().resolves({}) };
     http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
@@ -27,11 +30,12 @@ describe('CHTScriptApiService service', () => {
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
         { provide: ChangesService, useValue: changesService },
+        { provide: DbService, useValue: dbService },
         { provide: HttpClient, useValue: http },
       ]
     });
 
-    service = TestBed.inject(CHTScriptApiService);
+    service = TestBed.inject(CHTDatasourceService);
   });
 
   afterEach(() => {
@@ -40,9 +44,11 @@ describe('CHTScriptApiService service', () => {
 
   describe('init', () => {
 
-    it('should initialise service', async () => {
+    it('should initialise service for offline user', async () => {
       settingsService.get.resolves();
-      sessionService.userCtx.returns();
+      const userCtx = { hello: 'world' };
+      sessionService.userCtx.returns(userCtx);
+      sessionService.isOnlineOnly.returns(false);
 
       await service.isInitialized();
 
@@ -51,19 +57,39 @@ describe('CHTScriptApiService service', () => {
       expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(settingsService.get.callCount).to.equal(1);
+      expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+    });
+
+    it('should initialise service for online user', async () => {
+      settingsService.get.resolves();
+      const userCtx = { hello: 'world' };
+      sessionService.userCtx.returns(userCtx);
+      sessionService.isOnlineOnly.returns(true);
+
+      await service.isInitialized();
+
+      expect(changesService.subscribe.callCount).to.equal(1);
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
+      expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
     });
 
     it('should return versioned api', async () => {
       settingsService.get.resolves();
       await service.isInitialized();
 
-      const result = await service.getApi();
+      const result = await service.get();
 
-      expect(result).to.have.all.keys([ 'v1' ]);
-      expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib' ]);
+      expect(result).to.contain.keys([ 'v1' ]);
+      expect(result.v1).to.contain.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib', 'person' ]);
       expect(result.v1.hasPermissions).to.be.a('function');
       expect(result.v1.hasAnyPermission).to.be.a('function');
       expect(result.v1.getExtensionLib).to.be.a('function');
+      expect(result.v1.person).to.be.a('object');
     });
 
     it('should initialize extension libs', async () => {
@@ -78,7 +104,7 @@ describe('CHTScriptApiService service', () => {
       expect(http.get.args[1][0]).to.equal('/extension-libs/bar.js');
       expect(http.get.args[2][0]).to.equal('/extension-libs/foo.js');
 
-      const result = await service.getApi();
+      const result = await service.get();
 
       const foo = result.v1.getExtensionLib('foo.js');
       expect(foo).to.be.a('function');
@@ -105,7 +131,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_edit');
 
@@ -121,7 +147,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_create_people');
 
@@ -138,7 +164,7 @@ describe('CHTScriptApiService service', () => {
       sessionService.userCtx.returns({ roles: [ 'nurse' ] });
       await service.isInitialized();
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      const api = await service.getApi();
+      const api = await service.get();
 
       const permissionNotFound = api.v1.hasPermissions('can_create_people');
 
@@ -170,7 +196,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ '_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_create_people');
 
@@ -186,7 +212,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasPermissions('can_configure');
 
@@ -207,7 +233,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'district_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([
         [ 'can_backup_facilities' ],
@@ -227,7 +253,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'district_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([
         [ 'can_backup_facilities', 'can_backup_people' ],
@@ -248,7 +274,7 @@ describe('CHTScriptApiService service', () => {
       sessionService.userCtx.returns({ roles: [ 'nurse' ] });
       await service.isInitialized();
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      const api = await service.getApi();
+      const api = await service.get();
 
       const permissionNotFound = api.v1.hasAnyPermission([[ 'can_create_people' ], [ '!can_edit' ]]);
 
@@ -280,7 +306,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ '_admin' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([[ 'can_create_people' ], [ 'can_edit', 'can_configure' ]]);
 
@@ -298,7 +324,7 @@ describe('CHTScriptApiService service', () => {
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor' ] });
       await service.isInitialized();
-      const api = await service.getApi();
+      const api = await service.get();
 
       const result = api.v1.hasAnyPermission([[ 'can_configure', 'can_create_people' ], [ 'can_backup_facilities' ] ]);
 

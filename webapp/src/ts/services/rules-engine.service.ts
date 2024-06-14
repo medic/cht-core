@@ -18,7 +18,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 
@@ -73,7 +73,7 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private chtScriptApiService:CHTScriptApiService
+    private chtDatasourceService:CHTDatasourceService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
@@ -104,7 +104,7 @@ export class RulesEngineService implements OnDestroy {
             this.settingsService.get(),
             this.userContactService.get(),
             this.userSettingsService.get(),
-            this.chtScriptApiService.getApi()
+            this.chtDatasourceService.get()
           ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc, chtScriptApi]) => {
             const rulesEngineContext = this.getRulesEngineContext(
