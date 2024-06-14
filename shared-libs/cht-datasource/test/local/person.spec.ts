@@ -2,7 +2,6 @@ import sinon, { SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
-import * as Contact from '../../src/libs/contact';
 import * as Person from '../../src/local/person';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as Lineage from '../../src/local/libs/lineage';
@@ -16,7 +15,6 @@ describe('local person', () => {
   let warn: SinonStub;
   let debug: SinonStub;
   let isPerson: SinonStub;
-  let isNormalizedParent: SinonStub;
 
   beforeEach(() => {
     settingsGetAll = sinon.stub();
@@ -27,7 +25,6 @@ describe('local person', () => {
     warn = sinon.stub(logger, 'warn');
     debug = sinon.stub(logger, 'debug');
     isPerson = sinon.stub(contactTypeUtils, 'isPerson');
-    isNormalizedParent = sinon.stub(Contact, 'isNormalizedParent');
   });
 
   afterEach(() => sinon.restore());
@@ -50,7 +47,6 @@ describe('local person', () => {
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
         isPerson.returns(true);
-        isNormalizedParent.returns(true);
 
         const result = await Person.v1.get(localContext)(identifier);
 
@@ -58,7 +54,6 @@ describe('local person', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(doc)).to.be.true;
         expect(warn.notCalled).to.be.true;
       });
 
@@ -74,24 +69,6 @@ describe('local person', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(isNormalizedParent.notCalled).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
-      });
-
-      it('returns null if the identified doc does not have a valid normalized parent lineage', async () => {
-        const doc = { type: 'not-person' };
-        getDocByIdInner.resolves(doc);
-        settingsGetAll.returns(settings);
-        isPerson.returns(true);
-        isNormalizedParent.returns(false);
-
-        const result = await Person.v1.get(localContext)(identifier);
-
-        expect(result).to.be.null;
-        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPerson.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(doc)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
       });
 
@@ -105,7 +82,6 @@ describe('local person', () => {
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(settingsGetAll.notCalled).to.be.true;
         expect(isPerson.notCalled).to.be.true;
-        expect(isNormalizedParent.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No person found for identifier [${identifier.uuid}].`)).to.be.true;
       });
     });
@@ -155,7 +131,6 @@ describe('local person', () => {
         getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
         isPerson.returns(true);
         settingsGetAll.returns(settings);
-        isNormalizedParent.returns(true);
         getPrimaryContactIds.returns([contact0._id, contact1._id, person._id]);
         getDocsByIdsInner.resolves([contact0, contact1]);
         const place0WithContact = { ...place0, contact: contact0 };
@@ -173,7 +148,6 @@ describe('local person', () => {
         expect(result).to.equal(copiedPerson);
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.calledOnceWithExactly([place0, place1, place2])).to.be.true;
@@ -195,7 +169,6 @@ describe('local person', () => {
         expect(result).to.be.null;
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.notCalled).to.be.true;
-        expect(isNormalizedParent.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No person found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;
@@ -206,36 +179,28 @@ describe('local person', () => {
         expect(deepCopy.notCalled).to.be.true;
       });
 
-      [false, true].forEach((isPersonResult) => {
-        it('returns null if the doc returned is not a person', async () => {
-          const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
-          const place0 = { _id: 'place0', _rev: 'rev' };
-          const place1 = { _id: 'place1', _rev: 'rev' };
-          const place2 = { _id: 'place2', _rev: 'rev' };
-          getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
-          isPerson.returns(isPersonResult);
-          settingsGetAll.returns(settings);
-          isNormalizedParent.returns(false);
+      it('returns null if the doc returned is not a person', async () => {
+        const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
+        const place0 = { _id: 'place0', _rev: 'rev' };
+        const place1 = { _id: 'place1', _rev: 'rev' };
+        const place2 = { _id: 'place2', _rev: 'rev' };
+        getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
+        isPerson.returns(false);
+        settingsGetAll.returns(settings);
 
-          const result = await Person.v1.getWithLineage(localContext)(identifier);
+        const result = await Person.v1.getWithLineage(localContext)(identifier);
 
-          expect(result).to.be.null;
-          expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-          expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
-          if (isPersonResult) {
-            expect(isNormalizedParent.calledOnceWithExactly(person)).to.be.true;
-          } else {
-            expect(isNormalizedParent.notCalled).to.be.true;
-          }
-          expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
-          expect(debug.notCalled).to.be.true;
-          expect(getPrimaryContactIds.notCalled).to.be.true;
-          expect(getDocsByIdsInner.notCalled).to.be.true;
-          expect(hydratePrimaryContactOuter.notCalled).to.be.true;
-          expect(hydratePrimaryContactInner.notCalled).to.be.true;
-          expect(hydrateLineage.notCalled).to.be.true;
-          expect(deepCopy.notCalled).to.be.true;
-        });
+        expect(result).to.be.null;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
+        expect(debug.notCalled).to.be.true;
+        expect(getPrimaryContactIds.notCalled).to.be.true;
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+        expect(hydratePrimaryContactOuter.notCalled).to.be.true;
+        expect(hydratePrimaryContactInner.notCalled).to.be.true;
+        expect(hydrateLineage.notCalled).to.be.true;
+        expect(deepCopy.notCalled).to.be.true;
       });
 
       it('returns a person if no lineage is found', async () => {
@@ -243,14 +208,12 @@ describe('local person', () => {
         getLineageDocsByIdInner.resolves([person]);
         isPerson.returns(true);
         settingsGetAll.returns(settings);
-        isNormalizedParent.returns(true);
 
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(person);
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage places found for person [${identifier.uuid}].`)).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;

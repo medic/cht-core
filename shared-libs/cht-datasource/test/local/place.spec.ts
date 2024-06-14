@@ -2,7 +2,6 @@ import sinon, { SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
-import * as Contact from '../../src/libs/contact';
 import * as Place from '../../src/local/place';
 import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
@@ -16,7 +15,6 @@ describe('local place', () => {
   let warn: SinonStub;
   let debug: SinonStub;
   let isPlace: SinonStub;
-  let isNormalizedParent: SinonStub;
 
   beforeEach(() => {
     settingsGetAll = sinon.stub();
@@ -27,7 +25,6 @@ describe('local place', () => {
     warn = sinon.stub(logger, 'warn');
     debug = sinon.stub(logger, 'debug');
     isPlace = sinon.stub(contactTypeUtils, 'isPlace');
-    isNormalizedParent = sinon.stub(Contact, 'isNormalizedParent');
   });
 
   afterEach(() => sinon.restore());
@@ -50,7 +47,6 @@ describe('local place', () => {
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
         isPlace.returns(true);
-        isNormalizedParent.returns(true);
 
         const result = await Place.v1.get(localContext)(identifier);
 
@@ -58,7 +54,6 @@ describe('local place', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(doc)).to.be.true;
         expect(warn.notCalled).to.be.true;
       });
 
@@ -74,24 +69,6 @@ describe('local place', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(isNormalizedParent.notCalled).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
-      });
-
-      it('returns null if the identified doc does not have a valid normalized parent lineage', async () => {
-        const doc = { type: 'clinic' };
-        getDocByIdInner.resolves(doc);
-        settingsGetAll.returns(settings);
-        isPlace.returns(true);
-        isNormalizedParent.returns(false);
-
-        const result = await Place.v1.get(localContext)(identifier);
-
-        expect(result).to.be.null;
-        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPlace.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(doc)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
       });
 
@@ -105,7 +82,6 @@ describe('local place', () => {
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(settingsGetAll.notCalled).to.be.true;
         expect(isPlace.notCalled).to.be.true;
-        expect(isNormalizedParent.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No place found for identifier [${identifier.uuid}].`)).to.be.true;
       });
     });
@@ -154,7 +130,6 @@ describe('local place', () => {
         getLineageDocsByIdInner.resolves([place0, place1, place2]);
         isPlace.returns(true);
         settingsGetAll.returns(settings);
-        isNormalizedParent.returns(true);
         getPrimaryContactIds.returns([contact0._id, contact1._id]);
         getDocsByIdsInner.resolves([contact0, contact1]);
         const place0WithContact = { ...place0, contact: contact0 };
@@ -172,7 +147,6 @@ describe('local place', () => {
         expect(result).to.equal(copiedPlace);
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(place0)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.calledOnceWithExactly([place0, place1, place2])).to.be.true;
@@ -194,7 +168,6 @@ describe('local place', () => {
         expect(result).to.be.null;
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.notCalled).to.be.true;
-        expect(isNormalizedParent.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No place found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;
@@ -205,35 +178,27 @@ describe('local place', () => {
         expect(deepCopy.notCalled).to.be.true;
       });
 
-      [false, true].forEach((isPlaceResult) => {
-        it('returns null if the doc returned is not a place', async () => {
-          const place0 = { _id: 'place0', _rev: 'rev' };
-          const place1 = { _id: 'place1', _rev: 'rev' };
-          const place2 = { _id: 'place2', _rev: 'rev' };
-          getLineageDocsByIdInner.resolves([place0, place1, place2]);
-          isPlace.returns(isPlaceResult);
-          settingsGetAll.returns(settings);
-          isNormalizedParent.returns(false);
+      it('returns null if the doc returned is not a place', async () => {
+        const place0 = { _id: 'place0', _rev: 'rev' };
+        const place1 = { _id: 'place1', _rev: 'rev' };
+        const place2 = { _id: 'place2', _rev: 'rev' };
+        getLineageDocsByIdInner.resolves([place0, place1, place2]);
+        isPlace.returns(false);
+        settingsGetAll.returns(settings);
 
-          const result = await Place.v1.getWithLineage(localContext)(identifier);
+        const result = await Place.v1.getWithLineage(localContext)(identifier);
 
-          expect(result).to.be.null;
-          expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-          expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
-          if (isPlaceResult) {
-            expect(isNormalizedParent.calledOnceWithExactly(place0)).to.be.true;
-          } else {
-            expect(isNormalizedParent.notCalled).to.be.true;
-          }
-          expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
-          expect(debug.notCalled).to.be.true;
-          expect(getPrimaryContactIds.notCalled).to.be.true;
-          expect(getDocsByIdsInner.notCalled).to.be.true;
-          expect(hydratePrimaryContactOuter.notCalled).to.be.true;
-          expect(hydratePrimaryContactInner.notCalled).to.be.true;
-          expect(hydrateLineage.notCalled).to.be.true;
-          expect(deepCopy.notCalled).to.be.true;
-        });
+        expect(result).to.be.null;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
+        expect(debug.notCalled).to.be.true;
+        expect(getPrimaryContactIds.notCalled).to.be.true;
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+        expect(hydratePrimaryContactOuter.notCalled).to.be.true;
+        expect(hydratePrimaryContactInner.notCalled).to.be.true;
+        expect(hydrateLineage.notCalled).to.be.true;
+        expect(deepCopy.notCalled).to.be.true;
       });
 
       it('returns a place if no lineage is found', async () => {
@@ -241,14 +206,12 @@ describe('local place', () => {
         getLineageDocsByIdInner.resolves([place]);
         isPlace.returns(true);
         settingsGetAll.returns(settings);
-        isNormalizedParent.returns(true);
 
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(place);
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, place)).to.be.true;
-        expect(isNormalizedParent.calledOnceWithExactly(place)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage places found for place [${identifier.uuid}].`)).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;

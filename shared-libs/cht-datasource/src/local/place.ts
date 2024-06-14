@@ -5,7 +5,7 @@ import { UuidQualifier } from '../qualifier';
 import * as Place from '../place';
 import { getDocById, getDocsByIds } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { Contact, isNormalizedParent } from '../libs/contact';
+import { Contact } from '../libs/contact';
 import logger from '@medic/logger';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 
@@ -17,7 +17,7 @@ export namespace v1 {
       return false;
     }
     const hasPlaceType = contactTypeUtils.isPlace(settings.getAll(), doc);
-    if (!hasPlaceType || !isNormalizedParent(doc)) {
+    if (!hasPlaceType) {
       logger.warn(`Document [${uuid}] is not a valid place.`);
       return false;
     }
