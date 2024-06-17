@@ -1,6 +1,6 @@
 const utils = require('@utils');
 
-const { BRANCH, TAG } = process.env;
+const { BRANCH, TAG, BASE_VERSION } = process.env;
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -10,6 +10,8 @@ const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
 const semver = require('semver');
+
+const testFrontend = BASE_VERSION === 'latest';
 
 const docs = dataFactory.createHierarchy({
   name: 'offlineupgrade',
@@ -52,8 +54,12 @@ describe('Performing an upgrade', () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
 
-    await loginPage.login(docs.user);
-    await commonPage.logout();
+    if (testFrontend) {
+      // a variety of selectors that we use in e2e tests to interact with webapp
+      // are not compatible with older versions of the app.
+      await loginPage.login(docs.user);
+      await commonPage.logout();
+    }
 
     await loginPage.cookieLogin({
       username: constants.USERNAME,
@@ -72,6 +78,10 @@ describe('Performing an upgrade', () => {
   });
 
   it('should have valid semver after installing', async () => {
+    if (!testFrontend) {
+      return;
+    }
+
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });
@@ -116,6 +126,10 @@ describe('Performing an upgrade', () => {
       action: 'upgrade',
       state: 'finalized',
     });
+
+    if (!testFrontend) {
+      return;
+    }
 
     await adminPage.logout();
     await loginPage.login(docs.user);
