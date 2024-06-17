@@ -330,9 +330,16 @@ jobs:
 
   upgrade:
     needs: [publish]
-    name: Upgrade from latest release
+    name: Upgrade from ${{ matrix.version }}
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
     if: ${{ github.event_name != 'pull_request' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '4.2.4', 'latest' ]
 
     steps:
       - name: Configure AWS credentials Public
@@ -353,6 +360,7 @@ jobs:
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+          echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
       - run: npm ci
       - name: Create logs directory
         run: mkdir tests/logs
@@ -362,7 +370,7 @@ jobs:
       - name: Archive Results
         uses: actions/upload-artifact@v4
         with:
-          name: Upgrade
+          name: upgrade-${{ matrix.version }}
           path: |
             allure-results
             allure-report
