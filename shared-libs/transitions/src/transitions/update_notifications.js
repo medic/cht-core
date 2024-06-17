@@ -4,7 +4,7 @@ const utils = require('../lib/utils');
 const messages = require('../lib/messages');
 const transitionUtils = require('./utils');
 const mutingUtils = require('../lib/muting_utils');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const NAME = 'update_notifications';
 
 const getEventType = function(config, doc) {

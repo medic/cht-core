@@ -228,16 +228,21 @@ export class TargetAggregatesService {
       });
   }
 
-  private getHomePlace() {
-    return this.userSettingsService
-      .get()
-      .then((userSettings:any) => {
-        if (!userSettings.facility_id) {
-          return;
-        }
+  private async getUserFacilityIds(): Promise<string[] | undefined> {
+    const { facility_id }:any = await this.userSettingsService.get();
+    if (!facility_id?.length) {
+      return;
+    }
+    return Array.isArray(facility_id) ? facility_id : [ facility_id ];
+  }
 
-        return this.getDataRecordsService.get(userSettings.facility_id);
-      });
+  private async getHomePlace() {
+    const facilityIds = await this.getUserFacilityIds();
+    if (!facilityIds?.length) {
+      return;
+    }
+    const places = await this.getDataRecordsService.get(facilityIds);
+    return places?.length ? places[0] : undefined;
   }
 
   private getSupervisedContacts() {
@@ -271,8 +276,17 @@ export class TargetAggregatesService {
       });
   }
 
-  isEnabled() {
-    return this.authService.has('can_aggregate_targets');
+  async isEnabled() {
+    const canSeeAggregates = await this.authService.has('can_aggregate_targets');
+    if (!canSeeAggregates) {
+      return false;
+    }
+
+    const facilityIds = await this.getUserFacilityIds();
+
+    // When no facilities assigned, this returns true to display an error indicating to assign facilities to the user
+    // When more than one facility, this returns false to display an error about the module being disabled.
+    return !facilityIds || facilityIds.length <= 1;
   }
 
   getAggregates() {

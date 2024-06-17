@@ -2,7 +2,7 @@ const upgradeUtils = require('./utils');
 const viewIndexerProgress = require('./view-indexer-progress');
 const upgradeLogService = require('./upgrade-log');
 const viewIndexer = require('./view-indexer');
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 const startupLog = require('./startup-log');
 
 /**

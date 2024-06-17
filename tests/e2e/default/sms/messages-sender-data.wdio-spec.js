@@ -1,3 +1,4 @@
+const uuid = require('uuid').v4;
 const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -10,50 +11,72 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 describe('Message Tab - Sender Data', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const health_center = places.get('health_center');
-  const district_hospital = places.get('district_hospital');
-  const contact = {
+  const healthCenter1 = places.get('health_center');
+  const districtHospital = places.get('district_hospital');
+  const healthCenter2 = placeFactory.place().build({
+    name: 'health_center_2',
+    type: 'health_center',
+    parent: { _id: districtHospital._id },
+  });
+  const offlineUserContact = {
     _id: 'fixture:user:user1',
     name: 'OfflineUser',
     phone: '+12068881234',
-    place: health_center._id,
+    place: healthCenter1._id,
     type: 'person',
-    parent: {
-      _id: health_center._id,
-      parent: health_center.parent
-    },
+    parent: { _id: healthCenter1._id, parent: healthCenter1.parent },
   };
-  const contact2 = {
+  const onlineUserContact = {
     _id: 'fixture:user:user2',
     name: 'OnlineUser',
     phone: '+12068881235',
-    place: district_hospital._id,
+    place: districtHospital._id,
     type: 'person',
-    parent: {
-      _id: district_hospital._id,
-    },
+    parent: { _id: districtHospital._id },
   };
   const offlineUser = userFactory.build({
     username: 'offlineuser_messages',
     isOffline: true,
-    place: health_center._id,
-    contact: contact._id,
+    place: healthCenter1._id,
+    contact: offlineUserContact._id,
   });
   const onlineUser = userFactory.build({
     username: 'onlineuser_messages',
     roles: [ 'program_officer' ],
-    place: district_hospital._id,
-    contact: contact2._id,
+    place: districtHospital._id,
+    contact: onlineUserContact._id,
   });
   const patient = personFactory.build({
     _id: 'patient1',
     phone: '+14152223344',
     name: 'patient1',
-    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
+    parent: { _id: clinic._id, parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }}}
   });
+  const contactWithManyPlaces = personFactory.build({
+    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
+  });
+  const userWithManyPlaces = {
+    _id: 'org.couchdb.user:offline_many_facilities',
+    language: 'en',
+    known: true,
+    type: 'user-settings',
+    roles: [ 'chw' ],
+    facility_id: [ healthCenter1._id, healthCenter2._id ],
+    contact_id: contactWithManyPlaces._id,
+    name: 'offline_many_facilities'
+  };
+  const userWithManyPlacesPass = uuid();
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), contact, contact2, patient ]);
+    await utils.saveDocs([
+      ...places.values(), healthCenter2, offlineUserContact, onlineUserContact, patient,
+      contactWithManyPlaces, userWithManyPlaces,
+    ]);
+    await utils.request({
+      path: `/_users/${userWithManyPlaces._id}`,
+      method: 'PUT',
+      body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
+    });
     await utils.createUsers([ onlineUser, offlineUser ]);
   });
 
@@ -68,11 +91,22 @@ describe('Message Tab - Sender Data', () => {
     await messagesPage.sendMessage('Contact', patient.phone, patient.name);
 
     const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
-    const expectedLineage = clinic.name.concat(health_center.name, district_hospital.name);
+    const expectedLineage = clinic.name.concat(healthCenter1.name, districtHospital.name);
 
     expect(lineage).to.equal(expectedLineage);
   });
 
+  it('should not remove facility from breadcrumbs when offline user has many facilities associated', async () => {
+    await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
+    await commonElements.waitForPageLoaded();
+    await commonElements.goToMessages();
+    await messagesPage.sendMessage('Contact', patient.phone, patient.name);
+
+    const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
+    const expectedLineage = clinic.name.concat(healthCenter1.name);
+
+    expect(lineage).to.equal(expectedLineage);
+  });
 
   it('should display messages with updated breadcrumbs for offline user', async () => {
     await loginPage.login(offlineUser);

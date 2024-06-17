@@ -49,14 +49,14 @@ create_self_signed_ssl_certificate()
   mkdir -p /etc/nginx/private
   set_environment_variables_if_not_set
   openssl req -x509 -nodes -newkey rsa:4096 \
-    -keyout $SSL_KEY_FILE_PATH -out $SSL_CERT_FILE_PATH -days 365 \
+    -keyout "$SSL_KEY_FILE_PATH" -out "$SSL_CERT_FILE_PATH" -days 365 \
     -subj "/emailAddress=$EMAIL/C=$COUNTRY/ST=$STATE/L=$LOCALITY/O=$ORGANISATION/OU=$DEPARTMENT/CN=$COMMON_NAME"
 
   return "$?"
 }
 
 generate_self_signed_cert(){
-  if [ -f $SSL_CERT_FILE_PATH -a -f $SSL_KEY_FILE_PATH ]; then
+  if [ -f "$SSL_CERT_FILE_PATH" ] && [ -f "$SSL_KEY_FILE_PATH" ]; then
         echo "self signed SSL cert already exists." >&2
     else
         create_self_signed_ssl_certificate \
@@ -66,7 +66,7 @@ generate_self_signed_cert(){
 
 ensure_own_cert_exits(){
 
-  if [ ! -f $SSL_CERT_FILE_PATH -a ! -f $SSL_KEY_FILE_PATH ]; then
+  if [ ! -f "$SSL_CERT_FILE_PATH" ] && [ ! -f "$SSL_KEY_FILE_PATH" ]; then
   echo "Please provide add your certificate ($SSL_CERT_FILE_PATH) and key ($SSL_KEY_FILE_PATH) in the /etc/nginx/private/ directory"
   exit 1
   fi

@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Draw Widget</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/draw-widget/media_widgets/annotate:label">
+            <value>Annotate image widget</value>
+          </text>
+          <text id="/draw-widget/media_widgets/draw:label">
+            <value>Draw widget</value>
+          </text>
+          <text id="/draw-widget/media_widgets/signature:label">
+            <value>Signature widget</value>
+          </text>
+          <text id="/draw-widget/media_widgets:label">
+            <value>Media input widgets</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <draw-widget delimiter="#" id="draw-widget" prefix="J1!draw-widget!" version="2024-06-07 00:00:00">
+          <media_widgets>
+            <draw/>
+            <signature/>
+            <annotate/>
+          </media_widgets>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </draw-widget>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/draw-widget/media_widgets/draw" type="binary"/>
+      <bind nodeset="/draw-widget/media_widgets/signature" type="binary"/>
+      <bind nodeset="/draw-widget/media_widgets/annotate" type="binary"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/draw-widget/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/draw-widget/media_widgets">
+      <label ref="jr:itext('/draw-widget/media_widgets:label')"/>
+      <upload appearance="draw" mediatype="image/*" ref="/draw-widget/media_widgets/draw">
+        <label ref="jr:itext('/draw-widget/media_widgets/draw:label')"/>
+      </upload>
+      <upload appearance="signature" mediatype="image/*" ref="/draw-widget/media_widgets/signature">
+        <label ref="jr:itext('/draw-widget/media_widgets/signature:label')"/>
+      </upload>
+      <upload appearance="annotate" mediatype="image/*" ref="/draw-widget/media_widgets/annotate">
+        <label ref="jr:itext('/draw-widget/media_widgets/annotate:label')"/>
+      </upload>
+    </group>
+  </h:body>
+</h:html>

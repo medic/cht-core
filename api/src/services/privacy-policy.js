@@ -1,6 +1,6 @@
 const sanitizeHtml = require('sanitize-html');
 const db = require('../db');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const config = require('../config');
 
 const PRIVACY_POLICY_DOC_ID = 'privacy-policies';

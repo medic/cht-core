@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const db = require('./db');
-const logger = require('./lib/logger');
+const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
 const translations = {};
 
@@ -77,7 +77,7 @@ const initConfig = () => {
 };
 
 const initTransitionLib = () => {
-  transitionsLib = require('@medic/transitions')(db, module.exports, logger);
+  transitionsLib = require('@medic/transitions')(db, module.exports);
 };
 
 module.exports = {

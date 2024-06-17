@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const db = require('../db');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const BRANDING_ID = 'branding';
 const APP_TITLE_V1 = 'Medic';

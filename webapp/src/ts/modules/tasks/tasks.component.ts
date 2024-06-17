@@ -11,9 +11,8 @@ import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { UserContactService } from '@mm-services/user-contact.service';
-import { SessionService } from '@mm-services/session.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -26,8 +25,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     private rulesEngineService: RulesEngineService,
     private performanceService: PerformanceService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
-    private userContactService: UserContactService,
-    private sessionService: SessionService,
+    private extractLineageService: ExtractLineageService,
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -44,7 +42,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   hasTasks;
   loading;
   tasksDisabled;
-  currentLevel;
+  userLineageLevel;
 
   private tasksLoaded;
   private debouncedReload;
@@ -103,8 +101,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
-
-    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+    this.userLineageLevel = this.extractLineageService.getUserLineageToRemove();
     this.refreshTasks();
   }
 
@@ -141,12 +138,11 @@ export class TasksComponent implements OnInit, OnDestroy {
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
 
       this.hasTasks = taskDocs.length > 0;
-      this.loading = false;
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
       if (subjects?.size) {
-        const userLineageLevel = await this.currentLevel;
+        const userLineageLevel = await this.userLineageLevel;
         hydratedTasks.forEach(task => {
           task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
         });
@@ -157,10 +153,10 @@ export class TasksComponent implements OnInit, OnDestroy {
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
-      this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
+      this.loading = false;
       const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
       this.trackPerformance?.stop({
         name: performanceName,
@@ -176,10 +172,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     return task?._id;
   }
 
-  private getCurrentLineageLevel() {
-    return this.userContactService.get().then(user => user?.parent?.name);
-  }
-
   private getLineagesFromTaskDocs(taskDocs) {
     const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
     return this.lineageModelGeneratorService
@@ -191,18 +183,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     const lineage = subjects
       .get(task.owner)
       ?.map(lineage => lineage?.name);
-    return this.cleanAndRemoveCurrentLineage(lineage, userLineageLevel);
-  }
-
-  private cleanAndRemoveCurrentLineage(lineage, userLineageLevel) {
-    if (!lineage?.length) {
-      return;
-    }
-    lineage = lineage.filter(level => level);
-    const item = lineage[lineage.length - 1];
-    if (item === userLineageLevel) {
-      lineage.pop();
-    }
-    return lineage;
+    return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
   }
 }

@@ -3,12 +3,13 @@ const {promisify} = require('util');
 const fs = require('fs');
 const path = require('path');
 const readFileAsync = promisify(fs.readFile);
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 const db = require('../../../src/db');
 const { expect } = require('chai');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const byId = (a, b) => {
@@ -154,9 +155,11 @@ const matchDbs = (expected, actual) => {
 
 const realMedicDb = db.medic;
 const realSentinelDb = db.sentinel;
+const realUsersDb = db.users;
 const switchToRealDbs = () => {
   db.medic = realMedicDb;
   db.sentinel = realSentinelDb;
+  db.users = realUsersDb;
 };
 
 const switchToTestDbs = () => {
@@ -165,6 +168,9 @@ const switchToTestDbs = () => {
   );
   db.sentinel = new PouchDB(
     realSentinelDb.name.replace(/medic-sentinel$/, 'medic-sentinel-test')
+  );
+  db.users = new PouchDB(
+    realUsersDb.name.replace(/_users$/, 'users-test')
   );
 };
 

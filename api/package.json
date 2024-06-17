@@ -13,9 +13,11 @@
   },
   "scripts": {
     "toc": "doctoc --github --maxlevel 2 README.md",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'build/static' --ignore 'build/public' --watch ./ --watch '../shared-libs/**/src/**' server.js -- --allow-cors"
   },
   "dependencies": {
+    "@medic/logger": "file:../shared-libs/logger",
     "async": "^3.2.1",
     "bikram-sambat": "^1.7.0",
     "body-parser": "^1.20.2",
@@ -35,7 +37,7 @@
     "morgan": "^1.10.0",
     "mustache": "^4.2.0",
     "node-fetch": "^2.6.9",
-    "node-html-parser": "^3.0.4",
+    "node-html-parser": "^6.1.12",
     "object-path": "^0.11.8",
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",
@@ -43,6 +45,7 @@
     "pouchdb-core": "^7.3.1",
     "pouchdb-find": "^7.3.1",
     "pouchdb-mapreduce": "^7.3.1",
+    "pouchdb-session-authentication": "^1.1.0",
     "prometheus-api-metrics": "^3.2.2",
     "properties": "^1.2.1",
     "rate-limiter-flexible": "^3.0.2",

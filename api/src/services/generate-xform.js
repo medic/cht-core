@@ -5,7 +5,7 @@
 const childProcess = require('child_process');
 const path = require('path');
 const htmlParser = require('node-html-parser');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 const db = require('../db');
 const formsService = require('./forms');
 const markdown = require('../enketo-transformer/markdown');
@@ -94,11 +94,40 @@ const replaceNode = (currentNode, newNode) => {
   ];
 };
 
+
+const getElementChildren = (element) => element?.childNodes?.filter(childNode => childNode.nodeType === 1) || [];
+
+const getChtAttributeEntries = currentXmlElement => Object
+  .entries(currentXmlElement?.attributes || [])
+  .filter(([name]) => name.startsWith('cht:'))
+  .map(([name, value]) => [`data-cht-${name.substring(4)}`, value]);
+
+const setQuestionAttributes = (formHtml, questionName, attributes) => {
+  const namedElement = formHtml.querySelector(`[name="${questionName}"]`);
+  const questionElement = namedElement?.closest('.question') || namedElement;
+  attributes.forEach(([name, value]) => questionElement?.setAttribute(name, value));
+};
+
+const populateChtAttributeData = (formHtml, currentXmlElement, currentPath = '') => {
+  const currentName = `${currentPath}/${currentXmlElement?.localName}`;
+  const attributes = getChtAttributeEntries(currentXmlElement);
+  if (attributes.length) {
+    setQuestionAttributes(formHtml, currentName, attributes);
+  }
+  getElementChildren(currentXmlElement)
+    .forEach(childNode => populateChtAttributeData(formHtml, childNode, currentName));
+};
+
+const setChtAttributes = (formXml, formElement) => {
+  const instanceElement = htmlParser.parse(formXml).querySelector('instance');
+  const topElement = getElementChildren(instanceElement)[0];
+  populateChtAttributeData(formElement, topElement);
+};
+
 // Based on enketo/enketo-transformer
 // https://github.com/enketo/enketo-transformer/blob/377caf14153586b040367f8c2de53c9d794c19d4/src/transformer.js#L430
-const replaceAllMarkdown = (formString) => {
+const replaceAllMarkdown = (form) => {
   const replacements = {};
-  const form = htmlParser.parse(formString).querySelector('form');
 
   // First turn all outputs into text so *<span class="or-output></span>* can be detected
   form.querySelectorAll('span.or-output').forEach((el, index) => {
@@ -140,14 +169,18 @@ const replaceAllMarkdown = (formString) => {
   return result;
 };
 
+const customizeHtml = (formXml, formString) => {
+  const formElement = htmlParser.parse(formString).querySelector('form');
+  setChtAttributes(formXml, formElement);
+  const markedUpForm = replaceAllMarkdown(formElement);
+  // rename the media src attributes so the browser doesn't try and
+  // request them, instead leaving it to custom code in the Enketo
+  // service to load them asynchronously
+  return markedUpForm.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
+};
+
 const generateForm = formXml => {
-  return transform(formXml, FORM_STYLESHEET).then(form => {
-    form = replaceAllMarkdown(form);
-    // rename the media src attributes so the browser doesn't try and
-    // request them, instead leaving it to custom code in the Enketo
-    // service to load them asynchronously
-    return form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
-  });
+  return transform(formXml, FORM_STYLESHEET).then(form => customizeHtml(formXml, form));
 };
 
 const generateModel = formXml => {

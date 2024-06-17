@@ -4,7 +4,7 @@ const messageUtils = require('@medic/message-utils');
 const utils = require('./utils');
 const config = require('../config');
 const history = require('./history');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 
 const messageStatus = (from, msg) => {
   let status = 'denied';
@@ -92,7 +92,7 @@ module.exports = {
      * a `translation_key` property with a string.
      */
   getMessage: (configuration, locale) => {
-    return messageUtils.getMessage(configuration, utils.translate, locale, logger);
+    return messageUtils.getMessage(configuration, utils.translate, locale);
   },
   /*
      * Return true when the recipient phone is not denied.

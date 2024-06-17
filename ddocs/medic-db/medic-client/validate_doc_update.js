@@ -1,4 +1,4 @@
-function(newDoc, oldDoc, userCtx) {
+function(newDoc, oldDoc, userCtx, secObj) {
   /*
     LOCAL DOCUMENT VALIDATION
 
@@ -13,11 +13,42 @@ function(newDoc, oldDoc, userCtx) {
     throw({ forbidden: msg });
   };
 
+  var hasRole = function(roles, role) {
+    if (roles) {
+      for (var i = 0; i < roles.length; i++) {
+        if (roles[i] === role) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  var isDbAdmin = function(userCtx, secObj) {
+    if (hasRole(userCtx.roles, '_admin')) {
+      return true;
+    }
+
+    if (secObj.admins && secObj.admins.names && secObj.admins.names.indexOf(userCtx.name) !== -1) {
+      return true;
+    }
+
+    if (secObj.admins && secObj.admins.roles) {
+      for (var i = 0; i < userCtx.roles.length; i++) {
+        if (hasRole(secObj.admins.roles, userCtx.roles[i])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   /**
    * Ensure that type='form' documents are created with correctly formatted _id
    * property.
    */
-  var validateForm = function(newDoc) {
+  var validateForm = function() {
     var id_parts = newDoc._id.split(':');
     var prefix = id_parts[0];
     var form_id = id_parts.slice(1).join(':');
@@ -32,7 +63,7 @@ function(newDoc, oldDoc, userCtx) {
     }
   };
 
-  var validateUserSettings = function(newDoc) {
+  var validateUserSettings = function() {
     var id_parts = newDoc._id.split(':');
     var prefix = id_parts[0];
     var username = id_parts.slice(1).join(':');
@@ -60,14 +91,36 @@ function(newDoc, oldDoc, userCtx) {
     }
   };
 
+  var authorizeUserSettings = function() {
+    if (!oldDoc) {
+      _err('You are not authorized to create user-settings');
+    }
+    if (typeof oldDoc.roles !== 'object') {
+      _err('You are not authorized to edit roles');
+    }
+    if (newDoc.roles.length !== oldDoc.roles.length) {
+      _err('You are not authorized to edit roles');
+    }
+    for (var i = 0; i < oldDoc.roles.length; i++) {
+      if (oldDoc.roles[i] !== newDoc.roles[i]) {
+        _err('You are not authorized to edit roles');
+      }
+    }
+  }
+
+  // admins can do anything
+  if (isDbAdmin(userCtx, secObj)) {
+    return;
+  }
   if (userCtx.facility_id === newDoc._id) {
     _err('You are not authorized to edit your own place');
   }
   if (newDoc.type === 'form') {
-    validateForm(newDoc);
+    validateForm();
   }
   if (newDoc.type === 'user-settings') {
-    validateUserSettings(newDoc);
+    validateUserSettings();
+    authorizeUserSettings();
   }
 
   log(

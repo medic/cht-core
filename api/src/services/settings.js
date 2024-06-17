@@ -3,7 +3,7 @@ const path = require('path');
 
 const db = require('../db');
 const environment = require('../environment');
-const { info } = require('../logger');
+const { info } = require('@medic/logger');
 const config = require('../config');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);

@@ -7,7 +7,11 @@
     "node": ">=20.11.0",
     "npm": ">=10.2.4"
   },
+  "scripts": {
+    "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9228 --watch server.js --watch 'src/**' --watch '../shared-libs/**/src/**' --watch '../shared-libs/**/dist/**' server.js"
+  },
   "dependencies": {
+    "@medic/logger": "file:../shared-libs/logger",
     "async": "^3.2.4",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
@@ -25,6 +29,7 @@
     "pouchdb-core": "^7.3.1",
     "pouchdb-mapreduce": "^7.3.1",
     "pouchdb-replication": "^7.3.1",
+    "pouchdb-session-authentication": "^1.1.0",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
     "simple-password-tester": "^1.0.0",

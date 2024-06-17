@@ -45,6 +45,7 @@ const RESTRICTED_USER_EDITABLE_FIELDS = [
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
+  'contact',
   'type',
   'roles',
 ]);
@@ -57,8 +58,6 @@ const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
 ];
 
 const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
-  'place',
-  'contact',
   'external_id',
   'type',
   'roles',
@@ -105,18 +104,47 @@ const getDocID = doc => {
   }
 };
 
-const getAllUserSettings = () => {
-  const opts = {
-    include_docs: true,
-    key: ['user-settings']
-  };
-  return db.medic.query('medic-client/doc_by_type', opts)
-    .then(result => result.rows.map(row => row.doc));
+const queryDocs = (db, view, key) => db
+  .query(view, { include_docs: true, key })
+  .then(({ rows }) => rows.map(({ doc }) => doc));
+
+const getAllUserSettings = () => queryDocs(db.medic, 'medic-client/doc_by_type', ['user-settings']);
+
+const getSettingsByIds = async (ids) => {
+  const { rows } = await db.medic.allDocs({ keys: ids, include_docs: true });
+  return rows
+    .map(row => row.doc)
+    .filter(Boolean);
 };
 
-const getAllUsers = () => {
-  return db.users.allDocs({ include_docs: true })
-    .then(result => result.rows);
+const getAllUsers = async () => db.users
+  .allDocs({ include_docs: true, start_key: 'org.couchdb.user:', end_key: 'org.couchdb.user:\ufff0' })
+  .then(({ rows }) => rows.map(({ doc }) => doc));
+
+const getUsers = async (facilityId, contactId) => {
+  if (!contactId) {
+    return queryDocs(db.users, 'users/users_by_field', ['facility_id', facilityId]);
+  }
+
+  const usersForContactId = await queryDocs(db.users, 'users/users_by_field', ['contact_id', contactId]);
+  if (!facilityId) {
+    return usersForContactId;
+  }
+
+  return usersForContactId.filter(user => {
+    return user.facility_id === facilityId ||
+           (Array.isArray(user.facility_id) && user.facility_id.includes(facilityId));
+  });
+};
+
+const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
+  if (!facilityId && !contactId) {
+    return Promise.all([getAllUsers(), getAllUserSettings()]);
+  }
+  const users = await getUsers(facilityId, contactId);
+  const ids = users.map(({ _id }) => _id);
+  const settings = await getSettingsByIds(ids);
+  return [users, settings];
 };
 
 const validateContact = (id, placeID) => {
@@ -129,26 +157,6 @@ const validateContact = (id, placeID) => {
         return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
       }
       return doc;
-    });
-};
-
-const validateUser = id => {
-  return db.users.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user.';
-      }
-      return Promise.reject(err);
-    });
-};
-
-const validateUserSettings = id => {
-  return db.medic.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user settings.';
-      }
-      return Promise.reject(err);
     });
 };
 
@@ -332,26 +340,94 @@ const hasParent = (facility, id) => {
  * available, but in this function the user doc takes precedence.  If the two
  * docs somehow get out of sync this might cause confusion.
  */
+const mapUser = (user, setting, facilities) => {
+  const facilityIds = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
+  const places = facilityIds.filter(facilityId => facilityId).map(facility => getDoc(facility, facilities));
+  return {
+    id: user._id,
+    rev: user._rev,
+    username: user.name,
+    fullname: setting.fullname,
+    email: setting.email,
+    phone: setting.phone,
+    place: places.length ? places : null,
+    roles: user.roles,
+    contact: getDoc(user.contact_id, facilities),
+    external_id: setting.external_id,
+    known: user.known
+  };
+};
+
 const mapUsers = (users, settings, facilities) => {
   users = users || [];
   return users
-    .filter(user => user.id.indexOf(USER_PREFIX) === 0)
+    .filter(user => user._id.indexOf(USER_PREFIX) === 0)
     .map(user => {
-      const setting = getDoc(user.id, settings) || {};
-      return {
-        id: user.id,
-        rev: user.doc._rev,
-        username: user.doc.name,
-        fullname: setting.fullname,
-        email: setting.email,
-        phone: setting.phone,
-        place: getDoc(user.doc.facility_id, facilities),
-        roles: user.doc.roles,
-        contact: getDoc(setting.contact_id, facilities),
-        external_id: setting.external_id,
-        known: user.doc.known
-      };
+      const setting = getDoc(user._id, settings) || {};
+      return mapUser(user, setting, facilities);
     });
+};
+
+const getFacilityId = (data) => {
+  if (data.place) {
+    let facilities = Array.isArray(data.place) ? data.place.map(place => getDocID(place)) :  [getDocID(data.place)];
+    facilities = facilities.filter(Boolean);
+    return facilities.length ? facilities : null;
+  }
+
+  if (_.isNull(data.place)) {
+    return null;
+  }
+};
+const getContactId = (data) => {
+  if (data.contact) {
+    return getDocID(data.contact);
+  }
+
+  if (_.isNull(data.contact)) {
+    return null;
+  }
+};
+
+const hydratePayload = (data) => {
+  if (data.type) {
+    // deprecated: use 'roles' instead
+    data.roles = getRoles(data.type);
+  }
+
+  data.facility_id = getFacilityId(data);
+  data.contact_id = getContactId(data);
+};
+
+const getRolesUpdates = (data) => {
+  if (!data.roles) {
+    return;
+  }
+  const index = data.roles.indexOf(roles.ONLINE_ROLE);
+  if (roles.isOffline(data.roles)) {
+    if (index !== -1) {
+      // remove the online role
+      data.roles.splice(index, 1);
+    }
+  } else if (index === -1) {
+    // add the online role
+    data.roles.push(roles.ONLINE_ROLE);
+  }
+};
+
+const getCommonFieldsUpdates = (userDoc, data) => {
+  getRolesUpdates(data);
+  if (data.roles) {
+    userDoc.roles = data.roles;
+  }
+  
+  if (!_.isUndefined(data.place)) {
+    userDoc.facility_id = data.facility_id;
+  }
+
+  if (!_.isUndefined(data.contact)) {
+    userDoc.contact_id = data.contact_id;
+  }
 };
 
 const getSettingsUpdates = (username, data) => {
@@ -368,34 +444,13 @@ const getSettingsUpdates = (username, data) => {
     }
   });
 
-  if (data.type) {
-    // deprecated: use 'roles' instead
-    settings.roles = getRoles(data.type);
-  }
-  if (settings.roles) {
-    const index = settings.roles.indexOf(roles.ONLINE_ROLE);
-    if (roles.isOffline(settings.roles)) {
-      if (index !== -1) {
-        // remove the online role
-        settings.roles.splice(index, 1);
-      }
-    } else if (index === -1) {
-      // add the online role
-      settings.roles.push(roles.ONLINE_ROLE);
-    }
-  }
-  if (data.place) {
-    settings.facility_id = getDocID(data.place);
-  }
-  if (data.contact) {
-    settings.contact_id = getDocID(data.contact);
-  }
+  getCommonFieldsUpdates(settings, data);
 
   return settings;
 };
 
 const getUserUpdates = (username, data) => {
-  const ignore = ['type', 'place'];
+  const ignore = ['type', 'place', 'contact'];
 
   const user = {
     name: username,
@@ -408,16 +463,7 @@ const getUserUpdates = (username, data) => {
     }
   });
 
-  if (data.type) {
-    // deprecated: use 'roles' instead
-    user.roles = getRoles(data.type);
-  }
-  if (user.roles && !roles.isOffline(user.roles)) {
-    user.roles.push(roles.ONLINE_ROLE);
-  }
-  if (data.place) {
-    user.facility_id = getDocID(data.place);
-  }
+  getCommonFieldsUpdates(user, data);
 
   return user;
 };
@@ -457,6 +503,7 @@ const validatePassword = (password) => {
   }
 };
 
+const getDataRoles = (data) => data.roles || (data.type && getRoles(data.type));
 const missingFields = data => {
   const required = ['username'];
 
@@ -466,36 +513,50 @@ const missingFields = data => {
     required.push('password');
   }
 
-  if (data.roles && roles.isOffline(data.roles)) {
+  const userRoles = getDataRoles(data);
+  if (!userRoles) {
+    required.push('type or roles');
+  } else if (roles.isOffline(userRoles)) {
     required.push('place', 'contact');
   }
 
-  const missing = required.filter(prop => !data[prop]);
+  const isInvalidProp = (prop) => {
+    if (!data[prop]) {
+      return true;
+    }
 
-  if (!data.type && !data.roles) {
-    missing.push('type or roles');
-  }
+    if (Array.isArray(data[prop])) {
+      return data[prop].filter(value => value).length === 0;
+    }
 
-  return missing;
+    if (typeof data[prop] === 'object') {
+      return Object.values(data[prop]).filter(value => value).length === 0;
+    }
+
+    return false;
+  };
+
+  return required.filter(prop => isInvalidProp(prop));
 };
 
-const getUpdatedUserDoc = (username, data) => {
-  const userID = createID(username);
-  return validateUser(userID).then(doc => {
-    const user = Object.assign(doc, getUserUpdates(username, data));
-    user._id = userID;
-    return user;
+const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
+  .then(doc => {
+    return {
+      ...doc,
+      ...getUserUpdates(username, data),
+      _id: createID(username)
+    };
   });
-};
 
-const getUpdatedSettingsDoc = (username, data) => {
-  const userID = createID(username);
-  return validateUserSettings(userID).then(doc => {
-    const settings = Object.assign(doc, getSettingsUpdates(username, data));
-    settings._id = userID;
-    return settings;
+
+const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
+  .then(doc => {
+    return {
+      ...doc,
+      ...getSettingsUpdates(username, data),
+      _id: createID(username)
+    };
   });
-};
 
 const isDbAdmin = user => {
   return couchSettings
@@ -523,39 +584,68 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
-const validateUserFacility = (data, user, userSettings) => {
-  if (data.place) {
-    userSettings.facility_id = user.facility_id;
-    return places.getPlace(user.facility_id);
-  }
-
-  if (_.isNull(data.place)) {
-    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
-      return Promise.reject(error400(
-        'Place field is required for offline users',
-        'field is required',
-        {'field': 'Place'}
-      ));
-    }
-    user.facility_id = null;
-    userSettings.facility_id = null;
+const validateFacilityIsNeeded = (data, user) => {
+  const userRoles = data.roles || user?.roles;
+  if (userRoles && roles.isOffline(userRoles)) {
+    return Promise.reject(error400(
+      'Place field is required for offline users',
+      'field is required',
+      {'field': 'Place'}
+    ));
   }
 };
 
-const validateUserContact = (data, user, userSettings) => {
+const validateAllowedMultipleFacilities = (data, user) => {
+  if (!Array.isArray(data.place) || data.place.length === 1) {
+    return true;
+  }
+
+  const userRoles = data.roles || user?.roles;
+  if (!userRoles || !roles.hasAllPermissions(userRoles, ['can_have_multiple_places'])) {
+    throw error400(
+      'This user cannot have multiple places',
+      'field is required',
+      {'field': 'Place'}
+    );
+  }
+};
+
+const validateUserFacility = (data, user) => {
+  if (data.place) {
+    if (!data.facility_id) {
+      throw error400(
+        'Invalid facilities list',
+        'field is required',
+        {'field': 'Place'}
+      );
+    }
+    validateAllowedMultipleFacilities(data, user);
+    return places.placesExist(data.facility_id);
+  }
+
+  if (_.isNull(data.place)) {
+    return validateFacilityIsNeeded(data, user);
+  }
+};
+
+const validateUserContact = (data, user) => {
   if (data.contact) {
-    return validateContact(userSettings.contact_id, user.facility_id);
+    return Promise
+      .any(data.facility_id.map(facility_id => validateContact(data.contact_id, facility_id)))
+      .catch(errors => {
+        throw errors.errors[0];
+      });
   }
 
   if (_.isNull(data.contact)) {
-    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
+    const userRoles = user?.roles || data.roles;
+    if (userRoles.roles && roles.isOffline(userRoles.roles)) {
       return Promise.reject(error400(
         'Contact field is required for offline users',
         'field is required',
         {'field': 'Contact'}
       ));
     }
-    userSettings.contact_id = null;
   }
 };
 
@@ -564,11 +654,15 @@ const validateUserContact = (data, user, userSettings) => {
  * @param {Object} data
  * @param {string} data.username Identifier used for authentication
  * @param {string[]} data.roles
- * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
- * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
- * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+ * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the
+ *   roles contain an offline role.
+ * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in
+ *   the app. Required if the roles contain an offline role.
+ * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved.
+ *   Required if token_login is not enabled for the user.
  * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
- * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+ * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this
+ *   user.
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -587,6 +681,7 @@ const createUserEntities = async (data, appUrl) => {
   await setContactParent(data);
   await createContact(data, response);
   await storeUpdatedPlace(data, preservePrimaryContact);
+  hydratePayload(data);
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
@@ -717,63 +812,135 @@ const createRecordBulkLog = (record, status, error, message) => {
 
 const hydrateUserSettings = (userSettings) => {
   return db.medic
-    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .allDocs({ keys: [ userSettings.contact_id, ...userSettings.facility_id ], include_docs: true })
     .then((response) => {
-      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+      if (!response.rows || !Array.isArray(response.rows)) {
+        return userSettings;
+      }
+      const [ contactRow, ...facilityRows ] = response.rows;
+      if (!facilityRows.length || !contactRow) { // malformed response
         return userSettings;
       }
 
-      const [facilityRow, contactRow] = response.rows;
-      if (!facilityRow || !contactRow) { // malformed response
-        return userSettings;
-      }
-
-      userSettings.facility = facilityRow.doc;
+      userSettings.facility = facilityRows.map(row => row.doc);
       userSettings.contact = contactRow.doc;
 
       return userSettings;
     });
 };
 
-const getUserDoc = (username, dbName) => {
-  return db[dbName]
-    .get(`org.couchdb.user:${username}`)
-    .catch(err => {
-      err.db = dbName;
-      throw err;
-    });
-};
+const getUserDoc = (username, dbName) => db[dbName]
+  .get(createID(username))
+  .catch(err => {
+    if (err.status === 404) {
+      err.message = `Failed to find user with name [${username}] in the [${dbName}] database.`;
+    }
+    return Promise.reject(err);
+  });
 
-const getUserDocsByName = (name) => {
-  return Promise
-    .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
-    .catch(error => {
-      if (error.status !== 404) {
-        return Promise.reject(error);
-      }
-      return Promise.reject({
-        status: 404,
-        message: `Failed to find user with name [${name}] in the [${error.db}] database.`
-      });
-    });
-};
+const getUserDocsByName = (name) => Promise.all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)));
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
-  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'contact_id'));
+  medicUser.facility_id = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
   return hydrateUserSettings(medicUser);
 };
 
+const createMultiFacilityUser = async (data, appUrl) => {
+  const missing = missingFields(data);
+  if (missing.length > 0) {
+    return Promise.reject(error400(
+      'Missing required fields: ' + missing.join(', '),
+      'fields.required',
+      { 'fields': missing.join(', ') }
+    ));
+  }
+  hydratePayload(data);
+
+  const tokenLoginError = tokenLogin.validateTokenLogin(data, true);
+  if (tokenLoginError) {
+    throw error400(tokenLoginError.msg, tokenLoginError.key);
+  }
+  const passwordError = validatePassword(data.password);
+  if (passwordError) {
+    throw passwordError;
+  }
+
+  const response = {};
+  await validateNewUsername(data.username);
+  await validateUserFacility(data);
+  await validateUserContact(data);
+
+  await createUser(data, response);
+  await createUserSettings(data, response);
+  await tokenLogin.manageTokenLogin(data, appUrl, response);
+  return response;
+};
+
+const validateUpgradeAttemptFields = (data) => {
+  const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
+
+  // Online users can remove place or contact
+  if (!_.isNull(data.place) &&
+      !_.isNull(data.contact) &&
+      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
+  ) {
+    throw error400(
+      'One of the following fields are required: ' + props.join(', '),
+      'fields.one.required',
+      { 'fields': props.join(', ') }
+    );
+  }
+};
+
+const validateUpgradeAtetmptPassword = (data) => {
+  if (data.password) {
+    const passwordError = validatePassword(data.password);
+    if (passwordError) {
+      throw passwordError;
+    }
+  }
+};
+
+const validateUpdateAttempt = (data, fullAccess) => {
+  // Reject update attempts that try to modify data they're not allowed to
+  if (!fullAccess) {
+    const illegalAttempts = illegalDataModificationAttempts(data);
+    if (illegalAttempts.length) {
+      const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
+      err.status = 401;
+      throw err;
+    }
+  }
+
+  validateUpgradeAttemptFields(data);
+  validateUpgradeAtetmptPassword(data);
+};
+
+const checkPayloadFacilityCount = (data) => {
+  return Array.isArray(data.place) && data.place.length > 1;
+};
+
 /*
- * Everything not exported directly is private.  Underscore prefix is only used
- * to export functions needed for testing.
- */
+   * Everything not exported directly is private.  Underscore prefix is only used
+   * to export functions needed for testing.
+   */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
-  getList: async () => {
-    const [ users, settings ] = await Promise.all([ getAllUsers(), getAllUserSettings() ]);
-    const facilities = await facility.list(users, settings);
+  getList: async (filters) => {
+    const [users, settings] = await getUsersAndSettings(filters);
+    const facilities = await facility.list(users);
     return mapUsers(users, settings, facilities);
+  },
+  getUser: async username => {
+    if (!username) {
+      throw new Error('Username is required.');
+    }
+
+    const [user, userSettings] = await getUserDocsByName(username);
+    const facilities = await facility.list([user]);
+    return mapUser(user, userSettings, facilities);
   },
   getUserSettings,
   /* eslint-disable max-len */
@@ -784,11 +951,15 @@ module.exports = {
    * @param {Object} data
    * @param {string} data.username Identifier used for authentication
    * @param {string[]} data.roles
-   * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
-   * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
-   * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if
+   *   the roles contain an offline role.
+   * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in
+   *   the app. Required if the roles contain an offline role.
+   * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved.
+   *   Required if token_login is not enabled for the user.
    * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
-   * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for
+   *   this user.
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -827,11 +998,15 @@ module.exports = {
    * @param {Object|Object[]} users[]
    * @param {string} users[].username Identifier used for authentication
    * @param {string[]} users[].roles
-   * @param {(Object|string)=} users[].place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
-   * @param {(Object|string)=} users[].contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
-   * @param {string=} users[].password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {(Object|string)=} users[].place Place identifier string (UUID) or object this user resides in. Required if
+   *   the roles contain an offline role.
+   * @param {(Object|string)=} users[].contact A person identifier string (UUID) or object based on the form configured
+   *   in the app. Required if the roles contain an offline role.
+   * @param {string=} users[].password Password string used for authentication. Only allowed to be set, not retrieved.
+   *   Required if token_login is not enabled for the user.
    * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
-   * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for
+   *   this user.
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
@@ -873,6 +1048,7 @@ module.exports = {
         if (missing.length > 0) {
           throw new Error('Missing required fields: ' + missing.join(', '));
         }
+        hydratePayload(user);
 
         const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
         if (tokenLoginError) {
@@ -910,7 +1086,7 @@ module.exports = {
   * if they do not already exist.
   */
   createAdmin: userCtx => {
-    return validateUser(createID(userCtx.name))
+    return getUserDoc(userCtx.name, 'users')
       .catch(err => {
         if (err && err.status === 404) {
           const data = { username: userCtx.name, roles: ['admin'] };
@@ -940,36 +1116,8 @@ module.exports = {
    * @param      {String}    appUrl      request protocol://hostname
    */
   updateUser: async (username, data, fullAccess, appUrl) => {
-    // Reject update attempts that try to modify data they're not allowed to
-    if (!fullAccess) {
-      const illegalAttempts = illegalDataModificationAttempts(data);
-      if (illegalAttempts.length) {
-        const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
-        err.status = 401;
-        return Promise.reject(err);
-      }
-    }
-
-    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
-
-    // Online users can remove place or contact
-    if (!_.isNull(data.place) &&
-      !_.isNull(data.contact) &&
-      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
-    ) {
-      return Promise.reject(error400(
-        'One of the following fields are required: ' + props.join(', '),
-        'fields.one.required',
-        { 'fields': props.join(', ') }
-      ));
-    }
-
-    if (data.password) {
-      const passwordError = validatePassword(data.password);
-      if (passwordError) {
-        return Promise.reject(passwordError);
-      }
-    }
+    await validateUpdateAttempt(data, fullAccess);
+    hydratePayload(data);
 
     const [user, userSettings] = await Promise.all([
       getUpdatedUserDoc(username, data),
@@ -981,8 +1129,9 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    await validateUserFacility(data, user, userSettings);
-    await validateUserContact(data, user, userSettings);
+    await validateUserFacility(data, user);
+    await validateUserContact(data, user);
+
     const response = {
       user: await saveUserUpdates(user),
       'user-settings': await saveUserSettingsUpdates(userSettings),
@@ -1011,4 +1160,8 @@ module.exports = {
    * @param {string} csv CSV of users.
    */
   parseCsv,
+
+  createMultiFacilityUser,
+
+  checkPayloadFacilityCount,
 };

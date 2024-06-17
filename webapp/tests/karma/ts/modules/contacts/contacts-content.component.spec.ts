@@ -222,7 +222,7 @@ describe('Contacts content component', () => {
 
   it(`should load the user's home place when a param id not set and no search term exists`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    store.overrideSelector(Selectors.getUserFacilityId, ['homeplace']);
     store.overrideSelector(Selectors.getFilters, undefined);
     activatedRoute.params = of({});
     activatedRoute.snapshot.params = {};

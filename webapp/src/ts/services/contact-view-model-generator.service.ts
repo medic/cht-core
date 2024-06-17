@@ -3,8 +3,6 @@ import {
   groupBy as _groupBy,
   partial as _partial,
   find as _find,
-  flattenDeep as _flattenDeep,
-  map as _map
 } from 'lodash-es';
 
 import registrationUtils from '@medic/registration-utils';
@@ -36,6 +34,8 @@ import { TranslateService } from '@mm-services/translate.service';
   providedIn: 'root'
 })
 export class ContactViewModelGeneratorService {
+  LIMIT_SELECT_ALL_REPORTS = 500;
+
   constructor(
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private dbService:DbService,
@@ -261,18 +261,6 @@ export class ContactViewModelGeneratorService {
       });
   }
 
-  private addPatientName(reports, contacts) {
-    reports.forEach((report) => {
-      if (report.fields && !report.fields.patient_name) {
-        const patientId = report.fields.patient_id || report.patient_id;
-        const patient = contacts.find(contact => contact.patient_id === patientId);
-        if (patient) {
-          report.fields.patient_name = patient.name;
-        }
-      }
-    });
-  }
-
   private getHeading(report, forms) {
     const form = _find(forms, { code: report.form });
     if (form && form.subjectKey) {
@@ -287,32 +275,35 @@ export class ContactViewModelGeneratorService {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private addHeading(reports, forms) {
-    const reportIds = _map(reports, '_id');
-    return this.getDataRecordsService
-      .get(reportIds)
-      .then((dataRecords) => {
-        dataRecords.forEach((dataRecord) => {
-          const report = reports.find(report => report._id === dataRecord._id);
-          if (report) {
-            report.heading = this.getHeading(dataRecord, forms);
-          }
-        });
-        return reports;
-      });
+  private async addHeading(reports, forms) {
+    const summaries = await this.getDataRecordsService.getDocsSummaries(reports);
+    summaries?.forEach(summary => {
+      const report = reports.find(report => report._id === summary._id);
+      if (report) {
+        report.heading = this.getHeading(summary, forms);
+      }
+    });
+    return reports;
   }
 
   private getReports(contactDocs) {
-    const subjectIds: any[] = [];
-    contactDocs.forEach((doc) => {
-      subjectIds.push(registrationUtils.getSubjectIds(doc));
-    });
-    const filter = { subjectIds: _flattenDeep(subjectIds) };
+    const subjectIds: string[] = [];
+    contactDocs.forEach(doc => subjectIds.push(...registrationUtils.getSubjectIds(doc)));
+
     return this.searchService
-      .search('reports', filter, { include_docs: true })
-      .then((reports) => {
-        reports.forEach((report) => {
+      .search('reports', { subjectIds }, { include_docs: true, limit: this.LIMIT_SELECT_ALL_REPORTS })
+      .then(reports => {
+        reports.forEach(report => {
           report.valid = !report.errors || !report.errors.length;
+
+          if (!report.fields || report.fields?.patient_name) {
+            return;
+          }
+          const patientId = report.fields.patient_id || report.patient_id;
+          const patient = contactDocs.find(contact => contact?.patient_id === patientId);
+          if (patient) {
+            report.fields.patient_name = patient.name;
+          }
         });
         return reports;
       });
@@ -325,18 +316,14 @@ export class ContactViewModelGeneratorService {
   private _loadReports(model, forms) {
     const contacts = [ model.doc ];
     model.children.forEach(group => {
-      if (group.type && group.type.person) {
+      if (group?.type?.person) {
         group.contacts.forEach(contact => contacts.push(contact.doc));
       }
     });
     return this
       .getReports(contacts)
       .then(reports => this.addHeading(reports, forms))
-      .then((reports) => {
-        this.addPatientName(reports, contacts);
-        reports.sort(this.reportedDateComparator);
-        return reports;
-      });
+      .then(reports => reports.sort(this.reportedDateComparator));
   }
 
   private setType(model, types) {

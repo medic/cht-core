@@ -5,7 +5,7 @@ const crypto = require('crypto');
 
 const environment = require('./environment');
 const db = require('./db');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
 const extensionLibs = require('./services/extension-libs');
 

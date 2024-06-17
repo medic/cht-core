@@ -20,6 +20,7 @@ describe('SendMessageService', () => {
   let markReadService;
   let settingsService;
   let userSettingsService;
+  let extractLineageService;
 
   beforeEach(() => {
     const store = { dispatch: sinon.stub() };
@@ -32,6 +33,7 @@ describe('SendMessageService', () => {
     markReadService = { markAsRead: sinon.stub() };
     settingsService = { get: sinon.stub().resolves() };
     userSettingsService = { get: sinon.stub().resolves({ phone: '+5551', name: 'jack' }) };
+    extractLineageService = { extract: ExtractLineageService.prototype.extract };
 
     TestBed.configureTestingModule({
       providers: [
@@ -41,6 +43,7 @@ describe('SendMessageService', () => {
         { provide: MarkReadService, useValue: markReadService },
         { provide: SettingsService, useValue: settingsService },
         { provide: UserSettingsService, useValue: userSettingsService },
+        { provide: ExtractLineageService, useValue: extractLineageService },
       ]
     });
 

@@ -1,0 +1,238 @@
+// Copied from https://github.com/enketo/enketo/blob/main/packages/enketo-core/src/widget/draw/draw-widget.scss
+// After upgrading to enekto-core 8.1+, this widget should be removed and we should use the one from enketo-core.
+// NOSONAR_BEGIN
+
+/*
+ * To save headaches with resizing canvases, it is important to maintain fixed aspect
+ * ratios at all times:
+ */
+
+$ratio1: 0.75;
+$ratio2: 0.45;
+$fullscreen-margin-v: 50px;
+$fullscreen-margin-h: 15px;
+$picker-border: 2px solid grey;
+
+.or-drawing-initialized,
+.or-signature-initialized,
+.or-annotation-initialized {
+  input[type='text'] {
+    display: none;
+  }
+}
+
+.or-signature-initialized {
+  .draw-widget__body {
+    padding-top: $ratio2 * 100%;
+  }
+}
+
+.or-annotation-initialized {
+  // make space for absolutely positioned fake-file-input
+  .draw-widget {
+    margin-top: 50px;
+  }
+}
+
+.draw-widget {
+  width: 100%;
+
+  &__body {
+    position: relative;
+    width: 100%; // trick to fix aspect ratio with width of 100% to 4:3
+    // combined with absolutely positioned canvas child
+    padding-top: $ratio1 * 100%;
+
+    &__canvas {
+      background: white;
+      // for plain theme:
+      border: 1px solid $gray-lighter; // override border:
+      @include form-control;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+
+      &.disabled {
+        cursor: not-allowed;
+
+        ~ .draw-widget__colorpicker,
+        ~ .draw-widget__undo {
+          display: none;
+        }
+
+        // show canvas normally (for readonly record views)
+        background: white;
+        opacity: 1;
+      }
+    }
+
+    input[type='file'] {
+      display: none;
+    }
+
+    .file-picker {
+      position: absolute;
+      top: -($fullscreen-margin-v);
+      left: 0; // TODO: RTL
+      width: 100%;
+    }
+
+    .show-canvas-btn {
+      position: absolute;
+      z-index: 10;
+      top: calc(50% - 16px);
+      left: 50%;
+      width: 200px;
+      margin-left: -100px;
+    }
+
+    .hide-canvas-btn {
+      display: none;
+    }
+  }
+
+  &__footer {
+    margin-top: 10px;
+
+    .draw-widget__btn-reset:disabled {
+      display: none;
+    }
+  }
+
+  &__feedback {
+    @include question-error-message;
+  }
+
+  &__undo {
+    position: absolute;
+    top: 37px;
+    right: 7px;
+    width: 20px;
+    height: 20px;
+    margin: 2px;
+    padding: 0;
+    border: $picker-border;
+  }
+
+  &__colorpicker {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: calc(100% - (2 * 7px));
+    top: 7px;
+    right: 7px;
+
+    div {
+      display: none;
+    }
+
+    div { // NOSONAR
+      width: 20px;
+      height: 20px;
+      margin: 2px;
+      border: none;
+      padding: 0;
+    }
+
+    &.reveal div {
+      display: block;
+    }
+
+    .current {
+      display: block;
+      border: $picker-border;
+    }
+  }
+
+  &.full-screen {
+    @include display-flex;
+
+    @include flex-direction(column);
+
+    @include flex-wrap(nowrap);
+
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    background: white;
+    margin: 0;
+    padding-left: $fullscreen-margin-h;
+    padding-right: $fullscreen-margin-h;
+
+    .draw-widget__body {
+      width: calc(100% - 2 * #{$fullscreen-margin-h});
+      padding-top: calc(
+              #{$ratio1} * (100% - 2 * #{$fullscreen-margin-h})
+      );
+      margin: $fullscreen-margin-v auto;
+
+      input[type='file'] {
+        left: 90px; // TODO: RTL
+      }
+
+      .file-picker {
+        left: 80px;
+        width: calc(100% - 18px);
+      }
+    }
+
+    .hide-canvas-btn {
+      display: block;
+      position: absolute;
+      z-index: 30;
+      top: -($fullscreen-margin-v - 10px);
+      left: 0; // TODO: RTL
+      width: 70px;
+    }
+
+    .show-canvas-btn {
+      display: none;
+    }
+
+    .draw-widget__footer {
+      width: calc(100vmin - 2 * #{$fullscreen-margin-h});
+      margin: -($fullscreen-margin-v - 10px) auto 0 auto;
+    }
+  }
+
+  .btn-download {
+    margin-right: 0;
+
+    &[href=''] {
+      display: none;
+    }
+  }
+}
+
+.or-signature-initialized { // NOSONAR
+  .draw-widget.full-screen {
+    .draw-widget__body {
+      width: calc(100% - 2 * #{$fullscreen-margin-h});
+      padding-top: calc(
+              #{$ratio2} * (100% - 2 * #{$fullscreen-margin-h})
+      );
+    }
+
+    .draw-widget__footer {
+      width: calc(
+              100% - 2 * #{$fullscreen-margin-h}
+      ); //margin: -($fullscreen-margin-v - 10px) auto 0 auto; NOSONAR
+    }
+  }
+}
+
+.or-annotate-initialized {
+  .draw-widget__body {
+    margin-top: $fullscreen-margin-v;
+  }
+}
+// NOSONAR_END
