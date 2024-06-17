@@ -4,6 +4,9 @@ const utils = require('../lib/utils');
 const objectPath = require('object-path');
 const transitionUtils = require('./utils');
 const db = require('../db');
+const dataContext = require('../data-context');
+const { Person, Qualifier } = require('@medic/cht-datasource');
+
 const NAME = 'death_reporting';
 const CONFIG_NAME = 'death_reporting';
 const MARK_PROPERTY_NAME = 'mark_deceased_forms';
@@ -61,8 +64,8 @@ module.exports = {
       return Promise.resolve(false);
     }
 
-    return db.medic
-      .get(hydratedPatient._id)
+    const getPerson = dataContext.bind(Person.v1.get);
+    return getPerson(Qualifier.byUuid(hydratedPatient._id))
       .then(patient => updatePatient(patient, change.doc))
       .then(changed => !!changed);
   },

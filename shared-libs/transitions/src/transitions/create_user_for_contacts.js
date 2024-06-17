@@ -1,5 +1,7 @@
 const config = require('../config');
 const db = require('../db');
+const dataContext = require('../data-context');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
@@ -97,7 +99,8 @@ const createNewUser = async ({ roles }, contact) => {
   try {
     await users.createUser(user, config.get('app_url'));
     // Pick up any updates made to the contact
-    Object.assign(contact, await db.medic.get(_id));
+    const getPerson = dataContext.bind(Person.v1.get);
+    Object.assign(contact, await getPerson(Qualifier.byUuid(_id)));
   } catch (err) {
     if (!err.message || typeof err.message === 'string') {
       throw err;

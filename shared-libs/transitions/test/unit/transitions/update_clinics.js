@@ -9,7 +9,6 @@ const phone = '+34567890123';
 
 let transition;
 let lineageStub;
-let bind;
 
 describe('update clinic', () => {
   beforeEach(() => {
@@ -20,8 +19,7 @@ describe('update clinic', () => {
     });
     transition = require('../../../src/transitions/update_clinics');
     lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
-    bind = sinon.stub();
-    dataContext.init({ bind });
+    dataContext.init({ bind: sinon.stub() });
   });
 
   afterEach(() => {
@@ -221,7 +219,7 @@ describe('update clinic', () => {
     const getPersonWithLineage = sinon
       .stub()
       .resolves(contact);
-    bind.returns(getPersonWithLineage);
+    dataContext.bind.returns(getPersonWithLineage);
 
     const changed = await transition.onMatch({ doc: doc });
 
@@ -229,7 +227,7 @@ describe('update clinic', () => {
     assert(doc.contact);
     assert.equal(doc.contact._rev, '2');
     assert.equal(doc.contact.name, 'zenith');
-    assert.isTrue(bind.calledOnceWithExactly(Person.v1.getWithLineage));
+    assert.isTrue(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage));
     assert.isTrue(getPersonWithLineage.calledOnceWithExactly({ uuid: 'z' }));
   });
 
