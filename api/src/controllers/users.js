@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const db = require('../db');
 const config = require('../config');
-const { bulkUploadLog, roles, users } = require('@medic/user-management')(config, db);
+const dataContext = require('../services/data-context');
+const { bulkUploadLog, roles, users } = require('@medic/user-management')(config, db, dataContext);
 const auth = require('../auth');
 const logger = require('@medic/logger');
 const serverUtils = require('../server-utils');

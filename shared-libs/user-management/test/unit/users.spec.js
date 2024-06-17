@@ -7,10 +7,12 @@ const couchSettings = require('@medic/settings');
 const tokenLogin = require('../../src/token-login');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
+const dataContext = require('../../src/libs/data-context');
 const facility = require('../../src/libs/facility');
 const lineage = require('../../src/libs/lineage');
 const passwords = require('../../src/libs/passwords');
 const roles = require('../../src/roles');
+const { Person, Place } = require('@medic/cht-datasource');
 const { people, places }  = require('@medic/contacts')(config, db);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
@@ -27,6 +29,8 @@ const contactMilan = {
 let userData;
 let clock;
 let addMessage;
+let getPerson;
+let getPlace;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
 let service;
@@ -47,6 +51,12 @@ describe('Users service', () => {
       medicLogs: { get: sinon.stub(), put: sinon.stub(), },
       users: { query: sinon.stub(), get: sinon.stub(), put: sinon.stub() },
     });
+    getPerson = sinon.stub();
+    getPlace = sinon.stub();
+    const bind = sinon.stub();
+    bind.withArgs(Person.v1.get).returns(getPerson);
+    bind.withArgs(Place.v1.get).returns(getPlace);
+    dataContext.init({ bind });
     lineage.init(require('@medic/lineage')(Promise, db.medic));
     addMessage = sinon.stub();
     config.getTransitionsLib.returns({ messages: { addMessage } });
@@ -1187,27 +1197,27 @@ describe('Users service', () => {
       });
     });
 
-    it('sets up response', () => {
+    it('sets up response', async () => {
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'abc', _rev: '1-xyz' });
       const response = {};
-      return service
-        .__get__('createContact')(userData, response)
-        .then(() => {
-          chai.expect(response).to.deep.equal({
-            contact: {
-              id: 'abc',
-              rev: '1-xyz'
-            }
-          });
-          chai.expect(db.medic.get.notCalled).to.be.true;
-          chai.expect(db.medic.put.notCalled).to.be.true;
-        });
+      await service.__get__('createContact')(userData, response);
+
+      chai.expect(response).to.deep.equal({
+        contact: {
+          id: 'abc',
+          rev: '1-xyz'
+        }
+      });
+      chai.expect(dataContext.bind.notCalled).to.be.true;
+      chai.expect(getPerson.notCalled).to.be.true;
+      chai.expect(db.medic.get.notCalled).to.be.true;
+      chai.expect(db.medic.put.notCalled).to.be.true;
     });
 
-    it('removes user_for_contact.create property', () => {
+    it('removes user_for_contact.create property', async () => {
       const contact = { _id: 'abc', _rev: '1-abc', user_for_contact: { create: 'true'} };
       sinon.stub(people, 'getOrCreatePerson').resolves(contact);
-      db.medic.get.resolves(contact);
+      getPerson.resolves(contact);
       db.medic.put.resolves({
         id: 'abc',
         rev: '2-xyz'
@@ -1218,28 +1228,26 @@ describe('Users service', () => {
         user_for_contact: {}
       };
       const response = {};
-      return service
-        .__get__('createContact')(userData, response)
-        .then(() => {
-          chai.expect(db.medic.get.callCount).to.equal(1);
-          chai.expect(db.medic.get.args[0]).to.deep.equal(['abc']);
-          chai.expect(db.medic.put.callCount).to.equal(1);
-          chai.expect(db.medic.put.args[0]).to.deep.equal([expectedContact]);
+      await service.__get__('createContact')(userData, response);
 
-          chai.expect(userData.contact).to.deep.equal(expectedContact);
-          chai.expect(response).to.deep.equal({
-            contact: {
-              id: 'abc',
-              rev: '2-xyz'
-            }
-          });
-        });
+      chai.expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+      chai.expect(getPerson.calledOnceWithExactly({ uuid: 'abc' })).to.be.true;
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0]).to.deep.equal([expectedContact]);
+
+      chai.expect(userData.contact).to.deep.equal(expectedContact);
+      chai.expect(response).to.deep.equal({
+        contact: {
+          id: 'abc',
+          rev: '2-xyz'
+        }
+      });
     });
 
-    it('does not remove user_for_contact.create property if the contact has already changed in the DB', () => {
+    it('does not remove user_for_contact.create property if the contact has already changed in the DB', async () => {
       const contact = { _id: 'abc', _rev: '1-abc', user_for_contact: { create: 'true'} };
       sinon.stub(people, 'getOrCreatePerson').resolves(contact);
-      db.medic.get.resolves({ ...contact, user_for_contact: undefined });
+      getPerson.resolves({ ...contact, user_for_contact: undefined });
       db.medic.put.resolves({
         id: 'abc',
         rev: '2-xyz'
@@ -1249,21 +1257,19 @@ describe('Users service', () => {
         user_for_contact: {}
       };
       const response = {};
-      return service
-        .__get__('createContact')(userData, response)
-        .then(() => {
-          chai.expect(db.medic.get.callCount).to.equal(1);
-          chai.expect(db.medic.get.args[0]).to.deep.equal(['abc']);
-          chai.expect(db.medic.put.notCalled).to.be.true;
+      await service.__get__('createContact')(userData, response);
 
-          chai.expect(userData.contact).to.deep.equal(expectedContact);
-          chai.expect(response).to.deep.equal({
-            contact: {
-              id: 'abc',
-              rev: '1-abc'
-            }
-          });
-        });
+      chai.expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+      chai.expect(getPerson.calledOnceWithExactly({ uuid: 'abc' })).to.be.true;
+      chai.expect(db.medic.put.notCalled).to.be.true;
+
+      chai.expect(userData.contact).to.deep.equal(expectedContact);
+      chai.expect(response).to.deep.equal({
+        contact: {
+          id: 'abc',
+          rev: '1-abc'
+        }
+      });
     });
   });
 
@@ -2400,7 +2406,7 @@ describe('Users service', () => {
 
   describe('updatePlace', () => {
 
-    it('updatePlace resolves place\'s contact in waterfall', () => {
+    it('updatePlace resolves place\'s contact in waterfall', async () => {
       userData = {
         username: 'x',
         password: COMPLEX_PASSWORD,
@@ -2421,20 +2427,20 @@ describe('Users service', () => {
         _id: 'b',
         name: 'mickey'
       });
-      db.medic.get.resolves(place);
+      getPlace.resolves(place);
       db.medic.put.resolves();
       service.__set__('createUser', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
-      return service.createUser(userData).then(() => {
-        chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
-        chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
-        chai.expect(db.medic.get.callCount).to.equal(1);
-        chai.expect(db.medic.get.args[0]).to.deep.equal(['place_id']);
-        chai.expect(db.medic.put.callCount).to.equal(1);
-        chai.expect(db.medic.put.args[0]).to.deep.equal([{
-          _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent',
-        }]);
-      });
+      await service.createUser(userData);
+
+      chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
+      chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
+      chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.get)).to.be.true;
+      chai.expect(getPlace.calledOnceWithExactly({ uuid: 'place_id' })).to.be.true;
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0]).to.deep.equal([{
+        _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+      }]);
     });
 
     it('should catch conflicts', () => {
@@ -2456,7 +2462,7 @@ describe('Users service', () => {
         _id: 'b',
         name: 'mickey'
       });
-      db.medic.get
+      getPlace
         .onCall(0).resolves(placeRev1)
         .onCall(1).resolves(placeRev2);
       db.medic.put
@@ -2468,8 +2474,8 @@ describe('Users service', () => {
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
-        chai.expect(db.medic.get.callCount).to.equal(2);
-        chai.expect(db.medic.get.args).to.deep.equal([['place_id'], ['place_id']]);
+        chai.expect(dataContext.bind.args).to.deep.equal([[Place.v1.get], [Place.v1.get]]);
+        chai.expect(getPlace.args).to.deep.equal([[{ uuid: 'place_id' }], [{ uuid: 'place_id' }]]);
         chai.expect(db.medic.put.callCount).to.equal(2);
         chai.expect(db.medic.put.args[0]).to.deep.equal([{
           _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
@@ -2480,7 +2486,7 @@ describe('Users service', () => {
       });
     });
 
-    it('should retry 3 times on conflicts', () => {
+    it('should retry 3 times on conflicts', async () => {
       userData = {
         username: 'x',
         password: COMPLEX_PASSWORD,
@@ -2497,7 +2503,7 @@ describe('Users service', () => {
       sinon.stub(places, 'getOrCreatePlace').resolves(placeRev1);
       sinon.stub(places, 'getPlace').resolves(placeRev1);
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'b', name: 'mickey' });
-      db.medic.get
+      getPlace
         .onCall(0).resolves(placeRev1)
         .onCall(1).resolves(placeRev2)
         .onCall(2).resolves(placeRev3)
@@ -2509,22 +2515,25 @@ describe('Users service', () => {
         .onCall(3).resolves();
       service.__set__('createUser', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
-      return service.createUser(userData).then(() => {
-        chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
-        chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
-        chai.expect(db.medic.get.callCount).to.equal(4);
-        chai.expect(db.medic.get.args).to.deep.equal([['place_id'], ['place_id'], ['place_id'], ['place_id']]);
-        chai.expect(db.medic.put.callCount).to.equal(4);
-        chai.expect(db.medic.put.args[0]).to.deep.equal([{
-          _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
-        }]);
-        chai.expect(db.medic.put.args[1]).to.deep.equal([{
-          _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
-        }]);
-      });
+      await service.createUser(userData);
+      chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
+      chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
+      chai.expect(dataContext.bind.args).to.deep.equal([
+        [Place.v1.get], [Place.v1.get], [Place.v1.get], [Place.v1.get]
+      ]);
+      chai.expect(getPlace.args).to.deep.equal([
+        [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }]
+      ]);
+      chai.expect(db.medic.put.callCount).to.equal(4);
+      chai.expect(db.medic.put.args[0]).to.deep.equal([{
+        _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+      }]);
+      chai.expect(db.medic.put.args[1]).to.deep.equal([{
+        _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
+      }]);
     });
 
-    it('should throw after 4 conflicts', () => {
+    it('should throw after 4 conflicts', async () => {
       userData = {
         username: 'x',
         password: COMPLEX_PASSWORD,
@@ -2543,7 +2552,7 @@ describe('Users service', () => {
       sinon.stub(places, 'getOrCreatePlace').resolves(placeRev1);
       sinon.stub(places, 'getPlace').resolves(placeRev1);
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'b', name: 'mickey' });
-      db.medic.get
+      getPlace
         .onCall(0).resolves(placeRev1)
         .onCall(1).resolves(placeRev2)
         .onCall(2).resolves(placeRev3)
@@ -2559,25 +2568,26 @@ describe('Users service', () => {
         .onCall(4).resolves();
       service.__set__('createUser', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
-      return service
-        .createUser(userData)
-        .then(() => chai.expect.fail('should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.equal(conflictErr);
-          chai.expect(db.medic.get.callCount).to.equal(4);
-          chai.expect(db.medic.get.args).to.deep.equal([['place_id'], ['place_id'], ['place_id'], ['place_id']]);
-          chai.expect(db.medic.put.callCount).to.equal(4);
-          chai.expect(db.medic.put.args[0]).to.deep.equal([{
-            _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
-          }]);
-          chai.expect(db.medic.put.args[1]).to.deep.equal([{
-            _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
-          }]);
-          chai.expect(service.__get__('createUser').callCount).to.equal(0);
-        });
+
+      await chai.expect(service.createUser(userData)).to.be.rejectedWith(conflictErr);
+
+      chai.expect(dataContext.bind.args).to.deep.equal([
+        [Place.v1.get], [Place.v1.get], [Place.v1.get], [Place.v1.get]
+      ]);
+      chai.expect(getPlace.args).to.deep.equal([
+        [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }]
+      ]);
+      chai.expect(db.medic.put.callCount).to.equal(4);
+      chai.expect(db.medic.put.args[0]).to.deep.equal([{
+        _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+      }]);
+      chai.expect(db.medic.put.args[1]).to.deep.equal([{
+        _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
+      }]);
+      chai.expect(service.__get__('createUser').callCount).to.equal(0);
     });
 
-    it('should throw any other error than a conflict', () => {
+    it('should throw any other error than a conflict', async () => {
       userData = {
         username: 'x',
         password: COMPLEX_PASSWORD,
@@ -2594,23 +2604,20 @@ describe('Users service', () => {
         _id: 'b',
         name: 'mickey'
       });
-      db.medic.get.resolves(place);
+      getPlace.resolves(place);
       db.medic.put.rejects({ status: 400, reason: 'not-a-conflict' });
       service.__set__('createUser', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
-      return service
-        .createUser(userData)
-        .then(() => chai.expect.fail('should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ status: 400, reason: 'not-a-conflict' });
-          chai.expect(db.medic.get.callCount).to.equal(1);
-          chai.expect(db.medic.get.args).to.deep.equal([['place_id']]);
-          chai.expect(db.medic.put.callCount).to.equal(1);
-          chai.expect(db.medic.put.args[0]).to.deep.equal([{
-            _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
-          }]);
-          chai.expect(service.__get__('createUser').callCount).to.equal(0);
-        });
+
+      await chai.expect(service.createUser(userData)).to.be.rejectedWith({ status: 400, reason: 'not-a-conflict' });
+
+      chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.get)).to.be.true;
+      chai.expect(getPlace.calledOnceWithExactly({ uuid: 'place_id' })).to.be.true;
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0]).to.deep.equal([{
+        _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+      }]);
+      chai.expect(service.__get__('createUser').callCount).to.equal(0);
     });
 
   });

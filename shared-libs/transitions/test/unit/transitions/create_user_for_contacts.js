@@ -6,7 +6,7 @@ const db = require('../../../src/db');
 const dataContext = require('../../../src/data-context');
 const { Person } = require('@medic/cht-datasource');
 const { people } = require('@medic/contacts')(config, db);
-const { users } = require('@medic/user-management')(config, db);
+const { users } = require('@medic/user-management')(config, db, dataContext);
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 const deepFreeze = obj => {
