@@ -11,6 +11,7 @@
     "jsverify": "^0.8.4"
   },
   "dependencies": {
+    "@medic/cht-datasource": "file:../cht-datasource",
     "@medic/contact-types-utils": "file:../contact-types-utils",
     "@medic/contacts": "file:../contacts",
     "@medic/couch-request": "file:../couch-request",
