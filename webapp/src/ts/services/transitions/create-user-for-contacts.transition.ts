@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DataContext, Person, Place, Qualifier } from '@medic/cht-datasource';
+import { Person, Place, Qualifier } from '@medic/cht-datasource';
 
 import { Doc, Transition } from '@mm-services/transitions/transition';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
