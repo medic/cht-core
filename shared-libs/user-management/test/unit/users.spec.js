@@ -13,7 +13,7 @@ const lineage = require('../../src/libs/lineage');
 const passwords = require('../../src/libs/passwords');
 const roles = require('../../src/roles');
 const { Person, Place } = require('@medic/cht-datasource');
-const { people, places }  = require('@medic/contacts')(config, db);
+const { people, places }  = require('@medic/contacts')(config, db, dataContext);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
 const facilityA = { _id: 'a', name: 'aaron' };

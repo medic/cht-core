@@ -13,7 +13,7 @@ const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
 const { Person, Place, Qualifier } = require('@medic/cht-datasource');
-const { people, places } = require('@medic/contacts')(config, db);
+const { people, places } = require('@medic/contacts')(config, db, dataContext);
 
 const USER_PREFIX = 'org.couchdb.user:';
 

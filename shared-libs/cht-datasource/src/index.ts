@@ -15,7 +15,7 @@
  *
  * const getPerson = Person.v1.get(dataContext);
  * // Or
- * const getPerson = dataContext.get(Person.v1.get);
+ * const getPerson = dataContext.bind(Person.v1.get);
  *
  * const myUuid = 'my-uuid';
  * const myPerson = await getPerson(Qualifier.byUuid(uuid));

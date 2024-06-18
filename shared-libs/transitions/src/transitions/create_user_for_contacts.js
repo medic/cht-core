@@ -3,7 +3,7 @@ const db = require('../db');
 const dataContext = require('../data-context');
 const { Person, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
-const { people } = require('@medic/contacts')(config, db);
+const { people } = require('@medic/contacts')(config, db, dataContext);
 const { users } = require('@medic/user-management')(config, db, dataContext);
 
 const NAME = 'create_user_for_contacts';

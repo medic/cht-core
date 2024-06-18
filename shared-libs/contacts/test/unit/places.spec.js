@@ -3,10 +3,12 @@ chai.use(require('chai-as-promised'));
 const sinon = require('sinon');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
+const dataContext = require('../../src/libs/data-context');
 const controller = require('../../src/places');
 const people = require('../../src/people');
 const cutils = require('../../src/libs/utils');
 const lineage = require('../../src/libs/lineage');
+const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypesUtils = require('@medic/contact-types-utils');
 
 let examplePlace;
@@ -61,11 +63,12 @@ const contactTypes = [
 ];
 
 describe('places controller', () => {
-  let fetchHydratedDoc;
+  let getWithLineage;
 
   beforeEach(() => {
     config.init({ get: sinon.stub() });
     db.init({ medic: { post: sinon.stub(), allDocs: sinon.stub() } });
+    dataContext.init({ bind: sinon.stub() });
     examplePlace = {
       type: 'clinic',
       name: 'St. Paul',
@@ -74,7 +77,8 @@ describe('places controller', () => {
     config.get.returns({ contact_types: contactTypes });
     lineage.init(require('@medic/lineage')(Promise, db.medic));
 
-    fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc');
+    getWithLineage = sinon.stub();
+    dataContext.bind.returns(getWithLineage);
   });
 
   afterEach(() => {
@@ -192,15 +196,14 @@ describe('places controller', () => {
   });
 
   describe('getPlace', () => {
+    it('returns custom message on 404 errors.', async () => {
+      getWithLineage.resolves(null);
 
-    it('returns custom message on 404 errors.', done => {
-      fetchHydratedDoc.rejects({ status: 404 });
-      controller.getPlace('x').catch(err => {
-        chai.expect(err.message).to.equal('Failed to find place.');
-        done();
-      });
+      await chai.expect(controller.getPlace('x')).to.be.rejectedWith('Failed to find place.');
+
+      chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
+      chai.expect(getWithLineage.calledOnceWithExactly({ uuid: 'x' })).to.be.true;
     });
-
   });
 
   describe('createPlaces', () => {
@@ -250,7 +253,7 @@ describe('places controller', () => {
       });
     });
 
-    it('supports objects with name and right type.', () => {
+    it('supports objects with name and right type.', async () => {
       const place = {
         name: 'CHP Family',
         type: 'clinic',
@@ -285,15 +288,15 @@ describe('places controller', () => {
           return Promise.resolve({ id: 'ghi' });
         }
       });
-      fetchHydratedDoc.callsFake(id => {
-        if (id === 'abc') {
+      getWithLineage.callsFake(({ uuid }) => {
+        if (uuid === 'abc') {
           return Promise.resolve({
             _id: 'abc',
             name: 'CHP Branch One',
             type: 'district_hospital'
           });
         }
-        if (id === 'def') {
+        if (uuid === 'def') {
           return Promise.resolve({
             _id: 'def',
             name: 'CHP Area One',
@@ -305,7 +308,7 @@ describe('places controller', () => {
             }
           });
         }
-        if (id === 'ghi') {
+        if (uuid === 'ghi') {
           return Promise.resolve({
             _id: 'ghi',
             name: 'CHP Family',
@@ -323,12 +326,15 @@ describe('places controller', () => {
           });
         }
       });
-      return controller._createPlaces(place).then(actual => {
-        chai.expect(actual).to.deep.equal({ id: 'ghi' });
-      });
+
+      const actual = await controller._createPlaces(place);
+
+      chai.expect(actual).to.deep.equal({ id: 'ghi' });
+      chai.expect(dataContext.bind.args).to.deep.equal([[Place.v1.getWithLineage], [Place.v1.getWithLineage]]);
+      chai.expect(getWithLineage.args).to.deep.equal([[{ uuid: 'abc' }], [{ uuid: 'def' }]]);
     });
 
-    it('creates contacts', () => {
+    it('creates contacts', async () => {
       const place = {
         name: 'CHP Family',
         type: 'health_center',
@@ -363,7 +369,7 @@ describe('places controller', () => {
         return Promise.resolve({ id: 'hc', rev: '2' });
       });
 
-      fetchHydratedDoc.withArgs('hc').resolves({
+      getWithLineage.withArgs(Qualifier.byUuid('hc')).resolves({
         name: 'CHP Family',
         type: 'health_center',
         parent: {
@@ -372,22 +378,24 @@ describe('places controller', () => {
           type: 'district_hospital'
         }
       });
-      fetchHydratedDoc.withArgs('ad06d137').resolves({
+      getWithLineage.withArgs(Qualifier.byUuid('ad06d137')).resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
         type: 'district_hospital'
       });
 
-      return controller._createPlaces(place).then(actual => {
-        chai.expect(db.medic.post.callCount).to.equal(2);
-        chai.expect(actual).to.deep.equal({
-          id: 'hc',
-          rev: '2',
-          contact: {
-            id: 'qwe',
-          }
-        });
+      const actual = await controller._createPlaces(place);
+
+      chai.expect(db.medic.post.callCount).to.equal(2);
+      chai.expect(actual).to.deep.equal({
+        id: 'hc',
+        rev: '2',
+        contact: {
+          id: 'qwe',
+        }
       });
+      chai.expect(dataContext.bind.args).to.deep.equal([[Place.v1.getWithLineage], [Place.v1.getWithLineage]]);
+      chai.expect(getWithLineage.args).to.deep.equal([[Qualifier.byUuid('ad06d137')], [Qualifier.byUuid('hc')]]);
     });
 
     it('returns err if contact does not have name', done => {
@@ -412,15 +420,13 @@ describe('places controller', () => {
         type: 'district_hospital',
         contact: 'person'
       };
-      fetchHydratedDoc.rejects({ status: 404 });
+      getWithLineage.resolves(null);
       const post = db.medic.post;
-      try {
-        await controller._createPlaces(place);
-        chai.expect.fail('Call should throw');
-      } catch (err) {
-        chai.expect(err.message).to.equal('Failed to find person.');
-        chai.expect(post.callCount).to.equal(0);
-      }
+      await chai.expect(controller._createPlaces(place)).to.be.rejectedWith('Failed to find person.');
+
+      chai.expect(post.callCount).to.equal(0);
+      chai.expect(dataContext.bind.calledOnce).to.be.true;
+      chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('person'))).to.be.true;
     });
 
     it('rejects contacts with wrong type', done => {
@@ -441,13 +447,13 @@ describe('places controller', () => {
     });
 
 
-    it('supports parents defined as uuids.', () => {
+    it('supports parents defined as uuids.', async () => {
       const place = {
         name: 'CHP Area One',
         type: 'health_center',
         parent: 'ad06d137'
       };
-      fetchHydratedDoc.resolves({
+      getWithLineage.resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
         type: 'district_hospital'
@@ -461,9 +467,12 @@ describe('places controller', () => {
         chai.expect(doc.parent.type).to.equal(undefined); // minified
         return Promise.resolve({ id: 'abc123' });
       });
-      return controller._createPlaces(place).then(actual => {
-        chai.expect(actual).to.deep.equal({ id: 'abc123' });
-      });
+
+      const actual = await controller._createPlaces(place);
+
+      chai.expect(actual).to.deep.equal({ id: 'abc123' });
+      chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
+      chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('ad06d137'))).to.be.true;
     });
 
     it('rejects invalid reported_date.', done => {
@@ -651,13 +660,12 @@ describe('places controller', () => {
     });
 
     it('rejects if contact does not exist', async () => {
-      fetchHydratedDoc.rejects({ status: 404 });
-      try {
-        await controller._preparePlaceContact('test');
-        chai.expect.fail('Call should throw');
-      } catch (err) {
-        chai.expect(err.message).to.equal('Failed to find person.');
-      }
+      getWithLineage.resolves(null);
+
+      await chai.expect(controller._preparePlaceContact('test')).to.be.rejectedWith('Failed to find person.');
+
+      chai.expect(dataContext.bind.calledOnce).to.be.true;
+      chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('test'))).to.be.true;
     });
   });
 

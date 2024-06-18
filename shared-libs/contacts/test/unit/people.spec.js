@@ -4,19 +4,20 @@ const places = require('../../src/places');
 const cutils = require('../../src/libs/utils');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
+const dataContext = require('../../src/libs/data-context');
 const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
+const { Person } = require('@medic/cht-datasource');
 
 describe('people controller', () => {
-  let fetchHydratedDoc;
   let minifyLineage;
 
   beforeEach(() => {
     config.init({ get: sinon.stub() });
     db.init({ medic: { post: sinon.stub() } });
-    fetchHydratedDoc = sinon.stub();
+    dataContext.init({ bind: sinon.stub() });
     minifyLineage = sinon.stub();
-    lineage.init({ fetchHydratedDoc, minifyLineage });
+    lineage.init({ minifyLineage });
   });
 
   afterEach(() => {
@@ -63,26 +64,26 @@ describe('people controller', () => {
   });
 
   describe('getPerson', () => {
+    let getWithLineage;
 
-    it('returns custom message on 404 errors.', done => {
-      fetchHydratedDoc.rejects({status: 404});
-      controller._getPerson('x').catch(err => {
-        chai.expect(err.message).to.equal('Failed to find person.');
-        done();
-      });
+    beforeEach(() => {
+      getWithLineage = sinon.stub();
+      dataContext.bind.returns(getWithLineage);
     });
 
-    it('returns not found message if doc is wrong type.', done => {
-      fetchHydratedDoc.resolves({type: 'clinic'});
-      controller._getPerson('x').catch(err => {
-        chai.expect(err.message).to.equal('Failed to find person.');
-        done();
-      });
+    afterEach(() => chai.expect(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true);
+
+    it('throws error when person not found', async () => {
+      getWithLineage.resolves(null);
+
+      await chai.expect(controller._getPerson('x')).to.be.rejectedWith('Failed to find person.');
+
+      chai.expect(getWithLineage.calledOnceWithExactly({ uuid: 'x' })).to.be.true;
     });
 
     it('succeeds and returns doc when person type.', () => {
       config.get.returns([{ id: 'person', person: true }]);
-      fetchHydratedDoc.resolves({type: 'person'});
+      getWithLineage.resolves({type: 'person'});
       return controller._getPerson('x').then(doc => {
         chai.expect(doc).to.deep.equal({ type: 'person' });
       });
