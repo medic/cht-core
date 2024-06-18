@@ -30,6 +30,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
 
   selectedContactDoc;
   hasNestedContacts = false;
+  isUserFacility = false;
   contactsList;
   useOldActionBar = false;
 
@@ -94,16 +95,22 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
     }
     return this.userSettingsService
       .get()
-      .then(userSettings => this.userSettings = userSettings)
+      .then(userSettings => {
+        this.userSettings = userSettings;
+        this.checkUserFacility();
+      })
       .catch(error => console.error('Error fetching user settings', error));
+  }
+
+  private checkUserFacility() {
+    if (this.sessionService.isAdmin()) {
+      return false;
+    }
+    this.isUserFacility = this.userSettings?.facility_id.includes(this.selectedContactDoc?._id);
   }
 
   deleteContact() {
     this.globalActions.deleteDocConfirm(this.selectedContactDoc);
-  }
-
-  isContactInUserFacility() {
-    return this.userSettings?.facility_id.includes(this.selectedContactDoc?._id);
   }
 
   displayEditOption() {

@@ -48,7 +48,7 @@ const scrollToBottomOfModal = async () => {
   });
 };
 
-const inputAddUserFields = async (username, fullname, role, place, contact, password, confirmPassword = password) => {
+const inputAddUserFields = async (username, fullname, role, places, contact, password, confirmPassword = password) => {
   await (await userName()).setValue(username);
   await (await userFullName()).setValue(fullname);
   await (await $(`#role-select input[value="${role}"]`)).click();
@@ -57,8 +57,14 @@ const inputAddUserFields = async (username, fullname, role, place, contact, pass
   // scrollIntoView doesn't work because they're within a scrollable div (the modal)
   await scrollToBottomOfModal();
 
-  if (!_.isEmpty(place)) {
-    await selectPlace(place);
+  if (!_.isEmpty(places)) {
+    if (Array.isArray(places)) {
+      for (const name of places) {
+        await selectPlace([name]);
+      }
+    } else {
+      await selectPlace([places]);
+    }
   }
 
   if (!_.isEmpty(contact)) {
@@ -90,7 +96,7 @@ const setSelect2 = async (id, value) => {
   await option.click();
 };
 
-const setPlaceSelect2 = async (value) => {
+const setPlaceSelectMultiple = async (value) => {
   const input = await $(`span.select2-selection--multiple`);
   await input.waitForExist();
   await input.click();
@@ -106,8 +112,10 @@ const setPlaceSelect2 = async (value) => {
   await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
 };
 
-const selectPlace = async (place) => {
-  await setPlaceSelect2(place);
+const selectPlace = async (places) => {
+  for (const place of places) {
+    await setPlaceSelectMultiple(place);
+  }
 };
 
 const selectContact = async (associatedContact) => {
