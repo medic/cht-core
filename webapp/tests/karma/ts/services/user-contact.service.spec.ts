@@ -8,18 +8,13 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('UserContact service', () => {
-  const uuidQualifier = { uuid: 'uuid' };
   let service: UserContactService;
-  let byUuid;
   let getPerson;
   let bind;
   let UserSettings;
 
   beforeEach(() => {
     UserSettings = sinon.stub();
-    byUuid = sinon
-      .stub(Qualifier, 'byUuid')
-      .returns(uuidQualifier);
     getPerson = sinon.stub();
     bind = sinon
       .stub()
@@ -44,7 +39,6 @@ describe('UserContact service', () => {
 
     await expect(service.get()).to.be.rejectedWith('boom');
 
-    expect(byUuid.notCalled).to.be.true;
     expect(bind.notCalled).to.be.true;
     expect(getPerson.notCalled).to.be.true;
   });
@@ -55,7 +49,6 @@ describe('UserContact service', () => {
     const userContact = await service.get();
 
     expect(userContact).to.be.null;
-    expect(byUuid.notCalled).to.be.true;
     expect(bind.notCalled).to.be.true;
     expect(getPerson.notCalled).to.be.true;
   });
@@ -66,7 +59,6 @@ describe('UserContact service', () => {
     const userContact = await service.get();
 
     expect(userContact).to.be.null;
-    expect(byUuid.notCalled).to.be.true;
     expect(bind.notCalled).to.be.true;
     expect(getPerson.notCalled).to.be.true;
   });
@@ -78,9 +70,8 @@ describe('UserContact service', () => {
     const userContact = await service.get();
 
     expect(userContact).to.be.null;
-    expect(byUuid.calledOnceWithExactly('not-found')).to.be.true;
     expect(bind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
-    expect(getPerson.calledOnceWithExactly(uuidQualifier)).to.be.true;
+    expect(getPerson.calledOnceWithExactly(Qualifier.byUuid('not-found'))).to.be.true;
   });
 
   it('returns error from getting contact', async () => {
@@ -89,9 +80,8 @@ describe('UserContact service', () => {
 
     await expect(service.get()).to.be.rejectedWith('boom');
 
-    expect(byUuid.calledOnceWithExactly('nobody')).to.be.true;
     expect(bind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
-    expect(getPerson.calledOnceWithExactly(uuidQualifier)).to.be.true;
+    expect(getPerson.calledOnceWithExactly(Qualifier.byUuid('nobody'))).to.be.true;
   });
 
   it('returns contact with lineage', async () => {
@@ -102,9 +92,8 @@ describe('UserContact service', () => {
     const actual = await service.get();
 
     expect(actual).to.equal(expected);
-    expect(byUuid.calledOnceWithExactly(expected._id)).to.be.true;
     expect(bind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
-    expect(getPerson.calledOnceWithExactly(uuidQualifier)).to.be.true;
+    expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(expected._id))).to.be.true;
   });
 
   it('returns contact without lineage', async () => {
@@ -115,8 +104,7 @@ describe('UserContact service', () => {
     const actual = await service.get({ hydrateLineage: false });
 
     expect(actual).to.equal(expected);
-    expect(byUuid.calledOnceWithExactly(expected._id)).to.be.true;
     expect(bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-    expect(getPerson.calledOnceWithExactly(uuidQualifier)).to.be.true;
+    expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(expected._id))).to.be.true;
   });
 });

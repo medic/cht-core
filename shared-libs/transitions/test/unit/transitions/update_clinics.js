@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const { Person } = require('@medic/cht-datasource');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
@@ -228,7 +228,7 @@ describe('update clinic', () => {
     assert.equal(doc.contact._rev, '2');
     assert.equal(doc.contact.name, 'zenith');
     assert.isTrue(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage));
-    assert.isTrue(getPersonWithLineage.calledOnceWithExactly({ uuid: 'z' }));
+    assert.isTrue(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('z')));
   });
 
   /*

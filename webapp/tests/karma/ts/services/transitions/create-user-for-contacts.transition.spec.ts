@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
-import { Person, Place } from '@medic/cht-datasource';
+import { Person, Place, Qualifier } from '@medic/cht-datasource';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 import { CreateUserForContactsTransition } from '@mm-services/transitions/create-user-for-contacts.transition';
 import sinon from 'sinon';
@@ -233,8 +233,8 @@ describe('Create User for Contacts Transition', () => {
         }]);
         expect(userContactService.get.callCount).to.equal(1);
         expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get], [Place.v1.get]]);
-        expect(getPerson.calledOnceWithExactly({ uuid: NEW_CONTACT._id })).to.be.true;
-        expect(getPlace.calledOnceWithExactly({ uuid: parentPlace._id })).to.be.true;
+        expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
+        expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
@@ -257,7 +257,7 @@ describe('Create User for Contacts Transition', () => {
         }]);
         expect(userContactService.get.callCount).to.equal(1);
         expect(chtDatasourceService.bind.args).to.deep.equal([[Place.v1.get]]);
-        expect(getPlace.calledOnceWithExactly({ uuid: parentPlace._id })).to.be.true;
+        expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
@@ -312,7 +312,7 @@ describe('Create User for Contacts Transition', () => {
         // User replaced again
         expect(userContactService.get.callCount).to.equal(1);
         expect(chtDatasourceService.bind.args).to.deep.equal([[Place.v1.get]]);
-        expect(getPlace.calledOnceWithExactly({ uuid: parentPlace._id })).to.be.true;
+        expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, secondNewContact]);
       });
@@ -330,8 +330,8 @@ describe('Create User for Contacts Transition', () => {
         expect(parentPlace.contact).to.deep.equal({ _id: 'different-contact', });
         expect(userContactService.get.callCount).to.equal(1);
         expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get], [Place.v1.get]]);
-        expect(getPerson.calledOnceWithExactly({ uuid: NEW_CONTACT._id })).to.be.true;
-        expect(getPlace.calledOnceWithExactly({ uuid: parentPlace._id })).to.be.true;
+        expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
+        expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
@@ -348,8 +348,8 @@ describe('Create User for Contacts Transition', () => {
         expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
         expect(userContactService.get.callCount).to.equal(1);
         expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get], [Place.v1.get]]);
-        expect(getPerson.calledOnceWithExactly({ uuid: NEW_CONTACT._id })).to.be.true;
-        expect(getPlace.calledOnceWithExactly({ uuid: PARENT_PLACE._id })).to.be.true;
+        expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
+        expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(PARENT_PLACE._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
@@ -370,7 +370,7 @@ describe('Create User for Contacts Transition', () => {
           expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
           expect(userContactService.get.callCount).to.equal(1);
           expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get]]);
-          expect(getPerson.calledOnceWithExactly({ uuid: newContact._id })).to.be.true;
+          expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(newContact._id))).to.be.true;
           expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
           expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, newContact]);
           expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
@@ -431,7 +431,7 @@ describe('Create User for Contacts Transition', () => {
 
         expect(userContactService.get.callCount).to.equal(1);
         expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get]]);
-        expect(getPerson.calledOnceWithExactly({ uuid: NEW_CONTACT._id })).to.be.true;
+        expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
       });
@@ -449,7 +449,7 @@ describe('Create User for Contacts Transition', () => {
 
         expect(userContactService.get.callCount).to.equal(1);
         expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get]]);
-        expect(getPerson.calledOnceWithExactly({ uuid: NEW_CONTACT._id })).to.be.true;
+        expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
       });

@@ -12,7 +12,7 @@ const facility = require('../../src/libs/facility');
 const lineage = require('../../src/libs/lineage');
 const passwords = require('../../src/libs/passwords');
 const roles = require('../../src/roles');
-const { Person, Place } = require('@medic/cht-datasource');
+const { Person, Place, Qualifier } = require('@medic/cht-datasource');
 const { people, places }  = require('@medic/contacts')(config, db, dataContext);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
@@ -1231,7 +1231,7 @@ describe('Users service', () => {
       await service.__get__('createContact')(userData, response);
 
       chai.expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-      chai.expect(getPerson.calledOnceWithExactly({ uuid: 'abc' })).to.be.true;
+      chai.expect(getPerson.calledOnceWithExactly(Qualifier.byUuid('abc'))).to.be.true;
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0]).to.deep.equal([expectedContact]);
 
@@ -1260,7 +1260,7 @@ describe('Users service', () => {
       await service.__get__('createContact')(userData, response);
 
       chai.expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-      chai.expect(getPerson.calledOnceWithExactly({ uuid: 'abc' })).to.be.true;
+      chai.expect(getPerson.calledOnceWithExactly(Qualifier.byUuid('abc'))).to.be.true;
       chai.expect(db.medic.put.notCalled).to.be.true;
 
       chai.expect(userData.contact).to.deep.equal(expectedContact);
@@ -2436,7 +2436,7 @@ describe('Users service', () => {
       chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
       chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
       chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.get)).to.be.true;
-      chai.expect(getPlace.calledOnceWithExactly({ uuid: 'place_id' })).to.be.true;
+      chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid('place_id'))).to.be.true;
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
         _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent',
@@ -2475,7 +2475,7 @@ describe('Users service', () => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
         chai.expect(dataContext.bind.args).to.deep.equal([[Place.v1.get], [Place.v1.get]]);
-        chai.expect(getPlace.args).to.deep.equal([[{ uuid: 'place_id' }], [{ uuid: 'place_id' }]]);
+        chai.expect(getPlace.args).to.deep.equal([[Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')]]);
         chai.expect(db.medic.put.callCount).to.equal(2);
         chai.expect(db.medic.put.args[0]).to.deep.equal([{
           _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
@@ -2522,7 +2522,7 @@ describe('Users service', () => {
         [Place.v1.get], [Place.v1.get], [Place.v1.get], [Place.v1.get]
       ]);
       chai.expect(getPlace.args).to.deep.equal([
-        [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }]
+        [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')]
       ]);
       chai.expect(db.medic.put.callCount).to.equal(4);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
@@ -2575,7 +2575,7 @@ describe('Users service', () => {
         [Place.v1.get], [Place.v1.get], [Place.v1.get], [Place.v1.get]
       ]);
       chai.expect(getPlace.args).to.deep.equal([
-        [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }], [{ uuid: 'place_id' }]
+        [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')]
       ]);
       chai.expect(db.medic.put.callCount).to.equal(4);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
@@ -2612,7 +2612,7 @@ describe('Users service', () => {
       await chai.expect(service.createUser(userData)).to.be.rejectedWith({ status: 400, reason: 'not-a-conflict' });
 
       chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.get)).to.be.true;
-      chai.expect(getPlace.calledOnceWithExactly({ uuid: 'place_id' })).to.be.true;
+      chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid('place_id'))).to.be.true;
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
         _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',

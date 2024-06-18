@@ -26,8 +26,6 @@ describe('Place Controller', () => {
 
   describe('v1', () => {
     describe('get', () => {
-      const qualifier = Object.freeze({ uuid: 'uuid' });
-      let byUuid;
       let placeGet;
       let placeGetWithLineage;
 
@@ -36,9 +34,6 @@ describe('Place Controller', () => {
           params: { uuid: 'uuid' },
           query: { }
         };
-        byUuid = sinon
-          .stub(Qualifier, 'byUuid')
-          .returns(qualifier);
         placeGet = sinon.stub();
         placeGetWithLineage = sinon.stub();
         dataContextBind
@@ -57,8 +52,7 @@ describe('Place Controller', () => {
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
-        expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(place)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
@@ -73,9 +67,8 @@ describe('Place Controller', () => {
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(placeGet.notCalled).to.be.true;
-        expect(placeGetWithLineage.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(placeGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(place)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
@@ -89,8 +82,7 @@ describe('Place Controller', () => {
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
-        expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(place)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
@@ -103,8 +95,7 @@ describe('Place Controller', () => {
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
-        expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
@@ -122,7 +113,6 @@ describe('Place Controller', () => {
 
         expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
-        expect(byUuid.notCalled).to.be.true;
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;

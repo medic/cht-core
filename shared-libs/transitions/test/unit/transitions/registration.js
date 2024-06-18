@@ -7,7 +7,7 @@ const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const validation = require('@medic/validation');
-const { Place } = require('@medic/cht-datasource');
+const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const phoneNumberParser = require('@medic/phone-number');
 
@@ -194,7 +194,7 @@ describe('registration', () => {
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: parentId }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
       saveDoc.args[0][0].parent._id.should.equal(parentId);
@@ -273,7 +273,7 @@ describe('registration', () => {
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: parentId }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
       saveDoc.args[0][0].phone.should.equal(patientPhoneNumber);
@@ -350,7 +350,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: parentId }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(0);
     });
 
@@ -416,7 +416,7 @@ describe('registration', () => {
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: parentId }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
       (typeof saveDoc.args[0][0].phone).should.be.equal('undefined');
@@ -497,7 +497,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'papa' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.args[0][0].patient_id.should.equal(patientId);
       doc.patient_id.should.equal(patientId);
       (typeof doc.errors).should.equal('undefined');
@@ -551,7 +551,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'papa' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].type.should.equal('contact');
       saveDoc.args[0][0].contact_type.should.equal('patient');
@@ -597,7 +597,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'papa' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       (typeof doc.patient_id).should.equal('undefined');
       doc.errors.should.deep.equal([
         {
@@ -649,7 +649,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'papa' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       (typeof doc.patient_id).should.be.equal('undefined');
       doc.errors.should.deep.equal([
         {
@@ -698,7 +698,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'papa' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
     });
@@ -748,7 +748,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'papa' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
     });
@@ -795,7 +795,7 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'papa' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
     });
@@ -1516,7 +1516,7 @@ describe('registration', () => {
       db.medic.query.args[0]
         .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
-      getPlace.calledOnceWithExactly({ uuid: 'west_hc' }).should.be.true;
+      getPlace.calledOnceWithExactly(Qualifier.byUuid('west_hc')).should.be.true;
       db.medic.post.callCount.should.equal(1);
       db.medic.post.args[0].should.deep.equal([{
         name: 'new clinic',

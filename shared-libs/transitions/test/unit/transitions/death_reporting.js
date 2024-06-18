@@ -4,7 +4,7 @@ const db = require('../../../src/db');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
-const { Person } = require('@medic/cht-datasource');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 
 describe('death_reporting', () => {
   let transition;
@@ -57,7 +57,7 @@ describe('death_reporting', () => {
 
       changed.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
-      getPerson.calledOnceWithExactly({ uuid: patientId }).should.be.true;
+      getPerson.calledOnceWithExactly(Qualifier.byUuid(patientId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0].should.deep.equal([{
         _id: patientId,
@@ -90,7 +90,7 @@ describe('death_reporting', () => {
 
       changed.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
-      getPerson.calledOnceWithExactly({ uuid: patient._id }).should.be.true;
+      getPerson.calledOnceWithExactly(Qualifier.byUuid(patient._id)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0].should.deep.equal([{
         name: 'greg',
@@ -124,7 +124,7 @@ describe('death_reporting', () => {
 
       changed.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
-      getPerson.calledOnceWithExactly({ uuid: patient._id }).should.be.true;
+      getPerson.calledOnceWithExactly(Qualifier.byUuid(patient._id)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0].should.deep.equal([{
         name: 'greg',
@@ -161,7 +161,7 @@ describe('death_reporting', () => {
 
       changed.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
-      getPerson.calledOnceWithExactly({ uuid: patientId }).should.be.true;
+      getPerson.calledOnceWithExactly(Qualifier.byUuid(patientId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0].should.deep.equal([{
         name: 'greg',
@@ -191,7 +191,7 @@ describe('death_reporting', () => {
 
       changed.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
-      getPerson.calledOnceWithExactly({ uuid: patientId }).should.be.true;
+      getPerson.calledOnceWithExactly(Qualifier.byUuid(patientId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0].should.deep.equal([{ name: 'greg', _id: patientId }]);
     });
@@ -217,7 +217,7 @@ describe('death_reporting', () => {
 
       changed.should.equal(false);
       dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
-      getPerson.calledOnceWithExactly({ uuid: patientId }).should.be.true;
+      getPerson.calledOnceWithExactly(Qualifier.byUuid(patientId)).should.be.true;
       saveDoc.callCount.should.equal(0);
     });
 

@@ -4,7 +4,7 @@ const rewire = require('rewire');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const dataContext = require('../../../src/data-context');
-const { Person } = require('@medic/cht-datasource');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const { people } = require('@medic/contacts')(config, db, dataContext);
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const contactTypeUtils = require('@medic/contact-types-utils');
@@ -325,7 +325,7 @@ describe('create_user_for_contacts', () => {
       expectUsersCreated([{ contact: doc, user: doc }]);
       expect(doc.user_for_contact.create).to.not.exist;
       expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-      expect(getPerson.calledOnceWithExactly({ uuid: doc._id })).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(doc._id))).to.be.true;
     });
 
     it(`creates user for new contact with create flag of 'true' and single role`, async () => {
@@ -338,7 +338,7 @@ describe('create_user_for_contacts', () => {
       expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
       expect(doc.user_for_contact.create).to.not.exist;
       expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-      expect(getPerson.calledOnceWithExactly({ uuid: doc._id })).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(doc._id))).to.be.true;
     });
 
     it('records error when creating user when an error is thrown generating a new username', async () => {
@@ -420,7 +420,7 @@ describe('create_user_for_contacts', () => {
       expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
       expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-      expect(getPerson.calledOnceWithExactly({ uuid: NEW_CONTACT._id })).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
     });
 
     [
@@ -752,7 +752,7 @@ describe('create_user_for_contacts', () => {
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
       expect(doc.user_for_contact.create).to.not.exist;
       expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-      expect(getPerson.calledOnceWithExactly({ uuid: NEW_CONTACT._id })).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
     });
   });
 });

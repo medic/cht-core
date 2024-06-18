@@ -202,7 +202,7 @@ describe('places controller', () => {
       await chai.expect(controller.getPlace('x')).to.be.rejectedWith('Failed to find place.');
 
       chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
-      chai.expect(getWithLineage.calledOnceWithExactly({ uuid: 'x' })).to.be.true;
+    chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('x'))).to.be.true;
     });
   });
 
@@ -331,7 +331,7 @@ describe('places controller', () => {
 
       chai.expect(actual).to.deep.equal({ id: 'ghi' });
       chai.expect(dataContext.bind.args).to.deep.equal([[Place.v1.getWithLineage], [Place.v1.getWithLineage]]);
-      chai.expect(getWithLineage.args).to.deep.equal([[{ uuid: 'abc' }], [{ uuid: 'def' }]]);
+      chai.expect(getWithLineage.args).to.deep.equal([[Qualifier.byUuid('abc')], [Qualifier.byUuid('def')]]);
     });
 
     it('creates contacts', async () => {

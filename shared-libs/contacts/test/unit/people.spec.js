@@ -7,7 +7,7 @@ const db = require('../../src/libs/db');
 const dataContext = require('../../src/libs/data-context');
 const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
-const { Person } = require('@medic/cht-datasource');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 
 describe('people controller', () => {
   let minifyLineage;
@@ -78,7 +78,7 @@ describe('people controller', () => {
 
       await chai.expect(controller._getPerson('x')).to.be.rejectedWith('Failed to find person.');
 
-      chai.expect(getWithLineage.calledOnceWithExactly({ uuid: 'x' })).to.be.true;
+      chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('x'))).to.be.true;
     });
 
     it('succeeds and returns doc when person type.', () => {
