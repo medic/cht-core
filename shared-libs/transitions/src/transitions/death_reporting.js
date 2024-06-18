@@ -66,7 +66,13 @@ module.exports = {
 
     const getPerson = dataContext.bind(Person.v1.get);
     return getPerson(Qualifier.byUuid(hydratedPatient._id))
-      .then(patient => updatePatient(patient, change.doc))
+      .then(patient => {
+        if (!patient) {
+          return Promise.reject(`Patient not found: ${hydratedPatient._id}`);
+        }
+
+        return updatePatient(patient, change.doc);
+      })
       .then(changed => !!changed);
   },
 };

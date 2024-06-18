@@ -1,4 +1,5 @@
 require('chai').should();
+const { expect } = require('chai');
 const sinon = require('sinon');
 const db = require('../../../src/db');
 const utils = require('../../../src/lib/utils');
@@ -216,6 +217,30 @@ describe('death_reporting', () => {
       const changed = await transition.onMatch(change);
 
       changed.should.equal(false);
+      dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
+      getPerson.calledOnceWithExactly(Qualifier.byUuid(patientId)).should.be.true;
+      saveDoc.callCount.should.equal(0);
+    });
+
+    it('records an error when the patient cannot be found', async () => {
+      const patientId = '00001';
+      const patient = { name: 'greg', date_of_death: 13151549848, _id: patientId };
+      const change = {
+        doc: {
+          form: 'death-confirm',
+          fields: { patient_uuid: patientId },
+          patient: patient
+        },
+      };
+      config.get.returns({
+        mark_deceased_forms: ['death-confirm'],
+        undo_deceased_forms: ['death-undo'],
+      });
+      const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
+      getPerson.resolves(null);
+
+      await expect(transition.onMatch(change)).to.be.rejectedWith('Patient not found: 00001');
+
       dataContext.bind.calledOnceWithExactly(Person.v1.get).should.be.true;
       getPerson.calledOnceWithExactly(Qualifier.byUuid(patientId)).should.be.true;
       saveDoc.callCount.should.equal(0);
