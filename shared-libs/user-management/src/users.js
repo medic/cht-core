@@ -270,6 +270,9 @@ const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
   const getPlace = dataContext.bind(Place.v1.get);
   return getPlace(Qualifier.byUuid(data.place._id))
     .then(place => {
+      if (!place) {
+        return Promise.reject(`Place not found [${data.place._id}].`);
+      }
       if (preservePrimaryContact) {
         return;
       }

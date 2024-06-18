@@ -2620,6 +2620,32 @@ describe('Users service', () => {
       chai.expect(service.__get__('createUser').callCount).to.equal(0);
     });
 
+    it('should throw an error if no place is found', async () => {
+      userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'y', parent: 'parent' },
+        contact: { name: 'mickey' },
+        type: 'national-manager'
+      };
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+
+      const place = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
+      sinon.stub(places, 'getOrCreatePlace').resolves(place);
+      sinon.stub(places, 'getPlace').resolves(place);
+      sinon.stub(people, 'getOrCreatePerson').resolves({
+        _id: 'b',
+        name: 'mickey'
+      });
+      getPlace.resolves(null);
+
+      await chai.expect(service.createUser(userData)).to.be.rejectedWith(`Place not found [${place._id}].`);
+
+      chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.get)).to.be.true;
+      chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid('place_id'))).to.be.true;
+      chai.expect(db.medic.put.notCalled).to.be.true;
+    });
+
   });
 
   describe('updateUser', () => {
