@@ -202,7 +202,7 @@ describe('places controller', () => {
       await chai.expect(controller.getPlace('x')).to.be.rejectedWith('Failed to find place.');
 
       chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
-    chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('x'))).to.be.true;
+      chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('x'))).to.be.true;
     });
   });
 

@@ -2522,7 +2522,10 @@ describe('Users service', () => {
         [Place.v1.get], [Place.v1.get], [Place.v1.get], [Place.v1.get]
       ]);
       chai.expect(getPlace.args).to.deep.equal([
-        [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')]
+        [Qualifier.byUuid('place_id')],
+        [Qualifier.byUuid('place_id')],
+        [Qualifier.byUuid('place_id')],
+        [Qualifier.byUuid('place_id')]
       ]);
       chai.expect(db.medic.put.callCount).to.equal(4);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
@@ -2575,7 +2578,10 @@ describe('Users service', () => {
         [Place.v1.get], [Place.v1.get], [Place.v1.get], [Place.v1.get]
       ]);
       chai.expect(getPlace.args).to.deep.equal([
-        [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')], [Qualifier.byUuid('place_id')]
+        [Qualifier.byUuid('place_id')],
+        [Qualifier.byUuid('place_id')],
+        [Qualifier.byUuid('place_id')],
+        [Qualifier.byUuid('place_id')]
       ]);
       chai.expect(db.medic.put.callCount).to.equal(4);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
