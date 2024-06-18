@@ -71,6 +71,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
       this.selectedContactDoc = selectedContactDoc;
       this.loadingContent = loadingContent;
       this.snapshotData = snapshotData;
+      this.checkUserFacility();
     });
     this.subscription.add(storeSubscription);
 
@@ -95,10 +96,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
     }
     return this.userSettingsService
       .get()
-      .then(userSettings => {
-        this.userSettings = userSettings;
-        this.checkUserFacility();
-      })
+      .then(userSettings => this.userSettings = userSettings)
       .catch(error => console.error('Error fetching user settings', error));
   }
 
