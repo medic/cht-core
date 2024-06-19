@@ -91,7 +91,11 @@ describe('Performing an upgrade', () => {
     await (await upgradePage.deploymentInProgress()).waitForDisplayed();
     await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
 
-    await (await upgradePage.deploymentComplete()).waitForDisplayed();
+    if (testFrontend) {
+      // Old admin pages will not show the correct deployment complete message because of a change in API
+      // https://github.com/medic/cht-core/issues/9186
+      await (await upgradePage.deploymentComplete()).waitForDisplayed();
+    }
 
     const currentVersion = await upgradePage.getCurrentVersion();
     expect(version.getVersion(true)).to.include(currentVersion);
