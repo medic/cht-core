@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
@@ -93,7 +92,7 @@ angular
             phone: $scope.model.phone,
             // FacilitySelect is what binds to the select, place is there to
             // compare to later to see if it's changed once we've run computeFields();
-            facilitySelect: $scope.model.facility_id,
+            facilitySelect: $scope.model.facility_id || [],
             place: $scope.model.facility_id,
             roles: getRoles($scope.model.roles),
             // ^ Same with contactSelect vs. contact
