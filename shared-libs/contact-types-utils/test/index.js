@@ -155,6 +155,21 @@ describe('ContactType Utils', () => {
     });
   });
 
+  describe('isSameContactType', () => {
+    it('should return true for contacts of the same type', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'contact', contact_type: 'health_center' },
+        { type: 'contact', contact_type: 'health_center' },
+      ])).to.equal(true);
+    });
+    it('should return false for contacts of different type', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'contact', contact_type: 'health_center' },
+        { type: 'contact', contact_type: 'district_hospital' },
+      ])).to.equal(false);
+    });
+  });
+
   describe('isPlaceType', () => {
     it('should return false for no type', () => {
       chai.expect(utils.isPlaceType(false)).to.equal(false);
