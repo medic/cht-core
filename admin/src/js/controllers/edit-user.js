@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
@@ -103,6 +104,23 @@ angular
         });
     };
 
+    const fetchDocsByIds = (ids) => {
+      return DB()
+        .allDocs({ keys: ids, include_docs: true });
+    };
+
+    const usersPlaces = (ids) => {
+      return fetchDocsByIds(ids)
+        .then((docs) => processDocs(docs))
+        .then((filteredDocs) => filteredDocs.map((doc) => doc._id));
+    };
+
+    const processDocs = function (result) {
+      return result.rows
+        .filter((row) => row.doc && !row.value.deleted)
+        .map((row) => row.doc);
+    };
+
     this.setupPromise = determineEditUserModel()
       .then(model => {
         $scope.editUserModel = model;
@@ -118,11 +136,9 @@ angular
         const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
         Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
         const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
-        Select2Search(
-          $('#edit-user-profile [name=facilitySelect]'),
-          placeTypes,
-          { initialValue: $scope.editUserModel.facilitySelect }
-        );
+        return usersPlaces($scope.editUserModel.facilitySelect).then(facilityIds => {
+          Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes, { initialValue: facilityIds });
+        });
       });
 
     const validateRequired = (fieldName, fieldDisplayName) => {
@@ -285,7 +301,7 @@ angular
         return $q.resolve(true);
       }
 
-      return DB().allDocs({ keys: placeIds, include_docs: true })
+      return fetchDocsByIds(placeIds)
         .then(result => {
           const places = result.rows.map(row => row.doc);
           const isSameHierarchy = ContactTypes.isSameContactType(places);
