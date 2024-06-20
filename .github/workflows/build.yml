@@ -417,7 +417,7 @@ jobs:
       - name: Main Branch Only - Deploy to GH pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          personal_token: ${{ secrets.DEPOLY_TO_SITE }}
+          personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
           external_repository: medic/medic.github.io
           publish_dir: ./shared-libs/cht-datasource/docs
           user_name: medic-ci
