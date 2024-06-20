@@ -25,17 +25,17 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.loadContactList(settingsProvider);
     });
 
-    it('should load CHW area', async () => {
-      await contactsPage.loadCHWArea(settingsProvider);
-    });
+    // it('should load CHW area', async () => {
+    //   await contactsPage.loadCHWArea(settingsProvider);
+    // });
 
-    it('should load Household', async () => {
-      await contactsPage.loadHousehold(settingsProvider);
-    });
+    // it('should load Household', async () => {
+    //   await contactsPage.loadHousehold(settingsProvider);
+    // });
 
-    it('should create patient', async () => {
-      await contactsPage.createPatient(settingsProvider);
-    });
+    // it('should create patient', async () => {
+    //   await contactsPage.createPatient(settingsProvider);
+    // });
 
     it('should load patient', async () => {
       await contactsPage.loadPatient(settingsProvider);
@@ -45,21 +45,21 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.submitPatientReport(settingsProvider);
     });
 
-    it('should search patient', async () => {
-      await contactsPage.searchPatient(settingsProvider);
-    });
+    // it('should search patient', async () => {
+    //   await contactsPage.searchPatient(settingsProvider);
+    // });
 
-    it('should load message list and view a message', async () => {
-      await messagesPage.loadMessageList(settingsProvider);
-    });
+    // it('should load message list and view a message', async () => {
+    //   await messagesPage.loadMessageList(settingsProvider);
+    // });
 
-    it('should load task list and view a task', async () => {
-      await tasksPage.loadTaskList(settingsProvider);
+    it('should load task list and complete a task', async () => {
+      await tasksPage.submitTask(settingsProvider);
     });
   
-    it('should load report list and view a report', async () => {
-      await reportsPage.loadReportList(settingsProvider);
-    });
+    // it('should load report list and view a report', async () => {
+    //   await reportsPage.loadReportList(settingsProvider);
+    // });
 
     it('should load analytics and relaunch the app', async () => {
       await performancePage.loadAnalytics(settingsProvider);

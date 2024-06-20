@@ -165,7 +165,7 @@ module.exports = class Page {
     await this.waitForDisplayedAndRetry(MENU_LIST_TITLE);
   }
 
-  async searchContact (form) {
+  async searchContact(form) {
     const page = form.pages[0];
 
     await this.navigate(form.navigation);
@@ -174,6 +174,26 @@ module.exports = class Page {
 
     await this.navigate(form.postTestPath);
     await this.assertMany(form.postSubmitAssert);
+  }
+
+  async fillUpFormOnly(form, commonElements) {
+    const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
+    const FORM_PAGE_NEXT_SELECTOR = commonElements?.formNext || '//android.widget.Button[@text="Next >"]';
+
+    await this.navigate(form.navigation);
+    for (let i = 0; i < form.pages?.length; i++) {
+      const page = form.pages[i];
+
+      if (i > 0) {
+        await this.clickElement(FORM_PAGE_NEXT_SELECTOR);
+      }
+
+      await this.fillUpFormPage(page);
+    }
+
+    await this.clickElement(FORM_SUBMIT_SELECTOR);
+    await this.navigate(form.postTestPath);
+    await this.assertMany(form.postSubmitAsserts);
   }
 
   // ToDo: clean all these below after settings are done

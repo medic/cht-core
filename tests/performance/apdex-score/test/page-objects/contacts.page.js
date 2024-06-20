@@ -5,6 +5,7 @@ class ContactsPage extends Page {
   async loadContactList(settingsProvider) {
     const page = settingsProvider.getPage('contact-list');
     await super.loadAndAssertPage(page);
+    await super.toggleAirplaneMode('on');
   }
 
   async loadCHWArea(settingsProvider) {
