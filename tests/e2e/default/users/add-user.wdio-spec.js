@@ -11,21 +11,33 @@ const password = 'Jacktest@123';
 const incorrectpassword = 'Passwor';
 const places = placeFactory.generateHierarchy();
 const districtHospital = places.get('district_hospital');
+const districtHospital2 = placeFactory.place().build({
+  name: 'district_hospital',
+  type: 'district_hospital',
+});
 
 const person = personFactory.build(
   {
     parent: {
       _id: districtHospital._id,
       parent: districtHospital.parent
-    }
+    },
+    roles: [offlineUserRole]
   }
 );
 
-const docs = [...places.values(), person];
+
+const docs = [...places.values(), person, districtHospital2];
 
 describe('User Test Cases ->', () => {
 
   before(async () => {
+    const settings = await utils.getSettings();
+    const permissions = {
+      ...settings.permissions,
+      can_have_multiple_places: [offlineUserRole],
+    };
+    await utils.updateSettings({ permissions }, true);
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();
   });
@@ -48,6 +60,19 @@ describe('User Test Cases ->', () => {
         'Jack',
         onlineUserRole,
         districtHospital.name,
+        person.name,
+        password
+      );
+      await usersAdminPage.saveUser();
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([username]);
+    });
+
+    it('should add user with multiple places with permission', async () => {
+      await usersAdminPage.inputAddUserFields(
+        'new_jack',
+        'Jack',
+        offlineUserRole,
+        [districtHospital.name, districtHospital2.name],
         person.name,
         password
       );
@@ -93,6 +118,21 @@ describe('User Test Cases ->', () => {
       await usersAdminPage.saveUser(false);
       expect(await usersAdminPage.getPlaceErrorText()).to.contain('required');
       expect(await usersAdminPage.getContactErrorText()).to.contain('required');
+    });
+
+    it('should require user to have permission for multiple places', async () => {
+      await usersAdminPage.inputAddUserFields(
+        username,
+        'Jack',
+        onlineUserRole,
+        [districtHospital.name, districtHospital2.name],
+        person.name,
+        password
+      );
+      await usersAdminPage.saveUser(false);
+      expect(await usersAdminPage.getPlaceErrorText()).to.contain(
+        'The selected roles do not have permission to be assigned multiple places.'
+      );
     });
   });
 });
