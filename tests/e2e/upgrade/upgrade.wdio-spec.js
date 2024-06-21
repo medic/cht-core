@@ -91,9 +91,13 @@ describe('Performing an upgrade', () => {
     await upgradePage.expandPreReleasesAccordion();
 
     const installButton = await upgradePage.getInstallButton(BRANCH, TAG);
+    console.warn('BRANCH: '+BRANCH);
+    console.warn('TAG: '+TAG);
+    await browser.takeScreenshot();
     await installButton.click();
 
     const confirm = await upgradePage.upgradeModalConfirm();
+    await browser.takeScreenshot();
     await confirm.click();
 
     await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();

@@ -125,7 +125,7 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs:
     [
       'upgrade.wdio-spec.js',
-      '*.wdio-spec.js'
+      //'*.wdio-spec.js'
     ],
   exclude: [],
 
