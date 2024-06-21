@@ -90,7 +90,7 @@ jobs:
     name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -346,7 +346,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests, config-tests, test-cht-form]
+    needs: [build]
     name: Publish branch build
     runs-on: ubuntu-22.04
     timeout-minutes: 60
