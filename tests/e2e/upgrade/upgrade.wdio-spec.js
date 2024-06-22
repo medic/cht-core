@@ -100,7 +100,11 @@ describe('Performing an upgrade', () => {
     await (await upgradePage.deploymentInProgress()).waitForDisplayed();
     await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
 
-    await (await upgradePage.deploymentComplete()).waitForDisplayed();
+    if (testFrontend) {
+      // https://github.com/medic/cht-core/issues/9186
+      // this is an unfortunate incompatibility between current API and admin app in the old version
+      await (await upgradePage.deploymentComplete()).waitForDisplayed();
+    }
 
     const currentVersion = await upgradePage.getCurrentVersion();
     expect(version.getVersion(true)).to.include(currentVersion);
