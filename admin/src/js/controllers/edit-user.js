@@ -62,6 +62,22 @@ angular
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
 
+    /**
+     * * Ensures that facility_id is an array for backward compatibility.
+     * *
+     * * @returns {Array} The normalized facility_id as an array.
+     * */
+    const getFacilityId = function () {
+      if (!$scope.model.facility_id) {
+        $scope.model.facility_id = [];
+      }
+
+      if (!Array.isArray($scope.model.facility_id)) {
+        $scope.model.facility_id = [$scope.model.facility_id];
+      }
+      return $scope.model.facility_id;
+    };
+
     const determineEditUserModel = function() {
       // Edit a user that's not the current user.
       // $scope.model is the user object passed in by controller creating the Modal.
@@ -75,6 +91,7 @@ angular
             return $q.resolve({});
           }
 
+          const facilityId = getFacilityId();
           const tokenLoginData = $scope.model.token_login;
           const tokenLoginEnabled = tokenLoginData &&
             {
@@ -92,8 +109,8 @@ angular
             phone: $scope.model.phone,
             // FacilitySelect is what binds to the select, place is there to
             // compare to later to see if it's changed once we've run computeFields();
-            facilitySelect: $scope.model.facility_id || [],
-            place: $scope.model.facility_id,
+            facilitySelect: facilityId,
+            place: facilityId,
             roles: getRoles($scope.model.roles),
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,

@@ -16,6 +16,7 @@ describe('EditUserCtrl controller', () => {
   let Translate;
   let Settings;
   let userToEdit;
+  let user;
   let http;
 
   beforeEach(() => {
@@ -174,6 +175,27 @@ describe('EditUserCtrl controller', () => {
           contact: userToEdit.contact_id,
           tokenLoginEnabled: undefined,
         });
+      });
+    });
+  });
+
+  describe('Initializing existing users', () => {
+    user = {
+      _id: 'user.id',
+      name: 'user.name',
+      fullname: 'user.fullname',
+      email: 'user@email.com',
+      phone: 'user.phone',
+      facility_id: 'abc',
+      contact_id: 'xyz',
+      roles: ['supervisor'],
+      language: 'zz',
+    };
+
+    it('converts string facility_id to Array ', () => {
+      return mockEditAUser(user).setupPromise.then(() => {
+        chai.expect(scope.editUserModel.facilitySelect).to.deep.equal(['abc']);
+        chai.expect(scope.editUserModel.facilitySelect).to.be.an('array');
       });
     });
   });
