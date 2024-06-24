@@ -29,19 +29,33 @@ describe('Person API', () => {
     short_name: 'Mary'
   }));
   const userNoPerms = utils.deepFreeze(userFactory.build({
+    username: 'online-no-perms',
+    place: place1._id,
+    contact: {
+      _id: 'fixture:user:online-no-perms',
+      name: 'Online User',
+    },
+    roles: ['mm-online']
+  }));
+  const offlineUser = utils.deepFreeze(userFactory.build({
+    username: 'offline-has-perms',
     place: place0._id,
-    roles: ['no_perms']
+    contact: {
+      _id: 'fixture:user:offline-has-perms',
+      name: 'Offline User',
+    },
+    roles: ['chw']
   }));
   const dataContext = getRemoteDataContext(utils.getOrigin());
 
   before(async () => {
     await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, patient]);
-    await utils.createUsers([userNoPerms]);
+    await utils.createUsers([userNoPerms, offlineUser]);
   });
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([userNoPerms]);
+    await utils.deleteUsers([userNoPerms, offlineUser]);
   });
 
   describe('GET /api/v1/person/:uuid', async () => {
@@ -77,12 +91,17 @@ describe('Person API', () => {
       expect(person).to.be.null;
     });
 
-    it('throws error when user does not have can_view_contacts permission', async () => {
-      const opts = {
-        path: `/api/v1/person/${patient._id}`,
-        auth: { username: userNoPerms.username, password: userNoPerms.password },
-      };
-      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    [
+      ['does not have can_view_contacts permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
+      it(`throws error when user ${description}`, async () => {
+        const opts = {
+          path: `/api/v1/person/${patient._id}`,
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 });

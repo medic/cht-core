@@ -5,7 +5,6 @@ import { UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { getDocById, getDocsByIds } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { isNormalizedParent } from '../libs/contact';
 import logger from '@medic/logger';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 
@@ -17,7 +16,7 @@ export namespace v1 {
       return false;
     }
     const hasPersonType = contactTypeUtils.isPerson(settings.getAll(), doc);
-    if (!hasPersonType || !isNormalizedParent(doc)) {
+    if (!hasPersonType) {
       logger.warn(`Document [${uuid}] is not a valid person.`);
       return false;
     }
