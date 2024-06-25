@@ -402,10 +402,8 @@ jobs:
     name: Publish generated docs
     runs-on: ubuntu-22.04
     timeout-minutes: 15
-    permissions:
-      contents: write
 
-#    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -419,7 +417,7 @@ jobs:
       - name: Main Branch Only - Deploy to GH pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES_FAIL }}
+          personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
           external_repository: medic/cht-datasource
           publish_dir: ./shared-libs/cht-datasource/docs
           user_name: medic-ci
