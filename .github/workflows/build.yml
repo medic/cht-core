@@ -398,12 +398,12 @@ jobs:
 
 
   publish-generated-docs:
-    needs: [publish]
+#    needs: [publish]
     name: Publish generated docs
     runs-on: ubuntu-22.04
     timeout-minutes: 5
 
-    if: ${{ github.event_name != 'pull_request' }}
+#    if: ${{ github.event_name != 'pull_request' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -418,12 +418,11 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
-          external_repository: medic/medic.github.io
+          external_repository: medic/cht-datasource
           publish_dir: ./shared-libs/cht-datasource/docs
           user_name: medic-ci
           user_email: medic-ci@github
           publish_branch: main
-          destination_dir: ./cht-datasource
 
   upgrade:
     needs: [publish]
