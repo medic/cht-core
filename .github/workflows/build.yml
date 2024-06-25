@@ -422,7 +422,7 @@ jobs:
           personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
           external_repository: medic/cht-datasource
           publish_dir: ./shared-libs/cht-datasource/docs
-          user_name: medic-ci
+          user_name: medic-ci-test
           user_email: medic-ci@github
           publish_branch: main
 
