@@ -63,10 +63,9 @@ angular
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
 
     /**
-     * * Ensures that facility_id is an array for backward compatibility.
-     * *
-     * * @returns {Array} The normalized facility_id as an array.
-     * */
+     * Ensures that facility_id is an array for backward compatibility.
+     * @returns {Array} The normalized facility_id as an array.
+     */
     const getFacilityId = function () {
       if (!$scope.model.facility_id) {
         $scope.model.facility_id = [];
@@ -75,6 +74,7 @@ angular
       if (!Array.isArray($scope.model.facility_id)) {
         $scope.model.facility_id = [$scope.model.facility_id];
       }
+
       return $scope.model.facility_id;
     };
 
