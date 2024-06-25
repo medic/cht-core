@@ -7,14 +7,21 @@ const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
 
 describe('Person Controller', () => {
-  let authCheck;
+  const userCtx = { hello: 'world' };
+  let getUserCtx;
+  let isOnlineOnly;
+  let hasAllPermissions;
   let dataContextBind;
   let serverUtilsError;
   let req;
   let res;
 
   beforeEach(() => {
-    authCheck = sinon.stub(auth, 'check');
+    getUserCtx = sinon
+      .stub(auth, 'getUserCtx')
+      .resolves(userCtx);
+    isOnlineOnly = sinon.stub(auth, 'isOnlineOnly');
+    hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
     dataContextBind = sinon.stub(dataContext, 'bind');
     serverUtilsError = sinon.stub(serverUtils, 'error');
     res = {
@@ -49,13 +56,20 @@ describe('Person Controller', () => {
           .returns(personGetWithLineage);
       });
 
+      afterEach(() => {
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
+
       it('returns a person', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
         const person = { name: 'John Doe' };
         personGet.resolves(person);
 
         await controller.v1.get(req, res);
 
-        expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
@@ -65,13 +79,15 @@ describe('Person Controller', () => {
       });
 
       it('returns a person with lineage when the query parameter is set to "true"', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
         const person = { name: 'John Doe' };
         personGetWithLineage.resolves(person);
         req.query.with_lineage = 'true';
 
         await controller.v1.get(req, res);
 
-        expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.notCalled).to.be.true;
@@ -81,13 +97,15 @@ describe('Person Controller', () => {
       });
 
       it('returns a person without lineage when the query parameter is set something else', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
         const person = { name: 'John Doe' };
         personGet.resolves(person);
         req.query.with_lineage = '1';
 
         await controller.v1.get(req, res);
 
-        expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
@@ -97,11 +115,13 @@ describe('Person Controller', () => {
       });
 
       it('returns a 404 error if person is not found', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
         personGet.resolves(null);
 
         await controller.v1.get(req, res);
 
-        expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
@@ -114,13 +134,29 @@ describe('Person Controller', () => {
         )).to.be.true;
       });
 
-      it('returns error if user unauthorized', async () => {
-        const error = new Error('Unauthorized');
-        authCheck.rejects(error);
+      it('returns error if user does not have can_view_contacts permission', async () => {
+        const error = { code: 403, message: 'Insufficient privileges' };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(false);
 
         await controller.v1.get(req, res);
 
-        expect(authCheck.calledOnceWithExactly(req, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(dataContextBind.notCalled).to.be.true;
+        expect(byUuid.notCalled).to.be.true;
+        expect(personGet.notCalled).to.be.true;
+        expect(personGetWithLineage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+      });
+
+      it('returns error if not an online user', async () => {
+        const error = { code: 403, message: 'Insufficient privileges' };
+        isOnlineOnly.returns(false);
+
+        await controller.v1.get(req, res);
+
+        expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(byUuid.notCalled).to.be.true;
         expect(personGet.notCalled).to.be.true;
