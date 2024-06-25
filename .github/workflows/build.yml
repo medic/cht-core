@@ -398,7 +398,7 @@ jobs:
 
 
   publish-generated-docs:
-    #    needs: [publish]
+    needs: [publish]
     name: Publish generated docs
     runs-on: ubuntu-22.04
     timeout-minutes: 5
