@@ -116,7 +116,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
       && !this.loadingContent
       && this.snapshotData?.name === 'contacts.detail'
       && this.hasEditPermission
-      && (this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContactDoc?._id);
+      && (this.isOnlineOnly || !this.isUserFacility);
   }
 
   displayDeleteOption() {

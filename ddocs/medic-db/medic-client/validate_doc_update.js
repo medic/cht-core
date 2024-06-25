@@ -112,7 +112,9 @@ function(newDoc, oldDoc, userCtx, secObj) {
   if (isDbAdmin(userCtx, secObj)) {
     return;
   }
-  if (userCtx.facility_id === newDoc._id) {
+  if (userCtx.facility_id === newDoc._id ||
+    (Array.isArray(userCtx.facility_id) && userCtx.facility_id.includes(newDoc._id ))
+  ) {
     _err('You are not authorized to edit your own place');
   }
   if (newDoc.type === 'form') {
