@@ -12,7 +12,10 @@ const getPerson = ({ with_lineage }) => ctx.bind(
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await auth.check(req, 'can_view_contacts');
+      const userCtx = await auth.getUserCtx(req);
+      if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
+        return Promise.reject({ code: 403, message: 'Insufficient privileges' });
+      }
       const { uuid } = req.params;
       const person = await getPerson(req.query)(Qualifier.byUuid(uuid));
       if (!person) {

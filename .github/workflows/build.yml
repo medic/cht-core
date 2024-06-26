@@ -396,13 +396,46 @@ jobs:
         node ./publish.js
         node ./tag-docker-images.js
 
+
+  publish-generated-docs:
+    needs: [publish]
+    name: Publish generated docs
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - name: Generate TypeDoc
+        run: npm run --prefix shared-libs/cht-datasource gen-docs
+      - name: Main Branch Only - Deploy to GH pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
+          external_repository: medic/cht-datasource
+          publish_dir: ./shared-libs/cht-datasource/docs
+          user_name: medic-ci
+          user_email: medic-ci@github
+          publish_branch: main
+
   upgrade:
     needs: [publish]
-    name: Upgrade from latest release
+    name: Upgrade from ${{ matrix.version }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
-    
+
     if: ${{ github.event_name != 'pull_request' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '4.2.4', 'latest' ]
 
     steps:
       - name: Configure AWS credentials Public
@@ -423,6 +456,7 @@ jobs:
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+          echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
       - run: npm ci
       - name: Create logs directory
         run: mkdir tests/logs
@@ -432,7 +466,7 @@ jobs:
       - name: Archive Results
         uses: actions/upload-artifact@v4
         with:
-          name: Upgrade
+          name: upgrade-${{ matrix.version }}
           path: |
             allure-results
             allure-report
