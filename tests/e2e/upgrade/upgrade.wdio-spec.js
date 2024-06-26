@@ -145,6 +145,37 @@ describe('Performing an upgrade', () => {
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
     expect(await aboutPage.getVersion()).to.include(expected);
     await commonPage.logout();
+
+    // https://github.com/medic/cht-core/issues/9117
+    // install 'master' branch to make sure a new version can be installed from the build version
+
+    await loginPage.cookieLogin({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      createUser: false
+    });
+    await upgradePage.goToUpgradePage();
+    await upgradePage.expandPreReleasesAccordion();
+
+    await (await upgradePage.getInstallButton('master', TAG)).click();
+    await (await upgradePage.upgradeModalConfirm()).click();
+
+    await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
+    await (await upgradePage.deploymentInProgress()).waitForDisplayed();
+    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
+
+    if (testFrontend) {
+      // https://github.com/medic/cht-core/issues/9186
+      // this is an unfortunate incompatibility between current API and admin app in the old version
+      await (await upgradePage.deploymentComplete()).waitForDisplayed();
+    }
+
+    expect(await upgradePage.getBuild()).to.include('alpha');
+    await commonPage.goToAboutPage();
+    await commonPage.waitForPageLoaded();
+    await (await aboutPage.aboutCard()).waitForDisplayed();
+    expect(await aboutPage.getVersion()).to.include('master');
+    await commonPage.logout();
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
