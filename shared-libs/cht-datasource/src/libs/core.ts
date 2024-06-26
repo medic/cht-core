@@ -54,6 +54,8 @@ export const isDataObject = (value: unknown): value is DataObject => {
  * Ideally, this function should only be used at the edge of this library (when returning potentially cross-referenced
  * data objects) to avoid unintended consequences if any of the objects are edited in-place. This function should not
  * be used for logic internal to this library since all data objects are marked as immutable.
+ * This could be replaced by [structuredClone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone)
+ * in CHT 5.x, or earlier if using a polyfill or a similar implementation like `_.cloneDeep()`.
  * @internal
  */
 export const deepCopy = <T extends DataObject | DataArray | DataPrimitive>(value: T): T => {
