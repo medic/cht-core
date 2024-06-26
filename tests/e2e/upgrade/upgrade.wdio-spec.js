@@ -107,8 +107,7 @@ describe('Performing an upgrade', () => {
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });
 
-  // eslint-disable-next-line no-only-tests/no-only-tests
-  it.only('should upgrade to current branch', async () => {
+  it('should upgrade to current branch', async () => {
     await upgradeVersion(BRANCH);
 
     const currentVersion = await upgradePage.getCurrentVersion();
