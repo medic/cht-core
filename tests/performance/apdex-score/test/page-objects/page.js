@@ -192,7 +192,6 @@ module.exports = class Page {
     }
 
     await this.clickElement(FORM_SUBMIT_SELECTOR);
-    await this.navigate(form.postTestPath);
     await this.assertMany(form.postSubmitAsserts);
   }
 
