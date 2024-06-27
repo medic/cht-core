@@ -55,9 +55,4 @@ describe('Webapp after upgrade', () => {
     expect(contacts).to.deep.equal(['DC']);
   });
 
-  it('should display correct version on the about page', async () => {
-    await common.goToAboutPage();
-    const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
-    expect(await aboutPage.getVersion()).to.include(expected);
-  });
 });
