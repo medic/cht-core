@@ -1,10 +1,7 @@
 const common = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const peoplePage = require('@page-objects/default/contacts/contacts.wdio.page');
-const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const utils = require('@utils');
-
-const { BRANCH, TAG } = process.env;
 
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const constants = require('@constants');
