@@ -49,6 +49,24 @@ const deleteUpgradeLogs = async () => {
   await utils.logsDb.bulkDocs(logs);
 };
 
+const upgradeVersion = async (branchVersion) => {
+  await upgradePage.goToUpgradePage();
+  await upgradePage.expandPreReleasesAccordion();
+
+  await (await upgradePage.getInstallButton(branchVersion, TAG)).click();
+  await (await upgradePage.upgradeModalConfirm()).click();
+
+  await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
+  await (await upgradePage.deploymentInProgress()).waitForDisplayed();
+  await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
+
+  if (testFrontend) {
+    // https://github.com/medic/cht-core/issues/9186
+    // this is an unfortunate incompatibility between current API and admin app in the old version
+    await (await upgradePage.deploymentComplete()).waitForDisplayed();
+  }
+};
+
 describe('Performing an upgrade', () => {
   before(async () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
@@ -87,24 +105,7 @@ describe('Performing an upgrade', () => {
   });
 
   it('should upgrade to current branch', async () => {
-    await upgradePage.goToUpgradePage();
-    await upgradePage.expandPreReleasesAccordion();
-
-    const installButton = await upgradePage.getInstallButton(BRANCH, TAG);
-    await installButton.click();
-
-    const confirm = await upgradePage.upgradeModalConfirm();
-    await confirm.click();
-
-    await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
-    await (await upgradePage.deploymentInProgress()).waitForDisplayed();
-    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
-
-    if (testFrontend) {
-      // https://github.com/medic/cht-core/issues/9186
-      // this is an unfortunate incompatibility between current API and admin app in the old version
-      await (await upgradePage.deploymentComplete()).waitForDisplayed();
-    }
+    await upgradeVersion(BRANCH);
 
     const currentVersion = await upgradePage.getCurrentVersion();
     expect(version.getVersion(true)).to.include(currentVersion);
@@ -156,21 +157,7 @@ describe('Performing an upgrade', () => {
       createUser: false
     });
 
-    await upgradePage.goToUpgradePage();
-    await upgradePage.expandPreReleasesAccordion();
-
-    await (upgradePage.getInstallButton('master', TAG)).click();
-    await (upgradePage.upgradeModalConfirm()).click();
-
-    await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
-    await (await upgradePage.deploymentInProgress()).waitForDisplayed();
-    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
-
-    if (testFrontend) {
-      // https://github.com/medic/cht-core/issues/9186
-      // this is an unfortunate incompatibility between current API and admin app in the old version
-      await (await upgradePage.deploymentComplete()).waitForDisplayed();
-    }
+    await upgradeVersion('master');
 
     expect(await upgradePage.getBuild()).to.include('alpha');
     await commonPage.goToAboutPage();
