@@ -38,6 +38,7 @@
     "integration-cht-form": "wdio run ./tests/integration/cht-form/wdio.conf.js",
     "lint": "eslint --color --cache . && ./scripts/build/blank-link-check.sh && npm run lint-shell",
     "lint-shell": "shellcheck $(./scripts/ci/list-shellscripts.sh)",
+    "lint-translations": "node scripts/ci/lint-translations.js",
     "test": "npm run lint && npm run unit && npm run integration-api",
     "unit": "node scripts/build/cli npmCiModules && npm run unit-webapp && npm run unit-admin && npm run unit-shared-lib && npm run unit-api && npm run unit-sentinel",
     "unit-admin": "node ./scripts/ci/run-karma.js",
