@@ -185,7 +185,7 @@ jobs:
         if: ${{ failure() }}
 
   translations:
-    needs: build
+    # needs: build
     name: Lint translations
     runs-on: ubuntu-22.04
     strategy:
@@ -197,7 +197,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - uses: actions/checkout@v4
       - run: npm ci
-      - run: npm lint-translations
+      - run: npm run lint-translations
 
   tests:
     needs: build
