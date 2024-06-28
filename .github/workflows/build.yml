@@ -191,11 +191,11 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - uses: actions/checkout@v4
       - run: npm ci
       - run: npm run lint-translations
 

@@ -23,7 +23,8 @@ const handleError = (e) => {
 
 const run = async () => {
   try {
-    await checkTranslations(TRANSLATION_DIR, TRANSLATION_OPTIONS);
+    const files = await checkTranslations(TRANSLATION_DIR, TRANSLATION_OPTIONS);
+    console.log(`Files checked: ${files}`);
   } catch (e) {
     const exitCode = handleError(e);
     process.exit(exitCode);
@@ -31,5 +32,6 @@ const run = async () => {
 };
 
 console.log('Linting translation files...');
-run();
-console.log('Linting translation files passed');
+run().then(() => {
+  console.log('Linting translation files passed');
+});
