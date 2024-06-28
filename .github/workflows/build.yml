@@ -196,7 +196,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: npm ci
+      - run: |
+        cd scripts
+        npm ci
+        cd ..
       - run: npm run lint-translations
 
   tests:
