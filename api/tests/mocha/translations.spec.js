@@ -6,7 +6,7 @@ const rewire = require('rewire');
 
 const db = require('../../src/db');
 const settings = require('../../src/services/settings');
-const environment = require('../../src/environment');
+const resources = require('../../src/resources');
 
 let translations;
 
@@ -15,7 +15,7 @@ describe('translations', () => {
     sinon.stub(fs.promises, 'readdir');
     sinon.stub(fs.promises, 'readFile');
     sinon.stub(properties, 'parse');
-    sinon.stub(environment, 'resourcesPath').value('/path/to/resources/');
+    sinon.stub(resources, 'resourcesPath').value('/path/to/resources/');
     translations = rewire('../../src/translations');
   });
 

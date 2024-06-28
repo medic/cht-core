@@ -3,7 +3,7 @@ const chai = require('chai');
 const auth = require('../../../src/auth');
 const userDb = require('../../../src/services/user-db');
 const serverUtils = require('../../../src/server-utils');
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 const sinon = require('sinon');
 
 describe('create-user-db controller', () => {

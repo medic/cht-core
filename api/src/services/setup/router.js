@@ -4,7 +4,7 @@ const path = require('path');
 const localeUtils = require('locale');
 const morgan = require('morgan');
 
-const environment = require('../../environment');
+const resources = require('../../resources');
 const startupLog = require('./startup-log');
 
 const { wantsJSON } = require('../../middleware/wants-json');
@@ -16,7 +16,7 @@ const template = require('../template');
 const branding = require('../../services/branding');
 const STATUS = 503;
 
-router.use(express.static(environment.staticPath));
+router.use(express.static(resources.staticPath));
 router.use(getLocale);
 router.use(
   morgan(':date STARTUP RES: :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length]')
@@ -39,7 +39,7 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
 };
 
 const getTemplate = async () => {
-  const templatePath = path.join(environment.templatePath, 'setup', 'setup.html');
+  const templatePath = path.join(resources.templatePath, 'setup', 'setup.html');
   return template.getTemplate(templatePath);
 };
 

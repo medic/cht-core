@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
-const environment = require('../../src/environment');
+const environment = require('@medic/environment');
 const serverUtils = require('../../src/server-utils');
 const cookie = require('../../src/services/cookie');
 

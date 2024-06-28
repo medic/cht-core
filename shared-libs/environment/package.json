@@ -1,0 +1,14 @@
+{
+  "name": "@medic/environment",
+  "version": "1.0.0",
+  "description": "Parse and process common environment variables",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@medic/logger": "file:../logger"
+  }
+}

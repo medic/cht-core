@@ -1,4 +1,4 @@
-const environment = require('../environment');
+const environment = require('@medic/environment');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 

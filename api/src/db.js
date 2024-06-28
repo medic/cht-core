@@ -1,6 +1,6 @@
 const PouchDB = require('pouchdb-core');
 const logger = require('@medic/logger');
-const environment = require('./environment');
+const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-session-authentication'));

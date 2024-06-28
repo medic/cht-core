@@ -1,6 +1,7 @@
 const request = require('request-promise-native');
 const isPlainObject = require('lodash/isPlainObject');
-const servername = new URL(process.env.COUCH_URL).hostname;
+const environment = require('@medic/environment');
+const servername = environment.host;
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;

@@ -4,7 +4,7 @@ const expect = chai.expect;
 const rewire = require('rewire');
 
 const db = require('../../../src/db');
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 
 let purgedDocsCache;
 let purgedDbObj;

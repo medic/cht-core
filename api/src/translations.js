@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const properties = require('properties');
 const db = require('./db');
-const environment = require('./environment');
+const resources = require('./resources');
 const fs = require('fs');
 const logger = require('@medic/logger');
 const util = require('util');
@@ -131,7 +131,7 @@ const readTranslationFile = (fileName, folderPath) => {
 };
 
 const getTranslationFiles = () => {
-  const translationsPath = path.join(environment.resourcesPath, 'translations');
+  const translationsPath = path.join(resources.resourcesPath, 'translations');
   return fs.promises.readdir(translationsPath).then(files => {
     const translationsFiles = files.filter(file => file && file.match(TRANSLATION_FILE_NAME_REGEX));
     return Promise.all(translationsFiles.map(fileName => readTranslationFile(fileName, translationsPath)));

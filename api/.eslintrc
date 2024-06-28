@@ -34,7 +34,9 @@
           "@medic/translation-utils",
           "@medic/user-management",
           "@medic/validation",
-          "@medic/view-map-utils"
+          "@medic/view-map-utils",
+          "@medic/logger",
+          "@medic/environment"
         ]
       }]
   },

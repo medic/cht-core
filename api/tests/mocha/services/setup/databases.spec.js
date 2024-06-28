@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const db = require('../../../../src/db');
-const env = require('../../../../src/environment');
+const env = require('@medic/environment');
 
 let databases;
 

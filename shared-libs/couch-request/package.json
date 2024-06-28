@@ -9,6 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@medic/environment": "file:../environment",
     "lodash": "^4.17.21",
     "request-promise-native": "^1.0.9"
   }

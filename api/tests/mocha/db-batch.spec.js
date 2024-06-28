@@ -2,7 +2,7 @@ const lib = require('../../src/db-batch');
 const chai = require('chai');
 const request = require('@medic/couch-request');
 const sinon = require('sinon');
-const environment = require('../../src/environment');
+const environment = require('@medic/environment');
 const viewName = 'myddoc/myview';
 const viewKey = 'mykey';
 

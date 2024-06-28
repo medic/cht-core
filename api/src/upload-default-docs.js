@@ -3,7 +3,7 @@ const path = require('path');
 
 const db = require('./db');
 const { error } = require('@medic/logger');
-const environment = require('./environment');
+const resources = require('./resources');
 const settingService = require('./services/settings');
 
 const uploadDocumentsInFolder = async folderPath => {
@@ -41,7 +41,7 @@ const uploadDefaultDocuments = async function () {
     return;
   }
 
-  const pathToConfig = environment.defaultDocsPath;
+  const pathToConfig = resources.defaultDocsPath;
   if (fs.existsSync(pathToConfig)) {
     const uploadResult = await uploadDocumentsInFolder(pathToConfig);
     const unsuccessfulUploads = uploadResult.filter(result => !result.ok);

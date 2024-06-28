@@ -11,7 +11,7 @@ describe('Routing', () => {
   after(() => delete global.angular);
 
   it('Content Security policy build url matches actual', () => {
-    const environment = rewire('./../../src/environment');
+    const environment = rewire('@medic/environment');
     const adminUpgrade = rewire('./../../../admin/src/js/controllers/upgrade');
     const cspBuildDb = environment.__get__('DEFAULT_BUILDS_URL');
     const actualBuildDb = adminUpgrade.__get__('DEFAULT_BUILDS_URL');

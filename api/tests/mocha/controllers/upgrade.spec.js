@@ -1,7 +1,7 @@
 const should = require('chai').should();
 
 const sinon = require('sinon');
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 

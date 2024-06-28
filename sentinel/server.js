@@ -1,7 +1,7 @@
 const request = require('request');
 
-const db = require('./src/db');
 const logger = require('@medic/logger');
+const environment = require('@medic/environment');
 const serverChecks = require('@medic/server-checks');
 
 process
@@ -36,7 +36,7 @@ const waitForApi = () => new Promise(resolve => {
 
 logger.info('Running server checks...');
 serverChecks
-  .check(db.couchUrl)
+  .check(environment.couchUrl)
   .then(waitForApi)
   .then(() => {
     // Even requiring this boots translations, so has to be required after

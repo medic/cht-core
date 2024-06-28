@@ -1,6 +1,7 @@
 const later = require('later');
 const db = require('../db');
 const logger = require('@medic/logger');
+const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 
 const PURGE_LOG_ID = '_local/purge_log';
@@ -27,7 +28,7 @@ const purgeDocs = (sourceDb, changes) => {
     .info()
     .then(info => {
       const opts = {
-        uri: `${db.serverUrl}/${info.db_name}/_purge`,
+        uri: `${environment.serverUrl}/${info.db_name}/_purge`,
         json: true,
         body: docsToPurge,
       };
@@ -121,8 +122,8 @@ module.exports = {
     return Promise.resolve();
   },
   runReplication: () => {
-    const SRC_DB_REGEX = new RegExp(`${db.medicDbName}-user-.+-meta`);
-    const TO_DB_NAME = `${db.medicDbName}-users-meta`;
+    const SRC_DB_REGEX = new RegExp(`${environment.db}-user-.+-meta`);
+    const TO_DB_NAME = `${environment.db}-users-meta`;
     return db.allDbs().then(dbs => {
       const srcDbs = dbs.filter(db => SRC_DB_REGEX.exec(db));
       return module.exports.replicateDbs(srcDbs, TO_DB_NAME);

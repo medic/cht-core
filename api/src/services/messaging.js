@@ -6,7 +6,7 @@ const config = require('../config');
 const africasTalking = require('./africas-talking');
 const rapidPro = require('./rapidpro');
 const records = require('../services/records');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 
 // Check DB for messages every minute
 // when e2e testing, check every second

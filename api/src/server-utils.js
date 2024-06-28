@@ -1,6 +1,6 @@
 const url = require('url');
 const path = require('path');
-const environment = require('./environment');
+const environment = require('@medic/environment');
 const isClientHuman = require('./is-client-human');
 const logger = require('@medic/logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';

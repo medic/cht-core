@@ -5,9 +5,14 @@ const request = require('@medic/couch-request');
 const rewire = require('rewire');
 
 const db = require('../../../src/db');
+const environment = require('@medic/environment');
 const replications = rewire('../../../src/schedule/replications');
 
 describe('replications', () => {
+  beforeEach(() => {
+    sinon.stub(environment, 'serverUrl').value('http://admin:pass@localhost:5984');
+    sinon.stub(environment, 'db').value('medic');
+  });
 
   afterEach(() => {
     replications.__set__('timer', undefined);
@@ -41,18 +46,18 @@ describe('replications', () => {
       .resolves([
         'medic-b',
         'medic-s',
-        `${db.medicDbName}-user-x-meta`,
-        `${db.medicDbName}-user-y-meta`,
-        `${db.medicDbName}-user-xx-yy-meta`
+        `${environment.db}-user-x-meta`,
+        `${environment.db}-user-y-meta`,
+        `${environment.db}-user-xx-yy-meta`
       ]);
     return replications.execute().then(() => {
       assert.equal(replicateDbs.callCount, 1);
       assert.deepEqual(replicateDbs.args[0][0], [
-        `${db.medicDbName}-user-x-meta`,
-        `${db.medicDbName}-user-y-meta`,
-        `${db.medicDbName}-user-xx-yy-meta`
+        `${environment.db}-user-x-meta`,
+        `${environment.db}-user-y-meta`,
+        `${environment.db}-user-xx-yy-meta`
       ]);
-      assert.equal(replicateDbs.args[0][1], `${db.medicDbName}-users-meta`);
+      assert.equal(replicateDbs.args[0][1], `${environment.db}-users-meta`);
     });
   });
 
@@ -216,7 +221,7 @@ describe('replications', () => {
           assert.deepEqual(source.changes.args[4], [{ since: 400, limit: 100, batch_size: 100 }]);
           assert.equal(request.post.callCount, 3);
           assert.deepEqual(request.post.args[0], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'telemetry-1': ['1'],
@@ -224,7 +229,7 @@ describe('replications', () => {
             }
           }]);
           assert.deepEqual(request.post.args[1], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'feedback-2': ['2'],
@@ -233,7 +238,7 @@ describe('replications', () => {
             }
           }]);
           assert.deepEqual(request.post.args[2], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'telemetry-4': ['1'],
@@ -338,7 +343,7 @@ describe('replications', () => {
           assert.deepEqual(source.changes.args[4], [{ since: 500, limit: 100, batch_size: 100 }]);
           assert.equal(request.post.callCount, 3);
           assert.deepEqual(request.post.args[0], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'telemetry-1': ['1'],
@@ -346,7 +351,7 @@ describe('replications', () => {
             }
           }]);
           assert.deepEqual(request.post.args[1], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'feedback-2': ['2'],
@@ -355,7 +360,7 @@ describe('replications', () => {
             }
           }]);
           assert.deepEqual(request.post.args[2], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'telemetry-4': ['1'],
@@ -426,7 +431,7 @@ describe('replications', () => {
           assert.deepEqual(source.changes.args[3], [{ since: 220, limit: 100, batch_size: 100 }]);
           assert.equal(request.post.callCount, 2);
           assert.deepEqual(request.post.args[0], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'telemetry-1': ['1'],
@@ -434,7 +439,7 @@ describe('replications', () => {
             }
           }]);
           assert.deepEqual(request.post.args[1], [{
-            uri: `${db.serverUrl}/source/_purge`,
+            uri: `${environment.serverUrl}/source/_purge`,
             json: true,
             body: {
               'feedback-2': ['2'],
@@ -515,7 +520,7 @@ describe('replications', () => {
             assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100, batch_size: 100 }]);
             assert.equal(request.post.callCount, 2);
             assert.deepEqual(request.post.args[0], [{
-              uri: `${db.serverUrl}/source/_purge`,
+              uri: `${environment.serverUrl}/source/_purge`,
               json: true,
               body: {
                 'telemetry-1': ['1'],
@@ -523,7 +528,7 @@ describe('replications', () => {
               }
             }]);
             assert.deepEqual(request.post.args[1], [{
-              uri: `${db.serverUrl}/source/_purge`,
+              uri: `${environment.serverUrl}/source/_purge`,
               json: true,
               body: {
                 'feedback-2': ['2'],

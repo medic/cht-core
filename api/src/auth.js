@@ -1,7 +1,7 @@
 const request = require('@medic/couch-request');
 const _ = require('lodash');
 const db = require('./db');
-const environment = require('./environment');
+const environment = require('@medic/environment');
 const config = require('./config');
 const { roles, users } = require('@medic/user-management')(config, db);
 

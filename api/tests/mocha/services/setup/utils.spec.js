@@ -6,7 +6,8 @@ const request = require('@medic/couch-request');
 
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
-const env = require('../../../../src/environment');
+const env = require('@medic/environment');
+const resources = require('../../../../src/resources');
 const { DATABASES } = require('../../../../src/services/setup/databases');
 const ddocsService = require('../../../../src/services/setup/ddocs');
 
@@ -205,7 +206,7 @@ describe('Setup utils', () => {
     describe('for local version install', () => {
       it('should get bundled ddocs for every db', async () => {
         sinon.stub(fs.promises, 'readFile');
-        sinon.stub(env, 'ddocsPath').value('localDdocs');
+        sinon.stub(resources, 'ddocsPath').value('localDdocs');
 
         const medicDdocs = [
           { _id: '_design/medic', views: { medic1: {}, medic2: {} } },
@@ -246,7 +247,7 @@ describe('Setup utils', () => {
 
       it('should throw error when read fails', async () => {
         sinon.stub(fs.promises, 'readFile');
-        sinon.stub(env, 'ddocsPath').value('localDdocs');
+        sinon.stub(resources, 'ddocsPath').value('localDdocs');
 
         const medicDdocs = [{ _id: 'ddoc1' }];
         const logsDdocs = [{ _id: 'ddoc2' }];
@@ -274,7 +275,7 @@ describe('Setup utils', () => {
 
       it('should throw error when contents is invalid json', async () => {
         sinon.stub(fs.promises, 'readFile');
-        sinon.stub(env, 'ddocsPath').value('localDdocs');
+        sinon.stub(resources, 'ddocsPath').value('localDdocs');
 
         const medicDdocs = [{ _id: 'ddoc1' }];
         const sentinelDdocs = [{ _id: 'ddoc3' }];
@@ -598,7 +599,7 @@ describe('Setup utils', () => {
         },
       };
       sinon.stub(env, 'ddoc').value('medic');
-      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(resources, 'ddocsPath').value('ddocsPath');
 
       sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ docs: [medicDdoc] }));
 
@@ -610,7 +611,7 @@ describe('Setup utils', () => {
     });
 
     it('should throw error if json is not found', async () => {
-      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(resources, 'ddocsPath').value('ddocsPath');
       sinon.stub(env, 'ddoc').value('medic');
       sinon.stub(fs.promises, 'readFile').rejects({ code: 'ENOENT' });
 
@@ -623,7 +624,7 @@ describe('Setup utils', () => {
     });
 
     it('should throw error if json has no ddocs', async () => {
-      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(resources, 'ddocsPath').value('ddocsPath');
       sinon.stub(env, 'ddoc').value('medic');
       sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({}));
 
@@ -637,7 +638,7 @@ describe('Setup utils', () => {
 
     it('should throw error if json is missing medic ddoc', async () => {
       const jsonDdocs = [{ _id: '_design/one' }, { _id: '_design/two' }, { _id: '_design/three' }];
-      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(resources, 'ddocsPath').value('ddocsPath');
       sinon.stub(env, 'ddoc').value('medic');
       sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ docs: jsonDdocs }));
 

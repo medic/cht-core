@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 
 const db = require('../../../../src/db');
-const env = require('../../../../src/environment');
+const env = require('@medic/environment');
 const request = require('@medic/couch-request');
 const databases = require('../../../../src/services/setup/databases');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
