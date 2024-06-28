@@ -19,18 +19,20 @@ const run = async () => {
     console.log('Linting translation files passed');
   } catch (err) {
     if (err instanceof TranslationException) {
-      if (!err.errors) {
-        // unknown error
-        throw err;
+      if (err.errors) {
+        for (const e of err.errors) {
+          console.error(e.message);
+        }
+        process.exit(1);
       }
-      for (const e of err.errors) {
-        console.error(e.message);
-      }
-      process.exit(-1);
-    } else {
-      throw err;
     }
+    throw err;
   }
 };
 
-run();
+try {
+  run();
+} catch(e) {
+  console.log(e);
+  process.exit(1);
+}
