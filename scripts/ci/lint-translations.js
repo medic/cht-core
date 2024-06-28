@@ -11,25 +11,25 @@ const TRANSLATION_OPTIONS = {
 };
 
 const handleError = (e) => {
-  if (e instanceof TranslationException && e.errors) {
-    for (const error of e.errors) {
-      console.error(error.message);
+  if (e instanceof TranslationException && !!e.errors) {
+    for (const err of e.errors) {
+      console.error(err.message);
     }
     return 1;
   }
-  console.log(e);
+  console.error(e);
   return 2;
 };
 
 const run = async () => {
-  console.log('Linting translation files...');
-  await checkTranslations(TRANSLATION_DIR, TRANSLATION_OPTIONS);
-  console.log('Linting translation files passed');
+  try {
+    await checkTranslations(TRANSLATION_DIR, TRANSLATION_OPTIONS);
+  } catch (e) {
+    const exitCode = handleError(e);
+    process.exit(exitCode);
+  }
 };
 
-try {
-  run();
-} catch (e) {
-  const exitCode = handleError(e);
-  process.exit(exitCode);
-}
+console.log('Linting translation files...');
+run();
+console.log('Linting translation files passed');
