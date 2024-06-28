@@ -4,6 +4,7 @@ const XPR = {
   number: v => ({ t: 'num', v }),
   string: v => ({ t: 'str', v }),
   date: v => ({ t: 'date', v }),
+  bool: v => ({ t: 'bool', v}),
 };
 const MOMENT_KEYS = {
   YEARS: 'years',
@@ -162,6 +163,28 @@ const dateDiff = function (startDateObj, endDateObj, key) {
   return XPR.number(endDate.diff(startDate, key));
 };
 
+const luhn = function (number) {
+  number = getValue(number);
+  number = number.toString().trim().replace(/\s/g, '');
+
+  if (number.length !== 13 || !/^\d+$/.test(number)) {
+    return XPR.bool(false);
+  }
+
+  const digits = number.split('').map(Number);
+  const sum = digits.reduce((acc, digit, index) => {
+    if (index % 2 === 0) {
+      return acc + digit;
+    // eslint-disable-next-line no-else-return
+    } else {
+      const doubledDigit = 2 * digit;
+      return acc + Math.floor(doubledDigit / 10) + (doubledDigit % 10);
+    }
+  }, 0);
+
+  return XPR.bool(sum % 10 === 0);
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
@@ -190,6 +213,7 @@ module.exports = {
     'difference-in-months': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.MONTHS), // To be deprecated
     'cht:difference-in-weeks': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.WEEKS),
     'cht:difference-in-days': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.DAYS),
+    'cht:luhn': (number) => luhn(number),
     'cht:extension-lib': function () {
       const args = Array.from(arguments);
       const firstArg = args.shift();

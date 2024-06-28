@@ -7,7 +7,7 @@ medicXpathExtensions.init(null, toBik_text, moment);
 const func = medicXpathExtensions.func;
 
 describe('medic-xpath-extensions', function () {
-  const wrapDate = (date) => { 
+  const wrapDate = (date) => {
     return { t: 'str', v: date };
   };
 
@@ -87,7 +87,7 @@ describe('medic-xpath-extensions', function () {
 
   describe('#difference-in-months', function () {
     const diffInMonths = func['cht:difference-in-months'];
-    
+
     [
       ['2015-10-01', '2015-10-01', 0,],
       ['2015-09-01', '2015-10-01', 1,],
@@ -378,6 +378,41 @@ describe('medic-xpath-extensions', function () {
         const year = { t: 'num', v: 1 };
         assert.equal(func['add-date'](date, year).v.toString(), 'Invalid Date');
       });
+    });
+  });
+
+  describe('validateIdNumber()', () => {
+    const test = func['cht:luhn'];
+
+    it('should return true for a valid ID number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '6505285125086' }] };
+      const result = test(idNumber);
+      assert.strictEqual(result.v, true);
+    });
+    it('should return false for an ID number that does not contain 13 digits', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '650528512508' }] };
+      const result = test(idNumber);
+      assert.strictEqual(result.v, false);
+    });
+    it('should return false for an  invalid ID number ', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '6505285125085' }] };
+      const result = test(idNumber);
+      assert.strictEqual(result.v, false);
+    });
+    it('should return false for a non-numeric ID number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '650528512a086' }] };
+      const result = test(idNumber);
+      assert.strictEqual(result.v, false);
+    });
+    it('should return true for a valid ID number with spaces', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '6505  2851  2508 6' }] };
+      const result = test(idNumber);
+      assert.strictEqual(result.v, true);
+    });
+    it('should return true for a valid ID number with leading/trailing spaces', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '  6505285125086  ' }] };
+      const result = test(idNumber);
+      assert.strictEqual(result.v, true);
     });
   });
 });
