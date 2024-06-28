@@ -21,17 +21,16 @@ const handleError = (e) => {
   return 2;
 };
 
-const run = async () => {
-  try {
-    const files = await checkTranslations(TRANSLATION_DIR, TRANSLATION_OPTIONS);
-    console.log(`Files checked: ${files}`);
-  } catch (e) {
-    const exitCode = handleError(e);
-    process.exit(exitCode);
-  }
+const run = () => {
+  return checkTranslations(TRANSLATION_DIR, TRANSLATION_OPTIONS);
 };
 
 console.log('Linting translation files...');
-run().then(() => {
-  console.log('Linting translation files passed');
-});
+run()
+  .then(() => {
+    console.log('Linting translation files passed');
+  })
+  .catch(e => {
+    const exitCode = handleError(e);
+    process.exit(exitCode);
+  });
