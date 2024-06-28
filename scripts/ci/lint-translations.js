@@ -32,7 +32,7 @@ const run = async () => {
 
 try {
   run();
-} catch(e) {
+} catch (e) {
   console.log(e);
   process.exit(1);
 }
