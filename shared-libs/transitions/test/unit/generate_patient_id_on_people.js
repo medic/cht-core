@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../src/config');
-const logger = require('../../src/lib/logger');
+const logger = require('@medic/logger');
 
 const types = [
   { id: 'person', person: true },

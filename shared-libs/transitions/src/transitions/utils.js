@@ -4,7 +4,7 @@ const utils = require('../lib/utils');
 const idGenerator = require('../lib/ids').generator(db);
 const config = require('../config');
 const validation = require('@medic/validation');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 
 validation.init({ db, translate: utils.translate, settings: config.getAll(), logger });
 

@@ -1,14 +1,14 @@
 const { performance } = require('perf_hooks');
 const _ = require('lodash');
 const moment = require('moment');
-const request = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 const config = require('../config');
 const db = require('../db');
 const scheduling = require('../lib/scheduling');
 const later = require('later');
 const lineage = require('@medic/lineage')(Promise, db.medic);
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const messages = config.getTransitionsLib().messages;
 const contactTypesUtils = require('@medic/contact-types-utils');
 
@@ -108,7 +108,7 @@ const getPlaceIds = (keys, startDocId) => {
   // using `request` library because PouchDB doesn't support `start_key_doc_id` in view queries
   // using `start_key_doc_id` because using `skip` is *very* slow
   return request
-    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: query, json: true })
+    .get({ url: `${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, qs: query, json: true })
     .then(result => result.rows.map(row => row.id));
 };
 

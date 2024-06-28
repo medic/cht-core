@@ -1,0 +1,26 @@
+name: Conventional commits
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+jobs:
+  lint_pr_title:
+    name: Lint PR title
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.11
+      - name: Install dependencies
+        run: npm ci
+      - name: Run
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: npx --no-install commitlint <<< "$TITLE"

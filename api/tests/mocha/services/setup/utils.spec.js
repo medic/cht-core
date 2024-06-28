@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
 const fs = require('fs');
-const rpn = require('request-promise-native');
+const request = require('@medic/couch-request');
 
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
@@ -14,7 +14,7 @@ let utils;
 let clock;
 let originalEnv;
 
-const buildInfo = (version, namespace='medic', application='medic') => ({ version, namespace, application });
+const buildInfo = (version, namespace = 'medic', application = 'medic') => ({ version, namespace, application });
 
 const mockDb = (db) => {
   sinon.stub(db, 'allDocs');
@@ -396,7 +396,7 @@ describe('Setup utils', () => {
       it('should throw an error when staging doc has no attachments', async () => {
         const version = '4.0.0';
         db.builds.get.resolves({
-          build_info: { },
+          build_info: {},
           version: version,
         });
 
@@ -414,7 +414,7 @@ describe('Setup utils', () => {
       it('should throw an error when ddocs are corrupted', async () => {
         const version = 'theversion';
         db.builds.get.resolves({
-          build_info: { },
+          build_info: {},
           version: version,
           _attachments: {
             'ddocs/medic.json': { data: genAttachmentData([{ _id: 'aaa' }]) },
@@ -625,7 +625,7 @@ describe('Setup utils', () => {
     it('should throw error if json has no ddocs', async () => {
       sinon.stub(env, 'ddocsPath').value('ddocsPath');
       sinon.stub(env, 'ddoc').value('medic');
-      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ }));
+      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({}));
 
       try {
         await utils.getPackagedBuildInfo();
@@ -636,7 +636,7 @@ describe('Setup utils', () => {
     });
 
     it('should throw error if json is missing medic ddoc', async () => {
-      const jsonDdocs = [ { _id: '_design/one' }, { _id: '_design/two' }, { _id: '_design/three' } ];
+      const jsonDdocs = [{ _id: '_design/one' }, { _id: '_design/two' }, { _id: '_design/three' }];
       sinon.stub(env, 'ddocsPath').value('ddocsPath');
       sinon.stub(env, 'ddoc').value('medic');
       sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ docs: jsonDdocs }));
@@ -686,22 +686,28 @@ describe('Setup utils', () => {
       const deployInfoOld = { user: 'old', upgrade_log_id: '11', timestamp: 100 };
       const deployInfoExpected = Object.assign({ timestamp: 1500 }, deployInfoNew);
 
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:medic', _rev: '1', new: true, deploy_info: deployInfoNew } },
-        { doc: { _id: '_design/:staged:medic-client', _rev: '1', new: true, deploy_info: deployInfoNew } },
-        { doc: { _id: '_design/medic', _rev: '2', old: true, deploy_info: deployInfoOld } },
-        { doc: { _id: '_design/medic-client', _rev: '3', old: true, deploy_info: deployInfoOld } },
-      ] }); // all ddocs have match
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:sentinel1', _rev: '1', isnew: true, deploy_info: deployInfoNew } },
-        { doc: { _id: '_design/sentinel1', _rev: '2', isOld: true, deploy_info: deployInfoOld } },
-        { doc: { _id: '_design/extra', _rev: '3', deploy_info: deployInfoOld } },
-      ] }); // one extra existent ddoc
-      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:logs1', _rev: '1', field: 'a', deploy_info: deployInfoNew } },
-        { doc: { _id: '_design/:staged:logs2', _rev: '1', deploy_info: deployInfoNew } },
-        { doc: { _id: '_design/logs1', _rev: '3', field: 'b', deploy_info: deployInfoOld } },
-      ] }); // one extra staged ddoc
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:medic', _rev: '1', new: true, deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/:staged:medic-client', _rev: '1', new: true, deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/medic', _rev: '2', old: true, deploy_info: deployInfoOld } },
+          { doc: { _id: '_design/medic-client', _rev: '3', old: true, deploy_info: deployInfoOld } },
+        ]
+      }); // all ddocs have match
+      sinon.stub(db.sentinel, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:sentinel1', _rev: '1', isnew: true, deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/sentinel1', _rev: '2', isOld: true, deploy_info: deployInfoOld } },
+          { doc: { _id: '_design/extra', _rev: '3', deploy_info: deployInfoOld } },
+        ]
+      }); // one extra existent ddoc
+      sinon.stub(db.medicLogs, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:logs1', _rev: '1', field: 'a', deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/:staged:logs2', _rev: '1', deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/logs1', _rev: '3', field: 'b', deploy_info: deployInfoOld } },
+        ]
+      }); // one extra staged ddoc
       sinon.stub(db.medicUsersMeta, 'allDocs').resolves({ rows: [] }); // no ddocs
       sinon.stub(db.users, 'allDocs').resolves({ rows: [] }); // no ddocs
 
@@ -740,10 +746,12 @@ describe('Setup utils', () => {
 
     it('should throw an error when getting ddocs fails', async () => {
       clock.tick(2500);
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:medic', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
-        { doc: { _id: '_design/medic', _rev: '2', bar: 2, deploy_info: { deploy: 'old' } } },
-      ] }); // all ddocs have match
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:medic', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
+          { doc: { _id: '_design/medic', _rev: '2', bar: 2, deploy_info: { deploy: 'old' } } },
+        ]
+      }); // all ddocs have match
       sinon.stub(db.sentinel, 'allDocs').rejects({ the: 'error' });
 
       sinon.stub(db, 'saveDocs').resolves();
@@ -759,20 +767,24 @@ describe('Setup utils', () => {
         expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.saveDocs.callCount).to.equal(1);
         expect(db.saveDocs.args[0]).to.deep.equal([db.medic, [
-          { _id: '_design/medic', _rev: '2', foo: 1, deploy_info: { deploy: 'info', timestamp: 2500 }},
+          { _id: '_design/medic', _rev: '2', foo: 1, deploy_info: { deploy: 'info', timestamp: 2500 } },
         ]]);
         expect(db.sentinel.allDocs.callCount).to.equal(1);
       }
     });
 
     it('should throw an error when saving ddocs fails', async () => {
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:medic', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
-        { doc: { _id: '_design/medic', _rev: '2', bar: 2, deploy_info: 'omg' } },
-      ] }); // all ddocs have match
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:sentinel', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
-      ]});
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:medic', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
+          { doc: { _id: '_design/medic', _rev: '2', bar: 2, deploy_info: 'omg' } },
+        ]
+      }); // all ddocs have match
+      sinon.stub(db.sentinel, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:sentinel', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
+        ]
+      });
 
       sinon.stub(db, 'saveDocs').resolves();
       db.saveDocs.onCall(1).rejects({ error: 'an error' });
@@ -928,11 +940,11 @@ describe('Setup utils', () => {
     it('should call default upgrade service url', async () => {
       const payload = { docker_compose: { 'doc.yml': 'payload' }, containers: [] };
       const response = { 'doc.yml': { ok: true } };
-      sinon.stub(rpn, 'post').resolves({ 'doc.yml': { ok: true } });
+      sinon.stub(request, 'post').resolves({ 'doc.yml': { ok: true } });
 
       expect(await utils.makeUpgradeRequest(payload)).to.deep.equal(response);
-      expect(rpn.post.callCount).to.equal(1);
-      expect(rpn.post.args[0]).to.deep.equal([{
+      expect(request.post.callCount).to.equal(1);
+      expect(request.post.args[0]).to.deep.equal([{
         url: 'http://localhost:5008/upgrade',
         json: true,
         body: payload,
@@ -942,13 +954,13 @@ describe('Setup utils', () => {
     it('should call env upgrade service url', async () => {
       const payload = { containers: [], docker_compose: { 'doc.yml': 'payload' } };
       const response = { 'doc.yml': { ok: true } };
-      sinon.stub(rpn, 'post').resolves(response);
+      sinon.stub(request, 'post').resolves(response);
       process.env.UPGRADE_SERVICE_URL = 'http://someurl';
       utils = rewire('../../../../src/services/setup/utils');
 
       expect(await utils.makeUpgradeRequest(payload)).to.deep.equal(response);
-      expect(rpn.post.callCount).to.equal(1);
-      expect(rpn.post.args[0]).to.deep.equal([{
+      expect(request.post.callCount).to.equal(1);
+      expect(request.post.args[0]).to.deep.equal([{
         url: 'http://someurl/upgrade',
         json: true,
         body: payload,
@@ -957,30 +969,31 @@ describe('Setup utils', () => {
 
     it('should throw invalid url error', async () => {
       const payload = { containers: [], docker_compose: {} };
-      sinon.stub(rpn, 'post').resolves({});
+      sinon.stub(request, 'post').resolves({});
       process.env.UPGRADE_SERVICE_URL = 'whatever';
       utils = rewire('../../../../src/services/setup/utils');
 
-      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('Invalid UPGRADE_SERVICE_URL: whatever');
+      await expect(utils.makeUpgradeRequest(payload))
+        .to.be.rejectedWith('Invalid UPGRADE_SERVICE_URL: whatever');
     });
 
     it('should throw request errors', async () => {
       const payload = { containers: [], 'docker-compose': {} };
-      sinon.stub(rpn, 'post').rejects(new Error('boom'));
+      sinon.stub(request, 'post').rejects(new Error('boom'));
 
       await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('boom');
     });
 
     it('should throw error when response is invalid', async () => {
       const payload = { docker_compose: { 'doc.yml': 'payload' }, containers: {} };
-      sinon.stub(rpn, 'post').resolves();
+      sinon.stub(request, 'post').resolves();
 
       await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('No containers were updated');
     });
 
     it('should throw error when no docker-compose files were updated', async () => {
       const payload = { docker_compose: { 'doc1.yml': 'payload', 'doc2.yml': 'payload' }, containers: [] };
-      sinon.stub(rpn, 'post').resolves({
+      sinon.stub(request, 'post').resolves({
         'doc1.yml': { ok: false },
         'doc2.yml': { ok: false },
       });
@@ -993,7 +1006,7 @@ describe('Setup utils', () => {
         docker_compose: { 'd1.yml': 'p', 'd2.yml': 'p' },
         containers: [{ container_name: 'a' }, { container_name: 'b' }]
       };
-      sinon.stub(rpn, 'post').resolves({
+      sinon.stub(request, 'post').resolves({
         'a': { ok: false },
         'b': { ok: false },
       });

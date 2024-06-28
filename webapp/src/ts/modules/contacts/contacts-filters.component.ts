@@ -24,7 +24,7 @@ export class ContactsFiltersComponent {
   @Input() sortDirection;
   @Input() lastVisitedDateExtras;
 
-  @ViewChild(FreetextFilterComponent) freetextFilter:FreetextFilterComponent;
+  @ViewChild(FreetextFilterComponent) freetextFilter?:FreetextFilterComponent;
 
   applyFilters() {
     this.search.emit();

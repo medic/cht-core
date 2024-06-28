@@ -6,7 +6,7 @@ const rewire = require('rewire');
 
 const db = require('../../src/db');
 const env = require('../../src/environment');
-const logger = require('../../src/logger');
+const logger = require('@medic/logger');
 const loginController = require('../../src/controllers/login');
 const extensionLibsService = require('../../src/services/extension-libs');
 

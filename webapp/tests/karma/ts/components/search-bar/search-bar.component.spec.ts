@@ -74,7 +74,7 @@ describe('Search Bar Component', () => {
   });
 
   it('should clear search term and apply', () => {
-    const freeTextClearSpy = sinon.spy(component.freetextFilter, 'clear');
+    const freeTextClearSpy = sinon.spy(component.freetextFilter!, 'clear');
 
     component.clear();
 
@@ -84,7 +84,7 @@ describe('Search Bar Component', () => {
   });
 
   it('should do nothing if component is disabled', () => {
-    const freeTextClearSpy = sinon.spy(component.freetextFilter, 'clear');
+    const freeTextClearSpy = sinon.spy(component.freetextFilter!, 'clear');
     component.disabled = true;
 
     component.clear();

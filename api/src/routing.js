@@ -10,17 +10,24 @@ const path = require('path');
 const auth = require('./auth');
 const prometheusMiddleware = require('prometheus-api-metrics');
 const rateLimiterMiddleware = require('./middleware/rate-limiter');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 const isClientHuman = require('./is-client-human');
-const target = 'http://' + environment.host + ':' + environment.port;
-const proxy = require('http-proxy').createProxyServer({ target: target });
+
+const port = typeof environment.port !== 'undefined' && environment.port !== null ? `:${environment.port}` : '';
+const target = `${environment.protocol}//${environment.host}${port}`;
+const proxy = require('http-proxy').createProxyServer({
+  target: target, 
+  changeOrigin: environment.proxies.changeOrigin
+});
 const proxyForAuth = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: environment.proxies.changeOrigin
 });
 const proxyForChanges = require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
+  changeOrigin: environment.proxies.changeOrigin
 });
 const login = require('./controllers/login');
 const smsGateway = require('./controllers/sms-gateway');
@@ -28,6 +35,7 @@ const exportData = require('./controllers/export-data');
 const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
+const person = require('./controllers/person');
 const { people, places } = require('@medic/contacts')(config, db);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
@@ -46,6 +54,7 @@ const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
+const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
 const startupLog = require('./services/setup/startup-log');
@@ -65,6 +74,7 @@ const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
 const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
+const moment = require('moment');
 const MAX_REQUEST_SIZE = '32mb';
 
 // requires content-type application/x-www-form-urlencoded header
@@ -150,6 +160,7 @@ app.use((req, res, next) => {
 app.use(getLocale);
 
 morgan.token('id', req => req.id);
+morgan.token('date', () => moment().format(logger.DATE_FORMAT));
 
 app.use(
   morgan(':date REQ: :id :remote-addr :remote-user :method :url HTTP/:http-version', {
@@ -225,6 +236,8 @@ app.use(compression({
     return compression.filter(req, res);
   }
 }));
+
+app.get('/.well-known/assetlinks.json', wellKnownController.assetlinks);
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic/issues/4089
@@ -414,11 +427,14 @@ app.get('/api/v1/forms', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
-app.get('/api/v1/users', users.get);
-app.get('/api/v2/users', users.v2.get);
+app.get('/api/v1/users', users.list);
+app.get('/api/v2/users/:username', users.v2.get);
+app.get('/api/v2/users', users.v2.list);
 app.postJson('/api/v1/users', users.create);
 app.postJsonOrCsv('/api/v2/users', users.v2.create);
+app.postJson('/api/v3/users', users.v3.create);
 app.postJson('/api/v1/users/:username', users.update);
+app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
@@ -459,6 +475,8 @@ app.postJson('/api/v1/people', function(req, res) {
     })
     .catch(err => serverUtils.error(err, req, res));
 });
+
+app.get('/api/v1/person/:uuid', person.v1.get);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 

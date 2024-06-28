@@ -101,4 +101,77 @@ describe('roles', () => {
       chai.expect(roles.isOffline(['roleB', 'roleC'])).to.equal(false);
     });
   });
+
+  describe('hasAllPermissions', () => {
+    it('should return true for db admin', () => {
+      chai.expect(roles.hasAllPermissions(['_admin'], 'permission')).to.equal(true);
+    });
+
+    it('should return false for no permissions', () => {
+      chai.expect(roles.hasAllPermissions(['role'])).to.equal(false);
+    });
+
+    it('should return false for no roles', () => {
+      chai.expect(roles.hasAllPermissions(undefined, ['perm'])).to.equal(false);
+    });
+
+    it('should return false when no role has permission', () => {
+      config.get.withArgs('permissions').returns({
+        'permission1': ['role1', 'role2'],
+        'permission2': ['role2', 'role3'],
+        'permission3': [],
+      });
+
+      chai.expect(roles.hasAllPermissions(['role2'], ['permission3'])).to.equal(false);
+    });
+
+    it('should return false for missing permission', () => {
+      config.get.withArgs('permissions').returns({
+        'permission1': ['role1', 'role2'],
+        'permission2': ['role2', 'role3'],
+      });
+
+      chai.expect(roles.hasAllPermissions(['role2'], ['perm'])).to.equal(false);
+    });
+
+    it('should return false when some roles have some permissions', () => {
+      config.get.withArgs('permissions').returns({
+        'permission1': ['role1', 'role2'],
+        'permission2': ['role2', 'role3'],
+        'permission3': ['role3'],
+      });
+
+      chai.expect(roles.hasAllPermissions(['role2'], ['permission3', 'permission1'])).to.equal(false);
+    });
+
+    it('should return true when one role has all permissions', () => {
+      config.get.withArgs('permissions').returns({
+        'permission1': ['role1', 'role2'],
+        'permission2': ['role2', 'role3'],
+        'permission3': ['role3'],
+      });
+
+      chai.expect(roles.hasAllPermissions(['role2', 'role1'], ['permission1', 'permission2'])).to.equal(true);
+    });
+
+    it('should return true when multiple roles have all permissions', () => {
+      config.get.withArgs('permissions').returns({
+        'permission1': ['role1', 'role2'],
+        'permission2': ['role3', 'role4'],
+        'permission3': ['role3'],
+      });
+
+      chai.expect(roles.hasAllPermissions(['role1', 'role3'], ['permission1', 'permission2'])).to.equal(true);
+    });
+
+    it('should return work with single permission', () => {
+      config.get.withArgs('permissions').returns({
+        'permission1': ['role1', 'role2'],
+        'permission2': ['role3', 'role4'],
+        'permission3': ['role3'],
+      });
+
+      chai.expect(roles.hasAllPermissions(['role3'], 'permission3')).to.equal(true);
+    });
+  });
 });

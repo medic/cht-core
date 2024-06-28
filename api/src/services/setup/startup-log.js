@@ -1,4 +1,4 @@
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 const config = require('../../config');
 
 const actions = {

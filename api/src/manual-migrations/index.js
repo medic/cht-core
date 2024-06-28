@@ -14,7 +14,7 @@
  * @module manual-migrations
  */
 const db = require('../db').medic;
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const PAGE_LIMIT = 100;
 const ALL_MIGRATIONS = {

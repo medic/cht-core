@@ -23,6 +23,7 @@ jobs:
   build:
     name: Compile the app
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
     steps:
     - name: Install bats
@@ -88,6 +89,8 @@ jobs:
     needs: build
     name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    
     strategy:
       fail-fast: false
       matrix:
@@ -118,14 +121,79 @@ jobs:
       - name: Build cht-form Web Component
         run: npm run build-cht-form
       - name: Run Tests
-        run: npm run wdio-cht-form
+        run: npm run integration-cht-form
+
+  tests-k3d:
+    needs: build
+    name: ${{ matrix.cmd }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['ci-integration-all-k3d', 'ci-integration-sentinel-k3d']
+
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/checkout@v4
+
+      - run: mkdir tests/logs
+      - run: python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+      - run: npm install -g cht-conf
+      - run: npm ci
+
+      - uses: nolar/setup-k3d-k3s@v1
+      - uses: azure/setup-helm@v4.1.0
+      - uses: azure/setup-kubectl@v4
+      - name: Run tests
+        run: npm run ${{ matrix.cmd }}
+      - name: Archive Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.cmd }}
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}
 
   tests:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    
     env:
       CHROME_VERSION: ${{ matrix.chrome-version }}
+      JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
+
 
     strategy:
       fail-fast: false
@@ -198,9 +266,6 @@ jobs:
       working-directory: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Set ENV
-      run: |
-        echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install pyxform
@@ -217,7 +282,7 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
+        cp -r build-history-data/cht-core/allure/${{ env.JOB_NAME }}/allure-report/history allure-results | true
     - name: Install Chrome 90
       if: ${{matrix.chrome-version=='90'}}
       run: |
@@ -237,8 +302,8 @@ jobs:
     - name: Copy new allure history
       if: always()
       run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report | true
+        mkdir -p build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/allure-report | true
     - name: Upload allure report history
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       continue-on-error: true # don't fail the build if git push fails
@@ -258,8 +323,8 @@ jobs:
     - name: Copy new report
       if: always()
       run: |
-        mkdir -p build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}
-        cp -r allure-report build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }} | true
+        mkdir -p build-history/cht-core/allure/${{ env.JOB_NAME }}
+        cp -r allure-report build-history/cht-core/allure/${{ env.JOB_NAME }} | true
     - name: Upload allure report
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       continue-on-error: true # don't fail the build if git push fails
@@ -272,7 +337,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
+        name: ${{ env.JOB_NAME }}
         path: |
           allure-results
           allure-report
@@ -284,6 +349,8 @@ jobs:
     needs: [tests, config-tests, test-cht-form]
     name: Publish branch build
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
@@ -329,11 +396,46 @@ jobs:
         node ./publish.js
         node ./tag-docker-images.js
 
+
+  publish-generated-docs:
+    needs: [publish]
+    name: Publish generated docs
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - name: Generate TypeDoc
+        run: npm run --prefix shared-libs/cht-datasource gen-docs
+      - name: Main Branch Only - Deploy to GH pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
+          external_repository: medic/cht-datasource
+          publish_dir: ./shared-libs/cht-datasource/docs
+          user_name: medic-ci
+          user_email: medic-ci@github
+          publish_branch: main
+
   upgrade:
     needs: [publish]
-    name: Upgrade from latest release
+    name: Upgrade from ${{ matrix.version }}
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
     if: ${{ github.event_name != 'pull_request' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '4.2.4', 'latest' ]
 
     steps:
       - name: Configure AWS credentials Public
@@ -354,6 +456,7 @@ jobs:
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+          echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
       - run: npm ci
       - name: Create logs directory
         run: mkdir tests/logs
@@ -363,7 +466,7 @@ jobs:
       - name: Archive Results
         uses: actions/upload-artifact@v4
         with:
-          name: Upgrade
+          name: upgrade-${{ matrix.version }}
           path: |
             allure-results
             allure-report

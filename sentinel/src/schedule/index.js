@@ -2,7 +2,7 @@ const moment = require('moment');
 const config = require('../config');
 const transitionsLib = config.getTransitionsLib();
 const date = transitionsLib.date;
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 
 const RUN_EVERY_MS = 5 * 60 * 1000; // 5 minutes
 

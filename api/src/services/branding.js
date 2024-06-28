@@ -3,7 +3,7 @@ const { promisify } = require('util');
 const path = require('path');
 
 const db = require('../db');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const DEFAULT_LOGO_PATH = path.join(__dirname, '..', 'resources', 'logo', 'cht-logo.png');
 const DEFAULT_FAVICON_PATH = path.join(__dirname, '..', 'resources', 'ico', 'favicon.ico');

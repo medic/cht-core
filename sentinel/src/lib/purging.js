@@ -1,8 +1,8 @@
 const config = require('../config');
 const registrationUtils = require('@medic/registration-utils');
 const serverSidePurgeUtils = require('@medic/purging-utils');
-const chtScriptApi = require('@medic/cht-script-api');
-const logger = require('./logger');
+const cht = require('@medic/cht-datasource');
+const logger = require('@medic/logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 const moment = require('moment');
@@ -15,6 +15,8 @@ const VIEW_LIMIT = 100 * 1000;
 const MAX_BATCH_SIZE = 20 * 1000;
 const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
+
+const dataContext = cht.getLocalDataContext(config, db);
 let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 let skippedContacts = [];
 
@@ -346,7 +348,7 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
         group.contact,
         group.reports,
         group.messages,
-        chtScriptApi,
+        cht.getDatasource(dataContext),
         permissionSettings
       );
       if (!validPurgeResults(idsToPurge)) {
@@ -454,13 +456,14 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
 
   const getIdsToPurge = (rolesHashes, rows) => {
     const toPurge = {};
+    const datasource = cht.getDatasource(dataContext);
     rows.forEach(row => {
       const doc = row.doc;
       rolesHashes.forEach(hash => {
         toPurge[hash] = toPurge[hash] || {};
         const purgeIds = doc.form ?
-          purgeFn({ roles: roles[hash] }, {}, [doc], [], chtScriptApi, permissionSettings) :
-          purgeFn({ roles: roles[hash] }, {}, [], [doc], chtScriptApi, permissionSettings);
+          purgeFn({ roles: roles[hash] }, {}, [doc], [], datasource, permissionSettings) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc], datasource, permissionSettings);
 
         if (!validPurgeResults(purgeIds)) {
           return;

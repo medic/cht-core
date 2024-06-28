@@ -1,0 +1,23 @@
+name: Test CouchDB (Conditional)
+on:
+  pull_request:
+    paths:
+      - 'couchdb/**'
+  push:
+    paths:
+      - 'couchdb/**'
+
+jobs:
+  test:
+    name: Test CouchDB
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          sparse-checkout: |
+            couchdb/
+      - name: Test CouchDB
+        run: |
+          cd couchdb/tests
+          make test

@@ -98,11 +98,11 @@ describe('Reports Filters Component', () => {
   it('reset filters should reset all filters', () => {
     const clearFilters = sinon.stub(GlobalActions.prototype, 'clearFilters');
     const searchSpy = sinon.spy(component.search, 'emit');
-    const formTypeClearSpy = sinon.spy(component.formTypeFilter, 'clear');
-    const facilityClearSpy = sinon.spy(component.facilityFilter, 'clear');
-    const dateClearSpy = sinon.spy(component.dateFilter, 'clear');
-    const statusClearSpy = sinon.spy(component.statusFilter, 'clear');
-    const freetextClearSpy = sinon.spy(component.freetextFilter, 'clear');
+    const formTypeClearSpy = sinon.spy(component.formTypeFilter!, 'clear');
+    const facilityClearSpy = sinon.spy(component.facilityFilter!, 'clear');
+    const dateClearSpy = sinon.spy(component.dateFilter!, 'clear');
+    const statusClearSpy = sinon.spy(component.statusFilter!, 'clear');
+    const freetextClearSpy = sinon.spy(component.freetextFilter!, 'clear');
 
     component.resetFilters();
 

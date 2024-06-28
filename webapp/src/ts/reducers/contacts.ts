@@ -118,9 +118,11 @@ const updateSelectedContactSummary = (state, summary) => {
 
 const updateSelectedContactsTasks = (state, tasks) => {
   const taskCounts = {};
+  const mappedTasks: any = [];
   tasks.forEach(task => {
     const childId = task.emission.forId;
     taskCounts[childId] = taskCounts[childId] ? taskCounts[childId] + 1 : 1;
+    mappedTasks.push(task.emission);
   });
   const children = state.selected?.children?.map(group => {
     const contacts = group.contacts.map(child => {
@@ -128,7 +130,6 @@ const updateSelectedContactsTasks = (state, tasks) => {
     });
     return { ...group, contacts };
   });
-  const mappedTasks = tasks.map(doc => doc.emission);
   return { ...state, selected: { ...state.selected, tasks: mappedTasks, children }};
 };
 

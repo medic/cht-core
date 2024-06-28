@@ -11,8 +11,8 @@ import { SessionService } from '@mm-services/session.service';
 })
 export class ConfigurationUserComponent implements OnInit {
 
-  loading: boolean;
-  canUpdatePassword: boolean;
+  loading?: boolean;
+  canUpdatePassword?: boolean;
 
   constructor(
     private modalService: ModalService,

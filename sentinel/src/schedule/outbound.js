@@ -1,8 +1,8 @@
 const configService = require('../config');
 const db = require('../db');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const lineage = require('@medic/lineage')(Promise, db.medic);
-const outbound = require('@medic/outbound')(logger);
+const outbound = require('@medic/outbound');
 const infodocLib = require('@medic/infodoc');
 infodocLib.initLib(db.medic, db.sentinel);
 

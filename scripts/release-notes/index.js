@@ -1,30 +1,38 @@
-/*
- * Generates a changelog given a GH report and milestone.
- *
- * USAGE:
- *  1) Make sure all the issues in the release are assigned to the milestone
- *  2) Each issue should have one and only one Type label - the script will tell you which ones don't
- *  3) Make sure you have generated a GH token and created a token.json file, eg: { "githubApiToken": "..." }
- *     This token needs at least `read:org` permissions
- *  4) Execute the command: node index.js <repo_name> <milestone_name> > <output_file>
- *      eg: node index.js cht-core 3.0.0 > tmp.md
- *  5) Insert the contents of the output file into the appropriate location in Changes.md
- */
-
-const { Octokit } = require('@octokit/rest');
-const octokit = new Octokit({
+const minimist = require('minimist');
+const { Octokit } = require('@octokit/core');
+const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
+const ExtendedOctokit = Octokit.plugin(paginateGraphql);
+const octokit = new ExtendedOctokit({
   auth: require('../token.json').githubApiToken,
   userAgent: 'cht-release-note-generator',
 });
 
 const OWNER = 'medic';
-const ISSUE_STATE = 'all';
+const BOTS = ['dependabot[bot]'];
 
-const REPO_NAME = process.argv[2];
+const argv = minimist(process.argv.slice(2));
+if (argv.help) {
+  console.log(`
+Usage: node index.js [OPTIONS] REPO MILESTONE
+
+Generates a changelog given a GH report and milestone. Requires a GitHub API token to be configured. 
+See the README for more information.
+
+Options:
+   --help  Show this help message
+   --skip-commit-validation  Skip validation of commits
+   
+Repository: The name of the repository (e.g. cht-core).
+
+Milestone: The name of the milestone (e.g. 2.15.0).
+`);
+  process.exit(0);
+}
+
+const [REPO_NAME, MILESTONE_NAME] = argv._;
 if (!REPO_NAME) {
   throw new Error('You must specify a repo name (eg: "cht-core") as the first argument');
 }
-const MILESTONE_NAME = process.argv[3];
 if (!MILESTONE_NAME) {
   throw new Error('You must specify a milestone name (eg: "2.15.0") as the second argument');
 }
@@ -49,10 +57,134 @@ const PREFIXES_TO_IGNORE = [
   'Type: Investigation',
 ];
 
-const getMilestone = async () => {
-  const response = await octokit.rest.issues.listMilestones({ owner: OWNER, repo: REPO_NAME });
-  return response.data.find(milestone => milestone.title === MILESTONE_NAME);
+const getRepoQueryString = query => `{ repository(owner: "${OWNER}", name: "${REPO_NAME}") { ${query} } }`;
+
+const queryRepo = query => octokit.graphql(getRepoQueryString(query));
+
+const queryRepoPaginated = query => octokit.graphql
+  .paginate(`query paginate($cursor: String) ${getRepoQueryString(query)}`);
+
+const getLatestReleaseName = async () => queryRepo(
+  `releases(first: 1) {
+        edges { node { tagName } }
+      }`
+).then(({ repository }) => repository.releases.edges[0].node.tagName);
+
+const getMilestoneBranch = async () => {
+  const milestoneBranch = [...MILESTONE_NAME.split('.').slice(0, -1), 'x'].join('.');
+  const branchExists = await queryRepo(
+    `ref(qualifiedName: "refs/heads/${milestoneBranch}") {
+        target { oid }
+      }`
+  ).then(({ repository }) => repository.ref);
+  if (branchExists) {
+    return milestoneBranch;
+  }
+
+  // Fall back to default branch if milestone branch doesn't exist. This might be useful when preparing for a release
+  // before actually creating the release branch.
+  return queryRepo(
+    `defaultBranchRef { name }`
+  ).then(({ repository }) => repository.defaultBranchRef.name);
 };
+
+// This query calculates the "commits for the release" by comparing the commit history of the latest release with the
+// commit history of the milestone branch and keeping only the commits that are unique to the milestone branch.
+const getCommitsForRelease = async (release, milestoneBranch) => queryRepoPaginated(
+  `ref(qualifiedName: "${release}") {
+      compare(headRef: "${milestoneBranch}") {
+        commits(first: 100, after: $cursor) {
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+          nodes {
+            oid
+            messageHeadline
+            author { user { login, name, url } }
+            associatedPullRequests(first: 50) {
+              nodes {
+                milestone { id }
+                closingIssuesReferences(first: 50) { edges { node { milestone { id } } } }
+              }
+            }
+          }
+        }
+      }
+    }`
+).then(({ repository }) => repository.ref.compare.commits.nodes);
+
+const commitHasPRWithMilestone = commit => commit.associatedPullRequests.nodes.find(pr => pr.milestone);
+const prHasIssueWithMilestone = pr => pr.closingIssuesReferences.edges.find(edge => edge.node.milestone);
+const commitPRHasIssueWithMilestone = commit => commit.associatedPullRequests.nodes.find(prHasIssueWithMilestone);
+
+const getIssueNumbers = commitMessage => {
+  const issuePattern = /#(\d+)/g;
+  const results = commitMessage.match(issuePattern);
+  if (!results) {
+    return [];
+  }
+
+  return results.map(result => result.substring(1));
+};
+
+const issueHasMilestone = async issueNumber => queryRepo(
+  `issueOrPullRequest(number: ${issueNumber}){
+        ... on Issue { milestone { id } }
+        ... on PullRequest { milestone { id } }
+      }`
+).then(({ repository }) => repository.issueOrPullRequest.milestone);
+
+const commitMsgHasIssueWithMilestone = async ({ messageHeadline }) => {
+  for (const issueNumber of getIssueNumbers(messageHeadline)) {
+    if (await issueHasMilestone(issueNumber)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const findCommitsWithoutMilestone = async (commitsForRelease) => {
+  const commitsWithoutMilestone = [];
+  for (const commit of commitsForRelease) {
+    if (
+      commitHasPRWithMilestone(commit)
+      || commitPRHasIssueWithMilestone(commit)
+      || (await commitMsgHasIssueWithMilestone(commit))
+    ) {
+      continue;
+    }
+
+    commitsWithoutMilestone.push(commit);
+  }
+  return commitsWithoutMilestone;
+};
+
+const validateCommits = async (commitsForRelease) => {
+  if (argv['skip-commit-validation']) {
+    return;
+  }
+  const commitsWithoutMilestone = await findCommitsWithoutMilestone(commitsForRelease);
+
+  if (commitsWithoutMilestone.length) {
+    console.error(`
+Some commits included in the release are not associated with a milestone. Commits can be associated with a milestone by:
+
+  1. Setting the milestone on an issue closed by the commit's PR (issue must be listed in the PR's "Development" links)
+  2. Setting the milestone directly on the commit's PR
+  3. Setting the milestone on an issue referenced in the commit message (e.g. "fix(#1345): ..."
+
+Commits:
+`);
+    commitsWithoutMilestone.forEach(commit => console.error(`- ${commit.oid}: ${commit.messageHeadline}`));
+    throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
+  }
+};
+
+const getMilestone = async () => queryRepo(
+  `milestones(query: "${MILESTONE_NAME}", first: 1) { nodes { number } }`
+).then(({ repository }) => repository.milestones.nodes[0]);
 
 const getMilestoneNumber = async () => {
   const milestone = await getMilestone();
@@ -62,13 +194,30 @@ const getMilestoneNumber = async () => {
   return milestone.number;
 };
 
+const getMilestoneIssues = async (milestoneNumber) => queryRepoPaginated(
+  `milestone(number: ${milestoneNumber}) {
+    issues(first: 100, after: $cursor, states: [OPEN, CLOSED]) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      nodes {
+        number
+        url
+        title
+        labels(first: 100) { nodes { name } }
+      }
+    }
+  }`
+).then(({ repository }) => repository.milestone.issues.nodes);
+
 const validateIssue = issue => {
-  const matchingTypes = TYPES.filter(type => issue.labels.find(label => type.labels.includes(label.name)));
+  const matchingTypes = TYPES.filter(type => issue.labels.nodes.find(label => type.labels.includes(label.name)));
   if (!matchingTypes.length) {
-    return `Issue doesn't have any Type label: ${issue.html_url}`;
+    return `Issue doesn't have any Type label: ${issue.url}`;
   }
   if (matchingTypes.length > 1) {
-    return `Issue has too many Type labels: ${issue.html_url}`;
+    return `Issue has too many Type labels: ${issue.url}`;
   }
 };
 
@@ -80,23 +229,11 @@ const validateIssues = issues => {
     console.error(JSON.stringify(errors, null, 2));
     throw new Error('Some issues are in an invalid state');
   }
-  return issues;
-};
-
-const getIssues = async (milestoneId) => {
-  const issues = await octokit.paginate(octokit.rest.issues.listForRepo, {
-    owner: OWNER,
-    repo: REPO_NAME,
-    milestone: milestoneId,
-    state: ISSUE_STATE,
-    per_page: 100
-  });
-  return validateIssues(issues);
 };
 
 const filterIssues = issues => {
   return issues.filter(issue => {
-    return issue.labels.every(label => {
+    return issue.labels.nodes.every(label => {
       return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
     });
   });
@@ -104,8 +241,8 @@ const filterIssues = issues => {
 
 const group = (group, issues) => {
   const filtered = issues
-    .filter(issue => issue.labels.find(label => group.labels.includes(label.name)))
-    .sort((lhs, rhs) => lhs.html_url.localeCompare(rhs.html_url));
+    .filter(issue => issue.labels.nodes.find(label => group.labels.includes(label.name)))
+    .sort((lhs, rhs) => lhs.url.localeCompare(rhs.url));
   return { title: group.title, issues: filtered };
 };
 
@@ -116,15 +253,33 @@ const groupIssues = issues => {
   };
 };
 
-const format = issue => `- [#${issue.number}](${issue.html_url}): ${issue.title}\n`;
+const format = issue => `- [#${issue.number}](${issue.url}): ${issue.title}\n`;
 
 const formatAll = issues => issues.length ? issues.map(format).join('') : 'None.\n';
 
-const outputGroups = (groups) => {
-  return groups.map(group => `### ${group.title}\n\n${formatAll(group.issues)}\n`).join('');
+const formatGroups = (groups) => {
+  return groups
+    .map(group => `### ${group.title}\n\n${formatAll(group.issues)}\n`)
+    .join('');
 };
 
-const output = ({ warnings, types }) => {
+const formatCommits = (commits) => {
+  const ignoreLogins = BOTS;
+  const lines = [];
+  for (const commit of commits) {
+    const login = commit.author?.user?.login;
+    if (login && !ignoreLogins.includes(login)) {
+      ignoreLogins.push(login);
+      const user = commit.author.user;
+      const name = user.name || user.login;
+      const profileUrl = user.url;
+      lines.push(`- [${name}](${profileUrl})`);
+    }
+  }
+  return lines.join('\n');
+};
+
+const output = ({ warnings, types }, commits) => {
   console.log(`
 ---
 title: "${MILESTONE_NAME} release notes"
@@ -141,20 +296,40 @@ Check the repository for the [latest known issues](https://github.com/medic/cht-
 
 ## Upgrade notes
 
-${outputGroups(warnings)}
+${formatGroups(warnings)}
 ## Highlights
 
 <<< TODO >>>
 
 ## And more...
 
-${outputGroups(types)}`);
+${formatGroups(types)}
+
+## Contributors
+
+Thanks to all who committed changes for this release!
+
+${formatCommits(commits)}
+`);
 };
 
-Promise.resolve()
-  .then(getMilestoneNumber)
-  .then(getIssues)
-  .then(filterIssues)
-  .then(groupIssues)
-  .then(output)
+const getCommits = async () => {
+  const latestReleaseName = await getLatestReleaseName();
+  const milestoneBranch = await getMilestoneBranch();
+  const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
+  validateCommits(commitsForRelease);
+  return commitsForRelease;
+};
+
+const getIssues = async () => {
+  const milestoneNumber = await getMilestoneNumber();
+  const issues = await getMilestoneIssues(milestoneNumber);
+  await validateIssues(issues);
+  const filtered = await filterIssues(issues);
+  const grouped = await groupIssues(filtered);
+  return grouped;
+};
+
+Promise.all([ getIssues(), getCommits() ])
+  .then(([ issues, commits ]) => output(issues, commits))
   .catch(console.error);

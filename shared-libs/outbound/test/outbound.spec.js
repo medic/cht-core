@@ -2,15 +2,11 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
-const request = require('request-promise-native');
-const outbound = rewire('../src/outbound');
+const request = require('@medic/couch-request');
+let outbound;
 
 describe('outbound shared library', () => {
   afterEach(() => sinon.restore());
-
-  // This has to run before any describes even though it's only used by the service describe block
-  // so the logger gets attached
-  const service = outbound({ ...console, isDebugEnabled: () => false });
 
   describe('send', () => {
     let restores;
@@ -20,6 +16,8 @@ describe('outbound shared library', () => {
 
     beforeEach(() => {
       restores = [];
+
+      outbound = rewire('../src/outbound');
 
       mapDocumentToPayload = sinon.stub();
       restores.push(outbound.__set__('mapDocumentToPayload', mapDocumentToPayload));
@@ -45,7 +43,7 @@ describe('outbound shared library', () => {
       mapDocumentToPayload.resolves(payload);
       sendPayload.resolves();
 
-      return service.send(config, configName, record, recordInfo)
+      return outbound.send(config, configName, record, recordInfo)
         .then(() => {
           assert.equal(mapDocumentToPayload.callCount, 1);
           assert.equal(sendPayload.callCount, 1);
@@ -58,7 +56,7 @@ describe('outbound shared library', () => {
     it('Propagates a mapping error', () => {
       mapDocumentToPayload.rejects(error);
 
-      return service.send(config, configName, record)
+      return outbound.send(config, configName, record)
         .catch(err => err)
         .then(err => {
           assert.equal(mapDocumentToPayload.callCount, 1);
@@ -73,7 +71,7 @@ describe('outbound shared library', () => {
       alreadySent.returns(false);
       sendPayload.rejects(error);
 
-      return service.send(config, configName, record, recordInfo)
+      return outbound.send(config, configName, record, recordInfo)
         .catch(err => err)
         .then(err => {
           assert.equal(mapDocumentToPayload.callCount, 1);
@@ -85,7 +83,10 @@ describe('outbound shared library', () => {
   });
 
   describe('mapDocumentToPayload', () => {
-    const mapDocumentToPayload = outbound.__get__('mapDocumentToPayload');
+    let mapDocumentToPayload;
+    beforeEach(() => {
+      mapDocumentToPayload = outbound.__get__('mapDocumentToPayload');
+    });
 
     it('supports simple dest => src mapping', () => {
       const doc = {

@@ -456,6 +456,23 @@ export class FormatDataRecordService {
     return result;
   }
 
+  private getImagePath(doc, label, value) {
+    if (!doc?._attachments) {
+      return undefined;
+    }
+    const isImagePath = filePath => doc._attachments[filePath]?.content_type?.startsWith('image/');
+    const filePath = 'user-file-' + value;
+    if (isImagePath(filePath)) {
+      return filePath;
+    }
+    // Fall back to the old style of naming image attachments
+    const legacyFilePath = 'user-file/' + label.split('.').slice(1).join('/');
+    if (isImagePath(legacyFilePath)) {
+      return legacyFilePath;
+    }
+    return undefined;
+  }
+
   private getFields(doc, results, values, labelPrefix, depth) {
     if (depth > 3) {
       depth = 3;
@@ -469,23 +486,13 @@ export class FormatDataRecordService {
           results.push({ label, depth });
           this.getFields(doc, results, value, label, depth + 1);
         } else {
-          const result:any = {
+          results.push({
             label,
             value,
             depth,
             target: this.getClickTarget(key, doc),
-          };
-
-          const filePath = 'user-file/' + label.split('.').slice(1).join('/');
-          if (doc &&
-            doc._attachments &&
-            doc._attachments[filePath] &&
-            doc._attachments[filePath].content_type &&
-            doc._attachments[filePath].content_type.startsWith('image/')) {
-            result.imagePath = filePath;
-          }
-
-          results.push(result);
+            imagePath: this.getImagePath(doc, label, value),
+          });
         }
       });
     return results;
@@ -524,10 +531,9 @@ export class FormatDataRecordService {
   }
 
   private formatScheduledTasks(doc, settings, language, context) {
-    doc.scheduled_tasks_by_group = [];
+    const scheduledTasksByGroup:Array<{ group; name; type; number; rows; rows_sorted }> = [];
     const groups = {};
     doc.scheduled_tasks.forEach((task) => {
-      // avoid crash if item is falsey
       if (!task) {
         return;
       }
@@ -566,8 +572,6 @@ export class FormatDataRecordService {
         copy.message_key = task.message_key;
       }
 
-      // setup scheduled groups
-
       const groupName = this.getGroupName(task);
       let group = groups[groupName];
       if (!group) {
@@ -584,9 +588,10 @@ export class FormatDataRecordService {
     });
     Object.keys(groups).forEach((key) => {
       groups[key].rows_sorted = _.sortBy(groups[key].rows, 'timestamp');
-      doc.scheduled_tasks_by_group.push(groups[key]);
+      scheduledTasksByGroup.push(groups[key]);
     });
 
+    return scheduledTasksByGroup;
   }
 
   /*
@@ -673,7 +678,7 @@ export class FormatDataRecordService {
     }
 
     if (formatted.scheduled_tasks) {
-      this.formatScheduledTasks(formatted, settings, language, context);
+      formatted.scheduled_tasks_by_group =this.formatScheduledTasks(doc, settings, language, context);
     }
 
     if (formatted.kujua_message) {
@@ -688,8 +693,8 @@ export class FormatDataRecordService {
   }
 
   private _format(doc) {
-    const patientId = doc.patient_id || doc.fields?.patient_id;
-    const placeId = doc.place_id || doc.fields?.place_id;
+    const patientId = doc.patient_id || doc.fields?.patient_id || doc.patient?.patient_id;
+    const placeId = doc.place_id || doc.fields?.place_id || doc.place?.place_id;
 
     return Promise
       .all([
@@ -701,14 +706,14 @@ export class FormatDataRecordService {
       .then(([ settings, language, patientRegistrations=[], placeRegistrations=[] ]) => {
         const context:any = {};
 
-        if (patientId) {
+        if (doc.patient) {
           context.patient = doc.patient;
           context.registrations = patientRegistrations.filter((registration) => {
             return registrationUtils.isValidRegistration(registration, settings);
           });
         }
 
-        if (placeId) {
+        if (doc.place) {
           context.place = doc.place;
           context.placeRegistrations = placeRegistrations.filter((registration) => {
             return registrationUtils.isValidRegistration(registration, settings);
