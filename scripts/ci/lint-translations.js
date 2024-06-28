@@ -1,38 +1,35 @@
 const { checkTranslations, TranslationException } = require('@medic/translation-checker');
 
+const SUPPORTED_LANGUAGES = [ 'en', 'es', 'fr', /*'ne',*/ 'sw' ]; // add ne once all missing translations added
 const TRANSLATION_DIR = `${__dirname}/../../api/resources/translations`;
-const SUPPORTED_LANGUAGES = [ 'en', 'es', 'fr', /*'ne',*/ 'sw' ]; // TODO add ne once all missing translations added
+const TRANSLATION_OPTIONS = {
+  checkPlaceholders: true,
+  checkEmpties: true,
+  checkMessageformat: true,
+  checkMissing: true,
+  languages: SUPPORTED_LANGUAGES
+};
+
+const handleError = (e) => {
+  if (e instanceof TranslationException && e.errors) {
+    for (const error of e.errors) {
+      console.error(error.message);
+    }
+    return 1;
+  }
+  console.log(e);
+  return 2;
+};
 
 const run = async () => {
-  try {
-    console.log('Linting translation files...');
-    await checkTranslations(
-      TRANSLATION_DIR,
-      {
-        checkPlaceholders: true,
-        checkEmpties: true,
-        checkMessageformat: true,
-        checkMissing: true,
-        languages: SUPPORTED_LANGUAGES
-      }
-    );
-    console.log('Linting translation files passed');
-  } catch (err) {
-    if (err instanceof TranslationException) {
-      if (err.errors) {
-        for (const e of err.errors) {
-          console.error(e.message);
-        }
-        process.exit(1);
-      }
-    }
-    throw err;
-  }
+  console.log('Linting translation files...');
+  await checkTranslations(TRANSLATION_DIR, TRANSLATION_OPTIONS);
+  console.log('Linting translation files passed');
 };
 
 try {
   run();
 } catch (e) {
-  console.log(e);
-  process.exit(1);
+  const exitCode = handleError(e);
+  process.exit(exitCode);
 }
