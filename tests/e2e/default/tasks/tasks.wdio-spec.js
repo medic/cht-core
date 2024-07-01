@@ -2,7 +2,6 @@ const path = require('path');
 const chtConfUtils = require('@utils/cht-conf');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
