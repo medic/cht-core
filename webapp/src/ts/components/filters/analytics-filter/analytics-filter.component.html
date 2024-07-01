@@ -20,4 +20,10 @@
     </ul>
   </span>
 
+  <div class="right-side-filter" *ngIf="showFilterButton">
+    <button class="btn open-filter right-side-filter" (click)="toggleFilter.emit()">
+      <span class="fa fa-sliders"></span>
+      <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
+    </button>
+  </div>
 </div>

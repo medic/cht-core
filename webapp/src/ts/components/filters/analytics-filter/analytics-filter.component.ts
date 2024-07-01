@@ -1,4 +1,11 @@
-import { AfterContentChecked, AfterContentInit, Component, Input, OnDestroy } from '@angular/core';
+import {
+  AfterContentChecked,
+  AfterContentInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -8,6 +15,8 @@ import { Subscription } from 'rxjs';
 })
 export class AnalyticsFilterComponent implements AfterContentInit, AfterContentChecked, OnDestroy {
   @Input() analyticsModules: any[] = [];
+  @Input() showFilterButton: boolean = false;
+  @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
   activeModule;
   subscriptions: Subscription = new Subscription();
 
