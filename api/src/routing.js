@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const environment = require('./environment');
 const config = require('./config');
 const db = require('./db');
+const dataContext = require('./services/data-context');
 const path = require('path');
 const auth = require('./auth');
 const prometheusMiddleware = require('prometheus-api-metrics');
@@ -36,7 +37,8 @@ const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
 const person = require('./controllers/person');
-const { people, places } = require('@medic/contacts')(config, db);
+const place = require('./controllers/place');
+const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
@@ -463,6 +465,8 @@ app.postJson('/api/v1/places/:id', function(req, res) {
     })
     .catch(err => serverUtils.error(err, req, res));
 });
+
+app.get('/api/v1/place/:uuid', place.v1.get);
 
 app.postJson('/api/v1/people', function(req, res) {
   auth
