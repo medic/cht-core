@@ -66,7 +66,7 @@ describe('Tasks', () => {
     await updateSettings(settings);
     await commonPage.goToTasks();
 
-    const { errorMessage, url, username, errorStack } = await tasksPage.getErrorLog();
+    const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');

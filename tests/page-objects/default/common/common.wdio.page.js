@@ -52,6 +52,8 @@ const ABOUT_MENU = '#header-dropdown i.fa-question';
 //Configuration App
 const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 
+const errorLog = () => $(`error-log`);
+
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
 };
@@ -450,6 +452,18 @@ const getActionBarLabels = async () => {
   return labels.filter(label => !!label);
 };
 
+const getErrorLog = async () => {
+  await errorLog().waitForDisplayed();
+
+  const errorMessage = await (await $('.error-details span')).getText();
+  const userDetails = await (await $$('.error-details dl dd'));
+  const errorStack = await (await $('pre code'));
+
+  const username = await userDetails[0].getText();
+  const url = await userDetails[1].getText();
+  return { errorMessage, url, username, errorStack };
+};
+
 module.exports = {
   openMoreOptionsMenu,
   closeFastActionList,
@@ -513,4 +527,5 @@ module.exports = {
   goToUrl,
   getFastActionItemsLabels,
   getActionBarLabels,
+  getErrorLog
 };

@@ -165,7 +165,7 @@ describe('Contact details page', () => {
     });
 
     it('should show error log for bad config', async () => {
-      const { errorMessage, url, username, errorStack } = await contactPage.getErrorLog();
+      const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
       expect(username).to.equal(constants.USERNAME);
       expect(url).to.equal(constants.API_HOST);
