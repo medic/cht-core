@@ -272,7 +272,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       relevantForms: [], // This disables the "New Action" button until forms load
       sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
       canDelete: this.canDeleteContact,
-      canEdit: this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
+      canEdit: this.isOnlineOnly || !this.userSettings?.facility_id?.includes(this.selectedContact?.doc?._id),
       openContactMutedModal: (form) => this.openContactMutedModal(form),
       openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo),
     });
