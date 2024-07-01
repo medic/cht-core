@@ -381,38 +381,82 @@ describe('medic-xpath-extensions', function () {
     });
   });
 
-  describe('validateIdNumber()', () => {
-    const test = func['cht:luhn'];
+  describe('#validate-luhn()', () => {
+    const test = func['cht:validate-luhn'];
 
-    it('should return true for a valid ID number', () => {
+    it('should return true for a valid South African ID number', () => {
       const idNumber = { t: 'arr', v: [{ textContent: '6505285125086' }] };
-      const result = test(idNumber);
+      const result = test(idNumber, 13);
       assert.strictEqual(result.v, true);
     });
-    it('should return false for an ID number that does not contain 13 digits', () => {
+    it('should return false for an South African ID number that does not contain 13 digits', () => {
       const idNumber = { t: 'arr', v: [{ textContent: '650528512508' }] };
-      const result = test(idNumber);
+      const result = test(idNumber, 13);
       assert.strictEqual(result.v, false);
     });
-    it('should return false for an  invalid ID number ', () => {
+    it('should return false for an invalid South African ID number ', () => {
       const idNumber = { t: 'arr', v: [{ textContent: '6505285125085' }] };
-      const result = test(idNumber);
+      const result = test(idNumber, 13);
       assert.strictEqual(result.v, false);
     });
-    it('should return false for a non-numeric ID number', () => {
+    it('should return false for a non-numeric South African ID number', () => {
       const idNumber = { t: 'arr', v: [{ textContent: '650528512a086' }] };
-      const result = test(idNumber);
+      const result = test(idNumber, 13);
       assert.strictEqual(result.v, false);
     });
-    it('should return true for a valid ID number with spaces', () => {
+    it('should return true for a valid South African ID number with spaces', () => {
       const idNumber = { t: 'arr', v: [{ textContent: '6505  2851  2508 6' }] };
-      const result = test(idNumber);
+      const result = test(idNumber, 13);
       assert.strictEqual(result.v, true);
     });
-    it('should return true for a valid ID number with leading/trailing spaces', () => {
+    it('should return true for a valid South African ID number with leading/trailing spaces', () => {
       const idNumber = { t: 'arr', v: [{ textContent: '  6505285125086  ' }] };
-      const result = test(idNumber);
+      const result = test(idNumber, 13);
       assert.strictEqual(result.v, true);
+    });
+
+    it('should return true for a valid American Express credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '371449635398431' }] };
+      const result = test(idNumber, 15);
+      assert.strictEqual(result.v, true);
+    });
+    it('should return false for an invalid American Express credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '371449635398432' }] };
+      const result = test(idNumber, 15);
+      assert.strictEqual(result.v, false);
+    });
+
+    it('should return true for a valid Visa credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '4532015112830366' }] };
+      const result = test(idNumber, 16);
+      assert.strictEqual(result.v, true);
+    });
+    it('should return false for an invalid Visa credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '4532015112830367' }] };
+      const result = test(idNumber, 16);
+      assert.strictEqual(result.v, false);
+    });
+
+    it('should return true for a valid MasterCard credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '5555555555554444' }] };
+      const result = test(idNumber, 16);
+      assert.strictEqual(result.v, true);
+    });
+    it('should return false for an invalid MasterCard credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '5555555555554445' }] };
+      const result = test(idNumber, 16);
+      assert.strictEqual(result.v, false);
+    });
+
+    it('should return true for a valid Discover credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '6011000990139424' }] };
+      const result = test(idNumber, 16);
+      assert.strictEqual(result.v, true);
+    });
+    it('should return false for an invalid Discover credit card number', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: '6011000990139425' }] };
+      const result = test(idNumber, 16);
+      assert.strictEqual(result.v, false);
     });
   });
 });
