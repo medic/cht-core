@@ -130,4 +130,12 @@ module.exports = {
   },
 
   wantsJSON,
+
+  doOrError: (fn) => async (req, res) => {
+    try {
+      return await fn(req, res);
+    } catch (err) {
+      module.exports.error(err, req, res);
+    }
+  }
 };

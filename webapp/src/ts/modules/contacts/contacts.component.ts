@@ -140,7 +140,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.contactsActions.removeContactFromList({ _id: change.id });
       this.hasContacts = !!this.contactsList.length;
     }
-    if (this.usersHomePlace?.some(homePlace => homePlace._id === change.id)) {
+    if (this.usersHomePlace?.find(homePlace => homePlace._id === change.id)) {
       this.usersHomePlace = await this.getUserHomePlaceSummary();
     }
     const withIds =
@@ -235,7 +235,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!facilityId.length || facilityId.some(id => id === undefined)) {
           return;
         }
-
 
         this.globalActions.setUserFacilityId(facilityId);
         return this.getDataRecordsService
@@ -504,6 +503,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return contact._id + contact._rev;
   }
 
+  private getUserHomePlaceId() {
+    return this.usersHomePlace?.[0]?._id;
+  }
+
   private setLeftActionBar() {
     if (this.destroyed) {
       // don't update the actionbar if the component has already been destroyed
@@ -514,7 +517,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setLeftActionBar({
       exportFn: () => this.exportContacts(),
       hasResults: this.hasContacts,
-      userFacilityId: this.usersHomePlace?.[0]?._id,
+      userFacilityId: this.getUserHomePlaceId(),
       childPlaces: this.allowedChildPlaces,
     });
   }
@@ -527,7 +530,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.fastActionList = await this.fastActionButtonService.getContactLeftSideActions({
-      parentFacilityId: this.usersHomePlace?.[0]?._id,
+      parentFacilityId: this.getUserHomePlaceId(),
       childContactTypes: this.allowedChildPlaces,
     });
   }

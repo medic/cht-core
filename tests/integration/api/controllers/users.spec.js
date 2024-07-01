@@ -1716,7 +1716,7 @@ describe('Users API', () => {
   });
 
 
-  describe.skip('POST/GET api/v2/users', () => {
+  describe('POST/GET api/v2/users', () => {
     before(async () => {
       await utils.saveDoc(parentPlace);
     });

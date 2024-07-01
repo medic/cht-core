@@ -1,6 +1,7 @@
 const userName = () => $('label=User name');
 const partners = () => $('.partners');
 const version = () => $('[test-id="about-version"]');
+const aboutCard = () => $('div*=About');
 const RELOAD_BUTTON = '.about.page .mat-primary';
 
 const getPartnerImage = async (name) => {
@@ -21,5 +22,6 @@ module.exports = {
   partners,
   getPartnerImage,
   getVersion,
+  aboutCard,
   RELOAD_BUTTON,
 };

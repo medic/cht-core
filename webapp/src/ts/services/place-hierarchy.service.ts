@@ -81,7 +81,7 @@ export class PlaceHierarchyService {
             const ids: any[] = [];
             types.forEach(type => {
               if (type.parents) {
-                ids.push(...type.parents);
+                ids.push(...(type.parents as unknown[]));
               }
             });
             return ids;

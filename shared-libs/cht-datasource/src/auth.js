@@ -65,6 +65,22 @@ const verifyParameters = (permissions, userRoles, chtPermissionsSettings) => {
   return true;
 };
 
+const normalizePermissions = (permissions) => {
+  if (permissions && typeof permissions === 'string') {
+    return [permissions];
+  }
+  return permissions;
+};
+
+const checkAdminPermissions = (disallowedGroupList, permissions, userRoles) => {
+  if (disallowedGroupList.every(permissions => permissions.length)) {
+    debug('Disallowed permission(s) found for admin', permissions, userRoles);
+    return false;
+  }
+  // Admin has the permissions automatically.
+  return true;
+};
+
 /**
  * Verify if the user's role has the permission(s).
  * @param permissions {string | string[]} Permission(s) to verify
@@ -73,9 +89,7 @@ const verifyParameters = (permissions, userRoles, chtPermissionsSettings) => {
  * @return {boolean}
  */
 const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
-  if (permissions && typeof permissions === 'string') {
-    permissions = [ permissions ];
-  }
+  permissions = normalizePermissions(permissions);
 
   if (!verifyParameters(permissions, userRoles, chtPermissionsSettings)) {
     return false;
@@ -84,12 +98,7 @@ const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
   const { allowed, disallowed } = groupPermissions(permissions);
 
   if (isAdmin(userRoles)) {
-    if (disallowed.length) {
-      debug('Disallowed permission(s) found for admin', permissions, userRoles);
-      return false;
-    }
-    // Admin has the permissions automatically.
-    return true;
+    return checkAdminPermissions([disallowed], permissions, userRoles);
   }
 
   const hasDisallowed = !checkUserHasPermissions(disallowed, userRoles, chtPermissionsSettings, false);
@@ -135,12 +144,7 @@ const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSetting
   });
 
   if (isAdmin(userRoles)) {
-    if (disallowedGroupList.every(permissions => permissions.length)) {
-      debug('Disallowed permission(s) found for admin', permissionsGroupList, userRoles);
-      return false;
-    }
-    // Admin has the permissions automatically.
-    return true;
+    return checkAdminPermissions(disallowedGroupList, permissionsGroupList, userRoles);
   }
 
   const hasAnyPermissionGroup = permissionsGroupList.some((permissions, i) => {

@@ -30,6 +30,7 @@
     require( './widgets/android-app-launcher' ),
     require( './widgets/display-base64-image' ),
     require( './widgets/dynamic-url' ),
+    require( './widgets/draw' ),
   ];
 
   module.exports = widgets;
