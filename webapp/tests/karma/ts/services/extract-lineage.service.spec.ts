@@ -82,31 +82,31 @@ describe('ExtractLineageService', () => {
   });
 
   describe('getUserLineageToRemove()', () => {
-    it('should return undefined when user is type online', async () => {
+    it('should return null when user is type online', async () => {
       authService.online.returns(true);
 
       const result = await service.getUserLineageToRemove();
 
-      expect(result).to.be.undefined;
+      expect(result).to.be.null;
     });
 
-    it('should return undefined when user has more than one assigned facility', async () => {
+    it('should return null when user has more than one assigned facility', async () => {
       authService.online.returns(false);
       userSettingsService.get.resolves({ facility_id: [ 'id-1', 'id-2' ] });
 
       const result = await service.getUserLineageToRemove();
 
-      expect(result).to.be.undefined;
+      expect(result).to.be.null;
     });
 
-    it('should return undefined when parent is not defined', async () => {
+    it('should return null when parent is not defined', async () => {
       authService.online.returns(false);
       userSettingsService.get.resolves({ facility_id: [ 'id-1', 'id-2' ] });
       userContactService.get.resolves({ parent: undefined });
 
       const result = await service.getUserLineageToRemove();
 
-      expect(result).to.be.undefined;
+      expect(result).to.be.null;
     });
 
     it('should return facility name when user is type offline and has only one assigned facility', async () => {

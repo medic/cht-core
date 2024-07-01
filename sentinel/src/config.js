@@ -77,7 +77,7 @@ const initConfig = () => {
 };
 
 const initTransitionLib = () => {
-  transitionsLib = require('@medic/transitions')(db, module.exports);
+  transitionsLib = require('@medic/transitions')(db, module.exports, require('./data-context'));
 };
 
 module.exports = {

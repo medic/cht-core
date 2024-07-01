@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
+const dataContext = require('./libs/data-context');
 const facility = require('./libs/facility');
 const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
@@ -11,7 +12,8 @@ const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
-const { people, places } = require('@medic/contacts')(config, db);
+const { Person, Place, Qualifier } = require('@medic/cht-datasource');
+const { people, places } = require('@medic/contacts')(config, db, dataContext);
 
 const USER_PREFIX = 'org.couchdb.user:';
 
@@ -209,13 +211,14 @@ const createUser = (data, response) => {
   });
 };
 
-const hasUserCreateFlag = doc => doc.user_for_contact && doc.user_for_contact.create;
+const hasUserCreateFlag = doc => doc?.user_for_contact?.create;
 
 const clearCreateUserForContact = async (doc) => {
   if (!hasUserCreateFlag(doc)) {
     return;
   }
-  const contact = await db.medic.get(doc._id);
+  const getPerson = dataContext.bind(Person.v1.get);
+  const contact = await getPerson(Qualifier.byUuid(doc._id));
   if (hasUserCreateFlag(contact)) {
     delete contact.user_for_contact.create;
     const { rev } = await db.medic.put(contact);
@@ -264,10 +267,12 @@ const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
 
   data.place.contact = lineage.minifyLineage(data.contact);
   data.place.parent = lineage.minifyLineage(data.place.parent);
-
-  return db.medic
-    .get(data.place._id)
+  const getPlace = dataContext.bind(Place.v1.get);
+  return getPlace(Qualifier.byUuid(data.place._id))
     .then(place => {
+      if (!place) {
+        return Promise.reject(`Place not found [${data.place._id}].`);
+      }
       if (preservePrimaryContact) {
         return;
       }

@@ -1,16 +1,18 @@
 const config = require('./config');
 const db = require('./db');
+const dataContext = require('./data-context');
 const infodoc = require('@medic/infodoc');
 
 let inited = false;
 
-module.exports = (sourceDb, sourceConfig) => {
+module.exports = (sourceDb, sourceConfig, sourceDataContext) => {
   if (!inited) {
     db.init(sourceDb);
     infodoc.initLib(db.medic, db.sentinel);
     inited = true;
   }
   config.init(sourceConfig);
+  dataContext.init(sourceDataContext);
 
   const transitions = require('./transitions');
   const utils = require('./lib/utils');
