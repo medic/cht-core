@@ -13,6 +13,7 @@ const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
 const config = require('../config');
+const dataContext = require('./data-context');
 const environment = require('../environment');
 const extensionLibs = require('./extension-libs');
 
@@ -42,7 +43,7 @@ const loadTranslations = () => {
 };
 
 const initTransitionLib = () => {
-  const transitionsLib = require('@medic/transitions')(db, config);
+  const transitionsLib = require('@medic/transitions')(db, config, dataContext);
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);
