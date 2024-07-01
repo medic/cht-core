@@ -155,6 +155,45 @@ describe('ContactType Utils', () => {
     });
   });
 
+  describe('isSameContactType', () => {
+    it('should return true for hardcoded contacts of the same type', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'contact', contact_type: 'health_center' },
+        { type: 'contact', contact_type: 'health_center' },
+      ])).to.equal(true);
+    });
+    it('should return true for configurable contacts of the same type', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'my_health_center' },
+        { type: 'my_health_center' },
+      ])).to.equal(true);
+    });
+    it('should return true for a mix of hardcoded and configurable types of the same hierarchy', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'health_center' },
+        { type: 'contact', contact_type: 'health_center' },
+      ])).to.equal(true);
+    });
+    it('should return false for hardcoded contacts of different type', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'contact', contact_type: 'health_center' },
+        { type: 'contact', contact_type: 'district_hospital' },
+      ])).to.equal(false);
+    });
+    it('should return false for configurable contacts of different type', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'my_health_center' },
+        { type: 'health_center' },
+      ])).to.equal(false);
+    });
+    it('should return true for a mix of hardcoded and configurable types of the same hierarchy', () => {
+      chai.expect(utils.isSameContactType([
+        { type: 'health_center' },
+        { type: 'contact', contact_type: 'my_health_center' },
+      ])).to.equal(false);
+    });
+  });
+
   describe('isPlaceType', () => {
     it('should return false for no type', () => {
       chai.expect(utils.isPlaceType(false)).to.equal(false);

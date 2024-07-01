@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.9.0",
+  "version": "4.10.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -53,7 +53,7 @@
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default/wdio.conf.js",
     "-- CI SCRIPTS ": "-----------------------------------------------------------------------------------------------",
     "build": "./scripts/build/build-ci.sh",
-    "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run build && npm run integration-api && npm run unit && npm run unit-nginx && npm run unit-haproxy && npm run unit-haproxy-healthcheck",
+    "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run unit-nginx && npm run unit-haproxy && npm run unit-haproxy-healthcheck && npm run build && npm run integration-api && npm run unit",
     "ci-integration-all": "mocha --config tests/integration/.mocharc-all.js",
     "ci-integration-all-k3d": "mocha --config tests/integration/.mocharc-k3d.js",
     "ci-integration-sentinel": "mocha --config tests/integration/.mocharc-sentinel.js",
