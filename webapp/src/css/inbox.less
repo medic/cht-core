@@ -406,6 +406,20 @@ body {
     left: 0;
     right: 0;
     display: flex;
+    .right-side-filter {
+      margin-left: auto;
+      .open-filter-label {
+        color: @analytics-filter-text-color;
+      }
+      .btn.open-filter {
+        background-color: transparent;
+        margin: 0;
+        .fa {
+          font-size: @font-extra-large;
+          color: @filter-icon-color;
+        }
+      }
+    }
   }
 
   .freetext-filter {
@@ -1712,6 +1726,10 @@ mm-search-bar {
     display: none;
   }
 
+  .open-filter-label {
+    display: none;
+  }
+
   mm-search-bar {
     padding: 5px;
     .mm-search-bar-container {
@@ -1729,10 +1747,6 @@ mm-search-bar {
 
       .btn.open-filter {
         margin: 0;
-
-        .open-filter-label {
-          display: none;
-        }
 
         .filter-counter {
           position: absolute;
