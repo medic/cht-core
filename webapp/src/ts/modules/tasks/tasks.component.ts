@@ -71,12 +71,26 @@ export class TasksComponent implements OnInit, OnDestroy {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
     const changesSubscription = this.changesService.subscribe({
       key: 'refresh-task-list',
-      filter: change => !!change.doc && (
-        this.contactTypesService.includes(change.doc) ||
-        isReport(change.doc) ||
-        change.doc.type === 'task'
-      ),
+      filter: change => {
+        console.warn('change subscription => !!change.doc', change.doc);
+        console.warn(
+          'change subscription => this.contactTypesService.includes(change.doc)',
+          this.contactTypesService.includes(change.doc)
+        );
+        console.warn('change subscription => isReport(change.doc)', isReport(change.doc));
+        console.warn('change subscription => change.doc.type === task', change.doc.type === 'task');
+        console.warn(
+          'change subscription => (change.doc.type === \'task\' && change.doc.state !== \'Completed\')',
+          (change.doc.type === 'task' && change.doc.state !== 'Completed')
+        );
+        return !!change.doc && (
+          this.contactTypesService.includes(change.doc) ||
+          isReport(change.doc) ||
+          (change.doc.type === 'task' /*&& change.doc.state !== 'Completed'*/)
+        );
+      },
       callback: () => {
+        console.warn('controller subscribe new task detected');
         this.debouncedReload.cancel();
         return this.debouncedReload();
       },
@@ -86,6 +100,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private subscribeToRulesEngine() {
     const rulesEngineSubscription = this.rulesEngineService.contactsMarkedAsDirty(() => {
+      console.warn('controller - triggering subscribe contactsMarkedAsDirty');
       this.debouncedReload.cancel();
       return this.debouncedReload();
     });
@@ -133,10 +148,11 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private async refreshTasks() {
     try {
+      console.warn('>>>>>> refreshTasks trigger');
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-
+      console.warn('>>>>> refreshTasks trigger finished :: ', taskDocs);
       this.hasTasks = taskDocs.length > 0;
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];

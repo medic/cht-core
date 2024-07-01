@@ -79,11 +79,19 @@ module.exports = {
 
     return enqueue(() => {
       const calculationTimestamp = Date.now();
+      console.warn('fetchTasksFor >> contactIds', contactIds);
       return refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds)
+        /// TODO: Do we really need to refresh rules emissions before getting the tasks by relation??
         .then(() => contactIds ? provider.tasksByRelation(contactIds, 'owner') : provider.allTasks('owner'))
         .then(tasksToDisplay => {
+          console.warn('fetchTasksFor >> updateTemporalStates >> tasksToDisplay', tasksToDisplay);
           const docsToCommit = updateTemporalStates(tasksToDisplay, calculationTimestamp);
+          console.warn('fetchTasksFor >> commitTaskDocs >> docsToCommit', docsToCommit);
           provider.commitTaskDocs(docsToCommit);
+          console.warn(
+            'fetchTasksFor >> tasksToDisplay.filter',
+            tasksToDisplay.filter(taskDoc => taskDoc.state === TaskStates.Ready)
+          );
           return tasksToDisplay.filter(taskDoc => taskDoc.state === TaskStates.Ready);
         });
     });
@@ -220,10 +228,15 @@ const disabledResponse = () => {
 const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
   const refreshAndSave = (freshData, updatedContactIds) => (
     refreshRulesEmissions(freshData, calculationTimestamp, wireupOptions)
-      .then(refreshed => Promise.all([
-        rulesStateStore.storeTargetEmissions(updatedContactIds, refreshed.targetEmissions),
-        provider.commitTaskDocs(refreshed.updatedTaskDocs),
-      ]))
+      .then(refreshed => {
+        console.warn(
+          'refreshRulesEmissionForContacts > refreshAndSave > refreshRulesEmissions', refreshed.updatedTaskDocs
+        );
+        return Promise.all([
+          rulesStateStore.storeTargetEmissions(updatedContactIds, refreshed.targetEmissions),
+          provider.commitTaskDocs(refreshed.updatedTaskDocs),
+        ]);
+      })
   );
 
   const refreshForAllContacts = (calculationTimestamp) => (
@@ -249,7 +262,8 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
 
   const refreshForKnownContacts = (calculationTimestamp, contactIds) => {
     const dirtyContactIds = contactIds.filter(contactId => rulesStateStore.isDirty(contactId));
-    return provider.taskDataFor(dirtyContactIds, rulesStateStore.currentUserSettings())
+    return provider
+      .taskDataFor(dirtyContactIds, rulesStateStore.currentUserSettings())
       .then(freshData => refreshAndSave(freshData, dirtyContactIds))
       .then(() => {
         rulesStateStore.markFresh(calculationTimestamp, dirtyContactIds);
@@ -258,15 +272,18 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
 
   return handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }).then(() => {
     if (contactIds) {
+      console.warn('refreshForKnownContacts (first return)');
       return refreshForKnownContacts(calculationTimestamp, contactIds);
     }
 
     // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
     // reports/tasks)
     if (!rulesStateStore.hasAllContacts()) {
+      console.warn('refreshForAllContacts');
       return refreshForAllContacts(calculationTimestamp);
     }
 
+    console.warn('refreshForKnownContacts (last return)');
     // Once the contact state store has all contacts, trust it and only refresh those marked dirty
     return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
   });
@@ -294,26 +311,30 @@ const storeTargetsDoc = (provider, targets, filterInterval, force = false) => {
 // https://github.com/medic/cht-core/issues/6209
 const handleIntervalTurnover = (provider, { monthStartDate }) => {
   if (!rulesStateStore.isLoaded() || !wireupOptions.enableTargets) {
+    console.warn('handleIntervalTurnover - return 1');
     return Promise.resolve();
   }
 
   const stateCalculatedAt = rulesStateStore.stateLastUpdatedAt();
   if (!stateCalculatedAt) {
+    console.warn('handleIntervalTurnover - return 2');
     return Promise.resolve();
   }
 
   const currentInterval = calendarInterval.getCurrent(monthStartDate);
   // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
   if (moment(stateCalculatedAt).isBetween(currentInterval.start, currentInterval.end, null, '[]')) {
+    console.warn('handleIntervalTurnover - return 3');
     return Promise.resolve();
   }
 
   const filterInterval = calendarInterval.getInterval(monthStartDate, stateCalculatedAt);
   const targetEmissionFilter = (emission => {
     // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
+    console.warn('handleIntervalTurnover - return 4');
     return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
   });
-
+  console.warn('handleIntervalTurnover - return 5');
   const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
   return storeTargetsDoc(provider, targets, filterInterval, true);
 };
