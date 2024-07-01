@@ -458,5 +458,16 @@ describe('medic-xpath-extensions', function () {
       const result = test(idNumber, 16);
       assert.strictEqual(result.v, false);
     });
+    
+    it('should return true for a valid luhn number without specifying a length', () => {
+      const number = { t: 'arr', v: [{ textContent: '6505285125086' }] };
+      const result = test(number);
+      assert.strictEqual(result.v, true);
+    });
+    it('should return true for a invalid luhn number without specifying a length', () => {
+      const number = { t: 'arr', v: [{ textContent: '6011000990139425' }] };
+      const result = test(number);
+      assert.strictEqual(result.v, false);
+    });
   });
 });
