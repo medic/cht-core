@@ -3,25 +3,20 @@ const config = require('./libs/config');
 const people = require('./people');
 const utils = require('./libs/utils');
 const db = require('./libs/db');
+const dataContext = require('./libs/data-context');
 const lineage = require('./libs/lineage');
+const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'];
 
-const getPlace = id => {
-  return lineage.fetchHydratedDoc(id)
-    .then(doc => {
-      if (!isAPlace(doc)) {
-        return Promise.reject({ status: 404 });
-      }
-      return doc;
-    })
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find place.';
-      }
-      throw err;
-    });
-};
+const getPlace = id => dataContext
+  .bind(Place.v1.getWithLineage)(Qualifier.byUuid(id))
+  .then(doc => {
+    if (!doc) {
+      return Promise.reject({ status: 404, message: 'Failed to find place.' });
+    }
+    return doc;
+  });
 
 const placesExist = async (placeIds) => {
   if (!Array.isArray(placeIds)) {
