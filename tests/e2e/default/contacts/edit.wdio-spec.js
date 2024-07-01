@@ -29,22 +29,16 @@ describe('Edit contacts with the default config. ', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it('should edit contact name', async () => {
+  it('should edit contact name ' +
+    'and then remove the primary contact from the clinic when the contact is deleted', async () => {
     await commonPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);
     await contactPage.editPersonName(CONTACT_NAME, CONTACT_UPDATED_NAME);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople(healthCenter._id);
     const primaryContactName = await contactPage.getPrimaryContactName();
+
     expect(primaryContactName).to.equal(CONTACT_UPDATED_NAME);
-  });
-
-  xit('should remove the primary contact from the clinic when the contact is deleted', async () => {
-    await commonPage.goToPeople();
-    await commonPage.waitForPageLoaded();
-
-    await contactPage.selectLHSRowByText(healthCenter.name);
-    await contactPage.waitForContactLoaded();
     expect(await contactPage.getAllRHSPeopleNames()).to.have.members([ CONTACT_UPDATED_NAME ]);
 
     await contactPage.selectLHSRowByText(CONTACT_UPDATED_NAME);
@@ -55,4 +49,5 @@ describe('Edit contacts with the default config. ', () => {
     await contactPage.waitForContactLoaded();
     expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([ CONTACT_UPDATED_NAME ]);
   });
+
 });
