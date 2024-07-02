@@ -32,18 +32,18 @@ export class ExtractLineageService {
     return result;
   }
 
-  async getUserLineageToRemove(): Promise<string | undefined> {
+  async getUserLineageToRemove(): Promise<string | null> {
     if (this.authService.online(true)) {
-      return;
+      return null;
     }
 
     const { facility_id }:any = await this.userSettingsService.get();
     if (!facility_id || (Array.isArray(facility_id) && facility_id.length > 1)) {
-      return;
+      return null;
     }
 
     const user = await this.userContactService.get();
-    return user?.parent?.name;
+    return user?.parent?.name as string;
   }
 
   removeUserFacility(lineage: string[], userLineageLevel: string): string[] | undefined {

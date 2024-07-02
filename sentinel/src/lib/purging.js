@@ -5,6 +5,7 @@ const cht = require('@medic/cht-datasource');
 const logger = require('@medic/logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
+const dataContext = require('../data-context');
 const moment = require('moment');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
@@ -16,7 +17,6 @@ const MAX_BATCH_SIZE = 20 * 1000;
 const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 
-const dataContext = cht.getLocalDataContext(config, db);
 let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 let skippedContacts = [];
 

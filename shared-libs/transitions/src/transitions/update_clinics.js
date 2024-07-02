@@ -1,8 +1,10 @@
 const transitionUtils = require('./utils');
 const db = require('../db');
+const dataContext = require('../data-context');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const utils = require('../lib/utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
@@ -32,9 +34,11 @@ const getContactByRefid = doc => {
       if (!contactType) {
         return;
       }
+
+      const getPersonWithLineage = dataContext.bind(Person.v1.getWithLineage);
       // person
       if (contactType.person) {
-        return lineage.fetchHydratedDoc(result._id);
+        return getPersonWithLineage(Qualifier.byUuid(result._id));
       }
 
       // place
@@ -43,7 +47,7 @@ const getContactByRefid = doc => {
         return result.contact || { parent: result };
       }
 
-      return lineage.fetchHydratedDoc(id);
+      return getPersonWithLineage(Qualifier.byUuid(id));
     });
 };
 

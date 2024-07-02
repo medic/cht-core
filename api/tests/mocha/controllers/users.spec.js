@@ -7,7 +7,8 @@ const serverUtils = require('../../../src/server-utils');
 const purgedDocs = require('../../../src/services/purged-docs');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const { roles, users } = require('@medic/user-management')(config, db);
+const dataContext = require('../../../src/services/data-context');
+const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 const replicationLimitLog = require('../../../src/services/replication-limit-log');
 
 let req;
