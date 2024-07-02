@@ -184,6 +184,24 @@ jobs:
             tests/results/
         if: ${{ failure() }}
 
+  translations:
+    needs: build
+    name: Lint translations
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: |
+          cd scripts
+          npm ci
+          cd ..
+      - run: npm run lint-translations
+
   tests:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
@@ -193,7 +211,6 @@ jobs:
     env:
       CHROME_VERSION: ${{ matrix.chrome-version }}
       JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
-
 
     strategy:
       fail-fast: false
@@ -346,7 +363,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests, config-tests, test-cht-form]
+    needs: [tests, config-tests, test-cht-form, translations]
     name: Publish branch build
     runs-on: ubuntu-22.04
     timeout-minutes: 60
