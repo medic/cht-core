@@ -6,31 +6,39 @@ const personFactory = require('@factories/cht/contacts/person');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const utils = require('@utils');
 
-describe('Edit contacts with the default config. ', () => {
+describe('Edit ', () => {
   const CONTACT_NAME = 'Maria Gomez';
   const CONTACT_UPDATED_NAME = 'Ana Paula Gonzalez';
-  const places = placeFactory.generateHierarchy();
-  const districtHospital = places.get('district_hospital');
-  const districtHospitalPrimaryContact = userFactory.build({ place: districtHospital._id });
-  const healthCenter = places.get('health_center');
-  const parent = { _id: healthCenter._id, parent: healthCenter.parent };
-  const healthCenterPrimaryContact = personFactory.build({ name: CONTACT_NAME, parent: parent });
-  healthCenter.contact = {
-    _id: healthCenterPrimaryContact._id,
-    name: healthCenterPrimaryContact.name,
-    phone: healthCenterPrimaryContact.phone
-  };
-  const docs = [...places.values(), districtHospitalPrimaryContact, healthCenterPrimaryContact];
+  const PLACE_UPDATED_NAME = 'Updated Health Center';
 
-  before(async () => {
-    await utils.saveDocs(docs);
-    await utils.createUsers([districtHospitalPrimaryContact]);
-    await loginPage.login(districtHospitalPrimaryContact);
-    await commonPage.waitForPageLoaded();
+  const places = placeFactory.generateHierarchy();
+  const healthCenter = places.get('health_center');
+
+  const offlineUserContact = personFactory.build({ name: CONTACT_NAME, parent: healthCenter });
+  const onlineUserContact = personFactory.build({ parent: healthCenter });
+
+  const offlineUser = userFactory.build({
+    username: 'offline_user',
+    place: healthCenter._id,
+    roles: ['chw'],
+    contact: offlineUserContact
+  });
+  const onlineUser = userFactory.build({
+    username: 'online_user',
+    place: healthCenter._id,
+    roles: ['program_officer'],
+    contact: onlineUserContact
   });
 
-  it('should edit contact name ' +
+  before(async () => {
+    await utils.saveDocs([...places.values()]);
+    await utils.createUsers([offlineUser, onlineUser]);
+  });
+
+  it('should update the contact name ' +
     'and then remove the primary contact from the clinic when the contact is deleted', async () => {
+    await loginPage.login(offlineUser);
+    await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);
     await contactPage.editPersonName(CONTACT_NAME, CONTACT_UPDATED_NAME);
@@ -39,7 +47,7 @@ describe('Edit contacts with the default config. ', () => {
     const primaryContactName = await contactPage.getPrimaryContactName();
 
     expect(primaryContactName).to.equal(CONTACT_UPDATED_NAME);
-    expect(await contactPage.getAllRHSPeopleNames()).to.have.members([ CONTACT_UPDATED_NAME ]);
+    expect(await contactPage.getAllRHSPeopleNames()).to.include.members([ CONTACT_UPDATED_NAME ]);
 
     await contactPage.selectLHSRowByText(CONTACT_UPDATED_NAME);
     await contactPage.waitForContactLoaded();
@@ -47,7 +55,31 @@ describe('Edit contacts with the default config. ', () => {
 
     await contactPage.selectLHSRowByText(healthCenter.name);
     await contactPage.waitForContactLoaded();
-    expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([ CONTACT_UPDATED_NAME ]);
+    expect(await contactPage.getAllRHSPeopleNames()).to.not.include.members([ CONTACT_UPDATED_NAME ]);
+
+    await commonPage.logout();
+  });
+
+  it('should sync and update offlineUser HomePlace', async () => {
+    await loginPage.login(offlineUser);
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToPeople();
+    await commonPage.logout();
+
+    await loginPage.login(onlineUser);
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToPeople();
+    await contactPage.editPlace(healthCenter.name, PLACE_UPDATED_NAME, 'health_center');
+    await commonPage.waitForPageLoaded();
+    await commonPage.logout();
+
+    await loginPage.login(offlineUser);
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToPeople();
+
+    expect(await contactPage.getContactCardText()).to.equal(healthCenter.name);
+    await commonPage.sync();
+    expect(await contactPage.getContactCardText()).to.equal(PLACE_UPDATED_NAME);
   });
 
 });
