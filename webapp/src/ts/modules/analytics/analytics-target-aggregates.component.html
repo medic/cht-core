@@ -20,6 +20,11 @@
     <p class="loading-status" *ngIf="!error && !aggregates?.length">{{'analytics.target.aggregates.no.targets' | translate}}</p>
   </div>
 
+  <mm-analytics-target-aggregates-sidebar-filter
+    class="col-sm-3 sidebar-filter-wrapper"
+    *ngIf="useSidebarFilter">
+  </mm-analytics-target-aggregates-sidebar-filter>
+
   <router-outlet></router-outlet>
 </div>
 
