@@ -5,55 +5,55 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const places = placeFactory.generateHierarchy();
-
-//Add two more health_center
-const sittuHospital = placeFactory.place().build({
-  name: 'Sittu Hospital',
-  type: 'district_hospital',
-  parent: {
-    _id: '',
-    parent: {
-      _id: ''
-    }
-  }
-});
-
-const potuHospital = placeFactory.place().build({
-  name: 'Potu Hospital',
-  type: 'district_hospital',
-  parent: {
-    _id: '',
-    parent: {
-      _id: ''
-    }
-  }
-});
-
-const sittuPerson = personFactory.build(
-  {
-    name: 'Sittu',
-    parent: {
-      _id: sittuHospital._id,
-      parent: sittuHospital.parent
-    }
-  }
-);
-const potuPerson = personFactory.build(
-  {
-    name: 'Potu',
-    parent: {
-      _id: sittuHospital._id,
-      parent: sittuHospital.parent
-    }
-  }
-);
-
-const docs = [...places.values(), sittuHospital, sittuPerson, potuHospital, potuPerson];
 
 describe('Test Contact Search Functionality', () => {
+  const places = placeFactory.generateHierarchy();
+
+  //Add two more health_center
+  const sittuHospital = placeFactory.place().build({
+    name: 'Sittu Hospital',
+    type: 'district_hospital',
+    parent: {
+      _id: '',
+      parent: {
+        _id: ''
+      }
+    }
+  });
+
+  const potuHospital = placeFactory.place().build({
+    name: 'Potu Hospital',
+    type: 'district_hospital',
+    parent: {
+      _id: '',
+      parent: {
+        _id: ''
+      }
+    }
+  });
+
+  const sittuPerson = personFactory.build(
+    {
+      name: 'Sittu',
+      parent: {
+        _id: sittuHospital._id,
+        parent: sittuHospital.parent
+      }
+    }
+  );
+
+  const potuPerson = personFactory.build(
+    {
+      name: 'Potu',
+      parent: {
+        _id: sittuHospital._id,
+        parent: sittuHospital.parent
+      }
+    }
+  );
+
   before(async () => {
-    await utils.saveDocs(docs);
+    await utils.saveDocs([...places.values(), sittuHospital, sittuPerson, potuHospital, potuPerson]);
     await loginPage.cookieLogin();
     await commonPage.goToPeople();
   });
