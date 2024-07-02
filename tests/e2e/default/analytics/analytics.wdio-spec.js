@@ -106,7 +106,7 @@ describe('Targets', () => {
     await updateSettings(settings);
     await analyticsPage.goToTargets();
 
-    const { errorMessage, url, username, errorStack } = await analyticsPage.getErrorLog();
+    const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');

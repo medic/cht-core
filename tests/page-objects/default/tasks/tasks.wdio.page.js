@@ -3,21 +3,8 @@ const taskFormSelector = '#task-report';
 const tasksGroupSelector = '#tasks-group .item-content';
 const formTitleSelector = `${taskFormSelector} h3#form-title`;
 const noSelectedTaskSelector = '.empty-selection';
-const errorLogSelector = `${taskListSelector} error-log`;
 
 const tasksList = () => $(taskListSelector);
-
-const getErrorLog = async () => {
-  await $(errorLogSelector).waitForDisplayed();
-
-  const errorMessage = await (await $('.error-details span')).getText();
-  const userDetails = await (await $$('.error-details dl dd'));
-  const errorStack = await (await $('pre code'));
-
-  const username = await userDetails[0].getText();
-  const url = await userDetails[1].getText();
-  return { errorMessage, url, username, errorStack };
-};
 
 const getTaskById = (emissionId) => $(`${taskListSelector} li[data-record-id="${emissionId}"`);
 const getTasks = () => $$(`${taskListSelector} li.content-row`);
@@ -112,6 +99,5 @@ module.exports = {
   waitForTasksGroupLoaded,
   getTasksInGroup,
   noSelectedTask,
-  getErrorLog,
   openTaskById,
 };
