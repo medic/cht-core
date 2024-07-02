@@ -1,26 +1,21 @@
 const _ = require('lodash');
+const dataContext = require('./libs/data-context');
 const db = require('./libs/db');
 const config = require('./libs/config');
 const utils = require('./libs/utils');
 const places = require('./places');
 const lineage = require('./libs/lineage');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
-const getPerson = id => {
-  return lineage.fetchHydratedDoc(id)
-    .catch(err => {
-      if (err.status === 404) {
-        throw { code: 404, message: 'Failed to find person.' };
-      }
-      throw err;
-    })
-    .then(doc => {
-      if (!isAPerson(doc)) {
-        throw { code: 404, message: 'Failed to find person.' };
-      }
-      return doc;
-    });
-};
+const getPerson = id => dataContext
+  .bind(Person.v1.getWithLineage)(Qualifier.byUuid(id))
+  .then(doc => {
+    if (!doc) {
+      return Promise.reject({ code: 404, message: 'Failed to find person.' });
+    }
+    return doc;
+  });
 
 const isAPerson = person => contactTypeUtils.isPerson(config.get(), person);
 

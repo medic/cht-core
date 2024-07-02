@@ -14,7 +14,8 @@ const db = require('../../../src/db').medic;
 const translations = require('../../../src/translations');
 const privacyPolicy = require('../../../src/services/privacy-policy');
 const config = require('../../../src/config');
-const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
+const dataContext = require('../../../src/services/data-context');
+const { tokenLogin, roles, users } = require('@medic/user-management')(config, db, dataContext);
 const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
 
