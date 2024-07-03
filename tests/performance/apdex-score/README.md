@@ -250,7 +250,16 @@ Elements to assert that are displayed in the screen.
     - Scroll down: `adb shell input swipe 500 1000 300 300`
     - Scroll up: `adb shell input swipe 300 300 500 1000`
     - For example, if you need to run 3 times the scroll down command, then you add 3 like this: `"scrollDown": 3,`
-- Avoid XPATH selector with special characters like single quote, asterisks.
-- Use [Appium Inspector](https://github.com/appium/appium-inspector) to help you find the XPath selectors. Sometimes it produces very long selectors but you can find a way to make them shorter.
-   - If it fails to start after setting up with capabilities. Try running `appium server` in the terminal then run the Appium Inspector.
+- In some cases, it's necessary to unfocus a selected element, trigger a click in a label. For example:
+```
+{
+  "id": "age_field_label",
+  "selector": "//*[contains(@text, \"What is your age\")]"
+},
+```
+- XPATH selectors
+  - Avoid XPATH selector with special characters like single quote, asterisks.
+  - Find an element containing a text _anywhere_ in the screen: `"//*[text()[contains(.,\"Eric Patt\")]"`
+  - Use [Appium Inspector](https://github.com/appium/appium-inspector) to help you find the XPath selectors. Sometimes it produces very long selectors but you can find a way to make them shorter.
+     - If it fails to start after setting up with capabilities. Try running `appium server` in the terminal then run the Appium Inspector.
 

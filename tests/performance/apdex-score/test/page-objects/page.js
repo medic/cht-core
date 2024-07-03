@@ -134,6 +134,10 @@ module.exports = class Page {
   }
 
   async fillUpForm(form, commonElements){
+    if (!form) {
+      return;
+    }
+
     const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
     const FAB_LIST_TITLE = commonElements?.fabListTitle || '//android.widget.TextView[@text="New"]';
     const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
@@ -166,6 +170,9 @@ module.exports = class Page {
   }
 
   async searchContact (form) {
+    if (!form) {
+      return;
+    }
     const page = form.pages[0];
 
     await this.navigate(form.navigation);
