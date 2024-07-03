@@ -27,7 +27,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   selected = null;
   error = null;
   useSidebarFilter = true;
-  //To-do : What was this for in Reports?
+  isSidebarFilterOpen = false;
 
   constructor(
     private store: Store,
@@ -43,6 +43,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeSidebarFilter();
     this.getTargetAggregates();
+    this.subscribeToToggleFilter();
   }
 
   ngOnDestroy(): void {
@@ -104,12 +105,21 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const subscription = this.sidebarFilterService.getSidebarToggleEvents()
-      .subscribe(() => {
-        if (this.analyticsTargetAggregatesFilterComponent) {
-          this.analyticsTargetAggregatesFilterComponent.toggleSidebarFilter();
-        }
-      });
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
     this.subscriptions.add(subscription);
+  }
+
+  private subscribeToToggleFilter() {
+    this.subscriptions.add(
+      this.sidebarFilterService.toggleFilter.subscribe(() => {
+        this.toggleFilter();
+      })
+    );
+  }
+
+  toggleFilter() {
+    this.analyticsTargetAggregatesFilterComponent?.toggleSidebarFilter();
   }
 }

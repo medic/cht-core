@@ -5,7 +5,9 @@
 </div>
 
 <div class="page target-aggregates" *ngIf="enabled && !loading">
-  <div id="target-aggregates-list" class="col-sm-4 inbox-items left-pane">
+  <div id="target-aggregates-list"
+    class="inbox-items left-pane"
+    [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
     <ul>
       <mm-content-row *ngFor="let aggregate of aggregates"
         [id]="aggregate.id"
@@ -20,12 +22,16 @@
     <p class="loading-status" *ngIf="!error && !aggregates?.length">{{'analytics.target.aggregates.no.targets' | translate}}</p>
   </div>
 
-  <mm-analytics-target-aggregates-sidebar-filter
-    class="col-sm-3 sidebar-filter-wrapper"
-    *ngIf="useSidebarFilter">
-  </mm-analytics-target-aggregates-sidebar-filter>
-
-  <router-outlet></router-outlet>
+  <div class="content-pane right-pane">
+    <div class="item-content"
+      [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
+    <router-outlet></router-outlet>
+    </div>
+    <mm-analytics-target-aggregates-sidebar-filter
+      class="col-sm-3 sidebar-filter-wrapper"
+      *ngIf="useSidebarFilter">
+    </mm-analytics-target-aggregates-sidebar-filter>
+  </div>
 </div>
 
 <ng-template #loaderTpl>

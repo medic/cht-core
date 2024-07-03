@@ -1,11 +1,9 @@
-import { Component, ViewChild, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription, filter } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
-import { AnalyticsTargetAggregatesSidebarFilterComponent }
-  from './analytics-target-aggregates-sidebar-filter.component';
 import { SidebarFilterService } from '@mm-services/sidebar-filter.service';
 import { NavigationEnd, Router } from '@angular/router';
 
@@ -13,8 +11,6 @@ import { NavigationEnd, Router } from '@angular/router';
   templateUrl: './analytics.component.html'
 })
 export class AnalyticsComponent implements OnInit, OnDestroy {
-  @ViewChild(AnalyticsTargetAggregatesSidebarFilterComponent) analyticsTargetAggregatesFilterComponent?:
-   AnalyticsTargetAggregatesSidebarFilterComponent;
 
   private globalActions;
   subscriptions: Subscription = new Subscription();
@@ -30,6 +26,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.checkCurrentRoute();
     this.subscribeToStore();
     this.subscribeToRouteChanges();
     this.globalActions.unsetSelected();
@@ -59,8 +56,13 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     this.showFilterButton = currentRoute.includes('target-aggregates');
   }
 
-  toggleFilter() {
-    this.sidebarFilterService.toggleSidebarFilter();
+  private checkCurrentRoute() {
+    const currentUrl = this.router.url;
+    this.canDisplayFilterButton(currentUrl);
+  }
+
+  onToggleFilter() {
+    this.sidebarFilterService.triggerToggleFilter();
   }
 }
 

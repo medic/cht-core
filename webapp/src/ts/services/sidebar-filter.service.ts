@@ -5,13 +5,10 @@ import { Subject } from 'rxjs';
   providedIn: 'root'
 })
 export class SidebarFilterService {
-  private sideBarToggleSubject = new Subject<void>();
+  private toggleFilterSubject = new Subject<void>();
+  toggleFilter = this.toggleFilterSubject.asObservable();
 
-  toggleSidebarFilter(): void {
-    this.sideBarToggleSubject.next();
-  }
-
-  getSidebarToggleEvents() {
-    return this.sideBarToggleSubject.asObservable();
+  triggerToggleFilter() {
+    this.toggleFilterSubject.next();
   }
 }

@@ -2,10 +2,10 @@ import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewC
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
-import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 
-type FilterComponent = DateFilterComponent ;
+type FilterComponent = FacilityFilterComponent ;
 
 @Component({
   selector: 'mm-analytics-target-aggregates-sidebar-filter',
@@ -16,14 +16,12 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements AfterVie
   @Input() disabled;
 
 
-  @ViewChild('fromDate') fromDateFilter!: DateFilterComponent;
-  @ViewChild('toDate') toDateFilter!: DateFilterComponent;
+  @ViewChild(FacilityFilterComponent) facilityFilter!: FacilityFilterComponent;
 
   private globalActions;
   private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
-  dateFilterError = '';
 
   constructor(
     private store: Store,
@@ -34,8 +32,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements AfterVie
 
   ngAfterViewInit() {
     this.filters = [
-      this.fromDateFilter,
-      this.toDateFilter,
+      this.facilityFilter,
     ];
   }
 
@@ -54,21 +51,8 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements AfterVie
     filters.forEach(filter => filter.clear());
   }
 
-  resetFilters() {
-    if (this.disabled) {
-      return;
-    }
-    this.isResettingFilters = true;
-    this.globalActions.clearFilters('search');
-    this.clearFilters();
-    this.isResettingFilters = false;
-    this.applyFilters();
-  }
-
   toggleSidebarFilter() {
-    console.log('clicked from filter');
     this.isOpen = !this.isOpen;
-    console.log('Sidebar isOpen:', this.isOpen);
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
 
     if (this.isOpen) {
@@ -77,8 +61,8 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements AfterVie
     }
   }
 
-  showDateFilterError(error) {
-    this.dateFilterError = error || '';
+  setDefaultFacilityFilter(filters) {
+    this.facilityFilter?.setDefault(filters?.facility);
   }
 
   ngOnDestroy() {

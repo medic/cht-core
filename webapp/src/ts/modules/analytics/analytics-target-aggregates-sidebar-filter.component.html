@@ -5,41 +5,30 @@
   <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
     <div class="sidebar-header">
       <p class="sidebar-title">Filter</p>
-      <a class="sidebar-reset" [class.disabled]="disabled"
-        (click)="resetFilters()">Reset</a>
       <a class="sidebar-close fa fa-times" (click)="toggleSidebarFilter()"></a>
     </div>
 
     <div class="sidebar-body">
       <mat-accordion multi>
-
-        <!-- 3. Date -->
-        <mat-expansion-panel id="date-filter-accordion"
-          [class.filter-error]="dateFilterError">
+        <!-- 2. Place -->
+        <mat-expansion-panel id="place-filter-accordion">
           <mat-expansion-panel-header>
-            <ng-container [ngTemplateOutlet]="headerTemplate"
-              [ngTemplateOutletContext]="{
-                label: 'reports.sidebar.filter.date',
-                filters: [ 'fromDateFilter', 'toDateFilter' ]
-              }">
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{ label: 'reports.sidebar.filter.place', filters: [ 'placeFilter' ] }">
             </ng-container>
           </mat-expansion-panel-header>
           <mat-panel-description>
-            <label>{{ 'reports.sidebar.filter.from_date' | translate }}</label>
-            <mm-date-filter #fromDate class="filter" fieldId="fromDateFilter"
-              (search)="applyFilters()" (onError)="showDateFilterError($event)"
-              [disabled]="disabled" [isStartDate]="true">
-            </mm-date-filter>
-
-            <label>{{ 'reports.sidebar.filter.to_date' | translate }}</label>
-            <mm-date-filter #toDate class="filter" fieldId="toDateFilter"
-              (search)="applyFilters()" (onError)="showDateFilterError($event)"
-              [disabled]="disabled">
-            </mm-date-filter>
-            <p class="filter-error-message" *ngIf="dateFilterError">{{
-              dateFilterError | translate }}</p>
+            <mm-facility-filter
+              class="filter"
+              fieldId="placeFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled"
+              [inline]="true">
+            </mm-facility-filter>
           </mat-panel-description>
         </mat-expansion-panel>
+
       </mat-accordion>
     </div>
 

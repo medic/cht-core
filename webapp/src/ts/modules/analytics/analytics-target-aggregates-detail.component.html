@@ -1,13 +1,13 @@
-<div class="content-pane right-pane">
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!selected && !error">
+<div>
+  <div class="item-content empty-selection" *ngIf="!selected && !error">
     <div>{{'analytics.target.aggregates.no.target.selected' | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection selection-error" *ngIf="error || selected?.error">
+  <div class="item-content empty-selection selection-error" *ngIf="error || selected?.error">
     <div>{{ (error?.translationKey || selected?.error?.translationKey || 'analytics.target.aggregates.select.error') | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content" *ngIf="selected && !selected.error && !error">
+  <div class="item-content" *ngIf="selected && !selected.error && !error">
     <div class="material">
       <div class="body meta">
         <div class="target-detail card" [ngClass]="{ 'has-goal': selected.goal >= 0, 'goal-met': (selected.value?.pass >= selected.goal) || (selected.value?.percent >= selected.goal) }">
