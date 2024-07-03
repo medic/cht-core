@@ -86,8 +86,14 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
       expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
+
+      await contactPage.filterReport3Months();
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      await contactPage.filterReport6Months();
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      await contactPage.filterReportViewAll();
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
     });
 
     it(

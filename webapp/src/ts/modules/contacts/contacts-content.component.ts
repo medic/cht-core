@@ -249,7 +249,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         break;
       }
 
-      if (reportStartDate?.isBefore(report.reported_date)) {
+      if (!reportStartDate || reportStartDate.isBefore(report.reported_date)) {
         filteredReports.push(report);
       }
     }
