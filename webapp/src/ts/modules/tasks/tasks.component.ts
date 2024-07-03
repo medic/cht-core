@@ -34,7 +34,8 @@ export class TasksComponent implements OnInit, OnDestroy {
   subscription = new Subscription();
   private tasksActions;
   private globalActions;
-  private trackPerformance;
+  private trackLoadPerformance;
+  private trackRefreshPerformance;
 
   tasksList;
   selectedTask;
@@ -93,7 +94,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.trackPerformance = this.performanceService.track();
+    this.trackLoadPerformance = this.performanceService.track();
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
@@ -107,7 +108,6 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-
     this.tasksActions.setTasksList([]);
     this.tasksActions.setTasksLoaded(false);
     this.tasksActions.setSelectedTask(null);
@@ -133,10 +133,12 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private async refreshTasks() {
     try {
+      if (this.tasksLoaded) {
+        this.trackRefreshPerformance = this.performanceService.track();
+      }
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-
       this.hasTasks = taskDocs.length > 0;
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
@@ -157,15 +159,26 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.tasksActions.setTasksList([]);
     } finally {
       this.loading = false;
-      const performanceName = this.tasksLoaded ? 'tasks:refresh' : 'tasks:load';
-      this.trackPerformance?.stop({
-        name: performanceName,
-        recordApdex: true,
-      });
+      this.recordPerformance();
       if (!this.tasksLoaded) {
         this.tasksActions.setTasksLoaded(true);
       }
     }
+  }
+
+  private recordPerformance() {
+    if (this.tasksLoaded) {
+      this.trackRefreshPerformance?.stop({
+        name: ['tasks', 'refresh'].join(':'),
+        recordApdex: true,
+      });
+      return;
+    }
+
+    this.trackLoadPerformance?.stop({
+      name: ['tasks', 'load'].join(':'),
+      recordApdex: true,
+    });
   }
 
   listTrackBy(index, task) {
