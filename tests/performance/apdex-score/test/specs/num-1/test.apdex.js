@@ -33,33 +33,33 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.loadHousehold(settingsProvider);
     });
 
-    // it('should create patient', async () => {
-    //   await contactsPage.createPatient(settingsProvider);
-    // });
+    it('should create patient', async () => {
+      await contactsPage.createPatient(settingsProvider);
+    });
 
     it('should load patient', async () => {
       await contactsPage.loadPatient(settingsProvider);
     });
 
-    // it('should submit patient report', async () => {
-    //   await contactsPage.submitPatientReport(settingsProvider);
-    // });
+    it('should submit patient report', async () => {
+      await contactsPage.submitPatientReport(settingsProvider);
+    });
 
-    // it('should search patient', async () => {
-    //   await contactsPage.searchPatient(settingsProvider);
-    // });
+    it('should search patient', async () => {
+      await contactsPage.searchPatient(settingsProvider);
+    });
 
-    // it('should load message list and view a message', async () => {
-    //   await messagesPage.loadMessageList(settingsProvider);
-    // });
+    it('should load message list and view a message', async () => {
+      await messagesPage.loadMessageList(settingsProvider);
+    });
 
-    // it('should load task list and complete a task', async () => {
-    //   await tasksPage.submitTask(settingsProvider);
-    // });
+    it('should load task list and complete a task', async () => {
+      await tasksPage.submitTask(settingsProvider);
+    });
   
-    // it('should load report list and view a report', async () => {
-    //   await reportsPage.loadReportList(settingsProvider);
-    // });
+    it('should load report list and view a report', async () => {
+      await reportsPage.loadReportList(settingsProvider);
+    });
 
     it('should load analytics and relaunch the app', async () => {
       await performancePage.loadAnalytics(settingsProvider);
