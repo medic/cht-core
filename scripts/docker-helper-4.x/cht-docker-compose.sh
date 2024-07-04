@@ -458,8 +458,12 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-docker exec "$nginxContainerId" bash -c "curl -v -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
-docker exec "$nginxContainerId" bash -c "curl -v -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
+curl -v -o ./cert.pem https://local-ip.medicmobile.org/fullchain
+curl -v -o ./key.pem https://local-ip.medicmobile.org/key
+docker cp ./cert.pem "$nginxContainerId":/etc/nginx/private/cert.pem
+docker cp ./key.pem "$nginxContainerId":/etc/nginx/private/key.pem
+#docker exec "$nginxContainerId" bash -c "curl -v -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
+#docker exec "$nginxContainerId" bash -c "curl -v -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
 docker exec "$nginxContainerId" bash -c "nginx -s reload"
 
 echo ""
