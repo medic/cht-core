@@ -76,6 +76,7 @@ describe('Contact details page', () => {
 
       await loginPage.login(user);
       await commonElements.waitForPageLoaded();
+      await commonElements.sync(true);
     });
 
     it('should show reports and tasks when permissions are enabled', async () => {
