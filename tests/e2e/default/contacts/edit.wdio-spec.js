@@ -16,6 +16,7 @@ describe('Edit ', () => {
 
   const offlineUserContact = personFactory.build({ name: CONTACT_NAME, parent: healthCenter });
   const onlineUserContact = personFactory.build({ parent: healthCenter });
+  healthCenter.contact = offlineUserContact;
 
   const offlineUser = userFactory.build({
     username: 'offline_user',
@@ -77,9 +78,9 @@ describe('Edit ', () => {
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
 
-    expect(await contactPage.getContactCardText()).to.equal(healthCenter.name);
+    expect(await contactPage.getContactInfoName()).to.equal(healthCenter.name);
     await commonPage.sync();
-    expect(await contactPage.getContactCardText()).to.equal(PLACE_UPDATED_NAME);
+    expect(await contactPage.getContactInfoName()).to.equal(PLACE_UPDATED_NAME);
   });
 
 });

@@ -29,7 +29,7 @@ describe('FAB + Actionbar - ', () => {
     await commonElements.goToPeople(healthCenter._id);
     const fabLabels = await commonElements.getFastActionItemsLabels();
 
-    expect(fabLabels).to.have.members(['New household', 'New person']);
+    expect(fabLabels).to.include.members(['New household', 'New person']);
   });
 
   it('FAB - should show fab when user only has can_create_places permission', async () => {

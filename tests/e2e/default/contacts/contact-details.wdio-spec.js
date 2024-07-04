@@ -77,7 +77,7 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
 
   it('should show reports and tasks when permissions are enabled', async () => {
     await commonElements.goToPeople(patient._id, true);
-    expect(await (await contactPage.contactCard()).getText()).to.equal(patient.name);
+    expect(await (await contactPage.contactCardName()).getText()).to.equal(patient.name);
     await waitForContactLoaded(true);
 
     expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);

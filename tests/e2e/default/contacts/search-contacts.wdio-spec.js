@@ -81,7 +81,7 @@ describe('Test Contact Search Functionality', () => {
   it('search should clear RHS selected contact', async () => {
     await contactPage.selectLHSRowByText(potuHospital.name, false);
     await contactPage.waitForContactLoaded();
-    expect(await (await contactPage.contactCard()).getText()).to.equal(potuHospital.name);
+    expect(await (await contactPage.contactCardName()).getText()).to.equal(potuHospital.name);
 
     await searchPage.performSearch('sittu');
     await contactPage.waitForContactUnloaded();
