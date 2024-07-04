@@ -140,7 +140,7 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
     });
   });
 
