@@ -25,13 +25,13 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.loadContactList(settingsProvider);
     });
 
-    // it('should load CHW area', async () => {
-    //   await contactsPage.loadCHWArea(settingsProvider);
-    // });
+    it('should load CHW area', async () => {
+      await contactsPage.loadCHWArea(settingsProvider);
+    });
 
-    // it('should load Household', async () => {
-    //   await contactsPage.loadHousehold(settingsProvider);
-    // });
+    it('should load Household', async () => {
+      await contactsPage.loadHousehold(settingsProvider);
+    });
 
     // it('should create patient', async () => {
     //   await contactsPage.createPatient(settingsProvider);
@@ -41,9 +41,9 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.loadPatient(settingsProvider);
     });
 
-    it('should submit patient report', async () => {
-      await contactsPage.submitPatientReport(settingsProvider);
-    });
+    // it('should submit patient report', async () => {
+    //   await contactsPage.submitPatientReport(settingsProvider);
+    // });
 
     // it('should search patient', async () => {
     //   await contactsPage.searchPatient(settingsProvider);
@@ -53,9 +53,9 @@ describe('Apdex Performance Workflows', () => {
     //   await messagesPage.loadMessageList(settingsProvider);
     // });
 
-    it('should load task list and complete a task', async () => {
-      await tasksPage.submitTask(settingsProvider);
-    });
+    // it('should load task list and complete a task', async () => {
+    //   await tasksPage.submitTask(settingsProvider);
+    // });
   
     // it('should load report list and view a report', async () => {
     //   await reportsPage.loadReportList(settingsProvider);
