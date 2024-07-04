@@ -392,19 +392,10 @@ const getCurrentPersonEditFormValues = async (sexValue, roleValue) => {
   };
 };
 
-const filterReport3Months = async () => {
-  const tab = (await $(RHS_REPORT_LIST_CARD)).$('*="3 months"');
-  await tab.click();
-};
-
-const filterReport6Months = async () => {
-  const tab = (await $(RHS_REPORT_LIST_CARD)).$('*="6 months"');
-  await tab.click();
-};
-
 const filterReportViewAll = async () => {
-  const tab = (await $(RHS_REPORT_LIST_CARD)).$('*="View all"');
-  await tab.click();
+  const tabsContainer = $(`${RHS_REPORT_LIST_CARD} .action-header .table-filter`);
+  await tabsContainer.scrollIntoView();
+  await (await tabsContainer.$('*=View all')).click();
 };
 
 module.exports = {
@@ -471,7 +462,5 @@ module.exports = {
   sexField,
   roleField,
   getCurrentPersonEditFormValues,
-  filterReport3Months,
-  filterReport6Months,
   filterReportViewAll,
 };
