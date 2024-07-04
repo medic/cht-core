@@ -458,8 +458,9 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-curl -v -o ./cert.pem https://local-ip.medicmobile.org/fullchain
-curl -v -o ./key.pem https://local-ip.medicmobile.org/key
+dig +trace local-ip.medicmobile.org
+curl -v --resolve local-ip.medicmobile.org:443:15.188.129.97 -o ./cert.pem https://local-ip.medicmobile.org/fullchain
+curl -v --resolve local-ip.medicmobile.org:443:15.188.129.97 -o ./key.pem https://local-ip.medicmobile.org/key
 docker cp ./cert.pem "$nginxContainerId":/etc/nginx/private/cert.pem
 docker cp ./key.pem "$nginxContainerId":/etc/nginx/private/key.pem
 #docker exec "$nginxContainerId" bash -c "curl -v -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
