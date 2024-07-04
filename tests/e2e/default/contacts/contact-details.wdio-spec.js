@@ -65,8 +65,6 @@ describe('Contact details page', () => {
     });
     const reports = [...newReports, ...oldReports, pregnancyReport];
 
-
-
     const updatePermissions = async (role, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();
       settings.roles[role] = { offline: true };
