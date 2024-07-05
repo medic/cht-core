@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import child_process from 'child_process';
 import { helmInstallOrUpdate, ensureMedicHelmRepo } from '../src/install.js';
-import UserRuntimeError from '../src/error.js';
 
 const MEDIC_REPO_NAME = 'medic';
 const MEDIC_REPO_URL = 'https://docs.communityhealthtoolkit.org/helm-charts';
