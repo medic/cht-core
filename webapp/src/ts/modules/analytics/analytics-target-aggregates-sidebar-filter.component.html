@@ -1,6 +1,5 @@
 <section class="sidebar-filter">
-  <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }"
-    (click)="toggleSidebarFilter()"></div>
+  <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }" (click)="toggleSidebarFilter()"></div>
 
   <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
     <div class="sidebar-header">
@@ -34,17 +33,11 @@
 
     <div class="sidebar-footer">
       <button type="button" class="btn btn-primary"
-        (click)="toggleSidebarFilter()">Submit</button>
+        (click)="toggleSidebarFilter()">Apply</button>
     </div>
   </div>
 </section>
 
-<ng-template #headerTemplate let-numSelected="numSelected" let-label="label"
-  let-filters="filters">
+<ng-template #headerTemplate let-label="label" let-filters="filters">
   <p class="title">{{ label | translate }}</p>
-  <div class="chip" *ngIf="numSelected" [class.disabled]="disabled">
-    <span>{{ numSelected | translate }}</span>
-    <span class="fa fa-times"
-      (click)="clearFilters(filters); $event.stopPropagation();"></span>
-  </div>
 </ng-template>
