@@ -9,7 +9,16 @@
 
     <div class="sidebar-body">
       <mat-accordion multi>
-
+        <span> {{ facilityLabel | translate }} </span>
+        <div class="facility-filter-wrap">
+          <div *ngFor="let facility of userFacilities">
+            <label>
+              <input type="radio" name="facility" [value]="facility._id"
+                (click)="fetchAggregateTargets(facility._id)">
+              {{ facility.name }}
+            </label>
+          </div>
+        </div>
       </mat-accordion>
     </div>
 

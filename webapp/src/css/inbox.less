@@ -414,10 +414,16 @@ body {
       .btn.open-filter {
         background-color: transparent;
         margin: 0;
+        &:focus,
+        &:active {
+          outline: none;
+          border: none;
+          box-shadow: none;
+        }
         .fa {
           font-size: @font-extra-large;
           color: @filter-icon-color;
-          margin-right: 5px;
+          padding: 2px 2px 0 0;
         }
       }
     }
@@ -1788,6 +1794,9 @@ mm-search-bar {
   }
   .filters .filter {
     width: 17%;
+  }
+  .right-side-filter {
+    padding-right: 6px;
   }
   .header {
     .tabs {
