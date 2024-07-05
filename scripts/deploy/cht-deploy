@@ -11,59 +11,59 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-function validateNodeVersion() {
-    const packageJsonPath = path.resolve(__dirname, 'package.json');
+const validateNodeVersion = function() {
+  const packageJsonPath = path.resolve(__dirname, 'package.json');
 
-    try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-        const requiredNodeVersion = packageJson.engines && packageJson.engines.node;
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const requiredNodeVersion = packageJson.engines && packageJson.engines.node;
 
-        if (requiredNodeVersion && !semver.satisfies(process.version, requiredNodeVersion)) {
-            console.error(`Invalid Node.js version. Required: ${requiredNodeVersion}. Current: ${process.version}`);
-            process.exit(1);
-        }
-    } catch (err) {
-        return;
+    if (requiredNodeVersion && !semver.satisfies(process.version, requiredNodeVersion)) {
+      console.error(`Invalid Node.js version. Required: ${requiredNodeVersion}. Current: ${process.version}`);
+      process.exit(1);
     }
-}
+  } catch (err) {
+    return;
+  }
+};
 
-function validateArguments() {
-    const args = process.argv.slice(2);
-    if (args.length < 2 || args[0] !== '-f' || !args[1]) {
-        console.error('No values file provided. Please specify a values file using -f <file>');
-        process.exit(1);
-    }
-    return args;
-}
+const validateArguments = function() {
+  const args = process.argv.slice(2);
+  if (args.length < 2 || args[0] !== '-f' || !args[1]) {
+    console.error('No values file provided. Please specify a values file using -f <file>');
+    process.exit(1);
+  }
+  return args;
+};
 
-function validateFileExists(filePath) {
-    try {
-        fs.accessSync(filePath);
-    } catch (err) {
-        console.error(`File not found: ${filePath}`);
-        process.exit(1);
-    }
-}
+const validateFileExists = function(filePath) {
+  try {
+    fs.accessSync(filePath);
+  } catch (err) {
+    console.error(`File not found: ${filePath}`);
+    process.exit(1);
+  }
+};
 
-async function runInstallScript(args) {
-    try {
-        const valuesFilePath = args[1];
-        await install(valuesFilePath);
-    } catch (err) {
-        console.error('Error executing the install script:', err.message);
-        console.error(JSON.stringify(err));
-        process.exit(1);
-    }
-}
+const runInstallScript = async function(args) {
+  try {
+    const valuesFilePath = args[1];
+    await install(valuesFilePath);
+  } catch (err) {
+    console.error('Error executing the install script:', err.message);
+    console.error(JSON.stringify(err));
+    process.exit(1);
+  }
+};
 
-async function main() {
-    validateNodeVersion();
-    const args = validateArguments();
-    validateFileExists(args[1]);
-    await runInstallScript(args);
-}
+const main = async function() {
+  validateNodeVersion();
+  const args = validateArguments();
+  validateFileExists(args[1]);
+  await runInstallScript(args);
+};
 
 main().catch((err) => {
-    console.error('An error occurred:', err.message);
-    console.error(JSON.stringify(err));
+  console.error('An error occurred:', err.message);
+  console.error(JSON.stringify(err));
 });
