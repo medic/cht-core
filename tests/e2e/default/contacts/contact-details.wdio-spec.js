@@ -34,8 +34,8 @@ describe('Contact details page', () => {
     const user = userFactory.build({ username: 'offlineuser', roles: [role] });
     const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
 
-    const reports = Array
-      .from({ length: 60 })
+    const newReports = Array
+      .from({ length: 40 })
       .map(() => reportFactory.report().build(
         { form: 'pregnancy_danger_sign' },
         {
@@ -44,7 +44,18 @@ describe('Contact details page', () => {
           fields: { t_danger_signs_referral_follow_up: 'yes' },
         }
       ));
-
+    const oldReportDate = new Date();
+    oldReportDate.setMonth(new Date().setMonth() - 4);
+    const oldReports = Array
+      .from({ length: 20 })
+      .map(() => reportFactory.report().build(
+        { form: 'pregnancy', reported_date: oldReportDate },
+        {
+          patient,
+          submitter: user.contact,
+          fields: { t_danger_signs_referral_follow_up: 'yes' },
+        }
+      ));
     const pregnancyReport = pregnancyFactory.build({
       fields: {
         patient_id: patient._id,
@@ -52,6 +63,7 @@ describe('Contact details page', () => {
         patient_name: patient.name,
       },
     });
+    const reports = [...newReports, ...oldReports, pregnancyReport];
 
     const updatePermissions = async (role, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();
@@ -70,7 +82,7 @@ describe('Contact details page', () => {
       await updatePermissions(role, permissions);
 
       await utils.saveDocs([parent, patient]);
-      await utils.saveDocs([...reports, pregnancyReport]);
+      await utils.saveDocs(reports);
 
       await utils.createUsers([user]);
 
@@ -86,8 +98,11 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
       expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
+
+      await contactPage.filterReportViewAll();
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
     });
 
     it(
@@ -125,7 +140,7 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
     });
   });
 
