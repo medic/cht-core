@@ -23,7 +23,8 @@ const validateNodeVersion = function() {
       process.exit(1);
     }
   } catch (err) {
-    return;
+    console.error('Error reading package.json:', err.message);
+    process.exit(1);
   }
 };
 
@@ -33,12 +34,15 @@ const validateArguments = function() {
     console.error('No values file provided. Please specify a values file using -f <file>');
     process.exit(1);
   }
-  return args;
+  if (validateFileExists(args[1])) {
+    return args;
+  }
 };
 
 const validateFileExists = function(filePath) {
   try {
     fs.accessSync(filePath);
+    return true;
   } catch (err) {
     console.error(`File not found: ${filePath}`);
     process.exit(1);
@@ -59,11 +63,21 @@ const runInstallScript = async function(args) {
 const main = async function() {
   validateNodeVersion();
   const args = validateArguments();
-  validateFileExists(args[1]);
   await runInstallScript(args);
 };
 
-main().catch((err) => {
-  console.error('An error occurred:', err.message);
-  console.error(JSON.stringify(err));
-});
+if (import.meta.url === `file://${process.argv[1]}`) { //Make sure the script is being run directly and not being imported
+  main().catch((err) => {
+    console.error('An error occurred:', err.message);
+    console.error(JSON.stringify(err));
+    process.exit(1);
+  });
+}
+
+export {
+  main,
+  validateNodeVersion,
+  validateArguments,
+  validateFileExists,
+  runInstallScript
+};
