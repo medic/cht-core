@@ -1,54 +1,48 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
-
-type FilterComponent = FacilityFilterComponent ;
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Component({
   selector: 'mm-analytics-target-aggregates-sidebar-filter',
   templateUrl: './analytics-target-aggregates-sidebar-filter.component.html'
 })
-export class AnalyticsTargetAggregatesSidebarFilterComponent implements AfterViewInit, OnDestroy {
+export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
-
-  @ViewChild(FacilityFilterComponent) facilityFilter!: FacilityFilterComponent;
-
   private globalActions;
-  private filters: FilterComponent[] = [];
-  isResettingFilters = false;
+  subscriptions: Subscription = new Subscription();
   isOpen = false;
 
   constructor(
     private store: Store,
+    private getDataRecordsService: GetDataRecordsService,
     private telemetryService: TelemetryService,
+    private userSettingsService: UserSettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
-  ngAfterViewInit() {
-    this.filters = [
-      this.facilityFilter,
-    ];
+  ngOnInit() {
+    this.subscribeToStore();
+    this.getUserFacility();
   }
 
-  applyFilters() {
-    if (this.isResettingFilters || this.disabled) {
-      return;
-    }
-    this.search.emit();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
-  clearFilters(fieldIds?) {
-    if (this.disabled) {
-      return;
-    }
-    const filters = fieldIds ? this.filters.filter(filter => fieldIds.includes(filter.fieldId)) : this.filters;
-    filters.forEach(filter => filter.clear());
+  private subscribeToStore() {
+    const subscription = this.store.select(Selectors.getSidebarFilter).subscribe(({ isOpen }) => {
+      this.isOpen = isOpen;
+    });
+    this.subscriptions.add(subscription);
   }
 
   toggleSidebarFilter() {
@@ -61,12 +55,19 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements AfterVie
     }
   }
 
-  setDefaultFacilityFilter(filters) {
-    this.facilityFilter?.setDefault(filters?.facility);
+  private getUserFacility() {
+    return this.userSettingsService
+      .get()
+      .then((userSettings: any) => {
+        return this.getFacilityPlaces(userSettings.facility_id);
+      });
   }
 
-  ngOnDestroy() {
-    this.globalActions.clearSidebarFilter();
-    this.globalActions.clearFilters();
+  private getFacilityPlaces(facilityId) {
+    return this.getDataRecordsService
+      .get(facilityId)
+      .then(places => {
+        console.log('places', places);
+      });
   }
 }

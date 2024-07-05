@@ -27,9 +27,7 @@
       [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
     <router-outlet></router-outlet>
     </div>
-    <mm-analytics-target-aggregates-sidebar-filter
-      class="col-sm-3 sidebar-filter-wrapper"
-      *ngIf="useSidebarFilter">
+    <mm-analytics-target-aggregates-sidebar-filter class="col-sm-3 sidebar-filter-wrapper" *ngIf="useSidebarFilter">
     </mm-analytics-target-aggregates-sidebar-filter>
   </div>
 </div>

@@ -6,7 +6,6 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { Selectors } from '@mm-selectors/index';
 import { PerformanceService } from '@mm-services/performance.service';
-import { SidebarFilterService } from '@mm-services/sidebar-filter.service';
 import { AnalyticsTargetAggregatesSidebarFilterComponent }
   from './analytics-target-aggregates-sidebar-filter.component';
 
@@ -15,7 +14,7 @@ import { AnalyticsTargetAggregatesSidebarFilterComponent }
   templateUrl: './analytics-target-aggregates.component.html',
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
-  @ViewChild(AnalyticsTargetAggregatesSidebarFilterComponent) analyticsTargetAggregatesFilterComponent?:
+  @ViewChild(AnalyticsTargetAggregatesSidebarFilterComponent) sidebarFilter?:
    AnalyticsTargetAggregatesSidebarFilterComponent;
 
   private targetAggregatesActions: TargetAggregatesActions;
@@ -33,7 +32,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     private store: Store,
     private targetAggregatesService: TargetAggregatesService,
     private performanceService: PerformanceService,
-    private sidebarFilterService: SidebarFilterService
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
   }
@@ -43,7 +41,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeSidebarFilter();
     this.getTargetAggregates();
-    this.subscribeToToggleFilter();
   }
 
   ngOnDestroy(): void {
@@ -109,17 +106,5 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
     this.subscriptions.add(subscription);
-  }
-
-  private subscribeToToggleFilter() {
-    this.subscriptions.add(
-      this.sidebarFilterService.toggleFilter.subscribe(() => {
-        this.toggleFilter();
-      })
-    );
-  }
-
-  toggleFilter() {
-    this.analyticsTargetAggregatesFilterComponent?.toggleSidebarFilter();
   }
 }

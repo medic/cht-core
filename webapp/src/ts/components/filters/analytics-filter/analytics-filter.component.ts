@@ -7,11 +7,16 @@ import {
   OnDestroy,
   OnInit,
   Output } from '@angular/core';
+import { Store } from '@ngrx/store';
+
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
+
+import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SessionService } from '@mm-services/session.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 const AGGREGATE_TARGET_URL = '/analytics/target-aggregates';
 @Component({
@@ -21,21 +26,28 @@ const AGGREGATE_TARGET_URL = '/analytics/target-aggregates';
 export class AnalyticsFilterComponent implements AfterContentInit, AfterContentChecked, OnInit, OnDestroy {
   @Input() analyticsModules: any[] = [];
   @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
+
+  private globalActions;
   activeModule;
   subscriptions: Subscription = new Subscription();
   showFilterButton;
+  isOpen = false;
 
   constructor(
+    private store: Store,
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private userSettingsService: UserSettingsService,
-    private sessionService: SessionService
-  ) { }
+    private sessionService: SessionService,
+    private userSettingsService: UserSettingsService
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   ngOnInit() {
     this.canDisplayFilterButton();
     this.subscribeToRouteChanges();
+    this.subscribeToStore();
   }
 
   ngAfterContentInit() {
@@ -51,6 +63,13 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  private subscribeToStore() {
+    const subscription = this.store.select(Selectors.getSidebarFilter).subscribe(({ isOpen }) => {
+      this.isOpen = isOpen;
+    });
+    this.subscriptions.add(subscription);
   }
 
   private setActiveModule() {
@@ -103,6 +122,10 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
       this.checkPermissions(),
     ]);
 
-    this.showFilterButton = hasMultipleFacilities && !isAdmin && checkPermissions && this.isTargetAggregates();
+    this.showFilterButton = !isAdmin && hasMultipleFacilities && checkPermissions && this.isTargetAggregates();
+  }
+
+  openSidebar() {
+    this.globalActions.setSidebarFilter({ isOpen: !this.isOpen });
   }
 }
