@@ -33,8 +33,8 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
     return browser.pause(1000);
   };
 
-  const reports = Array
-    .from({ length: 60 })
+  const newReports = Array
+    .from({ length: 40 })
     .map(() => reportFactory.report().build(
       { form: 'pregnancy_danger_sign' },
       {
@@ -43,7 +43,18 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
         fields: { t_danger_signs_referral_follow_up: 'yes' },
       }
     ));
-
+    const oldReportDate = new Date();
+    oldReportDate.setMonth(new Date().setMonth() - 4);
+    const oldReports = Array
+      .from({ length: 20 })
+      .map(() => reportFactory.report().build(
+        { form: 'pregnancy', reported_date: oldReportDate },
+        {
+          patient,
+          submitter: user.contact,
+          fields: { t_danger_signs_referral_follow_up: 'yes' },
+        }
+      ));
   const pregnancyReport = pregnancyFactory.build({
     fields: {
       patient_id: patient._id,
@@ -51,6 +62,7 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
       patient_name: patient.name,
     },
   });
+    const reports = [...newReports, ...oldReports, pregnancyReport];
 
   const updatePermissions = async (roleValue, addPermissions, removePermissions = []) => {
     const settings = await utils.getSettings();
@@ -67,7 +79,7 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
     await updatePermissions(role, permissions);
 
     await utils.saveDocs([parent, patient]);
-    await utils.saveDocs([...reports, pregnancyReport]);
+    await utils.saveDocs(reports);
 
     await utils.createUsers([user]);
 
@@ -83,9 +95,12 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
     expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
     expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
 
-    expect((await contactPage.getAllRHSReportsNames()).length).to.equal(docsDisplayLimit);
-    expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(docsDisplayLimit);
-  });
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
+      expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
+
+      await contactPage.filterReportViewAll();
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+    });
 
   it('should show contact summary that has the full context for reports > 50' +
     ' validate that the pregnancy card is always displayed', async () => {
@@ -113,9 +128,11 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
     await browser.refresh();
     await waitForContactLoaded(false);
 
-    expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
-    expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
-    expect((await contactPage.getAllRHSReportsNames()).length).to.equal(docsDisplayLimit);
+      expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
+      expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
+
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
+    });
   });
 
 });

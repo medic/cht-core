@@ -25,6 +25,16 @@ const contentRows = () => $$(contentRowSelector);
 const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
 const contactListLoadingStatus = () => $(`${contactListSelector} .loading-status`);
 
+const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
+const RHS_REPORT_LIST_CARD = '.card.reports';
+const RHS_REPORT_LIST_SELECTOR = `${RHS_REPORT_LIST_CARD} mm-content-row h4 span`;
+const RHS_TASK_LIST_SELECTOR = '.card.tasks mm-content-row h4 span';
+const rhsTaskListElement = () => $(RHS_TASK_LIST_SELECTOR);
+const rhsTaskListElementList = () => $$(RHS_TASK_LIST_SELECTOR);
+const rhsReportListElement = () => $(RHS_REPORT_LIST_SELECTOR);
+const rhsReportElementList = () => $$(RHS_REPORT_LIST_SELECTOR);
+
+const contactSummaryContainer = () => $('#contact_summary');
 // right panel
 const emptySelection = () => $('contacts-content .empty-selection');
 const childrenCards = () => $$('.right-pane .card.children');
@@ -374,6 +384,12 @@ const getCurrentPersonEditFormValues = async (sexValue, roleValue) => {
   };
 };
 
+const filterReportViewAll = async () => {
+  const tabsContainer = $(`${RHS_REPORT_LIST_CARD} .action-header .table-filter`);
+  await tabsContainer.scrollIntoView();
+  await (await tabsContainer.$('*=View all')).click();
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -419,4 +435,5 @@ module.exports = {
   getCurrentContactId,
   getDisplayedContactsNames,
   getCurrentPersonEditFormValues,
+  filterReportViewAll,
 };
