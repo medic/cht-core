@@ -23,7 +23,7 @@
     "mustache": "^4.2.0",
     "ng-redux": "^4.4.5",
     "object-path": "^0.11.8",
-    "pouchdb-browser": "^7.3.1",
+    "pouchdb-browser": "^9.0.0",
     "properties": "^1.2.1",
     "redux": "^4.2.0",
     "select2": "^4.0.13",
@@ -32,6 +32,6 @@
   },
   "resolutions": {
     "**/jquery": "3.2.x",
-    "**/pouchdb-browser": "^7.2.2"
+    "**/pouchdb-browser": "^9.0.0"
   }
 }
