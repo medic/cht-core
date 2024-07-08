@@ -17,6 +17,8 @@
             <div *ngFor="let facility of userFacilities" class="facility-filter-place">
               <label class="facility-label">
                 <input type="radio" name="facility" [value]="facility._id" class="facility-radio"
+                  [(ngModel)]="selectedFacilityId"
+                  [checked]="facility._id === selectedFacilityId"
                   (click)="fetchAggregateTargets(facility._id)">
                 <span class="facility-name">{{ facility.name }}</span>
               </label>
