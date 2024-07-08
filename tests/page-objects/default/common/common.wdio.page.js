@@ -353,6 +353,7 @@ const sync = async (expectReload, timeout) => {
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess(timeout);
+  await closeHamburgerMenu();
 };
 
 const syncAndWaitForFailure = async () => {
