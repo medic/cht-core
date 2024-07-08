@@ -11,7 +11,7 @@ const DEFAULT_CHART_VERSION = '1.0.*';
 
 import { fileURLToPath } from 'url';
 import { obtainCertificateAndKey, createSecret } from './certificate.js';
-import UserRuntimeError from './error.js';
+import { UserRuntimeError } from './error.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
