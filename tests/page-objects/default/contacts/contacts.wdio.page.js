@@ -308,8 +308,8 @@ const deletePerson = async () => {
 
 const getContactSummaryField = async (fieldName) => {
   await (await contactCardSelectors.contactSummaryContainer()).waitForDisplayed();
-  const cleanFieldName = fieldName.toLowerCase().replace(/\./g, '\\.');
-  const field = await (await contactCardSelectors.contactSummaryContainer()).$(`.cell.${cleanFieldName}`);
+  const field = await (await contactCardSelectors.contactSummaryContainer())
+    .$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
   return await (await field.$('p')).getText();
 };
 
