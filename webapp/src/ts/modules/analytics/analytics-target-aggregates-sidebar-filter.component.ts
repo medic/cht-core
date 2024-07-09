@@ -5,12 +5,10 @@ import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
-const FACILITY =  'Facility';
 @Component({
   selector: 'mm-analytics-target-aggregates-sidebar-filter',
   templateUrl: './analytics-target-aggregates-sidebar-filter.component.html'
@@ -23,12 +21,11 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   isOpen = false;
   userFacilities;
   selectedFacilityId;
-  facilityLabel;
+  facilityFilterLabel;
 
   constructor(
     private store: Store,
     private contactTypesService: ContactTypesService,
-    private getDataRecordsService: GetDataRecordsService,
     private settingsService: SettingsService,
     private telemetryService: TelemetryService,
     private userSettingsService: UserSettingsService,
@@ -39,7 +36,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   async ngOnInit() {
     try {
       this.subscribeToStore();
-      await this.getUserFacility();
+      await this.loadUserFacility();
       await this.setFacilityLabel();
     } catch (err) {
       this.error = true;
@@ -52,9 +49,10 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   }
 
   private subscribeToStore() {
-    const subscription = this.store.select(Selectors.getSidebarFilter).subscribe(({ isOpen }) => {
-      this.isOpen = isOpen;
-    });
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isOpen = isOpen);
+
     this.subscriptions.add(subscription);
   }
 
@@ -68,40 +66,32 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     }
   }
 
-  private getUserFacility() {
-    return this.userSettingsService
-      .get()
-      .then((userSettings: any) => {
-        return this.getPlaces(userSettings.facility_id);
-      });
+  private async loadUserFacility() {
+    const [userFacilities, hasMultipleFacilities] = await Promise.all([
+      this.userSettingsService.getUserFacility(),
+      this.userSettingsService.hasMultipleFacilities()
+    ]);
+
+    this.userFacilities = userFacilities;
+
+    if (hasMultipleFacilities) {
+      this.selectedFacilityId = this.userFacilities[0]._id;
+    }
   }
 
-  private getPlaces(facilityId) {
-    return this.getDataRecordsService
-      .get(facilityId)
-      .then(places => {
-        this.userFacilities = places;
-        if (this.userFacilities) {
-          this.selectedFacilityId = this.userFacilities[0]?._id;
-        }
-      });
-  }
+  private async setFacilityLabel() {
+    const FACILITY = 'Facility';
+    try {
+      const settings = await this.settingsService.get();
+      const userFacilityType = this.contactTypesService.getTypeId(this.userFacilities[0]);
+      const placeType = settings.contact_types.find(type => type.id === userFacilityType);
 
-  private getFacilityType() {
-    return this.contactTypesService.getTypeId(this.userFacilities[0]);
-  }
-
-  private setFacilityLabel() {
-    return this.settingsService.get()
-      .then((settings) => {
-        const place = settings.contact_types.find(type => type.id === this.getFacilityType());
-        this.facilityLabel = place.name_key;
-      })
-      .catch(error => {
-        this.error = true;
-        console.error('Error fetching facility label', error);
-        this.facilityLabel = FACILITY;
-      });
+      this.facilityFilterLabel = placeType.name_key;
+    } catch (err) {
+      this.error = true;
+      console.error('Error fetching facility label', err);
+      this.facilityFilterLabel = FACILITY;
+    }
   }
 
   fetchAggregateTargets(facilityId) {

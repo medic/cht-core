@@ -9,14 +9,11 @@ import { Selectors } from '@mm-selectors/index';
   templateUrl: './analytics.component.html'
 })
 export class AnalyticsComponent implements OnInit, OnDestroy {
-
   private globalActions;
   subscriptions: Subscription = new Subscription();
   analyticsModules = [];
 
-  constructor(
-    private store: Store,
-  ) {
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
   }
 

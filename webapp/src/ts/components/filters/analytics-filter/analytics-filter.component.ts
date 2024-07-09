@@ -6,7 +6,8 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Output } from '@angular/core';
+  Output
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
@@ -18,7 +19,6 @@ import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
-const AGGREGATE_TARGET_URL = '/analytics/target-aggregates';
 @Component({
   selector: 'mm-analytics-filters',
   templateUrl: './analytics-filter.component.html'
@@ -66,59 +66,48 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   }
 
   private subscribeToStore() {
-    const subscription = this.store.select(Selectors.getSidebarFilter).subscribe(({ isOpen }) => {
-      this.isOpen = isOpen;
-    });
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isOpen = isOpen);
     this.subscriptions.add(subscription);
   }
 
+  private getCurrentModuleId() {
+    return this.route.snapshot?.firstChild?.data?.moduleId;
+  }
+
   private setActiveModule() {
-    this.activeModule = this.analyticsModules?.find(module => {
-      return module.id === this.route.snapshot?.firstChild?.data?.moduleId;
-    });
+    const currentModuleId = this.getCurrentModuleId();
+    this.activeModule = this.analyticsModules?.find(module => module.id === currentModuleId);
   }
 
   private subscribeToRouteChanges() {
-    const routeSubscription = this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.canDisplayFilterButton();
-    });
+    const routeSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => this.canDisplayFilterButton());
     this.subscriptions.add(routeSubscription);
   }
 
-  private hasMultipleFacilities() {
-    return this.userSettingsService
-      .get()
-      .then((userSettings: any) => {
-        const facility = userSettings.facility_id;
-        return Array.isArray(facility) && facility.length > 1;
-      });
-  }
-
   private checkPermissions() {
-    return Promise
-      .all([
-        this.authService.has('!can_view_old_filter_and_search'),
-        this.authService.has('!can_view_old_action_bar')
-      ])
-      .then(([cannotViewOldFilter, cannotViewOldActionBar]) => {
-        return cannotViewOldFilter && cannotViewOldActionBar;
-      })
-      .catch(error => {
-        console.error('Error checking permissions:', error);
-        return false;
-      });
+    const permissions = [
+      '!can_view_old_filter_and_search',
+      '!can_view_old_action_bar'
+    ];
+
+    return this.authService
+      .has(permissions)
+      .then((permissions) => permissions === true);
   }
 
   private isTargetAggregates() {
-    return this.router.url.startsWith(AGGREGATE_TARGET_URL);
+    const AGGREGATE_TARGET_ID = 'target-aggregates';
+    return this.getCurrentModuleId() === AGGREGATE_TARGET_ID;
   }
 
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
     const [hasMultipleFacilities, checkPermissions] = await Promise.all([
-      this.hasMultipleFacilities(),
+      this.userSettingsService.hasMultipleFacilities(),
       this.checkPermissions(),
     ]);
 

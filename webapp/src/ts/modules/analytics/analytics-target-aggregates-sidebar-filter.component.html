@@ -9,28 +9,26 @@
 
     <div class="sidebar-body">
       <mat-accordion multi>
-        <div class="facility-filter-wrap">
+        <div class="facility-options-container">
           <div class="facility-filter-title">
-            <span class="facility-title"> {{ facilityLabel | translate }} </span>
+            <span class="facility-options-title"> {{ facilityFilterLabel | translate }} </span>
           </div>
-          <div class="facility-filter-body">
-            <div *ngFor="let facility of userFacilities" class="facility-filter-place">
-              <label class="facility-label">
-                <input type="radio" name="facility" [value]="facility._id" class="facility-radio"
-                  [(ngModel)]="selectedFacilityId"
-                  [checked]="facility._id === selectedFacilityId"
-                  (click)="fetchAggregateTargets(facility._id)">
-                <span class="facility-name">{{ facility.name }}</span>
-              </label>
-            </div>
-          </div>
+            <ng-container *ngFor="let facility of userFacilities">
+              <div class="facility-option-place">
+                <label class="facility-option-wrapper">
+                  <input type="radio" name="facility" [value]="facility._id"
+                    class="facility-option-radio" [(ngModel)]="selectedFacilityId"
+                    (change)="fetchAggregateTargets(facility._id)">
+                  <span class="facility-option-label">{{ facility.name }}</span>
+                </label>
+              </div>
+            </ng-container>
         </div>
       </mat-accordion>
     </div>
 
     <div class="sidebar-footer">
-      <button type="button" class="btn btn-primary"
-        (click)="toggleSidebarFilter()">Apply</button>
+      <button type="button" class="btn btn-primary" (click)="toggleSidebarFilter()">Apply</button>
     </div>
   </div>
 </section>

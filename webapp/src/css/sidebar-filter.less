@@ -99,14 +99,14 @@
       overflow-y: auto;
       overflow-x: hidden;
 
-      .facility-filter-wrap {
+      .facility-options-container {
         padding-top: 25px;
         padding-left: 18px;
         padding-right: 18px;
         width: 100%;
         height: 100%;
 
-        .facility-title {
+        .facility-options-title {
           display: block;
           height: 20px;
           font-weight: bold;
@@ -114,51 +114,49 @@
           color: @gray-ultra-dark;
         }
 
-        .facility-filter-body {
-          .facility-filter-place {
-            padding-top: 20px;
+        .facility-option-place {
+          padding-top: 20px;
 
-            .facility-label {
-              display: flex;
-              align-items: center;
+          .facility-option-wrapper {
+            display: flex;
+            align-items: center;
+            margin: 0;
+
+            .facility-option-radio {
+              -webkit-appearance: none;
+              -moz-appearance: none;
+              appearance: none;
+              width: 20px !important;
+              height: 20px !important;
+              border: 3px solid @gray-medium-dark;
+              border-radius: 50%;
+              outline: none;
               margin: 0;
-
-              .facility-radio {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-                width: 20px;
-                height: 20px;
-                border: 3px solid @gray-medium-dark;
-                border-radius: 50%;
-                outline: none;
-                margin: 0;
-                position: relative;
-              }
-
-              .facility-radio:checked {
-                border-color: @radio-checked-blue;
-              }
-
-              .facility-radio:checked::after {
-                content: '';
-                width: 7px;
-                height: 7px;
-                background: @radio-checked-blue;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                border-radius: 50%;
-              }
+              position: relative;
             }
 
-            .facility-name {
-              font-size: @font-medium;
-              font-weight: normal;
-              color: @gray-ultra-dark;
-              padding-left: 10px;
+            .facility-option-radio:checked {
+              border-color: @blue-dark;
             }
+
+            .facility-option-radio:checked::after {
+              content: '';
+              width: 7px !important;
+              height: 7px !important;
+              background: @blue-dark;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              border-radius: 50%;
+            }
+          }
+
+          .facility-option-label {
+            font-size: @font-medium;
+            font-weight: normal;
+            color: @gray-ultra-dark;
+            padding-left: 10px;
           }
         }
       }

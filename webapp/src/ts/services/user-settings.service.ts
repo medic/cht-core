@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 
 import { CacheService } from '@mm-services/cache.service';
+import { GetDataRecordsService } from './get-data-records.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LanguageService } from '@mm-services/language.service';
@@ -12,6 +13,7 @@ export class UserSettingsService {
   private readonly cache;
   constructor(
     private cacheService:CacheService,
+    private getDataRecordsService: GetDataRecordsService,
     private dbService:DbService,
     private languageService:LanguageService,
     private sessionService:SessionService,
@@ -58,6 +60,22 @@ export class UserSettingsService {
         resolve(userSettings);
       });
     });
+  }
+
+  async hasMultipleFacilities(): Promise<boolean> {
+    return this.get()
+      .then((userSettings:any) => {
+        const userFacility = userSettings.facility_id;
+        return Array.isArray(userFacility) && userFacility.length > 1;
+      });
+  }
+
+  async getUserFacility(): Promise<any[]> {
+    return this.get()
+      .then((userSettings:any) => {
+        const userFacility = userSettings.facility_id;
+        return this.getDataRecordsService.get(userFacility);
+      });
   }
 
   async getWithLanguage(): Promise<Object> {
