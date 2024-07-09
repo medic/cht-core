@@ -1,6 +1,10 @@
 const commonElements = require('@page-objects/default/common/common.wdio.page.js');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page.js');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
+const path = require('path');
+const constants = require('@constants');
+const chtConfUtils = require('@utils/cht-conf');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 const userFactory = require('@factories/cht/users/users');
@@ -90,6 +94,10 @@ describe('Contact details page', () => {
       await commonElements.waitForPageLoaded();
     });
 
+    after(async () => {
+      await utils.revertSettings(true);
+    });
+
     it('should show reports and tasks when permissions are enabled', async () => {
       await commonElements.goToPeople(patient._id, true);
       expect(await (await contactPage.contactCard()).getText()).to.equal(patient.name);
@@ -144,4 +152,42 @@ describe('Contact details page', () => {
     });
   });
 
+  describe('Contact summary error', () => {
+    const places = placeFactory.generateHierarchy();
+    const clinic = places.get('clinic');
+
+    const patient = personFactory.build({
+      name: 'Patient',
+      phone: '+50683444444',
+      parent: { _id: clinic._id, parent: clinic.parent }
+    });
+
+    before(async () => {
+      await chtConfUtils.initializeConfigDir();
+      const contactSummaryFile = path.join(__dirname, 'config/contact-summary-error-config.js');
+
+      const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+      await utils.updateSettings({ contact_summary: contactSummary }, true);
+
+      await utils.saveDocs([...places.values(), patient]);
+
+      await loginPage.cookieLogin();
+      await (await commonPage.goToPeople(patient._id));
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
+    });
+
+    it('should show error log for bad config', async () => {
+      const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
+
+      expect(username).to.equal(constants.USERNAME);
+      expect(url).to.equal(constants.API_HOST);
+      expect(errorMessage).to.equal('Error fetching people');
+      expect(await (await errorStack.isDisplayed())).to.be.true;
+      expect(await (await errorStack.getText())).to
+        .include('Error: Configuration error');
+    });
+  });
 });
