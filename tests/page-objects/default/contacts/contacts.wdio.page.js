@@ -7,87 +7,152 @@ const searchPage = require('@page-objects/default/search/search.wdio.page');
 const mobileSearchPage = require('@page-objects/default-mobile/search/search.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-// search
-const searchBox = () => $('.mm-search-bar-container input#freetext');
+const searchSelectors = {
+  searchBox: () => $('.mm-search-bar-container input#freetext'),
+};
 
-// menu
-const menuContent = (testId) => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="${testId}"]`);
-const exportButton = () => menuContent('export-contacts');
-const editContactButton = () => menuContent('edit-contacts');
-const deleteContactButton = () => menuContent('delete-contacts');
+const menuSelectors = {
+  exportButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]`),
+  editContactButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]`),
+  deleteContactButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]`),
+};
 
-// left panel
-const contactListSelector = '#contacts-list';
-const contentRowSelector = `${contactListSelector} .content-row`;
-const contactList = () => $('#contacts-list');
-const contentRow = () => $(contentRowSelector);
-const contentRows = () => $$(contentRowSelector);
-const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
-const contactListLoadingStatus = () => $(`${contactListSelector} .loading-status`);
+/*
+const leftPanelSelectors = {
+  CONTACT_LIST_SELECTOR: '#contacts-list',
+  CONTENT_ROW_SELECTOR: `${this.CONTACT_LIST_SELECTOR} .content-row`,
+  init() {
+    const self = this;
+    this.contactList = () => $(self.CONTACT_LIST_SELECTOR);
+    this.contentRow = () => $(self.CONTENT_ROW_SELECTOR);
+    this.contentRows = () => $$(self.CONTENT_ROW_SELECTOR);
+    this.contactName = () => $$(`${self.CONTENT_ROW_SELECTOR} .heading h4 span`);
+    this.contactListLoadingStatus = () => $(`${self.CONTACT_LIST_SELECTOR} .loading-status`);
+  },
+};
 
-const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
+const CONTACT_LIST_SELECTOR = '#contacts-list';
+const CONTENT_ROW_SELECTOR = `${this.CONTACT_LIST_SELECTOR} .content-row`;
+const leftPanelSelectors = {
+  contactList: () => $(CONTACT_LIST_SELECTOR),
+  contentRow: () => $(CONTENT_ROW_SELECTOR),
+  contentRows: () => $$(CONTENT_ROW_SELECTOR),
+  contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
+  contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
+};
+*/
+const CONTACT_LIST_SELECTOR = '#contacts-list';
+const CONTENT_ROW_SELECTOR =  `${CONTACT_LIST_SELECTOR} .content-row`;
+const leftPanelSelectors = {
+  contactList: () => $(CONTACT_LIST_SELECTOR),
+  contentRow: () => $(CONTENT_ROW_SELECTOR),
+  contentRows: () =>  $$(CONTENT_ROW_SELECTOR),
+  contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
+  contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
+};
+
+const rightPanelSelectors = {
+  emptySelection: () => $('contacts-content .empty-selection'),
+  childrenCards: () => $$('.right-pane .card.children'),
+  contactCardTitle: () => $('.inbox .content-pane .material .body .action-header'),
+};
+
+const contactCardSelectors = {
+  contactCardName: () => $('h2[test-id="contact-name"]'),
+  contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
+  contactSummaryContainer: () => $('#contact_summary'),
+  contactMedicID: () => $('#contact_summary .cell.patient_id > div > p'),
+  contactDeceasedStatus: () => $('div[test-id="deceased-title"]'),
+  contactMuted: () => $('.heading-content .muted'),
+};
+
+const peopleCardSelectors = {
+  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
+  rhsPeopleListSelector: () => $$('.card.children.persons h4 span'),
+};
+
+/*const tasksCardSelectors = {
+  RHS_TASK_LIST_CARD: '.card.tasks',
+  TASK_FILTER_SELECTOR: `${this.RHS_TASK_LIST_CARD} .table-filter a`,
+  RHS_TASK_LIST_SELECTOR: `${this.RHS_TASK_LIST_CARD} mm-content-row h4 span`,
+  taskFilter: () => $(this.TASK_FILTER_SELECTOR),
+  taskFilters: () => $$(this.TASK_FILTER_SELECTOR),
+  rhsTaskListElement: () => $(this.RHS_TASK_LIST_SELECTOR),
+  rhsTaskListElementList: () => $$(this.RHS_TASK_LIST_SELECTOR),
+};*/
+const RHS_TASK_LIST_CARD =  '.card.tasks';
+const TASK_FILTER_SELECTOR = `${RHS_TASK_LIST_CARD} .table-filter a`;
+const RHS_TASK_LIST_SELECTOR = `${RHS_TASK_LIST_CARD} mm-content-row h4 span`;
+const tasksCardSelectors = {
+  taskFilter: () => $(TASK_FILTER_SELECTOR),
+  taskFilters: () => $$(TASK_FILTER_SELECTOR),
+  rhsTaskListElement: () =>  $(RHS_TASK_LIST_SELECTOR),
+  rhsTaskListElementList: () => $$(RHS_TASK_LIST_SELECTOR),
+};
+
+/*const reportsCardSelectors = {
+  RHS_REPORT_LIST_CARD: '.card.reports',
+  REPORT_FILTER_SELECTOR: `${this.RHS_REPORT_LIST_CARD} .table-filter a`,
+  RHS_REPORT_LIST_SELECTOR: `${this.RHS_REPORT_LIST_CARD} mm-content-row h4 span`,
+  reportFilter: () => $(this.REPORT_FILTER_SELECTOR),
+  reportFilters: () => $$(this.REPORT_FILTER_SELECTOR),
+  rhsReportListElement: () => $(this.RHS_REPORT_LIST_SELECTOR),
+  rhsReportElementList: () => $$(this.RHS_REPORT_LIST_SELECTOR),
+};*/
 const RHS_REPORT_LIST_CARD = '.card.reports';
+const REPORT_FILTER_SELECTOR = `${RHS_REPORT_LIST_CARD} .table-filter a`;
 const RHS_REPORT_LIST_SELECTOR = `${RHS_REPORT_LIST_CARD} mm-content-row h4 span`;
-const RHS_TASK_LIST_SELECTOR = '.card.tasks mm-content-row h4 span';
-const rhsTaskListElement = () => $(RHS_TASK_LIST_SELECTOR);
-const rhsTaskListElementList = () => $$(RHS_TASK_LIST_SELECTOR);
-const rhsReportListElement = () => $(RHS_REPORT_LIST_SELECTOR);
-const rhsReportElementList = () => $$(RHS_REPORT_LIST_SELECTOR);
+const reportsCardSelectors = {
+  reportFilter: () => $(REPORT_FILTER_SELECTOR),
+  reportFilters: () => $$(REPORT_FILTER_SELECTOR),
+  rhsReportListElement: () => $(RHS_REPORT_LIST_SELECTOR),
+  rhsReportElementList: () => $$(RHS_REPORT_LIST_SELECTOR),
+};
 
-const contactSummaryContainer = () => $('#contact_summary');
-// right panel
-const emptySelection = () => $('contacts-content .empty-selection');
-const childrenCards = () => $$('.right-pane .card.children');
-const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
+/*const commonCardSelectors = {
+  cardId: (cardTestId) => $(`div[test-id="${cardTestId}"]`),
+  cardField(cardTestId, fieldTestId) {
+    return this.cardId(cardTestId).$(`div[test-id="${fieldTestId}"] p.card-field-value`);
+  },
+};*/
 
-// card section
-const contactCardName = () => $('h2[test-id="contact-name"]');
-const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
-const contactSummaryContainer = () => $('#contact_summary');
-const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
-const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
-const contactMuted = () => $('.heading-content .muted');
+/*const pregnancyCardSelectors = {
+  PREG_CARD_TEST_ID: 'contact.profile.pregnancy.active',
+  pregnancyCard: () => commonCardSelectors.cardId(this.PREG_CARD_TEST_ID),
+  weeksPregnant: () => commonCardSelectors.cardField(this.PREG_CARD_TEST_ID, 'Weeks Pregnant'),
+  edd: () => commonCardSelectors.cardField(this.PREG_CARD_TEST_ID, 'contact.profile.edd'),
+  highRisk: () => {
+    return commonCardSelectors.cardId(this.PREG_CARD_TEST_ID)
+      .$('div[test-id="contact.profile.risk.high"] label');
+  },
+  nextANCVisit: () => {
+    return commonCardSelectors.cardField(this.PREG_CARD_TEST_ID, 'contact.profile.anc.next');
+  },
+};*/
+const PREG_CARD_TEST_ID = `div[test-id="contact.profile.pregnancy.active"]`;
+const pregnancyCardSelectors = {
+  pregnancyCard: () => $(PREG_CARD_TEST_ID),
+  weeksPregnant: () => $(`${PREG_CARD_TEST_ID} div[test-id="Weeks Pregnant"] p.card-field-value`),
+  edd: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.edd"] p.card-field-value`),
+  highRisk: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.risk.high"] label`),
+  nextANCVisit: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.anc.next"] p.card-field-value`),
+};
 
-// people section
-const primaryContactName = () => $('i[title="Primary contact"]').nextElement();
-const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
-
-// task section
-const TASK_FILTER_SELECTOR = '.card.tasks .table-filter a';
-const RHS_TASK_LIST_SELECTOR = '.card.tasks mm-content-row h4 span';
-const taskFilter = () => $(TASK_FILTER_SELECTOR);
-const taskFilters = () => $$(TASK_FILTER_SELECTOR);
-const rhsTaskListElement = () => $(RHS_TASK_LIST_SELECTOR);
-const rhsTaskListElementList = () => $$(RHS_TASK_LIST_SELECTOR);
-
-// reports section
-const REPORT_FILTER_SELECTOR = '.card.reports .table-filter a';
-const RHS_REPORT_LIST_SELECTOR = '.card.reports mm-content-row h4 span';
-const reportFilter = () => $(REPORT_FILTER_SELECTOR);
-const reportFilters = () => $$(REPORT_FILTER_SELECTOR);
-const rhsReportListElement = () => $(RHS_REPORT_LIST_SELECTOR);
-const rhsReportElementList = () => $$(RHS_REPORT_LIST_SELECTOR);
-
-// custom card
-const cardId = (cardTestId) => $(`div[test-id="${cardTestId}"]`);
-const cardField = (cardTestId, fieldTestId) => cardId(cardTestId).$(`div[test-id="${fieldTestId}"] p.card-field-value`);
-
-// pregnancy card
-const PREG_CARD_TEST_ID = 'contact.profile.pregnancy.active';
-const pregnancyCard = () => cardId(PREG_CARD_TEST_ID);
-const weeksPregnant = () => cardField(PREG_CARD_TEST_ID, 'Weeks Pregnant');
-const edd = () => cardField(PREG_CARD_TEST_ID, 'contact.profile.edd');
-const highRisk = () => cardId(PREG_CARD_TEST_ID).$('div[test-id="contact.profile.risk.high"] label');
-const nextANCVisit = () => cardField(PREG_CARD_TEST_ID, 'contact.profile.anc.next');
-
-// pregnancy card
-const DEATH_CARD_TEST_ID = 'contact.profile.death.title';
-const deathCard = () => cardId(DEATH_CARD_TEST_ID);
-const deathDate = () => cardField(DEATH_CARD_TEST_ID, 'contact.profile.death.date');
-const deathPlace = () => cardField(DEATH_CARD_TEST_ID, 'contact.profile.death.place');
+/*const deathCardSelectors = {
+  DEATH_CARD_TEST_ID: 'contact.profile.death.title',
+  deathCard: () => commonCardSelectors.cardId(this.DEATH_CARD_TEST_ID),
+  deathDate: () => commonCardSelectors.cardField(this.DEATH_CARD_TEST_ID, 'contact.profile.death.date'),
+  deathPlace: () => commonCardSelectors.cardField(this.DEATH_CARD_TEST_ID, 'contact.profile.death.place'),
+};*/
+const DEATH_CARD_TEST_ID = 'div[test-id="contact.profile.death.title"]';
+const deathCardSelectors = {
+  deathCard: () => $(DEATH_CARD_TEST_ID),
+  deathDate: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.date"] p.card-field-value`),
+  deathPlace: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.place"] p.card-field-value`),
+};
 
 const search = async (query) => {
-  if (!await (await searchBox()).isDisplayed()) {
+  if (!await (await searchSelectors.searchBox()).isDisplayed()) {
     await mobileSearchPage.performSearch(query);
   } else {
     await searchPage.performSearch(query);
@@ -95,7 +160,7 @@ const search = async (query) => {
 };
 
 const findRowByText = async (text) => {
-  for (const row of await contentRows()) {
+  for (const row of await leftPanelSelectors.contentRows()) {
     if ((await row.getText()) === text) {
       return row;
     }
@@ -125,23 +190,23 @@ const selectRHSRowById = async (id) => {
 };
 
 const getReportFiltersText = async () => {
-  await (await reportFilter()).waitForDisplayed();
-  return (await reportFilters()).map(filter => filter.getText());
+  await (await reportsCardSelectors.reportFilter()).waitForDisplayed();
+  return (await reportsCardSelectors.reportFilters()).map(filter => filter.getText());
 };
 
 const getReportTaskFiltersText = async () => {
-  await (await taskFilter()).waitForDisplayed();
-  return await (await taskFilters()).map(filter => filter.getText());
+  await (await tasksCardSelectors.taskFilter()).waitForDisplayed();
+  return await (await tasksCardSelectors.taskFilters()).map(filter => filter.getText());
 };
 
 const waitForContactLoaded = async (type) => {
-  type && await (await contactCardIcon(type)).waitForDisplayed();
-  await (await contactCardName()).waitForDisplayed();
-  await (await contactSummaryContainer()).waitForDisplayed();
+  type && await (await contactCardSelectors.contactCardIcon(type)).waitForDisplayed();
+  await (await contactCardSelectors.contactCardName()).waitForDisplayed();
+  await (await contactCardSelectors.contactSummaryContainer()).waitForDisplayed();
 };
 
 const waitForContactUnloaded = async () => {
-  await (await emptySelection()).waitForDisplayed();
+  await (await rightPanelSelectors.emptySelection()).waitForDisplayed();
 };
 
 const addPlace = async ({
@@ -204,16 +269,16 @@ const addPerson = async ({
   if (waitForSentinel) {
     await sentinelUtils.waitForSentinel();
   }
-  await (await contactCardIcon(type)).waitForDisplayed();
-  return (await contactCardName()).getText();
+  await (await contactCardSelectors.contactCardIcon(type)).waitForDisplayed();
+  return (await contactCardSelectors.contactCardName()).getText();
 };
 
 const editPerson = async (currentName, { name, phone, dob }) => {
   await selectLHSRowByText(currentName);
   await waitForContactLoaded();
   await commonPage.openMoreOptionsMenu();
-  await (await editContactButton()).waitForClickable();
-  await (await editContactButton()).click();
+  await (await menuSelectors.editContactButton()).waitForClickable();
+  await (await menuSelectors.editContactButton()).click();
   await (await genericForm.nextPage());
 
   if (name !== undefined) {
@@ -231,47 +296,48 @@ const editPerson = async (currentName, { name, phone, dob }) => {
 
 const editPersonName = async (name, updatedName) => {
   await editPerson(name, { name: updatedName });
-  return (await contactCardName()).getText();
+  return (await contactCardSelectors.contactCardName()).getText();
 };
 
 const deletePerson = async () => {
   await commonPage.openMoreOptionsMenu();
-  await (await deleteContactButton()).waitForClickable();
-  await (await deleteContactButton()).click();
+  await (await menuSelectors.deleteContactButton()).waitForClickable();
+  await (await menuSelectors.deleteContactButton()).click();
   await modalPage.submit();
 };
 
 const getContactSummaryField = async (fieldName) => {
-  await (await contactSummaryContainer()).waitForDisplayed();
-  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
+  await (await contactCardSelectors.contactSummaryContainer()).waitForDisplayed();
+  const cleanFieldName = fieldName.toLowerCase().replace(/\./g, '\\.');
+  const field = await (await contactCardSelectors.contactSummaryContainer()).$(`.cell.${cleanFieldName}`);
   return await (await field.$('p')).getText();
 };
 
 const getPrimaryContactName = async () => {
-  return await (await primaryContactName()).getText();
+  return await (await peopleCardSelectors.primaryContactName()).getText();
 };
 
 const getAllLHSContactsNames = async () => {
-  await (await contentRow()).waitForDisplayed();
-  return commonPage.getTextForElements(contactName);
+  await (await leftPanelSelectors.contentRow()).waitForDisplayed();
+  return commonPage.getTextForElements(leftPanelSelectors.contactName);
 };
 
 const getAllRHSPeopleNames = () => {
-  return commonPage.getTextForElements(rhsPeopleListSelector);
+  return commonPage.getTextForElements(peopleCardSelectors.rhsPeopleListSelector);
 };
 
 const getAllRHSReportsNames = async () => {
-  await (await rhsReportListElement()).waitForDisplayed();
-  return commonPage.getTextForElements(rhsReportElementList);
+  await (await reportsCardSelectors.rhsReportListElement()).waitForDisplayed();
+  return commonPage.getTextForElements(reportsCardSelectors.rhsReportElementList);
 };
 
 const getAllRHSTaskNames = async () => {
-  await (await rhsTaskListElement()).waitForDisplayed();
-  return commonPage.getTextForElements(rhsTaskListElementList);
+  await (await tasksCardSelectors.rhsTaskListElement()).waitForDisplayed();
+  return commonPage.getTextForElements(tasksCardSelectors.rhsTaskListElementList);
 };
 
 const allContactsList = async () => {
-  const parentCards = await childrenCards();
+  const parentCards = await rightPanelSelectors.childrenCards();
 
   return parentCards.map(async (parent) => ({
     heading: await (await parent.$('h3')).getText(),
@@ -284,8 +350,8 @@ const editPlace = async (currentName, editedName) => {
   await waitForContactLoaded();
 
   await commonPage.openMoreOptionsMenu();
-  await (await editContactButton()).waitForClickable();
-  await (await editContactButton()).click();
+  await (await menuSelectors.editContactButton()).waitForClickable();
+  await (await menuSelectors.editContactButton()).click();
 
   await commonEnketoPage.setInputValue('Name of this', editedName);
   await genericForm.submitForm();
@@ -298,54 +364,54 @@ const openFormWithWarning = async (formId) => {
 
 const openReport = async () => {
   await commonPage.toggleActionbar(true);
-  await (await rhsReportListElement()).waitForDisplayed();
-  await (await rhsReportListElement()).click();
+  await (await reportsCardSelectors.rhsReportListElement()).waitForDisplayed();
+  await (await reportsCardSelectors.rhsReportListElement()).click();
   await commonPage.toggleActionbar();
 };
 
 const getContactCardTitle = async () => {
-  await contactCardTitle().waitForDisplayed();
-  return (await contactCardTitle()).getText();
+  await rightPanelSelectors.contactCardTitle().waitForDisplayed();
+  return (await rightPanelSelectors.contactCardTitle()).getText();
 };
 
 const getContactInfoName = async () => {
-  await contactCardName().waitForDisplayed();
-  return (await contactCardName()).getText();
+  await contactCardSelectors.contactCardName().waitForDisplayed();
+  return (await contactCardSelectors.contactCardName()).getText();
 };
 
 const getContactMedicID = async () => {
-  await contactMedicID().waitForDisplayed();
-  return (await contactMedicID()).getText();
+  await contactCardSelectors.contactMedicID().waitForDisplayed();
+  return (await contactCardSelectors.contactMedicID()).getText();
 };
 
 const getContactDeceasedStatus = async () => {
-  const deceasedStatus = await contactDeceasedStatus();
+  const deceasedStatus = await contactCardSelectors.contactDeceasedStatus();
   await deceasedStatus.waitForDisplayed();
   return await deceasedStatus.getText();
 };
 
 const getPregnancyCardInfo = async () => {
-  await pregnancyCard().waitForDisplayed();
+  await pregnancyCardSelectors.pregnancyCard().waitForDisplayed();
   return {
-    weeksPregnant: await weeksPregnant().getText(),
-    deliveryDate: await edd().getText(),
-    risk: await highRisk().getText(),
-    ancVisit: await nextANCVisit().getText(),
+    weeksPregnant: await pregnancyCardSelectors.weeksPregnant().getText(),
+    deliveryDate: await pregnancyCardSelectors.edd().getText(),
+    risk: await pregnancyCardSelectors.highRisk().getText(),
+    ancVisit: await pregnancyCardSelectors.nextANCVisit().getText(),
   };
 };
 
 const getDeathCardInfo = async () => {
-  await deathCard().waitForDisplayed();
+  await deathCardSelectors.deathCard().waitForDisplayed();
   return {
-    deathDate: await deathDate().getText(),
-    deathPlace: await deathPlace().getText(),
+    deathDate: await deathCardSelectors.deathDate().getText(),
+    deathPlace: await deathCardSelectors.deathPlace().getText(),
   };
 };
 
 const exportContacts = async () => {
   await commonPage.openMoreOptionsMenu();
-  await (await exportButton()).waitForClickable();
-  await (await exportButton()).click();
+  await (await menuSelectors.exportButton()).waitForClickable();
+  await (await menuSelectors.exportButton()).click();
 };
 
 const getCurrentContactId = async () => {
@@ -359,13 +425,13 @@ const getCurrentContactId = async () => {
 };
 
 const getContactListLoadingStatus = async () => {
-  await (await contactListLoadingStatus()).waitForDisplayed();
-  return await (await contactListLoadingStatus()).getText();
+  await (await leftPanelSelectors.contactListLoadingStatus()).waitForDisplayed();
+  return await (await leftPanelSelectors.contactListLoadingStatus()).getText();
 };
 
 const getDisplayedContactsNames = async () => {
   const contacts = [];
-  for (const row of await contentRows()) {
+  for (const row of await leftPanelSelectors.contentRows()) {
     contacts.push(await row.getText());
   }
   return contacts;
@@ -392,12 +458,17 @@ const filterReportViewAll = async () => {
 
 module.exports = {
   genericForm,
+  leftPanelSelectors,
+  rightPanelSelectors,
+  contactCardSelectors,
+  tasksCardSelectors,
+  reportsCardSelectors,
+  pregnancyCardSelectors,
+  deathCardSelectors,
   selectLHSRowByText,
   selectRHSRowById,
-  reportFilters,
   getReportFiltersText,
   getReportTaskFiltersText,
-  contactList,
   getAllLHSContactsNames,
   addPerson,
   addPlace,
@@ -405,31 +476,22 @@ module.exports = {
   getAllRHSPeopleNames,
   waitForContactLoaded,
   waitForContactUnloaded,
-  contactCardName,
   editPerson,
   editPersonName,
   editPlace,
   exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
-  rhsReportListElement,
   getAllRHSTaskNames,
-  rhsTaskListElement,
   deletePerson,
   allContactsList,
-  childrenCards,
   openReport,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
   getContactDeceasedStatus,
-  contactCardIcon,
-  editContactButton,
-  pregnancyCard,
   getPregnancyCardInfo,
-  deathCard,
   getDeathCardInfo,
-  contactMuted,
   openFormWithWarning,
   getContactListLoadingStatus,
   getCurrentContactId,

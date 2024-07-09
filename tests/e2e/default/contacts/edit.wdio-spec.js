@@ -36,8 +36,7 @@ describe('Edit ', () => {
     await utils.createUsers([offlineUser, onlineUser]);
   });
 
-  it('should update the contact name ' +
-    'and then remove the primary contact from the clinic when the contact is deleted', async () => {
+  it('should update a contact, delete the same contact then unassign primary contact from facility', async () => {
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
@@ -61,7 +60,7 @@ describe('Edit ', () => {
     await commonPage.logout();
   });
 
-  it('should sync and update offlineUser HomePlace', async () => {
+  it('should sync and update the offline user\'s home place', async () => {
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();

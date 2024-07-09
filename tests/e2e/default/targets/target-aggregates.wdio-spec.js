@@ -412,7 +412,7 @@ describe('Target aggregates', () => {
 
       await targetAggregatesPage.clickOnTargetAggregateListItem(prometheus._id);
       // wait until contact-summary is loaded
-      await (await contactsPage.contactCardName()).waitForDisplayed();
+      await (await contactsPage.contactCardSelectors.contactCardName()).waitForDisplayed();
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');

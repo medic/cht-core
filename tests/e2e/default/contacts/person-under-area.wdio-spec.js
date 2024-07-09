@@ -14,35 +14,17 @@ describe('Create Person Under Area, ', () => {
   const districtHospital = places.get('district_hospital');
   const healthCenters = places.get('health_center');
 
-  // Add one more health_center
   const healthCenter2 = placeFactory.place().build({
     name: 'HealthCenter-2',
     type: 'health_center',
-    parent: {
-      _id: districtHospital._id,
-      parent: {
-        _id: ''
-      }
-    }
+    parent: { _id: districtHospital._id, parent: { _id: '' } }
   });
 
-  const person1 = personFactory.build(
-    {
-      parent: {
-        _id: healthCenters._id,
-        parent: healthCenters.parent
-      }
-    }
-  );
-  const person2 = personFactory.build(
-    {
-      name: 'Jack',
-      parent: {
-        _id: healthCenter2._id,
-        parent: healthCenter2.parent
-      }
-    }
-  );
+  const person1 = personFactory.build({ parent: { _id: healthCenters._id, parent: healthCenters.parent } });
+  const person2 = personFactory.build({
+    name: 'Jack',
+    parent: { _id: healthCenter2._id, parent: healthCenter2.parent }
+  });
 
   before(async () => {
     await utils.saveDocs([...places.values(), healthCenter2, person1, person2]);
