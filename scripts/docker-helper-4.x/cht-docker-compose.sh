@@ -458,14 +458,9 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-dig +short local-ip.medicmobile.org
-curl -v --resolve local-ip.medicmobile.org:443:15.188.129.97 -o ./cert.pem https://local-ip.medicmobile.org/fullchain
-curl -v --resolve local-ip.medicmobile.org:443:15.188.129.97 -o ./key.pem https://local-ip.medicmobile.org/key
-docker cp ./cert.pem "$nginxContainerId":/etc/nginx/private/cert.pem
-docker cp ./key.pem "$nginxContainerId":/etc/nginx/private/key.pem
-#docker exec "$nginxContainerId" bash -c "curl -v -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
-#docker exec "$nginxContainerId" bash -c "curl -v -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
-docker exec "$nginxContainerId" bash -c "nginx -s reload"
+docker exec "$nginxContainerId" bash -c "curl -s --resolve local-ip.medicmobile.org:443:15.188.129.97 -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain" 2>/dev/null
+docker exec "$nginxContainerId" bash -c "curl -s --resolve local-ip.medicmobile.org:443:15.188.129.97 -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key" 2>/dev/null
+docker exec "$nginxContainerId" bash -c "nginx -s reload" 2>/dev/null
 
 echo ""
 echo ""
