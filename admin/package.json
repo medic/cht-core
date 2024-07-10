@@ -23,6 +23,7 @@
     "mustache": "^4.2.0",
     "ng-redux": "^4.4.5",
     "object-path": "^0.11.8",
+    "pouchdb-adapter-indexeddb": "^9.0.0",
     "pouchdb-browser": "^9.0.0",
     "properties": "^1.2.1",
     "redux": "^4.2.0",

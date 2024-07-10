@@ -12,6 +12,7 @@ import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 // import pouchdbDebug from 'pouchdb-debug';
+import pouchdbAdapterIndexeddb from 'pouchdb-adapter-indexeddb';
 import * as $ from 'jquery';
 
 import { AppModule } from './app.module';
@@ -45,6 +46,7 @@ Object.defineProperties($, {
 });
 
 // window.PouchDB.plugin(pouchdbDebug);
+window.PouchDB.plugin(pouchdbAdapterIndexeddb);
 bootstrapper(POUCHDB_OPTIONS)
   .then(() => {
     window.startupTimes.bootstrapped = performance.now();

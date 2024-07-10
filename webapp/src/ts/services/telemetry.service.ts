@@ -248,7 +248,7 @@ export class TelemetryService {
 
       try {
         this.isAggregationRunning = true;
-        const db = this.windowRef.PouchDB(dbName);
+        const db = this.windowRef.PouchDB(dbName, { adapter: 'indexeddb' });
         await this.aggregate(db, dbName);
         await db.destroy();
         await this.indexedDbService.deleteDatabaseName(dbName); // Firefox support.
