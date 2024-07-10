@@ -104,7 +104,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+      .subscribe((filterState) => this.isSidebarFilterOpen = filterState?.isOpen ?? false);
     this.subscriptions.add(subscription);
   }
 }

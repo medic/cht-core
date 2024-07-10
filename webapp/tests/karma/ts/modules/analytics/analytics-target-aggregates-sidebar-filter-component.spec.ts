@@ -14,7 +14,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GlobalActions } from '@mm-actions/global';
 
-describe.only('Analytics Target Aggregate Sidebar Filter Component', () => {
+describe('Analytics Target Aggregate Sidebar Filter Component', () => {
   let component: AnalyticsTargetAggregatesSidebarFilterComponent;
   let fixture: ComponentFixture<AnalyticsTargetAggregatesSidebarFilterComponent>;
   let contactTypesService;
@@ -76,7 +76,6 @@ describe.only('Analytics Target Aggregate Sidebar Filter Component', () => {
   });
 
   it('should create component', fakeAsync(() => {
-    flush();
     expect(component).to.exist;
     expect(component.isOpen).to.be.false;
     expect(component.error).to.be.undefined;
