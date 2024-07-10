@@ -17,30 +17,6 @@ const menuSelectors = {
   deleteContactButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]`),
 };
 
-/*
-const leftPanelSelectors = {
-  CONTACT_LIST_SELECTOR: '#contacts-list',
-  CONTENT_ROW_SELECTOR: `${this.CONTACT_LIST_SELECTOR} .content-row`,
-  init() {
-    const self = this;
-    this.contactList = () => $(self.CONTACT_LIST_SELECTOR);
-    this.contentRow = () => $(self.CONTENT_ROW_SELECTOR);
-    this.contentRows = () => $$(self.CONTENT_ROW_SELECTOR);
-    this.contactName = () => $$(`${self.CONTENT_ROW_SELECTOR} .heading h4 span`);
-    this.contactListLoadingStatus = () => $(`${self.CONTACT_LIST_SELECTOR} .loading-status`);
-  },
-};
-
-const CONTACT_LIST_SELECTOR = '#contacts-list';
-const CONTENT_ROW_SELECTOR = `${this.CONTACT_LIST_SELECTOR} .content-row`;
-const leftPanelSelectors = {
-  contactList: () => $(CONTACT_LIST_SELECTOR),
-  contentRow: () => $(CONTENT_ROW_SELECTOR),
-  contentRows: () => $$(CONTENT_ROW_SELECTOR),
-  contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
-  contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
-};
-*/
 const CONTACT_LIST_SELECTOR = '#contacts-list';
 const CONTENT_ROW_SELECTOR =  `${CONTACT_LIST_SELECTOR} .content-row`;
 const leftPanelSelectors = {
@@ -71,15 +47,6 @@ const peopleCardSelectors = {
   rhsPeopleListSelector: () => $$('.card.children.persons h4 span'),
 };
 
-/*const tasksCardSelectors = {
-  RHS_TASK_LIST_CARD: '.card.tasks',
-  TASK_FILTER_SELECTOR: `${this.RHS_TASK_LIST_CARD} .table-filter a`,
-  RHS_TASK_LIST_SELECTOR: `${this.RHS_TASK_LIST_CARD} mm-content-row h4 span`,
-  taskFilter: () => $(this.TASK_FILTER_SELECTOR),
-  taskFilters: () => $$(this.TASK_FILTER_SELECTOR),
-  rhsTaskListElement: () => $(this.RHS_TASK_LIST_SELECTOR),
-  rhsTaskListElementList: () => $$(this.RHS_TASK_LIST_SELECTOR),
-};*/
 const RHS_TASK_LIST_CARD =  '.card.tasks';
 const TASK_FILTER_SELECTOR = `${RHS_TASK_LIST_CARD} .table-filter a`;
 const RHS_TASK_LIST_SELECTOR = `${RHS_TASK_LIST_CARD} mm-content-row h4 span`;
@@ -90,15 +57,6 @@ const tasksCardSelectors = {
   rhsTaskListElementList: () => $$(RHS_TASK_LIST_SELECTOR),
 };
 
-/*const reportsCardSelectors = {
-  RHS_REPORT_LIST_CARD: '.card.reports',
-  REPORT_FILTER_SELECTOR: `${this.RHS_REPORT_LIST_CARD} .table-filter a`,
-  RHS_REPORT_LIST_SELECTOR: `${this.RHS_REPORT_LIST_CARD} mm-content-row h4 span`,
-  reportFilter: () => $(this.REPORT_FILTER_SELECTOR),
-  reportFilters: () => $$(this.REPORT_FILTER_SELECTOR),
-  rhsReportListElement: () => $(this.RHS_REPORT_LIST_SELECTOR),
-  rhsReportElementList: () => $$(this.RHS_REPORT_LIST_SELECTOR),
-};*/
 const RHS_REPORT_LIST_CARD = '.card.reports';
 const REPORT_FILTER_SELECTOR = `${RHS_REPORT_LIST_CARD} .table-filter a`;
 const RHS_REPORT_LIST_SELECTOR = `${RHS_REPORT_LIST_CARD} mm-content-row h4 span`;
@@ -109,26 +67,6 @@ const reportsCardSelectors = {
   rhsReportElementList: () => $$(RHS_REPORT_LIST_SELECTOR),
 };
 
-/*const commonCardSelectors = {
-  cardId: (cardTestId) => $(`div[test-id="${cardTestId}"]`),
-  cardField(cardTestId, fieldTestId) {
-    return this.cardId(cardTestId).$(`div[test-id="${fieldTestId}"] p.card-field-value`);
-  },
-};*/
-
-/*const pregnancyCardSelectors = {
-  PREG_CARD_TEST_ID: 'contact.profile.pregnancy.active',
-  pregnancyCard: () => commonCardSelectors.cardId(this.PREG_CARD_TEST_ID),
-  weeksPregnant: () => commonCardSelectors.cardField(this.PREG_CARD_TEST_ID, 'Weeks Pregnant'),
-  edd: () => commonCardSelectors.cardField(this.PREG_CARD_TEST_ID, 'contact.profile.edd'),
-  highRisk: () => {
-    return commonCardSelectors.cardId(this.PREG_CARD_TEST_ID)
-      .$('div[test-id="contact.profile.risk.high"] label');
-  },
-  nextANCVisit: () => {
-    return commonCardSelectors.cardField(this.PREG_CARD_TEST_ID, 'contact.profile.anc.next');
-  },
-};*/
 const PREG_CARD_TEST_ID = `div[test-id="contact.profile.pregnancy.active"]`;
 const pregnancyCardSelectors = {
   pregnancyCard: () => $(PREG_CARD_TEST_ID),
@@ -138,12 +76,6 @@ const pregnancyCardSelectors = {
   nextANCVisit: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.anc.next"] p.card-field-value`),
 };
 
-/*const deathCardSelectors = {
-  DEATH_CARD_TEST_ID: 'contact.profile.death.title',
-  deathCard: () => commonCardSelectors.cardId(this.DEATH_CARD_TEST_ID),
-  deathDate: () => commonCardSelectors.cardField(this.DEATH_CARD_TEST_ID, 'contact.profile.death.date'),
-  deathPlace: () => commonCardSelectors.cardField(this.DEATH_CARD_TEST_ID, 'contact.profile.death.place'),
-};*/
 const DEATH_CARD_TEST_ID = 'div[test-id="contact.profile.death.title"]';
 const deathCardSelectors = {
   deathCard: () => $(DEATH_CARD_TEST_ID),

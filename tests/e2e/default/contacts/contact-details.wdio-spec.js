@@ -28,7 +28,7 @@ describe('Contact details page. Permissions to show reports and tasks', () => {
       // contact loaded only waits for contact summary (which requires reports)
       // tasks are loaded afterwards and there is no visual indication of them being loaded, or still loading
       return browser.waitUntil(async () => {
-        await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed();
+        return await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed();
       });
     }
 
