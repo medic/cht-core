@@ -7,7 +7,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const { genericForm } = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-describe('FAB + Actionbar - ', () => {
+describe('FAB + Actionbar', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
@@ -25,63 +25,67 @@ describe('FAB + Actionbar - ', () => {
     await utils.revertSettings(false);
   });
 
-  it('FAB - should show new household and new person create option', async () => {
-    await commonElements.goToPeople(healthCenter._id);
-    const fabLabels = await commonElements.getFastActionItemsLabels();
+  describe('FAB', () => {
+    it('should show new household and new person create option', async () => {
+      await commonElements.goToPeople(healthCenter._id);
+      const fabLabels = await commonElements.getFastActionItemsLabels();
 
-    expect(fabLabels).to.include.members(['New household', 'New person']);
+      expect(fabLabels).to.include.members(['New household', 'New person']);
+    });
+
+    it('should show fab when user only has can_create_places permission', async () => {
+      await utils.updatePermissions(onlineUser.roles, [], ['can_create_people']);
+      await commonElements.goToPeople(healthCenter._id);
+
+      await commonElements.clickFastActionFAB({ waitForList: false });
+      const formTitle = await genericForm.getFormTitle();
+      expect(formTitle).to.equal('New household');
+    });
+
+    it('should show fab when user only has can_create_people permission', async () => {
+      await utils.updatePermissions(onlineUser.roles, [], ['can_create_places']);
+      await commonElements.goToPeople(healthCenter._id);
+
+      await commonElements.clickFastActionFAB({ waitForList: false });
+      const formTitle = await genericForm.getFormTitle();
+      expect(formTitle).to.equal('New person');
+    });
   });
 
-  it('FAB - should show fab when user only has can_create_places permission', async () => {
-    await utils.updatePermissions(onlineUser.roles, [], ['can_create_people']);
-    await commonElements.goToPeople(healthCenter._id);
+  describe('Action bar', () => {
+    it('Action bar - should show new household and new person create option', async () => {
+      await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar']);
+      await commonElements.goToPeople(healthCenter._id);
+      const actionBarLabels = await commonElements.getActionBarLabels();
 
-    await commonElements.clickFastActionFAB({ waitForList: false });
-    const formTitle = await genericForm.getFormTitle();
-    expect(formTitle).to.equal('New household');
-  });
+      expect(actionBarLabels).to.have.members([
+        'New household',
+        'New person',
+        'New action',
+      ]);
+    });
 
-  it('FAB - should show fab when user only has can_create_people permission', async () => {
-    await utils.updatePermissions(onlineUser.roles, [], ['can_create_places']);
-    await commonElements.goToPeople(healthCenter._id);
+    it('Action bar - should not show new person when missing permission', async () => {
+      await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_people']);
+      await commonElements.goToPeople(healthCenter._id);
+      const actionBarLabels = await commonElements.getActionBarLabels();
 
-    await commonElements.clickFastActionFAB({ waitForList: false });
-    const formTitle = await genericForm.getFormTitle();
-    expect(formTitle).to.equal('New person');
-  });
+      expect(actionBarLabels).to.have.members([
+        'New household',
+        'New action',
+      ]);
+    });
 
-  it('Action bar - should show new household and new person create option', async () => {
-    await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar']);
-    await commonElements.goToPeople(healthCenter._id);
-    const actionBarLabels = await commonElements.getActionBarLabels();
+    it('Action bar - should not show new place when missing permission', async () => {
+      await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_places']);
+      await commonElements.goToPeople(healthCenter._id);
+      const actionBarLabels = await commonElements.getActionBarLabels();
 
-    expect(actionBarLabels).to.have.members([
-      'New household',
-      'New person',
-      'New action',
-    ]);
-  });
-
-  it('Action bar - should not show new person when missing permission', async () => {
-    await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_people']);
-    await commonElements.goToPeople(healthCenter._id);
-    const actionBarLabels = await commonElements.getActionBarLabels();
-
-    expect(actionBarLabels).to.have.members([
-      'New household',
-      'New action',
-    ]);
-  });
-
-  it('Action bar - should not show new place when missing permission', async () => {
-    await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_places']);
-    await commonElements.goToPeople(healthCenter._id);
-    const actionBarLabels = await commonElements.getActionBarLabels();
-
-    expect(actionBarLabels).to.have.members([
-      'New person',
-      'New action',
-    ]);
+      expect(actionBarLabels).to.have.members([
+        'New person',
+        'New action',
+      ]);
+    });
   });
 
 });
