@@ -3,23 +3,23 @@ const Page = require('./page');
 
 class LoginPage extends Page {
   
-  get inputUsername () {
+  get inputUsername() {
     return $('//android.view.View[1]/android.widget.EditText');
   }
 
-  get inputPassword () {
+  get inputPassword() {
     return $('//android.view.View[3]/android.widget.EditText');
   }
 
-  get btnLogin () {
+  get btnLogin() {
     return $('//*[@text="Login"]');
   }
 
-  get btnAccept () {
+  get btnAccept() {
     return $('//*[@text="Accept"]');
   }
 
-  async login (username, password, hasPrivacyPolicy) {
+  async login(username, password, hasPrivacyPolicy) {
     await this.inputUsername.waitForDisplayed();
     await this.inputUsername.setValue(username);
     await this.inputPassword.setValue(password);

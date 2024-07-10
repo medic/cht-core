@@ -158,7 +158,7 @@ module.exports = class Page {
     await this.navigate(form.postTestPath);
   }
 
-  async relaunchApp (commonElements) {
+  async relaunchApp(commonElements) {
     const MENU_LIST_TITLE = commonElements?.menuListTitle || '//*[@text="People"]';
     await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
@@ -195,12 +195,12 @@ module.exports = class Page {
     await this.assertMany(form.postSubmitAsserts);
   }
 
-  async clickDisplayedElem (elem) {
+  async clickDisplayedElem(elem) {
     await elem.waitForDisplayed();
     await elem.click();
   }
 
-  async toggleAirplaneMode (state) {
+  async toggleAirplaneMode(state) {
     driver.getNetworkConnection().then(nConnect => {
       if (nConnect === 1 && state === 'off') {
         execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });

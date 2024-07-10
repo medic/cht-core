@@ -7,15 +7,15 @@ class LoadPage extends Page {
     return $('//*[@text="Custom"]');
   }
   
-  get inputInstanceUrl () {
+  get inputInstanceUrl() {
     return $('//android.widget.EditText[@resource-id="org.medicmobile.webapp.mobile:id/txtAppUrl"]');
   }
 
-  get btnSave () {
+  get btnSave() {
     return $('//android.widget.Button[@resource-id="org.medicmobile.webapp.mobile:id/btnSaveSettings"]');
   }
 
-  async loadInstance (url) {
+  async loadInstance(url) {
     await super.toggleAirplaneMode('off');
     await this.btnCustom.click();
     await this.inputInstanceUrl.setValue(url);
