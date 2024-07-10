@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const deprecation = require('../../../src/middleware/deprecation');
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 
 describe('deprecation middleware', () => {
   let req;

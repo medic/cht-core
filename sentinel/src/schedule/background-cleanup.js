@@ -5,7 +5,7 @@
 //
 const db = require('../db');
 const metadata = require('../lib/metadata');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 
 const BATCH = 1000;
 

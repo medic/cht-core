@@ -1,8 +1,10 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const db = require('../db');
+const dataContext = require('../data-context');
+const { Place, Qualifier } = require('@medic/cht-datasource');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messages = require('../lib/messages');
 const schedules = require('../lib/schedules');
@@ -421,7 +423,8 @@ const getParentByPhone = options => {
       }
 
       options.doc.contact = contact;
-      return contact.parent && db.medic.get(contact.parent._id);
+      const getPlace = dataContext.bind(Place.v1.get);
+      return contact.parent && getPlace(Qualifier.byUuid(contact.parent._id));
     });
 };
 

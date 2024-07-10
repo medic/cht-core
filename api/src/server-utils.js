@@ -2,7 +2,7 @@ const url = require('url');
 const path = require('path');
 const environment = require('./environment');
 const isClientHuman = require('./is-client-human');
-const logger = require('./logger');
+const logger = require('@medic/logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const cookie = require('./services/cookie');
 
@@ -130,4 +130,12 @@ module.exports = {
   },
 
   wantsJSON,
+
+  doOrError: (fn) => async (req, res) => {
+    try {
+      return await fn(req, res);
+    } catch (err) {
+      module.exports.error(err, req, res);
+    }
+  }
 };

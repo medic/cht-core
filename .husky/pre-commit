@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# shellcheck disable=SC1091 # don't test thirdparty packages
 . "$(dirname -- "$0")/_/husky.sh"
 
 branch="$(git rev-parse --abbrev-ref HEAD)"

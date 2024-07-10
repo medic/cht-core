@@ -30,6 +30,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
 
   selectedContactDoc;
   hasNestedContacts = false;
+  isUserFacility = false;
   contactsList;
   useOldActionBar = false;
 
@@ -70,6 +71,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
       this.selectedContactDoc = selectedContactDoc;
       this.loadingContent = loadingContent;
       this.snapshotData = snapshotData;
+      this.checkUserFacility();
     });
     this.subscription.add(storeSubscription);
 
@@ -98,6 +100,13 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
       .catch(error => console.error('Error fetching user settings', error));
   }
 
+  private checkUserFacility() {
+    if (this.sessionService.isAdmin()) {
+      return false;
+    }
+    this.isUserFacility = this.userSettings?.facility_id.includes(this.selectedContactDoc?._id);
+  }
+
   deleteContact() {
     this.globalActions.deleteDocConfirm(this.selectedContactDoc);
   }
@@ -107,7 +116,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
       && !this.loadingContent
       && this.snapshotData?.name === 'contacts.detail'
       && this.hasEditPermission
-      && (this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContactDoc?._id);
+      && (this.isOnlineOnly || !this.isUserFacility);
   }
 
   displayDeleteOption() {

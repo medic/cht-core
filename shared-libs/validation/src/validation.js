@@ -4,9 +4,9 @@ const pupil = require('./pupil/src/pupil');
 const messages = require('@medic/message-utils');
 const config = require('../../transitions/src/config');
 const phoneNumberParser = require('@medic/phone-number');
+const logger = require('@medic/logger');
 
 let db;
-let logger = console;
 let settings;
 let translate;
 let inited = false;
@@ -149,7 +149,6 @@ module.exports = {
     db = options.db;
     translate = options.translate;
     settings = options.settings || options.config;
-    logger = options.logger || logger;
 
     inited = true;
   },

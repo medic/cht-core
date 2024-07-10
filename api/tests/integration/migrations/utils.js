@@ -3,7 +3,7 @@ const {promisify} = require('util');
 const fs = require('fs');
 const path = require('path');
 const readFileAsync = promisify(fs.readFile);
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 const db = require('../../../src/db');
 const { expect } = require('chai');
 

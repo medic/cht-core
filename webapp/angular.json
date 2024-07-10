@@ -93,7 +93,7 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular-builders/custom-webpack:karma",
           "options": {
             "main": "tests/karma/test.ts",
             "polyfills": "src/ts/polyfills.ts",
@@ -123,7 +123,10 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/select2/dist/js/select2.min.js"
-            ]
+            ],
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
           }
         }
       }
@@ -220,7 +223,7 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular-builders/custom-webpack:karma",
           "options": {
             "main": "tests/karma/test.ts",
             "polyfills": "src/ts/polyfills.ts",
@@ -254,7 +257,10 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/select2/dist/js/select2.min.js"
-            ]
+            ],
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
           }
         }
       }

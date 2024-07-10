@@ -113,9 +113,9 @@ describe('FormatDataRecord service', () => {
 
     return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
-        { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
+        { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined, imagePath: undefined },
         { label: 'report.my-form.group3', depth: 0 },
-        { label: 'report.my-form.group3.field4', value: 3, depth: 1, target: undefined },
+        { label: 'report.my-form.group3.field4', value: 3, depth: 1, target: undefined, imagePath: undefined },
       ]);
     });
   });
@@ -144,35 +144,82 @@ describe('FormatDataRecord service', () => {
 
     return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
-        { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
+        { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined, imagePath: undefined },
         { label: 'report.my-form.fields', depth: 0 },
-        { label: 'report.my-form.fields.field21', value: 1, depth: 1, target: undefined },
+        { label: 'report.my-form.fields.field21', value: 1, depth: 1, target: undefined, imagePath: undefined },
         { label: 'report.my-form.fields.fields', depth: 1 },
-        { label: 'report.my-form.fields.fields.field31', value: 1, depth: 2, target: undefined },
+        { label: 'report.my-form.fields.fields.field31', value: 1, depth: 2, target: undefined, imagePath: undefined },
         { label: 'report.my-form.fields.fields.fields', depth: 2 },
-        { label: 'report.my-form.fields.fields.fields.field41', value: 1, depth: 3, target: undefined },
+        {
+          label: 'report.my-form.fields.fields.fields.field41',
+          value: 1, depth: 3, target: undefined, imagePath: undefined
+        },
         { label: 'report.my-form.fields.fields.fields.fields', depth: 3 },
-        { label: 'report.my-form.fields.fields.fields.fields.field51', value: 1, depth: 3, target: undefined }
+        {
+          label: 'report.my-form.fields.fields.fields.fields.field51',
+          value: 1, depth: 3, target: undefined, imagePath: undefined
+        }
       ]);
     });
   });
 
-  it('returns correct image path', () => {
-    const report = {
-      _id: 'my-report',
-      form: 'my-form',
-      content_type: 'xml',
-      fields: {
-        image: 'some image',
-        deep: { image2: 'other' }
-      },
-      _attachments: {
-        'user-file/my-form/image': { content_type: 'image/gif' },
-        'user-file/my-form/deep/image2': { content_type: 'image/png' }
-      }
-    };
+  describe('image path', () => {
+    it('returns correct image path', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          image: 'my_image.gif',
+          deep: { image2: 'other.png' }
+        },
+        _attachments: {
+          'user-file-my_image.gif': { content_type: 'image/gif' },
+          'user-file-other.png': { content_type: 'image/png' }
+        }
+      };
 
-    return service.format(report).then(result => {
+      const result = await service.format(report);
+
+      expect(result.fields).to.deep.equal([
+        {
+          label: 'report.my-form.image',
+          value: 'my_image.gif',
+          depth: 0,
+          imagePath: 'user-file-my_image.gif',
+          target: undefined
+        },
+        {
+          label: 'report.my-form.deep',
+          depth: 0
+        },
+        {
+          label: 'report.my-form.deep.image2',
+          value: 'other.png',
+          depth: 1,
+          imagePath: 'user-file-other.png',
+          target: undefined
+        }
+      ]);
+    });
+
+    it('returns correct image path for attachment with legacy name', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          image: 'some image',
+          deep: { image2: 'other' }
+        },
+        _attachments: {
+          'user-file/my-form/image': { content_type: 'image/gif' },
+          'user-file/my-form/deep/image2': { content_type: 'image/png' }
+        }
+      };
+
+      const result = await service.format(report);
+
       expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.image',
@@ -192,6 +239,31 @@ describe('FormatDataRecord service', () => {
           imagePath: 'user-file/my-form/deep/image2',
           target: undefined
         }
+      ]);
+    });
+
+    it('returns empty image path if attachment does not exist for image name', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          image: 'my_image.gif',
+        },
+        _attachments: {
+          'thisAintRight.gif': { content_type: 'image/gif' },
+        }
+      };
+
+      const result = await service.format(report);
+      expect(result.fields).to.deep.equal([
+        {
+          label: 'report.my-form.image',
+          value: 'my_image.gif',
+          depth: 0,
+          imagePath: undefined,
+          target: undefined
+        },
       ]);
     });
   });
@@ -216,25 +288,29 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.patient_id',
           value: '1234',
           depth: 0,
-          target: { url: ['/contacts', 'some-patient-id'] }
+          target: { url: ['/contacts', 'some-patient-id'] },
+          imagePath: undefined
         },
         {
           label: 'report.my-form.patient_uuid',
           value: 'some-uuid',
           depth: 0,
-          target: { url: ['/contacts', 'some-patient-id'] }
+          target: { url: ['/contacts', 'some-patient-id'] },
+          imagePath: undefined
         },
         {
           label: 'report.my-form.patient_name',
           value: 'linky mclinkface',
           depth: 0,
-          target: { url: ['/contacts', 'some-patient-id'] }
+          target: { url: ['/contacts', 'some-patient-id'] },
+          imagePath: undefined
         },
         {
           label: 'report.my-form.not_patient_id',
           value: 'pass',
           depth: 0,
-          target: undefined
+          target: undefined,
+          imagePath: undefined
         }
       ]);
     });
@@ -257,13 +333,15 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.case_id',
           value: '1234',
           depth: 0,
-          target: { filter: 'case_id:1234' }
+          target: { filter: 'case_id:1234' },
+          imagePath: undefined
         },
         {
           label: 'report.my-form.not_case_id',
           value: 'pass',
           depth: 0,
-          target: undefined
+          target: undefined,
+          imagePath: undefined
         }
       ]);
     });
@@ -287,13 +365,15 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.place_id',
           value: '1234',
           depth: 0,
-          target: { url: ['/contacts', 'some-place-id'] }
+          target: { url: ['/contacts', 'some-place-id'] },
+          imagePath: undefined
         },
         {
           label: 'report.my-form.not_place_id',
           value: 'pass',
           depth: 0,
-          target: undefined
+          target: undefined,
+          imagePath: undefined
         }
       ]);
     });
@@ -332,7 +412,8 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.not_case_id',
           value: 'pass',
           depth: 0,
-          target: undefined
+          target: undefined,
+          imagePath: undefined
         }
       ]);
     });
@@ -624,6 +705,94 @@ describe('FormatDataRecord service', () => {
             message: 'message contents',
           }]
         });
+      });
+    });
+
+    it('should generate messages with patient and hidden fields', async () => {
+      const report = {
+        _id: 'report',
+        form: 'frm',
+        fields: { patient_id: '12345', shown_field: 10, hidden_field: 20 },
+        hidden_fields: ['hidden_field'],
+        patient: { _id: 'p_uuid', patient_id: '12345', name: 'alpha' },
+        contact: { _id: 'submitter', phone: '+40858585' },
+        scheduled_tasks: [
+          {
+            due: 10,
+            group: 1,
+            type: 1,
+            message_key: 'message1',
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+
+      translateLocaleService.instant.withArgs('message1').returns(
+        'Patient {{patient_name}} has a hidden_field of {{hidden_field}}'
+      );
+
+      db.query.resolves({ rows: [] });
+      Settings.resolves({ registrations: [{ }]});
+
+      const formatted = await service.format(report);
+      expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted[0]).excludingEvery('uuid').to.deep.equal({
+        due: 10,
+        group: 1,
+        type: 1,
+        message_key: 'message1',
+        recipient: 'reporting_unit',
+        timestamp: 10,
+        messages: [{
+          to: report.contact.phone,
+          message: 'Patient alpha has a hidden_field of 20',
+        }]
+      });
+    });
+
+    it('should generate messages with patient without patient_id', async () => {
+      const report = {
+        _id: 'report',
+        form: 'frm',
+        fields: { patient_id: '', patient_uuid: 'p_uuid', patient_name: 'alpha' },
+        hidden_fields: ['hidden_field'],
+        patient: { _id: 'p_uuid', patient_id: '12345', name: 'alpha', phone: '222' },
+        contact: { _id: 'submitter', phone: '+40858585' },
+        scheduled_tasks: [
+          {
+            due: 10,
+            group: 1,
+            type: 1,
+            message_key: 'message1',
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+
+      translateLocaleService.instant.withArgs('message1').returns(
+        'Message patient {{patient_name}}({{patient_id}}) at {{patient.phone}}'
+      );
+
+      db.query.resolves({ rows: [] });
+      Settings.resolves({ registrations: [{ }]});
+
+      const formatted = await service.format(report);
+      expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows_sorted[0]).excludingEvery('uuid').to.deep.equal({
+        due: 10,
+        group: 1,
+        type: 1,
+        message_key: 'message1',
+        recipient: 'reporting_unit',
+        timestamp: 10,
+        messages: [{
+          to: report.contact.phone,
+          message: 'Message patient alpha(12345) at 222',
+        }]
       });
     });
   });

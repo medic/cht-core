@@ -47,13 +47,13 @@ then
   exit
 fi
 
-status=$(docker inspect --format="{{.State.Running}}" $container 2> /dev/null)
+status=$(docker inspect --format="{{.State.Running}}" "$container" 2> /dev/null)
 if [ "$status" = "true" ]; then
   result=""
   if [ "$action" = "refresh" ]; then
     result="downloaded fresh local-ip.medicmobile.org"
-    docker exec -it $container bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
-    docker exec -it $container bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
+    docker exec -it "$container" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
+    docker exec -it "$container" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
   elif [ "$action" = "expire" ]; then
     result="installed expired local-ip.medicmobile.org"
     docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem
@@ -65,7 +65,7 @@ if [ "$status" = "true" ]; then
   fi
 
   if [ "$result" != "" ]; then
-    docker restart $container
+    docker restart "$container"
     echo ""
     echo "If just container name is shown above, a fresh local-ip.medicmobile.org certificate was ${result}."
     echo ""

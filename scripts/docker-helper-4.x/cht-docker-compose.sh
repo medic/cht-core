@@ -56,11 +56,11 @@ get_compose_download_url() {
 }
 
 get_all_known_versions() {
-  curl -s "${stagingUrl}"/_design/builds/_view/releases\?descending\=true |  tr -d \\n | grep -o "medic\:medic\:[A-Za-z0-9\.\_\/\-]*" | cut -f3 -d: | sort
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?descending=true |  tr -d \\n | grep -o "medic\:medic\:[A-Za-z0-9\.\_\/\-]*" | cut -f3 -d: | sort
 }
 
 get_latest_version_string() {
-  curl -s "${stagingUrl}"/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*' | cut -f3 -d:
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?limit=1\&descending=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*' | cut -f3 -d:
 }
 
 create_compose_files() {
@@ -72,8 +72,8 @@ create_compose_files() {
   mkdir -p "$homeDir/compose"
   curl -s -o "$homeDir/upgrade-service.yml" \
     https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
-  curl -s -o "$homeDir/compose/cht-core.yml" ${stagingUrlBase}/docker-compose/cht-core.yml
-  curl -s -o "$homeDir/compose/couchdb.yml" ${stagingUrlBase}/docker-compose/cht-couchdb.yml
+  curl -s -o "$homeDir/compose/cht-core.yml" "${stagingUrlBase}"/docker-compose/cht-core.yml
+  curl -s -o "$homeDir/compose/couchdb.yml" "${stagingUrlBase}"/docker-compose/cht-couchdb.yml
 
   echo -e "${green} done${noColor} "
 }
@@ -118,10 +118,10 @@ get_lan_ip() {
     #       Device "" does not exist.
     routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
     subnet=$(echo "$routerIP" | cut -d'.' -f1,2,3 )
-    if [ -z $subnet ]; then
+    if [ -z "$subnet" ]; then
       subnet=127.0.0
     fi
-    lanInterface=$(ip r | grep $subnet | grep default | head -n1 | cut -d' ' -f 5)
+    lanInterface=$(ip r | grep "$subnet" | grep default | head -n1 | cut -d' ' -f 5)
     lanAddress=$(ip a s "$lanInterface" | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
   elif [ "$(required_apps_installed "system_profiler")" ];then
     subnet=$(netstat -rn| grep default | awk '{print $2}'|grep -Ev '^[a-f]' |cut -f1,2,3 -d'.')
@@ -187,11 +187,11 @@ service_has_image_downloaded(){
   else
     compose_path="${homeDir}/compose/cht-core.yml"
   fi
-  image=$(grep "${service}:" ${compose_path} | grep image | cut -f2,3 -d":" | xargs)
+  image=$(grep "${service}:" "${compose_path}" | grep image | cut -f2,3 -d":" | xargs)
 
-  imageDownloadName=$(docker image ls  --format {{.Repository}}:{{.Tag}} -f "reference=${image}" 2>/dev/null)
-  if [ $imageDownloadName ];then
-    echo ${imageDownloadName}
+  imageDownloadName=$(docker image ls  --format '{{.Repository}}:{{.Tag}}' -f "reference=${image}" 2>/dev/null)
+  if [ "$imageDownloadName" ];then
+    echo "${imageDownloadName}"
   else
     echo "NA"
   fi
@@ -199,9 +199,9 @@ service_has_image_downloaded(){
 
 service_has_container(){
   service=$1
-  container_name=$(docker ps -af "name=^${projectName}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | grep ${service} 2>/dev/null)
-  if [ $container_name ];then
-    echo ${container_name}
+  container_name=$(docker ps -af "name=^${projectName}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | grep "${service}" 2>/dev/null)
+  if [ "$container_name" ];then
+    echo "${container_name}"
   else
     echo "NA"
   fi
@@ -210,8 +210,8 @@ service_has_container(){
 container_status(){
   contianer=$1
   status=$(docker inspect --format="{{.State.Status}}" "$contianer" 2>/dev/null)
-  if [ $status ];then
-    echo ${status}
+  if [ "$status" ];then
+    echo "${status}"
   else
     echo "NA"
   fi
@@ -242,9 +242,9 @@ get_system_and_docker_info(){
   services="cht-upgrade-service haproxy healthcheck api sentinel nginx couchdb"
   IFS=' ' read -ra servicesArray <<<"$services"
   for service in "${servicesArray[@]}"; do
-    image=$(service_has_image_downloaded ${service})
-    container=$(service_has_container ${service})
-    status=$(container_status ${container})
+    image=$(service_has_image_downloaded "${service}")
+    container=$(service_has_container "${service}")
+    status=$(container_status "${container}")
     info="${info}"$'\n'"${service} ${status} ${container} ${image}"
   done
   echo
@@ -286,6 +286,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
   case $2 in
   "stop")
     echo "Stopping project \"${projectName}\"..." | tr -d '\n'
+    # shellcheck disable=SC2086
     docker kill $containerIds 1>/dev/null
     echo -e "${green} done${noColor} "
     exit 0
@@ -295,7 +296,9 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 
     if [[ -n $containerIds ]]; then
       echo "Removing project's docker containers..." | tr -d '\n'
+      # shellcheck disable=SC2086
       docker kill $containerIds 1>/dev/null
+      # shellcheck disable=SC2086
       docker rm $containerIds 1>/dev/null
       echo -e "${green} done${noColor} "
     else
@@ -305,6 +308,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
     networks=$(docker network ls --filter "name=${projectName}" --quiet)
     if [[ -n $networks ]]; then
       echo "Removing project's docker networks..." | tr -d '\n'
+      # shellcheck disable=SC2086
       docker network rm $networks 1>/dev/null
       echo -e "${green} done${noColor} "
     else
@@ -314,6 +318,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
     volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
     if [[ -n $volumes ]]; then
       echo "Removing project's docker volumes..." | tr -d '\n'
+      # shellcheck disable=SC2086
       docker volume rm $volumes 1>/dev/null
       echo -e "${green} done${noColor} "
     else
@@ -330,7 +335,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 
     if [[ -f "${projectName}.env" ]]; then
       echo "Removing .env file in this directory..." | tr -d '\n'
-      rm ${projectName}.env
+      rm "${projectName}".env
       echo -e "${green} done${noColor} "
     else
       echo "No .env file found, skipping."
@@ -351,13 +356,14 @@ if [[ -z "$projectName" ]]; then
   fi
 
   echo
-  read -p "Would you like to initialize a new project [y/N]? " yn
+  # thanks for the pr vs rp!! https://unix.stackexchange.com/a/677805
+  read -rp "Would you like to initialize a new project [y/N]?" yn
   case $yn in
   [Yy]*)
     while [[ -z "$projectName" ]]; do
       preferredRelease=$(get_latest_version_string)
       echo
-      read -p "Do you want to run the latest CHT Core version (${preferredRelease}) [Y/n]? " runLatest
+      read -rp "Do you want to run the latest CHT Core version (${preferredRelease}) [Y/n]? " runLatest
       case $runLatest in
       [nN]*)
         allKnownVersions=$(get_all_known_versions)
@@ -368,10 +374,10 @@ if [[ -z "$projectName" ]]; then
         done
       esac
       echo
-      read -p "How do you want to name the project? " projectName
+      read -rp "How do you want to name the project? " projectName
 
       projectName="${projectName//[^[:alnum:]]/_}"
-      projectName=$(echo $projectName | tr '[:upper:]' '[:lower:]')
+      projectName=$(echo "$projectName" | tr '[:upper:]' '[:lower:]')
       projectFile="$projectName.env"
       homeDir=$(get_home_dir "$projectName")
       if test -f "./$projectFile"; then
@@ -412,11 +418,11 @@ fi
 source "./$projectFile"
 
 projectURL=$(get_local_ip_url "$(get_lan_ip)")
-if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 
 echo "";echo "homedir: $homeDir"
 docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
-if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
@@ -425,7 +431,7 @@ nginxContainerId=$(get_nginx_container_id)
 running=$(is_nginx_running "$nginxContainerId")
 i=0
 
-if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 while [[ "$running" != "true" ]]; do
   if [[ $i -gt 300 ]]; then
     echo ""
@@ -437,7 +443,7 @@ while [[ "$running" != "true" ]]; do
     exit 1
   fi
 
-  if [ ! -z ${DEBUG+x} ];then
+  if [[ -n ${DEBUG+x} ]];then
     clear;get_system_and_docker_info
   else
   	echo '.' | tr -d '\n'
@@ -452,9 +458,9 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
-docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
-docker exec -it $nginxContainerId bash -c "nginx -s reload"  2>/dev/null
+docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
+docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
+docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
 
 echo ""
 echo ""
@@ -474,5 +480,5 @@ echo ""
 echo -e "${green} Have a great day!${noColor} "
 echo ""
 
-if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 set -e

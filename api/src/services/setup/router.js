@@ -9,7 +9,7 @@ const startupLog = require('./startup-log');
 
 const { wantsJSON } = require('../../middleware/wants-json');
 const { getLocale } = require('../../middleware/locale');
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 const translations = require('../../translations');
 const config = require('../../config');
 const template = require('../template');

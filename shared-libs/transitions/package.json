@@ -11,11 +11,13 @@
     "jsverify": "^0.8.4"
   },
   "dependencies": {
+    "@medic/cht-datasource": "file:../cht-datasource",
     "@medic/contact-types-utils": "file:../contact-types-utils",
     "@medic/contacts": "file:../contacts",
     "@medic/couch-request": "file:../couch-request",
     "@medic/infodoc": "file:../infodoc",
     "@medic/lineage": "file:../lineage",
+    "@medic/logger": "file:../logger",
     "@medic/message-utils": "file:../message-utils",
     "@medic/outbound": "file:../outbound",
     "@medic/phone-number": "file:../phone-number",

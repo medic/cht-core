@@ -1,7 +1,9 @@
 import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
+import { Nullable, Person } from '@medic/cht-datasource';
 import type JQuery from 'jquery';
+import * as FileManager from '../../js/enketo/file-manager.js';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import { AttachmentService } from '@mm-services/attachment.service';
@@ -158,7 +160,7 @@ export class EnketoService {
       instanceStr: instanceStr,
     };
     if (contactSummaryXML) {
-      options.external = [ contactSummaryXML ];
+      options.external = [contactSummaryXML];
     }
     const form = wrapper.find('form')[0];
     return new window.EnketoForm(form, options, { language: userSettings.language });
@@ -222,7 +224,7 @@ export class EnketoService {
     } // else the title is hardcoded in the form definition - leave it alone
   }
 
-  private setNavigation(form, $wrapper, useWindowHistory=true) {
+  private setNavigation(form, $wrapper, useWindowHistory = true) {
     if (useWindowHistory) {
       // Handle page turning using browser history
       window.history.replaceState({ enketo_page_number: 0 }, '');
@@ -460,8 +462,12 @@ export class EnketoService {
     }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
 
-    const attach = (elem, file, type, alreadyEncoded, xpath?) => {
-      xpath = xpath || Xpath.getElementXPath(elem);
+    FileManager
+      .getCurrentFiles()
+      .forEach(file => this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false));
+
+    const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
+      const xpath = Xpath.getElementXPath(elem);
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
@@ -469,23 +475,14 @@ export class EnketoService {
     };
 
     $record
-      .find('[type=file]')
-      .each((idx, element) => {
-        const xpath = Xpath.getElementXPath(element);
-        const $input: any = $('input[type=file][name="' + xpath + '"]');
-        const file = $input[0].files[0];
-        if (file) {
-          attach(element, file, file.type, false, xpath);
-        }
-      });
-
-    $record
       .find('[type=binary]')
       .each((idx, element) => {
         const file = $(element).text();
         if (file) {
-          $(element).text('');
-          attach(element, file, 'image/png', true);
+          // Attach binary file with legacy-style filename because the actual filename is not stored as the question
+          // value in the form model (and so there is currently no way to map the answer in a saved report to the
+          // associated file attachment).
+          attachLegacyFile(element, file, 'image/png', true);
         }
       });
 
@@ -513,7 +510,7 @@ export class EnketoService {
   }
 
   private create(formInternalId, contact) {
-    return  {
+    return {
       form: formInternalId,
       type: 'data_record',
       content_type: 'xml',
@@ -617,7 +614,7 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  instanceData: null | string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
   contactSummary?: Record<string, any>;
@@ -627,16 +624,16 @@ export class EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
   type: string; // 'contact'|'report'|'task'|'training-card'
-  editing: boolean;
-  instanceData: null|string|Record<string, any>;
-  editedListener: () => void;
-  valuechangeListener: () => void;
+  editing?: boolean;
+  instanceData: null | string | Record<string, any>;
+  editedListener?: () => void;
+  valuechangeListener?: () => void;
   titleKey?: string;
   isFormInModal?: boolean;
-  userContact?: Record<string, any>;
-  contactSummary? :Record<string, any>;
+  userContact?: Nullable<Person.v1.Person>;
+  contactSummary?: Record<string, any>;
 
-  constructor(selector:string, type:string, formDoc:Record<string, any>, instanceData?) {
+  constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
     this.selector = selector;
     this.type = type;
     this.formDoc = formDoc;

@@ -2,8 +2,8 @@
 
 # Helper script to show running docker containers and related docker resources
 
-# shellcheck disable=SC2046
-. $(dirname $0)/simple_curses.sh
+# shellcheck disable=SC1091
+. "$(dirname "$0")"/simple_curses.sh
 
 main (){
 
@@ -47,4 +47,4 @@ main (){
 
 }
 
-main_loop -t 1.2 $@
+main_loop -t 1.2 "$@"

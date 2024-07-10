@@ -42,12 +42,12 @@ export class EditReportComponent implements AfterViewInit {
     return this.contactTypesService
       .getPersonTypes()
       .then(types => {
-        types = types.map(type => type.id);
+        const typeIds = types.map(type => type.id);
         const options = {
           allowNew: false,
           initialValue: this.report?.contact?._id || this.report?.from,
         };
-        return this.select2SearchService.init(this.getSelectElement(), types, options);
+        return this.select2SearchService.init(this.getSelectElement(), typeIds, options);
       })
       .catch(err => console.error('Error initialising select2', err));
   }

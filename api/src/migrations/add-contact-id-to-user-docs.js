@@ -1,5 +1,5 @@
 const db = require('../db');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const BATCH_SIZE = 100;
 

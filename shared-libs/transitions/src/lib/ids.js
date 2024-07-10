@@ -1,4 +1,4 @@
-const logger = require('./logger');
+const logger = require('@medic/logger');
 
 const ID_LENGTH_DOC_ID = 'shortcode-id-length';
 const ID_LENGTH_PARAM = 'current_length';

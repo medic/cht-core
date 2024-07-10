@@ -1,7 +1,7 @@
 const db = require('../db');
 const authorization = require('./authorization');
 const _ = require('lodash');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const utils = require('@medic/bulk-docs-utils')({
   Promise: Promise,

@@ -1,4 +1,4 @@
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 module.exports = {
   deprecate: (replacement) => {

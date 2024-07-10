@@ -1,7 +1,7 @@
 const viewIndexerProgress = require('./view-indexer-progress');
 const upgradeLog = require('./upgrade-log');
 const upgradeSteps = require('./upgrade-steps');
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 
 /**
  * @typedef {Object} BuildInfo

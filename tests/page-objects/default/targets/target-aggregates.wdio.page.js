@@ -1,3 +1,4 @@
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
@@ -28,6 +29,12 @@ const goToTargetAggregates = async (enabled) => {
     await (await $(AGGREGATE_LIST)).waitForDisplayed();
     return;
   }
+  await (await $(CONTENT_DISABLED)).waitForDisplayed();
+};
+
+const checkContentDisabled = async () => {
+  await commonPage.goToUrl('/#/analytics/target-aggregates');
+  await commonPage.waitForPageLoaded();
   await (await $(CONTENT_DISABLED)).waitForDisplayed();
 };
 
@@ -128,5 +135,6 @@ module.exports = {
   getAggregateDetailListElementByIndex,
   getAggregateDetailElementInfo,
   clickOnTargetAggregateListItem,
+  checkContentDisabled,
 };
 

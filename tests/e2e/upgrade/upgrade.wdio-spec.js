@@ -1,6 +1,6 @@
 const utils = require('@utils');
 
-const { BRANCH, TAG } = process.env;
+const { BRANCH, TAG, BASE_VERSION } = process.env;
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -10,6 +10,8 @@ const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
 const semver = require('semver');
+
+const testFrontend = BASE_VERSION === 'latest';
 
 const docs = dataFactory.createHierarchy({
   name: 'offlineupgrade',
@@ -47,13 +49,35 @@ const deleteUpgradeLogs = async () => {
   await utils.logsDb.bulkDocs(logs);
 };
 
+const upgradeVersion = async (branchVersion) => {
+  await upgradePage.goToUpgradePage();
+  await upgradePage.expandPreReleasesAccordion();
+
+  await (await upgradePage.getInstallButton(branchVersion, TAG)).click();
+  await (await upgradePage.upgradeModalConfirm()).click();
+
+  await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
+  await (await upgradePage.deploymentInProgress()).waitForDisplayed();
+  await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
+
+  if (testFrontend) {
+    // https://github.com/medic/cht-core/issues/9186
+    // this is an unfortunate incompatibility between current API and admin app in the old version
+    await (await upgradePage.deploymentComplete()).waitForDisplayed();
+  }
+};
+
 describe('Performing an upgrade', () => {
   before(async () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
 
-    await loginPage.login(docs.user);
-    await commonPage.logout();
+    if (testFrontend) {
+      // a variety of selectors that we use in e2e tests to interact with webapp
+      // are not compatible with older versions of the app.
+      await loginPage.login(docs.user);
+      await commonPage.logout();
+    }
 
     await loginPage.cookieLogin({
       username: constants.USERNAME,
@@ -71,27 +95,17 @@ describe('Performing an upgrade', () => {
     });
   });
 
-  // TODO Enable this test after 4.6.0 is released
-  xit('should have valid semver after installing', async () => {
+  it('should have valid semver after installing', async () => {
+    if (!testFrontend) {
+      return;
+    }
+
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });
 
   it('should upgrade to current branch', async () => {
-    await upgradePage.goToUpgradePage();
-    await upgradePage.expandPreReleasesAccordion();
-
-    const installButton = await upgradePage.getInstallButton(BRANCH, TAG);
-    await installButton.click();
-
-    const confirm = await upgradePage.upgradeModalConfirm();
-    await confirm.click();
-
-    await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
-    await (await upgradePage.deploymentInProgress()).waitForDisplayed();
-    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
-
-    await (await upgradePage.deploymentComplete()).waitForDisplayed();
+    await upgradeVersion(BRANCH);
 
     const currentVersion = await upgradePage.getCurrentVersion();
     expect(version.getVersion(true)).to.include(currentVersion);
@@ -105,7 +119,8 @@ describe('Performing an upgrade', () => {
     const staged = ddocs.filter(ddoc => ddoc._id.includes('staged'));
     expect(staged.length).to.equal(0);
 
-    ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
+    // For tags (betas and releases) we don't actually show the build number on the upgrade page
+    ddocs.forEach(ddoc => expect(ddoc.version).to.include(currentBuild));
 
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
@@ -117,6 +132,10 @@ describe('Performing an upgrade', () => {
       state: 'finalized',
     });
 
+    if (!testFrontend) {
+      return;
+    }
+
     await adminPage.logout();
     await loginPage.login(docs.user);
     await commonPage.sync(true);
@@ -124,8 +143,28 @@ describe('Performing an upgrade', () => {
     await browser.refresh();
     await commonPage.waitForPageLoaded();
     await commonPage.goToAboutPage();
+    await (await aboutPage.aboutCard()).waitForDisplayed();
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
     expect(await aboutPage.getVersion()).to.include(expected);
+    await commonPage.logout();
+
+    // https://github.com/medic/cht-core/issues/9117
+    // install 'master' branch to make sure a new version can be installed from the build version
+
+    await loginPage.cookieLogin({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      createUser: false
+    });
+
+    await upgradeVersion('master');
+
+    expect(await upgradePage.getBuild()).to.include('alpha');
+    await commonPage.goToAboutPage();
+    await commonPage.waitForPageLoaded();
+    await (await aboutPage.aboutCard()).waitForDisplayed();
+    expect(await aboutPage.getVersion()).to.include('master');
+
     await commonPage.logout();
   });
 

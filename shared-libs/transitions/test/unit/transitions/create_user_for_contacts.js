@@ -3,8 +3,10 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const { people } = require('@medic/contacts')(config, db);
-const { users } = require('@medic/user-management')(config, db);
+const dataContext = require('../../../src/data-context');
+const { Person, Qualifier } = require('@medic/cht-datasource');
+const { people } = require('@medic/contacts')(config, db, dataContext);
+const { users } = require('@medic/user-management')(config, db, dataContext);
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 const deepFreeze = obj => {
@@ -68,6 +70,7 @@ describe('create_user_for_contacts', () => {
       getAll: sinon.stub().returns({}),
       get: sinon.stub(),
     });
+    dataContext.init({ bind: sinon.stub() });
 
     transition = rewire('../../../src/transitions/create_user_for_contacts');
   });
@@ -243,7 +246,7 @@ describe('create_user_for_contacts', () => {
     let createUser;
     let resetPassword;
     let validateNewUsername;
-    let medicGet;
+    let getPerson;
 
     beforeEach(() => {
       config.get
@@ -268,8 +271,8 @@ describe('create_user_for_contacts', () => {
       validateNewUsername = sinon
         .stub(users, 'validateNewUsername')
         .resolves();
-      medicGet = sinon
-        .stub(db.medic, 'get');
+      getPerson = sinon.stub();
+      dataContext.bind.returns(getPerson);
     });
 
     const expectInitialDataRetrieved = (users) => {
@@ -314,28 +317,28 @@ describe('create_user_for_contacts', () => {
 
     it(`creates user for new contact with create flag of 'true' and multiple roles`, async () => {
       const doc = getCreatedContact({ roles: ['nurse', 'chw'], role: null });
-      medicGet.resolves({ ...doc, user_for_contact: {} });
+      getPerson.resolves({ ...doc, user_for_contact: {} });
 
       const result = await transition.onMatch({ doc, initialProcessing: true });
       expect(result).to.be.true;
 
       expectUsersCreated([{ contact: doc, user: doc }]);
       expect(doc.user_for_contact.create).to.not.exist;
-      expect(medicGet.callCount).to.equal(1);
-      expect(medicGet.args[0]).to.deep.equal([doc._id]);
+      expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(doc._id))).to.be.true;
     });
 
     it(`creates user for new contact with create flag of 'true' and single role`, async () => {
       const doc = getCreatedContact({ role: 'chw' });
-      medicGet.resolves({ ...doc, user_for_contact: {} });
+      getPerson.resolves({ ...doc, user_for_contact: {} });
 
       const result = await transition.onMatch({ doc, initialProcessing: true });
       expect(result).to.be.true;
 
       expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
       expect(doc.user_for_contact.create).to.not.exist;
-      expect(medicGet.callCount).to.equal(1);
-      expect(medicGet.args[0]).to.deep.equal([doc._id]);
+      expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(doc._id))).to.be.true;
     });
 
     it('records error when creating user when an error is thrown generating a new username', async () => {
@@ -416,8 +419,8 @@ describe('create_user_for_contacts', () => {
       expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
       expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
-      expect(medicGet.callCount).to.equal(1);
-      expect(medicGet.args[0]).to.deep.equal([NEW_CONTACT._id]);
+      expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
     });
 
     [
@@ -736,8 +739,8 @@ describe('create_user_for_contacts', () => {
         role: 'chw',
         phone: '+1234567890',
       };
-      medicGet.withArgs(doc._id).resolves({ ...doc, user_for_contact: { ...doc.user_for_contact } });
-      medicGet.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
+      getPerson.withArgs(doc._id).resolves({ ...doc, user_for_contact: { ...doc.user_for_contact } });
+      getPerson.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
       doc.user_for_contact.create = 'true';
 
       const result = await transition.onMatch({ doc, initialProcessing: true });
@@ -748,8 +751,8 @@ describe('create_user_for_contacts', () => {
       expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
       expect(doc.user_for_contact.create).to.not.exist;
-      expect(medicGet.callCount).to.equal(1);
-      expect(medicGet.args).to.deep.equal([[NEW_CONTACT._id]]);
+      expect(dataContext.bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+      expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
     });
   });
 });

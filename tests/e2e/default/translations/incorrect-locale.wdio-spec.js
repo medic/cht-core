@@ -35,15 +35,8 @@ let contact;
 
 describe('Testing Incorrect locale', () => {
 
-  beforeEach(async () => {
+  beforeEach(() => {
     contact = createContact();
-    await loginPage.cookieLogin();
-    await utils.saveDoc(contact);
-    await sentinelUtils.waitForSentinel();
-    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await createLanguage();
-    await waitForServiceWorker.promise;
-    await commonElements.closeReloadModal(true);
   });
 
   afterEach(async () => {
@@ -51,8 +44,16 @@ describe('Testing Incorrect locale', () => {
     await utils.revertSettings(true);
     await browser.setCookies({ name: 'locale', value: 'en' });
   });
-
+  
   it('should work with incorrect locale', async () => {
+    await loginPage.cookieLogin();
+    await utils.saveDoc(contact);
+    await sentinelUtils.waitForSentinel();
+    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
+    await createLanguage();
+    await waitForServiceWorker.promise;
+    await commonElements.closeReloadModal(true);
+
     await userSettingsElements.setLanguage(languageCode);
 
     const text = await commonElements.getReportsButtonLabel().getText();

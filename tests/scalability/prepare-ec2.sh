@@ -31,8 +31,8 @@ mkdir -p /cht/compose
 
 curl -s https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml \
   -o /cht/upgrade-service/docker-compose.yml
-curl -s $BUILD/docker-compose/cht-core.yml -o /cht/compose/cht-core.yml
-curl -s $BUILD/docker-compose/cht-couchdb.yml -o /cht/compose/cht-couchdb.yml
+curl -s "$BUILD"/docker-compose/cht-core.yml -o /cht/compose/cht-core.yml
+curl -s "$BUILD"/docker-compose/cht-couchdb.yml -o /cht/compose/cht-couchdb.yml
 
 cd /cht/upgrade-service/
 cat > ./.env << EOF

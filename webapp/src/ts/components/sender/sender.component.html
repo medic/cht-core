@@ -9,7 +9,7 @@
 
     <a class="name" *ngIf="!sentBy && getId() && getName(); else noLinkLabel" [routerLink]="[ '/contacts', getId() ]">{{ getName() }}</a>
     <ng-template #noLinkLabel>
-      <span class="name">{{ getName() || ( 'messages.unknown.sender' | translate ) }}</span>
+      <span class="name" *ngIf="!sentBy || !getName()">{{ getName() || ( 'messages.unknown.sender' | translate ) }}</span>
     </ng-template>
 
     <span class="phone" *ngIf="!(message.name && message.name === message.facility?.contact?.phone)">

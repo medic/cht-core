@@ -1,6 +1,6 @@
 const USERNAME = 'admin';
 const PASSWORD = 'pass';
-const API_HOST = 'localhost';
+const API_HOST = `localhost${process.env.NGINX_HTTPS_PORT ? `:${process.env.NGINX_HTTPS_PORT}` : ''}`;
 const PROTOCOL = 'https://';
 
 module.exports = {
