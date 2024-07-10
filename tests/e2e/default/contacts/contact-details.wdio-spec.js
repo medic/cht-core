@@ -164,9 +164,6 @@ describe('Contact details page.', () => {
       await utils.updateSettings({ contact_summary: contactSummary }, true);
 
       await utils.saveDocs([...places.values(), patient]);
-
-      await loginPage.cookieLogin();
-      await (await commonPage.goToPeople(patient._id));
     });
 
     after(async () => {
@@ -174,6 +171,9 @@ describe('Contact details page.', () => {
     });
 
     it('should show error log for bad config', async () => {
+      await loginPage.cookieLogin();
+      await (await commonPage.goToPeople(patient._id));
+
       const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
       expect(username).to.equal(constants.USERNAME);
