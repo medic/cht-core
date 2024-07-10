@@ -222,7 +222,8 @@ export class TelemetryService {
     }
 
     await this.indexedDbService.saveDatabaseName(currentDB); // Firefox support.
-    return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
+    // Avoid angular-pouch as digest isn't necessary here
+    return this.windowRef.PouchDB(currentDB, { adapter: 'indexeddb' });
   }
 
   private storeIt(db, key, value) {

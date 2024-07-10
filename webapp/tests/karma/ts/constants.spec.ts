@@ -19,7 +19,9 @@ describe('Constants', () => {
   });
 
   it('should have correct default values', () => {
-    expect(POUCHDB_OPTIONS.local).to.deep.equal({ auto_compaction: true, skip_setup: false });
+    expect(POUCHDB_OPTIONS.local).to.deep.equal(
+      { auto_compaction: true, skip_setup: false, adapter: 'indexeddb' }
+    );
     expect(POUCHDB_OPTIONS.remote).to.have.all.keys(['skip_setup', 'fetch']);
     expect(POUCHDB_OPTIONS.remote.skip_setup).to.equal(true);
     expect(POUCHDB_OPTIONS.remote.fetch).to.be.a('function');
