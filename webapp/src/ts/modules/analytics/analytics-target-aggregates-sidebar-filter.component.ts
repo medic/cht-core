@@ -51,7 +51,9 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   private subscribeToStore() {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe(({ isOpen }) => this.isOpen = isOpen);
+      .subscribe((filterState) => {
+        this.isOpen = filterState?.isOpen ?? false;
+      });
 
     this.subscriptions.add(subscription);
   }
