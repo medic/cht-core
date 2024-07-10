@@ -18,8 +18,25 @@
     {
       "platformVersion": <Mandatory. String, Android version. E.g. "13">,
       "deviceName": <Mandatory. String, device name. E.g. "Neon Ray Ultra S">
+      "appPath": <Path to APK, relative to CHT root folder>
+      "noReset": false
     }
   ],
+  
+  "skip": {
+      "login": false,
+      "loadContactList": false,
+      "loadCHWArea": false,
+      "loadHousehold": false,
+      "loadPatient": false,
+      "searchPatient": false,
+      "loadMessageList": false,
+      "loadTaskList": true,
+      "loadTargets": true,
+      "loadReportList": true,
+      "createPatient": true,
+      "submitPatientReport": true
+    },
   
   "users": [
     {
@@ -169,6 +186,19 @@ export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 | capabilities | Object[] | Configures Appium to use your device for testing | Yes |
 | capabilities.platformVersion | String | Android version. E.g. "13". Find the android version by running `adb shell getprop | grep ro.build.version.release` | Yes |
 | capabilities.deviceName | String | Device name. E.g. "Neon Ray Ultra S". Find the device name by running `adb shell getprop | grep ro.product.model` | Yes |
+| capabilities.appPath | String | Path to CHT Android APK. E.g. "/Users/john/Downloads/cht-android-v1.4.0-unbranded-armeabi-v7a-release.apk" | Yes |
+| capabilities.noReset | Boolean | Default false. When set false, it deletes the app cache and storage data. | No |
+| skip.login | Boolean | Default false. Skip login, and it's expected that the user has already login previous running the automation tests. | No |
+| skip.loadContactList | Boolean | Default false. Skip test for loading the contact list. | No |
+| skip.loadCHWArea | Boolean | Default false. Skip test for loading the CHT Area. | No |
+| skip.loadHousehold | Boolean | Default false. Skip test for loading a household. | No |
+| skip.loadPatient | Boolean | Default false. Skip test for loading a patient. | No |
+| skip.searchPatient | Boolean | Default false. Skip test for searching patient. | No |
+| skip.loadTaskList | Boolean | Default false. Skip test for loading the task list. | No |
+| skip.loadTargets | Boolean | Default false. Skip test for loading the targets page. | No |
+| skip.loadReportList | Boolean | Default false. Skip test for loading the report list. | No |
+| skip.createPatient | Boolean | Default false. Skip test for creating a patient. | No |
+| skip.submitPatientReport | Boolean | Default false. Skip test for submiting a report for a patient. | No |
 | users | Object[] | User to login and use for testing | Yes |
 | users.type | String | Use: "offline" or "online" | Yes |
 | users.role | String | Use: "chw" | Yes |
@@ -186,6 +216,11 @@ export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 | forms | Object | Definition for app forms or contact forms that the automation tests use. See Forms section below for more details. | Yes |
 | forms.patientReport | Object | Definition for an app form that is submitted on the Patient page. See Forms section below for more details. | Yes |
 | forms.patientContact | Object | Definition for a contact form that is used to create patients. Submitted from the Household page. See Forms section below for more details. | Yes |
+| pages.message-list | Object | Definition for Message List page. See Pages section below for more details. | Yes |
+| pages.report-list | Object | Definition for Report List page. See Pages section below for more details. | Yes |
+| pages.task-list | Object | Definition for Task List page. See Pages section below for more details. | Yes |
+| pages.targets | Object | Definition for Targets page. See Pages section below for more details. | Yes |
+
 
 #### Pages
 Object containing the definition of the pages to load and assert during these automation tests.

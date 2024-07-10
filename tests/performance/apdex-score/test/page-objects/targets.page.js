@@ -1,9 +1,9 @@
 const Page = require('./page');
 
-class PerformancePage extends Page {
+class TargetsPage extends Page {
   
-  async loadAnalytics(settingsProvider) {
-    const page = settingsProvider.getPage('performance');
+  async loadTargets(settingsProvider) {
+    const page = settingsProvider.getPage('targets');
     await super.loadAndAssertPage(page);
 
     const commonElements = settingsProvider.getCommonElements();
@@ -12,4 +12,4 @@ class PerformancePage extends Page {
 
 }
 
-module.exports = new PerformancePage();
+module.exports = new TargetsPage();

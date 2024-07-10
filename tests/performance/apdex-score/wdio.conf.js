@@ -70,7 +70,7 @@ exports.config = {
     'appium:disableIdLocatorAutocompletion': true,
     'appium:appPackage': 'org.medicmobile.webapp.mobile',
     'appium:appActivity': 'org.medicmobile.webapp.mobile.StartupActivity',
-    'appium:app': 'tests/performance/apdex-score/apk/CHTAndroid.apk',
+    'appium:app': '',
     'appium:automationName': 'UiAutomator2'
   }],
 
@@ -179,6 +179,8 @@ exports.config = {
           const capability = capabilities[index];
           capability['appium:platformVersion'] = capabilitySettings.platformVersion;
           capability['appium:deviceName'] = capabilitySettings.deviceName;
+          capability['appium:app'] = capabilitySettings.appPath;
+          capability['appium:noReset'] = capabilitySettings.noReset;
         });
 
     } catch (error) {

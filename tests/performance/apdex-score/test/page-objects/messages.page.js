@@ -3,7 +3,7 @@ const Page = require('./page');
 class MessagesPage extends Page {
 
   async loadMessageList(settingsProvider) {
-    const page = settingsProvider.getPage('messages');
+    const page = settingsProvider.getPage('message-list');
     await super.loadAndAssertPage(page);
   }
 
