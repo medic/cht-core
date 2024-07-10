@@ -10,6 +10,12 @@ const parentPlace = {
   name: 'Big Parent Hostpital'
 };
 
+const randomIp = () => {
+  const section = () => (Math.floor(Math.random() * 255) + 1);
+  return `${section()}.${section()}.${section()}.${section()}`;
+};
+
+
 const loginWithData = data => {
   const opts = {
     path: '/medic/login?aaa=aaa',
@@ -18,6 +24,7 @@ const loginWithData = data => {
     noAuth: true,
     body: data,
     followRedirect: false,
+    headers: { 'X-Forwarded-For': randomIp() },
   };
   return utils.request(opts);
 };
@@ -31,6 +38,7 @@ const loginWithTokenLink = (token = '') => {
     noAuth: true,
     followRedirect: false,
     body: {},
+    headers: { 'X-Forwarded-For': randomIp() },
   };
   return utils.request(opts);
 };

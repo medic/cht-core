@@ -1,4 +1,4 @@
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const transitionsLib = require('../config').getTransitionsLib();
 
 module.exports = {

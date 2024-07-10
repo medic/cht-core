@@ -12,7 +12,7 @@ type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix
   providedIn: 'root'
 })
 export class BrowserDetectorService {
-  private _parser: Bowser.Parser.Parser;
+  private _parser?: Bowser.Parser.Parser;
   private androidAppVersion: VersionNumber | undefined;
 
   public constructor(private store: Store) {

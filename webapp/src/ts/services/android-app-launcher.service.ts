@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class AndroidAppLauncherService {
-  private resolve: Function | null;
+  private resolve?: Function | null;
 
   constructor() { }
 

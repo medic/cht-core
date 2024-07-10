@@ -5,6 +5,7 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const { genericForm } = require('@page-objects/default/contacts/contacts.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const places = placeFactory.generateHierarchy();
 const healthCenter = places.get('health_center');
@@ -18,6 +19,8 @@ describe('FAB + Actionbar', () => {
   });
 
   afterEach(async () => {
+    await browser.refresh();
+    await commonPage.waitForPageLoaded();
     await utils.revertSettings(false);
   });
 

@@ -4,8 +4,9 @@
   "description": "",
   "main": "bundle_templates.js",
   "dependencies": {
-    "@medic/translation-checker": "^1.0.1",
-    "@octokit/rest": "^20.0.1",
+    "@medic/translation-checker": "^1.1.0",
+    "@octokit/core": "^5.2.0",
+    "@octokit/plugin-paginate-graphql": "^ v4.0.1",
     "chalk": "^5.3.0",
     "clui": "^0.3.6",
     "command-line-usage": "^7.0.1",

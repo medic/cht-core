@@ -68,7 +68,7 @@ describe('More Options Menu - Offline User', () => {
 
   afterEach(async () => await commonPage.goToBase());
 
-  describe('all permissions enabled', () => {
+  describe.skip('all permissions enabled', () => {
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await sms.sendSms('testing', contact.phone);

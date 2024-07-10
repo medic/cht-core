@@ -15,13 +15,11 @@ const objectPath = require('object-path');
 const urlJoin = require('url-join');
 const request = require('@medic/couch-request');
 const vm = require('vm');
+const logger = require('@medic/logger');
 
 const secureSettings = require('@medic/settings');
 
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
-
-// set by init()
-let logger;
 
 class OutboundError extends Error {}
 
@@ -265,10 +263,10 @@ const logSendError = (configName, recordId, error) => {
 /**
  * Returns a boolean indicating if this combination of config and record has already been sent.
  *
- * @param      {<object>}  payload     The payload that would be sent
- * @param      {<string>}  configName  key used for this config in our app-settings (for logging)
- * @param      {<object>}  recordInfo  the couchdb record's info doc
- * @return     {<boolean>}  whether we think it's been sent out before
+ * @param      {Object}  payload     The payload that would be sent
+ * @param      {string}  configName  key used for this config in our app-settings (for logging)
+ * @param      {Object}  recordInfo  the couchdb record's info doc
+ * @return     {boolean}  whether we think it's been sent out before
  */
 const alreadySent = (payload, configName, recordInfo) => {
   if (!recordInfo.completed_tasks) {
@@ -280,41 +278,37 @@ const alreadySent = (payload, configName, recordInfo) => {
   return lastTask && lastTask.hash && lastTask.hash === hash(payload);
 };
 
-module.exports = theLogger => {
-  logger = theLogger;
+module.exports = {
+  /**
+   * Given a record and an outbound configuration, attempt to convert and deliver that payload.
+   * Writes the success into the infodoc, but expects you to write it to CouchDB
+   *
+   * @param      {Object}  config      a single outbound configuration
+   * @param      {string}  configName  key used for this config in our app-settings (for logging)
+   * @param      {Object}  record      the couchdb record (ie report) to use
+   * @param      {string}  recordInfo  the couchdb record's info doc
+   * @return     {Promise} a promise which can:
+   *      - resolve with true: outbound was successful and sent
+   *      - resolve with false: outbound didn't error, but wasn't sent out (because it's a duplicate of prior send)
+   *      - reject with error: something went wrong
+   */
+  send: (config, configName, record, recordInfo) => {
+    return Promise.resolve()
+      .then(() => mapDocumentToPayload(record, config, configName))
+      .then(payload => {
+        if (alreadySent(payload, configName, recordInfo)) {
+          logger.info(`Not pushing ${record._id} to ${configName} as payload is identical to previous push`);
+          return false;
+        }
 
-  return {
-    /**
-     * Given a record and an outbound configuration, attempt to convert and deliver that payload.
-     * Writes the success into the infodoc, but expects you to write it to CouchDB
-     *
-     * @param      {<object>}  config      a single outbound configuration
-     * @param      {<string>}  configName  key used for this config in our app-settings (for logging)
-     * @param      {<object>}  record      the couchdb record (ie report) to use
-     * @param      {<object>}  recordInfo  the couchdb record's info doc
-     * @return     {<promise>} a promise which can:
-     *      - resolve with true: outbound was successful and sent
-     *      - resolve with false: outbound didn't error, but wasn't sent out (because it's a duplicate of prior send)
-     *      - reject with error: something went wrong
-     */
-    send: (config, configName, record, recordInfo) => {
-      return Promise.resolve()
-        .then(() => mapDocumentToPayload(record, config, configName))
-        .then(payload => {
-          if (alreadySent(payload, configName, recordInfo)) {
-            logger.info(`Not pushing ${record._id} to ${configName} as payload is identical to previous push`);
-            return false;
-          }
-
-          return sendPayload(payload, config)
-            .then(() => updateInfo(payload, recordInfo, configName))
-            .then(() => logger.info(`Pushed ${record._id} to ${configName}`))
-            .then(() => true);
-        })
-        .catch(err => {
-          logSendError(configName, record._id, err);
-          throw err;
-        });
-    },
-  };
+        return sendPayload(payload, config)
+          .then(() => updateInfo(payload, recordInfo, configName))
+          .then(() => logger.info(`Pushed ${record._id} to ${configName}`))
+          .then(() => true);
+      })
+      .catch(err => {
+        logSendError(configName, record._id, err);
+        throw err;
+      });
+  },
 };

@@ -2,7 +2,8 @@ const sinon = require('sinon');
 const chai = require('chai');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
-const { people, places } = require('@medic/contacts')(config, db);
+const dataContext = require('../../../src/services/data-context');
+const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const migration = require('../../../src/migrations/extract-person-contacts');
 
 let createPerson;

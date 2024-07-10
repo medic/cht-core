@@ -133,8 +133,8 @@ describe('mark_for_outbound', () => {
         });
     });
 
-    it('correctly creates and sends outbound request immediately with due "cron"', () => {
-      const sentinelDate = utils.getSentinelDate();
+    it('correctly creates and sends outbound request immediately with due "cron"', async () => {
+      const sentinelDate = await utils.getSentinelDate();
       const report = makeReport();
       const config = {
         transitions: {
@@ -184,8 +184,8 @@ describe('mark_for_outbound', () => {
         });
     });
 
-    it('correctly skips outbound request immediately with not due "cron"', () => {
-      const sentinelDate = utils.getSentinelDate();
+    it('correctly skips outbound request immediately with not due "cron"', async () => {
+      const sentinelDate = await utils.getSentinelDate();
       const minute = sentinelDate.get('minute');
       const hour = sentinelDate.get('hour') + 1;
       const report = makeReport();

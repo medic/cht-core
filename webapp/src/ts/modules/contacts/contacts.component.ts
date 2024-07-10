@@ -29,19 +29,19 @@ import { PerformanceService } from '@mm-services/performance.service';
   templateUrl: './contacts.component.html'
 })
 export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
-  private readonly PAGE_SIZE = 50;
+  private readonly PAGE_SIZE = 25;
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
   private contactsActions: ContactsActions;
   private listContains;
-  private destroyed: boolean;
-  private isOnlineOnly: boolean;
+  private destroyed?: boolean;
+  private isOnlineOnly?: boolean;
 
-  fastActionList: FastAction[];
+  fastActionList?: FastAction[];
   contactsList;
   loading = false;
   error;
-  appending: boolean;
+  appending?: boolean;
   hasContacts = true;
   filters: Filter = {};
   defaultFilters: Filter = {};
@@ -54,9 +54,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   visitCountSettings;
   defaultSortDirection = 'alpha';
   sortDirection = this.defaultSortDirection;
+  isAllowedToSort = true;
   additionalListItem = false;
   useSearchNewDesign = true;
-  enketoEdited: boolean;
+  enketoEdited?: boolean;
   selectedContact;
 
   constructor(
@@ -83,32 +84,81 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.contactsActions = new ContactsActions(store);
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     const trackPerformance = this.performanceService.track();
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
     this.globalActions.clearFilters(); // clear any global filters first
     this.subscribeToStore();
+    this.manageChangesSubscription();
 
+    try {
+      const [settings, homePlaceSummary, viewLastVisitedDate, contactTypes] = await Promise.all([
+        this.settingsService.get(),
+        this.getUserHomePlaceSummary(),
+        this.canViewLastVisitedDate(),
+        this.contactTypesService.getAll(),
+      ]);
+
+      this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
+      this.usersHomePlace = homePlaceSummary;
+      if (this.usersHomePlace && this.usersHomePlace.length > 1) {
+        this.isAllowedToSort = false;
+      }
+      this.lastVisitedDateExtras = viewLastVisitedDate;
+      this.contactTypes = contactTypes;
+
+      if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+        this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
+      }
+
+      const children = await this.getChildren();
+      this.childPlaces = children;
+      this.defaultFilters = {
+        types: {
+          selected: this.childPlaces.map(type => type.id),
+        },
+      };
+
+      this.subscribeToAllContactXmlForms();
+      await this.search();
+    } catch (err) {
+      this.error = true;
+      this.loading = false;
+      this.appending = false;
+      console.error('Error initializing contacts component', err);
+    } finally {
+      trackPerformance?.stop({
+        name: 'contact_list:load',
+        recordApdex: true,
+      });
+    }
+  }
+
+  private async handleChange(change): Promise<void> {
+    const limit = this.contactsList.length;
+    if (change.deleted) {
+      this.contactsActions.removeContactFromList({ _id: change.id });
+      this.hasContacts = !!this.contactsList.length;
+    }
+    if (this.usersHomePlace?.find(homePlace => homePlace._id === change.id)) {
+      this.usersHomePlace = await this.getUserHomePlaceSummary();
+    }
+    const withIds =
+      this.isSortedByLastVisited() &&
+      !!this.isRelevantVisitReport(change.doc) &&
+      !change.deleted;
+    await this.query({
+      limit,
+      withIds,
+      silent: true,
+    });
+  }
+
+  private manageChangesSubscription() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
-      callback: async (change) => {
-        const limit = this.contactsList.length;
-        if (change.deleted) {
-          this.contactsActions.removeContactFromList({ _id: change.id });
-          this.hasContacts = this.contactsList.length;
-        }
-        if (this.usersHomePlace && change.id === this.usersHomePlace._id) {
-          this.usersHomePlace = await this.getUserHomePlaceSummary(change.id);
-        }
-        const withIds =
-          this.isSortedByLastVisited() &&
-          !!this.isRelevantVisitReport(change.doc) &&
-          !change.deleted;
-        return this.query({
-          limit,
-          withIds,
-          silent: true,
-        });
+      callback: (change) => {
+        this.handleChange(change).catch(err => console.error(err));
       },
       filter: (change) => {
         return (
@@ -120,47 +170,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
     this.subscription.add(changesSubscription);
-
-    Promise
-      .all([
-        this.getUserHomePlaceSummary(),
-        this.canViewLastVisitedDate(),
-        this.settingsService.get(),
-        this.contactTypesService.getAll()
-      ])
-      .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
-        this.usersHomePlace = homePlaceSummary;
-        this.lastVisitedDateExtras = viewLastVisitedDate;
-        this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
-        if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
-          this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
-        }
-        this.contactTypes = contactTypes;
-        return this.getChildren();
-      })
-      .then((children) => {
-        this.childPlaces = children;
-        this.defaultFilters = {
-          types: {
-            selected: this.childPlaces.map(type => type.id)
-          }
-        };
-
-        this.subscribeToAllContactXmlForms();
-        return this.search();
-      })
-      .catch((err) => {
-        this.error = true;
-        this.loading = false;
-        this.appending = false;
-        console.error('Error searching for contacts', err);
-      })
-      .finally(() => {
-        trackPerformance?.stop({
-          name: 'contact_list:load',
-          recordApdex: true,
-        });
-      });
   }
 
   async ngAfterViewInit() {
@@ -213,31 +222,41 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private getUserHomePlaceSummary(homePlaceId?: string) {
+  private getUserFacilityId(userSettings) {
+    return Array.isArray(userSettings.facility_id) ? userSettings.facility_id : [userSettings.facility_id];
+  }
+
+  private getUserHomePlaceSummary() {
     return this.userSettingsService
       .get()
-      .then((userSettings:any) => {
-        const facilityId: string = homePlaceId ?? userSettings.facility_id;
-        if (!facilityId) {
+      .then((userSettings: any) => {
+        const facilityId = this.getUserFacilityId(userSettings);
+
+        if (!facilityId.length || facilityId.some(id => id === undefined)) {
           return;
         }
 
         this.globalActions.setUserFacilityId(facilityId);
         return this.getDataRecordsService
-          .get([ facilityId ])
-          .then(places => places?.length ? places[0] : undefined);
+          .get(facilityId)
+          .then(places => {
+            const validPlaces = places?.filter(place => place !== undefined);
+            return validPlaces.length ? validPlaces : undefined;
+          });
       })
-      .then((summary) => {
-        if (summary) {
-          summary.home = true;
+      .then((homeplaces) => {
+        if (homeplaces) {
+          homeplaces.forEach(homeplace => {
+            homeplace.home = true;
+          });
         }
-        return summary;
+        return homeplaces;
       });
   }
 
   private canViewLastVisitedDate() {
     if (this.sessionService.isAdmin()) {
-    // disable UHC for DB admins
+      // disable UHC for DB admins
       return Promise.resolve(false);
     }
     return this.authService.has('can_view_last_visited_date');
@@ -260,13 +279,17 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.contactTypesService.getTypeById(this.contactTypes, typeId);
   }
 
+  private isPrimaryContact(contact) {
+    return this.usersHomePlace && this.usersHomePlace.length === 1 && contact.home;
+  }
+
   private populateContactDetails(contact, type) {
     contact.route = 'contacts';
     contact.icon = type?.icon;
     contact.heading = contact.name || '';
     contact.valid = true;
     contact.summary = null;
-    contact.primary = contact.home;
+    contact.primary = this.isPrimaryContact(contact);
     contact.dod = contact.date_of_death;
   }
 
@@ -328,7 +351,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
-      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace);
+      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace[0]);
       return this.contactTypesService
         .getChildren(homeType)
         .then(filterChildPlaces);
@@ -355,6 +378,13 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private isSortedByLastVisited() {
     return this.sortDirection === 'last_visited_date';
+  }
+
+  private updateAdditionalListItem(homeIndex) {
+    this.additionalListItem =
+      !this.filters.search &&
+      (this.additionalListItem || !this.appending) &&
+      homeIndex === -1;
   }
 
   private query(opts?) {
@@ -410,23 +440,27 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(updatedContacts => {
         // If you have a home place make sure its at the top
         if (this.usersHomePlace) {
-          const homeIndex = _findIndex(updatedContacts, (contact:any) => {
-            return contact._id === this.usersHomePlace._id;
-          });
-          this.additionalListItem =
-            !this.filters.search &&
-            (this.additionalListItem || !this.appending) &&
-            homeIndex === -1;
+          this.usersHomePlace.forEach(homePlace => {
+            const homeIndex = _findIndex(updatedContacts, (contact: any) => contact._id === homePlace._id);
 
-          if (!this.appending) {
-            if (homeIndex !== -1) {
-              // move it to the top
-              updatedContacts.splice(homeIndex, 1);
-              updatedContacts.unshift(this.usersHomePlace);
-            } else if (!this.filters.search) {
-              updatedContacts.unshift(this.usersHomePlace);
+            this.updateAdditionalListItem(homeIndex);
+
+            if (!this.appending) {
+              if (homeIndex !== -1) {
+                // move it to the top
+                const [homeContact] = updatedContacts.splice(homeIndex, 1);
+                updatedContacts.unshift(homeContact);
+              } else if (!this.filters.search) {
+                updatedContacts.unshift(homePlace);
+              }
             }
-          }
+          });
+        }
+
+        //  only show homeplaces facilities for multi-facility users
+        if (this.usersHomePlace?.length > 1 && !this.filters.search) {
+          const homePlaceIds = this.usersHomePlace.map(place => place._id);
+          updatedContacts = updatedContacts.filter(place => homePlaceIds.includes(place._id));
         }
 
         updatedContacts = this.formatContacts(updatedContacts);
@@ -469,6 +503,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return contact._id + contact._rev;
   }
 
+  private getUserHomePlaceId() {
+    return this.usersHomePlace?.[0]?._id;
+  }
+
   private setLeftActionBar() {
     if (this.destroyed) {
       // don't update the actionbar if the component has already been destroyed
@@ -479,7 +517,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setLeftActionBar({
       exportFn: () => this.exportContacts(),
       hasResults: this.hasContacts,
-      userFacilityId: this.usersHomePlace?._id,
+      userFacilityId: this.getUserHomePlaceId(),
       childPlaces: this.allowedChildPlaces,
     });
   }
@@ -492,7 +530,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.fastActionList = await this.fastActionButtonService.getContactLeftSideActions({
-      parentFacilityId: this.usersHomePlace?._id,
+      parentFacilityId: this.getUserHomePlaceId(),
       childContactTypes: this.allowedChildPlaces,
     });
   }

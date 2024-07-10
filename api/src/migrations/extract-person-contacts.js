@@ -2,8 +2,9 @@ const async = require('async');
 const { promisify } = require('util');
 const config = require('../config');
 const db = require('../db');
-const logger = require('../logger');
-const { people, places } = require('@medic/contacts')(config, db);
+const dataContext = require('../services/data-context');
+const logger = require('@medic/logger');
+const { people, places } = require('@medic/contacts')(config, db, dataContext);
 
 // WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
 // OFFLINE BEFORE RUNNING IT!

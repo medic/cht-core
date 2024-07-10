@@ -1,7 +1,9 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
+const dataContext = require('../../../src/data-context');
 const utils = require('../../../src/lib/utils');
 const phone = '+34567890123';
 
@@ -17,6 +19,7 @@ describe('update clinic', () => {
     });
     transition = require('../../../src/transitions/update_clinics');
     lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
+    dataContext.init({ bind: sinon.stub() });
   });
 
   afterEach(() => {
@@ -169,7 +172,7 @@ describe('update clinic', () => {
     });
   });
 
-  it('should update clinic by refid and get latest contact', () => {
+  it('should update clinic by refid and get latest contact', async () => {
     const doc = {
       from: '+12345',
       refid: '1000',
@@ -213,13 +216,19 @@ describe('update clinic', () => {
     };
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: clinic }] });
-    lineageStub.resolves(contact);
-    return transition.onMatch({ doc: doc }).then(changed => {
-      assert(changed);
-      assert(doc.contact);
-      assert.equal(doc.contact._rev, '2');
-      assert.equal(doc.contact.name, 'zenith');
-    });
+    const getPersonWithLineage = sinon
+      .stub()
+      .resolves(contact);
+    dataContext.bind.returns(getPersonWithLineage);
+
+    const changed = await transition.onMatch({ doc: doc });
+
+    assert(changed);
+    assert(doc.contact);
+    assert.equal(doc.contact._rev, '2');
+    assert.equal(doc.contact.name, 'zenith');
+    assert.isTrue(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage));
+    assert.isTrue(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('z')));
   });
 
   /*

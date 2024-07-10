@@ -29,7 +29,7 @@ describe('logging in through API directly', () => {
     await runDockerCommand('docker-compose', ['down', '--remove-orphans']);
   });
 
-  it('should allow logins', async () => {
+  it('should allow logins @docker', async () => {
     await runScript();
     const logs = await getLogs();
 

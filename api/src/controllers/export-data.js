@@ -1,5 +1,5 @@
 const moment = require('moment');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 const auth = require('../auth');
 const serverUtils = require('../server-utils');

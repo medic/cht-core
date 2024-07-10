@@ -1,6 +1,6 @@
 const auth = require('../auth');
 const connectedUserLogService = require('../services/connected-user-log');
-const logger = require('../logger');
+const logger = require('@medic/logger');
 
 module.exports = {
   log: (req, res, next) => {

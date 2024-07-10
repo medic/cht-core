@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const db = require('../../../src/db');
-const logger = require('../../../src/logger');
+const logger = require('@medic/logger');
 const migration = require('../../../src/migrations/add-contact-id-to-user-docs');
 
 const BATCH_SIZE = 100;

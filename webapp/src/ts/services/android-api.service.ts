@@ -50,6 +50,7 @@ export class AndroidApiService {
     $container
       .find('select.select2-hidden-accessible')
       .each(function() {
+        // @ts-expect-error Intentionally referencing shadowed `this` variable.
         const elem = <any>$(this);
         if (elem.select2('isOpen')) {
           elem.select2('close');
@@ -92,6 +93,7 @@ export class AndroidApiService {
   private closeTopModal($modals) {
     let $topModal;
     $modals.each(function() {
+      // @ts-expect-error Intentionally referencing shadowed `this` variable.
       const $modal = $(this);
       if (!$topModal) {
         $topModal = $modal;

@@ -1,4 +1,4 @@
-const logger = require('../lib/logger');
+const logger = require('@medic/logger');
 const generateShortcodeOnContacts = require('./generate_shortcode_on_contacts');
 const transitionUtils = require('./utils');
 const NAME = 'generate_patient_id_on_people';

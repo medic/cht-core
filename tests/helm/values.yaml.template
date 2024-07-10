@@ -1,0 +1,17 @@
+namespace: "{{namespace}}"
+cht_image_tag: "{{tag}}"
+
+upstream_servers:
+  docker_registry: "{{repo}}"
+
+couchdb:
+  password: "{{password}}"
+  secret: "{{secret}}"
+  user: "{{user}}"
+  uuid: "{{uuid}}"
+  db_name: "{{db_name}}"
+
+local_path:
+  preExistingDiskPath-1: "{{data_path}}/srv1"
+  preExistingDiskPath-2: "{{data_path}}/srv2"
+  preExistingDiskPath-3: "{{data_path}}/srv3"

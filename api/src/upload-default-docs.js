@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const db = require('./db');
-const { error } = require('./logger');
+const { error } = require('@medic/logger');
 const environment = require('./environment');
 const settingService = require('./services/settings');
 

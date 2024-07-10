@@ -1,7 +1,7 @@
 const _ = require('lodash');
 
 const db = require('../../db');
-const logger = require('../../logger');
+const logger = require('@medic/logger');
 
 const QUERY_TASKS_INTERVAL = 5000;
 // progress bar stretches to match console width.

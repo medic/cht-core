@@ -132,9 +132,22 @@ export class ContactsEffects {
     return this.contactIdToLoad !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
   }
 
+  private shouldGetDescendants(contactId, userFacilityId: string[] = []) {
+    if (!userFacilityId?.length) {
+      return true;
+    }
+
+    if (userFacilityId.length > 1) {
+      return true;
+    }
+
+    return userFacilityId[0] !== contactId;
+  }
+
   private loadChildren(contactId, userFacilityId, trackName) {
     const trackPerformance = this.performanceService.track();
-    const getChildPlaces = userFacilityId !== contactId;
+    const getChildPlaces = this.shouldGetDescendants(contactId, userFacilityId);
+
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
       .then(children => {
@@ -194,6 +207,10 @@ export class ContactsEffects {
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
+      .catch(error => {
+        this.contactsActions.updateSelectedContactSummary({ errorStack: error.stack });
+        throw error;
+      })
       .then(summary => {
         return this
           .verifySelectedContactNotChanged(contactId)

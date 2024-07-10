@@ -13,9 +13,11 @@
   },
   "scripts": {
     "toc": "doctoc --github --maxlevel 2 README.md",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'build/static' --ignore 'build/public' --watch ./ --watch '../shared-libs/**/src/**' server.js -- --allow-cors"
   },
   "dependencies": {
+    "@medic/logger": "file:../shared-libs/logger",
     "async": "^3.2.1",
     "bikram-sambat": "^1.7.0",
     "body-parser": "^1.20.2",

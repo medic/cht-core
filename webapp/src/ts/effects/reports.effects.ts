@@ -67,6 +67,7 @@ export class ReportsEffects {
             name: [ 'report_detail', model?.doc?.form, 'load' ].join(':'),
             recordApdex: true,
           });
+          this.trackOpenReport = null;
         }
 
         return of(this.reportActions.setRightActionBar());

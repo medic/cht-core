@@ -40,7 +40,7 @@ describe('databases', () => {
         jsonFileName: 'users-meta.json',
       },
       {
-        name: `thedb-users`,
+        name: `_users`,
         db: db.users,
         jsonFileName: 'users.json',
       },

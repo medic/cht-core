@@ -35,7 +35,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   activeFilters: number = 0;
   openSearch = false;
 
-  @ViewChild(FreetextFilterComponent) freetextFilter: FreetextFilterComponent;
+  @ViewChild(FreetextFilterComponent) freetextFilter?: FreetextFilterComponent;
 
   constructor(
     private store: Store,
@@ -70,7 +70,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     if (this.disabled) {
       return;
     }
-    this.freetextFilter.clear(true);
+    this.freetextFilter?.clear(true);
     this.toggleMobileSearch(false);
   }
 
