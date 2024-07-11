@@ -1,18 +1,18 @@
 {
-  "iterations": 1,
-  "instanceURL": "https://care-teams-baseline.dev.medicmobile.org",
+  "iterations": 40,
+  "instanceURL": "<instance-url>",
   "hasPrivacyPolicy": false,
   "capabilities": [
     {
       "platformVersion": "13",
       "deviceName": "Neon Ray Ultra S",
       "appPath": "/Users/jen/Documents/MEDIC/APDEX_CONFIGS/APK/cht-android-v1.4.0-unbranded-armeabi-v7a-release.apk",
-      "noReset": true
+      "noReset": false
     }
   ],
 
   "skip": {
-    "login": true,
+    "login": false,
 
     "loadContactList": false,
     "loadCHWArea": false,
@@ -33,8 +33,8 @@
     {
       "type": "offline",
       "role": "chw",
-      "username": "jon",
-      "password": "Moo1234!"
+      "username": "<username>",
+      "password": "<password>"
     }
   ],
 
@@ -44,13 +44,13 @@
         { "selector": "//*[@text=\"Reports\"]" },
         {
           "selector": "//*[@text=\"People\"]",
-          "asserts": [ { "selector": "//*[contains(@text, \"South Arthurstead\")]" } ]
+          "asserts": [ { "selector": "//*[contains(@text, \"West Miltonside\")]" } ]
         }
       ],
       "search": {
-        "value": "Jon Stracke",
+        "value": "Rafael Windler",
         "asserts": [
-          { "selector": "//*[@text=\"Jon Stracke\"]" },
+          { "selector": "//*[@text=\"Rafael Windler\"]" },
           {
             "scrollDown": 5,
             "selector": "//*[contains(@text, \"No more people\")]"
@@ -64,12 +64,12 @@
     "chwArea": {
       "navigation": [
         {
-          "selector": "//*[contains(@text, \"South Arthurstead\")]",
+          "selector": "//*[contains(@text, \"West Miltonside\")]",
           "asserts": [
             { "selector": "//*[contains(@text, \"External ID\")]" },
-            { "selector": "//*[contains(@text, \"Jon Stracke\")]" },
-            { "selector": "//*[contains(@text, \"Tasks\")]" },
-            { "selector": "//*[contains(@text, \"Reports\")]" }
+            { "selector": "//*[contains(@text, \"Rafael Windler\")]" },
+            { "selector": "//*[contains(@text, \"Households\")]" },
+            { "selector": "//*[contains(@text, \"Abilene\")]" }
           ]
         }
       ],
@@ -77,12 +77,12 @@
     },
     "household": {
       "navigation": [
-        { "selector": "//*[@text=\"People\"]" },
+        { "selector": "//*[contains(@text, \"West Miltonside\")]" },
         {
-          "selector": "//*[contains(@text, \"Haleyberg\")]",
+          "selector": "//*[contains(@text, \"Abilene\")]",
           "asserts": [
             { "selector": "//*[contains(@text, \"Phone\")]" },
-            { "selector": "//*[contains(@text, \"Alexandra Lemke\")]" },
+            { "selector": "//*[contains(@text, \"Bill Pouros\")]" },
             {
               "scrollDown": 2,
               "selector": "//*[text()[contains(.,\"Danger sign follow up\")]"
@@ -96,10 +96,9 @@
     "patient": {
       "navigation": [
         {
-          "scrollUp": 2,
-          "selector": "//*[contains(@text, \"Alexandra Lemke\")]",
+          "selector": "//*[contains(@text, \"Irene Shields\")]",
           "asserts": [
-            { "selector": "//*[contains(@text, \"17 years\")]" },
+            { "selector": "//*[contains(@text, \"37 years\")]" },
             {
               "scrollDown": 1,
               "selector": "//*[contains(@text, \"Danger sign follow up\")]" },
