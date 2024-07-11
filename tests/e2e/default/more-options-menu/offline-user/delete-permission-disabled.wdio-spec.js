@@ -87,7 +87,7 @@ describe('- DELETE permissions disabled', () => {
     await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
     expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
-    xexpect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
+    //expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
   });
 });
 
