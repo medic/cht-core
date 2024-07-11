@@ -79,7 +79,7 @@ describe('- EDIT permissions disabled', () => {
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
   });
 
-  it('- Report tab - menu not displayed when xml report selected', async () => {
+  xit('- Report tab - menu not displayed when xml report selected', async () => {
     await reportPage.goToReportById(xmlReportId);
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
   });

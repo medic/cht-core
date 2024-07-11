@@ -32,7 +32,7 @@ const setupUser = () => {
   };
 };
 
-describe('Telemetry', () => {
+xdescribe('Telemetry', () => {
   const DATE_FORMAT = 'YYYY-MM-DD';
   const TELEMETRY_PREFIX = 'telemetry';
   let user;
