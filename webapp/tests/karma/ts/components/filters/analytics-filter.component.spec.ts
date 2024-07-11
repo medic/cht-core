@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
@@ -12,7 +11,6 @@ import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filte
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { GlobalActions } from '@mm-actions/global';
 
 describe('Analytics Filter Component', () => {
   let component: AnalyticsFilterComponent;
@@ -20,7 +18,6 @@ describe('Analytics Filter Component', () => {
   let authService;
   let sessionService;
   let userSettingsService;
-  let globalActions;
   let route;
   let router;
   let store: MockStore;
@@ -32,9 +29,6 @@ describe('Analytics Filter Component', () => {
     sessionService = { isAdmin: sinon.stub().returns(false) };
     userSettingsService = {
       hasMultipleFacilities: sinon.stub().resolves(true)
-    };
-    globalActions = {
-      setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
     route = {
       snapshot: { queryParams: { query: '' }, firstChild: { data: { moduleId: 'some-module' } } },
