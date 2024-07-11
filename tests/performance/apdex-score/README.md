@@ -246,7 +246,12 @@ Object containing the definition of the pages to load and assert during these au
 | Property | Type | Description | Mandatory |
 |--|--|--|--|
 | navigation | Object[] | Click path to navigate to that page. See Navigation section below for more details. | Yes |
+| search | Object | Contains the configuration to filter data by using the search feature from the page | No |
+| search.value | String | Search term | No |
+| search.asserts | Object[] | Elements to assert once it has finished searching in the current page. Use to make sure all elements in the page have finished rendering. See Asserts section for more details. | No |
+| search.postTestPath | Object[] | Click path to navigate after the test has finished searching and the asserts has finished. | No |
 | postTestPath | Object[] | Click path to navigate after the test has finished. E.g. clicking on the back button to go back to the main list. It uses the same Navigation structure, see the Navigation section below for more details. | No |
+| relaunchApp | Boolean | Set true, to close and open the app before navigating to this page. This can make tests a bit lower as the app needs to load the assets and data again. | No |
 
 #### Forms
 Object containing the definition of forms to load, fill fields and asserts outcomes. 

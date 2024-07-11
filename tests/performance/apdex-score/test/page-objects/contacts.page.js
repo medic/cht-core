@@ -4,22 +4,26 @@ class ContactsPage extends Page {
 
   async loadContactList(settingsProvider) {
     const page = settingsProvider.getPage('contactList');
-    await super.loadAndAssertPage(page);
+    const commonElements = settingsProvider.getCommonElements();
+    await super.loadAndAssertPage(page, commonElements);
   }
 
   async loadCHWArea(settingsProvider) {
     const page = settingsProvider.getPage('chwArea');
-    await super.loadAndAssertPage(page);
+    const commonElements = settingsProvider.getCommonElements();
+    await super.loadAndAssertPage(page, commonElements);
   }
 
   async loadHousehold(settingsProvider) {
     const page = settingsProvider.getPage('household');
-    await super.loadAndAssertPage(page);
+    const commonElements = settingsProvider.getCommonElements();
+    await super.loadAndAssertPage(page, commonElements);
   }
 
   async loadPatient(settingsProvider) {
     const page = settingsProvider.getPage('patient');
-    await super.loadAndAssertPage(page);
+    const commonElements = settingsProvider.getCommonElements();
+    await super.loadAndAssertPage(page, commonElements);
   }
 
   async submitPatientReport(settingsProvider) {

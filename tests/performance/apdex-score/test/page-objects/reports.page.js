@@ -4,7 +4,8 @@ class ReportsPage extends Page {
 
   async loadReportList(settingsProvider) {
     const page = settingsProvider.getPage('reportList');
-    await super.loadAndAssertPage(page);
+    const commonElements = settingsProvider.getCommonElements();
+    await super.loadAndAssertPage(page, commonElements);
   }
 
   async searchReport(settingsProvider) {

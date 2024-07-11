@@ -100,7 +100,15 @@ module.exports = class Page {
     }
   }
 
-  async loadAndAssertPage(page) {
+  async loadAndAssertPage(page, commonElements) {
+    if (!page) {
+      return;
+    }
+
+    if (page.relaunchApp) {
+      await super.relaunchApp(commonElements);
+    }
+
     await this.navigate(page.navigation, page.asserts);
     await this.navigate(page.postTestPath);
   }
@@ -174,14 +182,17 @@ module.exports = class Page {
       return;
     }
 
-    const SEARCH_ICON = commonElements?.searchIcon || '//android.widget.TextView[@text=\\"\\"]';
+    const SEARCH_ICON = commonElements?.searchIcon || '//android.widget.TextView[@text=""]';
     const SEARCH_INPUT = '//android.widget.EditText';
 
     await this.navigate(page.navigation);
     await this.clickElement(SEARCH_ICON);
     await this.waitForDisplayedAndRetry(SEARCH_INPUT);
 
-    await this.enterFieldValue(page.search.value);
+    await this.enterFieldValue({
+      value: page.search.value,
+      selector: SEARCH_INPUT,
+    });
     // Trigger search with Enter.
     await this.enterFieldValue({ keycodes: [ 66 ] });
 

@@ -12,7 +12,7 @@
   ],
 
   "skip": {
-    "login": false,
+    "login": true,
 
     "loadContactList": false,
     "loadCHWArea": false,
@@ -127,10 +127,8 @@
       "search": {
         "value": "Alexandra Lemke",
         "asserts": [
-          { "selector": "//*[@text=\"Alexandra Lemke\"]" },
           {
-            "scrollDown": 5,
-            "selector": "//*[contains(@text, \"No more reports\")]"
+            "selector": "//*[contains(@text, \"No reports found\")]"
           }
         ],
         "postTestPath": [

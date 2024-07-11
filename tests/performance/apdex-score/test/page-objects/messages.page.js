@@ -4,7 +4,8 @@ class MessagesPage extends Page {
 
   async loadMessageList(settingsProvider) {
     const page = settingsProvider.getPage('messageList');
-    await super.loadAndAssertPage(page);
+    const commonElements = settingsProvider.getCommonElements();
+    await super.loadAndAssertPage(page, commonElements);
   }
 
 }
