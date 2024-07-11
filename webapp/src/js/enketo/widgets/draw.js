@@ -44,10 +44,25 @@ class DrawWidget extends Widget {
     this.canvas = this.$widget[0].querySelector('.draw-widget__body__canvas');
 
     this.initialize = fileManager.init().then(() => {
-      this.signaturePad = new SignaturePad(this.canvas);
+      this.pad = new SignaturePad(this.canvas);
       this.resizeObserver = new ResizeObserver(this._resizeCanvas.bind(this));
-      this.enable();
+
+
+
+
     });
+    this.disable();
+    this.initialize
+      .then(() => {
+        this.$widget
+          .find('.btn-reset')
+          .on('click', this._reset.bind(this))
+          .end()
+        this.enable();
+      })
+      .catch((error) => {
+        that._showFeedback(error.message);
+      });
   }
 
   /**
@@ -108,6 +123,39 @@ class DrawWidget extends Widget {
     return fragment;
   }
 
+  /**
+   * Clears pad, cache, loaded file name, download link and others
+   */
+  _reset() { // NOSONAR
+    // This discombobulated line is to help the i18next parser pick up all 3 keys.
+    const item =
+      this.props.type === 'signature'
+        ? t('drawwidget.signature')
+        : this.props.type === 'drawing' // NOSONAR
+          ? t('drawwidget.drawing')
+          : t('drawwidget.annotation');
+    dialog
+      .confirm(t('filepicker.resetWarning', { item }))
+      .then((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+        this.pad.clear();
+        this.disable();
+        this.enable();
+      });
+  }
+
+  /**
+   * @param {string} message - the feedback message to show
+   */
+  _showFeedback(message) {
+    message = message || '';
+
+    // replace text and replace all existing classes with the new status class
+    this.$widget.find('.draw-widget__feedback').text(message);
+  }
+
   // Adjust canvas coordinate space taking into account pixel ratio,
   // to make it look crisp on mobile devices.
   // This also causes canvas to be cleared.
@@ -127,7 +175,7 @@ class DrawWidget extends Widget {
     // canvas looks empty, because the internal data of this library wasn't cleared. To make sure
     // that the state of this library is consistent with visual state of the canvas, you
     // have to clear it manually.
-    this.signaturePad.clear();
+    this.pad.clear();
   };
 
   /**
@@ -136,7 +184,7 @@ class DrawWidget extends Widget {
   disable() {
     this.initialize.then(() => {
       this.resizeObserver.disconnect();
-      this.signaturePad.off();
+      this.pad.off();
       this.canvas.classList.add('disabled');
       this.$widget.find('.btn-reset').prop('disabled', true);
     });
@@ -149,7 +197,7 @@ class DrawWidget extends Widget {
     this.initialize.then(() => {
       this.resizeObserver.observe(this.$widget[0].querySelector('.draw-widget__body'));
 
-      this.signaturePad.on();
+      this.pad.on();
       this.canvas.classList.remove('disabled');
       this.$widget.find('.btn-reset').prop('disabled', false);
       // https://github.com/enketo/enketo-core/issues/450
@@ -160,6 +208,17 @@ class DrawWidget extends Widget {
       // sure the canvas is rendered properly.
       this._resizeCanvas(this.canvas);
     });
+  }
+
+  /**
+   * Updates value when it is programmatically cleared.
+   * There is no way to programmatically update a file input other than clearing it, so that's all
+   * we need to do.
+   */
+  update() {
+    if (this.originalInputValue === '') {
+      this._reset();
+    }
   }
 
   /**
