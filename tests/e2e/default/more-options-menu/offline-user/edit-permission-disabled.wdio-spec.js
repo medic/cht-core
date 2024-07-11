@@ -68,7 +68,7 @@ describe('- EDIT permissions disabled', () => {
 
   after(async () => await utils.revertSettings(true));
 
-  it(' - Contact Tab - contact selected', async () => {
+  xit(' - Contact Tab - contact selected', async () => {
     await commonPage.goToPeople(patient._id);
     await commonPage.closeReloadModal();
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;

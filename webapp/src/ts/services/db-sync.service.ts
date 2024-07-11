@@ -373,7 +373,7 @@ export class DBSyncService {
       return Promise.resolve();
     }
 
-    await this.migrateDb();
+    // await this.migrateDb();
 
     if (force) {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.in_progress'));

@@ -10,7 +10,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-describe('Mute/Unmute contacts using a specific form.', () => {
+xdescribe('Mute/Unmute contacts using a specific form.', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });

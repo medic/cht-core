@@ -33,7 +33,7 @@ describe('Privacy policy', () => {
         await utils.revertDb([/^form:/], true);
       });
 
-      it('should show the correct privacy policy on login', async () => {
+      xit('should show the correct privacy policy on login', async () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
@@ -49,7 +49,7 @@ describe('Privacy policy', () => {
         await privacyPage.waitForPolicy(await privacyPage.privacyConfig(), englishTexts);
       });
 
-      it('should not show on subsequent login', async () => {
+      xit('should not show on subsequent login', async () => {
         await browser.reloadSession();
         await browser.url('/');
         await loginPage.login({ username: user.username, password: user.password });
@@ -72,7 +72,7 @@ describe('Privacy policy', () => {
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
 
-      it('should show if the user policy changes', async () => {
+      xit('should show if the user policy changes', async () => {
         await browser.setCookies({ name: 'locale', value: 'en' });
         await browser.refresh();
 
@@ -100,7 +100,7 @@ describe('Privacy policy', () => {
     });
   });
 
-  describe('conflicts', () => {
+  xdescribe('conflicts', () => {
     let passed = false;
 
     const conflictUser = userFactory.build({

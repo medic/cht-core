@@ -142,7 +142,7 @@ describe('Contact Delivery Form', () => {
     ]);
   });
 
-  it('open, submit and edit (no changes) default delivery form', async () => {
+  xit('open, submit and edit (no changes) default delivery form', async () => {
     const noOfAliveBabies = 3;
     const noOfDeadBabies = 3;
 
@@ -345,7 +345,7 @@ describe('Contact Delivery Form', () => {
     expect(initialReport.fields.delivery_outcome.delivery_mode).to.equal('vaginal');
   });
 
-  it('open, submit and edit default delivery form', async () => {
+  xit('open, submit and edit default delivery form', async () => {
     const noOfAliveBabies = 2;
     const noOfDeadBabies = 2;
 

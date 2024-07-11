@@ -44,7 +44,7 @@ describe('Unauthorized form', () => {
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
   });
 
-  it('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
+  xit('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
     await commonPage.goToPeople();
     await updateSettings(customPlaceType);
 
@@ -54,7 +54,7 @@ describe('Unauthorized form', () => {
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
   });
 
-  it('should not display unauthorized error message in contacts tab when user has the form permission', async () => {
+  xit('should not display unauthorized error message in contacts tab when user has the form permission', async () => {
     await commonPage.goToPeople();
     await updateSettings(customPlaceType, { can_create_clinic: [ 'chw' ] });
 

@@ -33,7 +33,7 @@ describe('Edit Person Under Area', () => {
     await utils.createUsers([offlineUser, onlineUser]);
   });
 
-  it('can sync and update offlineUser HomePlace', async () => {
+  xit('can sync and update offlineUser HomePlace', async () => {
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();

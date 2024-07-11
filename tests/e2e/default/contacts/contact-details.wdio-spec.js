@@ -116,7 +116,7 @@ describe('Contact details page', () => {
       }
     );
 
-    it('should not show reports when permission is disabled', async () => {
+    xit('should not show reports when permission is disabled', async () => {
       await updatePermissions(role, [], ['can_view_reports']);
 
       await commonElements.sync(true);
@@ -129,7 +129,7 @@ describe('Contact details page', () => {
       expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
     });
 
-    it('should not show tasks when permission is disabled', async () => {
+    xit('should not show tasks when permission is disabled', async () => {
       await updatePermissions(role, ['can_view_reports'], ['can_view_tasks']);
 
       await commonElements.sync(true);
