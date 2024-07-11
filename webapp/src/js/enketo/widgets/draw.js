@@ -46,22 +46,34 @@ class DrawWidget extends Widget {
     this.initialize = fileManager.init().then(() => {
       this.pad = new SignaturePad(this.canvas);
       this.resizeObserver = new ResizeObserver(this._resizeCanvas.bind(this));
-
-
-
-
     });
     this.disable();
     this.initialize
       .then(() => {
+        const that = this;
         this.$widget
           .find('.btn-reset')
           .on('click', this._reset.bind(this))
           .end()
+          .find('.draw-widget__colorpicker')
+          .on('click', '.current', function () {
+            $(this).parent().toggleClass('reveal');
+          })
+          .on('click', '[data-color]:not(.current)', function () {
+            $(this)
+              .siblings()
+              .removeClass('current')
+              .end()
+              .addClass('current')
+              .parent()
+              .removeClass('reveal');
+            that.pad.penColor = this.dataset.color;
+          })
+          .end()
         this.enable();
       })
       .catch((error) => {
-        that._showFeedback(error.message);
+        this._showFeedback(error.message);
       });
   }
 
