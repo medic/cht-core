@@ -53,7 +53,7 @@ describe('FAB + Actionbar', () => {
   });
 
   describe('Action bar', () => {
-    it('Action bar - should show new household and new person create option', async () => {
+    it('should show new household and new person create option', async () => {
       await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar']);
       await commonElements.goToPeople(healthCenter._id);
       const actionBarLabels = await commonElements.getActionBarLabels();
@@ -65,7 +65,7 @@ describe('FAB + Actionbar', () => {
       ]);
     });
 
-    it('Action bar - should not show new person when missing permission', async () => {
+    it('should not show new person when missing permission', async () => {
       await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_people']);
       await commonElements.goToPeople(healthCenter._id);
       const actionBarLabels = await commonElements.getActionBarLabels();
@@ -76,7 +76,7 @@ describe('FAB + Actionbar', () => {
       ]);
     });
 
-    it('Action bar - should not show new place when missing permission', async () => {
+    it('should not show new place when missing permission', async () => {
       await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_places']);
       await commonElements.goToPeople(healthCenter._id);
       const actionBarLabels = await commonElements.getActionBarLabels();
