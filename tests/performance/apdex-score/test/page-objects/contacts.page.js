@@ -3,12 +3,12 @@ const Page = require('./page');
 class ContactsPage extends Page {
 
   async loadContactList(settingsProvider) {
-    const page = settingsProvider.getPage('contact-list');
+    const page = settingsProvider.getPage('contactList');
     await super.loadAndAssertPage(page);
   }
 
   async loadCHWArea(settingsProvider) {
-    const page = settingsProvider.getPage('chw-area');
+    const page = settingsProvider.getPage('chwArea');
     await super.loadAndAssertPage(page);
   }
 
@@ -34,9 +34,10 @@ class ContactsPage extends Page {
     await super.fillUpForm(form, commonElements);
   }
 
-  async searchPatient(settingsProvider) {
-    const form = settingsProvider.getForm('patientSearch');
-    await super.searchContact(form);
+  async searchContact(settingsProvider) {
+    const page = settingsProvider.getPage('contactList');
+    const commonElements = settingsProvider.getCommonElements();
+    await super.search(page, commonElements);
   }
 
 }

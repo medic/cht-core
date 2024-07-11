@@ -1,0 +1,159 @@
+{
+  "iterations": 1,
+  "instanceURL": "https://care-teams-baseline.dev.medicmobile.org",
+  "hasPrivacyPolicy": false,
+  "capabilities": [
+    {
+      "platformVersion": "13",
+      "deviceName": "Neon Ray Ultra S",
+      "appPath": "/Users/jen/Documents/MEDIC/APDEX_CONFIGS/APK/cht-android-v1.4.0-unbranded-armeabi-v7a-release.apk",
+      "noReset": true
+    }
+  ],
+
+  "skip": {
+    "login": false,
+
+    "loadContactList": false,
+    "loadCHWArea": false,
+    "loadHousehold": false,
+    "loadPatient": false,
+    "loadMessageList": false,
+    "loadTaskList": false,
+    "loadAnalytics": false,
+    "loadReportList": false,
+    "searchContact": false,
+    "searchReport": false,
+
+    "createPatient": true,
+    "submitPatientReport": true
+  },
+
+  "users": [
+    {
+      "type": "offline",
+      "role": "chw",
+      "username": "jon",
+      "password": "Moo1234!"
+    }
+  ],
+
+  "pages": {
+    "contactList": {
+      "navigation": [
+        { "selector": "//*[@text=\"Reports\"]" },
+        {
+          "selector": "//*[@text=\"People\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"South Arthurstead\")]" } ]
+        }
+      ],
+      "search": {
+        "value": "Jon Stracke",
+        "asserts": [
+          { "selector": "//*[@text=\"Jon Stracke\"]" },
+          {
+            "scrollDown": 5,
+            "selector": "//*[contains(@text, \"No more people\")]"
+          }
+        ],
+        "postTestPath": [
+          { "selector": "//*[@text=\"Reports\"]" }
+        ]
+      }
+    },
+    "chwArea": {
+      "navigation": [
+        {
+          "selector": "//*[contains(@text, \"South Arthurstead\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"External ID\")]" },
+            { "selector": "//*[contains(@text, \"Jon Stracke\")]" },
+            { "selector": "//*[contains(@text, \"Tasks\")]" },
+            { "selector": "//*[contains(@text, \"Reports\")]" }
+          ]
+        }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+    "household": {
+      "navigation": [
+        { "selector": "//*[@text=\"People\"]" },
+        {
+          "selector": "//*[contains(@text, \"Haleyberg\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Phone\")]" },
+            { "selector": "//*[contains(@text, \"Alexandra Lemke\")]" },
+            {
+              "scrollDown": 2,
+              "selector": "//*[text()[contains(.,\"Danger sign follow up\")]"
+            },
+            { "selector": "//*[text()[contains(.,\"Due today\")]" },
+            { "selector": "//*[text()[contains(.,\"Pregnancy danger sign\")]" }
+          ]
+        }
+      ]
+    },
+    "patient": {
+      "navigation": [
+        {
+          "scrollUp": 2,
+          "selector": "//*[contains(@text, \"Alexandra Lemke\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"17 years\")]" },
+            {
+              "scrollDown": 1,
+              "selector": "//*[contains(@text, \"Danger sign follow up\")]" },
+            { "selector": "//*[contains(@text, \"Pregnancy danger sign\")]" }
+          ]
+        }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+    "messageList": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Messages\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"No messages found\")]" } ]
+        }
+      ]
+    },
+    "reportList": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Reports\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"Pregnancy danger sign\")]" } ]
+        }
+      ],
+      "search": {
+        "value": "Alexandra Lemke",
+        "asserts": [
+          { "selector": "//*[@text=\"Alexandra Lemke\"]" },
+          {
+            "scrollDown": 5,
+            "selector": "//*[contains(@text, \"No more reports\")]"
+          }
+        ],
+        "postTestPath": [
+          { "selector": "//*[@text=\"Tasks\"]" }
+        ]
+      }
+    },
+    "taskList": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Tasks\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"Danger sign follow up\")]" } ]
+        }
+      ]
+    },
+    "targets": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Targets\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"New pregnancies\")]" } ]
+        }
+      ]
+    }
+  }
+
+}

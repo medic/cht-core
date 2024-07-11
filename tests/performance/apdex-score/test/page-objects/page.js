@@ -163,24 +163,30 @@ module.exports = class Page {
   }
 
   async relaunchApp (commonElements) {
-    const MENU_LIST_TITLE = commonElements?.menuListTitle || '//*[@text="People"]';
+    const UI_ELEMENT = commonElements?.relaunchAppAssert || '//*[@text="People"]';
     await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
-    await this.waitForDisplayedAndRetry(MENU_LIST_TITLE);
+    await this.waitForDisplayedAndRetry(UI_ELEMENT);
   }
 
-  async searchContact (form) {
-    if (!form) {
+  async search (page, commonElements) {
+    if (!page || !page.search) {
       return;
     }
-    const page = form.pages[0];
 
-    await this.navigate(form.navigation);
-    await this.fillUpFormPage(page);
-    await this.assertMany(form.postSubmitAsserts);
+    const SEARCH_ICON = commonElements?.searchIcon || '//android.widget.TextView[@text=\\"\\"]';
+    const SEARCH_INPUT = '//android.widget.EditText';
 
-    await this.navigate(form.postTestPath);
-    await this.assertMany(form.postSubmitAssert);
+    await this.navigate(page.navigation);
+    await this.clickElement(SEARCH_ICON);
+    await this.waitForDisplayedAndRetry(SEARCH_INPUT);
+
+    await this.enterFieldValue(page.search.value);
+    // Trigger search with Enter.
+    await this.enterFieldValue({ keycodes: [ 66 ] });
+
+    await this.assertMany(page.search.asserts);
+    await this.navigate(page.search.postTestPath);
   }
 
   // ToDo: clean all these below after settings are done

@@ -50,8 +50,8 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.submitPatientReport(settingsProvider);
     });
 
-    (skip.searchPatient ? xit : it)('should search patient', async () => {
-      await contactsPage.searchPatient(settingsProvider);
+    (skip.searchContact ? xit : it)('should search contact', async () => {
+      await contactsPage.searchContact(settingsProvider);
     });
 
     (skip.loadMessageList ? xit : it)('should load message list and view a message', async () => {
@@ -64,6 +64,10 @@ describe('Apdex Performance Workflows', () => {
 
     (skip.loadReportList ? xit : it)('should load report list and view a report', async () => {
       await reportsPage.loadReportList(settingsProvider);
+    });
+
+    (skip.searchReport ? xit : it)('should search report', async () => {
+      await reportsPage.searchReport(settingsProvider);
     });
 
     (skip.loadTargets ? xit : it)('should load targets and relaunch the app', async () => {

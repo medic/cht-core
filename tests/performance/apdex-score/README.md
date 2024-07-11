@@ -29,7 +29,8 @@
       "loadCHWArea": false,
       "loadHousehold": false,
       "loadPatient": false,
-      "searchPatient": false,
+      "searchContact": false,
+      "searchReport": false,
       "loadMessageList": false,
       "loadTaskList": true,
       "loadTargets": true,
@@ -54,16 +55,29 @@
   },
   
   "pages": {
-    "contact-list": {
+    "contactList": {
       "navigation": [
         { "selector": "//*[@text=\"<another tab name>\"]" }, // Always go to another tab in each iteration to reload Contact List 
         {
           "selector": "//*[@text=\"<contact's tab name>\"]",
           "asserts": [ { "selector": "//*[contains(@text, \"<contact name in the list>\")]" } ]
         }
-      ]
+      ],
+      "search": {
+        "value": "<contact name>",
+        "asserts": [
+          { "selector": "//*[@text=\"<contact name>\"]" },
+          {
+            "scrollDown": 5,
+            "selector": "//*[contains(@text, \"No more people\")]"
+          }
+        ],
+        "postTestPath": [
+          { "selector": "//*[@text=\"Reports\"]" }
+        ]
+      }
     },
-    "chw-area": {
+    "chwArea": {
       "navigation": [
         {
           "selector": "//*[contains(@text, \"<chw area name to select>\")]",
@@ -187,16 +201,17 @@ export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 | capabilities.platformVersion | String | Android version. E.g. "13". Find the android version by running `adb shell getprop | grep ro.build.version.release` | Yes |
 | capabilities.deviceName | String | Device name. E.g. "Neon Ray Ultra S". Find the device name by running `adb shell getprop | grep ro.product.model` | Yes |
 | capabilities.appPath | String | Path to CHT Android APK. E.g. "/Users/john/Downloads/cht-android-v1.4.0-unbranded-armeabi-v7a-release.apk" | Yes |
-| capabilities.noReset | Boolean | Default false. When set false, it deletes the app cache and storage data. | No |
+| capabilities.noReset | Boolean | Default false. When set false, it deletes the app cache and storage data. If set to true, the app will start again in the last page it was before, review your configuration to take that start point. | No |
 | skip.login | Boolean | Default false. Skip login, and it's expected that the user has already login previous running the automation tests. | No |
 | skip.loadContactList | Boolean | Default false. Skip test for loading the contact list. | No |
 | skip.loadCHWArea | Boolean | Default false. Skip test for loading the CHT Area. | No |
 | skip.loadHousehold | Boolean | Default false. Skip test for loading a household. | No |
 | skip.loadPatient | Boolean | Default false. Skip test for loading a patient. | No |
-| skip.searchPatient | Boolean | Default false. Skip test for searching patient. | No |
+| skip.searchContact | Boolean | Default false. Skip test for searching patient. | No |
 | skip.loadTaskList | Boolean | Default false. Skip test for loading the task list. | No |
 | skip.loadTargets | Boolean | Default false. Skip test for loading the targets page. | No |
 | skip.loadReportList | Boolean | Default false. Skip test for loading the report list. | No |
+| skip.searchReport | Boolean | Default false. Skip test for searching a report. | No |
 | skip.createPatient | Boolean | Default false. Skip test for creating a patient. | No |
 | skip.submitPatientReport | Boolean | Default false. Skip test for submiting a report for a patient. | No |
 | users | Object[] | User to login and use for testing | Yes |
@@ -205,20 +220,23 @@ export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 | users.username | String | Username | Yes |
 | users.password | String | Password | Yes |
 | commonElements | Object | Overrides selectors of system elements | No |
+| commonElements.relaunchAppAssert | String | XPath selector to element to assert when the app opens | No |
+| commonElements.searchIcon | String | XPath selector to element | No |
 | commonElements.fab | String | XPath selector to element | No |
+| commonElements.fabListTitle | String | XPath selector to element | No |
 | commonElements.formSubmit | String | XPath selector to element | No |
 | commonElements.formNext | String | XPath selector to element | No |
 | pages | Object | Object containing the definition of the pages that the automation tests use. See Pages section below for more details. | Yes |
-| pages.contact-list | Object | Definition for Contact List page. See Pages section below for more details. | Yes |
-| pages.chw-area | Object | Definition for Contact CHW Area page. See Pages section below for more details. | Yes |
+| pages.contactList | Object | Definition for Contact List page. See Pages section below for more details. | Yes |
+| pages.chwArea | Object | Definition for Contact CHW Area page. See Pages section below for more details. | Yes |
 | pages.household | Object | Definition for Contact Household page. See Pages section below for more details. | Yes |
 | pages.patient | Object | Definition for Contact Patient page. See Pages section below for more details. | Yes |
 | forms | Object | Definition for app forms or contact forms that the automation tests use. See Forms section below for more details. | Yes |
 | forms.patientReport | Object | Definition for an app form that is submitted on the Patient page. See Forms section below for more details. | Yes |
 | forms.patientContact | Object | Definition for a contact form that is used to create patients. Submitted from the Household page. See Forms section below for more details. | Yes |
-| pages.message-list | Object | Definition for Message List page. See Pages section below for more details. | Yes |
-| pages.report-list | Object | Definition for Report List page. See Pages section below for more details. | Yes |
-| pages.task-list | Object | Definition for Task List page. See Pages section below for more details. | Yes |
+| pages.messageList | Object | Definition for Message List page. See Pages section below for more details. | Yes |
+| pages.reportList | Object | Definition for Report List page. See Pages section below for more details. | Yes |
+| pages.taskList | Object | Definition for Task List page. See Pages section below for more details. | Yes |
 | pages.targets | Object | Definition for Targets page. See Pages section below for more details. | Yes |
 
 
