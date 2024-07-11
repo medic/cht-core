@@ -70,6 +70,15 @@ class DrawWidget extends Widget {
             that.pad.penColor = this.dataset.color;
           })
           .end()
+          .find('.draw-widget__undo')
+          .on('click', () => {
+            const data = this.pad.toData();
+            if (data) {
+              data.pop(); // remove the last dot or line
+              this.pad.fromData(data);
+            }
+          })
+          .end();
         this.enable();
       })
       .catch((error) => {
