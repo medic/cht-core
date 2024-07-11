@@ -63,6 +63,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.globalActions.clearSidebarFilter();
   }
 
   private subscribeToStore() {
