@@ -1,12 +1,12 @@
 {
-  "iterations": 40,
-  "instanceURL": "<instance-url>",
+  "iterations": 1,
+  "instanceURL": "<instance url>",
   "hasPrivacyPolicy": false,
   "capabilities": [
     {
-      "platformVersion": "13",
-      "deviceName": "Neon Ray Ultra S",
-      "appPath": "/Users/jen/Documents/MEDIC/APDEX_CONFIGS/APK/cht-android-v1.4.0-unbranded-armeabi-v7a-release.apk",
+      "platformVersion": "<android version>",
+      "deviceName": "<phone model>",
+      "appPath": "<path to cht android apk>",
       "noReset": false
     }
   ],
