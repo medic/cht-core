@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -15,6 +15,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 })
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 
+  @Output() facilitySelected = new EventEmitter<string>();
   private globalActions;
   subscriptions: Subscription = new Subscription();
   error;
@@ -97,6 +98,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   }
 
   fetchAggregateTargets(facilityId) {
-    this.selectedFacilityId = facilityId;
+    this.facilitySelected.emit(facilityId);
   }
 }

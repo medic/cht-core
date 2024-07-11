@@ -4,6 +4,7 @@ import { combineLatest, Subscription } from 'rxjs';
 
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 import { Selectors } from '@mm-selectors/index';
 import { PerformanceService } from '@mm-services/performance.service';
 import { AnalyticsTargetAggregatesSidebarFilterComponent }
@@ -27,20 +28,23 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   error = null;
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
+  userDefaultFacilityId;
 
   constructor(
     private store: Store,
     private targetAggregatesService: TargetAggregatesService,
     private performanceService: PerformanceService,
+    private userSettingsService: UserSettingsService,
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.trackPerformance = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeSidebarFilter();
-    this.getTargetAggregates();
+    await this.setDefaultFacilityId();
+    this.getTargetAggregates(this.userDefaultFacilityId);
   }
 
   ngOnDestroy(): void {
@@ -68,7 +72,14 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
-  private getTargetAggregates() {
+  private async setDefaultFacilityId() {
+    const [userFacilities] = await Promise.all([
+      this.userSettingsService.getUserFacility()
+    ]);
+    this.userDefaultFacilityId = userFacilities[0]?._id;
+  }
+
+  private getTargetAggregates(userDefaultFacilityId) {
     return this.targetAggregatesService
       .isEnabled()
       .then(enabled => {
@@ -78,7 +89,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
           return;
         }
 
-        return this.targetAggregatesService.getAggregates();
+        return this.targetAggregatesService.getAggregates(userDefaultFacilityId);
       })
       .then(aggregates => {
         this.targetAggregatesActions.setTargetAggregates(aggregates);
@@ -106,5 +117,9 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => this.isSidebarFilterOpen = filterState?.isOpen ?? false);
     this.subscriptions.add(subscription);
+  }
+
+  updateAggregateTargets(facilityId) {
+    this.getTargetAggregates(facilityId);
   }
 }
