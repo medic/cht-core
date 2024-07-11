@@ -1172,6 +1172,10 @@ a.fa:hover {
 .analytics {
   .content {
     .inner {
+      max-width: 100%;
+      .page {
+        max-width: 100%;
+      }
       .page:not(.target-aggregates) {
         > div {
           margin: 0 auto;
@@ -1184,6 +1188,14 @@ a.fa:hover {
         right: 0;
         margin-left: auto;
         margin-right: auto;
+
+        f&.sidebar-closed {
+          margin-right: auto;
+        }
+
+        &.sidebar-open {
+          margin-right: 0;
+        }
       }
     }
   }
