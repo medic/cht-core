@@ -6,7 +6,6 @@ const environment = require('@medic/environment');
 
 
 let db;
-let couchUrl;
 
 describe('db', () => {
   before(() => {

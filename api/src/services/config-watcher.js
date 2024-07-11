@@ -15,7 +15,6 @@ const manifest = require('./manifest');
 const config = require('../config');
 const environment = require('@medic/environment');
 const dataContext = require('./data-context');
-const environment = require('../environment');
 const extensionLibs = require('./extension-libs');
 
 const MEDIC_DDOC_ID = '_design/medic';
