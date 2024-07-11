@@ -82,7 +82,7 @@ describe('CreateUser service', () => {
         chai.expect($http.callCount).to.equal(1);
         chai.expect($http.args[0][0]).to.deep.equal({
           method: 'POST',
-          url: '/api/v2/users',
+          url: '/api/v3/users',
           data: {username: 'user', some: 'updates'},
           headers: {
             'Accept': 'application/json',

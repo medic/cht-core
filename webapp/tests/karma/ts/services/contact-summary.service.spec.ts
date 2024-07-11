@@ -8,14 +8,14 @@ import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
-import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('ContactSummary service', () => {
   let service;
   let Settings;
   let feedbackService;
   let uhcStatsService;
-  let chtScriptApiService;
+  let chtDatasourceService;
   let chtScriptApi;
 
   beforeEach(() => {
@@ -31,8 +31,8 @@ describe('ContactSummary service', () => {
         hasAnyPermission: sinon.stub()
       }
     };
-    chtScriptApiService = {
-      getApi: sinon.stub().returns(chtScriptApi)
+    chtDatasourceService = {
+      get: sinon.stub().returns(chtScriptApi)
     };
 
     const pipesTransform = (name, value) => {
@@ -48,7 +48,7 @@ describe('ContactSummary service', () => {
         { provide: PipesService, useValue: { transform: pipesTransform } },
         { provide: FeedbackService, useValue: feedbackService },
         { provide: UHCStatsService, useValue: uhcStatsService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService }
+        { provide: CHTDatasourceService, useValue: chtDatasourceService }
       ]
     });
     service = TestBed.inject(ContactSummaryService);
@@ -149,6 +149,7 @@ describe('ContactSummary service', () => {
       })
       .catch((err) => {
         expect(err.message).to.equal('Configuration error');
+        expect(err.stack).to.exist;
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
       });

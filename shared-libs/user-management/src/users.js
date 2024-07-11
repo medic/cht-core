@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
+const dataContext = require('./libs/data-context');
 const facility = require('./libs/facility');
 const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
@@ -11,7 +12,8 @@ const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
-const { people, places } = require('@medic/contacts')(config, db);
+const { Person, Place, Qualifier } = require('@medic/cht-datasource');
+const { people, places } = require('@medic/contacts')(config, db, dataContext);
 
 const USER_PREFIX = 'org.couchdb.user:';
 
@@ -58,8 +60,6 @@ const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
 ];
 
 const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
-  'place',
-  'contact',
   'external_id',
   'type',
   'roles',
@@ -133,7 +133,10 @@ const getUsers = async (facilityId, contactId) => {
     return usersForContactId;
   }
 
-  return usersForContactId.filter(user => user.facility_id === facilityId);
+  return usersForContactId.filter(user => {
+    return user.facility_id === facilityId ||
+           (Array.isArray(user.facility_id) && user.facility_id.includes(facilityId));
+  });
 };
 
 const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
@@ -208,13 +211,14 @@ const createUser = (data, response) => {
   });
 };
 
-const hasUserCreateFlag = doc => doc.user_for_contact && doc.user_for_contact.create;
+const hasUserCreateFlag = doc => doc?.user_for_contact?.create;
 
 const clearCreateUserForContact = async (doc) => {
   if (!hasUserCreateFlag(doc)) {
     return;
   }
-  const contact = await db.medic.get(doc._id);
+  const getPerson = dataContext.bind(Person.v1.get);
+  const contact = await getPerson(Qualifier.byUuid(doc._id));
   if (hasUserCreateFlag(contact)) {
     delete contact.user_for_contact.create;
     const { rev } = await db.medic.put(contact);
@@ -263,10 +267,12 @@ const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
 
   data.place.contact = lineage.minifyLineage(data.contact);
   data.place.parent = lineage.minifyLineage(data.place.parent);
-
-  return db.medic
-    .get(data.place._id)
+  const getPlace = dataContext.bind(Place.v1.get);
+  return getPlace(Qualifier.byUuid(data.place._id))
     .then(place => {
+      if (!place) {
+        return Promise.reject(`Place not found [${data.place._id}].`);
+      }
       if (preservePrimaryContact) {
         return;
       }
@@ -340,6 +346,8 @@ const hasParent = (facility, id) => {
  * docs somehow get out of sync this might cause confusion.
  */
 const mapUser = (user, setting, facilities) => {
+  const facilityIds = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
+  const places = facilityIds.filter(facilityId => facilityId).map(facility => getDoc(facility, facilities));
   return {
     id: user._id,
     rev: user._rev,
@@ -347,7 +355,7 @@ const mapUser = (user, setting, facilities) => {
     fullname: setting.fullname,
     email: setting.email,
     phone: setting.phone,
-    place: getDoc(user.facility_id, facilities),
+    place: places.length ? places : null,
     roles: user.roles,
     contact: getDoc(user.contact_id, facilities),
     external_id: setting.external_id,
@@ -365,6 +373,68 @@ const mapUsers = (users, settings, facilities) => {
     });
 };
 
+const getFacilityId = (data) => {
+  if (data.place) {
+    let facilities = Array.isArray(data.place) ? data.place.map(place => getDocID(place)) :  [getDocID(data.place)];
+    facilities = facilities.filter(Boolean);
+    return facilities.length ? facilities : null;
+  }
+
+  if (_.isNull(data.place)) {
+    return null;
+  }
+};
+const getContactId = (data) => {
+  if (data.contact) {
+    return getDocID(data.contact);
+  }
+
+  if (_.isNull(data.contact)) {
+    return null;
+  }
+};
+
+const hydratePayload = (data) => {
+  if (data.type) {
+    // deprecated: use 'roles' instead
+    data.roles = getRoles(data.type);
+  }
+
+  data.facility_id = getFacilityId(data);
+  data.contact_id = getContactId(data);
+};
+
+const getRolesUpdates = (data) => {
+  if (!data.roles) {
+    return;
+  }
+  const index = data.roles.indexOf(roles.ONLINE_ROLE);
+  if (roles.isOffline(data.roles)) {
+    if (index !== -1) {
+      // remove the online role
+      data.roles.splice(index, 1);
+    }
+  } else if (index === -1) {
+    // add the online role
+    data.roles.push(roles.ONLINE_ROLE);
+  }
+};
+
+const getCommonFieldsUpdates = (userDoc, data) => {
+  getRolesUpdates(data);
+  if (data.roles) {
+    userDoc.roles = data.roles;
+  }
+  
+  if (!_.isUndefined(data.place)) {
+    userDoc.facility_id = data.facility_id;
+  }
+
+  if (!_.isUndefined(data.contact)) {
+    userDoc.contact_id = data.contact_id;
+  }
+};
+
 const getSettingsUpdates = (username, data) => {
   const ignore = ['type', 'place', 'contact'];
 
@@ -379,28 +449,7 @@ const getSettingsUpdates = (username, data) => {
     }
   });
 
-  if (data.type) {
-    // deprecated: use 'roles' instead
-    settings.roles = getRoles(data.type);
-  }
-  if (settings.roles) {
-    const index = settings.roles.indexOf(roles.ONLINE_ROLE);
-    if (roles.isOffline(settings.roles)) {
-      if (index !== -1) {
-        // remove the online role
-        settings.roles.splice(index, 1);
-      }
-    } else if (index === -1) {
-      // add the online role
-      settings.roles.push(roles.ONLINE_ROLE);
-    }
-  }
-  if (data.place) {
-    settings.facility_id = getDocID(data.place);
-  }
-  if (data.contact) {
-    settings.contact_id = getDocID(data.contact);
-  }
+  getCommonFieldsUpdates(settings, data);
 
   return settings;
 };
@@ -419,19 +468,7 @@ const getUserUpdates = (username, data) => {
     }
   });
 
-  if (data.type) {
-    // deprecated: use 'roles' instead
-    user.roles = getRoles(data.type);
-  }
-  if (user.roles && !roles.isOffline(user.roles)) {
-    user.roles.push(roles.ONLINE_ROLE);
-  }
-  if (data.place) {
-    user.facility_id = getDocID(data.place);
-  }
-  if (data.contact) {
-    user.contact_id = getDocID(data.contact);
-  }
+  getCommonFieldsUpdates(user, data);
 
   return user;
 };
@@ -471,6 +508,7 @@ const validatePassword = (password) => {
   }
 };
 
+const getDataRoles = (data) => data.roles || (data.type && getRoles(data.type));
 const missingFields = data => {
   const required = ['username'];
 
@@ -480,17 +518,30 @@ const missingFields = data => {
     required.push('password');
   }
 
-  if (data.roles && roles.isOffline(data.roles)) {
+  const userRoles = getDataRoles(data);
+  if (!userRoles) {
+    required.push('type or roles');
+  } else if (roles.isOffline(userRoles)) {
     required.push('place', 'contact');
   }
 
-  const missing = required.filter(prop => !data[prop]);
+  const isInvalidProp = (prop) => {
+    if (!data[prop]) {
+      return true;
+    }
 
-  if (!data.type && !data.roles) {
-    missing.push('type or roles');
-  }
+    if (Array.isArray(data[prop])) {
+      return data[prop].filter(value => value).length === 0;
+    }
 
-  return missing;
+    if (typeof data[prop] === 'object') {
+      return Object.values(data[prop]).filter(value => value).length === 0;
+    }
+
+    return false;
+  };
+
+  return required.filter(prop => isInvalidProp(prop));
 };
 
 const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
@@ -538,40 +589,68 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
-const validateUserFacility = (data, user, userSettings) => {
-  if (data.place) {
-    userSettings.facility_id = user.facility_id;
-    return places.getPlace(user.facility_id);
-  }
-
-  if (_.isNull(data.place)) {
-    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
-      return Promise.reject(error400(
-        'Place field is required for offline users',
-        'field is required',
-        {'field': 'Place'}
-      ));
-    }
-    user.facility_id = null;
-    userSettings.facility_id = null;
+const validateFacilityIsNeeded = (data, user) => {
+  const userRoles = data.roles || user?.roles;
+  if (userRoles && roles.isOffline(userRoles)) {
+    return Promise.reject(error400(
+      'Place field is required for offline users',
+      'field is required',
+      {'field': 'Place'}
+    ));
   }
 };
 
-const validateUserContact = (data, user, userSettings) => {
+const validateAllowedMultipleFacilities = (data, user) => {
+  if (!Array.isArray(data.place) || data.place.length === 1) {
+    return true;
+  }
+
+  const userRoles = data.roles || user?.roles;
+  if (!userRoles || !roles.hasAllPermissions(userRoles, ['can_have_multiple_places'])) {
+    throw error400(
+      'This user cannot have multiple places',
+      'field is required',
+      {'field': 'Place'}
+    );
+  }
+};
+
+const validateUserFacility = (data, user) => {
+  if (data.place) {
+    if (!data.facility_id) {
+      throw error400(
+        'Invalid facilities list',
+        'field is required',
+        {'field': 'Place'}
+      );
+    }
+    validateAllowedMultipleFacilities(data, user);
+    return places.placesExist(data.facility_id);
+  }
+
+  if (_.isNull(data.place)) {
+    return validateFacilityIsNeeded(data, user);
+  }
+};
+
+const validateUserContact = (data, user) => {
   if (data.contact) {
-    return validateContact(user.contact_id, user.facility_id);
+    return Promise
+      .any(data.facility_id.map(facility_id => validateContact(data.contact_id, facility_id)))
+      .catch(errors => {
+        throw errors.errors[0];
+      });
   }
 
   if (_.isNull(data.contact)) {
-    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
+    const userRoles = user?.roles || data.roles;
+    if (userRoles.roles && roles.isOffline(userRoles.roles)) {
       return Promise.reject(error400(
         'Contact field is required for offline users',
         'field is required',
         {'field': 'Contact'}
       ));
     }
-    user.contact_id = null;
-    userSettings.contact_id = null;
   }
 };
 
@@ -580,11 +659,15 @@ const validateUserContact = (data, user, userSettings) => {
  * @param {Object} data
  * @param {string} data.username Identifier used for authentication
  * @param {string[]} data.roles
- * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
- * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
- * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+ * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the
+ *   roles contain an offline role.
+ * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in
+ *   the app. Required if the roles contain an offline role.
+ * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved.
+ *   Required if token_login is not enabled for the user.
  * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
- * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+ * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this
+ *   user.
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -603,6 +686,7 @@ const createUserEntities = async (data, appUrl) => {
   await setContactParent(data);
   await createContact(data, response);
   await storeUpdatedPlace(data, preservePrimaryContact);
+  hydratePayload(data);
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
@@ -733,18 +817,17 @@ const createRecordBulkLog = (record, status, error, message) => {
 
 const hydrateUserSettings = (userSettings) => {
   return db.medic
-    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .allDocs({ keys: [ userSettings.contact_id, ...userSettings.facility_id ], include_docs: true })
     .then((response) => {
-      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+      if (!response.rows || !Array.isArray(response.rows)) {
+        return userSettings;
+      }
+      const [ contactRow, ...facilityRows ] = response.rows;
+      if (!facilityRows.length || !contactRow) { // malformed response
         return userSettings;
       }
 
-      const [facilityRow, contactRow] = response.rows;
-      if (!facilityRow || !contactRow) { // malformed response
-        return userSettings;
-      }
-
-      userSettings.facility = facilityRow.doc;
+      userSettings.facility = facilityRows.map(row => row.doc);
       userSettings.contact = contactRow.doc;
 
       return userSettings;
@@ -764,14 +847,90 @@ const getUserDocsByName = (name) => Promise.all(['users', 'medic'].map(dbName =>
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
-  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id', 'contact_id'));
+  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'contact_id'));
+  medicUser.facility_id = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
   return hydrateUserSettings(medicUser);
 };
 
+const createMultiFacilityUser = async (data, appUrl) => {
+  const missing = missingFields(data);
+  if (missing.length > 0) {
+    return Promise.reject(error400(
+      'Missing required fields: ' + missing.join(', '),
+      'fields.required',
+      { 'fields': missing.join(', ') }
+    ));
+  }
+  hydratePayload(data);
+
+  const tokenLoginError = tokenLogin.validateTokenLogin(data, true);
+  if (tokenLoginError) {
+    throw error400(tokenLoginError.msg, tokenLoginError.key);
+  }
+  const passwordError = validatePassword(data.password);
+  if (passwordError) {
+    throw passwordError;
+  }
+
+  const response = {};
+  await validateNewUsername(data.username);
+  await validateUserFacility(data);
+  await validateUserContact(data);
+
+  await createUser(data, response);
+  await createUserSettings(data, response);
+  await tokenLogin.manageTokenLogin(data, appUrl, response);
+  return response;
+};
+
+const validateUpgradeAttemptFields = (data) => {
+  const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
+
+  // Online users can remove place or contact
+  if (!_.isNull(data.place) &&
+      !_.isNull(data.contact) &&
+      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
+  ) {
+    throw error400(
+      'One of the following fields are required: ' + props.join(', '),
+      'fields.one.required',
+      { 'fields': props.join(', ') }
+    );
+  }
+};
+
+const validateUpgradeAtetmptPassword = (data) => {
+  if (data.password) {
+    const passwordError = validatePassword(data.password);
+    if (passwordError) {
+      throw passwordError;
+    }
+  }
+};
+
+const validateUpdateAttempt = (data, fullAccess) => {
+  // Reject update attempts that try to modify data they're not allowed to
+  if (!fullAccess) {
+    const illegalAttempts = illegalDataModificationAttempts(data);
+    if (illegalAttempts.length) {
+      const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
+      err.status = 401;
+      throw err;
+    }
+  }
+
+  validateUpgradeAttemptFields(data);
+  validateUpgradeAtetmptPassword(data);
+};
+
+const checkPayloadFacilityCount = (data) => {
+  return Array.isArray(data.place) && data.place.length > 1;
+};
+
 /*
- * Everything not exported directly is private.  Underscore prefix is only used
- * to export functions needed for testing.
- */
+   * Everything not exported directly is private.  Underscore prefix is only used
+   * to export functions needed for testing.
+   */
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
   getList: async (filters) => {
@@ -797,11 +956,15 @@ module.exports = {
    * @param {Object} data
    * @param {string} data.username Identifier used for authentication
    * @param {string[]} data.roles
-   * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
-   * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
-   * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if
+   *   the roles contain an offline role.
+   * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in
+   *   the app. Required if the roles contain an offline role.
+   * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved.
+   *   Required if token_login is not enabled for the user.
    * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
-   * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for
+   *   this user.
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -840,11 +1003,15 @@ module.exports = {
    * @param {Object|Object[]} users[]
    * @param {string} users[].username Identifier used for authentication
    * @param {string[]} users[].roles
-   * @param {(Object|string)=} users[].place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
-   * @param {(Object|string)=} users[].contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
-   * @param {string=} users[].password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {(Object|string)=} users[].place Place identifier string (UUID) or object this user resides in. Required if
+   *   the roles contain an offline role.
+   * @param {(Object|string)=} users[].contact A person identifier string (UUID) or object based on the form configured
+   *   in the app. Required if the roles contain an offline role.
+   * @param {string=} users[].password Password string used for authentication. Only allowed to be set, not retrieved.
+   *   Required if token_login is not enabled for the user.
    * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
-   * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for
+   *   this user.
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
@@ -886,6 +1053,7 @@ module.exports = {
         if (missing.length > 0) {
           throw new Error('Missing required fields: ' + missing.join(', '));
         }
+        hydratePayload(user);
 
         const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
         if (tokenLoginError) {
@@ -953,36 +1121,8 @@ module.exports = {
    * @param      {String}    appUrl      request protocol://hostname
    */
   updateUser: async (username, data, fullAccess, appUrl) => {
-    // Reject update attempts that try to modify data they're not allowed to
-    if (!fullAccess) {
-      const illegalAttempts = illegalDataModificationAttempts(data);
-      if (illegalAttempts.length) {
-        const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
-        err.status = 401;
-        return Promise.reject(err);
-      }
-    }
-
-    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
-
-    // Online users can remove place or contact
-    if (!_.isNull(data.place) &&
-      !_.isNull(data.contact) &&
-      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
-    ) {
-      return Promise.reject(error400(
-        'One of the following fields are required: ' + props.join(', '),
-        'fields.one.required',
-        { 'fields': props.join(', ') }
-      ));
-    }
-
-    if (data.password) {
-      const passwordError = validatePassword(data.password);
-      if (passwordError) {
-        return Promise.reject(passwordError);
-      }
-    }
+    await validateUpdateAttempt(data, fullAccess);
+    hydratePayload(data);
 
     const [user, userSettings] = await Promise.all([
       getUpdatedUserDoc(username, data),
@@ -994,8 +1134,9 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    await validateUserFacility(data, user, userSettings);
-    await validateUserContact(data, user, userSettings);
+    await validateUserFacility(data, user);
+    await validateUserContact(data, user);
+
     const response = {
       user: await saveUserUpdates(user),
       'user-settings': await saveUserSettingsUpdates(userSettings),
@@ -1024,4 +1165,8 @@ module.exports = {
    * @param {string} csv CSV of users.
    */
   parseCsv,
+
+  createMultiFacilityUser,
+
+  checkPayloadFacilityCount,
 };

@@ -14,6 +14,8 @@ const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
 const config = require('../config');
 const environment = require('@medic/environment');
+const dataContext = require('./data-context');
+const environment = require('../environment');
 const extensionLibs = require('./extension-libs');
 
 const MEDIC_DDOC_ID = '_design/medic';
@@ -42,7 +44,7 @@ const loadTranslations = () => {
 };
 
 const initTransitionLib = () => {
-  const transitionsLib = require('@medic/transitions')(db, config);
+  const transitionsLib = require('@medic/transitions')(db, config, dataContext);
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);

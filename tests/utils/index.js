@@ -63,6 +63,9 @@ const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
 const cookieJar = rpn.jar();
 
+// Cookies from the jar will be included on Node `fetch` calls
+global.fetch = require('fetch-cookie').default(global.fetch, cookieJar);
+
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
   ...process.env,
@@ -753,14 +756,15 @@ const getCreatedUsers = async () => {
  * @return {Promise}
  * */
 const createUsers = async (users, meta = false) => {
-  const createUserOpts = {
-    path: '/api/v1/users',
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  };
+  const createUserOpts = { path: '/api/v1/users', method: 'POST' };
+  const createUserV3Opts = { path: '/api/v3/users', method: 'POST' };
 
   for (const user of users) {
-    await request({ ...createUserOpts, body: user });
+    const options = {
+      body: user,
+      ...(Array.isArray(user.place) ? createUserV3Opts : createUserOpts)
+    };
+    await request(options);
   }
 
   await delayPromise(1000);
@@ -1228,10 +1232,10 @@ const getLogs = (container) => {
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
   const command = isDocker() ? 'docker' : 'kubectl';
 
-  const params = `logs ${container}${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
+  const params = `logs ${container} ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn(command, params.split(' '));
+    const cmd = spawn(command, params);
     cmd.on('error', (err) => {
       console.error('Error while collecting container logs', err);
       reject(err);
@@ -1294,14 +1298,14 @@ const waitForLogs = (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let firstLine = false;
-  tail = isDocker() ? true : tail;
+  tail = (isDocker() || tail) ? '--tail=1': '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f${tail ? ` --tail=1` : ''}${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
-  const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const params = `logs ${container} -f ${tail} ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
+  const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
@@ -1373,8 +1377,8 @@ const collectLogs = (container, ...regex) => {
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
-  const params = `logs ${container} -f --tail=1${isK3D() ? ` ${KUBECTL_CONTEXT}` : ''}`;
-  const proc = spawn(cmd, params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const params = `logs ${container} -f --tail=1 ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
+  const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
@@ -1456,7 +1460,7 @@ const getContainerName = (service, project = PROJECT_NAME) => {
   return `deployment/cht-${service}`;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
+const getUpdatedPermissions  = async (roles, addPermissions, removePermissions) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {
@@ -1466,7 +1470,12 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
   });
 
   (removePermissions || []).forEach(permission => settings.permissions[permission] = []);
-  await updateSettings({ permissions: settings.permissions }, ignoreReload);
+  return settings.permissions;
+};
+
+const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
+  const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
+  await updateSettings({ permissions }, ignoreReload);
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
@@ -1577,6 +1586,7 @@ module.exports = {
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
+  getUpdatedPermissions,
   formDocProcessing,
   getSentinelDate,
   logFeedbackDocs,

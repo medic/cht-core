@@ -84,22 +84,48 @@ describe('TargetAggregatesService', () => {
   });
 
   describe('isEnabled', () => {
-    it('should return false when user does not have permission', async () => {
-      authService.has.resolves(false);
-
-      const result = await service.isEnabled();
-
-      expect(result).to.equal(false);
-    });
-
-    it('should return true when user has permission', async () => {
+    it('should return true when user has permission and user has one facility assigned as array', async () => {
       authService.has.resolves(true);
+      userSettingsService.get.resolves({ facility_id: [ 'facility-1' ] });
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(true);
       expect(authService.has.callCount).to.equal(1);
       expect(authService.has.args[0]).to.deep.equal(['can_aggregate_targets']);
+      expect(userSettingsService.get.calledOnce).to.be.true;
+    });
+
+    it('should return true when user has permission and user has one facility assigned as string', async () => {
+      authService.has.resolves(true);
+      userSettingsService.get.resolves({ facility_id: 'facility-1' });
+
+      const result = await service.isEnabled();
+
+      expect(result).to.equal(true);
+      expect(authService.has.callCount).to.equal(1);
+      expect(authService.has.args[0]).to.deep.equal(['can_aggregate_targets']);
+      expect(userSettingsService.get.calledOnce).to.be.true;
+    });
+
+    it('should return false when user does not have permission', async () => {
+      authService.has.resolves(false);
+      userSettingsService.get.resolves({ facility_id: [ 'facility-1' ] });
+
+      const result = await service.isEnabled();
+
+      expect(result).to.equal(false);
+      expect(userSettingsService.get.notCalled).to.be.true;
+    });
+
+    it('should return false when user has more than one facility assigned', async () => {
+      authService.has.resolves(true);
+      userSettingsService.get.resolves({ facility_id: [ 'facility-1', 'facility-2' ] });
+
+      const result = await service.isEnabled();
+
+      expect(result).to.equal(false);
+      expect(userSettingsService.get.calledOnce).to.be.true;
     });
   });
 

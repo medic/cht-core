@@ -243,4 +243,31 @@ describe('Server utils', () => {
     });
   });
 
+  describe('doOrError', () => {
+    let serverUtilsError;
+
+    beforeEach(() => {
+      serverUtilsError = sinon.stub(serverUtils, 'error');
+    });
+
+    it('returns the function output when no error is thrown', async () => {
+      const fn = sinon.stub().resolves('result');
+
+      const result = await serverUtils.doOrError(fn)(req, res);
+
+      chai.expect(result).to.equal('result');
+      chai.expect(fn.calledOnceWithExactly(req, res)).to.be.true;
+      chai.expect(serverUtilsError.notCalled).to.be.true;
+    });
+
+    it('calls error when an error is thrown', async () => {
+      const error = new Error('error');
+      const fn = sinon.stub().rejects(error);
+
+      await serverUtils.doOrError(fn)(req, res);
+
+      chai.expect(fn.calledOnceWithExactly(req, res)).to.be.true;
+      chai.expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+    });
+  });
 });

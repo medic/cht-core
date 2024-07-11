@@ -7,6 +7,7 @@ const environment = require('@medic/environment');
 const resources = require('./resources');
 const config = require('./config');
 const db = require('./db');
+const dataContext = require('./services/data-context');
 const path = require('path');
 const auth = require('./auth');
 const prometheusMiddleware = require('prometheus-api-metrics');
@@ -36,7 +37,9 @@ const exportData = require('./controllers/export-data');
 const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
-const { people, places } = require('@medic/contacts')(config, db);
+const person = require('./controllers/person');
+const place = require('./controllers/place');
+const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
@@ -432,7 +435,9 @@ app.get('/api/v2/users/:username', users.v2.get);
 app.get('/api/v2/users', users.v2.list);
 app.postJson('/api/v1/users', users.create);
 app.postJsonOrCsv('/api/v2/users', users.v2.create);
+app.postJson('/api/v3/users', users.v3.create);
 app.postJson('/api/v1/users/:username', users.update);
+app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
@@ -462,6 +467,8 @@ app.postJson('/api/v1/places/:id', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
+app.get('/api/v1/place/:uuid', place.v1.get);
+
 app.postJson('/api/v1/people', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_create_people'])
@@ -473,6 +480,8 @@ app.postJson('/api/v1/people', function(req, res) {
     })
     .catch(err => serverUtils.error(err, req, res));
 });
+
+app.get('/api/v1/person/:uuid', person.v1.get);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 

@@ -1,12 +1,14 @@
+const moment = require('moment');
+const _ = require('lodash');
+const fs = require('fs');
+const uuid = require('uuid').v4;
+
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page.js');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const moment = require('moment');
-const _ = require('lodash');
-const fs = require('fs');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
@@ -139,14 +141,31 @@ describe('Target aggregates', () => {
       // next month targets, in case the reporting period switches mid-test
       moment().date(10).add(1, 'month').format('YYYY-MM'),
     ];
+    const contactWithManyPlaces = personFactory.build({
+      parent: { _id: parentPlace._id, parent: { _id: parentPlace._id } },
+    });
+    const userWithManyPlaces = {
+      _id: 'org.couchdb.user:offline_many_facilities',
+      language: 'en',
+      known: true,
+      type: 'user-settings',
+      roles: [ 'chw' ],
+      facility_id: [ parentPlace._id, otherParentPlace._id ],
+      contact_id: contactWithManyPlaces._id,
+      name: 'offline_many_facilities'
+    };
+    const userWithManyPlacesPass = uuid();
 
     before(async () => {
-      const allDocs = [...docs, parentPlace, otherParentPlace];
+      const allDocs = [ ...docs, parentPlace, otherParentPlace, contactWithManyPlaces, userWithManyPlaces ];
       await utils.saveDocs(allDocs);
       await utils.createUsers([user]);
+      await utils.request({
+        path: `/_users/${userWithManyPlaces._id}`,
+        method: 'PUT',
+        body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
+      });
       await browser.url('/medic/login');
-      await loginPage.login({ username: user.username, password: user.password });
-      await commonPage.waitForPageLoaded();
     });
 
     const DOCS_TO_KEEP = [
@@ -159,9 +178,20 @@ describe('Target aggregates', () => {
       [/^form:/],
     ];
 
-    afterEach(async () => await utils.revertDb(DOCS_TO_KEEP, true));
+    afterEach(async () => {
+      await commonPage.logout();
+      await utils.revertDb(DOCS_TO_KEEP, true);
+    });
+
+    it('should disable content when user has many facilities associated', async () => {
+      await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
+      await commonPage.waitForPageLoaded();
+      await targetAggregatesPage.checkContentDisabled();
+    });
 
     it('should display no data when no targets are uploaded', async () => {
+      await loginPage.login({ username: user.username, password: user.password });
+      await commonPage.waitForPageLoaded();
       const targetsConfig = [
         { id: 'not_aggregate', type: 'count', title: generateTitle('my task') },
         { id: 'count_no_goal', type: 'count', title: generateTitle('count no goal'), aggregate: true },
@@ -203,6 +233,8 @@ describe('Target aggregates', () => {
     });
 
     it('should display correct data', async () => {
+      await loginPage.login({ username: user.username, password: user.password });
+      await commonPage.waitForPageLoaded();
       const targetsConfig = [
         { id: 'count_no_goal', type: 'count', title: generateTitle('count no goal'), aggregate: true },
         { id: 'count_with_goal', type: 'count', title: generateTitle('count with goal'), goal: 20, aggregate: true },
@@ -316,6 +348,8 @@ describe('Target aggregates', () => {
     });
 
     it('should route to contact-detail on list item click and display contact summary target card', async () => {
+      await loginPage.login({ username: user.username, password: user.password });
+      await commonPage.waitForPageLoaded();
       const targetsConfig = [
         { id: 'a_target', type: 'count', title: generateTitle('what a target!'), aggregate: true },
         { id: 'b_target', type: 'percent', title: generateTitle('the most target'), aggregate: true },

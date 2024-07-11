@@ -14,7 +14,7 @@
       {
         "allowModules": [
           "@medic/bulk-docs-utils",
-          "@medic/cht-script-api",
+          "@medic/cht-datasource",
           "@medic/contact-types-utils",
           "@medic/contacts",
           "@medic/couch-request",

@@ -1,6 +1,10 @@
 const commonElements = require('@page-objects/default/common/common.wdio.page.js');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page.js');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
+const path = require('path');
+const constants = require('@constants');
+const chtConfUtils = require('@utils/cht-conf');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 const userFactory = require('@factories/cht/users/users');
@@ -34,8 +38,8 @@ describe('Contact details page', () => {
     const user = userFactory.build({ username: 'offlineuser', roles: [role] });
     const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
 
-    const reports = Array
-      .from({ length: 60 })
+    const newReports = Array
+      .from({ length: 40 })
       .map(() => reportFactory.report().build(
         { form: 'pregnancy_danger_sign' },
         {
@@ -44,7 +48,18 @@ describe('Contact details page', () => {
           fields: { t_danger_signs_referral_follow_up: 'yes' },
         }
       ));
-
+    const oldReportDate = new Date();
+    oldReportDate.setMonth(new Date().setMonth() - 4);
+    const oldReports = Array
+      .from({ length: 20 })
+      .map(() => reportFactory.report().build(
+        { form: 'pregnancy', reported_date: oldReportDate },
+        {
+          patient,
+          submitter: user.contact,
+          fields: { t_danger_signs_referral_follow_up: 'yes' },
+        }
+      ));
     const pregnancyReport = pregnancyFactory.build({
       fields: {
         patient_id: patient._id,
@@ -52,6 +67,7 @@ describe('Contact details page', () => {
         patient_name: patient.name,
       },
     });
+    const reports = [...newReports, ...oldReports, pregnancyReport];
 
     const updatePermissions = async (role, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();
@@ -70,12 +86,16 @@ describe('Contact details page', () => {
       await updatePermissions(role, permissions);
 
       await utils.saveDocs([parent, patient]);
-      await utils.saveDocs([...reports, pregnancyReport]);
+      await utils.saveDocs(reports);
 
       await utils.createUsers([user]);
 
       await loginPage.login(user);
       await commonElements.waitForPageLoaded();
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
     });
 
     it('should show reports and tasks when permissions are enabled', async () => {
@@ -86,8 +106,11 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
       expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
+
+      await contactPage.filterReportViewAll();
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
     });
 
     it(
@@ -125,8 +148,46 @@ describe('Contact details page', () => {
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
 
-      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(DOCS_DISPLAY_LIMIT);
+      expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
     });
   });
 
+  describe('Contact summary error', () => {
+    const places = placeFactory.generateHierarchy();
+    const clinic = places.get('clinic');
+
+    const patient = personFactory.build({
+      name: 'Patient',
+      phone: '+50683444444',
+      parent: { _id: clinic._id, parent: clinic.parent }
+    });
+
+    before(async () => {
+      await chtConfUtils.initializeConfigDir();
+      const contactSummaryFile = path.join(__dirname, 'config/contact-summary-error-config.js');
+
+      const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+      await utils.updateSettings({ contact_summary: contactSummary }, true);
+
+      await utils.saveDocs([...places.values(), patient]);
+
+      await loginPage.cookieLogin();
+      await (await commonPage.goToPeople(patient._id));
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
+    });
+
+    it('should show error log for bad config', async () => {
+      const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
+
+      expect(username).to.equal(constants.USERNAME);
+      expect(url).to.equal(constants.API_HOST);
+      expect(errorMessage).to.equal('Error fetching people');
+      expect(await (await errorStack.isDisplayed())).to.be.true;
+      expect(await (await errorStack.getText())).to
+        .include('Error: Configuration error');
+    });
+  });
 });

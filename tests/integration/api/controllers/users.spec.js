@@ -18,6 +18,10 @@ const parentPlace = {
   name: 'Big Parent Hospital'
 };
 
+const randomIp = () => {
+  const section = () => (Math.floor(Math.random() * 255) + 1);
+  return `${section()}.${section()}.${section()}.${section()}`;
+};
 
 describe('Users API', () => {
 
@@ -29,6 +33,7 @@ describe('Users API', () => {
       noAuth: true,
       body: { user: user.username, password: user.password },
       followRedirect: false,
+      headers: { 'X-Forwarded-For': randomIp() },
     };
 
     return utils
@@ -51,6 +56,7 @@ describe('Users API', () => {
       simple: false,
       noAuth: true,
       body: { user: user.username, password: user.password },
+      headers: { 'X-Forwarded-For': randomIp() },
     };
 
     return utils
@@ -189,10 +195,10 @@ describe('Users API', () => {
         },
       });
       userSettingsDoc = await utils.getDoc(getUserId(username));
-      chai.expect(userSettingsDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userSettingsDoc.facility_id).to.deep.equal([newPlaceId]);
       chai.expect(userSettingsDoc.contact_id).to.equal(newContactId);
       userDoc = await utils.usersDb.get(getUserId(username));
-      chai.expect(userDoc.facility_id).to.equal(newPlaceId);
+      chai.expect(userDoc.facility_id).to.deep.equal([newPlaceId]);
       chai.expect(userDoc.contact_id).to.equal(newContactId);
     });
 
@@ -337,9 +343,9 @@ describe('Users API', () => {
         .then(([userSettings, user]) => {
           chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
           chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
-          chai.expect(userSettings.facility_id).to.equal(user.facility_id);
+          chai.expect(userSettings.facility_id).to.deep.equal(user.facility_id);
 
-          return utils.getDocs([userSettings.contact_id, userSettings.facility_id]);
+          return utils.getDocs([userSettings.contact_id, ...userSettings.facility_id]);
         })
         .then(([ contact, place ]) => {
           chai.expect(contact.patient_id).to.not.be.undefined;
@@ -407,7 +413,7 @@ describe('Users API', () => {
           _id: 'fixture:user:offlineonline',
           name: 'OnlineUser'
         },
-        roles: ['district_admin', 'mm-online']
+        roles: ['data_entry']
       },
     ];
 
@@ -663,6 +669,7 @@ describe('Users API', () => {
         noAuth: true,
         followRedirect: false,
         body: {},
+        headers: { 'X-Forwarded-For': randomIp() },
       };
       return utils.request(opts).then(response => {
         chai.expect(response).to.include({ statusCode: 302, body: '/' });
@@ -681,6 +688,7 @@ describe('Users API', () => {
         followRedirect: false,
         resolveWithFullResponse: true,
         body: {},
+        headers: { 'X-Forwarded-For': randomIp() },
       };
       return utils.request(opts).then(response => {
         chai.expect(response.headers['set-cookie']).to.be.undefined;
@@ -1645,7 +1653,7 @@ describe('Users API', () => {
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: facility,
+        place: [facility],
         contact: person,
       });
     });
@@ -1658,7 +1666,7 @@ describe('Users API', () => {
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: facility,
+        place: [facility],
         contact: person,
       });
     });
@@ -1701,7 +1709,7 @@ describe('Users API', () => {
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
         ...user,
-        place: facility,
+        place: [facility],
         contact: person,
       });
     });
@@ -1739,9 +1747,9 @@ describe('Users API', () => {
         const savedUser = savedUsers.find(savedUser => savedUser.username === user.username);
         expect(savedUser).to.deep.nested.include({
           id: `org.couchdb.user:${user.username}`,
-          'place.type': user.place.type,
-          'place.name': user.place.name,
-          'place.parent._id': parentPlace._id,
+          'place[0].type': user.place.type,
+          'place[0].name': user.place.name,
+          'place[0].parent._id': parentPlace._id,
           'contact.name': user.contact.name,
         });
       }
@@ -1812,14 +1820,14 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
         id: user1Response.user.id,
         'contact._id': contactA.id,
-        'place._id': facilityE.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
         id: user2Response.user.id,
         'contact._id': contactA.id,
-        'place._id': facilityE.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({
@@ -1830,20 +1838,20 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
         id: user1Response.user.id,
         'contact._id': contactA.id,
-        'place._id': facilityE.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
         id: user2Response.user.id,
         'contact._id': contactA.id,
-        'place._id': facilityE.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user3Response.user.id)).to.deep.nested.include({
         id: user3Response.user.id,
         'contact._id': contactB.id,
-        'place._id': facilityE.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({
@@ -1854,14 +1862,14 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
         id: user1Response.user.id,
         'contact._id': contactA.id,
-        'place._id': facilityE.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
       expect(filteredUsers.find(user => user.id === user2Response.user.id)).to.deep.nested.include({
         id: user2Response.user.id,
         'contact._id': contactA.id,
-        'place._id': facilityE.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityE.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({
@@ -1872,8 +1880,8 @@ describe('Users API', () => {
       expect(filteredUsers.find(user => user.id === user4Response.user.id)).to.deep.nested.include({
         id: user4Response.user.id,
         'contact._id': contactC.id,
-        'place._id': facilityF.id,
-        'place.parent._id': parentPlace._id,
+        'place[0]._id': facilityF.id,
+        'place[0].parent._id': parentPlace._id,
       });
 
       filteredUsers = await utils.request({
@@ -1890,6 +1898,171 @@ describe('Users API', () => {
 
       const allUsers = await utils.request({ path: '/api/v2/users' });
       expect(allUsers.map(user => user.id)).to.not.include(user5Response.user.id);
+    });
+  });
+
+  describe('POST api/v3/users', () => {
+    let places;
+    let contact;
+
+    before(async () => {
+      const placeAttributes = {
+        parent: { _id: parentPlace._id },
+        type: 'health_center',
+      };
+      places = [
+        placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
+        placeFactory.place().build({ ...placeAttributes, name: 'place2' }),
+        placeFactory.place().build({ ...placeAttributes, name: 'place3' }),
+      ];
+      contact = personFactory.build({
+        parent: { _id: places[0]._id, parent: places[0].parent },
+      });
+      await utils.saveDocs([...places, contact]);
+    });
+
+    afterEach(async () => {
+      await utils.revertSettings(true);
+    });
+
+    it('should create users with multiple facilities', async () => {
+      await utils.updatePermissions(['national_admin', 'chw'], ['can_have_multiple_places'], [], true);
+      const onlineUserPayload = {
+        username: uuid(),
+        password: password,
+        place: places.map(place => place._id),
+        contact: contact._id,
+        roles: ['national_admin']
+      };
+
+      const onlineResult = await utils.request({ path: '/api/v3/users', method: 'POST', body: onlineUserPayload });
+      const onlineUserDoc = await utils.getDoc(onlineResult.user.id);
+      const onlineUserSettingsDoc = await utils.getDoc(onlineResult['user-settings'].id);
+
+      expect(onlineUserDoc).to.deep.include({
+        roles: [...onlineUserPayload.roles, 'mm-online'],
+        facility_id: onlineUserPayload.place,
+        contact_id: onlineUserPayload.contact,
+      });
+
+      expect(onlineUserSettingsDoc).to.deep.include({
+        roles: [...onlineUserPayload.roles, 'mm-online'],
+        facility_id: onlineUserPayload.place,
+        contact_id: onlineUserPayload.contact,
+      });
+
+      const offlineUserPayload = {
+        username: uuid(),
+        password: password,
+        place: places.map(place => place._id),
+        contact: contact._id,
+        roles: ['chw']
+      };
+
+      const offlineResult = await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
+      const offlineUserDoc = await utils.usersDb.get(offlineResult.user.id);
+      const offlineUserSettingsDoc = await utils.getDoc(offlineResult['user-settings'].id);
+
+      expect(offlineUserDoc).to.deep.include({
+        roles: offlineUserPayload.roles,
+        facility_id: offlineUserPayload.place,
+        contact_id: offlineUserPayload.contact,
+      });
+
+      expect(offlineUserSettingsDoc).to.deep.include({
+        roles: offlineUserPayload.roles,
+        facility_id: offlineUserPayload.place,
+        contact_id: offlineUserPayload.contact,
+      });
+    });
+
+    it('should not allow creating users with multiple places without correct permission', async () => {
+      const offlineUserPayload = {
+        username: uuid(),
+        password: password,
+        place: places.map(place => place._id),
+        contact: contact._id,
+        roles: ['chw']
+      };
+
+      try {
+        await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
+        expect.fail('Should have thrown');
+      } catch (error) {
+        expect(error.statusCode).to.equal(400);
+        expect(error.error.error.message).to.equal('This user cannot have multiple places');
+      }
+    });
+
+    it('should edit users to add multiple facilities', async () => {
+      await utils.updatePermissions(['national_admin'], ['can_have_multiple_places']);
+      const onlineUserPayload = {
+        username: uuid(),
+        password: password,
+        place: places[0]._id,
+        contact: contact._id,
+        roles: ['national_admin']
+      };
+
+      const result = await utils.request({ path: '/api/v3/users', method: 'POST', body: onlineUserPayload });
+
+      const onlineUserDoc = await utils.getDoc(result.user.id);
+
+      expect(onlineUserDoc).to.deep.include({
+        roles: [...onlineUserPayload.roles, 'mm-online'],
+        facility_id: [onlineUserPayload.place],
+        contact_id: onlineUserPayload.contact,
+      });
+
+      const updatePayload = {
+        place: places.map(place => place._id),
+      };
+
+      await utils.request({
+        path: `/api/v3/users/${onlineUserPayload.username}`,
+        method: 'POST',
+        body: updatePayload
+      });
+
+      const userDoc = await utils.usersDb.get(result.user.id);
+      expect(userDoc.facility_id).to.deep.equal(updatePayload.place);
+      const userSettingsDoc =  await utils.getDoc(result.user.id);
+      expect(userSettingsDoc.facility_id).to.deep.equal(updatePayload.place);
+    });
+
+    it('should fail when facilities are malformed', async () => {
+      await utils.updatePermissions(['national_admin', 'chw'], ['can_have_multiple_places'], [], true);
+      const onlineUserPayload = {
+        username: uuid(),
+        password: password,
+        place: [],
+        contact: contact._id,
+        roles: ['national_admin']
+      };
+
+      try {
+        await utils.request({ path: '/api/v3/users', method: 'POST', body: onlineUserPayload });
+        expect.expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.responseBody.code).to.equal(400);
+        expect(err.responseBody.error.message).to.equal('Invalid facilities list');
+      }
+
+      const offlineUserPayload = {
+        username: uuid(),
+        password: password,
+        place: [''],
+        contact: contact._id,
+        roles: ['chw']
+      };
+
+      try {
+        await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
+        expect.expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.responseBody.code).to.equal(400);
+        expect(err.responseBody.error.message).to.equal('Missing required fields: place');
+      }
     });
   });
 });

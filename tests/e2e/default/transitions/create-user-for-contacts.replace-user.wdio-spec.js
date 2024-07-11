@@ -165,7 +165,7 @@ const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
   expect(newUserSettings).to.deep.include({
     roles: originalUser.roles,
     phone: newContact.phone,
-    facility_id: newContact.parent._id,
+    facility_id: [newContact.parent._id],
     contact_id: newContact._id,
     fullname: newContact.name,
   });

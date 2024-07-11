@@ -21,4 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run
-        run: npx --no-install commitlint <<< "${{ github.event.pull_request.title }}"
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: npx --no-install commitlint <<< "$TITLE"

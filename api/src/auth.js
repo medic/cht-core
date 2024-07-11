@@ -3,7 +3,8 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('@medic/environment');
 const config = require('./config');
-const { roles, users } = require('@medic/user-management')(config, db);
+const dataContext = require('./services/data-context');
+const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 
 const contentLengthRegex = /^content-length$/i;
 

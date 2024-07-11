@@ -48,7 +48,7 @@ const scrollToBottomOfModal = async () => {
   });
 };
 
-const inputAddUserFields = async (username, fullname, role, place, contact, password, confirmPassword = password) => {
+const inputAddUserFields = async (username, fullname, role, places, contact, password, confirmPassword = password) => {
   await (await userName()).setValue(username);
   await (await userFullName()).setValue(fullname);
   await (await $(`#role-select input[value="${role}"]`)).click();
@@ -57,8 +57,14 @@ const inputAddUserFields = async (username, fullname, role, place, contact, pass
   // scrollIntoView doesn't work because they're within a scrollable div (the modal)
   await scrollToBottomOfModal();
 
-  if (!_.isEmpty(place)) {
-    await selectPlace(place);
+  if (!_.isEmpty(places)) {
+    if (Array.isArray(places)) {
+      for (const name of places) {
+        await selectPlace([name]);
+      }
+    } else {
+      await selectPlace([places]);
+    }
   }
 
   if (!_.isEmpty(contact)) {
@@ -78,7 +84,9 @@ const setSelect2 = async (id, value) => {
   await input.waitForExist();
   await input.click();
 
-  const searchField = await $('.select2-search__field');
+  const searchField = await $(
+    `.select2-container--open .select2-search__field`
+  );
   await searchField.waitForExist();
   await searchField.setValue(value);
 
@@ -88,8 +96,26 @@ const setSelect2 = async (id, value) => {
   await option.click();
 };
 
-const selectPlace = async (place) => {
-  await setSelect2('facilitySelect', place);
+const setPlaceSelectMultiple = async (value) => {
+  const input = await $(`span.select2-selection--multiple`);
+  await input.waitForExist();
+  await input.click();
+
+  const searchField = await $('span.select2-selection--multiple .select2-search__field');
+  await searchField.waitForExist();
+  await searchField.setValue(value);
+
+  const option = await $('.name');
+  await option.waitForExist();
+  await option.waitForClickable();
+  await option.click();
+  await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
+};
+
+const selectPlace = async (places) => {
+  for (const place of places) {
+    await setPlaceSelectMultiple(place);
+  }
 };
 
 const selectContact = async (associatedContact) => {

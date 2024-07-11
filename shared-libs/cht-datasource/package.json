@@ -1,0 +1,23 @@
+{
+  "name": "@medic/cht-datasource",
+  "version": "1.0.0",
+  "description": "Provides an API for the CHT data model",
+  "main": "dist/index.js",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "postinstall": "rm -rf dist && npm run build",
+    "build": "tsc -p tsconfig.build.json",
+    "build-watch": "tsc --watch -p tsconfig.build.json",
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha \"test/**/*\"",
+    "gen-docs": "typedoc ./src/index.ts"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@medic/contact-types-utils": "file:../contact-types-utils",
+    "@medic/logger": "file:../logger",
+    "typedoc": "^0.25.13"
+  }
+}
