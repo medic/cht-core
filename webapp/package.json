@@ -69,7 +69,7 @@
     "pouchdb-generate-replication-id": "^7.3.1",
     "rxjs": "^7.8.1",
     "select2": "4.0.3",
-    "signature_pad": "2.3.x",
+    "signature_pad": "^5.0.2",
     "simple-password-tester": "^1.0.0",
     "tslib": "^2.5.3",
     "uuid": "^9.0.1",
