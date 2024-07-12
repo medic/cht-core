@@ -20,71 +20,6 @@ const downloadUtils = require('enketo-core/src/js/download-utils').default;
 const DELAY = 1500;
 
 /**
- * SignaturePad.prototype.fromDataURL is asynchronous and does not fit the image to the current canvas size.
- *
- * @function external:SignaturePad#fromObjectURL
- * @param {*} objectUrl - ObjectURL
- * @param {object} options - options
- * @param {number} [options.ratio] - ratio
- * @param {number} [options.width] - width
- * @param {number} [options.height] - height
- * @return {Promise} a promise that resolves with an objectURL
- */
-SignaturePad.prototype.fromObjectURL = function (
-  dataUrl,
-  options = {},
-) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const deviceRatio = options.ratio || window.devicePixelRatio || 1;
-    const width = options.width || this.canvas.width / deviceRatio;
-    const height = options.height || this.canvas.height / deviceRatio;
-
-    this._reset(this._getPointGroupOptions());
-
-    image.onload = () => {
-      const imgWidth = image.width;
-      const imgHeight = image.height;
-      const hRatio = width / imgWidth;
-      const vRatio = height / imgHeight;
-      let left;
-      let top;
-
-      if (hRatio < 1 || vRatio < 1) {
-        // if image is bigger than canvas then fit within the canvas
-        const ratio = Math.min(hRatio, vRatio);
-        left = (width - imgWidth * ratio) / 2;
-        top = (height - imgHeight * ratio) / 2;
-        this._ctx.drawImage(
-          image,
-          0,
-          0,
-          imgWidth,
-          imgHeight,
-          left,
-          top,
-          imgWidth * ratio,
-          imgHeight * ratio
-        );
-      } else {
-        // if image is smaller than canvas then show it in the center and don't stretch it
-        left = (width - imgWidth) / 2;
-        top = (height - imgHeight) / 2;
-        this._ctx.drawImage(image, left, top, imgWidth, imgHeight);
-      }
-      resolve();
-    };
-    image.onerror = (error) => {
-      reject(error);
-    };
-    image.crossOrigin = 'anonymous';
-    image.src = dataUrl;
-
-    this._isEmpty = false;
-  });
-}
-
-/**
  * Widget to obtain user-provided drawings or signature.
  *
  * @augments Widget
@@ -117,7 +52,13 @@ class DrawWidget extends Widget {
         penColor: this.props.colors[0] || 'black',
       });
       this.pad.addEventListener('endStroke', () => {
-        this._updateValue();
+        // keep replacing this timer so continuous drawing
+        // doesn't update the value after every stroke.
+        clearTimeout(this._updateWithDelay);
+        this._updateWithDelay = setTimeout(
+          this._updateValue.bind(this),
+          DELAY
+        );
       });
       this.resizeObserver = new ResizeObserver(this._resizeCanvas.bind(this));
     });
@@ -399,12 +340,14 @@ class DrawWidget extends Widget {
 
     return fileManager
       .getObjectUrl(file)
-      .then((objectUrl) => {
-        this.cache = objectUrl;
-
-        return objectUrl;
+      .then(async (objectUrl) => {
+        this.cache = {
+          objectUrl,
+          options: await this._getImageScalingOptions(objectUrl)
+        };
+        return this.pad.fromDataURL(objectUrl, this.cache.options);
       })
-      .then(this.pad.fromObjectURL.bind(this.pad))
+      .then(this._setBackgroundImage.bind(this))
       .catch(() => {
         this._showFeedback(
           'File could not be loaded (leave unchanged if already submitted and you want to preserve it).',
@@ -423,6 +366,45 @@ class DrawWidget extends Widget {
     this.$widget.find('.draw-widget__feedback').text(message);
   }
 
+  async _getImageScalingOptions(dataUrl) {
+    return new Promise((resolve) => {
+      const image = new Image();
+      const deviceRatio = window.devicePixelRatio || 1;
+      const width = this.canvas.width / deviceRatio;
+      const height = this.canvas.height / deviceRatio;
+
+      image.onload = () => {
+        const imgWidth = image.width;
+        const imgHeight = image.height;
+        const hRatio = width / imgWidth;
+        const vRatio = height / imgHeight;
+
+        if (hRatio < 1 || vRatio < 1) {
+          // if image is bigger than canvas then fit within the canvas
+          const ratio = Math.min(hRatio, vRatio);
+          const left = (width - imgWidth * ratio) / 2;
+          const top = (height - imgHeight * ratio) / 2;
+          resolve({
+            xOffset: left,
+            yOffset: top,
+            width: imgWidth * ratio,
+            height: imgHeight * ratio,
+          });
+        }
+        // if image is smaller than canvas then show it in the center and don't stretch it
+        const left = (width - imgWidth) / 2;
+        const top = (height - imgHeight) / 2;
+        resolve({
+          xOffset: left,
+          yOffset: top,
+          width: imgWidth,
+          height: imgHeight,
+        });
+      };
+      image.src = dataUrl;
+    });
+  }
+
   // Adjust canvas coordinate space taking into account pixel ratio,
   // to make it look crisp on mobile devices.
   // This also causes canvas to be cleared.
@@ -438,8 +420,11 @@ class DrawWidget extends Widget {
     this.canvas.getContext("2d").scale(ratio, ratio);
 
     if(this.cache) {
-      this.pad.fromObjectURL(this.cache)
-        .then(() => this.pad.fromData(this.pad.toData(),{ clear: false }));
+      const padData = this.pad.toData();
+      this.pad.clear();
+      this.pad.fromDataURL(this.cache.objectUrl, this.cache.options).then(() => {
+        this.pad.fromData(padData,{ clear: false });
+      });
     } else {
       this.pad.fromData(this.pad.toData());
     }
