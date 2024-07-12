@@ -296,7 +296,7 @@ describe('Tasks group landing page', () => {
       await commonPage.goToPeople('', false);
       await expectTasksGroupLeaveModal();
       await modalPage.submit();
-      await (await contactsPage.contactList()).waitForDisplayed();
+      await (await contactsPage.leftPanelSelectors.contactList()).waitForDisplayed();
       await (await commonPage.waitForPageLoaded());
     });
 

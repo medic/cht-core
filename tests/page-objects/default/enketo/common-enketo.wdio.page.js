@@ -11,6 +11,13 @@ const enabledFieldset = (section) => section.$$('fieldset.or-branch:not(.disable
 
 const addRepeatSectionButton = () => $(`button.add-repeat-btn`);
 
+const radioButtonElement = async (question, value) => {
+  return (await getCurrentPageSection())
+    .$(`legend*=${question}`)
+    .parentElement()
+    .$(`label*=${value}`);
+};
+
 const getCorrectFieldsetSection = async (section) => {
   const countFieldset = await enabledFieldset(section).length;
   if (countFieldset){
@@ -23,21 +30,17 @@ const isElementDisplayed = async (type, text) => {
   return await (await getCurrentPageSection()).$(`${type}*=${text}`).isDisplayed();
 };
 
-const selectRadioButton = async (question, label) => {
-  const radioButton = await (await getCurrentPageSection())
-    .$(`legend*=${question}`)
-    .parentElement()
-    .$(`label*=${label}`);
-  await radioButton.waitForClickable();
-  await radioButton.click();
+const selectRadioButton = async (question, value) => {
+  await (await radioButtonElement(question, value)).waitForClickable();
+  await (await radioButtonElement(question, value)).click();
 };
 
-const selectCheckBox = async (question, text) => {
+const selectCheckBox = async (question, value) => {
   const page = await getCurrentPageSection();
   const checkbox = await (await getCorrectFieldsetSection(page))
     .$(`legend*=${question}`)
     .nextElement()
-    .$(`label*=${text}`);
+    .$(`label*=${value}`);
   await checkbox.waitForClickable();
   await checkbox.click();
 };
@@ -96,11 +99,19 @@ const uploadForm = async (formName, saveDoc = true) => {
   return formDoc;
 };
 
-const getInputValue = async (question) => {
+const getValue = async (typeSelector, question) => {
   return await (await getCurrentPageSection())
     .$(`label*=${question}`)
-    .$('input')
+    .$(typeSelector)
     .getValue();
+};
+
+const getInputValue = async (question) => {
+  return await getValue('input', question);
+};
+
+const getTextareaValue = async (question) => {
+  return await getValue('textarea', question);
 };
 
 const addRepeatSection = async () => {
@@ -125,6 +136,10 @@ const drawShapeOnCanvas = async (question) => {
     .perform();
 };
 
+const isRadioButtonSelected = async (question, value) => {
+  return await (await radioButtonElement(question, value)).getAttribute('data-checked');
+};
+
 module.exports = {
   isElementDisplayed,
   selectRadioButton,
@@ -136,6 +151,8 @@ module.exports = {
   validateSummaryReport,
   uploadForm,
   getInputValue,
+  getTextareaValue,
   addRepeatSection,
   drawShapeOnCanvas,
+  isRadioButtonSelected,
 };
