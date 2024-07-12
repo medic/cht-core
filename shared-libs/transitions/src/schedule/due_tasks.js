@@ -6,6 +6,7 @@ const date = require('../date');
 const config = require('../config');
 const db = require('../db');
 const request = require('@medic/couch-request');
+const environment = require('@medic/environment');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
@@ -130,7 +131,7 @@ const getBatch = async (query, startKey, startKeyDocId) => {
   }
 
   const options = {
-    baseUrl: db.couchUrl,
+    baseUrl: environment.couchUrl,
     uri: '/_design/medic/_view/messages_by_state',
     qs: queryString,
     json: true
