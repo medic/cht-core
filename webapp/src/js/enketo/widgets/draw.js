@@ -526,14 +526,19 @@ class DrawWidget extends Widget {
    * @param {Element} canvas - Canvas element
    */
   _resizeCanvas() {
-    // When zoomed out to less than 100%, for some very strange reason,
-    // some browsers report devicePixelRatio as less than 1
-    // and only part of the canvas is cleared then.
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    this.canvas.width = this.canvas.offsetWidth * ratio;
-    this.canvas.height = this.canvas.offsetHeight * ratio;
-    this.canvas.getContext('2d').scale(ratio, ratio);
-    this._redrawPad(this.pad.toData());
+    // Use a little trick to avoid resizing currently-hidden canvases
+    // https://github.com/enketo/enketo-core/issues/605
+    if (this.canvas.offsetWidth > 0) {
+      // When zoomed out to less than 100%, for some very strange reason,
+      // some browsers report devicePixelRatio as less than 1
+      // and only part of the canvas is cleared then.
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      this.canvas.width = this.canvas.offsetWidth * ratio;
+      this.canvas.height = this.canvas.offsetHeight * ratio;
+      this.canvas.getContext('2d')
+          .scale(ratio, ratio);
+      this._redrawPad(this.pad.toData());
+    }
   }
 
   /**
