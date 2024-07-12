@@ -42,6 +42,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   selectedContact;
   contactsLoadingSummary;
   forms;
+  summaryErrorStack;
   loadingSelectedContactReports;
   reportsTimeWindowMonths;
   tasksTimeWindowWeeks;
@@ -179,7 +180,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         if (!summary || !this.selectedContact?.doc) {
           return;
         }
-
+        if (summary.errorStack){
+          this.summaryErrorStack = summary.errorStack;
+          return;
+        }
         this.subscribeToSelectedContactXmlForms();
       });
     this.subscription.add(contactSummarySubscription);
@@ -242,14 +246,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.filteredReports = this.getFilteredReports(allReports, reportStartDate, this.DISPLAY_LIMIT);
   }
 
-  private getFilteredReports(allReports: any[], reportStartDate, displayLimit): any[] {
+  private getFilteredReports(allReports: any[], startDate, displayLimit): any[] {
     const filteredReports: any[] = [];
     for (const report of allReports) {
-      if (filteredReports.length >= displayLimit) {
-        break;
-      }
-
-      if (reportStartDate?.isBefore(report.reported_date)) {
+      if (filteredReports.length < displayLimit && (!startDate || startDate.isBefore(report.reported_date))) {
         filteredReports.push(report);
       }
     }
@@ -272,7 +272,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       relevantForms: [], // This disables the "New Action" button until forms load
       sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
       canDelete: this.canDeleteContact,
-      canEdit: this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
+      canEdit: this.isOnlineOnly || !this.userSettings?.facility_id?.includes(this.selectedContact?.doc?._id),
       openContactMutedModal: (form) => this.openContactMutedModal(form),
       openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo),
     });

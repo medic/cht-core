@@ -40,12 +40,13 @@ const visitLabel = () => $(`${CARD} .row label`);
 const numberOfReports = () => $((`${CARD} .row p`));
 
 const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
-const rhsReportListSelector = '.card.reports mm-content-row h4 span';
-const rhsTaskListSelector = '.card.tasks mm-content-row h4 span';
-const rhsTaskListElement = () => $(rhsTaskListSelector);
-const rhsTaskListElementList = () => $$(rhsTaskListSelector);
-const rhsReportListElement = () => $(rhsReportListSelector);
-const rhsReportElementList = () => $$(rhsReportListSelector);
+const RHS_REPORT_LIST_CARD = '.card.reports';
+const RHS_REPORT_LIST_SELECTOR = `${RHS_REPORT_LIST_CARD} mm-content-row h4 span`;
+const RHS_TASK_LIST_SELECTOR = '.card.tasks mm-content-row h4 span';
+const rhsTaskListElement = () => $(RHS_TASK_LIST_SELECTOR);
+const rhsTaskListElementList = () => $$(RHS_TASK_LIST_SELECTOR);
+const rhsReportListElement = () => $(RHS_REPORT_LIST_SELECTOR);
+const rhsReportElementList = () => $$(RHS_REPORT_LIST_SELECTOR);
 
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
@@ -391,6 +392,12 @@ const getCurrentPersonEditFormValues = async (sexValue, roleValue) => {
   };
 };
 
+const filterReportViewAll = async () => {
+  const tabsContainer = $(`${RHS_REPORT_LIST_CARD} .action-header .table-filter`);
+  await tabsContainer.scrollIntoView();
+  await (await tabsContainer.$('*=View all')).click();
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -455,4 +462,5 @@ module.exports = {
   sexField,
   roleField,
   getCurrentPersonEditFormValues,
+  filterReportViewAll,
 };
