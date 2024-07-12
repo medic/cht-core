@@ -13,7 +13,12 @@ const rpn = require('request-promise-native');
 const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
 
-const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT, BASE_VERSION } = process.env;
+const {
+  MARKET_URL_READ='https://staging.dev.medicmobile.org',
+  STAGING_SERVER='_couch/builds_4',
+  HAPROXY_PORT,
+  BASE_VERSION='latest'
+} = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
 const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service-');
