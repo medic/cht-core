@@ -40,12 +40,26 @@ class DrawWidget extends Widget {
     this.element.dataset.drawing = true;
 
     this.element.after(this._getMarkup());
-    this.$widget = $(this.question.querySelector('.widget'));
+    const { question } = this;
+
+    question.classList.add(`or-${this.props.type}-initialized`);
+
+    this.$widget = $(question.querySelector('.widget'));
+
     this.canvas = this.$widget[0].querySelector('.draw-widget__body__canvas');
+    this.resizeObserver = new ResizeObserver(this._resizeCanvas.bind(this));
 
     if (this.props.load) {
       this._handleFiles(existingFilename);
     }
+
+    // This listener serves to capture a drawing when the submit button is clicked within [DELAY]
+    // milliseconds after the last stroke ended. Note that this could be the entire drawing/signature.
+    this.canvas.addEventListener('blur', this._forceUpdate.bind(this));
+
+    // We built a delay in saving on stroke "end", to avoid excessive updating
+    // This event does not fire on touchscreens for which we use the .hide-canvas-btn click
+    // to do the same thing.
 
     this.initialize = fileManager.init().then(() => {
       this.pad = new SignaturePad(this.canvas, {
@@ -60,46 +74,96 @@ class DrawWidget extends Widget {
           DELAY
         );
       });
-      this.resizeObserver = new ResizeObserver(this._resizeCanvas.bind(this));
+      this.pad.off();
+      if (existingFilename) {
+        this.element.value = existingFilename;
+
+        return this
+          ._loadFileIntoPad(existingFilename)
+          .then(this._updateDownloadLink.bind(this));
+      }
+
+      return true;
     });
     this.disable();
     this.initialize
-      .then(() => {
-        const that = this;
-        this.$widget
-          .find('.btn-reset')
-          .on('click', this._reset.bind(this))
-          .end()
-          .find('.draw-widget__colorpicker')
-          .on('click', '.current', function () {
-            $(this).parent().toggleClass('reveal');
-          })
-          .on('click', '[data-color]:not(.current)', function () {
-            $(this)
-              .siblings()
-              .removeClass('current')
+        .then(() => {
+          const that = this;
+          that.$widget
+              .find('.btn-reset')
+              .on('click', that._reset.bind(that))
               .end()
-              .addClass('current')
-              .parent()
-              .removeClass('reveal');
-            that.pad.penColor = this.dataset.color;
-          })
-          .end()
-          .find('.draw-widget__undo')
-          .on('click', () => {
-            const data = this.pad.toData();
-            if (data) {
-              data.pop(); // remove the last dot or line
-              this._redrawPad(data);
-            }
-          })
-          .end();
+              .find('.draw-widget__colorpicker')
+              .on('click', '.current', function () {
+                $(this).parent().toggleClass('reveal');
+              })
+              .on('click', '[data-color]:not(.current)', function () {
+                $(this)
+                  .siblings()
+                  .removeClass('current')
+                  .end()
+                  .addClass('current')
+                  .parent()
+                  .removeClass('reveal');
+                that.pad.penColor = this.dataset.color;
+              })
+              .end()
+              .find('.draw-widget__undo')
+              .on('click', () => {
+                const data = that.pad.toData();
+                if (data) {
+                  data.pop(); // remove the last dot or line
+                  that._redrawPad(data);
+                }
+              })
+              .end()
+              .find('.show-canvas-btn')
+              .on('click', () => {
+                that.$widget.addClass('full-screen');
+                that._resizeCanvas();
+                that.enable();
+
+                return false;
+              })
+              .end()
+              .find('.hide-canvas-btn')
+              .on('click', () => {
+                that.$widget.removeClass('full-screen');
+                that.pad.off();
+                that._forceUpdate();
+                that._resizeCanvas();
+
+                return false;
+              })
+              .click();
 
         this.enable();
       })
       .catch((error) => {
         this._showFeedback(error.message);
       });
+
+    $(this.element)
+      .on('applyfocus', () => {
+        this.canvas.focus();
+      })
+      .closest('[role="page"]')
+      .on(events.PageFlip().type, () => {
+        // When an existing value is loaded into the canvas and is not
+        // the first page, it won't become visible until the canvas is clicked
+        // or the window is resized:
+        // https://github.com/kobotoolbox/enketo-express/issues/895
+        // This also fixes a similar issue with an empty canvas:
+        // https://github.com/kobotoolbox/enketo-express/issues/844
+        this._resizeCanvas();
+      });
+  }
+
+  _forceUpdate() {
+    if (this._updateWithDelay) {
+      clearTimeout(this._updateWithDelay);
+      this._updateValue();
+    }
   }
 
   // All this is copied from the file-picker widget
@@ -292,6 +356,7 @@ class DrawWidget extends Widget {
       // pad.toData() doesn't seem to work when redrawing on a smaller canvas. Doesn't scale.
       // pad.toDataURL() is crude and memory-heavy but the advantage is that it will also work for appearance=annotate
       this.value = newValue;
+      this._updateDownloadLink(this.value);
     }
   }
 
@@ -299,45 +364,46 @@ class DrawWidget extends Widget {
    * Clears pad, cache, loaded file name, download link and others
    */
   _reset() { // NOSONAR
-    if (!this.element.value) {
-      return;
-    }
+    const that = this;
 
-    // This discombobulated line is to help the i18next parser pick up all 3 keys.
-    const item =
-      this.props.type === 'signature'
-        ? t('drawwidget.signature')
-        : this.props.type === 'drawing' // NOSONAR
-          ? t('drawwidget.drawing')
-          : t('drawwidget.annotation');
-    dialog
-      .confirm(t('filepicker.resetWarning', { item }))
-      .then((confirmed) => {
-        if (!confirmed) {
-          return;
-        }
-        this.pad.clear();
-        this.cache = null;
-        // Only upon reset is loadedFileName removed, so that "undo" will work
-        // for drawings loaded from storage.
-        delete this.element.dataset.loadedFileName;
-        delete this.element.dataset.loadedUrl;
-        this.element.dataset.filenamePostfix = '';
-        $(this.element).val('').trigger('change');
-        if (this._updateWithDelay) {
-          // This ensures that an emptied canvas will not be considered a drawing to be captured
-          // in _forceUpdate, e.g. after the blur event fires on an empty canvas see issue #924
-          this._updateWithDelay = null;
-        }
-        // Annotate file input
-        this.$widget
-            .find('input[type=file]')
-            .val('')
-            .trigger('change');
-        this._updateDownloadLink('');
-        this.disable();
-        this.enable();
-      });
+    if (this.element.value) {
+      // This discombobulated line is to help the i18next parser pick up all 3 keys.
+      const item =
+        this.props.type === 'signature'
+          ? t('drawwidget.signature')
+          : this.props.type === 'drawing' // NOSONAR
+            ? t('drawwidget.drawing')
+            : t('drawwidget.annotation');
+      dialog
+        .confirm(t('filepicker.resetWarning', { item }))
+        .then((confirmed) => {
+          if (!confirmed) {
+            return;
+          }
+          that.pad.clear();
+          that.cache = null;
+          that.baseImage = null;
+          // Only upon reset is loadedFileName removed, so that "undo" will work
+          // for drawings loaded from storage.
+          delete that.element.dataset.loadedFileName;
+          delete that.element.dataset.loadedUrl;
+          that.element.dataset.filenamePostfix = '';
+          $(that.element).val('').trigger('change');
+          if (that._updateWithDelay) {
+            // This ensures that an emptied canvas will not be considered a drawing to be captured
+            // in _forceUpdate, e.g. after the blur event fires on an empty canvas see issue #924
+            that._updateWithDelay = null;
+          }
+          // Annotate file input
+          that.$widget
+              .find('input[type=file]')
+              .val('')
+              .trigger('change');
+          that._updateDownloadLink('');
+          that.disable();
+          that.enable();
+        });
+    }
   }
 
   /**
@@ -359,7 +425,7 @@ class DrawWidget extends Widget {
     return fileManager
       .getObjectUrl(file)
       .then(async (objectUrl) => {
-        this.cache = {
+        this.baseImage = {
           objectUrl,
           options: await this._getImageScalingOptions(objectUrl)
         };
@@ -442,33 +508,33 @@ class DrawWidget extends Widget {
     });
   }
 
-  _redrawPad(padData = []) {
-    if(this.cache) {
+  async _redrawPad(padData = []) {
+    if(this.baseImage) {
       this.pad.clear();
-      return this.pad.fromDataURL(this.cache.objectUrl, this.cache.options)
-       .then(() => this.pad.fromData(padData,{ clear: false }));
+      await this.pad.fromDataURL(this.baseImage.objectUrl, this.baseImage.options);
+      this.pad.fromData(padData,{ clear: false });
+    } else {
+      this.pad.fromData(padData);
     }
-
-    this.pad.fromData(padData);
-    return Promise.resolve();
   }
 
-  // Adjust canvas coordinate space taking into account pixel ratio,
-  // to make it look crisp on mobile devices.
-  // This also causes canvas to be cleared.
+  /**
+   * Adjust canvas coordinate space taking into account pixel ratio,
+   * to make it look crisp on mobile devices.
+   * This also causes canvas to be cleared.
+   *
+   * @param {Element} canvas - Canvas element
+   */
   _resizeCanvas() {
     // When zoomed out to less than 100%, for some very strange reason,
     // some browsers report devicePixelRatio as less than 1
     // and only part of the canvas is cleared then.
-    const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-
-    // This part causes the canvas to be cleared
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
     this.canvas.width = this.canvas.offsetWidth * ratio;
     this.canvas.height = this.canvas.offsetHeight * ratio;
-    this.canvas.getContext("2d").scale(ratio, ratio);
-
+    this.canvas.getContext('2d').scale(ratio, ratio);
     this._redrawPad(this.pad.toData());
-  };
+  }
 
   /**
    * Disables widget
@@ -486,19 +552,25 @@ class DrawWidget extends Widget {
    * Enables widget
    */
   enable() {
+    const touchNotFull =
+      this.props.touch && !this.$widget.is('.full-screen');
+    const needFile = this.props.load && !this.element.value;
+
     this.initialize.then(() => {
       this.resizeObserver.observe(this.$widget[0].querySelector('.draw-widget__body'));
 
-      this.pad.on();
-      this.canvas.classList.remove('disabled');
-      this.$widget.find('.btn-reset').prop('disabled', false);
+      if (!this.props.readonly && !needFile && !touchNotFull) {
+        this.pad.on();
+        this.canvas.classList.remove('disabled');
+        this.$widget.find('.btn-reset').prop('disabled', false);
+      }
       // https://github.com/enketo/enketo-core/issues/450
       // When loading a question with a relevant, it is invisible
       // until branch.js removes the "pre-init" class. The rendering of the
       // canvas may therefore still be ongoing when this widget is instantiated.
       // For that reason we call _resizeCanvas when enable is called to make
       // sure the canvas is rendered properly.
-      this._resizeCanvas(this.canvas);
+      this._resizeCanvas();
     });
   }
 
@@ -549,6 +621,17 @@ class DrawWidget extends Widget {
     props.capture = this.element.getAttribute('capture');
 
     return props;
+  }
+
+  /**
+   * @type {string}
+   */
+  get value() {
+    return this.cache || '';
+  }
+
+  set value(dataUrl) {
+    this.cache = dataUrl;
   }
 }
 
