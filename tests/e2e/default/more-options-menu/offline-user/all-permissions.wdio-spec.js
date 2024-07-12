@@ -1,4 +1,4 @@
-const uuid = require('uuid').v4;
+//const uuid = require('uuid').v4;
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const reportPage = require('@page-objects/default/reports/reports.wdio.page');
@@ -19,24 +19,18 @@ describe('More Options Menu - Offline User', () => {
   let smsReportId;
 
   const contact = personFactory.build({
-    _id: uuid(),
-    name: 'OfflineContact',
     phone: '+12068881234',
     place: health_center._id,
-    type: 'person',
     parent: { _id: health_center._id, parent: health_center.parent },
   });
 
   const offlineUser = userFactory.build({
-    username: 'offlineuser',
     isOffline: true,
-    roles: ['chw'],
     place: health_center._id,
     contact: contact._id,
   });
 
   const patient = personFactory.build({
-    _id: uuid(),
     parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
   });
 
