@@ -163,9 +163,14 @@ const dateDiff = function (startDateObj, endDateObj, key) {
   return XPR.number(endDate.diff(startDate, key));
 };
 
+const stripWhitespace = function (string) {
+  return XPR.string(stripSpace(string));
+};
+
+const stripSpace = (s) => getValue(s).toString().trim().replace(/\s/g, '');
+
 const luhn = function (number, expLength) {
-  number = getValue(number);
-  number = number.toString().trim().replace(/\s/g, '');
+  number = stripSpace(number);
 
   if (!/^\d+$/.test(number) || (expLength && number.length !== expLength)) {
     return XPR.bool(false);
@@ -217,7 +222,8 @@ module.exports = {
     'difference-in-months': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.MONTHS), // To be deprecated
     'cht:difference-in-weeks': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.WEEKS),
     'cht:difference-in-days': (d1, d2) => dateDiff(d1, d2, MOMENT_KEYS.DAYS),
-    'cht:validate-luhn': (number, expectedLength) => luhn(number, expectedLength),
+    'cht:strip-whitespace': stripWhitespace,
+    'cht:validate-luhn': luhn,
     'cht:extension-lib': function () {
       const args = Array.from(arguments);
       const firstArg = args.shift();

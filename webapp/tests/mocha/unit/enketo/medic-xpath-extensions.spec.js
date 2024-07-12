@@ -381,6 +381,16 @@ describe('medic-xpath-extensions', function () {
     });
   });
 
+  describe('#strip-whitespace()', () => {
+    const test = func['cht:strip-whitespace'];
+
+    it('should return a string without any white spaces', () => {
+      const idNumber = { t: 'arr', v: [{ textContent: ' 65 05\n 28  5125 086 ' }] };
+      const result = test(idNumber);
+      assert.strictEqual(/\s/.test(result.v), false);
+    });
+  });
+
   describe('#validate-luhn()', () => {
     const test = func['cht:validate-luhn'];
 
