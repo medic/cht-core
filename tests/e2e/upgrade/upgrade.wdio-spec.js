@@ -147,6 +147,25 @@ describe('Performing an upgrade', () => {
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
     expect(await aboutPage.getVersion()).to.include(expected);
     await commonPage.logout();
+
+    // https://github.com/medic/cht-core/issues/9117
+    // install 'master' branch to make sure a new version can be installed from the build version
+
+    await loginPage.cookieLogin({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      createUser: false
+    });
+
+    await upgradeVersion('master');
+
+    expect(await upgradePage.getBuild()).to.include('alpha');
+    await commonPage.goToAboutPage();
+    await commonPage.waitForPageLoaded();
+    await (await aboutPage.aboutCard()).waitForDisplayed();
+    expect(await aboutPage.getVersion()).to.include('master');
+
+    await commonPage.logout();
   });
 
   it('should display upgrade page even without upgrade logs', async () => {

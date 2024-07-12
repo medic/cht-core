@@ -123,13 +123,8 @@ const servicesStartTimeout = () => {
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs:
-  // order is important, because we want to upgrade from an older version to current version. validate the upgrade
-  // and then upgrade to master
     [
-      'upgrade.wdio-spec.js',
-      'admin-user.wdio-spec.js',
-      'webapp.wdio-spec.js',
-      'upgrade-master.wdio-spec.js',
+      '*.wdio-spec.js',
     ],
   exclude: [],
 
@@ -145,7 +140,6 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   mochaOpts: {
     ui: 'bdd',
     timeout: TEST_TIMEOUT,
-    bail: true
   },
 });
 
