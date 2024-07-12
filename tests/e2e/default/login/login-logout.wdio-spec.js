@@ -4,17 +4,11 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
-let brandingDoc;
-
 describe('Login page funcionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
   };
-
-  before(async () => {
-    brandingDoc = await utils.getDoc('branding');
-  });
 
   afterEach(async () => {
     await browser.reloadSession();
@@ -51,13 +45,11 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should change locale to French', async () => {
-      //French translations
       expect(await loginPage.changeLanguage('fr', frTranslations.user)).to.deep.equal(frTranslations);
       expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'fr', name: 'Français (French)' });
     });
 
     it('should change locale to Spanish', async () => {
-      //Spanish translations
       expect(await loginPage.changeLanguage('es', esTranslations.user)).to.deep.equal(esTranslations);
       expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'es', name: 'Español (Spanish)' });
     });
@@ -66,15 +58,19 @@ describe('Login page funcionality tests', () => {
   describe('Log out', () => {
     it('should show a warning before log out', async () => {
       await loginPage.cookieLogin(auth);
-      const warning = await commonPage.getLogoutMessage();
-      expect(warning).to.equal('You will need an internet connection to log back in.');
+      expect(await commonPage.getLogoutMessage()).to.equal('You will need an internet connection to log back in.');
     });
   });
 
   describe('Log in', () => {
+    let brandingDoc;
     const wrongUsername = 'fakeuser';
     const wrongPassword = 'fakepass';
     const incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
+
+    before(async () => {
+      brandingDoc = await utils.getDoc('branding');
+    });
 
     it('should log in using username and password fields', async () => {
       await loginPage.login(auth);
