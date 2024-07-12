@@ -112,7 +112,7 @@ class DrawWidget extends Widget {
               .on('click', () => {
                 const data = that.pad.toData();
                 if (data) {
-                  data.pop(); // remove the last dot or line
+                  data.pop();
                   that._redrawPad(data);
                 }
               })
@@ -137,11 +137,11 @@ class DrawWidget extends Widget {
               })
               .click();
 
-        this.enable();
-      })
-      .catch((error) => {
-        this._showFeedback(error.message);
-      });
+          this.enable();
+        })
+        .catch((error) => {
+          this._showFeedback(error.message);
+        });
 
     $(this.element)
       .on('applyfocus', () => {
