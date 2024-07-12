@@ -1,4 +1,3 @@
-//const uuid = require('uuid').v4;
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const reportPage = require('@page-objects/default/reports/reports.wdio.page');
@@ -70,7 +69,7 @@ describe('More Options Menu - Offline User', () => {
 
     describe('Contact tab', () => {
       it('should hide the \'export\' and \'edit\' options and ' +
-        'disable the \'delete\' option when no contact is selected', async () => {
+        'disable the \'delete\' option when no contact is opened', async () => {
         await commonPage.goToPeople();
         await commonPage.openMoreOptionsMenu();
         expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
@@ -79,7 +78,7 @@ describe('More Options Menu - Offline User', () => {
       });
 
       it('should hide the \'export\' option and ' +
-        'enable the \'edit\' and \'delete\' options when a contact is selected', async () => {
+        'enable the \'edit\' and \'delete\' options when a contact is opened', async () => {
         await commonPage.goToPeople(patient._id);
         await commonPage.openMoreOptionsMenu();
         expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
@@ -99,7 +98,7 @@ describe('More Options Menu - Offline User', () => {
 
     describe('Report tab', () => {
       it('should hide the \'export\' and \'edit\' options and ' +
-        'enable the \'delete\' option when the sms report is selected', async () => {
+        'enable the \'delete\' option when the sms report is opened', async () => {
         await commonPage.goToReports();
         expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
 
@@ -111,7 +110,7 @@ describe('More Options Menu - Offline User', () => {
       });
 
       it('should hide the \'export\' option and ' +
-        'enable the \'edit\' and \'delete\' options when the xml report is selected', async () => {
+        'enable the \'edit\' and \'delete\' options when the xml report is opened', async () => {
         await reportPage.goToReportById(xmlReportId);
         await commonPage.openMoreOptionsMenu();
         expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
