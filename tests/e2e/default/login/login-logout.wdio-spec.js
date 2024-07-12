@@ -63,10 +63,10 @@ describe('Login page funcionality tests', () => {
   });
 
   describe('Log in', () => {
+    const WRONG_USERNAME = 'fakeuser';
+    const WRONG_PASSWORD = 'fakepass';
+    const INCORRECT_CREDENTIALS_TEXT = 'Incorrect user name or password. Please try again.';
     let brandingDoc;
-    const wrongUsername = 'fakeuser';
-    const wrongPassword = 'fakepass';
-    const incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
 
     before(async () => {
       brandingDoc = await utils.getDoc('branding');
@@ -136,18 +136,18 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
-      await loginPage.login({ username: wrongUsername, password: '', loadPage: false });
-      expect(await loginPage.getErrorMessage()).to.equal(incorrectCredentialsText);
+      await loginPage.login({ username: WRONG_USERNAME, password: '', loadPage: false });
+      expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should try to sign in with blank auth and verify that credentials were incorrect', async () => {
       await loginPage.login({ username: '', password: '', loadPage: false });
-      expect(await loginPage.getErrorMessage()).to.equal(incorrectCredentialsText);
+      expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should try to sign in and verify that credentials were incorrect', async () => {
-      await loginPage.login({ username: wrongUsername, password: wrongPassword, loadPage: false });
-      expect(await loginPage.getErrorMessage()).to.equal(incorrectCredentialsText);
+      await loginPage.login({ username: WRONG_USERNAME, password: WRONG_PASSWORD, loadPage: false });
+      expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should hide and reveal password value, and login with a revealed password', async () => {
