@@ -313,7 +313,7 @@ export class TelemetryService {
     return this.ngZone.runOutsideAngular(async () => {
       if (this.currentPromise) {
         try {
-          await this.currentPromise();
+          await this.currentPromise;
         } catch (error) {
           console.debug('Telemetry service :: Error:', error);
         } finally {
@@ -321,6 +321,7 @@ export class TelemetryService {
         }
       }
       this.currentPromise = this._record(key, value);
+      return this.currentPromise;
     });
   }
 
@@ -340,6 +341,7 @@ export class TelemetryService {
       const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
+      console.log('!!!!!!!!!!', currentDB, key, value);
       return await this.storeIt(currentDB, key, value);
       //.finally(() => this.closeDataBase(currentDB));
     } catch (error) {
