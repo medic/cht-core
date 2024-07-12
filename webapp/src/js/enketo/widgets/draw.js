@@ -19,7 +19,70 @@ const downloadUtils = require('enketo-core/src/js/download-utils').default;
 
 const DELAY = 1500;
 
+/**
+ * SignaturePad.prototype.fromDataURL is asynchronous and does not fit the image to the current canvas size.
+ *
+ * @function external:SignaturePad#fromObjectURL
+ * @param {*} objectUrl - ObjectURL
+ * @param {object} options - options
+ * @param {number} [options.ratio] - ratio
+ * @param {number} [options.width] - width
+ * @param {number} [options.height] - height
+ * @return {Promise} a promise that resolves with an objectURL
+ */
+SignaturePad.prototype.fromObjectURL = function (
+  dataUrl,
+  options = {},
+) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const deviceRatio = options.ratio || window.devicePixelRatio || 1;
+    const width = options.width || this.canvas.width / deviceRatio;
+    const height = options.height || this.canvas.height / deviceRatio;
 
+    this._reset(this._getPointGroupOptions());
+
+    image.onload = () => {
+      const imgWidth = image.width;
+      const imgHeight = image.height;
+      const hRatio = width / imgWidth;
+      const vRatio = height / imgHeight;
+      let left;
+      let top;
+
+      if (hRatio < 1 || vRatio < 1) {
+        // if image is bigger than canvas then fit within the canvas
+        const ratio = Math.min(hRatio, vRatio);
+        left = (width - imgWidth * ratio) / 2;
+        top = (height - imgHeight * ratio) / 2;
+        this._ctx.drawImage(
+          image,
+          0,
+          0,
+          imgWidth,
+          imgHeight,
+          left,
+          top,
+          imgWidth * ratio,
+          imgHeight * ratio
+        );
+      } else {
+        // if image is smaller than canvas then show it in the center and don't stretch it
+        left = (width - imgWidth) / 2;
+        top = (height - imgHeight) / 2;
+        this._ctx.drawImage(image, left, top, imgWidth, imgHeight);
+      }
+      resolve();
+    };
+    image.onerror = (error) => {
+      reject(error);
+    };
+    image.crossOrigin = 'anonymous';
+    image.src = dataUrl;
+
+    this._isEmpty = false;
+  });
+}
 
 /**
  * Widget to obtain user-provided drawings or signature.
@@ -36,6 +99,8 @@ class DrawWidget extends Widget {
   }
 
   _init() {
+    const existingFilename = this.element.dataset.loadedFileName;
+
     this.element.type = 'text';
     this.element.dataset.drawing = true;
 
@@ -43,8 +108,17 @@ class DrawWidget extends Widget {
     this.$widget = $(this.question.querySelector('.widget'));
     this.canvas = this.$widget[0].querySelector('.draw-widget__body__canvas');
 
+    if (this.props.load) {
+      this._handleFiles(existingFilename);
+    }
+
     this.initialize = fileManager.init().then(() => {
-      this.pad = new SignaturePad(this.canvas);
+      this.pad = new SignaturePad(this.canvas, {
+        penColor: this.props.colors[0] || 'black',
+      });
+      this.pad.addEventListener('endStroke', () => {
+        this._updateValue();
+      });
       this.resizeObserver = new ResizeObserver(this._resizeCanvas.bind(this));
     });
     this.disable();
@@ -79,11 +153,124 @@ class DrawWidget extends Widget {
             }
           })
           .end();
+
         this.enable();
       })
       .catch((error) => {
         this._showFeedback(error.message);
       });
+  }
+
+  // All this is copied from the file-picker widget
+  /**
+   * @param {string} loadedFileName - the loaded filename
+   */
+  _handleFiles(loadedFileName) {
+    // Monitor maxSize changes to update placeholder text in annotate widget. This facilitates asynchronous
+    // obtaining of max size from server without slowing down form loading.
+    this._updatePlaceholder();
+    this.element
+        .closest('form.or')
+        .addEventListener(
+          events.UpdateMaxSize().type,
+          this._updatePlaceholder.bind(this)
+        );
+
+    const that = this;
+
+    const $input = this.$widget.find('input[type=file]');
+    const $fakeInput = this.$widget.find('.fake-file-input');
+
+    // show loaded file name or placeholder regardless of whether widget is supported
+    this._showFileName(loadedFileName);
+
+    $input
+      .on('click', (event) => {
+        // The purpose of this handler is to block the filepicker window
+        // when the label is clicked outside of the input.
+        if (that.props.readonly || event.namespace !== 'propagate') {
+          that.$fakeInput.focus();
+          event.stopImmediatePropagation();
+
+          return false;
+        }
+      })
+      .on('change', function () {
+        // Get the file
+        const file = this.files[0];
+
+        if (file) {
+          // Process the file
+          if (!fileManager.isTooLarge(file)) {
+            // Update UI
+            that.pad.clear();
+            that._loadFileIntoPad(this.files[0]).then(() => {
+              that._updateValue.call(that);// NOSONAR
+              that._showFileName(file.name);
+              that.enable();
+            });
+          } else {
+            that._showFeedback(
+              t('filepicker.toolargeerror', {
+                maxSize: fileManager.getMaxSizeReadable(),
+              })
+            );
+          }
+        } else {
+          that._showFileName(null);
+        }
+      });
+
+    $fakeInput
+      .on('click', function (event) {
+        /*
+            The purpose of this handler is to selectively propagate clicks on the fake
+            input to the underlying file input (to show the file picker window).
+            It blocks propagation if the filepicker has a value to avoid accidentally
+            clearing files in a loaded record, hereby blocking native browser file input behavior
+            to clear values. Instead the reset button is the only way to clear a value.
+        */
+        if (
+          that.props.readonly ||
+          $input[0].value ||
+          $fakeInput[0].value
+        ) {
+          $(this).focus();
+          event.stopImmediatePropagation();
+
+          return false;
+        }
+        event.preventDefault();
+        $input.trigger('click.propagate');
+      })
+      .on(
+        'change',
+        () =>
+          // For robustness, avoid any editing of filenames by user.
+          false
+      );
+  }
+
+  /**
+   * @param {string} fileName - filename to show
+   */
+  _showFileName(fileName) {
+    this.$widget
+        .find('.fake-file-input')
+        .val(fileName)
+        .prop('readonly', !!fileName);
+  }
+
+  /**
+   * Updates placeholder
+   */
+  _updatePlaceholder() {
+    this.$widget.find('.fake-file-input').attr(
+      'placeholder',
+      t('filepicker.placeholder', {
+        maxSize: fileManager.getMaxSizeReadable() || '?MB',
+      })
+    );
   }
 
   /**
@@ -145,9 +332,36 @@ class DrawWidget extends Widget {
   }
 
   /**
+   * Updates value
+   *
+   * @param {boolean} [changed] - whether the value has changed
+   */
+  _updateValue(changed = true) {
+    const newValue = this.pad.toDataURL();
+    if (this.value !== newValue) {
+      const now = new Date();
+      const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`;
+      this.element.dataset.filenamePostfix = postfix;
+      // Note that this.element has become a text input.
+      // When a default file is loaded this function is called by the canvasreload handler, but the user hasn't changed anything.
+      // We want to make sure the model remains unchanged in that case.
+      if (changed) {
+        this.originalInputValue = this.props.filename;
+      }
+      // pad.toData() doesn't seem to work when redrawing on a smaller canvas. Doesn't scale.
+      // pad.toDataURL() is crude and memory-heavy but the advantage is that it will also work for appearance=annotate
+      this.value = newValue;
+    }
+  }
+
+  /**
    * Clears pad, cache, loaded file name, download link and others
    */
   _reset() { // NOSONAR
+    if (!this.element.value) {
+      return;
+    }
+
     // This discombobulated line is to help the i18next parser pick up all 3 keys.
     const item =
       this.props.type === 'signature'
@@ -164,6 +378,38 @@ class DrawWidget extends Widget {
         this.pad.clear();
         this.disable();
         this.enable();
+      });
+  }
+
+  /**
+   * @param {string|File} file - Either a filename or a file.
+   * @return {Promise} promise resolving with a string
+   */
+  _loadFileIntoPad(file) {
+    if (!file) {
+      return Promise.resolve('');
+    }
+    if (
+      typeof file === 'string' &&
+      file.startsWith('jr://') &&
+      this.element.dataset.loadedUrl
+    ) {
+      file = this.element.dataset.loadedUrl;
+    }
+
+    return fileManager
+      .getObjectUrl(file)
+      .then((objectUrl) => {
+        this.cache = objectUrl;
+
+        return objectUrl;
+      })
+      .then(this.pad.fromObjectURL.bind(this.pad))
+      .catch(() => {
+        this._showFeedback(
+          'File could not be loaded (leave unchanged if already submitted and you want to preserve it).',
+          'error'
+        );
       });
   }
 
@@ -191,12 +437,12 @@ class DrawWidget extends Widget {
     this.canvas.height = this.canvas.offsetHeight * ratio;
     this.canvas.getContext("2d").scale(ratio, ratio);
 
-    // This library does not listen for canvas changes, so after the canvas is automatically
-    // cleared by the browser, SignaturePad#isEmpty might still return false, even though the
-    // canvas looks empty, because the internal data of this library wasn't cleared. To make sure
-    // that the state of this library is consistent with visual state of the canvas, you
-    // have to clear it manually.
-    this.pad.clear();
+    if(this.cache) {
+      this.pad.fromObjectURL(this.cache)
+        .then(() => this.pad.fromData(this.pad.toData(),{ clear: false }));
+    } else {
+      this.pad.fromData(this.pad.toData());
+    }
   };
 
   /**
