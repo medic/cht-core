@@ -317,6 +317,24 @@ class DrawWidget extends Widget {
           return;
         }
         this.pad.clear();
+        this.cache = null;
+        // Only upon reset is loadedFileName removed, so that "undo" will work
+        // for drawings loaded from storage.
+        delete this.element.dataset.loadedFileName;
+        delete this.element.dataset.loadedUrl;
+        this.element.dataset.filenamePostfix = '';
+        $(this.element).val('').trigger('change');
+        if (this._updateWithDelay) {
+          // This ensures that an emptied canvas will not be considered a drawing to be captured
+          // in _forceUpdate, e.g. after the blur event fires on an empty canvas see issue #924
+          this._updateWithDelay = null;
+        }
+        // Annotate file input
+        this.$widget
+            .find('input[type=file]')
+            .val('')
+            .trigger('change');
+        this._updateDownloadLink('');
         this.disable();
         this.enable();
       });
@@ -347,7 +365,6 @@ class DrawWidget extends Widget {
         };
         return this.pad.fromDataURL(objectUrl, this.cache.options);
       })
-      .then(this._setBackgroundImage.bind(this))
       .catch(() => {
         this._showFeedback(
           'File could not be loaded (leave unchanged if already submitted and you want to preserve it).',
@@ -364,6 +381,26 @@ class DrawWidget extends Widget {
 
     // replace text and replace all existing classes with the new status class
     this.$widget.find('.draw-widget__feedback').text(message);
+  }
+
+  /**
+   * @param {string} url - the download URL
+   */
+  _updateDownloadLink(url) {
+    if (url && url.indexOf('data:') === 0) {
+      url = URL.createObjectURL(dataUriToBlobSync(url));
+    }
+    const fileName = url
+      ? getFilename(
+        { name: this.element.value },
+        this.element.dataset.filenamePostfix
+      )
+      : '';
+    downloadUtils.updateDownloadLink(
+      this.$widget.find('.btn-download')[0],
+      url,
+      fileName
+    );
   }
 
   async _getImageScalingOptions(dataUrl) {
