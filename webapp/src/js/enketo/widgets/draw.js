@@ -90,7 +90,7 @@ class DrawWidget extends Widget {
             const data = this.pad.toData();
             if (data) {
               data.pop(); // remove the last dot or line
-              this.pad.fromData(data);
+              this._redrawPad(data);
             }
           })
           .end();
@@ -363,7 +363,7 @@ class DrawWidget extends Widget {
           objectUrl,
           options: await this._getImageScalingOptions(objectUrl)
         };
-        return this.pad.fromDataURL(objectUrl, this.cache.options);
+        return this._redrawPad();
       })
       .catch(() => {
         this._showFeedback(
@@ -442,6 +442,17 @@ class DrawWidget extends Widget {
     });
   }
 
+  _redrawPad(padData = []) {
+    if(this.cache) {
+      this.pad.clear();
+      return this.pad.fromDataURL(this.cache.objectUrl, this.cache.options)
+       .then(() => this.pad.fromData(padData,{ clear: false }));
+    }
+
+    this.pad.fromData(padData);
+    return Promise.resolve();
+  }
+
   // Adjust canvas coordinate space taking into account pixel ratio,
   // to make it look crisp on mobile devices.
   // This also causes canvas to be cleared.
@@ -456,15 +467,7 @@ class DrawWidget extends Widget {
     this.canvas.height = this.canvas.offsetHeight * ratio;
     this.canvas.getContext("2d").scale(ratio, ratio);
 
-    if(this.cache) {
-      const padData = this.pad.toData();
-      this.pad.clear();
-      this.pad.fromDataURL(this.cache.objectUrl, this.cache.options).then(() => {
-        this.pad.fromData(padData,{ clear: false });
-      });
-    } else {
-      this.pad.fromData(this.pad.toData());
-    }
+    this._redrawPad(this.pad.toData());
   };
 
   /**
