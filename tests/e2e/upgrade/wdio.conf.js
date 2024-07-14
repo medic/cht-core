@@ -9,6 +9,7 @@ const chai = require('chai');
 const { spawn } = require('child_process');
 chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
+const semver = require('semver');
 
 const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
@@ -17,7 +18,8 @@ const {
   MARKET_URL_READ='https://staging.dev.medicmobile.org',
   STAGING_SERVER='_couch/builds_4',
   HAPROXY_PORT,
-  BASE_VERSION='latest'
+  BASE_VERSION='latest',
+  TAG,
 } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
@@ -33,22 +35,33 @@ const getUpgradeServiceDockerCompose = async () => {
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
+const getReleasesQuery = () => {
+  const startKey = ['release', 'medic', 'medic'];
+  if (TAG) {
+    const version = semver.parse(TAG);
+    startKey.push(version.major, version.minor, version.patch);
+  } else {
+    startKey.push({});
+  }
+  return {
+    start_key: JSON.stringify(startKey),
+    descending: true,
+    limit: TAG ? 2 : 1,
+  };
+};
+
 const getRelease = async () => {
   if (BASE_VERSION !== 'latest') {
     return `medic:medic:${BASE_VERSION}`;
   }
 
   const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
-  const query = {
-    startKey: ['release', 'medic', 'medic', {}],
-    descending: true,
-    limit: 1,
-  };
-  const releases = await rpn.get({ url: url, qs: query, json: true });
+  const releases = await rpn.get({ url: url, qs: getReleasesQuery(), json: true });
   if (!releases.rows.length) {
     return MAIN_BRANCH;
   }
-  return releases.rows[0].id;
+
+  return releases.rows.at(-1).id;
 };
 
 const getMainCHTDockerCompose = async () => {
