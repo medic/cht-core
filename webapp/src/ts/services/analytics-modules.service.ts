@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { SettingsService } from '@mm-services/settings.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
+export const AGGREGATE_TARGETS_ID: string = 'target-aggregates';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -23,7 +25,7 @@ export class AnalyticsModulesService {
 
   private getTargetAggregatesModule (settings, isAggregateEnabled) {
     return {
-      id: 'target-aggregates',
+      id: AGGREGATE_TARGETS_ID,
       label: 'analytics.target.aggregates',
       route: ['/', 'analytics', 'target-aggregates'],
       available: () => !!(settings?.tasks?.targets && isAggregateEnabled)

@@ -9,15 +9,17 @@ import {
   Output
 } from '@angular/core';
 import { Store } from '@ngrx/store';
-
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
-
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
+import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
 
 @Component({
   selector: 'mm-analytics-filters',
@@ -39,6 +41,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     private router: Router,
     private authService: AuthService,
     private sessionService: SessionService,
+    private telemetryService: TelemetryService,
     private userSettingsService: UserSettingsService
   ) {
     this.globalActions = new GlobalActions(store);
@@ -91,18 +94,17 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   private checkPermissions() {
     const permissions = [
-      '!can_view_old_filter_and_search',
-      '!can_view_old_action_bar'
+      OLD_REPORTS_FILTER_PERMISSION,
+      OLD_ACTION_BAR_PERMISSION
     ];
 
     return this.authService
       .has(permissions)
-      .then((permissions) => permissions === true);
+      .then((permissions) => permissions === false);
   }
 
   private isTargetAggregates() {
-    const AGGREGATE_TARGET_ID = 'target-aggregates';
-    return this.getCurrentModuleId() === AGGREGATE_TARGET_ID;
+    return this.getCurrentModuleId() === AGGREGATE_TARGETS_ID;
   }
 
   private async canDisplayFilterButton() {
@@ -117,5 +119,9 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   openSidebar() {
     this.globalActions.setSidebarFilter({ isOpen: !this.isOpen });
+    if (this.isOpen) {
+      // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
+      this.telemetryService.record('sidebar_filter:analytics_target_aggregates:open');
+    }
   }
 }

@@ -53,7 +53,7 @@ export class UserSettingsService {
     }
 
     return new Promise((resolve, reject) => {
-      this.cache((err, userSettings) => {
+      this.cache((err, userSettings: UserSettings) => {
         if (err) {
           return reject(err);
         }
@@ -63,19 +63,18 @@ export class UserSettingsService {
   }
 
   async hasMultipleFacilities(): Promise<boolean> {
-    return this.get()
-      .then((userSettings:any) => {
+    return this
+      .get()
+      .then((userSettings: UserSettings) => {
         const userFacility = userSettings.facility_id;
         return Array.isArray(userFacility) && userFacility.length > 1;
       });
   }
 
-  async getUserFacility(): Promise<any[]> {
-    return this.get()
-      .then((userSettings:any) => {
-        const userFacility = userSettings.facility_id;
-        return this.getDataRecordsService.get(userFacility);
-      });
+  async getUserFacility(): Promise<string[]> {
+    return this
+      .get()
+      .then((userSettings: UserSettings) => this.getDataRecordsService.get(userSettings.facility_id));
   }
 
   async getWithLanguage(): Promise<Object> {
@@ -100,4 +99,13 @@ export class UserSettingsService {
       });
   }
 
+}
+
+interface UserSettings {
+  _id: string;
+  contact_id: string;
+  facility_id: string[];
+  name: string;
+  roles: string[];
+  type: string;
 }

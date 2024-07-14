@@ -5,7 +5,8 @@
 </div>
 
 <div
-  class="inbox page target-aggregates" *ngIf="enabled && !loading"
+  class="inbox page target-aggregates"
+  *ngIf="enabled && !loading"
   [ngClass]="{'sidebar-open': isSidebarFilterOpen, 'sidebar-closed': !isSidebarFilterOpen}">
   <div
     id="target-aggregates-list"
@@ -27,7 +28,7 @@
 
   <div class="content-pane right-pane">
     <div class="item-content" [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
-    <router-outlet></router-outlet>
+      <router-outlet></router-outlet>
     </div>
     <mm-analytics-target-aggregates-sidebar-filter class="col-sm-3 sidebar-filter-wrapper" *ngIf="useSidebarFilter">
     </mm-analytics-target-aggregates-sidebar-filter>

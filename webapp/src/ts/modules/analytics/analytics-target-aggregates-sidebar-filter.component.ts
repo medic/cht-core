@@ -6,7 +6,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Component({
@@ -20,6 +19,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   error;
   isOpen = false;
   userFacilities;
+  selectedFacility;
   selectedFacilityId;
   facilityFilterLabel;
 
@@ -27,7 +27,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     private store: Store,
     private contactTypesService: ContactTypesService,
     private settingsService: SettingsService,
-    private telemetryService: TelemetryService,
     private userSettingsService: UserSettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -61,22 +60,14 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   toggleSidebarFilter() {
     this.isOpen = !this.isOpen;
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
-
-    if (this.isOpen) {
-      // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
-      this.telemetryService.record('sidebar_filter:analytics_target_aggregates:open');
-    }
   }
 
   private async loadUserFacility() {
-    const [userFacilities, hasMultipleFacilities] = await Promise.all([
-      this.userSettingsService.getUserFacility(),
-      this.userSettingsService.hasMultipleFacilities()
-    ]);
-
-    this.userFacilities = userFacilities;
+    const hasMultipleFacilities = await this.userSettingsService.hasMultipleFacilities();
+    this.userFacilities = await this.userSettingsService.getUserFacility();
 
     if (hasMultipleFacilities) {
+      this.selectedFacility = this.userFacilities[0];
       this.selectedFacilityId = this.userFacilities[0]._id;
     }
   }
@@ -85,18 +76,13 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     const FACILITY = 'Facility';
     try {
       const settings = await this.settingsService.get();
-      const userFacilityType = this.contactTypesService.getTypeId(this.userFacilities[0]);
+      const userFacilityType = this.contactTypesService.getTypeId(this.selectedFacility);
       const placeType = settings.contact_types.find(type => type.id === userFacilityType);
 
-      this.facilityFilterLabel = placeType.name_key;
+      this.facilityFilterLabel = placeType.name_key || FACILITY;
     } catch (err) {
       this.error = true;
       console.error('Error fetching facility label', err);
-      this.facilityFilterLabel = FACILITY;
     }
-  }
-
-  fetchAggregateTargets(facilityId) {
-    this.selectedFacilityId = facilityId;
   }
 }

@@ -3,23 +3,20 @@
 
   <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
     <div class="sidebar-header">
-      <p class="sidebar-title">Filter</p>
+      <p class="sidebar-title">{{ 'reports.sidebar.filter.title' | translate }}</p>
       <a class="sidebar-close fa fa-times" (click)="toggleSidebarFilter()"></a>
     </div>
 
     <div class="sidebar-body">
       <mat-accordion multi>
-        <div class="facility-options-container">
-          <div class="facility-filter-title">
-            <span class="facility-options-title"> {{ facilityFilterLabel | translate }} </span>
-          </div>
+        <div class="filter-options-container">
+            <span class="filter-options-title"> {{ facilityFilterLabel | translate }} </span>
             <ng-container *ngFor="let facility of userFacilities">
-              <div class="facility-option-place">
-                <label class="facility-option-wrapper">
+              <div class="filter-option-place">
+                <label class="filter-option-wrapper">
                   <input type="radio" name="facility" [value]="facility._id"
-                    class="facility-option-radio" [(ngModel)]="selectedFacilityId"
-                    (change)="fetchAggregateTargets(facility._id)">
-                  <span class="facility-option-label">{{ facility.name }}</span>
+                    class="filter-option-radio" [(ngModel)]="selectedFacilityId">
+                  <span class="filter-option-label">{{ facility.name }}</span>
                 </label>
               </div>
             </ng-container>
@@ -28,11 +25,7 @@
     </div>
 
     <div class="sidebar-footer">
-      <button type="button" class="btn btn-primary" (click)="toggleSidebarFilter()">Apply</button>
+      <button type="button" class="btn btn-primary" (click)="toggleSidebarFilter()">{{ 'reports.sidebar.filter.submit' | translate }}</button>
     </div>
   </div>
 </section>
-
-<ng-template #headerTemplate let-label="label" let-filters="filters">
-  <p class="title">{{ label | translate }}</p>
-</ng-template>

@@ -10,13 +10,15 @@ import { Selectors } from '@mm-selectors/index';
 import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
-describe('Analytics Filter Component', () => {
+describe.only('Analytics Filter Component', () => {
   let component: AnalyticsFilterComponent;
   let fixture: ComponentFixture<AnalyticsFilterComponent>;
   let authService;
   let sessionService;
+  let telemetryService;
   let userSettingsService;
   let route;
   let router;
@@ -27,6 +29,7 @@ describe('Analytics Filter Component', () => {
       has: sinon.stub().resolves(true),
     };
     sessionService = { isAdmin: sinon.stub().returns(false) };
+    telemetryService = { record: sinon.stub() };
     userSettingsService = {
       hasMultipleFacilities: sinon.stub().resolves(true)
     };
@@ -55,6 +58,7 @@ describe('Analytics Filter Component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
+          { provide: TelemetryService, useValue: telemetryService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
@@ -80,8 +84,8 @@ describe('Analytics Filter Component', () => {
 
   it('should display filter button when all conditions of showFilterButton are true', fakeAsync(() => {
     authService.has
-      .withArgs(['!can_view_old_filter_and_search', '!can_view_old_action_bar'])
-      .resolves(true);
+      .withArgs(['can_view_old_filter_and_search', 'can_view_old_action_bar'])
+      .resolves(false);
     sessionService.isAdmin.returns(false);
     userSettingsService.hasMultipleFacilities.resolves(true);
     route.snapshot.firstChild.data.moduleId = 'target-aggregates';
