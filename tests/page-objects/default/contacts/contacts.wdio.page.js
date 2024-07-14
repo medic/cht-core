@@ -5,76 +5,86 @@ const utils = require('@utils');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const mobileSearchPage = require('@page-objects/default-mobile/search/search.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-const searchBox = () => $('.mm-search-bar-container input#freetext');
-const contentRowSelector = '#contacts-list .content-row';
-const contentRow = () => $(contentRowSelector);
-const contentRows = () => $$(contentRowSelector);
-const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
-const reportFilterSelector = '.card.reports .table-filter a';
-const reportFilter = () => $(reportFilterSelector);
-const reportFilters = () => $$(reportFilterSelector);
-const taskFilterSelector = '.card.tasks .table-filter a';
-const taskFilter = () => $(taskFilterSelector);
-const taskFilters = () => $$(taskFilterSelector);
-const contactList = () => $('#contacts-list');
-const contactListLoadingStatus = () => $('#contacts-list .loading-status');
-const newPrimaryContactName = () => $('[name="/data/contact/name"]');
-const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
-const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
-const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
-const roleField = (type, role) => $(`[data-name="/data/${type}/role"][value="${role}"]`);
-const phoneField = () => $('input.ignore[type="tel"]');
-const nameField = (type) => $(`[name="/data/${type}/name"]`);
-const customPlaceNameField = () => $('input[name="/data/init/custom_place_name"]');
-const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
-const name = () => $('.children h4 span');
-const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
-const notes = (place) => $(`[name="/data/${place}/notes"]`);
-const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
-const contactCard = () => $('.card h2');
-const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
-const CARD = '.content-pane .meta > div > .card ';
-const pregnancyLabel = () => $(`${CARD} .action-header h3`);
-const visitLabel = () => $(`${CARD} .row label`);
-const numberOfReports = () => $((`${CARD} .row p`));
+const searchSelectors = {
+  searchBox: () => $('.mm-search-bar-container input#freetext'),
+};
 
-const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
+const menuSelectors = {
+  exportButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]`),
+  editContactButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]`),
+  deleteContactButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]`),
+};
+
+const CONTACT_LIST_SELECTOR = '#contacts-list';
+const CONTENT_ROW_SELECTOR =  `${CONTACT_LIST_SELECTOR} .content-row`;
+const leftPanelSelectors = {
+  contactList: () => $(CONTACT_LIST_SELECTOR),
+  contentRow: () => $(CONTENT_ROW_SELECTOR),
+  contentRows: () =>  $$(CONTENT_ROW_SELECTOR),
+  contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
+  contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
+};
+
+const rightPanelSelectors = {
+  emptySelection: () => $('contacts-content .empty-selection'),
+  childrenCards: () => $$('.right-pane .card.children'),
+  contactCardTitle: () => $('.inbox .content-pane .material .body .action-header'),
+};
+
+const contactCardSelectors = {
+  contactCardName: () => $('h2[test-id="contact-name"]'),
+  contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
+  contactSummaryContainer: () => $('#contact_summary'),
+  contactMedicID: () => $('#contact_summary .cell.patient_id > div > p'),
+  contactDeceasedStatus: () => $('div[test-id="deceased-title"]'),
+  contactMuted: () => $('.heading-content .muted'),
+};
+
+const peopleCardSelectors = {
+  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
+  rhsPeopleListSelector: () => $$('.card.children.persons h4 span'),
+};
+
+const RHS_TASK_LIST_CARD =  '.card.tasks';
+const TASK_FILTER_SELECTOR = `${RHS_TASK_LIST_CARD} .table-filter a`;
+const RHS_TASK_LIST_SELECTOR = `${RHS_TASK_LIST_CARD} mm-content-row h4 span`;
+const tasksCardSelectors = {
+  taskFilter: () => $(TASK_FILTER_SELECTOR),
+  taskFilters: () => $$(TASK_FILTER_SELECTOR),
+  rhsTaskListElement: () =>  $(RHS_TASK_LIST_SELECTOR),
+  rhsTaskListElementList: () => $$(RHS_TASK_LIST_SELECTOR),
+};
+
 const RHS_REPORT_LIST_CARD = '.card.reports';
+const REPORT_FILTER_SELECTOR = `${RHS_REPORT_LIST_CARD} .table-filter a`;
 const RHS_REPORT_LIST_SELECTOR = `${RHS_REPORT_LIST_CARD} mm-content-row h4 span`;
-const RHS_TASK_LIST_SELECTOR = '.card.tasks mm-content-row h4 span';
-const rhsTaskListElement = () => $(RHS_TASK_LIST_SELECTOR);
-const rhsTaskListElementList = () => $$(RHS_TASK_LIST_SELECTOR);
-const rhsReportListElement = () => $(RHS_REPORT_LIST_SELECTOR);
-const rhsReportElementList = () => $$(RHS_REPORT_LIST_SELECTOR);
+const reportsCardSelectors = {
+  reportFilter: () => $(REPORT_FILTER_SELECTOR),
+  reportFilters: () => $$(REPORT_FILTER_SELECTOR),
+  rhsReportListElement: () => $(RHS_REPORT_LIST_SELECTOR),
+  rhsReportElementList: () => $$(RHS_REPORT_LIST_SELECTOR),
+};
 
-const contactSummaryContainer = () => $('#contact_summary');
-const emptySelection = () => $('contacts-content .empty-selection');
-const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]');
-const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
-const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
-const contactCards = () => $$('.card.children');
-const childrenCards = () => $$('.right-pane .card.children');
-const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
-const contactInfoName = () => $('h2[test-id="contact-name"]');
-const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
-const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
-const contactMuted = () => $('.heading-content .muted');
+const PREG_CARD_TEST_ID = `div[test-id="contact.profile.pregnancy.active"]`;
+const pregnancyCardSelectors = {
+  pregnancyCard: () => $(PREG_CARD_TEST_ID),
+  weeksPregnant: () => $(`${PREG_CARD_TEST_ID} div[test-id="Weeks Pregnant"] p.card-field-value`),
+  edd: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.edd"] p.card-field-value`),
+  highRisk: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.risk.high"] label`),
+  nextANCVisit: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.anc.next"] p.card-field-value`),
+};
 
-const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
-const pregnancyCard = () => $(PREG_CARD_SELECTOR);
-const weeksPregnant = () => $(`${PREG_CARD_SELECTOR} div[test-id="Weeks Pregnant"] p.card-field-value`);
-const edd = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.edd"] p.card-field-value`);
-const highRisk = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.risk.high"] label`);
-const nextANCVisit = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.anc.next"] p.card-field-value`);
-
-const DEATH_CARD_SELECTOR = 'div[test-id="contact.profile.death.title"]';
-const deathCard = () => $(DEATH_CARD_SELECTOR);
-const deathDate = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.date"] p.card-field-value`);
-const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.place"] p.card-field-value`);
+const DEATH_CARD_TEST_ID = 'div[test-id="contact.profile.death.title"]';
+const deathCardSelectors = {
+  deathCard: () => $(DEATH_CARD_TEST_ID),
+  deathDate: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.date"] p.card-field-value`),
+  deathPlace: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.place"] p.card-field-value`),
+};
 
 const search = async (query) => {
-  if (!await (await searchBox()).isDisplayed()) {
+  if (!await (await searchSelectors.searchBox()).isDisplayed()) {
     await mobileSearchPage.performSearch(query);
   } else {
     await searchPage.performSearch(query);
@@ -82,7 +92,7 @@ const search = async (query) => {
 };
 
 const findRowByText = async (text) => {
-  for (const row of await contentRows()) {
+  for (const row of await leftPanelSelectors.contentRows()) {
     if ((await row.getText()) === text) {
       return row;
     }
@@ -112,23 +122,23 @@ const selectRHSRowById = async (id) => {
 };
 
 const getReportFiltersText = async () => {
-  await (await reportFilter()).waitForDisplayed();
-  return (await reportFilters()).map(filter => filter.getText());
+  await (await reportsCardSelectors.reportFilter()).waitForDisplayed();
+  return (await reportsCardSelectors.reportFilters()).map(filter => filter.getText());
 };
 
 const getReportTaskFiltersText = async () => {
-  await (await taskFilter()).waitForDisplayed();
-  return await (await taskFilters()).map(filter => filter.getText());
+  await (await tasksCardSelectors.taskFilter()).waitForDisplayed();
+  return await (await tasksCardSelectors.taskFilters()).map(filter => filter.getText());
 };
 
 const waitForContactLoaded = async (type) => {
-  type && await (await contactCardIcon(type)).waitForDisplayed();
-  await (await contactCard()).waitForDisplayed();
-  await (await contactSummaryContainer()).waitForDisplayed();
+  type && await (await contactCardSelectors.contactCardIcon(type)).waitForDisplayed();
+  await (await contactCardSelectors.contactCardName()).waitForDisplayed();
+  await (await contactCardSelectors.contactSummaryContainer()).waitForDisplayed();
 };
 
 const waitForContactUnloaded = async () => {
-  await (await emptySelection()).waitForDisplayed();
+  await (await rightPanelSelectors.emptySelection()).waitForDisplayed();
 };
 
 const addPlace = async ({
@@ -137,29 +147,32 @@ const addPlace = async ({
   contactName: contactNameValue = 'Person1',
   dob: dobValue = '2000-01-01',
   phone: phoneValue = '',
-  sex: sexValue = 'female',
-  role: roleValue = 'chw',
+  sex: sexValue = 'Female',
+  role: roleValue = 'CHW',
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {},
 rightSideAction = true,) => {
+
   if (rightSideAction) {
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {
     await commonPage.clickFastActionFlat({ waitForList: false });
   }
-  await (await newPrimaryContactButton()).waitForDisplayed();
-  await (await newPrimaryContactButton()).click();
-  await (await newPrimaryContactName()).setValue(contactNameValue);
-  await (await phoneField()).setValue(phoneValue);
-  await (await dateOfBirthField()).setValue(dobValue);
-  await (await sexField('contact', sexValue)).click();
-  await (await roleField('contact', roleValue)).click();
+  await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Create a new person');
+  await commonEnketoPage.setInputValue('Full Name', contactNameValue);
+  await commonEnketoPage.setInputValue('Phone Number', phoneValue);
+  await commonEnketoPage.setDateValue('Age', dobValue);
+  await commonEnketoPage.selectRadioButton('Sex', sexValue);
+  await commonEnketoPage.selectRadioButton('Role', roleValue);
   await genericForm.nextPage();
-  await (await writeNamePlace(typeValue)).click();
-  await (await customPlaceNameField()).setValue(placeNameValue);
-  await (await externalIdField(typeValue)).setValue(externalIDValue);
-  await (await notes(typeValue)).setValue(notesValue);
+  await commonEnketoPage.selectRadioButton(
+    'Would you like to name the place after the primary contact:',
+    'No, I want to name it manually'
+  );
+  await commonEnketoPage.setInputValue('Name', placeNameValue);
+  await commonEnketoPage.setInputValue('External ID', externalIDValue);
+  await commonEnketoPage.setTextareaValue('Notes', notesValue);
   await genericForm.submitForm({ waitForPageLoaded: false });
   const dashedType = typeValue.replace('_', '-');
   await waitForContactLoaded(dashedType);
@@ -169,46 +182,45 @@ const addPerson = async ({
   name: nameValue = 'Person1',
   dob: dobValue = '2000-01-01',
   phone: phoneValue = '',
-  sex: sexValue = 'female',
-  role: roleValue = 'chw',
+  sex: sexValue = 'Female',
+  role: roleValue = 'CHW',
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {}, waitForSentinel = true) => {
+
   const type = 'person';
   await commonPage.clickFastActionFAB({ actionId: type });
-  await (await nameField(type)).addValue(nameValue);
-  await (await dateOfBirthField()).addValue(dobValue);
-  await (await nameField(type)).click(); // blur the datepicker field so the sex field is visible
-  await (await phoneField()).addValue(phoneValue);
-  await (await sexField(type, sexValue)).click();
-  await (await roleField(type, roleValue)).click();
-  await (await externalIdField(type)).addValue(externalIDValue);
-  await (await notes(type)).addValue(notesValue);
+  await commonEnketoPage.setInputValue('Full name', nameValue);
+  await commonEnketoPage.setInputValue('Phone Number', phoneValue);
+  await commonEnketoPage.selectRadioButton('Sex', sexValue);
+  await commonEnketoPage.selectRadioButton('Role', roleValue);
+  await commonEnketoPage.setDateValue('Age', dobValue);
+  await commonEnketoPage.setInputValue('External ID', externalIDValue);
+  await commonEnketoPage.setTextareaValue('Notes', notesValue);
   await genericForm.submitForm();
   if (waitForSentinel) {
     await sentinelUtils.waitForSentinel();
   }
-  await (await contactCardIcon(type)).waitForDisplayed();
-  return (await contactCard()).getText();
+  await (await contactCardSelectors.contactCardIcon(type)).waitForDisplayed();
+  return (await contactCardSelectors.contactCardName()).getText();
 };
 
 const editPerson = async (currentName, { name, phone, dob }) => {
   await selectLHSRowByText(currentName);
   await waitForContactLoaded();
   await commonPage.openMoreOptionsMenu();
-  await (await editContactButton()).waitForClickable();
-  await (await editContactButton()).click();
-
+  await (await menuSelectors.editContactButton()).waitForClickable();
+  await (await menuSelectors.editContactButton()).click();
   await (await genericForm.nextPage());
 
   if (name !== undefined) {
-    await (await nameField('person')).setValue(name);
+    await commonEnketoPage.setInputValue('Full name', name);
   }
   if (phone !== undefined) {
-    await (await phoneField()).setValue(phone);
+    await commonEnketoPage.setInputValue('Phone Number', phone);
   }
   if (dob !== undefined) {
-    await (await dateOfBirthField()).setValue(dob);
+    await commonEnketoPage.setDateValue('Age', dob);
   }
   await genericForm.formTitle().click();
   await genericForm.submitForm();
@@ -216,48 +228,48 @@ const editPerson = async (currentName, { name, phone, dob }) => {
 
 const editPersonName = async (name, updatedName) => {
   await editPerson(name, { name: updatedName });
-  return (await contactCard()).getText();
+  return (await contactCardSelectors.contactCardName()).getText();
 };
 
 const deletePerson = async () => {
   await commonPage.openMoreOptionsMenu();
-  await (await deleteContactButton()).waitForClickable();
-  await (await deleteContactButton()).click();
+  await (await menuSelectors.deleteContactButton()).waitForClickable();
+  await (await menuSelectors.deleteContactButton()).click();
   await modalPage.submit();
 };
 
 const getContactSummaryField = async (fieldName) => {
-  await (await contactSummaryContainer()).waitForDisplayed();
-  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
+  await (await contactCardSelectors.contactSummaryContainer()).waitForDisplayed();
+  const field = await (await contactCardSelectors.contactSummaryContainer())
+    .$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
   return await (await field.$('p')).getText();
 };
 
 const getPrimaryContactName = async () => {
-  return (await name()).getText();
+  return await (await peopleCardSelectors.primaryContactName()).getText();
 };
 
 const getAllLHSContactsNames = async () => {
-  await (await contentRow()).waitForDisplayed();
-  return commonPage.getTextForElements(contactName);
+  await (await leftPanelSelectors.contentRow()).waitForDisplayed();
+  return commonPage.getTextForElements(leftPanelSelectors.contactName);
 };
 
-const getAllRHSPeopleNames = async () => {
-  await (await name()).waitForDisplayed();
-  return commonPage.getTextForElements(rhsPeopleListSelector);
+const getAllRHSPeopleNames = () => {
+  return commonPage.getTextForElements(peopleCardSelectors.rhsPeopleListSelector);
 };
 
 const getAllRHSReportsNames = async () => {
-  await (await rhsReportListElement()).waitForDisplayed();
-  return commonPage.getTextForElements(rhsReportElementList);
+  await (await reportsCardSelectors.rhsReportListElement()).waitForDisplayed();
+  return commonPage.getTextForElements(reportsCardSelectors.rhsReportElementList);
 };
 
 const getAllRHSTaskNames = async () => {
-  await (await rhsTaskListElement()).waitForDisplayed();
-  return commonPage.getTextForElements(rhsTaskListElementList);
+  await (await tasksCardSelectors.rhsTaskListElement()).waitForDisplayed();
+  return commonPage.getTextForElements(tasksCardSelectors.rhsTaskListElementList);
 };
 
 const allContactsList = async () => {
-  const parentCards = await contactCards();
+  const parentCards = await rightPanelSelectors.childrenCards();
 
   return parentCards.map(async (parent) => ({
     heading: await (await parent.$('h3')).getText(),
@@ -265,17 +277,15 @@ const allContactsList = async () => {
   }));
 };
 
-const editPlace = async (currentName, editedName, placeType) => {
+const editPlace = async (currentName, editedName) => {
   await selectLHSRowByText(currentName, true);
   await waitForContactLoaded();
 
   await commonPage.openMoreOptionsMenu();
-  await (await editContactButton()).waitForClickable();
-  await (await editContactButton()).click();
+  await (await menuSelectors.editContactButton()).waitForClickable();
+  await (await menuSelectors.editContactButton()).click();
 
-  await (await nameField(placeType)).setValue(editedName);
-  // blur field to trigger Enketo validation
-  await (await notes(placeType)).click();
+  await commonEnketoPage.setInputValue('Name of this', editedName);
   await genericForm.submitForm();
 };
 
@@ -286,74 +296,54 @@ const openFormWithWarning = async (formId) => {
 
 const openReport = async () => {
   await commonPage.toggleActionbar(true);
-  await (await rhsReportListElement()).waitForDisplayed();
-  await (await rhsReportListElement()).click();
+  await (await reportsCardSelectors.rhsReportListElement()).waitForDisplayed();
+  await (await reportsCardSelectors.rhsReportListElement()).click();
   await commonPage.toggleActionbar();
 };
 
 const getContactCardTitle = async () => {
-  await contactCardTitle().waitForDisplayed();
-  return (await contactCardTitle()).getText();
+  await rightPanelSelectors.contactCardTitle().waitForDisplayed();
+  return (await rightPanelSelectors.contactCardTitle()).getText();
 };
 
 const getContactInfoName = async () => {
-  await contactInfoName().waitForDisplayed();
-  return (await contactInfoName()).getText();
+  await contactCardSelectors.contactCardName().waitForDisplayed();
+  return (await contactCardSelectors.contactCardName()).getText();
 };
 
 const getContactMedicID = async () => {
-  await contactMedicID().waitForDisplayed();
-  return (await contactMedicID()).getText();
+  await contactCardSelectors.contactMedicID().waitForDisplayed();
+  return (await contactCardSelectors.contactMedicID()).getText();
 };
 
 const getContactDeceasedStatus = async () => {
-  const deceasedStatus = await contactDeceasedStatus();
+  const deceasedStatus = await contactCardSelectors.contactDeceasedStatus();
   await deceasedStatus.waitForDisplayed();
   return await deceasedStatus.getText();
 };
 
 const getPregnancyCardInfo = async () => {
-  await pregnancyCard().waitForDisplayed();
+  await pregnancyCardSelectors.pregnancyCard().waitForDisplayed();
   return {
-    weeksPregnant: await weeksPregnant().getText(),
-    deliveryDate: await edd().getText(),
-    risk: await highRisk().getText(),
-    ancVisit: await nextANCVisit().getText(),
+    weeksPregnant: await pregnancyCardSelectors.weeksPregnant().getText(),
+    deliveryDate: await pregnancyCardSelectors.edd().getText(),
+    risk: await pregnancyCardSelectors.highRisk().getText(),
+    ancVisit: await pregnancyCardSelectors.nextANCVisit().getText(),
   };
-};
-
-const getPregnancyLabel = async () => {
-  await pregnancyLabel().waitForDisplayed();
-  return (await pregnancyLabel()).getText();
-};
-
-const getVisitLabel = async () => {
-  await visitLabel().waitForDisplayed();
-  return (await visitLabel()).getText();
-};
-
-const getNumberOfReports = async () => {
-  await numberOfReports().waitForDisplayed();
-  return (await numberOfReports()).getText();
 };
 
 const getDeathCardInfo = async () => {
-  await deathCard().waitForDisplayed();
+  await deathCardSelectors.deathCard().waitForDisplayed();
   return {
-    deathDate: await deathDate().getText(),
-    deathPlace: await deathPlace().getText(),
+    deathDate: await deathCardSelectors.deathDate().getText(),
+    deathPlace: await deathCardSelectors.deathPlace().getText(),
   };
-};
-
-const getContactCardText = async () => {
-  await contactCard().waitForDisplayed();
-  return (await contactCard()).getText();
 };
 
 const exportContacts = async () => {
   await commonPage.openMoreOptionsMenu();
-  await (await exportButton()).waitForClickable();
-  await (await exportButton()).click();
+  await (await menuSelectors.exportButton()).waitForClickable();
+  await (await menuSelectors.exportButton()).click();
 };
 
 const getCurrentContactId = async () => {
@@ -367,13 +357,13 @@ const getCurrentContactId = async () => {
 };
 
 const getContactListLoadingStatus = async () => {
-  await (await contactListLoadingStatus()).waitForDisplayed();
-  return await (await contactListLoadingStatus()).getText();
+  await (await leftPanelSelectors.contactListLoadingStatus()).waitForDisplayed();
+  return await (await leftPanelSelectors.contactListLoadingStatus()).getText();
 };
 
 const getDisplayedContactsNames = async () => {
   const contacts = [];
-  for (const row of await contentRows()) {
+  for (const row of await leftPanelSelectors.contentRows()) {
     contacts.push(await row.getText());
   }
   return contacts;
@@ -381,14 +371,14 @@ const getDisplayedContactsNames = async () => {
 
 const getCurrentPersonEditFormValues = async (sexValue, roleValue) => {
   return {
-    name: await nameField('person').getValue(),
-    shortName: await $('[name="/data/person/short_name"]').getValue(),
-    dateOfBirth: await dateOfBirthField().getValue(),
-    sex: await sexField('person', sexValue).parentElement().getAttribute('data-checked'),
-    role: await roleField('person', roleValue).parentElement().getAttribute('data-checked'),
-    phone: await phoneField().getValue(),
-    externalId: await externalIdField('person').getValue(),
-    notes: await notes('person').getValue(),
+    name: await commonEnketoPage.getInputValue('Full name'),
+    shortName: await commonEnketoPage.getInputValue('Short name'),
+    dateOfBirth: await commonEnketoPage.getInputValue('Age'),
+    sex: await commonEnketoPage.isRadioButtonSelected('Sex', sexValue),
+    role: await commonEnketoPage.isRadioButtonSelected('Role', roleValue),
+    phone: await commonEnketoPage.getInputValue('Phone Number'),
+    externalId: await commonEnketoPage.getInputValue('External ID'),
+    notes: await commonEnketoPage.getTextareaValue('Notes'),
   };
 };
 
@@ -400,67 +390,44 @@ const filterReportViewAll = async () => {
 
 module.exports = {
   genericForm,
+  leftPanelSelectors,
+  rightPanelSelectors,
+  contactCardSelectors,
+  tasksCardSelectors,
+  reportsCardSelectors,
+  pregnancyCardSelectors,
+  deathCardSelectors,
   selectLHSRowByText,
   selectRHSRowById,
-  reportFilters,
   getReportFiltersText,
   getReportTaskFiltersText,
-  contactList,
   getAllLHSContactsNames,
   addPerson,
   addPlace,
-  topContact,
   getPrimaryContactName,
   getAllRHSPeopleNames,
   waitForContactLoaded,
   waitForContactUnloaded,
-  contactCard,
   editPerson,
   editPersonName,
   editPlace,
   exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
-  rhsReportListElement,
   getAllRHSTaskNames,
-  rhsTaskListElement,
   deletePerson,
   allContactsList,
-  childrenCards,
   openReport,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
   getContactDeceasedStatus,
-  newPrimaryContactButton,
-  newPrimaryContactName,
-  writeNamePlace,
-  externalIdField,
-  notes,
-  contactCardIcon,
-  editContactButton,
-  getContactCardText,
-  pregnancyCard,
   getPregnancyCardInfo,
-  deathCard,
   getDeathCardInfo,
-  contactMuted,
   openFormWithWarning,
   getContactListLoadingStatus,
   getCurrentContactId,
-  pregnancyLabel,
-  visitLabel,
-  numberOfReports,
-  getPregnancyLabel,
-  getVisitLabel,
-  getNumberOfReports,
   getDisplayedContactsNames,
-  nameField,
-  customPlaceNameField,
-  dateOfBirthField,
-  phoneField,
-  sexField,
-  roleField,
   getCurrentPersonEditFormValues,
   filterReportViewAll,
 };

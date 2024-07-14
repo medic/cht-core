@@ -6,11 +6,12 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-
 describe('Add new district tests : ', () => {
+
   before(async () => await loginPage.cookieLogin());
+
   afterEach(async () => {
-    sentinelUtils.waitForSentinel();
+    await sentinelUtils.waitForSentinel();
     await utils.revertDb([/^form:/], true);
   });
 
@@ -22,7 +23,7 @@ describe('Add new district tests : ', () => {
     await sentinelUtils.waitForSentinel();
     await commonPage.waitForPageLoaded();
 
-    expect(await contactPage.getContactCardText()).to.equal(district);
+    expect(await contactPage.getContactInfoName()).to.equal(district);
     expect(await contactPage.getPrimaryContactName()).to.equal('Tester');
   });
 
@@ -44,7 +45,7 @@ describe('Add new district tests : ', () => {
     await commonPage.goToPeople();
     await contactPage.editPlace('Caroline\'s district', 'Edited Caroline\'s', 'district_hospital');
     await commonPage.waitForPageLoaded();
-    expect(await contactPage.getContactCardText()).to.equal('Edited Caroline\'s');
+    expect(await contactPage.getContactInfoName()).to.equal('Edited Caroline\'s');
   });
 
   it('should edit district with contact_type', async () => {
@@ -73,13 +74,13 @@ describe('Add new district tests : ', () => {
     await contactPage.editPlace('Tudor\'s district', 'At Tudor\'s', 'district_hospital');
     await commonPage.waitForPageLoaded();
 
-    expect(await (await contactPage.contactCard()).getText()).to.equal('At Tudor\'s');
+    expect(await (await contactPage.contactCardSelectors.contactCardName()).getText()).to.equal('At Tudor\'s');
 
     const updatedDistrict = await utils.getDoc(district._id);
     expect(updatedDistrict.contact_type).to.equal('not a district_hospital'); // editing didn't overwrite
 
     // expect to have a single children section
-    expect(await (await contactPage.childrenCards()).length).to.equal(1);
+    expect((await contactPage.rightPanelSelectors.childrenCards()).length).to.equal(1);
     // expect to list two children
     expect(await contactPage.getAllRHSPeopleNames()).to.deep.equal(['Tudor', 'Ginny']);
   });

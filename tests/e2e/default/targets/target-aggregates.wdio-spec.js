@@ -399,7 +399,6 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.openTargetDetails(expectedTargets[0].id);
       await targetAggregatesPage.clickOnTargetAggregateListItem(clarissa._id);
       // wait until contact-summary is loaded
-      await (await contactsPage.contactCard()).waitForDisplayed();
       expect(await contactsPage.getContactInfoName()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
@@ -413,7 +412,7 @@ describe('Target aggregates', () => {
 
       await targetAggregatesPage.clickOnTargetAggregateListItem(prometheus._id);
       // wait until contact-summary is loaded
-      await (await contactsPage.contactCard()).waitForDisplayed();
+      await (await contactsPage.contactCardSelectors.contactCardName()).waitForDisplayed();
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
