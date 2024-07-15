@@ -13,7 +13,7 @@ import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
-describe.only('Analytics Filter Component', () => {
+describe('Analytics Filter Component', () => {
   let component: AnalyticsFilterComponent;
   let fixture: ComponentFixture<AnalyticsFilterComponent>;
   let authService;

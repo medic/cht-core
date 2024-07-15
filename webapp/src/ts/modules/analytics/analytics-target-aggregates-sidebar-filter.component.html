@@ -1,5 +1,10 @@
 <section class="sidebar-filter">
-  <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }" (click)="toggleSidebarFilter()"></div> <!-- //NOSONAR -->
+  <div
+    class="sidebar-backdrop"
+    [ngClass]="{ hidden: !isOpen }"
+    (click)="toggleSidebarFilter()"
+    (keydown.escape)="toggleSidebarFilter()">
+  </div>
 
   <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
     <div class="sidebar-header">
