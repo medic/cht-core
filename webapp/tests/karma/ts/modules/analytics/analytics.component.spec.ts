@@ -13,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
 describe('AnalyticsComponent', () => {
@@ -21,8 +22,9 @@ describe('AnalyticsComponent', () => {
   let globalActions;
   let authService;
   let sessionService;
-  let store;
   let userSettingsService;
+  let telemetryService;
+  let store;
 
   beforeEach(waitForAsync(() => {
     const mockSelectors = [
@@ -37,6 +39,7 @@ describe('AnalyticsComponent', () => {
     sessionService = {
       isAdmin: sinon.stub().returns(false)
     };
+    telemetryService = { record: sinon.stub() };
     globalActions = {
       unsetSelected: sinon.stub(GlobalActions.prototype, 'unsetSelected')
     };
@@ -57,6 +60,7 @@ describe('AnalyticsComponent', () => {
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
+          { provide: TelemetryService, useValue: telemetryService },
           { provide: UserSettingsService, useValue: userSettingsService}
         ]
       })
