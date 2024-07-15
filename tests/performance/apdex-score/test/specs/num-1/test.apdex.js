@@ -18,6 +18,7 @@ describe('Apdex Performance Workflows', () => {
     const user = settingsProvider.getUser('offline', 'chw');
     await loadPage.loadInstance(instanceUrl);
     await loginPage.login(user.username, user.password, hasPrivacyPolicy);
+    await loadPage.turnOnAirplaneMode(settingsProvider);
   });
 
   for (let i = 0; i < REPETITIONS; i++) {

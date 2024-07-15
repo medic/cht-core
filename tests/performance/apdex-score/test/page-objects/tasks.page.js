@@ -12,7 +12,7 @@ class TasksPage extends Page {
     
     const form = settingsProvider.getForm('patientTask');
     const commonElements = settingsProvider.getCommonElements();
-    await super.fillUpFormOnly(form, commonElements);
+    await super.fillUpForm(form, commonElements);
   }
 
 }

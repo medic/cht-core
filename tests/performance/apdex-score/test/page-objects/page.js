@@ -139,8 +139,10 @@ module.exports = class Page {
     const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
     const FORM_PAGE_NEXT_SELECTOR = commonElements?.formNext || '//android.widget.Button[@text="Next >"]';
 
-    await this.clickElement(FAB_SELECTOR);
-    await this.waitForDisplayedAndRetry(FAB_LIST_TITLE);
+    if (form.skipFAB) {
+      await this.clickElement(FAB_SELECTOR);
+      await this.waitForDisplayedAndRetry(FAB_LIST_TITLE);
+   } 
     await this.navigate(form.navigation);
 
     for (let i = 0; i < form.pages?.length; i++) {
@@ -155,14 +157,17 @@ module.exports = class Page {
 
     await this.clickElement(FORM_SUBMIT_SELECTOR);
     await this.assertMany(form.postSubmitAsserts);
-    await this.navigate(form.postTestPath);
+    if (form.skipFAB) {
+      await this.navigate(form.postTestPath);
+    }
   }
 
-  async relaunchApp(commonElements) {
-    const MENU_LIST_TITLE = commonElements?.menuListTitle || '//*[@text="People"]';
+  async relaunchApp(settingsProvider) {
+    const commonElements = settingsProvider.getCommonElements();
+    const UI_ELEMENT = commonElements?.relaunchAppAssert || '//*[@text="People"]';
     await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
-    await this.waitForDisplayedAndRetry(MENU_LIST_TITLE);
+    await this.waitForDisplayedAndRetry(UI_ELEMENT);
   }
 
   async searchContact(form) {
@@ -174,25 +179,6 @@ module.exports = class Page {
 
     await this.navigate(form.postTestPath);
     await this.assertMany(form.postSubmitAssert);
-  }
-
-  async fillUpFormOnly(form, commonElements) {
-    const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
-    const FORM_PAGE_NEXT_SELECTOR = commonElements?.formNext || '//android.widget.Button[@text="Next >"]';
-
-    await this.navigate(form.navigation);
-    for (let i = 0; i < form.pages?.length; i++) {
-      const page = form.pages[i];
-
-      if (i > 0) {
-        await this.clickElement(FORM_PAGE_NEXT_SELECTOR);
-      }
-
-      await this.fillUpFormPage(page);
-    }
-
-    await this.clickElement(FORM_SUBMIT_SELECTOR);
-    await this.assertMany(form.postSubmitAsserts);
   }
 
   async clickDisplayedElem(elem) {

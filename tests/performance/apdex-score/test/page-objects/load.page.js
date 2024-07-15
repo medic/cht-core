@@ -22,6 +22,13 @@ class LoadPage extends Page {
     await this.btnSave.click();
   }
 
+  async turnOnAirplaneMode(settingsProvider) {
+    const commonElements = settingsProvider.getCommonElements();
+    const UI_ELEMENT = commonElements?.relaunchAppAssert || '//*[@text="People"]';
+    await this.waitForDisplayedAndRetry(UI_ELEMENT);
+    await super.toggleAirplaneMode('on');
+  }
+  
 }
 
 module.exports = new LoadPage();
