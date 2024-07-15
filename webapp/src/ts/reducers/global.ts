@@ -208,7 +208,7 @@ const _globalReducer = createReducer(
   on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
     return { ...state, userFacilityId };
   }),
-  on(Actions.setUserContactId, (state, { payload: { setUserContactId }}) => ({ ...state, setUserContactId })),
+  on(Actions.setUserContactId, (state, { payload: { userContactId }}) => ({ ...state, userContactId })),
   on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
     return { ...state, trainingCardFormId };
   }),

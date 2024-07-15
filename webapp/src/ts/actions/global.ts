@@ -39,7 +39,7 @@ export const Actions = {
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityId: createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
-  setUserContactId: createSingleValueAction('SET_USER_CONTACT_ID', 'contactId'),
+  setUserContactId: createSingleValueAction('SET_USER_CONTACT_ID', 'userContactId'),
   setTrainingCardFormId: createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
 };
 
@@ -247,6 +247,7 @@ export class GlobalActions {
   }
 
   setUserContactId(userContactId) {
+    console.warn('set user contact id');
     return this.store.dispatch(Actions.setUserContactId(userContactId));
   }
 

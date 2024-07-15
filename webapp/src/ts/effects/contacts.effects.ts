@@ -50,8 +50,8 @@ export class ContactsEffects {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
       withLatestFrom(
-        this.store.pipe(select(Selectors.getUserFacilityId)),
-        this.store.pipe(select(Selectors.getUserContactId)),
+        this.store.select(Selectors.getUserFacilityId),
+        this.store.select(Selectors.getUserContactId),
         this.store.select(Selectors.getForms),
       ),
       exhaustMap(([{ payload: { id, silent } }, userFacilityId, userContactId, forms]) => {
