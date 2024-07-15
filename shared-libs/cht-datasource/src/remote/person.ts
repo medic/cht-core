@@ -19,4 +19,13 @@ export namespace v1 {
     identifier.uuid,
     { with_lineage: 'true' }
   );
+
+  /** @internal */
+  export const getPage = (remoteContext: RemoteDataContext) => (
+    limit: number,
+    skip: number
+  ): Promise<null> => getPerson(remoteContext)(
+    '',
+    {'limit': limit.toString(), 'skip': skip.toString()}
+  );
 }

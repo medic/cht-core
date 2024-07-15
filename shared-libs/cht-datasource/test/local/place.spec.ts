@@ -145,7 +145,7 @@ describe('local place', () => {
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(copiedPlace);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
@@ -166,7 +166,7 @@ describe('local place', () => {
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPlace.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No place found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
@@ -189,7 +189,7 @@ describe('local place', () => {
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
@@ -210,7 +210,7 @@ describe('local place', () => {
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(place);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, place)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage places found for place [${identifier.uuid}].`)).to.be.true;

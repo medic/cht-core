@@ -3,7 +3,7 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { deepCopy, isNonEmptyArray, Nullable } from '../libs/core';
 import { UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { getDocById, getDocsByIds } from './libs/doc';
+import { getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
@@ -40,7 +40,7 @@ export namespace v1 {
     const getLineageDocs = getLineageDocsById(medicDb);
     const getMedicDocsById = getDocsByIds(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Person.v1.PersonWithLineage>> => {
-      const [person, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
+      const [person, ...lineagePlaces] = await getLineageDocs(identifier.uuid, identifier.uuid);
       if (!isPerson(settings, identifier.uuid, person)) {
         return null;
       }
@@ -56,6 +56,24 @@ export namespace v1 {
       const linagePlacesWithContact = lineagePlaces.map(hydratePrimaryContact(contacts));
       const personWithLineage = hydrateLineage(person, linagePlacesWithContact);
       return deepCopy(personWithLineage);
+    };
+  };
+
+  /** @internal */
+  export const getPage = ({ medicDb, settings }: LocalDataContext) => {
+    const personIdentifierRecord = contactTypeUtils.getPersonTypes(settings.getAll());
+
+    let personIdentifier: string;
+    if (Object.entries(personIdentifierRecord).length > 0) {
+      personIdentifier = personIdentifierRecord[0]?.id as string;
+    } else {
+      throw new Error('Person type not found');
+    }
+
+    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+
+    return async (limit: number, skip: number): Promise<Nullable<Doc>[]> => {
+      return await getDocsByPage(personIdentifier, limit, skip);
     };
   };
 }

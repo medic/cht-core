@@ -123,5 +123,37 @@ describe('person', () => {
         expect(getPersonWithLineage.notCalled).to.be.true;
       });
     });
+
+    describe('getPage', () => {
+      const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
+      const limit = 3;
+      const skip = 1;
+      let getPage: SinonStub;
+
+      beforeEach(() => {
+        getPage = sinon.stub();
+        adapt.returns(getPage);
+      });
+
+      it('retrieves people from the data context', async () => {
+        getPage.resolves(people);
+
+        const result = await Person.v1.getPage(dataContext)(limit, skip);
+
+        expect(result).to.equal(people);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        assertDataContext.throws(new Error(`Invalid data context [null].`));
+
+        expect(() => Person.v1.getPage(dataContext)).to.throw(`Invalid data context [null].`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.notCalled).to.be.true;
+        expect(getPage.notCalled).to.be.true;
+      });
+    });
   });
 });

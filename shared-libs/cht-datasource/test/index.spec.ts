@@ -7,6 +7,7 @@ import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
+import { Doc } from '../src/libs/doc';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -92,7 +93,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage']);
+        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage', 'getPage']);
       });
 
       it('getByUuid', async () => {
@@ -123,6 +124,20 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getPage', async () => {
+        const expectedPeople: Index.Nullable<Doc>[] = [];
+        const personGetPage = sinon.stub().resolves(expectedPeople);
+        dataContextBind.returns(personGetPage);
+        const limit = 2;
+        const skip = 1;
+
+        const returnedPeople = await person.getPage(limit, skip);
+
+        expect(returnedPeople).to.equal(expectedPeople);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(limit, skip)).to.be.true;
       });
     });
   });

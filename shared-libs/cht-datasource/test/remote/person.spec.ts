@@ -64,5 +64,32 @@ describe('remote person', () => {
         expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
       });
     });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const skip = 1;
+      const queryParam = {limit: limit.toString(), skip: skip.toString()};
+
+      it('returns people', async () => {
+        const doc = [{ type: 'person' }, {type: 'person'}];
+        getResourceInner.resolves(doc);
+
+        const result = await Person.v1.getPage(remoteContext)(limit, skip);
+
+        expect(result).to.equal(doc);
+        expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly('', queryParam)).to.be.true;
+      });
+
+      it('returns empty array if docs are not found', async () => {
+        getResourceInner.resolves([]);
+
+        const result = await Person.v1.getPage(remoteContext)(limit, skip);
+
+        expect(result).to.deep.equal([]);
+        expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly('', queryParam)).to.be.true;
+      });
+    });
   });
 });

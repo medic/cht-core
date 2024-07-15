@@ -10,7 +10,7 @@ import {
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
-import { queryDocsByKey } from './doc';
+import { queryDocsByRange } from './doc';
 import logger from '@medic/logger';
 
 /**
@@ -20,7 +20,10 @@ import logger from '@medic/logger';
  */
 export const getLineageDocsById = (
   medicDb: PouchDB.Database<Doc>
-): (id: string) => Promise<Nullable<Doc>[]> => queryDocsByKey(medicDb, 'medic-client/docs_by_id_lineage');
+): (
+  startkey: unknown,
+  endkey: unknown
+) => Promise<Nullable<Doc>[]> => queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
 
 /** @internal */
 export const getPrimaryContactIds = (places: NonEmptyArray<Nullable<Doc>>): string[] => places

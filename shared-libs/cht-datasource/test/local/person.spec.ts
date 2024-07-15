@@ -146,7 +146,7 @@ describe('local person', () => {
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(copiedPerson);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
@@ -167,7 +167,7 @@ describe('local person', () => {
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPerson.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No person found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
@@ -191,7 +191,7 @@ describe('local person', () => {
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
@@ -212,7 +212,7 @@ describe('local person', () => {
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(person);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid, identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage places found for person [${identifier.uuid}].`)).to.be.true;
@@ -222,6 +222,65 @@ describe('local person', () => {
         expect(hydratePrimaryContactInner.notCalled).to.be.true;
         expect(hydrateLineage.notCalled).to.be.true;
         expect(deepCopy.notCalled).to.be.true;
+      });
+    });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const skip = 0;
+      const personIdentifier = 'person';
+      const personType = [{person: true, id: personIdentifier}] as Record<string, unknown>[];
+      let getPersonTypes: SinonStub;
+      let queryDocsByKeyInner: SinonStub;
+      let queryDocsByKeyOuter: SinonStub;
+
+      beforeEach(() => {
+        queryDocsByKeyInner = sinon.stub();
+        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
+        getPersonTypes = sinon.stub(contactTypeUtils, 'getPersonTypes').returns(personType);
+        settingsGetAll.returns(settings);
+
+      });
+      it('returns a page of people', async () => {
+        const doc = { type: 'person'};
+        const docs = [doc, doc, doc];
+        queryDocsByKeyInner.resolves(docs);
+
+        const res = await Person.v1.getPage(localContext)(limit, skip);
+
+        expect(res).to.equal(docs);
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly(personIdentifier, limit, skip)).to.be.true;
+      });
+
+      it('returns empty array if person identifier does not exist', () => {
+        getPersonTypes.returns({});
+        queryDocsByKeyInner.resolves([]);
+
+        expect(() => Person.v1.getPage(localContext)(limit, skip)).to.throw('Person type not found');
+
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(queryDocsByKeyOuter.notCalled).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+      });
+
+      it('returns empty array if people does not exist', async () => {
+        queryDocsByKeyInner.resolves([]);
+
+        const res = await Person.v1.getPage(localContext)(limit, skip);
+
+        expect(res).to.deep.equal([]);
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly(personIdentifier, limit, skip)).to.be.true;
       });
     });
   });

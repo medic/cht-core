@@ -21,15 +21,15 @@ describe('local lineage lib', () => {
 
   it('getLineageDocsById', () => {
     const queryFn = sinon.stub();
-    const queryDocsByKey = sinon
-      .stub(LocalDoc, 'queryDocsByKey')
+    const queryDocsByRange = sinon
+      .stub(LocalDoc, 'queryDocsByRange')
       .returns(queryFn);
     const medicDb = { hello: 'world' } as unknown as PouchDB.Database<Doc>;
 
     const result = getLineageDocsById(medicDb);
 
     expect(result).to.equal(queryFn);
-    expect(queryDocsByKey.calledOnceWithExactly(medicDb, 'medic-client/docs_by_id_lineage')).to.be.true;
+    expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'medic-client/docs_by_id_lineage')).to.be.true;
   });
 
   describe('getPrimaryContactIds', () => {

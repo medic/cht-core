@@ -28,14 +28,25 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[
 };
 
 /** @internal */
+const queryDocs = (db: PouchDB.Database<Doc>, view: string, options: PouchDB.Query.Options<Doc, unknown>) => db
+  .query(view, {...options})
+  .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
+
+/** @internal */
+export const queryDocsByRange = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  startkey: unknown,
+  endkey: unknown
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, startkey: [startkey], endkey: [endkey, {}]});
+
+/** @internal */
 export const queryDocsByKey = (
   db: PouchDB.Database<Doc>,
   view: string
-) => async (key: string): Promise<Nullable<Doc>[]> => db
-  .query(view, {
-    startkey: [key],
-    endkey: [key, {}],
-    include_docs: true
-  })
-  .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
-
+) => async (
+  key: unknown,
+  limit: number,
+  skip: number
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { key: [key], include_docs: true, limit, skip });

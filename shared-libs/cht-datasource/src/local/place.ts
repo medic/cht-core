@@ -39,7 +39,7 @@ export namespace v1 {
     const getLineageDocs = getLineageDocsById(medicDb);
     const getMedicDocsById = getDocsByIds(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Place.v1.PlaceWithLineage>> => {
-      const [place, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
+      const [place, ...lineagePlaces] = await getLineageDocs(identifier.uuid, identifier.uuid);
       if (!isPlace(settings, identifier.uuid, place)) {
         return null;
       }

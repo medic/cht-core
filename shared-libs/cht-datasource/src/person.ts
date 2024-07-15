@@ -44,6 +44,18 @@ export namespace v1 {
       };
     };
 
+  const getPeople = <T>(
+    localFn: (c: LocalDataContext) => (limit: number, skip: number) => Promise<T>,
+    remoteFn: (c: RemoteDataContext) => (limit: number, skip: number) => Promise<T>
+  ) => (context: DataContext) => {
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+
+      return async (limit = 100, skip = 0): Promise<T> => {
+        return fn(limit, skip);
+      };
+    };
+
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
@@ -59,4 +71,11 @@ export namespace v1 {
    * @throws Error if the provided context or qualifier is invalid
    */
   export const getWithLineage = getPerson(Local.Person.v1.getWithLineage, Remote.Person.v1.getWithLineage);
+
+  /**
+   * Returns an array of people.
+   * @param context the current data context
+   * @returns an array of people
+   */
+  export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);
 }

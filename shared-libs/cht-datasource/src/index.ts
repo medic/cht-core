@@ -85,6 +85,14 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws Error if no UUID is provided
          */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Person.v1.getWithLineage)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns a list of people.
+         * @param limit the total number of records to retrieve
+         * @param skip the total number of records to skip
+         * @returns array of `Person`
+         */
+        getPage: (limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(limit, skip),
       }
     }
   };
