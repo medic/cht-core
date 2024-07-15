@@ -40,9 +40,11 @@ export class TargetAggregatesService {
    * ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
    * ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
    */
-  private getCurrentIntervalTag(settings) {
+  private getInterval(settings, previous?) {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
-    const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    const targetInterval = previous ?
+      this.calendarIntervalService.getPrevious(uhcMonthStartDate) :
+      this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
     return moment(targetInterval.end).format('Y-MM');
   }
@@ -52,7 +54,7 @@ export class TargetAggregatesService {
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
    */
   private fetchLatestTargetDocs(settings) {
-    const tag = this.getCurrentIntervalTag(settings);
+    const tag = this.getInterval(settings);
     const opts = {
       start_key: `target~${tag}~`,
       end_key: `target~${tag}~\ufff0`,
@@ -71,8 +73,8 @@ export class TargetAggregatesService {
       });
   }
 
-  private fetchLatestTargetDoc(settings, contactUuid) {
-    const tag = this.getCurrentIntervalTag(settings);
+  private fetchTargetDoc(settings, contactUuid, previous?) {
+    const tag = this.getInterval(settings, previous);
     const opts = {
       start_key: `target~${tag}~${contactUuid}~`,
       end_key: `target~${tag}~${contactUuid}~\ufff0`,
@@ -304,11 +306,11 @@ export class TargetAggregatesService {
     return aggregates.find(aggregate => aggregate.id === targetId);
   }
 
-  getCurrentTargetDoc(contact?) {
-    return this.ngZone.runOutsideAngular(() => this._getCurrentTargetDoc(contact));
+  getTargetDoc(contact?, previous?) {
+    return this.ngZone.runOutsideAngular(() => this._getTargetDoc(contact, previous));
   }
 
-  private _getCurrentTargetDoc(contact?) {
+  private _getTargetDoc(contact?, previous?) {
     if (!contact) {
       return Promise.resolve();
     }
@@ -323,7 +325,7 @@ export class TargetAggregatesService {
       .get()
       .then(settings => {
         return this
-          .fetchLatestTargetDoc(settings, contactUuid)
+          .fetchTargetDoc(settings, contactUuid, previous)
           .then(targetDoc => this.getTargetDetails(targetDoc, settings));
       });
   }

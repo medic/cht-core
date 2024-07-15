@@ -51,9 +51,10 @@ export class ContactsEffects {
       ofType(ContactActionList.selectContact),
       withLatestFrom(
         this.store.pipe(select(Selectors.getUserFacilityId)),
+        this.store.pipe(select(Selectors.getUserContactId)),
         this.store.select(Selectors.getForms),
       ),
-      exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
+      exhaustMap(([{ payload: { id, silent } }, userFacilityId, userContactId, forms]) => {
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
@@ -81,7 +82,7 @@ export class ContactsEffects {
           .then(() => this.setTitle())
           .then(() => this.loadChildren(id, userFacilityId, trackName))
           .then(() => this.loadReports(id, forms, trackName))
-          .then(() => this.loadTargetDoc(id, trackName))
+          .then(() => this.loadTargetDoc(id, userFacilityId, userContactId, trackName))
           .then(() => this.loadContactSummary(id, trackName))
           .then(() => this.loadTasks(id, trackName))
           .catch(err => {
@@ -161,10 +162,12 @@ export class ContactsEffects {
       });
   }
 
-  private loadTargetDoc(contactId, trackName) {
+  private loadTargetDoc(contactId, userFacilityId, userContactId, trackName) {
     const trackPerformance = this.performanceService.track();
+    const isSelectedFacility = contactId === userFacilityId;
+    const targetContact = isSelectedFacility ? userContactId : this.selectedContact;
     return this.targetAggregateService
-      .getCurrentTargetDoc(this.selectedContact)
+      .getTargetDoc(targetContact, isSelectedFacility)
       .then(targetDoc => {
         return this
           .verifySelectedContactNotChanged(contactId)

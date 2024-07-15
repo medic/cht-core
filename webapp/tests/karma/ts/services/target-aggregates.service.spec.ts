@@ -55,7 +55,10 @@ describe('TargetAggregatesService', () => {
     };
     uhcSettingsService = {getMonthStartDate: sinon.stub()};
     translateFromService = {get: sinon.stub()};
-    calendarIntervalService = {getCurrent: sinon.stub().returns({end: 100})};
+    calendarIntervalService = {
+      getCurrent: sinon.stub().returns({ end: 100 }),
+      getPrevious: sinon.stub().returns({ end: 1 }),
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -1059,9 +1062,9 @@ describe('TargetAggregatesService', () => {
     it('should do nothing when no contact uuid', () => {
       return Promise
         .all([
-          service.getCurrentTargetDoc(),
-          service.getCurrentTargetDoc({}),
-          service.getCurrentTargetDoc(''),
+          service.getTargetDoc(),
+          service.getTargetDoc({}),
+          service.getTargetDoc(''),
         ])
         .then(results => {
           expect(results).to.deep.equal([undefined, undefined, undefined]);
@@ -1072,7 +1075,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.rejects({ some: 'err' });
 
       return service
-        .getCurrentTargetDoc('uuid')
+        .getTargetDoc('uuid')
         .then(() => assert.isFalse('Should have thrown'))
         .catch(err => expect(err).to.deep.equal({ some: 'err' }));
     });
@@ -1104,7 +1107,7 @@ describe('TargetAggregatesService', () => {
 
       dbService.allDocs.resolves({ rows: [{ doc: targetDoc }] });
 
-      const result = await service.getCurrentTargetDoc('uuid');
+      const result = await service.getTargetDoc('uuid');
 
       expect(result).to.deep.equal({
         _id: 'target~2020-02~uuid~username',
@@ -1157,7 +1160,7 @@ describe('TargetAggregatesService', () => {
 
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      const result = await service.getCurrentTargetDoc('uuid');
+      const result = await service.getTargetDoc('uuid');
 
       expect(result).to.deep.equal({
         _id: 'target~2020-02~uuid~username1',
@@ -1188,7 +1191,7 @@ describe('TargetAggregatesService', () => {
 
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      const result = await service.getCurrentTargetDoc('uuid');
+      const result = await service.getTargetDoc('uuid');
 
       expect(result).to.deep.equal({
         _id: 'target~2020-02~uuid~username1',

@@ -228,6 +228,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.globalActions.setUserFacilityId(facilityId);
+        this.globalActions.setUserContactId(userSettings.contact_id);
         return this.getDataRecordsService
           .get([ facilityId ])
           .then(places => places?.length ? places[0] : undefined);
