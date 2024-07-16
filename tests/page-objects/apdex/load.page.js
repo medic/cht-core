@@ -3,10 +3,6 @@ const Page = require('./page');
 
 class LoadPage extends Page {  
   
-  get btnCustom() {
-    return $('//android.widget.TextView[@text="Custom"]');
-  }
-  
   get inputInstanceUrl() {
     return $('//android.widget.EditText[@resource-id="org.medicmobile.webapp.mobile:id/txtAppUrl"]');
   }
@@ -17,7 +13,7 @@ class LoadPage extends Page {
 
   async loadInstance(url) {
     await super.toggleAirplaneMode('off');
-    await this.btnCustom.click();
+    await super.getButton("Custom").click();
     await this.inputInstanceUrl.setValue(url);
     await this.btnSave.click();
   }

@@ -11,21 +11,13 @@ class LoginPage extends Page {
     return $('//*[@text="Password"]//parent::android.view.View/android.view.View/android.widget.EditText');
   }
 
-  get btnLogin() {
-    return $('//*[@text="Login"]');
-  }
-
-  get btnAccept() {
-    return $('//*[@text="Accept"]');
-  }
-
   async login(username, password, hasPrivacyPolicy) {
     await this.inputUsername.waitForDisplayed();
     await this.inputUsername.setValue(username);
     await this.inputPassword.setValue(password);
-    await this.btnLogin.click();
+    await super.getButton("Login").click();
     if (hasPrivacyPolicy) {
-      await super.clickDisplayedElem(this.btnAccept);
+      await super.clickDisplayedElem(super.getButton("Accept"));
     }
   }
 

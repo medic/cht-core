@@ -157,9 +157,7 @@ module.exports = class Page {
 
     await this.clickElement(FORM_SUBMIT_SELECTOR);
     await this.assertMany(form.postSubmitAsserts);
-    if (form.useFAB) {
-      await this.navigate(form.postTestPath);
-    }
+    await this.navigate(form.postTestPath);
   }
 
   async relaunchApp(settingsProvider) {
@@ -199,7 +197,7 @@ module.exports = class Page {
       });
   }
 
-  async getButton(label) {
+  getButton(label) {
     return $('//*[@text="' + label +'"]');
   }
 
