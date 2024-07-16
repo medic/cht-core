@@ -15,9 +15,9 @@ class LoginPage extends Page {
     await this.inputUsername.waitForDisplayed();
     await this.inputUsername.setValue(username);
     await this.inputPassword.setValue(password);
-    await super.getButton("Login").click();
+    await super.getButton('Login').click();
     if (hasPrivacyPolicy) {
-      await super.clickDisplayedElem(super.getButton("Accept"));
+      await super.clickDisplayedElem(super.getButton('Accept'));
     }
   }
 
