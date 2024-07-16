@@ -4,11 +4,11 @@ const Page = require('./page');
 class LoginPage extends Page {
   
   get inputUsername() {
-    return $('//android.view.View[1]/android.widget.EditText');
+    return $('//android.view.View[@text="User name"]//parent::android.view.View/android.widget.EditText');
   }
 
   get inputPassword() {
-    return $('//android.view.View[3]/android.widget.EditText');
+    return $('//android.view.View[@text="Password"]//parent::android.view.View/android.view.View/android.widget.EditText');
   }
 
   get btnLogin() {

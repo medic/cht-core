@@ -4,7 +4,7 @@ const Page = require('./page');
 class LoadPage extends Page {  
   
   get btnCustom() {
-    return $('//*[@text="Custom"]');
+    return $('//android.widget.TextView[@text="Custom"]');
   }
   
   get inputInstanceUrl() {

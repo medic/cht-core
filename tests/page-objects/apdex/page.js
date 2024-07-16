@@ -199,4 +199,8 @@ module.exports = class Page {
       });
   }
 
+  async getButton(label) {
+    return $('//*[@text="' + label +'"]');
+  }
+
 };
