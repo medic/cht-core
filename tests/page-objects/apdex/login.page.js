@@ -8,7 +8,7 @@ class LoginPage extends Page {
   }
 
   get inputPassword() {
-    return $('//android.view.View[@text="Password"]//parent::android.view.View/android.view.View/android.widget.EditText');
+    return $('//*[@text="Password"]//parent::android.view.View/android.view.View/android.widget.EditText');
   }
 
   get btnLogin() {
