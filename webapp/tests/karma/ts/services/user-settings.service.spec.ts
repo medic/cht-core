@@ -10,7 +10,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { LanguageService } from '@mm-services/language.service';
 
 describe('UserSettings service', () => {
-  let service:UserSettingsService;
+  let service: UserSettingsService;
   let get;
   let userCtx;
   let changesCallback;
@@ -56,7 +56,7 @@ describe('UserSettings service', () => {
   it('gets from local db', () => {
     userCtx.returns({ name: 'jack' });
     get.returns(Promise.resolve({ id: 'j' }));
-    return service.get().then((actual:any) => {
+    return service.get().then((actual: any) => {
       expect(actual.id).to.equal('j');
       expect(userCtx.callCount).to.equal(2);
       expect(get.callCount).to.equal(1);
@@ -69,7 +69,7 @@ describe('UserSettings service', () => {
     userCtx.returns({ name: 'jack' });
     get.returns(Promise.resolve({ id: 'j' }));
     getLanguage.resolves('en');
-    return service.getWithLanguage().then((actual:any) => {
+    return service.getWithLanguage().then((actual: any) => {
       expect(actual.id).to.equal('j');
       expect(actual.language).to.equal('en');
       expect(userCtx.callCount).to.equal(2);
@@ -81,7 +81,7 @@ describe('UserSettings service', () => {
 
   it('hasMultipleFacilities returns true when user has multiple facilities', async () => {
     userCtx.returns({ name: 'jack' });
-    get.returns(Promise.resolve({ facility_id: ['facility_1', 'facility_2']}));
+    get.returns(Promise.resolve({ facility_id: ['facility_1', 'facility_2'] }));
     hasMultipleFacilities = sinon.spy(service, 'hasMultipleFacilities');
 
     const result = await service.hasMultipleFacilities();
@@ -165,12 +165,12 @@ describe('UserSettings service', () => {
     get.resolves({ id: 'j' });
     return service
       .get()
-      .then((first:any) => {
+      .then((first: any) => {
         expect(first.id).to.equal('j');
         expect(get.callCount).to.equal(1);
         return service.get();
       })
-      .then((second:any) => {
+      .then((second: any) => {
         expect(second.id).to.equal('j');
         expect(get.callCount).to.equal(1);
       });
@@ -181,13 +181,13 @@ describe('UserSettings service', () => {
     get.resolves({ id: 'j' });
     return service
       .get()
-      .then((first:any) => {
+      .then((first: any) => {
         expect(first.id).to.equal('j');
         expect(get.callCount).to.equal(1);
-        changesCallback({ id: 'org.couchdb.user:jack', changes: [ { rev: '5-xyz' } ] });
+        changesCallback({ id: 'org.couchdb.user:jack', changes: [{ rev: '5-xyz' }] });
         return service.get();
       })
-      .then((second:any) => {
+      .then((second: any) => {
         expect(second.id).to.equal('j');
         expect(get.callCount).to.equal(2);
       });
@@ -215,7 +215,7 @@ describe('UserSettings service', () => {
     get
       .onCall(0).rejects({ code: 404 })
       .onCall(1).resolves({ id: 'j' });
-    return service.get().then((actual:any) => {
+    return service.get().then((actual: any) => {
       expect(actual.id).to.equal('j');
       expect(userCtx.callCount).to.equal(2);
       expect(get.callCount).to.equal(2);
