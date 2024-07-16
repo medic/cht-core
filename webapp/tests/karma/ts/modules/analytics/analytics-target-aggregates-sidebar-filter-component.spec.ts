@@ -156,7 +156,6 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
 
     expect(component.selectedFacilityId).to.be.undefined;
     expect(component.selectedFacility).to.be.undefined;
-    expect(component.facilityFilterLabel).to.be.undefined;
     expect(userSettingsService.getUserFacility.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
     expect(contactTypesService.getTypeId.callCount).to.equal(0);

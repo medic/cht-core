@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -32,7 +32,7 @@ describe('Analytics Filter Component', () => {
     authService = {
       has: sinon.stub().resolves(true),
     };
-    sessionService = { isAdmin: sinon.stub().returns(false) };
+    sessionService = { isAdmin: sinon.stub() };
     telemetryService = { record: sinon.stub() };
     targetAggregatesService = {
       isEnabled: sinon.stub().resolves(false),
@@ -49,7 +49,7 @@ describe('Analytics Filter Component', () => {
     };
     router = {
       navigate: sinon.stub(),
-      events: of(new NavigationEnd(0, '', '')),
+      events: of(),
     };
 
     const mockedSelectors = [
@@ -107,7 +107,7 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.true;
-    expect(sessionService.isAdmin).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
@@ -133,7 +133,7 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
@@ -158,7 +158,7 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
@@ -171,7 +171,7 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
@@ -184,7 +184,7 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin).to.equal(1);
+    expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
