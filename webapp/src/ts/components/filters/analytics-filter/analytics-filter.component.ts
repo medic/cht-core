@@ -11,11 +11,13 @@ import {
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
+
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
@@ -42,6 +44,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     private authService: AuthService,
     private sessionService: SessionService,
     private telemetryService: TelemetryService,
+    private targetAggregatesService: TargetAggregatesService,
     private userSettingsService: UserSettingsService
   ) {
     this.globalActions = new GlobalActions(store);
@@ -107,18 +110,28 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     return this.getCurrentModuleId() === AGGREGATE_TARGETS_ID;
   }
 
+  private isTargetAggregateEnabled() {
+    return this.targetAggregatesService.isEnabled();
+  }
+
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
-    const [hasMultipleFacilities, checkPermissions] = await Promise.all([
+    const [hasMultipleFacilities, checkPermissions, isTargetAggregateEnabled] = await Promise.all([
       this.userSettingsService.hasMultipleFacilities(),
       this.checkPermissions(),
+      this.isTargetAggregateEnabled(),
     ]);
 
-    this.showFilterButton = !isAdmin && hasMultipleFacilities && checkPermissions && this.isTargetAggregates();
+    this.showFilterButton = !isAdmin &&
+                            hasMultipleFacilities &&
+                            checkPermissions &&
+                            this.isTargetAggregates() &&
+                            isTargetAggregateEnabled;
   }
 
   openSidebar() {
-    this.globalActions.setSidebarFilter({ isOpen: !this.isOpen });
+    this.isOpen = !this.isOpen;
+    this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
     if (this.isOpen) {
       // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
       this.telemetryService.record('sidebar_filter:analytics_target_aggregates:open');

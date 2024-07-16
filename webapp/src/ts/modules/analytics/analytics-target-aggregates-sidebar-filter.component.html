@@ -19,8 +19,12 @@
             <ng-container *ngFor="let facility of userFacilities">
               <div class="filter-option-place">
                 <label class="filter-option-wrapper">
-                  <input type="radio" name="facility" [value]="facility._id"
-                    class="filter-option-radio" [(ngModel)]="selectedFacilityId">
+                  <input
+                    type="radio"
+                    name="facility"
+                    [value]="facility._id"
+                    class="filter-option-radio"
+                    [(ngModel)]="selectedFacilityId">
                   <span class="filter-option-label">{{ facility.name }}</span>
                 </label>
               </div>

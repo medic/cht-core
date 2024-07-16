@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 
 import { CacheService } from '@mm-services/cache.service';
-import { GetDataRecordsService } from './get-data-records.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LanguageService } from '@mm-services/language.service';
@@ -74,7 +74,13 @@ export class UserSettingsService {
   async getUserFacility(): Promise<string[]> {
     return this
       .get()
-      .then((userSettings: UserSettings) => this.getDataRecordsService.get(userSettings.facility_id));
+      .then((userSettings: UserSettings) => {
+        return this.getDataRecordsService.get(userSettings.facility_id);
+      })
+      .catch((err) => {
+        console.error('Error fetching user facility:', err);
+        return [];
+      });
   }
 
   async getWithLanguage(): Promise<Object> {

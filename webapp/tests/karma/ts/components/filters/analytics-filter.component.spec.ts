@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -11,7 +11,9 @@ import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filte
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('Analytics Filter Component', () => {
   let component: AnalyticsFilterComponent;
@@ -19,19 +21,27 @@ describe('Analytics Filter Component', () => {
   let authService;
   let sessionService;
   let telemetryService;
+  let targetAggregatesService;
   let userSettingsService;
+  let globalActions;
   let route;
   let router;
   let store: MockStore;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async () => {
     authService = {
       has: sinon.stub().resolves(true),
     };
     sessionService = { isAdmin: sinon.stub().returns(false) };
     telemetryService = { record: sinon.stub() };
+    targetAggregatesService = {
+      isEnabled: sinon.stub().resolves(false),
+    };
     userSettingsService = {
       hasMultipleFacilities: sinon.stub().resolves(true)
+    };
+    globalActions = {
+      setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
     route = {
       snapshot: { queryParams: { query: '' }, firstChild: { data: { moduleId: 'some-module' } } },
@@ -46,7 +56,7 @@ describe('Analytics Filter Component', () => {
       { selector: Selectors.getSidebarFilter, value: {} },
     ];
 
-    return TestBed
+    await TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } })
@@ -59,6 +69,7 @@ describe('Analytics Filter Component', () => {
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
           { provide: TelemetryService, useValue: telemetryService },
+          { provide: TargetAggregatesService, useValue: targetAggregatesService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
@@ -71,7 +82,7 @@ describe('Analytics Filter Component', () => {
         store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
-  }));
+  });
 
   afterEach(() => {
     store.resetSelectors();
@@ -83,29 +94,52 @@ describe('Analytics Filter Component', () => {
   });
 
   it('should display filter button when all conditions of showFilterButton are true', fakeAsync(() => {
+    sinon.resetHistory();
     authService.has
       .withArgs(['can_view_old_filter_and_search', 'can_view_old_action_bar'])
       .resolves(false);
     sessionService.isAdmin.returns(false);
     userSettingsService.hasMultipleFacilities.resolves(true);
     route.snapshot.firstChild.data.moduleId = 'target-aggregates';
+    targetAggregatesService.isEnabled.resolves(true);
 
     component.ngOnInit();
     flush();
 
     expect(component.showFilterButton).to.be.true;
+    expect(sessionService.isAdmin).to.equal(1);
+    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
+  it('should open and close sidebar filter', () => {
+    component.openSidebar();
+    component.openSidebar();
+    component.openSidebar();
+
+    expect(globalActions.setSidebarFilter.calledThrice).to.be.true;
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true });
+    expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: false });
+    expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true });
+    expect(telemetryService.record.calledTwice).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics_target_aggregates:open']);
+  });
+
   it('should not display filter button if user does not have multipleFacilities', fakeAsync(() => {
+    sinon.resetHistory();
     userSettingsService.hasMultipleFacilities.resolves(false);
 
     component.ngOnInit();
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(sessionService.isAdmin).to.equal(1);
+    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
   it('should not display filter button if user is admin', fakeAsync(() => {
+    sinon.resetHistory();
     sessionService.isAdmin.returns(true);
 
     component.ngOnInit();
@@ -115,6 +149,7 @@ describe('Analytics Filter Component', () => {
   }));
 
   it('should not display filter button if user old UI permissions', fakeAsync(() => {
+    sinon.resetHistory();
     authService.has
       .withArgs(['!can_view_old_filter_and_search', '!can_view_old_action_bar'])
       .resolves(false);
@@ -123,14 +158,34 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(sessionService.isAdmin).to.equal(1);
+    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
+  }));
+
+  it('should not display filter button if targetAggregate is not enabled', fakeAsync(() => {
+    sinon.resetHistory();
+    targetAggregatesService.isEnabled.resolves(false);
+
+    component.ngOnInit();
+    flush();
+
+    expect(component.showFilterButton).to.be.false;
+    expect(sessionService.isAdmin).to.equal(1);
+    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
   it('should not display filter button if module is not target aggregates', fakeAsync(() => {
+    sinon.resetHistory();
     route.snapshot.firstChild.data.moduleId = 'not-target-aggregates';
 
     component.ngOnInit();
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(sessionService.isAdmin).to.equal(1);
+    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 });

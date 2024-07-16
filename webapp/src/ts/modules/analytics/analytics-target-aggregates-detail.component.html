@@ -7,7 +7,7 @@
     <div>{{ (error?.translationKey || selected?.error?.translationKey || 'analytics.target.aggregates.select.error') | translate}}</div>
   </div>
 
-  <div class="item-content" *ngIf="selected && !selected.error && !error">
+  <div *ngIf="selected && !selected.error && !error">
     <div class="material">
       <div class="body meta">
         <div class="target-detail card" [ngClass]="{ 'has-goal': selected.goal >= 0, 'goal-met': (selected.value?.pass >= selected.goal) || (selected.value?.percent >= selected.goal) }">

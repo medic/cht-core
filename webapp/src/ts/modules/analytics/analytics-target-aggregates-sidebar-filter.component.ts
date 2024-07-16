@@ -74,15 +74,21 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
 
   private async setFacilityLabel() {
     const FACILITY = 'Facility';
+    if (!this.selectedFacility) {
+      this.facilityFilterLabel = FACILITY;
+      return;
+    }
+
     try {
       const settings = await this.settingsService.get();
       const userFacilityType = this.contactTypesService.getTypeId(this.selectedFacility);
       const placeType = settings.contact_types.find(type => type.id === userFacilityType);
 
-      this.facilityFilterLabel = placeType.name_key || FACILITY;
+      this.facilityFilterLabel = placeType?.name_key || FACILITY;
     } catch (err) {
       this.error = true;
       console.error('Error fetching facility label', err);
+      this.facilityFilterLabel = FACILITY;
     }
   }
 }
