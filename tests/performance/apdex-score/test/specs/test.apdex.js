@@ -1,12 +1,12 @@
-const loadSettings = require('../../../settings-provider');
+const loadSettings = require('../../settings-provider');
 
-const loadPage = require('../../page-objects/load.page');
-const loginPage = require('../../page-objects/login.page');
-const contactsPage = require('../../page-objects/contacts.page');
-const performancePage = require('../../page-objects/performance.page');
-const tasksPage = require('../../page-objects/tasks.page');
-const messagesPage = require('../../page-objects/messages.page');
-const reportsPage = require('../../page-objects/reports.page');
+const loadPage = require('../page-objects/load.page');
+const loginPage = require('../page-objects/login.page');
+const contactsPage = require('../page-objects/contacts.page');
+const performancePage = require('../page-objects/performance.page');
+const tasksPage = require('../page-objects/tasks.page');
+const messagesPage = require('../page-objects/messages.page');
+const reportsPage = require('../page-objects/reports.page');
 
 describe('Apdex Performance Workflows', () => {
   const settingsProvider = loadSettings();
