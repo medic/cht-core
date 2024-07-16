@@ -8,7 +8,7 @@
 
 <details> <summary>Expand to see settings file structure </summary>
 
-```json {"id":"01J2WE5FDM112EVC71G6QBXS1N"}
+```json
 {
   "iterations": <Mandatory. Number of times to run the test cases>,
   "instanceURL": <Mandatory. String, instance url>,
