@@ -139,7 +139,7 @@ module.exports = class Page {
     const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
     const FORM_PAGE_NEXT_SELECTOR = commonElements?.formNext || '//android.widget.Button[@text="Next >"]';
 
-    if (form.skipFAB) {
+    if (form.useFAB) {
       await this.clickElement(FAB_SELECTOR);
       await this.waitForDisplayedAndRetry(FAB_LIST_TITLE);
     } 
@@ -157,7 +157,7 @@ module.exports = class Page {
 
     await this.clickElement(FORM_SUBMIT_SELECTOR);
     await this.assertMany(form.postSubmitAsserts);
-    if (form.skipFAB) {
+    if (form.useFAB) {
       await this.navigate(form.postTestPath);
     }
   }

@@ -206,7 +206,7 @@ Object containing the definition of forms to load, fill fields and asserts outco
 | Property | Type | Description | Mandatory |
 |--|--|--|--|
 | navigation | Object[] | Click path to navigate to that page. See Navigation section below for more details. | Yes |
-| skipFAB | Boolean | Set this to true when you do not need to click on the floating action button before proceeding with the tests. | Yes |
+| useFAB | Boolean | Whether to click on the floating action button before proceeding with the tests. | Yes |
 | pages.asserts | Object[] | Elements to assert once it has finished navigating to the current page. Use to make sure all elements in the page have finished rendering. See Asserts section for more details. | Yes |
 | pages.fields | Object[] | Fields to fill-up. See Fields section below for more details. | Yes |
 | pages.scrollDown | Number | Times to scroll down to reach to the page buttons. | No |
