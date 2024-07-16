@@ -406,6 +406,27 @@ body {
     left: 0;
     right: 0;
     display: flex;
+    .right-side-filter {
+      margin-left: auto;
+      .open-filter-label {
+        color: @filter-text-color;
+      }
+      .btn.open-filter {
+        background-color: transparent;
+        margin: 0;
+        &:focus,
+        &:active {
+          outline: none;
+          border: none;
+          box-shadow: none;
+        }
+        .fa {
+          font-size: @font-extra-large;
+          color: @filter-icon-color;
+          padding: 2px 2px 0 0;
+        }
+      }
+    }
   }
 
   .freetext-filter {
@@ -1151,13 +1172,12 @@ a.fa:hover {
 .analytics {
   .content {
     .inner {
-      /* allow the scrollable content to grow to full width */
-      max-width: inherit;
+      max-width: 100%;
+      .page {
+        max-width: 100%;
+      }
       .page:not(.target-aggregates) {
-        max-width: inherit;
-        /* set the max with and center all the children again */
         > div {
-          max-width: @content-width;
           margin: 0 auto;
         }
       }
@@ -1166,8 +1186,16 @@ a.fa:hover {
         /* position this absolute div in the horizontal center */
         left: 0;
         right: 0;
+        max-width: @content-width;
         margin-left: auto;
-        margin-right: auto;
+
+        &.sidebar-closed {
+          margin-right: auto;
+        }
+
+        &.sidebar-open {
+          margin-right: 0;
+        }
       }
     }
   }
@@ -1712,6 +1740,10 @@ mm-search-bar {
     display: none;
   }
 
+  .open-filter-label {
+    display: none;
+  }
+
   mm-search-bar {
     padding: 5px;
     .mm-search-bar-container {
@@ -1729,10 +1761,6 @@ mm-search-bar {
 
       .btn.open-filter {
         margin: 0;
-
-        .open-filter-label {
-          display: none;
-        }
 
         .filter-counter {
           position: absolute;
@@ -1778,6 +1806,9 @@ mm-search-bar {
   }
   .filters .filter {
     width: 17%;
+  }
+  .right-side-filter {
+    padding-right: 6px;
   }
   .header {
     .tabs {

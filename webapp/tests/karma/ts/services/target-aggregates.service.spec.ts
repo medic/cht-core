@@ -118,13 +118,13 @@ describe('TargetAggregatesService', () => {
       expect(userSettingsService.get.notCalled).to.be.true;
     });
 
-    it('should return false when user has more than one facility assigned', async () => {
+    it('should return true when user has more than one facility assigned', async () => {
       authService.has.resolves(true);
       userSettingsService.get.resolves({ facility_id: [ 'facility-1', 'facility-2' ] });
 
       const result = await service.isEnabled();
 
-      expect(result).to.equal(false);
+      expect(result).to.equal(true);
       expect(userSettingsService.get.calledOnce).to.be.true;
     });
   });
