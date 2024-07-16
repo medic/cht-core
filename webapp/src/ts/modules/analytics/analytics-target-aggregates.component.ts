@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -6,12 +6,17 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { Selectors } from '@mm-selectors/index';
 import { PerformanceService } from '@mm-services/performance.service';
+import { AnalyticsTargetAggregatesSidebarFilterComponent }
+  from './analytics-target-aggregates-sidebar-filter.component';
 
 @Component({
   selector: 'analytics-target-aggregates',
   templateUrl: './analytics-target-aggregates.component.html',
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
+  @ViewChild(AnalyticsTargetAggregatesSidebarFilterComponent) sidebarFilter?:
+   AnalyticsTargetAggregatesSidebarFilterComponent;
+
   private targetAggregatesActions: TargetAggregatesActions;
   private trackPerformance;
   subscriptions: Subscription = new Subscription();
@@ -20,6 +25,8 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   aggregates: any = null;
   selected = null;
   error = null;
+  useSidebarFilter = true;
+  isSidebarFilterOpen = false;
 
   constructor(
     private store: Store,
@@ -32,6 +39,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.trackPerformance = this.performanceService.track();
     this.subscribeToStore();
+    this.subscribeSidebarFilter();
     this.getTargetAggregates();
   }
 
@@ -87,5 +95,16 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
           recordApdex: true,
         });
       });
+  }
+
+  private subscribeSidebarFilter() {
+    if (!this.useSidebarFilter) {
+      return;
+    }
+
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe((filterState) => this.isSidebarFilterOpen = filterState?.isOpen ?? false);
+    this.subscriptions.add(subscription);
   }
 }

@@ -39,6 +39,8 @@ import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-polic
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
 import { AnalyticsModulesComponent } from '@mm-modules/analytics/analytics-modules.component';
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesSidebarFilterComponent }
+  from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 import {
   AnalyticsTargetAggregatesDetailComponent
 } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
@@ -76,6 +78,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     AnalyticsModulesComponent,
     AnalyticsTargetAggregatesComponent,
     AnalyticsTargetAggregatesDetailComponent,
+    AnalyticsTargetAggregatesSidebarFilterComponent,
     TasksComponent,
     TasksContentComponent,
     TasksGroupComponent,

@@ -1,11 +1,13 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Store } from '@ngrx/store';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesSidebarFilterComponent }
+  from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { PerformanceService } from '@mm-services/performance.service';
@@ -17,6 +19,7 @@ describe('Analytics Target Aggregates Component', () => {
   let targetAggregatesActions;
   let stopPerformanceTrackStub;
   let performanceService;
+  let store: MockStore;
 
   beforeEach(waitForAsync(() => {
     targetAggregatesService = {
@@ -38,7 +41,10 @@ describe('Analytics Target Aggregates Component', () => {
 
     return TestBed
       .configureTestingModule({
-        declarations: [ AnalyticsTargetAggregatesComponent ],
+        declarations: [
+          AnalyticsTargetAggregatesComponent,
+          AnalyticsTargetAggregatesSidebarFilterComponent
+        ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
@@ -52,16 +58,19 @@ describe('Analytics Target Aggregates Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetAggregatesComponent);
         component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
   it('should create component', () => {
     expect(component).to.exist;
+    expect(component.isSidebarFilterOpen).to.be.false;
   });
 
   it('should instantiate correctly', () => {
@@ -94,7 +103,7 @@ describe('Analytics Target Aggregates Component', () => {
     sinon.reset();
     targetAggregatesService.isEnabled.rejects({ some: 'err' });
     const consoleErrorMock = sinon.stub(console, 'error');
-    
+
     component.ngOnInit();
     tick();
 
