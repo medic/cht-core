@@ -142,7 +142,7 @@ module.exports = class Page {
     if (form.skipFAB) {
       await this.clickElement(FAB_SELECTOR);
       await this.waitForDisplayedAndRetry(FAB_LIST_TITLE);
-   } 
+    } 
     await this.navigate(form.navigation);
 
     for (let i = 0; i < form.pages?.length; i++) {
