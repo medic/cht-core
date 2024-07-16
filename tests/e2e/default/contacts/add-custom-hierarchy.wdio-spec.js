@@ -5,42 +5,44 @@ const login = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
-const addPlace = 'New Place';
-let translations;
-let forms;
-
-//Custom Hierarchy
-// customTopLevel -> person1
-//    customMidLevel -> childPlaceToCustomTopLevel
-//        customLowLevel -> firstChildPlaceToTopLevel, secondChildPlaceToTopLevel
-//        customParentWithMultiplePersons -> person2, person3
-// secondTopLevel
-
-const customTopLevel = customTypeFactory.customType().build();
-const secondTopLevel = customTypeFactory.customType().build({}, { name: 'second-top-level' });
-const customMidLevel = customTypeFactory.customType().build({ parents: [customTopLevel.id] }, { name: 'mid-level' });
-const customLowLevel = customTypeFactory.customType().build({ parents: [customMidLevel.id] }, { name: 'low-level' });
-
-const childPlaceToCustomMidLevel = customTypeFactory.customType()
-  .build({ parents: [customMidLevel.id] }, { name: 'doctor-office' });
-
-const firstChildPlaceToTopLevel = customTypeFactory.customType()
-  .build({ parents: [customLowLevel.id] }, { name: 'first-child' });
-
-const secondChildPlaceToTopLevel = customTypeFactory.customType()
-  .build({ parents: [customLowLevel.id] }, { name: 'second-child' });
-
-const customParentWithMultiplePersons = customTypeFactory.customType()
-  .build({ parents: [customMidLevel.id] }, { name: 'custom-parent' });
-
-const person1 = customTypeFactory.customType()
-  .build({ parents: [customTopLevel.id], person: true }, { name: 'doctor' });
-const person2 = customTypeFactory.customType()
-  .build({ parents: [customParentWithMultiplePersons.id], person: true }, { name: 'patient' });
-const person3 = customTypeFactory.customType()
-  .build({ parents: [customParentWithMultiplePersons.id], person: true }, { name: 'nurse' });
-
 describe('Creating custom places', () => {
+  const addPlace = 'New Place';
+  let translations;
+  let forms;
+
+  //Custom Hierarchy
+  // customTopLevel -> person1
+  //    customMidLevel -> childPlaceToCustomTopLevel
+  //        customLowLevel -> firstChildPlaceToTopLevel, secondChildPlaceToTopLevel
+  //        customParentWithMultiplePersons -> person2, person3
+  // secondTopLevel
+
+  const customTopLevel = customTypeFactory.customType().build();
+  const secondTopLevel = customTypeFactory.customType().build({}, { name: 'second-top-level' });
+  const customMidLevel = customTypeFactory.customType().build({ parents: [customTopLevel.id] }, { name: 'mid-level' });
+  const customLowLevel = customTypeFactory.customType().build({ parents: [customMidLevel.id] }, { name: 'low-level' });
+
+  const childPlaceToCustomMidLevel = customTypeFactory.customType()
+    .build({ parents: [customMidLevel.id] }, { name: 'doctor-office' });
+
+  const firstChildPlaceToTopLevel = customTypeFactory.customType()
+    .build({ parents: [customLowLevel.id] }, { name: 'first-child' });
+
+  const secondChildPlaceToTopLevel = customTypeFactory.customType()
+    .build({ parents: [customLowLevel.id] }, { name: 'second-child' });
+
+  const customParentWithMultiplePersons = customTypeFactory.customType()
+    .build({ parents: [customMidLevel.id] }, { name: 'custom-parent' });
+
+  const person1 = customTypeFactory.customType()
+    .build({ parents: [customTopLevel.id], person: true }, { name: 'doctor' });
+
+  const person2 = customTypeFactory.customType()
+    .build({ parents: [customParentWithMultiplePersons.id], person: true }, { name: 'patient' });
+
+  const person3 = customTypeFactory.customType()
+    .build({ parents: [customParentWithMultiplePersons.id], person: true }, { name: 'nurse' });
+
   const ngoCreateXML = `${__dirname}/forms/ngo-create.xml`;
 
   beforeEach(async () => {
@@ -134,14 +136,8 @@ describe('Creating custom places', () => {
     await commonPage.goToPeople(topLevel._id);
     const displayedListOfContacts = await contactsPage.allContactsList();
     const expected = [
-      {
-        heading: 'low-level Plural',
-        contactNames: ['lowlvl']
-      },
-      {
-        heading: 'mid-level Plural',
-        contactNames: ['midLevel']
-      },
+      { heading: 'low-level Plural', contactNames: ['lowlvl'] },
+      { heading: 'mid-level Plural', contactNames: ['midLevel'] },
     ];
     expect(displayedListOfContacts).to.deep.equal(expected);
   });

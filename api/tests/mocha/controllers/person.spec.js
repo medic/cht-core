@@ -33,8 +33,6 @@ describe('Person Controller', () => {
 
   describe('v1', () => {
     describe('get', () => {
-      const qualifier = Object.freeze({ uuid: 'uuid' });
-      let byUuid;
       let personGet;
       let personGetWithLineage;
 
@@ -43,9 +41,6 @@ describe('Person Controller', () => {
           params: { uuid: 'uuid' },
           query: { }
         };
-        byUuid = sinon
-          .stub(Qualifier, 'byUuid')
-          .returns(qualifier);
         personGet = sinon.stub();
         personGetWithLineage = sinon.stub();
         dataContextBind
@@ -71,8 +66,7 @@ describe('Person Controller', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
-        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
@@ -89,9 +83,8 @@ describe('Person Controller', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
         expect(personGet.notCalled).to.be.true;
-        expect(personGetWithLineage.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(personGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
@@ -107,8 +100,7 @@ describe('Person Controller', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
-        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
@@ -123,8 +115,7 @@ describe('Person Controller', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
-        expect(byUuid.calledOnceWithExactly(req.params.uuid)).to.be.true;
-        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
@@ -143,7 +134,6 @@ describe('Person Controller', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
-        expect(byUuid.notCalled).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -158,7 +148,6 @@ describe('Person Controller', () => {
 
         expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
-        expect(byUuid.notCalled).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;

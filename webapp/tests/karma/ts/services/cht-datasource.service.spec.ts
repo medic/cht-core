@@ -120,6 +120,42 @@ describe('CHTScriptApiService service', () => {
 
   });
 
+  describe('bind()', () => {
+    [true, false].forEach((isOnlineOnly) => {
+      it(`binds to a data context when isOnlineOnly is ${isOnlineOnly}`, async () => {
+        const settings = { hello: 'settings' } as const;
+        settingsService.get.resolves(settings);
+        const userCtx = { hello: 'world' };
+        sessionService.userCtx.returns(userCtx);
+        sessionService.isOnlineOnly.returns(isOnlineOnly);
+        const expectedDb = { hello: 'medic' };
+        dbService.get.resolves(expectedDb);
+        const innerFn = sinon.stub();
+        const outerFn = sinon
+          .stub()
+          .returns(innerFn);
+
+        const result = await service.bind(outerFn);
+
+        expect(outerFn.calledOnce).to.be.true;
+        const [dataContext, ...other] = outerFn.args[0];
+        expect(other).to.be.empty;
+        expect(dataContext.bind).to.be.a('function');
+        expect(result).to.equal(innerFn);
+        expect(innerFn.notCalled).to.be.true;
+        expect(changesService.subscribe.calledOnce).to.be.true;
+        expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+        expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
+        expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
+        expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
+        expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+        expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+        expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 0 : 1);
+      });
+    });
+  });
+
   describe('v1.hasPermissions()', () => {
 
     it('should return true when user has the permission', async () => {

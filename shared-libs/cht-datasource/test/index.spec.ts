@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import * as Index from '../src';
 import { hasAnyPermission, hasPermissions } from '../src/auth';
 import * as Person from '../src/person';
+import * as Place from '../src/place';
 import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
@@ -37,12 +38,52 @@ describe('CHT Script API - getDatasource', () => {
     beforeEach(() => v1 = datasource.v1);
 
     it('contains expected keys', () => expect(v1).to.have.all.keys([
-      'hasPermissions', 'hasAnyPermission', 'person'
+      'hasPermissions', 'hasAnyPermission', 'person', 'place'
     ]));
 
     it('permission', () => {
       expect(v1.hasPermissions).to.equal(hasPermissions);
       expect(v1.hasAnyPermission).to.equal(hasAnyPermission);
+    });
+
+    describe('place', () => {
+      let place: typeof v1.place;
+
+      beforeEach(() => place = v1.place);
+
+      it('contains expected keys', () => {
+        expect(place).to.have.all.keys(['getByUuid', 'getByUuidWithLineage']);
+      });
+
+      it('getByUuid', async () => {
+        const expectedPlace = {};
+        const placeGet = sinon.stub().resolves(expectedPlace);
+        dataContextBind.returns(placeGet);
+        const qualifier = { uuid: 'my-places-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedPlace = await place.getByUuid(qualifier.uuid);
+
+        expect(returnedPlace).to.equal(expectedPlace);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
+        expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getByUuidWithLineage', async () => {
+        const expectedPlace = {};
+        const placeGet = sinon.stub().resolves(expectedPlace);
+        dataContextBind.returns(placeGet);
+        const qualifier = { uuid: 'my-places-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedPlace = await place.getByUuidWithLineage(qualifier.uuid);
+
+        expect(returnedPlace).to.equal(expectedPlace);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
+        expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
     });
 
     describe('person', () => {

@@ -13,7 +13,12 @@ const rpn = require('request-promise-native');
 const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
 
-const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT, BASE_VERSION } = process.env;
+const {
+  MARKET_URL_READ='https://staging.dev.medicmobile.org',
+  STAGING_SERVER='_couch/builds_4',
+  HAPROXY_PORT,
+  BASE_VERSION='latest'
+} = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
 const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service-');
@@ -123,9 +128,13 @@ const servicesStartTimeout = () => {
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs:
+  // order is important, because we want to upgrade from an older version to current version. validate the upgrade
+  // and then upgrade to master
     [
       'upgrade.wdio-spec.js',
-      '*.wdio-spec.js'
+      'admin-user.wdio-spec.js',
+      'webapp.wdio-spec.js',
+      'upgrade-master.wdio-spec.js',
     ],
   exclude: [],
 
@@ -141,6 +150,7 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   mochaOpts: {
     ui: 'bdd',
     timeout: TEST_TIMEOUT,
+    bail: true
   },
 });
 

@@ -5,53 +5,33 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const places = placeFactory.generateHierarchy(); // This generates ['district_hospital', 'health_center', 'clinic']
-const districtHospital = places.get('district_hospital');
 
-const username = 'jack_test';
-const password = 'Jacktest@123';
+describe('Create Person Under Area, ', () => {
+  const username = 'jack_test';
+  const password = 'Jacktest@123';
 
-// Add one more health_center
-const healthCenter2 = placeFactory.place().build({
-  name: 'HealthCenter-2',
-  type: 'health_center',
-  parent: {
-    _id: districtHospital._id,
-    parent: {
-      _id: ''
-    }
-  }
-});
+  const places = placeFactory.generateHierarchy();
+  const districtHospital = places.get('district_hospital');
+  const healthCenters = places.get('health_center');
 
-const healthCenters = places.get('health_center');
+  const healthCenter2 = placeFactory.place().build({
+    name: 'HealthCenter-2',
+    type: 'health_center',
+    parent: { _id: districtHospital._id, parent: { _id: '' } }
+  });
 
-const person1 = personFactory.build(
-  {
-    parent: {
-      _id: healthCenters._id,
-      parent: healthCenters.parent
-    }
-  }
-);
-const person2 = personFactory.build(
-  {
+  const person1 = personFactory.build({ parent: { _id: healthCenters._id, parent: healthCenters.parent } });
+  const person2 = personFactory.build({
     name: 'Jack',
-    parent: {
-      _id: healthCenter2._id,
-      parent: healthCenter2.parent
-    }
-  }
-);
+    parent: { _id: healthCenter2._id, parent: healthCenter2.parent }
+  });
 
-const docs = [...places.values(), healthCenter2, person1, person2];
-
-describe('Create Person Under Area', () => {
   before(async () => {
-    await utils.saveDocs(docs);
+    await utils.saveDocs([...places.values(), healthCenter2, person1, person2]);
     await loginPage.cookieLogin();
   });
 
-  it('create person under area should only see children', async () => {
+  it('should create person under area should only see children', async () => {
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();
     await usersAdminPage.inputAddUserFields(username, 'Jack', 'chw', healthCenter2.name, person2.name, password);
