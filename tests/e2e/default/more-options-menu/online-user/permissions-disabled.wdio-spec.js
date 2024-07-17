@@ -1,4 +1,3 @@
-const uuid = require('uuid').v4;
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -9,39 +8,32 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const sms = require('@utils/sms');
 
-const places = placeFactory.generateHierarchy();
-const clinic = places.get('clinic');
-const health_center = places.get('health_center');
-const district_hospital = places.get('district_hospital');
-const contact = personFactory.build({
-  _id: uuid(),
-  name: 'contact',
-  phone: '+12068881234',
-  place: health_center._id,
-  type: 'person',
-  parent: {
-    _id: health_center._id,
-    parent: health_center.parent
-  },
-});
+describe('More Options Menu - Online User - Permissions disabled', () => {
+  const places = placeFactory.generateHierarchy();
+  const clinic = places.get('clinic');
+  const health_center = places.get('health_center');
+  const district_hospital = places.get('district_hospital');
 
-const onlineUser = userFactory.build({
-  username: 'onlineuser',
-  roles: [ 'program_officer' ],
-  place: district_hospital._id,
-  contact: contact._id,
-});
+  const contact = personFactory.build({
+    phone: '+12068881234',
+    place: health_center._id,
+    parent: { _id: health_center._id,  parent: health_center.parent },
+  });
 
-const patient = personFactory.build({
-  _id: uuid(),
-  parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
-});
+  const onlineUser = userFactory.build({
+    roles: [ 'program_officer' ],
+    place: district_hospital._id,
+    contact: contact._id,
+  });
 
-const reports = [
-  reportFactory.report().build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
-];
+  const patient = personFactory.build({
+    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
+  });
 
-describe('- permissions disabled', () => {
+  const reports = [
+    reportFactory.report().build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
+  ];
+
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
     await sms.sendSms('testing', contact.phone);
@@ -53,7 +45,7 @@ describe('- permissions disabled', () => {
 
   after(async () => await utils.revertSettings(true));
 
-  describe('- export permissions disabled', () => {
+  describe('Export permissions disabled', () => {
     before(async () => {
       const exportPermissions = ['can_export_all', 'can_export_contacts', 'can_export_messages'];
       await utils.updatePermissions(onlineUser.roles, [], exportPermissions);
@@ -62,7 +54,8 @@ describe('- permissions disabled', () => {
 
     after(async () => await utils.revertSettings(true));
 
-    it(' - Contact Tab - contact selected', async () => {
+    it('should hide the \'export\' option and ' +
+      'enable the \'edit\' and \'delete\' options when a contact is opened', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
@@ -70,16 +63,19 @@ describe('- permissions disabled', () => {
       expect(await commonPage.isMenuOptionEnabled('delete', 'contacts')).to.be.true;
     });
 
-    it('- Report Tab - report selected', async () => {
+    it('should hide the \'export\' option and ' +
+      'enable the \'edit\', \'delete\' and \'review\' options when a report is opened', async () => {
       await commonPage.goToReports();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
       (await reportPage.firstReport()).click();
-      await commonPage.openMoreOptionsMenu();
+      await commonPage.openMoreOptionsMenu(); //se ve review, edit y delete
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
       expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
     });
 
-    it('- Message tab', async () => {
+    it('should hide the kebab menu the it is on the Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       expect(await commonPage.isMessagesListPresent()).to.be.true;
@@ -87,7 +83,7 @@ describe('- permissions disabled', () => {
     });
   });
 
-  describe('- DELETE permissions disabled', () => {
+  describe('Delete permissions disabled', () => {
     before(async () => {
       await utils.updatePermissions(onlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
       await commonPage.closeReloadModal();
@@ -95,21 +91,28 @@ describe('- permissions disabled', () => {
 
     after(async () => await utils.revertSettings(true));
 
-    it(' - Contact Tab - contact selected', async () => {
+    it('should hide the \'delete\' option and ' +
+      'enable the \'edit\' and \'export\' options when a contact is opened', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.true;
     });
 
-    it('- Report Tab - option disabled when report selected', async () => {
+    it('should hide the \'delete\' option and ' +
+      'enable the \'edit\', \'export\' and \'review\' options when a report is opened', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
     });
   });
 
-  describe('- EDIT permissions disabled', () => {
+  describe('Edit permissions disabled', () => {
     before(async () => {
       await utils.updatePermissions(onlineUser.roles, [], ['can_edit']);
       await commonPage.closeReloadModal();
@@ -117,17 +120,24 @@ describe('- permissions disabled', () => {
 
     after(async () => await utils.revertSettings(true));
 
-    it(' - Contact Tab - contact selected', async () => {
+    it('should hide the \'edit\' and \'delete\' options and ' +
+      'enable the \'export\' option when a contact is opened', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.true;
     });
 
-    it('- Report Tab - option disabled when report selected', async () => {
+    it('should hide the \'edit\', \'delete\' and \'review\' options and ' +
+      'enable the \'export\' option when a report is opened', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('review', 'report')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
     });
   });
 });
