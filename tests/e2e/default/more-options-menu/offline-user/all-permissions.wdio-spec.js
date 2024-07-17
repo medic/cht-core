@@ -98,7 +98,7 @@ describe('More Options Menu - Offline User', () => {
 
     describe('Report tab', () => {
       it('should hide the \'export\' and \'edit\' options and ' +
-        'enable the \'delete\' option when the sms report is opened', async () => {
+        'enable the \'delete\' and \'review\' options when the sms report is opened', async () => {
         await commonPage.goToReports();
         expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
 
@@ -107,15 +107,17 @@ describe('More Options Menu - Offline User', () => {
         expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
         expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
         expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
+        expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
       });
 
       it('should hide the \'export\' option and ' +
-        'enable the \'edit\' and \'delete\' options when the xml report is opened', async () => {
+        'enable the \'edit\', \'delete\' and \'review\' options when the xml report is opened', async () => {
         await reportPage.goToReportById(xmlReportId);
         await commonPage.openMoreOptionsMenu();
         expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
         expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
         expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
+        expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
       });
     });
   });
