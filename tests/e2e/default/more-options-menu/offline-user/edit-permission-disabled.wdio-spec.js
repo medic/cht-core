@@ -7,7 +7,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-describe('- EDIT permissions disabled', () => {
+describe('More Options Menu - Offline User - Edit permissions disabled', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const health_center = places.get('health_center');
