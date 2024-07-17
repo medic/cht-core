@@ -243,11 +243,12 @@ export class GlobalActions {
   }
 
   setUserFacilityId(userFacilityId) {
+    console.warn('set user facility');
     return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
   }
 
   setUserContactId(userContactId) {
-    console.warn('set user contact id');
+    console.warn('set user contact');
     return this.store.dispatch(Actions.setUserContactId(userContactId));
   }
 
