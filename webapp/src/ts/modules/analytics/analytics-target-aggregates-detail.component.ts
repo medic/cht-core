@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { isEqual } from 'lodash-es';
 
 import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
@@ -19,6 +20,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   subscriptions: Subscription = new Subscription();
   selected: any = null;
   error: any = null;
+  prevAggregates;
   private aggregates = null;
   private viewInited = new Subject();
 
@@ -64,12 +66,17 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.route.params,
       this.viewInited,
       this.store.select(Selectors.getTargetAggregatesLoaded),
-    ).subscribe(([params, inited, loaded]) => {
+      this.store.select(Selectors.getTargetAggregates),
+    ).subscribe(([params, inited, loaded, aggregates]) => {
       if (loaded && inited && params) {
         setTimeout(() => {
           // two birds with one stone
           // both this component and the parent (analytics-target-aggregates) need to be updated
-          this.getAggregatesDetail(params.id);
+
+          if (!isEqual(this.prevAggregates, aggregates)) {
+            this.prevAggregates = aggregates;
+            this.getAggregatesDetail(params.id);
+          }
         });
       }
     });

@@ -236,7 +236,12 @@ export class TargetAggregatesService {
     return Array.isArray(facility_id) ? facility_id : [ facility_id ];
   }
 
-  private async getHomePlace() {
+  private async getHomePlace(facilityId?) {
+    if (facilityId) {
+      const places = await this.getDataRecordsService.get([facilityId]);
+      return places?.length ? places[0] : undefined;
+    }
+
     const facilityIds = await this.getUserFacilityIds();
     if (!facilityIds?.length) {
       return;
@@ -245,11 +250,12 @@ export class TargetAggregatesService {
     return places?.length ? places[0] : undefined;
   }
 
-  private getSupervisedContacts() {
+  private getSupervisedContacts(facilityId?) {
     const alphabeticalSort = (a, b) => String(a.name).localeCompare(String(b.name));
 
-    return this
-      .getHomePlace()
+    const getHomePlace = facilityId ? this.getHomePlace(facilityId) : this.getHomePlace();
+
+    return getHomePlace
       .then(homePlaceSummary => {
         if (!homePlaceSummary) {
           const message = 'Your user does not have an associated contact, or does not have access to the ' +
@@ -289,11 +295,11 @@ export class TargetAggregatesService {
     return !facilityIds || facilityIds.length > 0;
   }
 
-  getAggregates() {
-    return this.ngZone.runOutsideAngular(() => this._getAggregates());
+  getAggregates(facilityId?) {
+    return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId));
   }
 
-  private _getAggregates() {
+  private _getAggregates(facilityId?) {
     return this.settingsService
       .get()
       .then(settings => {
@@ -305,7 +311,7 @@ export class TargetAggregatesService {
 
         return Promise
           .all([
-            this.getSupervisedContacts(),
+            facilityId ? this.getSupervisedContacts(facilityId) : this.getSupervisedContacts(),
             this.fetchLatestTargetDocs(settings)
           ])
           .then(([ contacts, latestTargetDocs ]) => this.aggregateTargets(latestTargetDocs, contacts, targetsConfig));
