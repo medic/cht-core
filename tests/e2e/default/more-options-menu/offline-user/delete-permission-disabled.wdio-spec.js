@@ -75,11 +75,12 @@ describe('More Options Menu - Offline User - Delete permissions disabled', () =>
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
     });
 
-    it('should enable the \'edit\' option and ' +
+    it('should enable the \'edit\' and \'review\' option and ' +
       'hide the \'export\' and \'delete\' options when the xml report is opened', async () => {
       await reportPage.goToReportById(xmlReportId);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
     });
