@@ -1,6 +1,7 @@
 const constants = require('@constants');
 const utils = require('@utils');
-const commonPage = require('../common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
@@ -9,6 +10,7 @@ const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
+const tokenLoginError = (reason) => $(`.error.${reason}`);
 
 const getErrorMessage = async () => {
   await (await errorMessageField()).waitForDisplayed();
@@ -97,11 +99,6 @@ const changeLanguage = async (languageCode, userTranslation) => {
   };
 };
 
-const returnToLoginButtonExists = async () => {
-  return await (await $('.btn[href="/medic/login"]')).isExisting();
-};
-
-const tokenLoginError = (reason) => $(`.error.${reason}`);
 const getTokenError = async (reason) => {
   await (await tokenLoginError(reason)).waitForDisplayed();
   return await (await tokenLoginError(reason)).getText();
@@ -136,7 +133,6 @@ module.exports = {
   labelForUser,
   loginButton,
   labelForPassword,
-  returnToLoginButtonExists,
   getTokenError,
   getToLoginLinkText,
   getCurrentLanguage,
