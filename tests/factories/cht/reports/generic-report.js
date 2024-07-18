@@ -19,8 +19,8 @@ const minify = parent => {
 
 const report = () => {
   return new Factory()
-    .option('patient')
-    .option('submitter')
+    .option('patient', {})
+    .option('submitter', {})
     .sequence('_id', uuid.v4)
     .attrs({
       type: 'data_record',
