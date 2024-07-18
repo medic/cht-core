@@ -18,6 +18,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -31,6 +32,7 @@ describe('Contacts effects', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let routeSnapshotService;
+  let contactTypesService;
 
   beforeEach(async() => {
     actions$ = new Observable<Action>();
@@ -52,6 +54,7 @@ describe('Contacts effects', () => {
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getTargetDocs: sinon.stub().resolves() };
     tasksForContactService = { get: sinon.stub().resolves([]) };
+    contactTypesService = { isPersonType: sinon.stub().returns(true) };
 
     TestBed.configureTestingModule({
       imports: [
@@ -67,6 +70,7 @@ describe('Contacts effects', () => {
         { provide: TasksForContactService, useValue: tasksForContactService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
+        { provide: ContactTypesService, useValue: contactTypesService },
       ]
     });
 

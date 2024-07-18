@@ -14,6 +14,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -32,6 +33,7 @@ export class ContactsEffects {
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
+    private contactTypesService: ContactTypesService,
     private routeSnapshotService: RouteSnapshotService,
   ) {
     this.contactsActions = new ContactsActions(store);
@@ -162,21 +164,21 @@ export class ContactsEffects {
       });
   }
 
-  private loadTargetDoc(contactId, userFacilityId, userContactId, trackName) {
+  private async loadTargetDoc(contactId, userFacilityId, userContactId, trackName) {
     const trackPerformance = this.performanceService.track();
     const isSelectedFacility = contactId === userFacilityId;
-    const targetContact = isSelectedFacility ? userContactId : this.selectedContact;
-    return this.targetAggregateService
-      .getTargetDocs(targetContact)
-      .then(targetDocs => {
-        console.warn(targetDocs);
-        return this
-          .verifySelectedContactNotChanged(contactId)
-          .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDocs));
-      })
-      .finally(() => {
-        trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
-      });
+    const shouldLoadTargetDocs = isSelectedFacility || this.contactTypesService.isPersonType(this.selectedContact.type);
+
+    if (shouldLoadTargetDocs) {
+      const targetContact = isSelectedFacility ? userContactId : this.selectedContact;
+      const targetDocs = await this.targetAggregateService.getTargetDocs(targetContact);
+      console.warn(targetDocs);
+
+      await this.verifySelectedContactNotChanged(contactId);
+      this.contactsActions.receiveSelectedContactTargetDoc(targetDocs);
+    }
+
+    await trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
   }
 
   private loadTasks(contactId, trackName) {
