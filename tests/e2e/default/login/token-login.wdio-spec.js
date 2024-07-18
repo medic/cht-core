@@ -8,7 +8,14 @@ describe('Token login', () => {
   const MISSING = 'Your link is missing required information';
   const TO_LOGIN = 'If you know your username and password, click on the following link to load the login page.';
   const UNKNOWN = 'Something went wrong when processing your request';
-  let user;
+
+  const user = {
+    username: 'testusername',
+    roles: ['program_officer'],
+    phone: '+40766565656',
+    token_login: true,
+    known: true,
+  };
 
   const getUrl = (token) => `/medic/login/token/${token}`;
 
@@ -48,13 +55,6 @@ describe('Token login', () => {
 
 
   beforeEach(async () => {
-    user = {
-      username: 'testusername',
-      roles: ['program_officer'],
-      phone: '+40766565656',
-      token_login: true,
-      known: true,
-    };
     await browser.deleteCookies();
   });
 
