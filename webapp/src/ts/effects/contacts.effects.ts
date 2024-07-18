@@ -166,7 +166,6 @@ export class ContactsEffects {
     const trackPerformance = this.performanceService.track();
     const isSelectedFacility = contactId === userFacilityId;
     const targetContact = isSelectedFacility ? userContactId : this.selectedContact;
-    console.warn(userFacilityId, userContactId);
     return this.targetAggregateService
       .getTargetDocs(targetContact)
       .then(targetDocs => {
