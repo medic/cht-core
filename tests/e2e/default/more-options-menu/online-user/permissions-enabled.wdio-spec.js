@@ -24,13 +24,13 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
     it('should disable the \'export\' option in Message tab',
       async () => {
         await commonPage.goToMessages();
-        await commonPage.openMoreOptionsMenu();//export disabled
+        await commonPage.openMoreOptionsMenu();
         expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.false;
       });
 
     it('should disable the \'export\' option and hide the \'edit\' and \'delete\' options in Contact tab', async () => {
       await commonPage.goToPeople();
-      await commonPage.openMoreOptionsMenu();//export disabled
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
@@ -38,7 +38,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
 
     it('should disable the \'export\' option and hide the \'edit\' and \'delete\' options in Report tab', async () => {
       await commonPage.goToReports();
-      await commonPage.openMoreOptionsMenu();//export disabled
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
