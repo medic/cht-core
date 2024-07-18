@@ -1159,7 +1159,7 @@ describe('TargetAggregatesService', () => {
       expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([20, moment('2019-11-19').valueOf()]);
       expect(calendarIntervalService.getInterval.args[3]).to.deep.equal([20, moment('2019-10-19').valueOf()]);
       expect(calendarIntervalService.getInterval.args[4]).to.deep.equal([20, moment('2019-09-19').valueOf()]);
-      expect(calendarIntervalService.getInterval.args[5]).to.deep.equal([20, moment('2019-08-19').valueOf()])
+      expect(calendarIntervalService.getInterval.args[5]).to.deep.equal([20, moment('2019-08-19').valueOf()]);
 
       expect(dbService.allDocs.callCount).to.equal(6);
       expect(dbService.allDocs.args[0]).to.deep.equal([{
