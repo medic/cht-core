@@ -82,7 +82,7 @@ export class ContactSummaryService {
     return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDoc));
   }
 
-  private async _get(contact, reports, lineage, targetDoc?) {
+  private async _get(contact, reports, lineage, targetDocs?) {
     if (!this.settings) {
       this.settings = await this.settingsService.get();
     }
@@ -98,9 +98,10 @@ export class ContactSummaryService {
     };
 
     const chtScriptApi = await this.chtScriptApiService.getApi();
+    chtScriptApi.v2.context.targetDocs = targetDocs;
 
     try {
-      const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDoc);
+      const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDocs?.[0]);
       return this.applyFilters(summary);
     } catch (error) {
       console.error('Configuration error in contact-summary function: ', error);

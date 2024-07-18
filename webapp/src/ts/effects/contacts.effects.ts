@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store, select } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { combineLatest, of } from 'rxjs';
-import {exhaustMap, first, withLatestFrom} from 'rxjs/operators';
+import {exhaustMap, withLatestFrom} from 'rxjs/operators';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -168,12 +168,12 @@ export class ContactsEffects {
     const targetContact = isSelectedFacility ? userContactId : this.selectedContact;
     console.warn(userFacilityId, userContactId);
     return this.targetAggregateService
-      .getTargetDoc(targetContact, isSelectedFacility)
-      .then(targetDoc => {
-        console.warn(targetDoc);
+      .getTargetDocs(targetContact)
+      .then(targetDocs => {
+        console.warn(targetDocs);
         return this
           .verifySelectedContactNotChanged(contactId)
-          .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc));
+          .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDocs));
       })
       .finally(() => {
         trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });

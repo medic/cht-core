@@ -40,11 +40,9 @@ export class TargetAggregatesService {
    * ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
    * ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
    */
-  private getInterval(settings, previous?) {
+  private getCurrentIntervalTag(settings) {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
-    const targetInterval = previous ?
-      this.calendarIntervalService.getPrevious(uhcMonthStartDate) :
-      this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
     return moment(targetInterval.end).format('Y-MM');
   }
@@ -54,7 +52,7 @@ export class TargetAggregatesService {
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
    */
   private fetchLatestTargetDocs(settings) {
-    const tag = this.getInterval(settings);
+    const tag = this.getCurrentIntervalTag(settings);
     const opts = {
       start_key: `target~${tag}~`,
       end_key: `target~${tag}~\ufff0`,
@@ -73,18 +71,19 @@ export class TargetAggregatesService {
       });
   }
 
-  private fetchTargetDoc(settings, contactUuid, previous?) {
-    const tag = this.getInterval(settings, previous);
+  private async fetchTargetDocs(settings, contactUuid) {
+    const tag = this.getCurrentIntervalTag(settings);
     const opts = {
       start_key: `target~${tag}~${contactUuid}~`,
-      end_key: `target~${tag}~${contactUuid}~\ufff0`,
-      include_docs: true
+      end_key: `target~`,
+      include_docs: true,
+      descending: true,
     };
 
-    return this.dbService
-      .get()
-      .allDocs(opts)
-      .then(result => result?.rows?.[0]?.doc);
+    const results = await this.dbService.get().allDocs(opts);
+    return results.rows
+      .filter(row => row.doc.owner === contactUuid)
+      .map(row => row.doc);
   }
 
   private getTargetsConfig(settings, aggregatesOnly = false) {
@@ -306,28 +305,19 @@ export class TargetAggregatesService {
     return aggregates.find(aggregate => aggregate.id === targetId);
   }
 
-  getTargetDoc(contact?, previous?) {
-    return this.ngZone.runOutsideAngular(() => this._getTargetDoc(contact, previous));
+  getTargetDocs(contact?) {
+    return this.ngZone.runOutsideAngular(() => this._getTargetDocs(contact));
   }
 
-  private _getTargetDoc(contact?, previous?) {
-    if (!contact) {
-      return Promise.resolve();
-    }
-
-    const contactUuid = _isString(contact) ? contact : contact._id;
-
+  private async _getTargetDocs(contact?) {
+    const contactUuid = _isString(contact) ? contact : contact?._id;
     if (!contactUuid) {
-      return Promise.resolve();
+      return;
     }
 
-    return this.settingsService
-      .get()
-      .then(settings => {
-        return this
-          .fetchTargetDoc(settings, contactUuid, previous)
-          .then(targetDoc => this.getTargetDetails(targetDoc, settings));
-      });
+    const settings = await this.settingsService.get();
+    const targetDocs = await this.fetchTargetDocs(settings, contactUuid);
+    return targetDocs.map(targetDoc => this.getTargetDetails(targetDoc, settings));
   }
 
 }
