@@ -34,6 +34,8 @@ export class TargetAggregatesService {
     private ngZone:NgZone,
   ) { }
 
+  private readonly NBR_INTERVALS = 6;
+
   /**
    * Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
    * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
@@ -44,7 +46,25 @@ export class TargetAggregatesService {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
     const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
-    return moment(targetInterval.end).format('Y-MM');
+    return this.getIntervalTag(targetInterval);
+  }
+
+  private getIntervalTag (interval) {
+    return moment(interval.end).format('Y-MM');
+  }
+
+  private getIntervalTags(settings) {
+    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+    let interval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    const tags:Array<string> = [];
+
+    for (let i = 1; i <= this.NBR_INTERVALS; i++) {
+      tags.push(this.getIntervalTag(interval));
+      const previousIntervalDate = moment(interval.start).subtract(1, 'days');
+      interval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousIntervalDate.valueOf());
+    }
+
+    return tags;
   }
 
   /**
@@ -72,18 +92,21 @@ export class TargetAggregatesService {
   }
 
   private async fetchTargetDocs(settings, contactUuid) {
-    const tag = this.getCurrentIntervalTag(settings);
-    const opts = {
-      start_key: `target~${tag}~${contactUuid}~\ufff0`,
-      end_key: `target~`,
-      include_docs: true,
-      descending: true,
-    };
+    const tags = this.getIntervalTags(settings);
 
-    const results = await this.dbService.get().allDocs(opts);
-    return results.rows
-      .filter(row => row.doc.owner === contactUuid)
-      .map(row => row.doc);
+    const targetDocs:Array<any> = [];
+    for (const tag of tags) {
+      const opts = {
+        start_key: `target~${tag}~${contactUuid}~`,
+        end_key: `target~${tag}~${contactUuid}~\ufff0`,
+        include_docs: true,
+      };
+
+      const results = await this.dbService.get().allDocs(opts);
+      targetDocs.push(...results.rows.map(row => row.doc));
+    }
+
+    return targetDocs;
   }
 
   private getTargetsConfig(settings, aggregatesOnly = false) {

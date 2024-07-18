@@ -55,7 +55,10 @@ describe('TargetAggregatesService', () => {
     };
     uhcSettingsService = {getMonthStartDate: sinon.stub()};
     translateFromService = {get: sinon.stub()};
-    calendarIntervalService = {getCurrent: sinon.stub().returns({end: 100})};
+    calendarIntervalService = {
+      getCurrent: sinon.stub().returns({ end: 100 }),
+      getInterval: sinon.stub().returns({ end: 100 }),
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -1089,6 +1092,13 @@ describe('TargetAggregatesService', () => {
         start: moment('2020-01-20').valueOf(),
         end: moment('2020-02-20').valueOf(),
       });
+      calendarIntervalService.getInterval
+        .onCall(0).returns({ start: moment('2019-12-20').valueOf(), end: moment('2020-01-20').valueOf() })
+        .onCall(1).returns({ start: moment('2019-11-20').valueOf(), end: moment('2019-12-20').valueOf() })
+        .onCall(2).returns({ start: moment('2019-10-20').valueOf(), end: moment('2019-11-20').valueOf() })
+        .onCall(3).returns({ start: moment('2019-09-20').valueOf(), end: moment('2019-10-20').valueOf() })
+        .onCall(4).returns({ start: moment('2019-08-20').valueOf(), end: moment('2019-09-20').valueOf() })
+        .onCall(5).returns({ start: moment('2019-07-20').valueOf(), end: moment('2019-08-20').valueOf() });
 
       const targetDoc = {
         _id: 'target~2020-02~uuid~username',
@@ -1111,66 +1121,82 @@ describe('TargetAggregatesService', () => {
       };
 
       const targetDoc3 = {
-        _id: 'target~2020-02~uuid~other',
-        owner: 'other',
+        _id: 'target~2019-12~uuid~username',
+        owner: 'uuid',
         updated_date: 100,
         reporting_period: '2020-01',
         targets: targetDoc.targets,
       };
 
-      dbService.allDocs.resolves({ rows: [{ doc: targetDoc }, { doc: targetDoc2 }, { doc: targetDoc3 }] });
+      const targetDoc4 = {
+        _id: 'target~2019-10~uuid~username',
+        owner: 'uuid',
+        updated_date: 100,
+        reporting_period: '2020-01',
+        targets: targetDoc.targets,
+      };
+
+      dbService.allDocs
+        .onCall(0).resolves({ rows: [{ doc: targetDoc }] })
+        .onCall(1).resolves({ rows: [{ doc: targetDoc2 }] })
+        .onCall(2).resolves({ rows: [{ doc: targetDoc3 }] })
+        .onCall(3).resolves({ rows: [] })
+        .onCall(4).resolves({ rows: [{ doc: targetDoc4 }] })
+        .onCall(5).resolves({ rows: [] });
 
       const result = await service.getTargetDocs('uuid');
 
-      expect(result).to.deep.equal([targetDoc, targetDoc2]);
+      expect(result).to.deep.equal([targetDoc, targetDoc2, targetDoc3, targetDoc4]);
 
       expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
       expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
       expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
       expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([20]);
 
-      expect(dbService.allDocs.callCount).to.equal(1);
+      expect(calendarIntervalService.getInterval.callCount).to.equal(6);
+      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([20, moment('2020-01-19').valueOf()]);
+      expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([20, moment('2019-12-19').valueOf()]);
+      expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([20, moment('2019-11-19').valueOf()]);
+      expect(calendarIntervalService.getInterval.args[3]).to.deep.equal([20, moment('2019-10-19').valueOf()]);
+      expect(calendarIntervalService.getInterval.args[4]).to.deep.equal([20, moment('2019-09-19').valueOf()]);
+      expect(calendarIntervalService.getInterval.args[5]).to.deep.equal([20, moment('2019-08-19').valueOf()])
+
+      expect(dbService.allDocs.callCount).to.equal(6);
       expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2020-02~uuid~\ufff0',
-        end_key: 'target~',
+        start_key: 'target~2020-02~uuid~',
+        end_key: 'target~2020-02~uuid~\ufff0',
         include_docs: true,
-        descending: true,
       }]);
-    });
 
-    xit('should discard additional target docs', async () => {
-      const config = { tasks: { targets: { items: [
-        { id: 'target1', aggregate: true, type: 'count' },
-      ] } } };
-      settingsService.get.resolves(config);
+      expect(dbService.allDocs.args[1]).to.deep.equal([{
+        start_key: 'target~2020-01~uuid~',
+        end_key: 'target~2020-01~uuid~\ufff0',
+        include_docs: true,
+      }]);
 
-      const targetDocs = [
-        {
-          _id: 'target~2020-02~uuid~username1',
-          owner: 'uuid',
-          targets: [ { id: 'target1', value: { pass: 5, total: 5 } } ]
-        },
-        {
-          _id: 'target~2020-02~uuid~username2',
-          owner: 'uuid',
-          targets: [ { id: 'target1', value: { pass: 15, total: 15 } } ]
-        },
-        {
-          _id: 'target~2020-02~uuid~username3',
-          owner: 'uuid',
-          targets: [ { id: 'target1', value: { pass: 25, total: 25 } } ]
-        },
-      ];
+      expect(dbService.allDocs.args[2]).to.deep.equal([{
+        start_key: 'target~2019-12~uuid~',
+        end_key: 'target~2019-12~uuid~\ufff0',
+        include_docs: true,
+      }]);
 
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      expect(dbService.allDocs.args[3]).to.deep.equal([{
+        start_key: 'target~2019-11~uuid~',
+        end_key: 'target~2019-11~uuid~\ufff0',
+        include_docs: true,
+      }]);
 
-      const result = await service.getTargetDocs('uuid');
+      expect(dbService.allDocs.args[4]).to.deep.equal([{
+        start_key: 'target~2019-10~uuid~',
+        end_key: 'target~2019-10~uuid~\ufff0',
+        include_docs: true,
+      }]);
 
-      expect(result).to.deep.equal({
-        _id: 'target~2020-02~uuid~username1',
-        owner: 'uuid',
-        targets: [ { id: 'target1', value: { pass: 5, total: 5 }, aggregate: true, type: 'count' }]
-      });
+      expect(dbService.allDocs.args[5]).to.deep.equal([{
+        start_key: 'target~2019-09~uuid~',
+        end_key: 'target~2019-09~uuid~\ufff0',
+        include_docs: true,
+      }]);
     });
 
     it('should ignore targets that are not configured', async () => {
@@ -1180,20 +1206,19 @@ describe('TargetAggregatesService', () => {
       ] } } };
       settingsService.get.resolves(config);
 
-      const targetDocs = [
-        {
-          _id: 'target~2020-02~uuid~username1',
-          owner: 'uuid',
-          targets: [
-            { id: 'target1', value: { pass: 5, total: 5 } },
-            { id: 'target2', value: { pass: 10, total: 10 } },
-            { id: 'target3', value: { pass: 12, total: 12 } },
-            { id: 'target4', value: { pass: 18, total: 18 } },
-          ]
-        },
-      ];
+      const targetDoc = {
+        _id: 'target~2020-02~uuid~username1',
+        owner: 'uuid',
+        targets: [
+          { id: 'target1', value: { pass: 5, total: 5 } },
+          { id: 'target2', value: { pass: 10, total: 10 } },
+          { id: 'target3', value: { pass: 12, total: 12 } },
+          { id: 'target4', value: { pass: 18, total: 18 } },
+        ]
+      };
 
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      dbService.allDocs.resolves({ rows: [] });
+      dbService.allDocs.onCall(0).resolves({ rows: [{ doc: targetDoc }] });
 
       const result = await service.getTargetDocs('uuid');
 
