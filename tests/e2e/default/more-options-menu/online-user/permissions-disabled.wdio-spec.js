@@ -68,7 +68,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       await commonPage.goToReports();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
       (await reportPage.firstReport()).click();
-      await commonPage.openMoreOptionsMenu(); //se ve review, edit y delete
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
       expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
