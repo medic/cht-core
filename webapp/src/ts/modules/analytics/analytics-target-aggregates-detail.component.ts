@@ -20,6 +20,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   subscriptions: Subscription = new Subscription();
   selected: any = null;
   error: any = null;
+  prevAggregateId;
   prevAggregates;
   private aggregates = null;
   private viewInited = new Subject();
@@ -72,8 +73,10 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
         setTimeout(() => {
           // two birds with one stone
           // both this component and the parent (analytics-target-aggregates) need to be updated
+          const aggregatesChanged = !isEqual(this.prevAggregates, aggregates);
 
-          if (!isEqual(this.prevAggregates, aggregates)) {
+          if (params.id !== this.prevAggregateId || aggregatesChanged) {
+            this.prevAggregateId = params.id;
             this.prevAggregates = aggregates;
             this.getAggregatesDetail(params.id);
           }
