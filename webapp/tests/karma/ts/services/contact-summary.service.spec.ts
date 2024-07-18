@@ -28,7 +28,12 @@ describe('ContactSummary service', () => {
     chtScriptApi = {
       v1: {
         hasPermissions: sinon.stub(),
-        hasAnyPermission: sinon.stub()
+        hasAnyPermission: sinon.stub(),
+      },
+      v2: {
+        hasPermissions: sinon.stub(),
+        hasAnyPermission: sinon.stub(),
+        context: { targetDocs: undefined },
       }
     };
     chtScriptApiService = {
@@ -169,7 +174,7 @@ describe('ContactSummary service', () => {
     const contact = { name: 'boa' };
     const reports = [{ type: 'data' }, { type: 'record' }];
     const lineage = [{ name: 'parent' }, { name: 'grandparent' }];
-    const targetDoc = { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] };
+    const targetDoc = [{ date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] }];
 
     return service.get(contact, reports, lineage, targetDoc).then(contactSummary => {
       expect(contactSummary).to.deep.equal({

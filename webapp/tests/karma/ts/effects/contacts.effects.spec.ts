@@ -492,10 +492,10 @@ describe('Contacts effects', () => {
           doc: { _id: 'person' },
           children: [],
           reports: [{ _id: 'report' }],
-        }, false]);
+        }]);
         const receiveSelectedContactTargetDoc:any = ContactsActions.prototype.receiveSelectedContactTargetDoc;
         expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
-        expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([{ _id: 'targetDoc' }]);
+        expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([[{ _id: 'targetDoc' }]]);
       });
 
       it('should not receive target doc if the selected contact changes', async () => {
@@ -691,7 +691,7 @@ describe('Contacts effects', () => {
           children: [{ type: 'a' }],
           reports: [{ _id: 'the_report' }],
           summary: { cards: [{ id: 'card' }], fields: [{ id: 'field' }] },
-          targetDoc: { _id: 'targetDoc' },
+          targetDoc: [{ _id: 'targetDoc' }],
         }]);
         const updateSelectedContactsTasks:any = ContactsActions.prototype.updateSelectedContactsTasks;
         expect(updateSelectedContactsTasks.callCount).to.equal(1);
