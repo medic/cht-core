@@ -107,6 +107,22 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesActions.setTargetAggregatesLoaded.callCount).to.equal(1);
   });
 
+  it('should set userDefaultFacilityId correctly when facility exists', fakeAsync(() => {
+    sinon.reset();
+    const userFacilities = [{ _id: 'facility_1' }, { _id: 'facility_2' }];
+    userSettingsService.getUserFacility.resolves(userFacilities);
+    targetAggregatesService.isEnabled.resolves(true);
+    targetAggregatesService.getAggregates.resolves(['some aggregates']);
+
+    component.ngOnInit();
+    tick();
+
+    expect(component.userFacilityId).to.equal('facility_1');
+    expect(userSettingsService.getUserFacility.callCount).to.equal(1);
+    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
+  }));
+
   it('should set correct loading and error when TargetAggregates fails', fakeAsync(() => {
     sinon.reset();
     const userFacilities = [{ _id: 'facility_1' }];
@@ -140,6 +156,7 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.getAggregates.callCount).to.equal(0);
     expect(component.loading).to.equal(false);
     expect(component.enabled).to.equal(false);
+    expect(component.userFacilityId).to.equal('facility_1');
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(0);
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(undefined);
@@ -159,8 +176,41 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
     expect(component.loading).to.equal(false);
     expect(component.enabled).to.equal(true);
+    expect(component.userFacilityId).to.equal('facility_1');
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(0);
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(['some aggregates']);
+  }));
+
+  it('should set different aggregates when updateAggregateTargets is called with a new facility', fakeAsync(() => {
+    sinon.reset();
+    const userFacilities = [{ _id: 'facility_1' }, { _id: 'facility_2' }];
+    userSettingsService.getUserFacility.resolves(userFacilities);
+    targetAggregatesService.isEnabled.resolves(true);
+
+    const facilityOneAggregates = ['some aggregates'];
+    targetAggregatesService.getAggregates.withArgs('facility_1').resolves(facilityOneAggregates);
+
+    const facilityTwoAggregates = ['new aggregates'];
+    targetAggregatesService.getAggregates.withArgs('facility_2').resolves(facilityTwoAggregates);
+
+    component.ngOnInit();
+    tick();
+
+    expect(component.userFacilityId).to.equal('facility_1');
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
+    expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(facilityOneAggregates);
+
+    targetAggregatesActions.setTargetAggregates.resetHistory();
+    targetAggregatesService.getAggregates.resetHistory();
+
+    // Fetch aggregates for user's second facility
+    component.updateAggregateTargets('facility_2');
+    tick();
+
+    expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
+    expect(targetAggregatesService.getAggregates.calledWith('facility_2')).to.be.true;
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
+    expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(facilityTwoAggregates);
   }));
 });
