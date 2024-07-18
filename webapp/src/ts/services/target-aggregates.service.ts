@@ -74,7 +74,7 @@ export class TargetAggregatesService {
   private async fetchTargetDocs(settings, contactUuid) {
     const tag = this.getCurrentIntervalTag(settings);
     const opts = {
-      start_key: `target~${tag}~${contactUuid}~`,
+      start_key: `target~${tag}~${contactUuid}~\ufff0`,
       end_key: `target~`,
       include_docs: true,
       descending: true,

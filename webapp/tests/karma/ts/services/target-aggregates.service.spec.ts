@@ -1131,7 +1131,7 @@ describe('TargetAggregatesService', () => {
 
       expect(dbService.allDocs.callCount).to.equal(1);
       expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2020-02~uuid~',
+        start_key: 'target~2020-02~uuid~\ufff0',
         end_key: 'target~',
         include_docs: true,
         descending: true,

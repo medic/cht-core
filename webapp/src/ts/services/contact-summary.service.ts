@@ -78,8 +78,8 @@ export class ContactSummaryService {
     return summary;
   }
 
-  get(contact, reports, lineage, targetDoc?) {
-    return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDoc));
+  get(contact, reports, lineage, targetDocs?) {
+    return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDocs));
   }
 
   private async _get(contact, reports, lineage, targetDocs?) {
