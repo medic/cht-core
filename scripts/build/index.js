@@ -218,8 +218,10 @@ const buildSinglePlatformServiceImages = async () => {
   for (const service of versions.SERVICES) {
     console.log(`\n\nBuilding docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
-    await exec('npm', ['ci', '--omit=dev'], { cwd: service });
-    await exec('npm', ['dedupe'], { cwd: service });
+    // TODO remove duplicated code with buildMultiPlatformServiceImages
+    await exec('npm', ['pack'], { cwd: service });
+    await exec('tar', ['-Pxvzf', `medic-${service}-0.1.0.tgz`], { cwd: service });
+    await exec('rm', [`medic-${service}-0.1.0.tgz`], { cwd: service });
     await exec('docker', ['build', '-f', `./${service}/Dockerfile`, '--tag', tag, '.']);
   }
 };
@@ -228,16 +230,9 @@ const buildMultiPlatformServiceImages = async () => {
   for (const service of versions.SERVICES) {
     console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
-    if (service === 'sentinel') {
-      // old
-      await exec('npm', ['ci', '--omit=dev'], { cwd: service });
-      await exec('npm', ['dedupe'], { cwd: service });
-    } else {
-      // new
-      await exec('npm', ['pack'], { cwd: service });
-      await exec('tar', ['-Pxvzf', `medic-${service}-0.1.0.tgz`], { cwd: service });
-      await exec('rm', [`medic-${service}-0.1.0.tgz`], { cwd: service });
-    }
+    await exec('npm', ['pack'], { cwd: service });
+    await exec('tar', ['-Pxvzf', `medic-${service}-0.1.0.tgz`], { cwd: service });
+    await exec('rm', [`medic-${service}-0.1.0.tgz`], { cwd: service });
     await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
       '-f', `./${service}/Dockerfile`, '--tag', tag, '--push', '.']);
   }
