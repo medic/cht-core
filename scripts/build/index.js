@@ -18,7 +18,7 @@ const {
   INTERNAL_CONTRIBUTOR
 } = process.env;
 const DEFAULT_API_PORT = 5988;
-const MODULES = ['webapp', 'sentinel', 'admin'];
+const MODULES = ['webapp', 'admin'];
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
