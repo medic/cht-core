@@ -1,4 +1,4 @@
-const Page = require('./page');
+const Page = require('@page-objects/apdex/page');
 
 class ContactsPage extends Page {
 

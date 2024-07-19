@@ -1,4 +1,4 @@
-const { browser, driver, $ } = require('@wdio/globals');
+const { browser, driver } = require('@wdio/globals');
 const { execSync } = require('child_process');
 
 module.exports = class Page {

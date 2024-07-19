@@ -1,3 +1,4 @@
+require('../../aliases');
 const loadSettings = require('./settings-provider');
 
 exports.config = {

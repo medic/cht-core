@@ -1,5 +1,4 @@
-const { $ } = require('@wdio/globals');
-const Page = require('./page');
+const Page = require('@page-objects/apdex/page');
 
 class LoadPage extends Page {  
   
