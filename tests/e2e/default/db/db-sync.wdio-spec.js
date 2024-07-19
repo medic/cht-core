@@ -10,6 +10,8 @@ const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 const uuid = require('uuid').v4;
 
+/* global window */
+
 describe('db-sync', () => {
   const restrictedUserName = uuid();
   const restrictedPass = uuid();
