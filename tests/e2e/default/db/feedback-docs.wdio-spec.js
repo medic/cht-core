@@ -6,17 +6,17 @@ const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 
-const places = placeFactory.generateHierarchy();
-const clinic = places.get('clinic');
-const contact = personFactory.build({ parent: { _id: clinic._id, parent: clinic.parent }, });
-const user = userFactory.build({ contact: contact._id, place: clinic._id });
+describe('Feedback docs', () => {
+  const places = placeFactory.generateHierarchy();
+  const clinic = places.get('clinic');
+  const contact = personFactory.build({ parent: { _id: clinic._id, parent: clinic.parent }, });
+  const user = userFactory.build({ contact: contact._id, place: clinic._id });
 
-const getServerFeedbackDocs = async () => {
-  const response = await utils.request({ path: `/medic-user-${user.username}-meta/_all_docs` });
-  return response.rows.filter(row => row.id.includes('feedback'));
-};
+  const getServerFeedbackDocs = async () => {
+    const response = await utils.request({ path: `/medic-user-${user.username}-meta/_all_docs` });
+    return response.rows.filter(row => row.id.includes('feedback'));
+  };
 
-describe('feedback docs', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), contact]);
     await utils.createUsers([user]);
