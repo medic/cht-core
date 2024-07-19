@@ -33,8 +33,7 @@ describe('initial-replication', () => {
       start_key: 'messages-',
       end_key: 'messages-\ufff0',
     });
-    const docIds = translationDocs.rows.map(row => row.id);
-    return docIds;
+    return translationDocs.rows.map(row => row.id);
   };
 
   const getForms = async () => {
@@ -109,14 +108,9 @@ describe('initial-replication', () => {
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
-    await utils.saveDocs(userAllowedDocs.clinics);
-    await utils.saveDocs(userDeniedDocs.clinics);
-
-    await utils.saveDocs(userAllowedDocs.persons);
-    await utils.saveDocs(userDeniedDocs.persons);
-
-    await utils.saveDocs(userAllowedDocs.reports);
-    await utils.saveDocs(userDeniedDocs.reports);
+    await utils.saveDocs([...userAllowedDocs.clinics, ...userDeniedDocs.clinics]);
+    await utils.saveDocs([...userAllowedDocs.persons, ...userDeniedDocs.persons]);
+    await utils.saveDocs([...userAllowedDocs.reports, ...userDeniedDocs.reports]);
   });
 
   after(async () => {
