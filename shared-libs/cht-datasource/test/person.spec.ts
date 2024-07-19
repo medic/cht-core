@@ -12,11 +12,13 @@ describe('person', () => {
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
+  let isContactTypeQualifier: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
+    isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
   });
 
   afterEach(() => sinon.restore());
@@ -128,6 +130,8 @@ describe('person', () => {
       const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
       const limit = 3;
       const skip = 1;
+      const personTypeQualifier = {contactType: 'person'} as const;
+      const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
       beforeEach(() => {
@@ -136,9 +140,10 @@ describe('person', () => {
       });
 
       it('retrieves people from the data context', async () => {
+        isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        const result = await Person.v1.getPage(dataContext)(limit, skip);
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, limit, skip);
 
         expect(result).to.equal(people);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -146,12 +151,25 @@ describe('person', () => {
       });
 
       it('throws an error if the data context is invalid', () => {
+        isContactTypeQualifier.returns(true);
         assertDataContext.throws(new Error(`Invalid data context [null].`));
 
         expect(() => Person.v1.getPage(dataContext)).to.throw(`Invalid data context [null].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.notCalled).to.be.true;
+        expect(getPage.notCalled).to.be.true;
+      });
+
+      it('throws an error if the qualifier is invalid', async () => {
+        isContactTypeQualifier.returns(false);
+
+        await expect(Person.v1.getPage(dataContext)(invalidQualifier))
+          .to.be.rejectedWith(`Invalid type [${JSON.stringify(invalidQualifier)}].`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
         expect(getPage.notCalled).to.be.true;
       });
     });

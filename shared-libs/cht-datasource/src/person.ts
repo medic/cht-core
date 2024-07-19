@@ -1,4 +1,4 @@
-import { isUuidQualifier, UuidQualifier } from './qualifier';
+import { isContactTypeQualifier, isUuidQualifier, ContactTypeQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Remote from './remote';
@@ -32,6 +32,14 @@ export namespace v1 {
     }
   };
 
+  const assertTypeQualifier: (
+    qualifier: unknown
+  ) => asserts qualifier is ContactTypeQualifier = (qualifier: unknown) => {
+    if (!isContactTypeQualifier(qualifier)) {
+      throw new Error(`Invalid type [${JSON.stringify(qualifier)}].`);
+    }
+  };
+
   const getPerson = <T>(
     localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
     remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
@@ -45,14 +53,15 @@ export namespace v1 {
     };
 
   const getPeople = <T>(
-    localFn: (c: LocalDataContext) => (limit: number, skip: number) => Promise<T>,
-    remoteFn: (c: RemoteDataContext) => (limit: number, skip: number) => Promise<T>
+    localFn: (c: LocalDataContext) => (personType: ContactTypeQualifier, limit: number, skip: number) => Promise<T>,
+    remoteFn: (c: RemoteDataContext) => (personType: ContactTypeQualifier, limit: number, skip: number) => Promise<T>
   ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
 
-      return async (limit = 100, skip = 0): Promise<T> => {
-        return fn(limit, skip);
+      return async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<T> => {
+        assertTypeQualifier(personType);
+        return fn(personType, limit, skip);
       };
     };
 
@@ -76,6 +85,7 @@ export namespace v1 {
    * Returns an array of people.
    * @param context the current data context
    * @returns an array of people
+   * @throws Error if the provided context or personType qualifier is invalid
    */
   export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);
 }

@@ -21,9 +21,11 @@ import logger from '@medic/logger';
 export const getLineageDocsById = (
   medicDb: PouchDB.Database<Doc>
 ): (
-  startkey: unknown,
-  endkey: unknown
-) => Promise<Nullable<Doc>[]> => queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
+  id: string
+) => Promise<Nullable<Doc>[]> => {
+  const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
+  return (id: string) => fn([id], [id, {}]);
+};
 
 /** @internal */
 export const getPrimaryContactIds = (places: NonEmptyArray<Nullable<Doc>>): string[] => places

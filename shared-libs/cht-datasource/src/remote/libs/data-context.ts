@@ -58,3 +58,21 @@ export const getResource = (context: RemoteDataContext, path: string) => async <
     throw error;
   }
 };
+
+/** @internal */
+export const getResources = (context: RemoteDataContext, path: string) => async <T>(
+  queryParams?: Record<string, string>,
+): Promise<T> => {
+  const params = new URLSearchParams(queryParams).toString();
+  try {
+    const response = await fetch(`${context.url}/${path}}?${params}`);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    logger.error(`Failed to fetch resources from ${context.url}/${path} with params: ${params}`, error);
+    throw error;
+  }
+};

@@ -19,17 +19,20 @@ describe('local lineage lib', () => {
 
   afterEach(() => sinon.restore());
 
-  it('getLineageDocsById', () => {
-    const queryFn = sinon.stub();
+  it('getLineageDocsById', async () => {
+    const uuid = '123';
+    const queryFn = sinon.stub().returns(Promise.resolve([]));
     const queryDocsByRange = sinon
       .stub(LocalDoc, 'queryDocsByRange')
       .returns(queryFn);
     const medicDb = { hello: 'world' } as unknown as PouchDB.Database<Doc>;
 
-    const result = getLineageDocsById(medicDb);
+    const fn = getLineageDocsById(medicDb);
+    const result = await fn(uuid);
 
-    expect(result).to.equal(queryFn);
+    expect(result).to.deep.equal([]);
     expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'medic-client/docs_by_id_lineage')).to.be.true;
+    expect(queryFn.calledOnceWithExactly([uuid], [uuid, {}])).to.be.true;
   });
 
   describe('getPrimaryContactIds', () => {

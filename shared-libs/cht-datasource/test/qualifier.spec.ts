@@ -1,4 +1,4 @@
-import { byUuid, isUuidQualifier } from '../src/qualifier';
+import {byContactType, byUuid, isContactTypeQualifier, isUuidQualifier} from '../src/qualifier';
 import { expect } from 'chai';
 
 describe('qualifier', () => {
@@ -28,6 +28,38 @@ describe('qualifier', () => {
     ].forEach(([ identifier, expected ]) => {
       it(`evaluates ${JSON.stringify(identifier)}`, () => {
         expect(isUuidQualifier(identifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byContactType', () => {
+    it('builds a qualifier that identifies an entity by its contactType', () => {
+      expect(byContactType('person')).to.deep.equal({ contactType: 'person' });
+    });
+
+    [
+      null,
+      '',
+      { },
+    ].forEach(contactType => {
+      it(`throws an error for ${JSON.stringify(contactType)}`, () => {
+        expect(() => byContactType(contactType as string)).to.throw(
+          `Invalid ContactType [${JSON.stringify(contactType)}].`
+        );
+      });
+    });
+  });
+
+  describe('isContactTypeQualifier', () => {
+    [
+      [ null, false ],
+      [ 'person', false ],
+      [ { contactType: { } }, false ],
+      [ { contactType: 'person' }, true ],
+      [ { contactType: 'person', other: 'other' }, true ]
+    ].forEach(([ contactType, expected ]) => {
+      it(`evaluates ${JSON.stringify(contactType)}`, () => {
+        expect(isContactTypeQualifier(contactType)).to.equal(expected);
       });
     });
   });

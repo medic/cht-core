@@ -88,11 +88,14 @@ export const getDatasource = (ctx: DataContext) => {
 
         /**
          * Returns a list of people.
+         * @param personType the string that represents the person type
          * @param limit the total number of records to retrieve
          * @param skip the total number of records to skip
          * @returns array of `Person`
          */
-        getPage: (limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(limit, skip),
+        getPage: (personType: string, limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(
+          Qualifier.byContactType(personType), limit, skip
+        ),
       }
     }
   };

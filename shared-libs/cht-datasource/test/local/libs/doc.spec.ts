@@ -166,10 +166,11 @@ describe('local doc lib', () => {
       const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id);
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
+
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
-        startkey: [doc0._id],
-        endkey: [doc0._id, {}],
-        include_docs: true
+        include_docs: true,
+        startkey: doc0._id,
+        endkey: doc0._id
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
@@ -190,8 +191,8 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([doc0, null, doc2]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
-        startkey: [doc0._id],
-        endkey: [doc0._id, {}],
+        startkey: doc0._id,
+        endkey: doc0._id,
         include_docs: true
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [null], [doc2]]);
@@ -208,8 +209,8 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([null]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
-        startkey: [doc0._id],
-        endkey: [doc0._id, {}],
+        startkey: doc0._id,
+        endkey: doc0._id,
         include_docs: true
       })).to.be.true;
       expect(isDoc.calledOnceWithExactly(doc0)).to.be.true;
@@ -239,8 +240,8 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        key: [contactType],
         include_docs: true,
+        key: contactType,
         limit,
         skip
       })).to.be.true;
@@ -258,8 +259,8 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        key: [contactType],
         include_docs: true,
+        key: contactType,
         limit,
         skip
       })).to.be.true;

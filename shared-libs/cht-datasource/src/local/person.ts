@@ -1,7 +1,7 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { deepCopy, isNonEmptyArray, Nullable } from '../libs/core';
-import { UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
@@ -40,7 +40,7 @@ export namespace v1 {
     const getLineageDocs = getLineageDocsById(medicDb);
     const getMedicDocsById = getDocsByIds(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Person.v1.PersonWithLineage>> => {
-      const [person, ...lineagePlaces] = await getLineageDocs(identifier.uuid, identifier.uuid);
+      const [person, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
       if (!isPerson(settings, identifier.uuid, person)) {
         return null;
       }
@@ -61,19 +61,19 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    const personIdentifierRecord = contactTypeUtils.getPersonTypes(settings.getAll());
-
-    let personIdentifier: string;
-    if (Object.entries(personIdentifierRecord).length > 0) {
-      personIdentifier = personIdentifierRecord[0]?.id as string;
-    } else {
-      throw new Error('Person type not found');
-    }
+    const personTypes = contactTypeUtils.getPersonTypes(settings.getAll());
+    const personTypesIds = personTypes.map(item => item.id);
 
     const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
 
-    return async (limit: number, skip: number): Promise<Nullable<Doc>[]> => {
-      return await getDocsByPage(personIdentifier, limit, skip);
+    return async (personType: ContactTypeQualifier, limit: number, skip: number): Promise<Person.v1.Person[]> => {
+      if (!personTypesIds.includes(personType.contactType)) {
+        throw new Error(`Invalid person type: ${personType.contactType}`);
+      }
+
+      const docs = await getDocsByPage([personType.contactType], limit, skip);
+
+      return docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc?._id ?? '', doc));
     };
   };
 }

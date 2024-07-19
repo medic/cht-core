@@ -1,11 +1,13 @@
 import { Nullable } from '../libs/core';
-import { UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { getResource, RemoteDataContext } from './libs/data-context';
+import { getResource, getResources, RemoteDataContext } from './libs/data-context';
 
 /** @internal */
 export namespace v1 {
   const getPerson = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/person');
+
+  const getPeople = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/person');
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -22,10 +24,10 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
+    personType: ContactTypeQualifier,
     limit: number,
     skip: number
-  ): Promise<null> => getPerson(remoteContext)(
-    '',
-    {'limit': limit.toString(), 'skip': skip.toString()}
+  ): Promise<null> => getPeople(remoteContext)(
+    {'limit': limit.toString(), 'skip': skip.toString(), 'contactType': personType.contactType}
   );
 }
