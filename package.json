@@ -170,6 +170,7 @@
     "zone.js": "^0.14.4"
   },
   "overrides": {
+    "node-fetch": "$node-fetch",
     "minimist": ">=1.2.6",
     "nools": {
       "uglify-js": ">=2.6.0"
