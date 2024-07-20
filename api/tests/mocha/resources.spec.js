@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const path = require('path');
 
-const resources = require('../../src/resources.js');;
+const resources = require('../../src/resources.js');
 
 describe('resources', () => {
   it('buildPath should return build path', () => {
