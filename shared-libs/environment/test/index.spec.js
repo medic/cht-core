@@ -1,7 +1,7 @@
-const chai = require('chai');
-const expect = chai.expect;
+const { expect } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
+const logger = require('@medic/logger');
 
 let originalEnv;
 const stubProcessEnv = (props) => {
@@ -18,15 +18,19 @@ describe('environment', () => {
   it('should exit if no couchurl', async () => {
     sinon.stub(process, 'exit');
     stubProcessEnv({ COUCH_URL: '' });
+    sinon.stub(logger, 'error');
     rewire('../src/index');
     expect(process.exit.calledWith(1)).to.be.true;
+    expect(logger.error.calledWithMatch('Please define a valid COUCH_URL in your environment')).to.be.true;
   });
 
   it('should exit if the URL is invalid', () => {
     sinon.stub(process, 'exit');
     stubProcessEnv({ COUCH_URL: 'not a url' });
+    sinon.stub(logger, 'error');
     rewire('../src/index');
     expect(process.exit.calledWith(1)).to.be.true;
+    expect(logger.error.calledWithMatch('Please define a valid COUCH_URL in your environment')).to.be.true;
   });
 
   it('should export correct values', () => {

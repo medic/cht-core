@@ -1,14 +1,9 @@
-const rewire = require('rewire');
 const { expect } = require('chai');
 const path = require('path');
 
-let resources;
+const resources = require('../../src/resources.js');;
 
 describe('resources', () => {
-  beforeEach(() => {
-    resources = rewire('../../src/resources.js');
-  });
-
   it('buildPath should return build path', () => {
     expect(resources.buildPath).to.equal(path.resolve(__dirname, '../../build'));
   });

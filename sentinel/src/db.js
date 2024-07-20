@@ -59,7 +59,6 @@ if (UNIT_TEST_ENV) {
   PouchDB.plugin(require('pouchdb-mapreduce'));
   PouchDB.plugin(require('pouchdb-replication'));
 
-  // strip trailing slash from to prevent bugs in path matching
   const couchUrl = environment.couchUrl;
 
   const fetchFn = (url, opts) => {
