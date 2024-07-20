@@ -4,7 +4,7 @@ const request = require('@medic/couch-request');
 const _ = require('lodash');
 
 const db = require('../../../src/db');
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 

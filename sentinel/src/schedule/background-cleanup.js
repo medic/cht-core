@@ -6,6 +6,7 @@
 const db = require('../db');
 const metadata = require('../lib/metadata');
 const logger = require('@medic/logger');
+const environment = require('@medic/environment');
 
 const BATCH = 1000;
 
@@ -72,7 +73,7 @@ const deleteReadDocs = changes => {
   );
 
   return db.allDbs().then(dbs => {
-    const userDbs = dbs.filter(dbName => dbName.startsWith(`${db.medicDbName}-user-`));
+    const userDbs = dbs.filter(dbName => dbName.startsWith(`${environment.db}-user-`));
 
     // Intentionally not doing this in parallel because on larger systems we would fire off
     // thousands of requests at the same time. Would be great to use some kind of pressure based
