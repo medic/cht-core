@@ -15,6 +15,7 @@
     "@medic/contact-types-utils": "file:../contact-types-utils",
     "@medic/contacts": "file:../contacts",
     "@medic/couch-request": "file:../couch-request",
+    "@medic/environment": "file:../environment",
     "@medic/infodoc": "file:../infodoc",
     "@medic/lineage": "file:../lineage",
     "@medic/logger": "file:../logger",

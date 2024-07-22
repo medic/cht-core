@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
 
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 const db = require('../../../src/db');
 
 let service;

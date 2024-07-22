@@ -4,10 +4,10 @@ const path = require('path');
 
 const _ = require('lodash');
 
-const environment = require('../environment');
+const resources = require('../resources');
 const brandingService = require('./branding');
 
-const webappPath = environment.webappPath;
+const webappPath = resources.webappPath;
 const MANIFEST_OUTPUT_PATH = path.join(webappPath, 'manifest.json');
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'manifest.json');
 

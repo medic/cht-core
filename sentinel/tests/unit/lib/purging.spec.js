@@ -12,6 +12,7 @@ const config = require('../../../src/config');
 const purgingUtils = require('@medic/purging-utils');
 const db = require('../../../src/db');
 const chtDatasource = require('@medic/cht-datasource');
+const environment = require('@medic/environment');
 
 let service;
 let clock;
@@ -130,7 +131,7 @@ describe('ServerSidePurge', () => {
         'hash2': ['b'],
         'hash3': ['c'],
       };
-      db.medicDbName = 'dummy';
+      sinon.stub(environment, 'db').value('dummy');
 
       return service.__get__('initPurgeDbs')(roles).then(() => {
         chai.expect(db.get.callCount).to.equal(3);
@@ -152,7 +153,7 @@ describe('ServerSidePurge', () => {
         'hash-': ['2', '3'],
         'hash--': ['4', '5', '6'],
       };
-      db.medicDbName = 'not-medic';
+      sinon.stub(environment, 'db').value('not-medic');
 
       return service.__get__('initPurgeDbs')(roles).then(() => {
         chai.expect(db.get.callCount).to.equal(3);
@@ -170,7 +171,7 @@ describe('ServerSidePurge', () => {
       const purgedb = { put: sinon.stub().resolves() };
       db.get.returns(purgedb);
       const roles = { 'hash': ['1'] };
-      db.medicDbName = 'not-medic';
+      sinon.stub(environment, 'db').value('not-medic');
 
       return service.__get__('initPurgeDbs')(roles).then(() => {
         chai.expect(db.get.callCount).to.equal(1);
@@ -188,7 +189,7 @@ describe('ServerSidePurge', () => {
         'hash-': ['2', '3'],
         'hash--': ['4', '5', '6'],
       };
-      db.medicDbName = 'not-medic';
+      sinon.stub(environment, 'db').value('not-medic');
 
       return service
         .__get__('initPurgeDbs')(roles)
