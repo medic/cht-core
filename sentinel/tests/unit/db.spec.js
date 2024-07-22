@@ -2,34 +2,22 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
 const request = require('@medic/couch-request');
+const environment = require('@medic/environment');
+
 
 let db;
-let couchUrl;
 
 describe('db', () => {
   before(() => {
-    couchUrl = 'http://admin:pass@127.0.0.1:5984/medic-db-name';
-    sinon.stub(process, 'env').value({
-      UNIT_TEST_ENV: false,
-      COUCH_URL: couchUrl,
-    });
+    sinon.stub(process, 'env').value({ UNIT_TEST_ENV: false });
+    sinon.stub(environment, 'couchUrl').value('http://admin:pass@localhost:5984/medic');
+    sinon.stub(environment, 'serverUrl').value('http://admin:pass@localhost:5984');
+    sinon.stub(environment, 'db').value('medic');
     db = rewire('../../src/db');
   });
 
   afterEach(() => {
     sinon.restore();
-  });
-
-  describe('serverUrl', () => {
-    it('should return server url', () => {
-      expect(db.serverUrl).to.equal('http://admin:pass@127.0.0.1:5984');
-    });
-  });
-
-  describe('medicDbName', () => {
-    it('should return medic db name', () => {
-      expect(db.medicDbName).to.equal('medic-db-name');
-    });
   });
 
   describe('allDbs', () => {
@@ -39,7 +27,7 @@ describe('db', () => {
         expect(result).to.deep.equal(['db1', 'db2']);
         expect(request.get.callCount).to.equal(1);
         expect(request.get.args[0]).to.deep.equal([{
-          url: 'http://admin:pass@127.0.0.1:5984/_all_dbs',
+          url: 'http://admin:pass@localhost:5984/_all_dbs',
           json: true,
         }]);
       });
@@ -89,7 +77,7 @@ describe('db', () => {
         expect(response).to.deep.equal({ the: 'response' });
         expect(request.get.callCount).to.equal(1);
         expect(request.get.args[0]).to.deep.equal([{
-          url: 'http://admin:pass@127.0.0.1:5984/medic-db-name/_design/ddoc_name/_view/view_name',
+          url: 'http://admin:pass@localhost:5984/medic/_design/ddoc_name/_view/view_name',
           qs: { limit: 100, start_key: 'thing', param: 200 },
           json: true,
           body: undefined,
@@ -107,7 +95,7 @@ describe('db', () => {
         expect(request.get.callCount).to.equal(0);
         expect(request.post.callCount).to.equal(1);
         expect(request.post.args[0]).to.deep.equal([{
-          url: 'http://admin:pass@127.0.0.1:5984/medic-db-name/_design/medic-client/_view/contacts_by_depth',
+          url: 'http://admin:pass@localhost:5984/medic/_design/medic-client/_view/contacts_by_depth',
           qs: { skip: 100, start_key: 'thing', whatever: 'yes' },
           json: true,
           body: { keys: [1, 2, 3] },
@@ -122,7 +110,7 @@ describe('db', () => {
         expect(response).to.deep.equal({ response: 'this' });
         expect(request.get.callCount).to.equal(1);
         expect(request.get.args[0]).to.deep.equal([{
-          url: 'http://admin:pass@127.0.0.1:5984/medic-db-name/_all_docs',
+          url: 'http://admin:pass@localhost:5984/medic/_all_docs',
           qs: { nothing: 'is', left: 'out' },
           json: true,
           body: undefined,
@@ -140,7 +128,7 @@ describe('db', () => {
         expect(request.get.callCount).to.equal(0);
         expect(request.post.callCount).to.equal(1);
         expect(request.post.args[0]).to.deep.equal([{
-          url: 'http://admin:pass@127.0.0.1:5984/medic-db-name/_all_docs',
+          url: 'http://admin:pass@localhost:5984/medic/_all_docs',
           qs: { start_key: JSON.stringify('thing'), start_key_doc_id: 'thing' },
           json: true,
           body: { keys: [4, 5, 6] },

@@ -13,7 +13,7 @@ const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
 const manifest = require('../../../src/services/manifest');
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 
 describe('Configuration', () => {
   beforeEach(() => {

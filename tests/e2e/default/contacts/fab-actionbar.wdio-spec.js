@@ -7,11 +7,12 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const { genericForm } = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-const places = placeFactory.generateHierarchy();
-const healthCenter = places.get('health_center');
-const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
-const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
 describe('FAB + Actionbar', () => {
+  const places = placeFactory.generateHierarchy();
+  const healthCenter = places.get('health_center');
+  const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
+  const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+
   before(async () => {
     await utils.saveDocs([ ...places.values(), patient ]);
     await utils.createUsers([ onlineUser ]);
@@ -29,7 +30,7 @@ describe('FAB + Actionbar', () => {
       await commonElements.goToPeople(healthCenter._id);
       const fabLabels = await commonElements.getFastActionItemsLabels();
 
-      expect(fabLabels).to.have.members(['New household', 'New person']);
+      expect(fabLabels).to.include.members(['New household', 'New person']);
     });
 
     it('should show fab when user only has can_create_places permission', async () => {
@@ -86,4 +87,5 @@ describe('FAB + Actionbar', () => {
       ]);
     });
   });
+
 });

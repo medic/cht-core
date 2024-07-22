@@ -8,6 +8,7 @@ const utils = require('../../src/lib/utils');
 const db = require('../../src/db');
 const request = require('@medic/couch-request');
 const config = require('../../src/config');
+const environment = require('@medic/environment');
 
 describe('due tasks', () => {
   let schedule;
@@ -19,6 +20,7 @@ describe('due tasks', () => {
         .stub()
         .returns({}),
     });
+    sinon.stub(environment, 'couchUrl').value('http://admin:pass@127.0.0.1:5984/medic');
 
     schedule = require('../../src/schedule/due_tasks');
     date = require('../../src/date');

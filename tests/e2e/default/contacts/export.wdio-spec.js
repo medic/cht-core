@@ -1,5 +1,4 @@
 const moment = require('moment');
-
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
@@ -9,7 +8,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const fileDownloadUtils = require('@utils/file-download');
 const utils = require('@utils');
 
-describe('Export Contacts', () => {
+describe('Export Contacts ', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
@@ -17,6 +16,7 @@ describe('Export Contacts', () => {
   const today = moment();
 
   const savedContactIds = [];
+
   beforeEach(async () => {
     await fileDownloadUtils.setupDownloadFolder();
     const contactDocs = await utils.saveDocs([ ...places.values(), patient ]);
@@ -27,7 +27,7 @@ describe('Export Contacts', () => {
     await commonElements.goToPeople();
   });
 
-  it('Should download export file', async () => {
+  it('should download export file', async () => {
     await contactPage.exportContacts();
 
     const files = await fileDownloadUtils.waitForDownload(`contacts-${today.format('YYYYMMDD')}`);

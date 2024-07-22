@@ -5,7 +5,8 @@ const request = require('@medic/couch-request');
 
 const db = require('../../db');
 const logger = require('@medic/logger');
-const environment = require('../../environment');
+const environment = require('@medic/environment');
+const resources = require('../../resources');
 const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');
 const ddocsService = require('./ddocs');
@@ -18,7 +19,7 @@ const UPGRADE_SERVICE_URL = process.env.UPGRADE_SERVICE_URL || 'http://localhost
  */
 const getPackagedBuildInfo = async () => {
   try {
-    const medicDdocs = await getDdocJsonContents(path.join(environment.ddocsPath, MEDIC_DATABASE.jsonFileName));
+    const medicDdocs = await getDdocJsonContents(path.join(resources.ddocsPath, MEDIC_DATABASE.jsonFileName));
     if (!medicDdocs || !medicDdocs.docs) {
       throw new Error('Cannot find medic db ddocs among packaged ddocs.');
     }
@@ -228,7 +229,7 @@ const getDdocsFromJson = (json) => (json && json.docs) || [];
 
 const getBundledDdocs = async (database) => {
   try {
-    const ddocJson = await getDdocJsonContents(path.join(environment.ddocsPath, database.jsonFileName));
+    const ddocJson = await getDdocJsonContents(path.join(resources.ddocsPath, database.jsonFileName));
     return getDdocsFromJson(ddocJson);
   } catch (err) {
     logger.error('Error when trying to parse ddoc json contents: %o', err);
