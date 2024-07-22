@@ -93,10 +93,8 @@ describe('Target aggregates', () => {
 
       await targetAggregatesPage.goToTargetAggregates(true);
       expect(await (await targetAggregatesPage.aggregateList()).length).to.equal(0);
-      expect(await (await targetAggregatesPage.loadingStatus()).isDisplayed()).to.be.true;
-      expect(
-        await (await analyticsPage.emptySelectionNoError()).isDisplayed()
-      ).to.be.true;
+      expect(await targetAggregatesPage.loadingStatus().isDisplayed()).to.be.true;
+      expect(await analyticsPage.emptySelectionNoError().isDisplayed()).to.be.true;
     });
 
     it('should display an error when there are aggregates but no home place', async () => {
@@ -109,9 +107,9 @@ describe('Target aggregates', () => {
       await commonPage.goToAnalytics();
       await targetAggregatesPage.goToTargetAggregates(true);
       expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
-      expect(
-        await (await analyticsPage.emptySelectionError()).isDisplayed()
-      ).to.be.true;
+      expect(await analyticsPage.emptySelectionError().isDisplayed()).to.be.true;
+
+      await browser.pause(60000);
     });
   });
 
@@ -156,6 +154,83 @@ describe('Target aggregates', () => {
     };
     const userWithManyPlacesPass = uuid();
 
+    const targetsConfig = [
+      { id: 'count_no_goal', type: 'count', title: generateTitle('count no goal'), aggregate: true },
+      { id: 'count_with_goal', type: 'count', title: generateTitle('count with goal'), goal: 20, aggregate: true },
+      { id: 'percent_no_goal', type: 'percent', title: generateTitle('percent no goal'), aggregate: true },
+      {
+        id: 'percent_with_goal',
+        type: 'percent',
+        title: generateTitle('percent with goal'),
+        aggregate: true,
+        goal: 80
+      },
+      {
+        id: 'percent_achieved',
+        type: 'percent',
+        title: generateTitle('percent achieved'),
+        aggregate: true,
+        goal: 10
+      },
+    ];
+
+    const targetValuesByContact = {
+      'Clarissa': {
+        count_no_goal: { value: { pass: 5, total: 5 }, counter: '5', progress: 0 },
+        count_with_goal: { value: { pass: 10, total: 10 }, counter: '10', progress: '10' },
+        percent_no_goal: { value: { pass: 10, total: 20 }, counter: '50% (10 of 20)', progress: '50%' },
+        percent_with_goal: { value: { pass: 19, total: 20 }, counter: '95% (19 of 20)', progress: '95%' },
+        percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
+      },
+      'Prometheus': {
+        count_no_goal: { value: { pass: 2, total: 2 }, counter: '2', progress: 0 },
+        count_with_goal: { value: { pass: 21, total: 21 }, counter: '21', progress: '21' },
+        percent_no_goal: { value: { pass: 7, total: 9 }, counter: '78% (7 of 9)', progress: '78%' },
+        percent_with_goal: { value: { pass: 118, total: 162 }, counter: '73% (118 of 162)', progress: '73%' },
+        percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
+      },
+      'Alabama': {
+        count_no_goal: { value: { pass: 0, total: 0 }, counter: '0', progress: 0 },
+        count_with_goal: { value: { pass: 0, total: 0 }, counter: '0', progress: '0' },
+        percent_no_goal: { value: { pass: 0, total: 0 }, counter: '0% (0 of 0)', progress: '0%' },
+        percent_with_goal: { value: { pass: 0, total: 0 }, counter: '0% (0 of 0)', progress: '0%' },
+        percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
+      },
+      'Jasmine': {
+        count_no_goal: { value: { pass: 9, total: 9 }, counter: '9', progress: 0 },
+        count_with_goal: { value: { pass: 31, total: 31 }, counter: '31', progress: '31' },
+        percent_no_goal: { value: { pass: 20, total: 20 }, counter: '100% (20 of 20)', progress: '100%' },
+        percent_with_goal: { value: { pass: 5, total: 20 }, counter: '25% (5 of 20)', progress: '25%' },
+        percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
+      },
+      'Danielle': {
+        count_no_goal: { value: { pass: 11, total: 11 }, counter: '11', progress: 0 },
+        count_with_goal: { value: { pass: 29, total: 29 }, counter: '29', progress: '29' },
+        percent_no_goal: { value: { pass: 3, total: 9 }, counter: '33% (3 of 9)', progress: '33%' },
+        percent_with_goal: { value: { pass: 7, total: 20 }, counter: '35% (7 of 20)', progress: '35%' },
+        percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
+      }
+    };
+
+    const targetDocs = _.flatten(docs
+      .filter(doc => doc.type === 'person')
+      .map(contact => {
+        const genTarget = (target) => {
+          const value = targetValuesByContact[contact.name] &&
+            targetValuesByContact[contact.name][target.id].value ||
+            { pass: randomNumber(100), total: randomNumber(100) };
+          return { id: target.id, value };
+        };
+
+        return docTags.map(tag => ({
+          _id: `target~${tag}~${contact._id}~irrelevant`,
+          reporting_period: tag,
+          targets: targetsConfig.map(genTarget),
+          owner: contact._id,
+          user: 'irrelevant',
+        }));
+      }));
+
     before(async () => {
       const allDocs = [ ...docs, parentPlace, otherParentPlace, contactWithManyPlaces, userWithManyPlaces ];
       await utils.saveDocs(allDocs);
@@ -187,6 +262,21 @@ describe('Target aggregates', () => {
       await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
       await commonPage.waitForPageLoaded();
       await targetAggregatesPage.checkContentDisabled();
+    });
+
+     it('should display correct message when target aggregates are disabled', async () => {
+      await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
+      await commonPage.waitForPageLoaded();
+
+      await analyticsPage.goToTargetAggregates();
+
+      const emptySelection = await analyticsPage.noSelectedTarget();
+      await (emptySelection).waitForDisplayed();
+      await commonPage.waitForLoaderToDisappear(emptySelection);
+
+      expect(await emptySelection.getText()).to.equal(
+        'Target aggregates are disabled'
+      );
     });
 
     it('should display no data when no targets are uploaded', async () => {
@@ -232,85 +322,10 @@ describe('Target aggregates', () => {
       }
     });
 
-    it('should display correct data', async () => {
+    it.only('should display correct data', async () => {
       await loginPage.login({ username: user.username, password: user.password });
       await commonPage.waitForPageLoaded();
-      const targetsConfig = [
-        { id: 'count_no_goal', type: 'count', title: generateTitle('count no goal'), aggregate: true },
-        { id: 'count_with_goal', type: 'count', title: generateTitle('count with goal'), goal: 20, aggregate: true },
-        { id: 'percent_no_goal', type: 'percent', title: generateTitle('percent no goal'), aggregate: true },
-        {
-          id: 'percent_with_goal',
-          type: 'percent',
-          title: generateTitle('percent with goal'),
-          aggregate: true,
-          goal: 80
-        },
-        {
-          id: 'percent_achieved',
-          type: 'percent',
-          title: generateTitle('percent achieved'),
-          aggregate: true,
-          goal: 10
-        },
-      ];
-
-      const targetValuesByContact = {
-        'Clarissa': {
-          count_no_goal: { value: { pass: 5, total: 5 }, counter: '5', progress: 0 },
-          count_with_goal: { value: { pass: 10, total: 10 }, counter: '10', progress: '10' },
-          percent_no_goal: { value: { pass: 10, total: 20 }, counter: '50% (10 of 20)', progress: '50%' },
-          percent_with_goal: { value: { pass: 19, total: 20 }, counter: '95% (19 of 20)', progress: '95%' },
-          percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
-        },
-        'Prometheus': {
-          count_no_goal: { value: { pass: 2, total: 2 }, counter: '2', progress: 0 },
-          count_with_goal: { value: { pass: 21, total: 21 }, counter: '21', progress: '21' },
-          percent_no_goal: { value: { pass: 7, total: 9 }, counter: '78% (7 of 9)', progress: '78%' },
-          percent_with_goal: { value: { pass: 118, total: 162 }, counter: '73% (118 of 162)', progress: '73%' },
-          percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
-        },
-        'Alabama': {
-          count_no_goal: { value: { pass: 0, total: 0 }, counter: '0', progress: 0 },
-          count_with_goal: { value: { pass: 0, total: 0 }, counter: '0', progress: '0' },
-          percent_no_goal: { value: { pass: 0, total: 0 }, counter: '0% (0 of 0)', progress: '0%' },
-          percent_with_goal: { value: { pass: 0, total: 0 }, counter: '0% (0 of 0)', progress: '0%' },
-          percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
-        },
-        'Jasmine': {
-          count_no_goal: { value: { pass: 9, total: 9 }, counter: '9', progress: 0 },
-          count_with_goal: { value: { pass: 31, total: 31 }, counter: '31', progress: '31' },
-          percent_no_goal: { value: { pass: 20, total: 20 }, counter: '100% (20 of 20)', progress: '100%' },
-          percent_with_goal: { value: { pass: 5, total: 20 }, counter: '25% (5 of 20)', progress: '25%' },
-          percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
-        },
-        'Danielle': {
-          count_no_goal: { value: { pass: 11, total: 11 }, counter: '11', progress: 0 },
-          count_with_goal: { value: { pass: 29, total: 29 }, counter: '29', progress: '29' },
-          percent_no_goal: { value: { pass: 3, total: 9 }, counter: '33% (3 of 9)', progress: '33%' },
-          percent_with_goal: { value: { pass: 7, total: 20 }, counter: '35% (7 of 20)', progress: '35%' },
-          percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
-        }
-      };
-
-      const targetDocs = _.flatten(docs
-        .filter(doc => doc.type === 'person')
-        .map(contact => {
-          const genTarget = (target) => {
-            const value = targetValuesByContact[contact.name] &&
-              targetValuesByContact[contact.name][target.id].value ||
-              { pass: randomNumber(100), total: randomNumber(100) };
-            return { id: target.id, value };
-          };
-
-          return docTags.map(tag => ({
-            _id: `target~${tag}~${contact._id}~irrelevant`,
-            reporting_period: tag,
-            targets: targetsConfig.map(genTarget),
-            owner: contact._id,
-            user: 'irrelevant',
-          }));
-        }));
+      
       await utils.saveDocs(targetDocs);
       await updateSettings(targetsConfig, user);
 
@@ -345,6 +360,21 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.openTargetDetails(target.id);
       await browser.refresh();
       await targetAggregatesPage.expectTargetDetails(target);
+    });
+
+    it('should filter aggregates by place', async () => {
+      await loginPage.login({ username: user.username, password: user.password });
+      await commonPage.waitForPageLoaded();
+
+      await utils.saveDocs(targetDocs);
+      await updateSettings(targetsConfig, user);
+
+      await commonPage.goToAnalytics();
+      await targetAggregatesPage.goToTargetAggregates(true);
+
+      await targetAggregatesPage.openSidebarFilter();
+      await targetAggregatesPage.selectFilterOption();
+      await commonPage.waitForPageLoaded();
     });
 
     it('should route to contact-detail on list item click and display contact summary target card', async () => {

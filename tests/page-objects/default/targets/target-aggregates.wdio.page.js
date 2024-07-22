@@ -2,6 +2,9 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
+const sidebarFilterBtn = () => $('.open-filter .fa-sliders');
+const filterCloseBtn = () => $('.sidebar-close');
+const filterRadioBtn = () => $('.filter-option-place input');
 const AGGREGATE_DETAIL_LIST = '.aggregate-detail li';
 const targetAggregateListItem = (contactId) => $(`${AGGREGATE_DETAIL_LIST}[data-record-id="${contactId}"] a`);
 const targetAggregateDetailTitle = (element) => element.$('h4');
@@ -122,6 +125,19 @@ const clickOnTargetAggregateListItem = async (contactId) => {
   await (await targetAggregateListItem(contactId)).click();
 };
 
+const openSidebarFilter = async () => {
+  if (!await (await filterCloseBtn()).isDisplayed()) {
+    await (await sidebarFilterBtn()).click();
+  }
+  return await (await filterCloseBtn()).waitForDisplayed();
+};
+
+const selectFilterOption = async () => {
+  if (await (await filterCloseBtn()).isDisplayed()) {
+    await (await filterRadioBtn()).click();
+  }
+};
+
 module.exports = {
   expectModulesToBeAvailable,
   goToTargetAggregates,
@@ -136,5 +152,7 @@ module.exports = {
   getAggregateDetailElementInfo,
   clickOnTargetAggregateListItem,
   checkContentDisabled,
+  openSidebarFilter,
+  selectFilterOption,
 };
 

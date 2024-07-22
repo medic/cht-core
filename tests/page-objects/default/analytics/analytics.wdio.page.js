@@ -4,6 +4,8 @@ const TARGET_UNMET_COLOR = '#000000';
 
 const goToTargets = () => browser.url('/#/analytics/targets');
 
+const goToTargetAggregates = () => browser.url('/#/analytics/target-aggregates');
+
 const noSelectedTarget = () => $('.empty-selection');
 
 const targets = () => $$('.target');
@@ -74,6 +76,7 @@ const getTargets = async () => {
 module.exports = {
   noSelectedTarget,
   goToTargets,
+  goToTargetAggregates,
   getTargets,
   emptySelectionError,
   emptySelectionNoError,
