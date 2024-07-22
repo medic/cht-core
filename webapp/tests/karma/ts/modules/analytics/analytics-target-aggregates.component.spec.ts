@@ -117,10 +117,10 @@ describe('Analytics Target Aggregates Component', () => {
     component.ngOnInit();
     tick();
 
-    expect(component.userFacilityId).to.equal('facility_1');
     expect(userSettingsService.getUserFacility.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
+    expect(targetAggregatesService.getAggregates.calledWith('facility_1')).to.be.true;
   }));
 
   it('should set correct loading and error when TargetAggregates fails', fakeAsync(() => {
@@ -156,7 +156,6 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.getAggregates.callCount).to.equal(0);
     expect(component.loading).to.equal(false);
     expect(component.enabled).to.equal(false);
-    expect(component.userFacilityId).to.equal('facility_1');
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(0);
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(undefined);
@@ -176,10 +175,10 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
     expect(component.loading).to.equal(false);
     expect(component.enabled).to.equal(true);
-    expect(component.userFacilityId).to.equal('facility_1');
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(0);
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(['some aggregates']);
+    expect(targetAggregatesService.getAggregates.calledWith('facility_1')).to.be.true;
   }));
 
   it('should set different aggregates when updateAggregateTargets is called with a new facility', fakeAsync(() => {
@@ -197,15 +196,15 @@ describe('Analytics Target Aggregates Component', () => {
     component.ngOnInit();
     tick();
 
-    expect(component.userFacilityId).to.equal('facility_1');
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(facilityOneAggregates);
+    expect(targetAggregatesService.getAggregates.calledWith('facility_1')).to.be.true;
 
     targetAggregatesActions.setTargetAggregates.resetHistory();
     targetAggregatesService.getAggregates.resetHistory();
 
     // Fetch aggregates for user's second facility
-    component.updateAggregateTargets('facility_2');
+    component.getTargetAggregates('facility_2');
     tick();
 
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
