@@ -4,6 +4,7 @@ const rewire = require('rewire');
 
 const db = require('../../../src/db');
 const metadata = require('../../../src/lib/metadata');
+const environment = require('@medic/environment');
 
 let schedule;
 
@@ -227,7 +228,7 @@ describe('Background cleanup tasks', () => {
         'medic-users-meta',
       ]);
 
-      sinon.stub(db, 'medicDbName').value('medic');
+      sinon.stub(environment, 'db').value('medic');
       sinon.stub(db, 'close');
 
       const aliceDb = {allDocs: sinon.stub(), bulkDocs: sinon.stub()};
