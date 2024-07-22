@@ -1,13 +1,11 @@
-const Page = require('./page');
+const Page = require('@page-objects/apdex/page');
 
 class PerformancePage extends Page {
   
   async loadAnalytics(settingsProvider) {
     const page = settingsProvider.getPage('performance');
     await super.loadAndAssertPage(page);
-
-    const commonElements = settingsProvider.getCommonElements();
-    await super.relaunchApp(commonElements);
+    await super.relaunchApp(settingsProvider);
   }
 
 }

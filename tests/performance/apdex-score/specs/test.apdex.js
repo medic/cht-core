@@ -1,12 +1,12 @@
-const loadSettings = require('../../../settings-provider');
+const loadSettings = require('../settings-provider');
 
-const loadPage = require('../../page-objects/load.page');
-const loginPage = require('../../page-objects/login.page');
-const contactsPage = require('../../page-objects/contacts.page');
-const performancePage = require('../../page-objects/performance.page');
-const tasksPage = require('../../page-objects/tasks.page');
-const messagesPage = require('../../page-objects/messages.page');
-const reportsPage = require('../../page-objects/reports.page');
+const loadPage = require('@page-objects/apdex/load.page');
+const loginPage = require('@page-objects/apdex/login.page');
+const contactsPage = require('@page-objects/apdex/contacts.page');
+const performancePage = require('@page-objects/apdex/performance.page');
+const tasksPage = require('@page-objects/apdex/tasks.page');
+const messagesPage = require('@page-objects/apdex/messages.page');
+const reportsPage = require('@page-objects/apdex/reports.page');
 
 describe('Apdex Performance Workflows', () => {
   const settingsProvider = loadSettings();
@@ -18,6 +18,7 @@ describe('Apdex Performance Workflows', () => {
     const user = settingsProvider.getUser('offline', 'chw');
     await loadPage.loadInstance(instanceUrl);
     await loginPage.login(user.username, user.password, hasPrivacyPolicy);
+    await loadPage.turnOnAirplaneMode(settingsProvider);
   });
 
   for (let i = 0; i < REPETITIONS; i++) {
@@ -53,8 +54,8 @@ describe('Apdex Performance Workflows', () => {
       await messagesPage.loadMessageList(settingsProvider);
     });
 
-    it('should load task list and view a task', async () => {
-      await tasksPage.loadTaskList(settingsProvider);
+    it('should load task list and complete a task', async () => {
+      await tasksPage.submitTask(settingsProvider);
     });
   
     it('should load report list and view a report', async () => {
