@@ -166,17 +166,14 @@ export class ContactsEffects {
 
   private async loadTargetDoc(contactId, userFacilityId, userContactId, trackName) {
     const trackPerformance = this.performanceService.track();
-    const isSelectedFacility = contactId === userFacilityId;
-    const shouldLoadTargetDocs = isSelectedFacility || this.contactTypesService.isPersonType(this.selectedContact.type);
 
-    if (shouldLoadTargetDocs) {
-      const targetContact = isSelectedFacility ? userContactId : this.selectedContact;
-      const targetDocs = await this.targetAggregateService.getTargetDocs(targetContact);
-      console.warn(targetDocs);
-
-      await this.verifySelectedContactNotChanged(contactId);
-      this.contactsActions.receiveSelectedContactTargetDoc(targetDocs);
-    }
+    const targetDocs = await this.targetAggregateService.getTargetDocs(
+      this.selectedContact,
+      userFacilityId,
+      userContactId
+    );
+    await this.verifySelectedContactNotChanged(contactId);
+    this.contactsActions.receiveSelectedContactTargetDoc(targetDocs);
 
     await trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
   }
