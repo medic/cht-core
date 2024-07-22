@@ -33,6 +33,7 @@ import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { cloneDeep } from 'lodash-es';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -88,6 +89,7 @@ describe('Form service', () => {
   let consoleErrorMock;
   let consoleWarnMock;
   let feedbackService;
+  let targetAggregatesService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -153,6 +155,7 @@ describe('Form service', () => {
     consoleErrorMock = sinon.stub(console, 'error');
     consoleWarnMock = sinon.stub(console, 'warn');
     feedbackService = { submit: sinon.stub() };
+    targetAggregatesService = { getTargetDocs: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -181,6 +184,7 @@ describe('Form service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: TrainingCardsService, useValue: trainingCardsService },
         { provide: FeedbackService, useValue: feedbackService },
+        { provide: TargetAggregatesService, useValue: targetAggregatesService },
       ],
     });
 

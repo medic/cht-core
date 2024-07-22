@@ -139,8 +139,7 @@ export class FormService {
 
   private getContactSummary(doc, instanceData, userContactId, userFacilityId) {
     const contact = instanceData?.contact;
-    console.warn(contact);
-    if (!contact) {
+    if (!doc.hasContactSummary || !contact) {
       return Promise.resolve();
     }
     return Promise

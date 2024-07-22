@@ -15,7 +15,6 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
-import {act} from "@ngrx/effects";
 
 @Component({
   templateUrl: './tasks-content.component.html'

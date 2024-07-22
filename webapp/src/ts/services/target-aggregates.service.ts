@@ -36,6 +36,10 @@ export class TargetAggregatesService {
 
   private readonly NBR_MONTHS = 6;
 
+  private getIntervalTag (targetInterval) {
+    return moment(targetInterval.end).format('Y-MM');
+  }
+
   /**
    * Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
    * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
@@ -46,16 +50,17 @@ export class TargetAggregatesService {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
     const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
-    return moment(targetInterval.end).format('Y-MM');
+    return this.getIntervalTag(targetInterval);
   }
 
   private getOldIntervalTag(settings) {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
-    const oldDate = moment().subtract(this.NBR_MONTHS, 'months');
+    const oldDate = moment(currentInterval.end).subtract(this.NBR_MONTHS, 'months');
     const targetInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, oldDate.valueOf());
 
-    return moment(targetInterval.end).format('Y-MM');
+    return this.getIntervalTag(targetInterval);
   }
 
   /**
@@ -86,7 +91,7 @@ export class TargetAggregatesService {
     const tagStart = this.getCurrentIntervalTag(settings);
     const tagEnd = this.getOldIntervalTag(settings);
     const opts = {
-      start_key: `target~${tagStart}~${contactUuid}~\ufff8`,
+      start_key: `target~${tagStart}~${contactUuid}~\ufff0`,
       end_key: `target~${tagEnd}~${contactUuid}~`,
       descending: true,
     };
@@ -333,7 +338,7 @@ export class TargetAggregatesService {
 
     const settings = await this.settingsService.get();
     const isUserFacility = contactUuid === userFacilityId;
-    const shouldLoadTargetDocs = isUserFacility || this.contactTypesService.isPerson(contact);
+    const shouldLoadTargetDocs = isUserFacility || await this.contactTypesService.isPerson(contact);
     if (!shouldLoadTargetDocs) {
       return;
     }

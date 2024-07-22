@@ -496,7 +496,7 @@ describe('Contacts effects', () => {
           doc: { _id: 'person' },
           children: [],
           reports: [{ _id: 'report' }],
-        }]);
+        }, 'facility_id', 'contact_id']);
         const receiveSelectedContactTargetDoc:any = ContactsActions.prototype.receiveSelectedContactTargetDoc;
         expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
         expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([[{ _id: 'targetDoc' }]]);
