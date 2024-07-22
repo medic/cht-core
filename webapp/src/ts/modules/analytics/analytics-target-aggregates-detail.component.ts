@@ -20,8 +20,8 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   subscriptions: Subscription = new Subscription();
   selected: any = null;
   error: any = null;
-  prevAggregateId;
-  prevAggregates;
+  private prevAggregateId;
+  private prevAggregates;
   private aggregates = null;
   private viewInited = new Subject();
 
