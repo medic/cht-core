@@ -15,6 +15,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
+import {act} from "@ngrx/effects";
 
 @Component({
   templateUrl: './tasks-content.component.html'
@@ -228,6 +229,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   private renderForm(action, formDoc) {
     this.globalActions.setEnketoEditedStatus(false);
 
+    console.log(action.content);
     const formContext = new EnketoFormContext('#task-report', 'task', formDoc, action.content);
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);

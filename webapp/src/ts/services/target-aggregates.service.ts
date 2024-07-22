@@ -34,6 +34,8 @@ export class TargetAggregatesService {
     private ngZone:NgZone,
   ) { }
 
+  private readonly NBR_MONTHS = 6;
+
   /**
    * Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
    * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
@@ -43,6 +45,15 @@ export class TargetAggregatesService {
   private getCurrentIntervalTag(settings) {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
     const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+
+    return moment(targetInterval.end).format('Y-MM');
+  }
+
+  private getOldIntervalTag(settings) {
+    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+
+    const oldDate = moment().subtract(this.NBR_MONTHS, 'months');
+    const targetInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, oldDate.valueOf());
 
     return moment(targetInterval.end).format('Y-MM');
   }
@@ -72,11 +83,11 @@ export class TargetAggregatesService {
   }
 
   private async fetchTargetDocs(settings, contactUuid) {
-    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
-    const tag = this.getCurrentIntervalTag(uhcMonthStartDate);
+    const tagStart = this.getCurrentIntervalTag(settings);
+    const tagEnd = this.getOldIntervalTag(settings);
     const opts = {
-      start_key: `target~${tag}~${contactUuid}~\ufff8`,
-      end_key: `target~`,
+      start_key: `target~${tagStart}~${contactUuid}~\ufff8`,
+      end_key: `target~${tagEnd}~${contactUuid}~`,
       descending: true,
     };
     const bulkTargetDocs = await this.dbService.get().allDocs(opts);
@@ -87,6 +98,7 @@ export class TargetAggregatesService {
     const targetDocs = await this.dbService
       .get()
       .allDocs({ keys: targetDocsIds, include_docs: true });
+
     return targetDocs.rows.map(row => row.doc);
   }
 
@@ -319,18 +331,15 @@ export class TargetAggregatesService {
       return;
     }
 
+    const settings = await this.settingsService.get();
     const isUserFacility = contactUuid === userFacilityId;
-    const shouldLoadTargetDocs = isUserFacility || this.contactTypesService.isPersonType(contact.type);
+    const shouldLoadTargetDocs = isUserFacility || this.contactTypesService.isPerson(contact);
     if (!shouldLoadTargetDocs) {
       return;
     }
 
     const targetContact = isUserFacility ? userContactId : contactUuid;
-    const settings = await this.settingsService.get();
     const targetDocs = await this.fetchTargetDocs(settings, targetContact);
-
-    console.warn(targetDocs);
-
     return targetDocs.map(targetDoc => this.getTargetDetails(targetDoc, settings));
   }
 
