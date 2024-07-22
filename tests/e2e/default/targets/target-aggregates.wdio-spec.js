@@ -108,8 +108,6 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.goToTargetAggregates(true);
       expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
       expect(await analyticsPage.emptySelectionError().isDisplayed()).to.be.true;
-
-      await browser.pause(60000);
     });
   });
 
@@ -264,7 +262,7 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.checkContentDisabled();
     });
 
-     it('should display correct message when target aggregates are disabled', async () => {
+    it('should display correct message when target aggregates are disabled', async () => {
       await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
       await commonPage.waitForPageLoaded();
 
@@ -322,7 +320,7 @@ describe('Target aggregates', () => {
       }
     });
 
-    it.only('should display correct data', async () => {
+    it('should display correct data', async () => {
       await loginPage.login({ username: user.username, password: user.password });
       await commonPage.waitForPageLoaded();
       
