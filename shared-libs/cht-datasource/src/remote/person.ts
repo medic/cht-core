@@ -27,7 +27,7 @@ export namespace v1 {
     personType: ContactTypeQualifier,
     limit: number,
     skip: number
-  ): Promise<null> => getPeople(remoteContext)(
+  ): Promise<Person.v1.Person[]> => getPeople(remoteContext)(
     {'limit': limit.toString(), 'skip': skip.toString(), 'contactType': personType.contactType}
   );
 }
