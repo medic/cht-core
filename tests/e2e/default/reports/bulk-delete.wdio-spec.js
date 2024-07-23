@@ -2,58 +2,25 @@ const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportFactory = require('@factories/cht/reports/generic-report');
 
 describe('Bulk delete reports', () => {
   const docs = [
-    {
-      fields: {
-        lmp_date: 'Feb 3, 2016'
-      },
+    reportFactory.report().build({
+      fields: { lmp_date: 'Feb 3, 2016' },
       form: 'P',
-      type: 'data_record',
       content_type: 'xml',
-      reported_date: 1462333250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      fields: {
-        lmp_date: 'Feb 15, 2016'
-      },
+    }),
+    reportFactory.report().build({
+      fields: { lmp_date: 'Feb 15, 2016' },
       form: 'P',
-      type: 'data_record',
       content_type: 'xml',
-      reported_date: 1462338250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      fields: {
-        ok: 'Yes!'
-      },
+    }),
+    reportFactory.report().build({
+      fields: { ok: 'Yes!' },
       form: 'V',
-      type: 'data_record',
       content_type: 'xml',
-      reported_date: 1462538250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      name: 'Sharon',
-      phone: '+555',
-      type: 'person',
-      reported_date: 1462538250374,
-      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-    }
+    }),
   ];
 
   const savedUuids = [];
