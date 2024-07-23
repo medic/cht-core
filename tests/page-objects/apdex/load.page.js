@@ -10,10 +10,15 @@ class LoadPage extends Page {
     return $('//android.widget.Button[@resource-id="org.medicmobile.webapp.mobile:id/btnSaveSettings"]');
   }
 
-  async loadInstance(url) {
+  async loadInstance(settingsProvider) {
+    const isServerSettings = await super.btnCustom.isExisting();
+    if (!isServerSettings) {
+      return;
+    }
+
     await super.toggleAirplaneMode('off');
-    await super.getButton('Custom').click();
-    await this.inputInstanceUrl.setValue(url);
+    await super.clickButton('Custom');
+    await this.inputInstanceUrl.setValue(settingsProvider.getInstanceURL());
     await this.btnSave.click();
   }
 

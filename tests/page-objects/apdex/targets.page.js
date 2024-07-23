@@ -1,13 +1,13 @@
 const Page = require('@page-objects/apdex/page');
 
-class MessagesPage extends Page {
-
-  async loadMessageList(settingsProvider) {
-    const page = settingsProvider.getPage('messageList');
+class TargetsPage extends Page {
+  
+  async loadTargets(settingsProvider) {
+    const page = settingsProvider.getPage('targets');
     const commonElements = settingsProvider.getCommonElements();
     await super.loadAndAssertPage(page, commonElements);
   }
 
 }
 
-module.exports = new MessagesPage();
+module.exports = new TargetsPage();

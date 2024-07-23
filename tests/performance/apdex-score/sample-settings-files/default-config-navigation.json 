@@ -1,0 +1,156 @@
+{
+  "iterations": 1,
+  "instanceURL": "<instance url>",
+  "hasPrivacyPolicy": false,
+  "capabilities": [
+    {
+      "platformVersion": "<android version>",
+      "deviceName": "<phone model>",
+      "appPath": "<path to cht android apk>",
+      "noReset": false
+    }
+  ],
+
+  "skip": {
+    "login": false,
+
+    "loadContactList": false,
+    "loadCHWArea": false,
+    "loadHousehold": false,
+    "loadPatient": false,
+    "loadMessageList": false,
+    "loadTaskList": false,
+    "loadAnalytics": false,
+    "loadReportList": false,
+    "searchContact": false,
+    "searchReport": false,
+
+    "createPatient": true,
+    "submitPatientReport": true
+  },
+
+  "users": [
+    {
+      "type": "offline",
+      "role": "chw",
+      "username": "<username>",
+      "password": "<password>"
+    }
+  ],
+
+  "pages": {
+    "contactList": {
+      "navigation": [
+        { "selector": "//*[@text=\"Reports\"]" },
+        {
+          "selector": "//*[@text=\"People\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"West Miltonside\")]" } ]
+        }
+      ],
+      "search": {
+        "value": "Rafael Windler",
+        "asserts": [
+          { "selector": "//*[@text=\"Rafael Windler\"]" },
+          {
+            "scrollDown": 5,
+            "selector": "//*[contains(@text, \"No more people\")]"
+          }
+        ],
+        "postTestPath": [
+          { "selector": "//*[@text=\"Reports\"]" }
+        ]
+      }
+    },
+    "chwArea": {
+      "navigation": [
+        {
+          "selector": "//*[contains(@text, \"West Miltonside\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"External ID\")]" },
+            { "selector": "//*[contains(@text, \"Rafael Windler\")]" },
+            { "selector": "//*[contains(@text, \"Households\")]" },
+            { "selector": "//*[contains(@text, \"Abilene\")]" }
+          ]
+        }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+    "household": {
+      "navigation": [
+        { "selector": "//*[contains(@text, \"West Miltonside\")]" },
+        {
+          "selector": "//*[contains(@text, \"Abilene\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Phone\")]" },
+            { "selector": "//*[contains(@text, \"Bill Pouros\")]" },
+            {
+              "scrollDown": 2,
+              "selector": "//*[text()[contains(.,\"Danger sign follow up\")]"
+            },
+            { "selector": "//*[text()[contains(.,\"Due today\")]" },
+            { "selector": "//*[text()[contains(.,\"Pregnancy danger sign\")]" }
+          ]
+        }
+      ]
+    },
+    "patient": {
+      "navigation": [
+        {
+          "selector": "//*[contains(@text, \"Irene Shields\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"37 years\")]" },
+            {
+              "scrollDown": 1,
+              "selector": "//*[contains(@text, \"Danger sign follow up\")]" },
+            { "selector": "//*[contains(@text, \"Pregnancy danger sign\")]" }
+          ]
+        }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+    "messageList": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Messages\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"No messages found\")]" } ]
+        }
+      ]
+    },
+    "reportList": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Reports\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"Pregnancy danger sign\")]" } ]
+        }
+      ],
+      "search": {
+        "value": "Alexandra Lemke",
+        "asserts": [
+          {
+            "selector": "//*[contains(@text, \"No reports found\")]"
+          }
+        ],
+        "postTestPath": [
+          { "selector": "//*[@text=\"Tasks\"]" }
+        ]
+      }
+    },
+    "taskList": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Tasks\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"Danger sign follow up\")]" } ]
+        }
+      ]
+    },
+    "targets": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"Targets\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"New pregnancies\")]" } ]
+        }
+      ]
+    }
+  }
+
+}

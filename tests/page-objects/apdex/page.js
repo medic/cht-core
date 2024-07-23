@@ -22,6 +22,10 @@ module.exports = class Page {
     }
   }
 
+  async clickButton(label) {
+    await this.clickElement('//*[@text="' + label +'"]');
+  }
+
   async setValue(selector, value) {
     // Empty strings or zeros are fine.
     if (value === undefined) {
@@ -100,7 +104,15 @@ module.exports = class Page {
     }
   }
 
-  async loadAndAssertPage(page) {
+  async loadAndAssertPage(page, commonElements) {
+    if (!page) {
+      return;
+    }
+
+    if (page.relaunchApp) {
+      await super.relaunchApp(commonElements);
+    }
+
     await this.navigate(page.navigation, page.asserts);
     await this.navigate(page.postTestPath);
   }
@@ -134,6 +146,10 @@ module.exports = class Page {
   }
 
   async fillUpForm(form, commonElements){
+    if (!form) {
+      return;
+    }
+
     const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
     const FAB_LIST_TITLE = commonElements?.fabListTitle || '//android.widget.TextView[@text="New"]';
     const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
@@ -142,7 +158,8 @@ module.exports = class Page {
     if (form.useFAB) {
       await this.clickElement(FAB_SELECTOR);
       await this.waitForDisplayedAndRetry(FAB_LIST_TITLE);
-    } 
+    }
+
     await this.navigate(form.navigation);
 
     for (let i = 0; i < form.pages?.length; i++) {
@@ -168,37 +185,44 @@ module.exports = class Page {
     await this.waitForDisplayedAndRetry(UI_ELEMENT);
   }
 
-  async searchContact(form) {
-    const page = form.pages[0];
+  async search (page, commonElements) {
+    if (!page || !page.search) {
+      return;
+    }
 
-    await this.navigate(form.navigation);
-    await this.fillUpFormPage(page);
-    await this.assertMany(form.postSubmitAsserts);
+    const SEARCH_ICON = commonElements?.searchIcon || '//android.widget.TextView[@text=""]';
+    const SEARCH_INPUT = '//android.widget.EditText';
 
-    await this.navigate(form.postTestPath);
-    await this.assertMany(form.postSubmitAssert);
-  }
+    await this.navigate(page.navigation);
+    await this.clickElement(SEARCH_ICON);
+    await this.waitForDisplayedAndRetry(SEARCH_INPUT);
 
-  async clickDisplayedElem(elem) {
-    await elem.waitForDisplayed();
-    await elem.click();
+    await this.enterFieldValue({
+      value: page.search.value,
+      selector: SEARCH_INPUT,
+    });
+
+    // Trigger search with Enter.
+    await this.enterFieldValue({ keycodes: [ 66 ] });
+
+    await this.assertMany(page.search.asserts);
+    await this.navigate(page.search.postTestPath);
   }
 
   async toggleAirplaneMode(state) {
-    driver.getNetworkConnection().then(nConnect => {
-      if (nConnect === 1 && state === 'off') {
-        execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });
-      } else if (nConnect === 6 && state === 'on') {
-        execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
-      }
-    })
-      .catch(error => {
-        console.error('Error: ', error);
-      });
-  }
+    driver
+      .getNetworkConnection()
+      .then(nConnect => {
+        if (nConnect === 1 && state === 'off') {
+          execSync('adb shell cmd connectivity airplane-mode disable', { stdio: 'inherit' });
+          return;
+        }
 
-  getButton(label) {
-    return $('//*[@text="' + label +'"]');
+        if (nConnect === 6 && state === 'on') {
+          execSync('adb shell cmd connectivity airplane-mode enable', { stdio: 'inherit' });
+        }
+      })
+      .catch(error => console.error('Error: ', error));
   }
 
 };
