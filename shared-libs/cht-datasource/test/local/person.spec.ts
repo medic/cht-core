@@ -252,7 +252,7 @@ describe('local person', () => {
         const res = await Person.v1.getPage(localContext)(personTypeQualifier, limit, skip);
 
         expect(res).to.deep.equal(docs);
-        expect(settingsGetAll.callCount === 4).to.be.true;
+        expect(settingsGetAll.callCount).to.equal(4);
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
