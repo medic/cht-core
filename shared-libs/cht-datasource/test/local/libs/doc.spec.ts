@@ -163,14 +163,14 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id);
+      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc1._id);
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
 
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         include_docs: true,
         startkey: doc0._id,
-        endkey: doc0._id
+        endkey: doc1._id
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
@@ -187,12 +187,12 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id);
+      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id);
 
       expect(result).to.deep.equal([doc0, null, doc2]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         startkey: doc0._id,
-        endkey: doc0._id,
+        endkey: doc2._id,
         include_docs: true
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [null], [doc2]]);
@@ -249,22 +249,38 @@ describe('local doc lib', () => {
     });
 
     it('returns empty array if docs are not found', async () => {
-      dbQuery.resolves({
-        rows: [
-        ]
-      });
+      dbQuery.resolves({ rows: [] });
       isDoc.returns(true);
 
       const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        include_docs: true, key: contactType, limit, skip
+      })).to.be.true;
+      expect(isDoc.args).to.deep.equal([]);
+    });
+
+    it('returns null valued array if rows from database are not docs', async () => {
+      const doc0 = { _id: 'doc0' };
+
+      dbQuery.resolves({
+        rows: [
+          { doc: doc0 },
+        ]
+      });
+      isDoc.returns(false);
+
+      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+
+      expect(result).to.deep.equal([null]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: true,
         key: contactType,
         limit,
         skip
       })).to.be.true;
-      expect(isDoc.args).to.deep.equal([]);
+      expect(isDoc.args).to.deep.equal([[doc0]]);
     });
   });
 });

@@ -127,7 +127,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getPage', async () => {
-        const expectedPeople: Index.Nullable<Doc>[] = [];
+        const expectedPeople: Person.v1.Person[] = [];
         const personGetPage = sinon.stub().resolves(expectedPeople);
         dataContextBind.returns(personGetPage);
         const personType = 'person';

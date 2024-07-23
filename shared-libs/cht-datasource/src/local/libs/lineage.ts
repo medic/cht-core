@@ -18,11 +18,7 @@ import logger from '@medic/logger';
  * sorted such that the identified document is the first element and the parent documents are in order of lineage.
  * @internal
  */
-export const getLineageDocsById = (
-  medicDb: PouchDB.Database<Doc>
-): (
-  id: string
-) => Promise<Nullable<Doc>[]> => {
+export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
   const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
   return (id: string) => fn([id], [id, {}]);
 };

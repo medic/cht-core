@@ -10,7 +10,7 @@ import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimar
 
 /** @internal */
 export namespace v1 {
-  const isPerson = (settings: SettingsService, uuid: string, doc: Nullable<Doc>): doc is Person.v1.Person => {
+  const isPerson = (settings: SettingsService, doc: Nullable<Doc>, uuid = ''): doc is Person.v1.Person => {
     if (!doc) {
       logger.warn(`No person found for identifier [${uuid}].`);
       return false;
@@ -28,7 +28,7 @@ export namespace v1 {
     const getMedicDocById = getDocById(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Person.v1.Person>> => {
       const doc = await getMedicDocById(identifier.uuid);
-      if (!isPerson(settings, identifier.uuid, doc)) {
+      if (!isPerson(settings, doc, identifier.uuid)) {
         return null;
       }
       return doc;
@@ -41,7 +41,7 @@ export namespace v1 {
     const getMedicDocsById = getDocsByIds(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Person.v1.PersonWithLineage>> => {
       const [person, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
-      if (!isPerson(settings, identifier.uuid, person)) {
+      if (!isPerson(settings, person, identifier.uuid)) {
         return null;
       }
       // Intentionally not further validating lineage. For passivity, lineage problems should not block retrieval.
@@ -61,19 +61,19 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    const personTypes = contactTypeUtils.getPersonTypes(settings.getAll());
-    const personTypesIds = personTypes.map(item => item.id);
-
-    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
-
     return async (personType: ContactTypeQualifier, limit: number, skip: number): Promise<Person.v1.Person[]> => {
+      const personTypes = contactTypeUtils.getPersonTypes(settings.getAll());
+      const personTypesIds = personTypes.map(item => item.id);
+
+      const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+
       if (!personTypesIds.includes(personType.contactType)) {
         throw new Error(`Invalid person type: ${personType.contactType}`);
       }
 
       const docs = await getDocsByPage([personType.contactType], limit, skip);
 
-      return docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc?._id ?? '', doc));
+      return docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc, doc?._id));
     };
   };
 }

@@ -40,6 +40,15 @@ export namespace v1 {
     }
   };
 
+  const assertLimitAndSkip = (limit: unknown, skip: unknown) => {
+    if (typeof limit !== 'number' || limit <= 0) {
+      throw new Error('limit must be a positive number');
+    }
+    if (typeof skip !== 'number' || skip < 0) {
+      throw new Error('skip must be a non-negative number');
+    }
+  };
+
   const getPerson = <T>(
     localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
     remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
@@ -61,6 +70,8 @@ export namespace v1 {
 
       return async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<T> => {
         assertTypeQualifier(personType);
+        assertLimitAndSkip(limit, skip);
+
         return fn(personType, limit, skip);
       };
     };

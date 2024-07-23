@@ -130,6 +130,8 @@ describe('person', () => {
       const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
       const limit = 3;
       const skip = 1;
+      const invalidLimit = -1;
+      const invalidSkip = -1;
       const personTypeQualifier = {contactType: 'person'} as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
@@ -148,6 +150,8 @@ describe('person', () => {
         expect(result).to.equal(people);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+        expect(getPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
       });
 
       it('throws an error if the data context is invalid', () => {
@@ -159,6 +163,7 @@ describe('person', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.notCalled).to.be.true;
         expect(getPage.notCalled).to.be.true;
+        expect(isContactTypeQualifier.notCalled).to.be.true;
       });
 
       it('throws an error if the qualifier is invalid', async () => {
@@ -170,6 +175,32 @@ describe('person', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
+        expect(getPage.notCalled).to.be.true;
+      });
+
+      it('throws an error if limit is invalid', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(people);
+
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip))
+          .to.be.rejectedWith(`limit must be a positive number`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+        expect(getPage.notCalled).to.be.true;
+      });
+
+      it('throws an error if skip is invalid', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(people);
+
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, limit, invalidSkip))
+          .to.be.rejectedWith(`skip must be a non-negative number`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
         expect(getPage.notCalled).to.be.true;
       });
     });

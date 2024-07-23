@@ -16,12 +16,12 @@ describe('local lineage lib', () => {
   beforeEach(() => {
     debug = sinon.stub(logger, 'debug');
   });
-
+  //
   afterEach(() => sinon.restore());
 
   it('getLineageDocsById', async () => {
     const uuid = '123';
-    const queryFn = sinon.stub().returns(Promise.resolve([]));
+    const queryFn = sinon.stub().returns([]);
     const queryDocsByRange = sinon
       .stub(LocalDoc, 'queryDocsByRange')
       .returns(queryFn);
