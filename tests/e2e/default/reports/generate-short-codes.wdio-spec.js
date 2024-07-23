@@ -5,22 +5,14 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const place = require('@factories/cht/contacts/place');
-const places = place.generateHierarchy();
-const clinic = places.get('clinic');
 
-const contact = personFactory.build(
-  {
-    parent: {
-      _id: clinic._id,
-      parent: clinic.parent
-    },
-    phone: '+254712345670'
-  }
-);
 
-const docs = [...places.values(), contact];
 
-describe('generating short codes', () => {
+describe('Generating short codes', () => {
+  const places = place.generateHierarchy();
+  const clinic = places.get('clinic');
+  const contact = personFactory.build({ parent: { _id: clinic._id, parent: clinic.parent }, phone: '+254712345670' });
+
   const forms = {
     'CASEID': {
       'meta': { 'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form' },
@@ -28,22 +20,16 @@ describe('generating short codes', () => {
     }
   };
 
-  const registrations = [{
-    form: 'CASEID', events: [ { name: 'on_create', trigger: 'add_case' } ]
-  }];
-
-  const transitions = {
-    update_clinics: true, registration: true
-  };
+  const registrations = [{ form: 'CASEID', events: [{ name: 'on_create', trigger: 'add_case' }] }];
+  const transitions = { update_clinics: true, registration: true };
 
   before(async () => {
-    await utils.saveDocs(docs);
+    await utils.saveDocs([...places.values(), contact]);
     await utils.updateSettings({forms, registrations, transitions}, true);
-
     await loginPage.cookieLogin();
   });
 
-  it('create case ID', async () => {
+  it('should create case ID', async () => {
     await utils.request({
       method: 'POST',
       path: '/api/v2/records',
