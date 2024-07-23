@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store, select } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { combineLatest, of } from 'rxjs';
 import { exhaustMap, withLatestFrom } from 'rxjs/operators';
 
@@ -14,6 +14,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -22,6 +23,7 @@ export class ContactsEffects {
 
   private selectedContact;
   private contactIdToLoad;
+  private userFacilityId;
 
   constructor(
     private actions$: Actions,
@@ -33,6 +35,7 @@ export class ContactsEffects {
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
     private routeSnapshotService: RouteSnapshotService,
+    private userSettingsService: UserSettingsService,
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -40,20 +43,19 @@ export class ContactsEffects {
     combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getContactIdToLoad),
-    ).subscribe(([ selectedContact, contactIdToLoad ]) => {
+      this.store.select(Selectors.getUserFacilityId),
+    ).subscribe(([ selectedContact, contactIdToLoad, userFacilityId ]) => {
       this.selectedContact = selectedContact;
       this.contactIdToLoad = contactIdToLoad;
+      this.userFacilityId = userFacilityId;
     });
   }
 
   selectContact = createEffect(() => {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getUserFacilityId)),
-        this.store.select(Selectors.getForms),
-      ),
-      exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
+      withLatestFrom(this.store.select(Selectors.getForms)),
+      exhaustMap(async ([{ payload: { id, silent } }, forms]) => {
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
@@ -79,7 +81,7 @@ export class ContactsEffects {
           })
           .then(() => this.verifySelectedContactNotChanged(id))
           .then(() => this.setTitle())
-          .then(() => this.loadChildren(id, userFacilityId, trackName))
+          .then(() => this.loadDescendants(id, trackName))
           .then(() => this.loadReports(id, forms, trackName))
           .then(() => this.loadTargetDoc(id, trackName))
           .then(() => this.loadContactSummary(id, trackName))
@@ -132,7 +134,8 @@ export class ContactsEffects {
     return this.contactIdToLoad !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
   }
 
-  private shouldGetDescendants(contactId, userFacilityId: string[] = []) {
+  private async shouldGetDescendants(contactId) {
+    const userFacilityId: string[] = await this.getUserFacilityId();
     if (!userFacilityId?.length) {
       return true;
     }
@@ -144,10 +147,10 @@ export class ContactsEffects {
     return userFacilityId[0] !== contactId;
   }
 
-  private loadChildren(contactId, userFacilityId, trackName) {
+  private async loadDescendants(contactId, trackName) {
     const trackPerformance = this.performanceService.track();
-    const getChildPlaces = this.shouldGetDescendants(contactId, userFacilityId);
-
+    const getChildPlaces = await this.shouldGetDescendants(contactId);
+    console.warn('Fetching descendants', getChildPlaces);
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
       .then(children => {
@@ -222,5 +225,19 @@ export class ContactsEffects {
       .finally(() => {
         trackPerformance?.stop({ name: [ ...trackName, 'load_contact_summary' ].join(':') });
       });
+  }
+
+  private async getUserFacilityId() {
+    if (this.userFacilityId) {
+      console.warn('it actually has the data, returning UserFacilityId');
+      return this.userFacilityId;
+    }
+
+    console.warn('calling getUserFacilityId because it is null');
+    const userSettings: any = await this.userSettingsService.get();
+    const ids = Array.isArray(userSettings?.facility_id) ? userSettings?.facility_id : [userSettings?.facility_id];
+
+    this.globalActions.setUserFacilityId(ids);
+    return ids;
   }
 }

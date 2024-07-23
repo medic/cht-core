@@ -31,7 +31,7 @@ import { FastAction, FastActionButtonService } from '@mm-services/fast-action-bu
   templateUrl: './contacts-content.component.html'
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
-  subscription: Subscription = new Subscription();
+  subscriptions: Subscription = new Subscription();
   private subscriptionSelectedContactForms;
   private subscriptionAllContactForms;
   private globalActions;
@@ -97,15 +97,17 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
     this.contactsActions.clearSelection();
     this.globalActions.setRightActionBar({});
   }
 
   private getUserFacility() {
-    this.store.select(Selectors.getUserFacilityId)
+    const subscription = this.store
+      .select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityIds) => {
+        console.warn('userFacilityIds', userFacilityIds);
         const shouldDisplayHomePlace = userFacilityIds &&
           !this.filters?.search &&
           !this.route.snapshot.params.id &&
@@ -115,6 +117,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           this.contactsActions.selectContact(userFacilityIds[0]);
         }
       });
+    this.subscriptions.add(subscription);
   }
 
   private subscribeToStore() {
@@ -144,7 +147,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.contactsLoadingSummary = contactsLoadingSummary;
       this.filters = filters;
     });
-    this.subscription.add(reduxSubscription);
+    this.subscriptions.add(reduxSubscription);
 
     const childrenSubscription = this.store
       .select(Selectors.getSelectedContactChildren)
@@ -158,7 +161,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.canDeleteContact = canDelete;
         this.globalActions.updateRightActionBar({ canDelete: this.canDeleteContact });
       });
-    this.subscription.add(childrenSubscription);
+    this.subscriptions.add(childrenSubscription);
 
     const contactDocSubscription = this.store
       .select(Selectors.getSelectedContactDoc)
@@ -172,7 +175,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.subscribeToAllContactXmlForms();
         this.subscribeToSelectedContactXmlForms();
       });
-    this.subscription.add(contactDocSubscription);
+    this.subscriptions.add(contactDocSubscription);
 
     const contactSummarySubscription = this.store
       .select(Selectors.getSelectedContactSummary)
@@ -186,21 +189,21 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         }
         this.subscribeToSelectedContactXmlForms();
       });
-    this.subscription.add(contactSummarySubscription);
+    this.subscriptions.add(contactSummarySubscription);
 
     const contactReportsSubscription = this.store
       .select(Selectors.getSelectedContactReports)
       .subscribe((reports) => {
         this.filterReports(this.reportsTimeWindowMonths, reports);
       });
-    this.subscription.add(contactReportsSubscription);
+    this.subscriptions.add(contactReportsSubscription);
 
     const contactTasksSubscription = this.store
       .select(Selectors.getSelectedContactTasks)
       .subscribe((tasks) => {
         this.filterTasks(this.tasksTimeWindowWeeks, tasks);
       });
-    this.subscription.add(contactTasksSubscription);
+    this.subscriptions.add(contactTasksSubscription);
   }
 
   private subscribeToRoute() {
@@ -213,7 +216,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.contactsActions.clearSelection();
       this.globalActions.unsetSelected();
     });
-    this.subscription.add(routeSubscription);
+    this.subscriptions.add(routeSubscription);
   }
 
   private subscribeToChanges() {
@@ -234,7 +237,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         return this.contactsActions.selectContact(this.selectedContact._id, { silent: true });
       }
     });
-    this.subscription.add(changesSubscription);
+    this.subscriptions.add(changesSubscription);
   }
 
   filterReports(months?, reports?) {
@@ -359,7 +362,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         });
       }
     );
-    this.subscription.add(this.subscriptionAllContactForms);
+    this.subscriptions.add(this.subscriptionAllContactForms);
   }
 
   private subscribeToSelectedContactXmlForms() {
@@ -415,7 +418,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.globalActions.updateRightActionBar({ relevantForms: oldActionsBarForms });
       }
     );
-    this.subscription.add(this.subscriptionSelectedContactForms);
+    this.subscriptions.add(this.subscriptionSelectedContactForms);
   }
 
   private filterAllowedChildType(forms, childTypes: Record<string, any>[]) {

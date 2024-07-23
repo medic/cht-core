@@ -168,7 +168,7 @@ describe('Contacts content component', () => {
   });
 
   it('ngOnDestroy() should unsubscribe from observables and reset state', () => {
-    const unsubscribeSpy = sinon.spy(component.subscription, 'unsubscribe');
+    const unsubscribeSpy = sinon.spy(component.subscriptions, 'unsubscribe');
     const clearSelectionStub = sinon.stub(ContactsActions.prototype, 'clearSelection');
     sinon.resetHistory();
 
