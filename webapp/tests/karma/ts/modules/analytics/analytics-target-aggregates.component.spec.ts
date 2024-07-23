@@ -11,13 +11,11 @@ import { AnalyticsTargetAggregatesSidebarFilterComponent }
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { PerformanceService } from '@mm-services/performance.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
   let fixture: ComponentFixture<AnalyticsTargetAggregatesComponent>;
   let targetAggregatesService;
-  let userSettingsService;
   let targetAggregatesActions;
   let stopPerformanceTrackStub;
   let performanceService;
@@ -27,10 +25,6 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService = {
       isEnabled: sinon.stub().resolves(false),
       getAggregates: sinon.stub()
-    };
-    const userFacilities = [{ _id: 'facility_1' }];
-    userSettingsService = {
-      getUserFacility: sinon.stub().resolves(userFacilities)
     };
     targetAggregatesActions = {
       setTargetAggregates: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregates'),
@@ -58,7 +52,6 @@ describe('Analytics Target Aggregates Component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: TargetAggregatesService, useValue: targetAggregatesService },
           { provide: PerformanceService, useValue: performanceService },
-          { provide: UserSettingsService, useValue: userSettingsService },
         ]
       })
       .compileComponents()
@@ -86,7 +79,6 @@ describe('Analytics Target Aggregates Component', () => {
       sinon.createStubInstance(Store),
       sinon.createStubInstance(TargetAggregatesService),
       sinon.createStubInstance(PerformanceService),
-      sinon.createStubInstance(UserSettingsService),
     );
 
     expect(newComponent.loading).to.equal(true);
@@ -109,8 +101,6 @@ describe('Analytics Target Aggregates Component', () => {
 
   it('should set correct loading and error when TargetAggregates fails', fakeAsync(() => {
     sinon.reset();
-    const userFacilities = [{ _id: 'facility_1' }];
-    userSettingsService.getUserFacility.resolves(userFacilities);
     targetAggregatesService.isEnabled.rejects({ some: 'err' });
     const consoleErrorMock = sinon.stub(console, 'error');
 
@@ -129,8 +119,6 @@ describe('Analytics Target Aggregates Component', () => {
 
   it('should set aggregates disabled', fakeAsync(() => {
     sinon.reset();
-    const userFacilities = [{ _id: 'facility_1' }];
-    userSettingsService.getUserFacility.resolves(userFacilities);
     targetAggregatesService.isEnabled.resolves(false);
 
     component.ngOnInit();
@@ -147,8 +135,6 @@ describe('Analytics Target Aggregates Component', () => {
 
   it('should set aggregates', fakeAsync(() => {
     sinon.reset();
-    const userFacilities = [{ _id: 'facility_1' }];
-    userSettingsService.getUserFacility.resolves(userFacilities);
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.getAggregates.resolves(['some aggregates']);
 
@@ -167,8 +153,6 @@ describe('Analytics Target Aggregates Component', () => {
 
   it('should set different aggregates when updateAggregateTargets is called with a new facility', fakeAsync(() => {
     sinon.reset();
-    const userFacilities = [{ _id: 'facility_1' }, { _id: 'facility_2' }];
-    userSettingsService.getUserFacility.resolves(userFacilities);
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.getAggregates.resolves(['some aggregates']);
 

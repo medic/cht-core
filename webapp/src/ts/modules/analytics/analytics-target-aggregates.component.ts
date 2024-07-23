@@ -5,7 +5,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { AnalyticsTargetAggregatesSidebarFilterComponent }
   from './analytics-target-aggregates-sidebar-filter.component';
@@ -33,7 +32,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     private store: Store,
     private targetAggregatesService: TargetAggregatesService,
     private performanceService: PerformanceService,
-    private userSettingsService: UserSettingsService,
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
   }
