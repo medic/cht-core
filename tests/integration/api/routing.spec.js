@@ -167,7 +167,7 @@ describe('routing', () => {
       });
     });
 
-    xit('should display deploy-info to authenticated users', () => {
+    it('should display deploy-info to authenticated users', () => {
       return Promise.all([
         utils.request(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
@@ -183,14 +183,14 @@ describe('routing', () => {
         ).to.be.ok;
 
         const { BRANCH, TAG } = process.env;
-        const isBranchBuild = BRANCH && !TAG;
+        const isFRBuild = BRANCH && BRANCH.startsWith(`${ddoc.build_info.base_version}-FR-`)
+        const isBranchBuild = BRANCH && !isFRBuild && !TAG;
 
         const deployInfo = {
           ...ddoc.deploy_info,
           ...ddoc.build_info,
           version: isBranchBuild ? ddoc.build_info.build : ddoc.build_info.version
         };
-        console.log(deployInfo, deployInfoOnline);
         // for historical reasons, for a branch the version in the ddoc is the branch name.
         expect(deployInfoOnline).to.deep.equal(deployInfo);
         expect(deployInfoOffline).to.deep.equal(deployInfo);
