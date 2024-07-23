@@ -22,8 +22,16 @@ module.exports = class Page {
     }
   }
 
-  async clickButton(label) {
-    await this.clickElement('//*[@text="' + label +'"]');
+  getButtonSelector(label) {
+    return `//*[@text="${label}"]`;
+  }
+
+  clickButton(label) {
+    return this.clickElement(this.getButtonSelector(label));
+  }
+
+  isButtonExisting(label) {
+    return $(this.getButtonSelector(label)).isExisting();
   }
 
   async setValue(selector, value) {
@@ -110,7 +118,7 @@ module.exports = class Page {
     }
 
     if (page.relaunchApp) {
-      await super.relaunchApp(commonElements);
+      await this.relaunchApp(commonElements);
     }
 
     await this.navigate(page.navigation, page.asserts);
@@ -177,8 +185,7 @@ module.exports = class Page {
     await this.navigate(form.postTestPath);
   }
 
-  async relaunchApp(settingsProvider) {
-    const commonElements = settingsProvider.getCommonElements();
+  async relaunchApp(commonElements) {
     const UI_ELEMENT = commonElements?.relaunchAppAssert || '//*[@text="People"]';
     await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});

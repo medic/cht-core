@@ -11,7 +11,7 @@ class LoadPage extends Page {
   }
 
   async loadInstance(settingsProvider) {
-    const isServerSettings = await super.btnCustom.isExisting();
+    const isServerSettings = await super.isButtonExisting('Custom');
     if (!isServerSettings) {
       return;
     }
