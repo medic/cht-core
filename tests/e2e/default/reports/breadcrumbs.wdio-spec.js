@@ -59,31 +59,27 @@ describe('Reports tab breadcrumbs', () => {
 
   const today = moment();
 
-  const report1 = reportFactory
-    .report()
-    .build(
-      {
-        form: 'P',
-        reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
-        patient_id: 'patient1',
-      },
-      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' } },
-    );
+  const report1 = reportFactory.report().build(
+    {
+      form: 'P',
+      reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
+      patient_id: 'patient1',
+    },
+    { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' } },
+  );
 
-  const report2 = reportFactory
-    .report()
-    .build(
-      {
-        form: 'P',
-        reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
-        patient_id: 'patient1',
-      },
-      {
-        patient,
-        submitter: userWithManyPlaces.contact_id,
-        fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' },
-      },
-    );
+  const report2 = reportFactory.report().build(
+    {
+      form: 'P',
+      reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
+      patient_id: 'patient1',
+    },
+    {
+      patient,
+      submitter: userWithManyPlaces.contact_id,
+      fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' },
+    },
+  );
 
   before(async () => {
     await utils.saveDocs([
