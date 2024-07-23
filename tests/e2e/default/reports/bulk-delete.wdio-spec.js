@@ -6,21 +6,9 @@ const reportFactory = require('@factories/cht/reports/generic-report');
 
 describe('Bulk delete reports', () => {
   const docs = [
-    reportFactory.report().build({
-      fields: { lmp_date: 'Feb 3, 2016' },
-      form: 'P',
-      content_type: 'xml',
-    }),
-    reportFactory.report().build({
-      fields: { lmp_date: 'Feb 15, 2016' },
-      form: 'P',
-      content_type: 'xml',
-    }),
-    reportFactory.report().build({
-      fields: { ok: 'Yes!' },
-      form: 'V',
-      content_type: 'xml',
-    }),
+    reportFactory.report().build({ fields: { lmp_date: 'Feb 3, 2016' }, form: 'P', content_type: 'xml' }),
+    reportFactory.report().build({ fields: { lmp_date: 'Feb 15, 2016' }, form: 'P', content_type: 'xml' }),
+    reportFactory.report().build({ fields: { ok: 'Yes!' }, form: 'V', content_type: 'xml' })
   ];
 
   const savedUuids = [];
