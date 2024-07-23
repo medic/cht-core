@@ -25,6 +25,7 @@
     "searchContact": false,
     "searchReport": false,
 
+    "submitTask": true,
     "createPatient": true,
     "submitPatientReport": true
   },
@@ -44,13 +45,13 @@
         { "selector": "//*[@text=\"Reports\"]" },
         {
           "selector": "//*[@text=\"People\"]",
-          "asserts": [ { "selector": "//*[contains(@text, \"West Miltonside\")]" } ]
+          "asserts": [ { "selector": "//*[contains(@text, \"North Karsoncester\")]" } ]
         }
       ],
       "search": {
-        "value": "Rafael Windler",
+        "value": "Latoya Waelchi",
         "asserts": [
-          { "selector": "//*[@text=\"Rafael Windler\"]" },
+          { "selector": "//*[@text=\"Latoya Waelchi\"]" },
           {
             "scrollDown": 5,
             "selector": "//*[contains(@text, \"No more people\")]"
@@ -64,12 +65,10 @@
     "chwArea": {
       "navigation": [
         {
-          "selector": "//*[contains(@text, \"West Miltonside\")]",
+          "selector": "//*[contains(@text, \"North Karsoncester\")]",
           "asserts": [
             { "selector": "//*[contains(@text, \"External ID\")]" },
-            { "selector": "//*[contains(@text, \"Rafael Windler\")]" },
-            { "selector": "//*[contains(@text, \"Households\")]" },
-            { "selector": "//*[contains(@text, \"Abilene\")]" }
+            { "selector": "//*[contains(@text, \"Kimberly Kessler\")]" }
           ]
         }
       ],
@@ -77,12 +76,11 @@
     },
     "household": {
       "navigation": [
-        { "selector": "//*[contains(@text, \"West Miltonside\")]" },
         {
-          "selector": "//*[contains(@text, \"Abilene\")]",
+          "selector": "//*[contains(@text, \"Alafaya\")]",
           "asserts": [
             { "selector": "//*[contains(@text, \"Phone\")]" },
-            { "selector": "//*[contains(@text, \"Bill Pouros\")]" },
+            { "selector": "//*[contains(@text, \"Ann Ferry\")]" },
             {
               "scrollDown": 2,
               "selector": "//*[text()[contains(.,\"Danger sign follow up\")]"
@@ -96,9 +94,9 @@
     "patient": {
       "navigation": [
         {
-          "selector": "//*[contains(@text, \"Irene Shields\")]",
+          "selector": "//*[contains(@text, \"Zachary Weimann\")]",
           "asserts": [
-            { "selector": "//*[contains(@text, \"37 years\")]" },
+            { "selector": "//*[contains(@text, \"25 years\")]" },
             {
               "scrollDown": 1,
               "selector": "//*[contains(@text, \"Danger sign follow up\")]" },
