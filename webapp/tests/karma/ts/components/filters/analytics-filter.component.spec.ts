@@ -122,7 +122,7 @@ describe('Analytics Filter Component', () => {
     expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: false });
     expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true });
     expect(telemetryService.record.calledTwice).to.be.true;
-    expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics_target_aggregates:open']);
+    expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics:target_aggregates:open']);
   });
 
   it('should not display filter button if user does not have multipleFacilities', fakeAsync(() => {

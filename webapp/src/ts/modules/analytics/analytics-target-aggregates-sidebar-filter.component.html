@@ -24,7 +24,8 @@
                     name="facility"
                     [value]="facility._id"
                     class="filter-option-radio"
-                    [(ngModel)]="selectedFacilityId">
+                    [(ngModel)]="selectedFacilityId"
+                    (change)="fetchAggregateTargets(facility._id)">
                   <span class="filter-option-label">{{ facility.name }}</span>
                 </label>
               </div>
