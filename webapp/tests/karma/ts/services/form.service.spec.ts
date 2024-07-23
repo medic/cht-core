@@ -368,8 +368,10 @@ describe('Form service', () => {
       };
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
+      targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
       const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      formContext.setUserContext('contact', 'facility');
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
@@ -382,12 +384,17 @@ describe('Form service', () => {
         expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
+        expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);
+        expect(targetAggregatesService.getTargetDocs.args[0]).to.deep.equal([
+          { _id: 'fffff', patient_id: '44509' }, 'facility', 'contact'
+        ]);
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][0]._id).to.equal('fffff');
         expect(ContactSummary.args[0][1].length).to.equal(1);
         expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
         expect(ContactSummary.args[0][2].length).to.equal(1);
         expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
+        expect(ContactSummary.args[0][3]).to.deep.equal([{ _id: 't1' }, { _id: 't2' }]);
       });
     });
 

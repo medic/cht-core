@@ -302,4 +302,42 @@ describe('ContactTypes service', () => {
       expect(service.isLeafPlaceType(types, 'clinic2')).to.equal(true);
     });
   });
+
+  describe('isPerson', () => {
+    it('should return true if passed an object and contact is a person', async () => {
+      const contact = { type: { id: 'a_person', person: true } };
+      expect(await service.isPerson(contact)).to.equal(true);
+
+      const contact2 = { type: { id: 'person' } };
+      expect(await service.isPerson(contact2)).to.equal(true);
+    });
+
+    it('should return false if passed an object and contact is not a person', async () => {
+      const contact = { type: { id: 'not_person', person: false } };
+      expect(await service.isPerson(contact)).to.equal(false);
+
+      const contact2 = { type: { id: 'notperson' } };
+      expect(await service.isPerson(contact2)).to.equal(false);
+    });
+
+    it('should return true if passed a string and contact is a person', async () => {
+      const contact = { type: 'a_person' };
+      const types = [
+        { id: 'nothing', parents: ['something'] },
+        { id: 'a_person', person: true },
+      ];
+      Settings.resolves({ contact_types: types });
+      expect(await service.isPerson(contact)).to.equal(true);
+    });
+
+    it('should return false if passed a string and contact is not a person', async () => {
+      const contact = { type: 'nothing' };
+      const types = [
+        { id: 'nothing', parents: ['something'] },
+        { id: 'a_person', person: true },
+      ];
+      Settings.resolves({ contact_types: types });
+      expect(await service.isPerson(contact)).to.equal(false);
+    });
+  });
 });

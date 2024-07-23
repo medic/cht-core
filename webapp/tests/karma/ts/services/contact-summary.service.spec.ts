@@ -165,7 +165,8 @@ describe('ContactSummary service', () => {
       fields: [contact.name, lineage[0].name],
       cards: [
         { fields: reports[0].type },
-        { fields: targetDoc.date_updated }
+        { fields: targetDoc.date_updated },
+        { fields: cht.v2.context.targetDocs[1].date_updated },
       ],
     }
     `;
@@ -174,14 +175,18 @@ describe('ContactSummary service', () => {
     const contact = { name: 'boa' };
     const reports = [{ type: 'data' }, { type: 'record' }];
     const lineage = [{ name: 'parent' }, { name: 'grandparent' }];
-    const targetDoc = [{ date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] }];
+    const targetDocs = [
+      { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] },
+      { date_updated: 'a month ago', targets: [{ id: 'target', type: 'count' }] },
+    ];
 
-    return service.get(contact, reports, lineage, targetDoc).then(contactSummary => {
+    return service.get(contact, reports, lineage, targetDocs).then(contactSummary => {
       expect(contactSummary).to.deep.equal({
         fields: ['boa', 'parent'],
         cards: [
           { fields: 'data' },
           { fields: 'yesterday' },
+          { fields: 'a month ago' }
         ]
       });
     });

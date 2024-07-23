@@ -331,7 +331,7 @@ export class TargetAggregatesService {
   }
 
   private async _getTargetDocs(contact, userFacilityId, userContactId) {
-    const contactUuid = _isString(contact) ? contact : contact?._id;
+    const contactUuid = contact?._id;
     if (!contactUuid) {
       return;
     }
