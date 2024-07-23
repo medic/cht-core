@@ -2,9 +2,9 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
+import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { Selectors } from '@mm-selectors/index';
 import { PerformanceService } from '@mm-services/performance.service';
 import { AnalyticsTargetAggregatesSidebarFilterComponent }
   from './analytics-target-aggregates-sidebar-filter.component';
@@ -36,7 +36,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.trackPerformance = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeSidebarFilter();
@@ -68,7 +68,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
-  private getTargetAggregates() {
+  getTargetAggregates(userFacilityId?) {
     return this.targetAggregatesService
       .isEnabled()
       .then(enabled => {
@@ -78,7 +78,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
           return;
         }
 
-        return this.targetAggregatesService.getAggregates();
+        return this.targetAggregatesService.getAggregates(userFacilityId);
       })
       .then(aggregates => {
         this.targetAggregatesActions.setTargetAggregates(aggregates);

@@ -71,7 +71,7 @@ export class UserSettingsService {
       });
   }
 
-  async getUserFacility(): Promise<string[]> {
+  async getUserFacility() {
     return this
       .get()
       .then((userSettings: UserSettings) => {

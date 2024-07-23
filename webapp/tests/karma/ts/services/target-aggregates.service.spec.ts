@@ -488,6 +488,45 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[ 'home' ]]);
     });
 
+    it('should call getAggregates with provided facilityId when fetching aggregates', async () => {
+      const facilityId = 'facility123';
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
+      contactTypesService.getTypeId.returns('district');
+      contactTypesService.getChildren.resolves([{ id: 'health_center' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(12);
+      calendarIntervalService.getCurrent.returns({
+        start: moment('2019-05-12').valueOf(),
+        end: moment('2019-06-11').valueOf(),
+      });
+
+      const result = await service.getAggregates(facilityId);
+
+      expect(result.length).to.equal(1);
+      expect(result[0].id).to.equal('target');
+
+      expect(getDataRecordsService.get.callCount).to.equal(2);
+      expect(getDataRecordsService.get.args[0]).to.deep.equal([[facilityId]]);
+      expect(dbService.allDocs.callCount).to.equal(1);
+      expect(dbService.allDocs.args[0]).to.deep.equal([{
+        start_key: 'target~2019-06~',
+        end_key: 'target~2019-06~\ufff0',
+        include_docs: true
+      }]);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
+      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([12]);
+    });
+
     it('should fetch correct latest target docs', async () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }};
       settingsService.get.resolves(config);

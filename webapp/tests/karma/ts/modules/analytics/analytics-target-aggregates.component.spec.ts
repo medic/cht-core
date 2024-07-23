@@ -148,5 +148,39 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(0);
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(['some aggregates']);
+    expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
+  }));
+
+  it('should set different aggregates when updateAggregateTargets is called with a new facility', fakeAsync(() => {
+    sinon.reset();
+    targetAggregatesService.isEnabled.resolves(true);
+    targetAggregatesService.getAggregates.resolves(['some aggregates']);
+
+    component.ngOnInit();
+    tick();
+
+    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
+    expect(component.loading).to.equal(false);
+    expect(component.enabled).to.equal(true);
+    expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(0);
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
+    expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(['some aggregates']);
+    expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
+
+    targetAggregatesActions.setTargetAggregates.resetHistory();
+    targetAggregatesService.getAggregates.resetHistory();
+
+    const facilityTwoAggregates = ['new aggregates'];
+    targetAggregatesService.getAggregates.withArgs('facility_2').resolves(facilityTwoAggregates);
+
+    // Fetch aggregates for user's second facility
+    component.getTargetAggregates('facility_2');
+    tick();
+
+    expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
+    expect(targetAggregatesService.getAggregates.calledWith('facility_2')).to.be.true;
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
+    expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal(facilityTwoAggregates);
   }));
 });

@@ -35,6 +35,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
+      clearSidebarFilter: sinon.stub(GlobalActions.prototype, 'clearSidebarFilter'),
     };
 
     const mockedSelectors = [
@@ -76,6 +77,12 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     expect(component.isOpen).to.be.false;
     expect(component.error).to.be.undefined;
   }));
+
+  it('should clear sidebar filter in the store on component destroy', () => {
+    component.ngOnDestroy();
+
+    expect(globalActions.clearSidebarFilter.calledOnce).to.be.true;
+  });
 
   it('should toggle sidebar filter', () => {
     component.toggleSidebarFilter();
