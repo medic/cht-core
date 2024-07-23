@@ -124,8 +124,8 @@ export class FormService {
       });
   }
 
-  private getTargetDocs(contact, userContactId, userFacilityId) {
-    return this.targetAggregatesService.getTargetDocs(contact, userContactId, userFacilityId);
+  private getTargetDocs(contact, userFacilityId, userContactId) {
+    return this.targetAggregatesService.getTargetDocs(contact, userFacilityId, userContactId);
   }
 
   private getContactReports(contact) {
@@ -137,7 +137,7 @@ export class FormService {
     return this.searchService.search('reports', { subjectIds: subjectIds }, { include_docs: true });
   }
 
-  private getContactSummary(doc, instanceData, userContactId, userFacilityId) {
+  private getContactSummary(doc, instanceData, userFacilityId, userContactId) {
     const contact = instanceData?.contact;
     if (!doc.hasContactSummary || !contact) {
       return Promise.resolve();
@@ -146,7 +146,7 @@ export class FormService {
       .all([
         this.getContactReports(contact),
         this.getLineage(contact),
-        this.getTargetDocs(contact, userContactId, userFacilityId),
+        this.getTargetDocs(contact, userFacilityId, userContactId),
       ])
       .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
   }
@@ -172,7 +172,7 @@ export class FormService {
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
-      formContext.contactSummary = await this.getContactSummary(doc, instanceData, userContactId, userFacilityId);
+      formContext.contactSummary = await this.getContactSummary(doc, instanceData, userFacilityId, userContactId);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
