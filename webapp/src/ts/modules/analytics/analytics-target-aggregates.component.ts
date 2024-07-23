@@ -42,8 +42,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.trackPerformance = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeSidebarFilter();
-    const userFacilityId = await this.setFacilityId();
-    await this.getTargetAggregates(userFacilityId);
+    this.getTargetAggregates();
   }
 
   ngOnDestroy(): void {
@@ -69,11 +68,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
         this.error = error;
       });
     this.subscriptions.add(selectorsSubscription);
-  }
-
-  private async setFacilityId() {
-    const userFacilities = await this.userSettingsService.getUserFacility();
-    return userFacilities[0]?._id;
   }
 
   getTargetAggregates(userFacilityId?) {
