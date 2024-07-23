@@ -32,9 +32,9 @@ export namespace v1 {
     }
   };
 
-  const assertTypeQualifier: (
+  const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
     qualifier: unknown
-  ) => asserts qualifier is ContactTypeQualifier = (qualifier: unknown) => {
+  ) => {
     if (!isContactTypeQualifier(qualifier)) {
       throw new Error(`Invalid type [${JSON.stringify(qualifier)}].`);
     }
