@@ -4,7 +4,7 @@ const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
 const sidebarFilterBtn = () => $('.open-filter .fa-sliders');
 const filterCloseBtn = () => $('.sidebar-close');
-const filterRadioBtn = () => $('.filter-option-place input');
+const filterRadioBtn = () => $('.filter-options-container :nth-child(3) input');
 const AGGREGATE_DETAIL_LIST = '.aggregate-detail li';
 const targetAggregateListItem = (contactId) => $(`${AGGREGATE_DETAIL_LIST}[data-record-id="${contactId}"] a`);
 const targetAggregateDetailTitle = (element) => element.$('h4');

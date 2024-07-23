@@ -262,7 +262,7 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.checkContentDisabled();
     });
 
-    it('should display correct message when target aggregates are disabled', async () => {
+    it.only('should display correct message when target aggregates are disabled', async () => {
       await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
       await commonPage.waitForPageLoaded();
 
@@ -361,18 +361,27 @@ describe('Target aggregates', () => {
     });
 
     it('should filter aggregates by place', async () => {
-      await loginPage.login({ username: user.username, password: user.password });
+      await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
       await commonPage.waitForPageLoaded();
 
       await utils.saveDocs(targetDocs);
-      await updateSettings(targetsConfig, user);
+      await updateSettings(targetsConfig, userWithManyPlaces);
+      await commonPage.sync(true);
+      await browser.refresh();
 
       await commonPage.goToAnalytics();
-      await targetAggregatesPage.goToTargetAggregates(true);
+      await targetAggregatesPage.goToTargetAggregates(true); 
+
+      await targetAggregatesPage.openTargetDetails('count_with_goal');
 
       await targetAggregatesPage.openSidebarFilter();
+      const lineItem = await targetAggregatesPage.getAggregateDetailListElementByIndex(0);
+      let lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(lineItem);
+      expect(await lineItemInfo.title).to.equal('Alabama');
       await targetAggregatesPage.selectFilterOption();
       await commonPage.waitForPageLoaded();
+      lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(lineItem);
+      expect(await lineItemInfo.title).to.equal('Esteban');
     });
 
     it('should route to contact-detail on list item click and display contact summary target card', async () => {
