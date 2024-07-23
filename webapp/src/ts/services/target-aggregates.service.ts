@@ -1,6 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as moment from 'moment';
-import { isString as _isString } from 'lodash-es';
 
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { DbService } from '@mm-services/db.service';
