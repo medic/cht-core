@@ -5,7 +5,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { AnalyticsTargetAggregatesSidebarFilterComponent }
   from './analytics-target-aggregates-sidebar-filter.component';
@@ -72,12 +71,16 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
+<<<<<<< HEAD
   private async setFacilityId() {
     const userFacilities = await this.userSettingsService.getUserFacility();
     this.userFacilityId = userFacilities[0]?._id;
   }
 
   private getTargetAggregates(userFacilityId?) {
+=======
+  getTargetAggregates(userFacilityId?) {
+>>>>>>> 9231-add-aggregate-filter
     return this.targetAggregatesService
       .isEnabled()
       .then(enabled => {
@@ -87,9 +90,13 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
           return;
         }
 
+<<<<<<< HEAD
         return userFacilityId ?
           this.targetAggregatesService.getAggregates(userFacilityId) :
           this.targetAggregatesService.getAggregates();
+=======
+        return this.targetAggregatesService.getAggregates(userFacilityId);
+>>>>>>> 9231-add-aggregate-filter
       })
       .then(aggregates => {
         this.targetAggregatesActions.setTargetAggregates(aggregates);
