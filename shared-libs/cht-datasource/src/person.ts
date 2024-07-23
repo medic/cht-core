@@ -93,9 +93,9 @@ export namespace v1 {
   export const getWithLineage = getPerson(Local.Person.v1.getWithLineage, Remote.Person.v1.getWithLineage);
 
   /**
-   * Returns a function for retrieving a paged array of persons from the given data context.
+   * Returns a function for retrieving a paged array of people from the given data context.
    * @param context the current data context
-   * @returns a function for retrieving a paged array of persons
+   * @returns a function for retrieving a paged array of people
    * @throws Error if a data context is not provided
    */
   export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);

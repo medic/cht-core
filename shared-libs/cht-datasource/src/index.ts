@@ -86,16 +86,16 @@ export const getDatasource = (ctx: DataContext) => {
          */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Person.v1.getWithLineage)(Qualifier.byUuid(uuid)),
 
-    /**
-     * Returns an array of persons for the provided page specifications.
-     * @param personType the type of persons to return
-     * @param limit the maximum number of persons to return. Default is 100.
-     * @param skip the number of persons to skip. Default is 0.
-     * @returns an array of persons for the provided page specifications
-     * @throws Error if no type is provided or if the type is not for a person
-     * @throws Error if the provided limit is `<= 0`
-     * @throws Error if the provided skip is `< 0`
-     */
+        /**
+         * Returns an array of people for the provided page specifications.
+         * @param personType the type of people to return
+         * @param limit the maximum number of people to return. Default is 100.
+         * @param skip the number of people to skip. Default is 0.
+         * @returns an array of people for the provided page specifications
+         * @throws Error if no type is provided or if the type is not for a person
+         * @throws Error if the provided limit is `<= 0`
+         * @throws Error if the provided skip is `< 0`
+         */
         getPage: (personType: string, limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), limit, skip
         ),

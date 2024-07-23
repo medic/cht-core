@@ -65,7 +65,7 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
 ): Promise<T> => {
   const params = new URLSearchParams(queryParams).toString();
   try {
-    const response = await fetch(`${context.url}/${path}}?${params}`);
+    const response = await fetch(`${context.url}/${path}?${params}`);
     if (!response.ok) {
       throw new Error(response.statusText);
     }
