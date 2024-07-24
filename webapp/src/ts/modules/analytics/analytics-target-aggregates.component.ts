@@ -21,6 +21,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   selected = null;
   error = null;
   isSidebarFilterOpen = false;
+  reportingPeriod = 'current';
 
   constructor(
     private store: Store,
@@ -72,7 +73,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
           return;
         }
 
-        return this.targetAggregatesService.getAggregates(userFacilityId);
+        return this.targetAggregatesService.getAggregates(userFacilityId, this.reportingPeriod);
       })
       .then(aggregates => {
         this.targetAggregatesActions.setTargetAggregates(aggregates);
@@ -96,5 +97,10 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => this.isSidebarFilterOpen = filterState?.isOpen ?? false);
     this.subscriptions.add(subscription);
+  }
+
+  onReportingPeriodChange(period) {
+    this.reportingPeriod = period;
+    this.getTargetAggregates();
   }
 }

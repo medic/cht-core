@@ -32,7 +32,8 @@
     </div>
     <mm-analytics-target-aggregates-sidebar-filter
       class="col-sm-3 sidebar-filter-wrapper"
-      (facilitySelected)="getTargetAggregates($event)">
+      (facilitySelected)="getTargetAggregates($event)"
+      (reportingPeriodSelected)="onReportingPeriodChange($event)">
     </mm-analytics-target-aggregates-sidebar-filter>
   </div>
 </div>

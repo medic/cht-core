@@ -35,7 +35,31 @@
 
         <!-- 2. Reporting Period -->
         <div class="filter-options-container">
-          <span class="filter-options-title"> Reporting Period </span>
+          <span class="filter-options-title">{{ 'analytics.target.aggregates.reporting_period' | translate }}</span>
+          <div class="filter-option-place">
+            <label class="filter-option-wrapper">
+              <input
+                type="radio"
+                name="reportingPeriod"
+                value="current"
+                class="filter-option-radio"
+                [(ngModel)]="reportingPeriod"
+                (change)="onReportingPeriodChange()">
+              <span class="filter-option-label">{{ 'analytics.target.aggregates.this_month' | translate }}</span>
+            </label>
+          </div>
+          <div class="filter-option-place">
+            <label class="filter-option-wrapper">
+              <input
+                type="radio"
+                name="reportingPeriod"
+                value="previous"
+                class="filter-option-radio"
+                [(ngModel)]="reportingPeriod"
+                (change)="onReportingPeriodChange()">
+              <span class="filter-option-label">{{ 'analytics.target.aggregates.last_month' | translate }}</span>
+            </label>
+          </div>
         </div>
       </mat-accordion>
     </div>

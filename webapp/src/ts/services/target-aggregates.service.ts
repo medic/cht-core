@@ -47,12 +47,21 @@ export class TargetAggregatesService {
     return moment(targetInterval.end).format('Y-MM');
   }
 
+  private getPreviousIntervalTag(settings) {
+    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+    const targetInterval = this.calendarIntervalService.getPrevious(uhcMonthStartDate);
+    return moment(targetInterval.end).format('Y-MM');
+  }
+
   /**
    * Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
    */
-  private fetchLatestTargetDocs(settings) {
-    const tag = this.getCurrentIntervalTag(settings);
+  private fetchLatestTargetDocs(settings, reportingPeriod?) {
+    const tag = reportingPeriod === 'previous'
+      ? this.getPreviousIntervalTag(settings)
+      : this.getCurrentIntervalTag(settings);
+    console.log('tag', tag);
     const opts = {
       start_key: `target~${tag}~`,
       end_key: `target~${tag}~\ufff0`,
@@ -294,11 +303,11 @@ export class TargetAggregatesService {
     return !facilityIds || facilityIds.length > 0;
   }
 
-  getAggregates(facilityId?) {
-    return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId));
+  getAggregates(facilityId?, reportingPeriod?) {
+    return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId, reportingPeriod));
   }
 
-  private _getAggregates(facilityId?) {
+  private _getAggregates(facilityId?, reportingPeriod?) {
     return this.settingsService
       .get()
       .then(settings => {
@@ -311,7 +320,7 @@ export class TargetAggregatesService {
         return Promise
           .all([
             this.getSupervisedContacts(facilityId),
-            this.fetchLatestTargetDocs(settings)
+            this.fetchLatestTargetDocs(settings, reportingPeriod)
           ])
           .then(([ contacts, latestTargetDocs ]) => this.aggregateTargets(latestTargetDocs, contacts, targetsConfig));
       });

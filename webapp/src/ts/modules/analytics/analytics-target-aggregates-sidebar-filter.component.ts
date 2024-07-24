@@ -15,6 +15,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 
   @Output() facilitySelected = new EventEmitter<string>();
+  @Output() reportingPeriodSelected = new EventEmitter<string>();
   private globalActions;
   subscriptions: Subscription = new Subscription();
   error;
@@ -24,6 +25,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   selectedFacilityId;
   facilityFilterLabel;
   hasMultipleFacilities;
+  reportingPeriod = 'current';
 
   constructor(
     private store: Store,
@@ -105,5 +107,9 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
 
   fetchAggregateTargets(facilityId) {
     this.facilitySelected.emit(facilityId);
+  }
+
+  onReportingPeriodChange() {
+    this.reportingPeriodSelected.emit(this.reportingPeriod);
   }
 }
