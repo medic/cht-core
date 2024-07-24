@@ -1074,6 +1074,7 @@ describe('TargetAggregatesService', () => {
 
     it('should throw when getting settings fails', () => {
       settingsService.get.rejects({ some: 'err' });
+      contactTypesService.isPerson.resolves(true);
 
       return service
         .getTargetDocs({ _id: 'uuid' }, 'facility', 'contact')
