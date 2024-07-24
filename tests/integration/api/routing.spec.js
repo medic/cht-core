@@ -183,7 +183,8 @@ describe('routing', () => {
         ).to.be.ok;
 
         const { BRANCH, TAG } = process.env;
-        const isBranchBuild = BRANCH && !TAG;
+        const isFRBuild = BRANCH?.startsWith(`${ddoc.build_info.base_version}-FR-`);
+        const isBranchBuild = BRANCH && !isFRBuild && !TAG;
 
         const deployInfo = {
           ...ddoc.deploy_info,

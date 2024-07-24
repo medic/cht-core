@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store, select } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { combineLatest, of } from 'rxjs';
 import { exhaustMap, withLatestFrom } from 'rxjs/operators';
 
@@ -14,6 +14,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -32,6 +33,7 @@ export class ContactsEffects {
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
+    private contactTypesService: ContactTypesService,
     private routeSnapshotService: RouteSnapshotService,
   ) {
     this.contactsActions = new ContactsActions(store);
@@ -50,10 +52,11 @@ export class ContactsEffects {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
       withLatestFrom(
-        this.store.pipe(select(Selectors.getUserFacilityId)),
+        this.store.select(Selectors.getUserFacilityId),
+        this.store.select(Selectors.getUserContactId),
         this.store.select(Selectors.getForms),
       ),
-      exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
+      exhaustMap(([{ payload: { id, silent } }, userFacilityId, userContactId, forms]) => {
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
@@ -81,7 +84,7 @@ export class ContactsEffects {
           .then(() => this.setTitle())
           .then(() => this.loadChildren(id, userFacilityId, trackName))
           .then(() => this.loadReports(id, forms, trackName))
-          .then(() => this.loadTargetDoc(id, trackName))
+          .then(() => this.loadTargetDoc(id, userFacilityId, userContactId, trackName))
           .then(() => this.loadContactSummary(id, trackName))
           .then(() => this.loadTasks(id, trackName))
           .catch(err => {
@@ -161,18 +164,18 @@ export class ContactsEffects {
       });
   }
 
-  private loadTargetDoc(contactId, trackName) {
+  private async loadTargetDoc(contactId, userFacilityId, userContactId, trackName) {
     const trackPerformance = this.performanceService.track();
-    return this.targetAggregateService
-      .getCurrentTargetDoc(this.selectedContact)
-      .then(targetDoc => {
-        return this
-          .verifySelectedContactNotChanged(contactId)
-          .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc));
-      })
-      .finally(() => {
-        trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
-      });
+
+    const targetDocs = await this.targetAggregateService.getTargetDocs(
+      this.selectedContact,
+      userFacilityId,
+      userContactId
+    );
+    await this.verifySelectedContactNotChanged(contactId);
+    this.contactsActions.receiveSelectedContactTargetDoc(targetDocs);
+
+    trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
   }
 
   private loadTasks(contactId, trackName) {

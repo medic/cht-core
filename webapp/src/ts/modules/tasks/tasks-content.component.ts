@@ -51,6 +51,9 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   formId;
   private cancelCallback;
   errorTranslationKey;
+  userFacilityId;
+  userContactId;
+
   private tasksList;
   private geoHandle;
   private enketoError;
@@ -92,6 +95,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSelectedTask),
       this.store.select(Selectors.getCancelCallback),
       this.store.select(Selectors.getTasksList),
+      this.store.select(Selectors.getUserFacilityId),
+      this.store.select(Selectors.getUserContactId),
     ).subscribe(([
       enketoStatus,
       enketoError,
@@ -101,6 +106,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       selectedTask,
       cancelCallback,
       taskList,
+      userFacilityId,
+      userContactId,
     ]) => {
       this.enketoStatus = enketoStatus;
       this.enketoError = enketoError;
@@ -110,6 +117,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       this.selectedTask = selectedTask;
       this.cancelCallback = cancelCallback;
       this.tasksList = taskList;
+      this.userFacilityId = userFacilityId;
+      this.userContactId = userContactId;
     });
     this.subscription.add(subscription);
   }
@@ -222,6 +231,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     const formContext = new EnketoFormContext('#task-report', 'task', formDoc, action.content);
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
+    formContext.setUserContext(this.userContactId, this.userFacilityId);
 
     return this.formService
       .render(formContext)

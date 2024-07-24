@@ -60,10 +60,11 @@ describe('CHTScriptApiService service', () => {
       const result = await service.getApi();
 
       expect(result).to.have.all.keys([ 'v1' ]);
-      expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib' ]);
+      expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib', 'context' ]);
       expect(result.v1.hasPermissions).to.be.a('function');
       expect(result.v1.hasAnyPermission).to.be.a('function');
       expect(result.v1.getExtensionLib).to.be.a('function');
+      expect(result.v1.context).to.deep.equal({ targetDocs: [] });
     });
 
     it('should initialize extension libs', async () => {

@@ -11,4 +11,8 @@ export class CalendarIntervalService {
   getCurrent(startDate) {
     return CalendarInterval.getCurrent(startDate);
   }
+
+  getInterval(startDate, timestamp) {
+    return CalendarInterval.getInterval(startDate, timestamp);
+  }
 }

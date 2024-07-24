@@ -136,6 +136,8 @@ describe('Target aggregates', () => {
     const docTags = [
       // current targets
       moment().format('YYYY-MM'),
+      // previous months targets
+      moment().date(10).subtract(1, 'month').format('YYYY-MM'),
       // next month targets, in case the reporting period switches mid-test
       moment().date(10).add(1, 'month').format('YYYY-MM'),
     ];
@@ -370,7 +372,7 @@ describe('Target aggregates', () => {
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
 
-      await validateCardFields(['yesterday Clarissa', '40', '50%']);
+      await validateCardFields(['yesterday Clarissa', moment().format('YYYY-MM'), '40', '50%']);
 
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[0]);
@@ -383,10 +385,68 @@ describe('Target aggregates', () => {
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-      await validateCardFields(['yesterday Prometheus', '18', '15%']);
+      await validateCardFields(['yesterday Prometheus', moment().format('YYYY-MM'), '18', '15%']);
 
       await browser.back();
       await targetAggregatesPage.expectTargetDetails(expectedTargets[1]);
     });
+    
+    it('should display targets of current user on home place', async () => {
+      const targetsConfig = [
+        { id: 'a_target', type: 'count', title: generateTitle('what a target!'), aggregate: true },
+        { id: 'b_target', type: 'percent', title: generateTitle('the most target'), aggregate: true },
+      ];
+      const contactSummaryScript = fs.readFileSync(`${__dirname}/config/contact-summary-target-aggregates.js`, 'utf8');
+
+      const clarissa = docs.find(doc => doc.name === names[0]);
+      const prometheus = docs.find(doc => doc.name === names[1]);
+      const targets = {
+        'Clarissa': [
+          { id: 'a_target', value: { total: 50, pass: 40 } },
+          { id: 'b_target', value: { total: 20, pass: 10 } }
+        ],
+        'Prometheus': [
+          { id: 'a_target', value: { total: 20, pass: 18 } },
+          { id: 'b_target', value: { total: 40, pass: 6 } }
+        ],
+        [user.contact.name]: [
+          { id: 'a_target', value: { total: 1, pass: 1 } },
+          { id: 'b_target', value: { total: 1, pass: 1 } }
+        ],
+      };
+
+      const targetsForContact = (contact) => {
+        return docTags.map(tag => ({
+          _id: `target~${tag}~${contact._id}~irrelevant`,
+          reporting_period: tag,
+          targets: targets[contact.name],
+          owner: contact._id,
+          user: 'irrelevant',
+          date_updated: `yesterday ${contact.name}`,
+        }));
+      };
+      const targetDocs = [
+        ...targetsForContact(clarissa),
+        ...targetsForContact(prometheus),
+        ...targetsForContact(user.contact),
+      ];
+
+      await utils.saveDocs(targetDocs);
+      await updateSettings(targetsConfig, user, contactSummaryScript);
+
+      await commonPage.goToPeople(user.place._id);
+      // wait until contact-summary is loaded
+      await (await contactsPage.contactCard()).waitForDisplayed();
+      expect(await contactsPage.getContactInfoName()).to.equal(parentPlace.name);
+      // assert that the activity card exists and has the right fields.
+      expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
+
+      await validateCardFields([
+        `yesterday ${user.contact.name}`,
+        moment().subtract(1, 'month').format('YYYY-MM'),
+        '1',
+        '100%'
+      ]);
+    }); 
   });
 });

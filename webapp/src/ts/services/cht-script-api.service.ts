@@ -99,6 +99,9 @@ export class CHTScriptApiService {
         },
         getExtensionLib: (id) => {
           return this.extensionLibs[id];
+        },
+        context: {
+          targetDocs: []
         }
       }
     };
