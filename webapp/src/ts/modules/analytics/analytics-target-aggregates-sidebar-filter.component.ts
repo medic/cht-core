@@ -77,6 +77,8 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
       return;
     }
     this.userFacilities = await this.userSettingsService.getUserFacility();
+    this.userFacilities.sort((a, b) => a.name.localeCompare(b.name));
+    
     this.selectedFacility = this.userFacilities[0];
     this.selectedFacilityId = this.userFacilities[0]._id;
   }
