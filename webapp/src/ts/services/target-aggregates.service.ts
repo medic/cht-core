@@ -290,7 +290,6 @@ export class TargetAggregatesService {
     const facilityIds = await this.getUserFacilityIds();
 
     // When no facilities assigned, this returns true to display an error indicating to assign facilities to the user
-    // When more than one facility, this returns false to display an error about the module being disabled.
     return !facilityIds || facilityIds.length > 0;
   }
 

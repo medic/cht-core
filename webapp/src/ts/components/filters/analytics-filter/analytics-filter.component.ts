@@ -69,7 +69,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    this.globalActions.clearSidebarFilter();
   }
 
   private subscribeToStore() {
@@ -116,17 +115,17 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
-    const [hasMultipleFacilities, checkPermissions, isTargetAggregateEnabled] = await Promise.all([
-      this.userSettingsService.hasMultipleFacilities(),
-      this.checkPermissions(),
-      this.isTargetAggregateEnabled(),
-    ]);
+    const hasMultipleFacilities = await this.userSettingsService.hasMultipleFacilities();
+    const checkPermissions = await this.checkPermissions();
+    const isTargetAggregateEnabled = await this.isTargetAggregateEnabled();
 
     this.showFilterButton = !isAdmin &&
-                            hasMultipleFacilities &&
-                            checkPermissions &&
-                            this.isTargetAggregates() &&
-                            isTargetAggregateEnabled;
+      hasMultipleFacilities &&
+      checkPermissions &&
+      this.isTargetAggregates() &&
+      isTargetAggregateEnabled;
+
+    this.globalActions.setSidebarFilter({ hasFacilityFilter: hasMultipleFacilities });
   }
 
   openSidebar() {

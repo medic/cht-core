@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -6,7 +6,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Component({
   selector: 'mm-analytics-target-aggregates-sidebar-filter',
@@ -14,21 +13,19 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 })
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 
+  @Input() userFacilities;
   @Output() facilitySelected = new EventEmitter<string>();
   private globalActions;
   subscriptions: Subscription = new Subscription();
   error;
   isOpen = false;
-  userFacilities;
   selectedFacility;
-  selectedFacilityId;
   facilityFilterLabel;
 
   constructor(
     private store: Store,
     private contactTypesService: ContactTypesService,
     private settingsService: SettingsService,
-    private userSettingsService: UserSettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -36,7 +33,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   async ngOnInit() {
     try {
       this.subscribeToStore();
-      await this.loadUserFacility();
       await this.setFacilityLabel();
     } catch (err) {
       this.error = true;
@@ -45,7 +41,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   }
 
   ngOnDestroy() {
-    this.globalActions.clearSidebarFilter();
     this.subscriptions.unsubscribe();
   }
 
@@ -54,6 +49,9 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => {
         this.isOpen = filterState?.isOpen ?? false;
+        if (!this.selectedFacility && filterState?.defaultFilters?.facility) {
+          this.selectedFacility = filterState.defaultFilters.facility;
+        }
       });
 
     this.subscriptions.add(subscription);
@@ -62,16 +60,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   toggleSidebarFilter() {
     this.isOpen = !this.isOpen;
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
-  }
-
-  private async loadUserFacility() {
-    const hasMultipleFacilities = await this.userSettingsService.hasMultipleFacilities();
-    this.userFacilities = await this.userSettingsService.getUserFacility();
-
-    if (hasMultipleFacilities) {
-      this.selectedFacility = this.userFacilities[0];
-      this.selectedFacilityId = this.userFacilities[0]._id;
-    }
   }
 
   private async setFacilityLabel() {
@@ -94,7 +82,8 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     }
   }
 
-  fetchAggregateTargets(facilityId) {
-    this.facilitySelected.emit(facilityId);
+  fetchAggregateTargets(facility) {
+    this.selectedFacility = facility;
+    this.facilitySelected.emit(this.selectedFacility);
   }
 }

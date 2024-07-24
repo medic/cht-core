@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -6,41 +6,44 @@ import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { AnalyticsTargetAggregatesSidebarFilterComponent }
-  from './analytics-target-aggregates-sidebar-filter.component';
+import { GlobalActions } from '@mm-actions/global';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Component({
   selector: 'analytics-target-aggregates',
   templateUrl: './analytics-target-aggregates.component.html',
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
-  @ViewChild(AnalyticsTargetAggregatesSidebarFilterComponent) sidebarFilter?:
-   AnalyticsTargetAggregatesSidebarFilterComponent;
 
   private targetAggregatesActions: TargetAggregatesActions;
+  private globalActions: GlobalActions;
   private trackPerformance;
   subscriptions: Subscription = new Subscription();
-  loading = true;
+  userFacilities;
+  initialLoad;
+  loading = false;
   enabled = false;
   aggregates: any = null;
   selected = null;
   error = null;
-  useSidebarFilter = true;
-  isSidebarFilterOpen = false;
+  sidebarFilter;
 
   constructor(
     private store: Store,
     private targetAggregatesService: TargetAggregatesService,
     private performanceService: PerformanceService,
+    private userSettingsService: UserSettingsService,
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
+    this.globalActions = new GlobalActions(store);
   }
 
-  async ngOnInit(): Promise<void> {
+  async ngOnInit() {
     this.trackPerformance = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeSidebarFilter();
-    this.getTargetAggregates();
+    this.enabled = await this.targetAggregatesService.isEnabled();
+    await this.loadUserFacilities();
   }
 
   ngOnDestroy(): void {
@@ -48,6 +51,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.targetAggregatesActions.setTargetAggregatesError(null);
     this.targetAggregatesActions.setTargetAggregates(null);
     this.targetAggregatesActions.setTargetAggregatesLoaded(false);
+    this.globalActions.clearSidebarFilter();
   }
 
   private subscribeToStore() {
@@ -55,56 +59,61 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTargetAggregates),
       this.store.select(Selectors.getSelectedTargetAggregate),
       this.store.select(Selectors.getTargetAggregatesError),
-    )
-      .subscribe(([
-        aggregates,
-        selected,
-        error
-      ]) => {
-        this.aggregates = aggregates;
-        this.selected = selected;
-        this.error = error;
-      });
+    ).subscribe(([
+      aggregates,
+      selected,
+      error,
+    ]) => {
+      this.aggregates = aggregates;
+      this.selected = selected;
+      this.error = error;
+    });
     this.subscriptions.add(selectorsSubscription);
   }
 
-  getTargetAggregates(userFacilityId?) {
-    return this.targetAggregatesService
-      .isEnabled()
-      .then(enabled => {
-        this.enabled = enabled;
+  async getTargetAggregates(userFacility) {
+    try {
+      if (!this.enabled) {
+        return;
+      }
 
-        if (!this.enabled) {
-          return;
-        }
+      const aggregates = await this.targetAggregatesService.getAggregates(userFacility._id);
+      if (this.sidebarFilter.hasFacilityFilter) {
+        aggregates?.forEach((aggregate) => aggregate.facility = userFacility.name);
+      }
+      this.targetAggregatesActions.setTargetAggregates(aggregates);
+      this.targetAggregatesActions.setTargetAggregatesLoaded(true);
 
-        return this.targetAggregatesService.getAggregates(userFacilityId);
-      })
-      .then(aggregates => {
-        this.targetAggregatesActions.setTargetAggregates(aggregates);
-        this.targetAggregatesActions.setTargetAggregatesLoaded(true);
-      })
-      .catch(err => {
-        console.error('Error getting aggregate targets', err);
-        this.targetAggregatesActions.setTargetAggregatesError(err);
-      })
-      .finally(() => {
-        this.loading = false;
-        this.trackPerformance?.stop({
-          name: [ 'analytics', 'target_aggregates', 'load' ].join(':'),
-          recordApdex: true,
-        });
+    } catch (error) {
+      console.error('Error getting aggregate targets', error);
+      this.targetAggregatesActions.setTargetAggregatesError(error);
+    } finally {
+      this.loading = false;
+      this.trackPerformance?.stop({
+        name: [ 'analytics', 'target_aggregates', 'load' ].join(':'),
+        recordApdex: true,
       });
+    }
   }
 
   private subscribeSidebarFilter() {
-    if (!this.useSidebarFilter) {
-      return;
-    }
-
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe((filterState) => this.isSidebarFilterOpen = filterState?.isOpen ?? false);
+      .subscribe(sidebarFilter => {
+        this.sidebarFilter = sidebarFilter;
+        if (!this.initialLoad && this.sidebarFilter.defaultFilters) {
+          this.initialLoad = this.getTargetAggregates(this.sidebarFilter.defaultFilters.facility);
+        }
+      });
     this.subscriptions.add(subscription);
+  }
+
+  private async loadUserFacilities() {
+    this.userFacilities = await this.userSettingsService.getUserFacility();
+    if (this.userFacilities?.length) {
+      this.globalActions.setSidebarFilter({
+        defaultFilters: { facility: { ...this.userFacilities[0] } }
+      });
+    }
   }
 }
