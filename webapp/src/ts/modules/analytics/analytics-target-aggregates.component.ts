@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -6,17 +6,12 @@ import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { AnalyticsTargetAggregatesSidebarFilterComponent }
-  from './analytics-target-aggregates-sidebar-filter.component';
 
 @Component({
   selector: 'analytics-target-aggregates',
   templateUrl: './analytics-target-aggregates.component.html',
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
-  @ViewChild(AnalyticsTargetAggregatesSidebarFilterComponent) sidebarFilter?:
-   AnalyticsTargetAggregatesSidebarFilterComponent;
-
   private targetAggregatesActions: TargetAggregatesActions;
   private trackPerformance;
   subscriptions: Subscription = new Subscription();
@@ -25,7 +20,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   aggregates: any = null;
   selected = null;
   error = null;
-  useSidebarFilter = true;
   isSidebarFilterOpen = false;
 
   constructor(
@@ -98,10 +92,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   }
 
   private subscribeSidebarFilter() {
-    if (!this.useSidebarFilter) {
-      return;
-    }
-
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => this.isSidebarFilterOpen = filterState?.isOpen ?? false);

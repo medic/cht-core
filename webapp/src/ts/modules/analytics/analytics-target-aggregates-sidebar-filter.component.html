@@ -14,7 +14,8 @@
 
     <div class="sidebar-body">
       <mat-accordion multi>
-        <div class="filter-options-container">
+        <!-- 1. Facility -->
+        <div class="filter-options-container" *ngIf="hasMultipleFacilities">
             <span class="filter-options-title"> {{ facilityFilterLabel | translate }} </span>
             <ng-container *ngFor="let facility of userFacilities">
               <div class="filter-option-place">
@@ -30,6 +31,11 @@
                 </label>
               </div>
             </ng-container>
+        </div>
+
+        <!-- 2. Reporting Period -->
+        <div class="filter-options-container">
+          <span class="filter-options-title"> Reporting Period </span>
         </div>
       </mat-accordion>
     </div>

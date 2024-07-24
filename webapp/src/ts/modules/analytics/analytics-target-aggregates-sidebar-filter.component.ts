@@ -23,6 +23,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   selectedFacility;
   selectedFacilityId;
   facilityFilterLabel;
+  hasMultipleFacilities;
 
   constructor(
     private store: Store,
@@ -36,6 +37,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   async ngOnInit() {
     try {
       this.subscribeToStore();
+      await this.isMultiFacilityUser();
       await this.loadUserFacility();
       await this.setFacilityLabel();
     } catch (err) {
@@ -64,17 +66,24 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
   }
 
-  private async loadUserFacility() {
-    const hasMultipleFacilities = await this.userSettingsService.hasMultipleFacilities();
-    this.userFacilities = await this.userSettingsService.getUserFacility();
+  private async isMultiFacilityUser() {
+    this.hasMultipleFacilities = await this.userSettingsService.hasMultipleFacilities();
+  }
 
-    if (hasMultipleFacilities) {
-      this.selectedFacility = this.userFacilities[0];
-      this.selectedFacilityId = this.userFacilities[0]._id;
+  private async loadUserFacility() {
+    if (!this.hasMultipleFacilities) {
+      return;
     }
+    this.userFacilities = await this.userSettingsService.getUserFacility();
+    this.selectedFacility = this.userFacilities[0];
+    this.selectedFacilityId = this.userFacilities[0]._id;
   }
 
   private async setFacilityLabel() {
+    if (!this.hasMultipleFacilities) {
+      return;
+    }
+
     const FACILITY = 'Facility';
     if (!this.selectedFacility) {
       this.facilityFilterLabel = FACILITY;
