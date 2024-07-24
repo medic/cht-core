@@ -262,7 +262,7 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.checkContentDisabled();
     });
 
-    it.only('should display correct message when target aggregates are disabled', async () => {
+    it('should display correct message when target aggregates are disabled', async () => {
       await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
       await commonPage.waitForPageLoaded();
 
