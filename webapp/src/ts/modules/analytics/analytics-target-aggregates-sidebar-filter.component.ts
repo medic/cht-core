@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -14,6 +14,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 })
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 
+  @Output() facilitySelected = new EventEmitter<string>();
   private globalActions;
   subscriptions: Subscription = new Subscription();
   error;
@@ -44,6 +45,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   }
 
   ngOnDestroy() {
+    this.globalActions.clearSidebarFilter();
     this.subscriptions.unsubscribe();
   }
 
@@ -90,5 +92,9 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
       console.error('Error fetching facility label', err);
       this.facilityFilterLabel = FACILITY;
     }
+  }
+
+  fetchAggregateTargets(facilityId) {
+    this.facilitySelected.emit(facilityId);
   }
 }
