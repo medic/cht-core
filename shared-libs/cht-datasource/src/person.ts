@@ -87,6 +87,34 @@ export namespace v1 {
       return curriedFn;
     };
 
+  // NOTE: there's probably a better name for this function
+  const getPeopleGenerator = () => (context: DataContext) => {
+    assertDataContext(context);
+
+    return async (personType: ContactTypeQualifier) => {
+      assertTypeQualifier(personType);
+      const limit = 100;
+      let skip = 0;
+
+      return {
+        [Symbol.asyncIterator]: async function*() {
+          while (true) {
+            const docs = await context.bind(getPage)(personType, limit, skip);
+
+            if (docs.length < 100) {
+              yield docs;
+              break;
+            }
+
+            skip += limit;
+
+            yield docs;
+          }
+        }
+      };
+    };
+  };
+
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
@@ -110,4 +138,9 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    */
   export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);
+
+  /**
+   * TODO: Write docs
+   */
+  export const getAll = getPeopleGenerator();
 }
