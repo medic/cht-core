@@ -17,8 +17,6 @@ const Widget = require('enketo-core/src/js/widget').default;
 const { dataUriToBlobSync, getFilename } = require('enketo-core/src/js/utils');
 const downloadUtils = require('enketo-core/src/js/download-utils').default;
 
-const DELAY = 1500;
-
 /**
  * Widget to obtain user-provided drawings or signature.
  *
@@ -53,27 +51,11 @@ class DrawWidget extends Widget {
       this._handleFiles(existingFilename);
     }
 
-    // This listener serves to capture a drawing when the submit button is clicked within [DELAY]
-    // milliseconds after the last stroke ended. Note that this could be the entire drawing/signature.
-    this.canvas.addEventListener('blur', this._forceUpdate.bind(this));
-
-    // We built a delay in saving on stroke "end", to avoid excessive updating
-    // This event does not fire on touchscreens for which we use the .hide-canvas-btn click
-    // to do the same thing.
-
     this.initialize = fileManager.init().then(() => {
       this.pad = new SignaturePad(this.canvas, {
         penColor: this.props.colors[0] || 'black',
       });
-      this.pad.addEventListener('endStroke', () => {
-        // keep replacing this timer so continuous drawing
-        // doesn't update the value after every stroke.
-        clearTimeout(this._updateWithDelay);
-        this._updateWithDelay = setTimeout(
-          this._updateValue.bind(this),
-          DELAY
-        );
-      });
+      this.pad.addEventListener('endStroke', this._updateValue.bind(this));
       this.pad.off();
       if (existingFilename) {
         this.element.value = existingFilename;
@@ -113,7 +95,7 @@ class DrawWidget extends Widget {
                 const data = that.pad.toData();
                 if (data) {
                   data.pop();
-                  that._redrawPad(data);
+                  that._redrawPad(data).then(that._updateValue.bind(that));
                 }
               })
               .end()
@@ -130,7 +112,7 @@ class DrawWidget extends Widget {
               .on('click', () => {
                 that.$widget.removeClass('full-screen');
                 that.pad.off();
-                that._forceUpdate();
+                that._updateValue();
                 that._resizeCanvas();
 
                 return false;
@@ -157,13 +139,6 @@ class DrawWidget extends Widget {
         // https://github.com/kobotoolbox/enketo-express/issues/844
         this._resizeCanvas();
       });
-  }
-
-  _forceUpdate() {
-    if (this._updateWithDelay) {
-      clearTimeout(this._updateWithDelay);
-      this._updateValue();
-    }
   }
 
   // All this is copied from the file-picker widget
@@ -338,21 +313,14 @@ class DrawWidget extends Widget {
 
   /**
    * Updates value
-   *
-   * @param {boolean} [changed] - whether the value has changed
    */
-  _updateValue(changed = true) {
+  _updateValue() {
     const newValue = this.pad.toDataURL();
     if (this.value !== newValue) {
       const now = new Date();
       const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`;
       this.element.dataset.filenamePostfix = postfix;
-      // Note that this.element has become a text input.
-      // When a default file is loaded this function is called by the canvasreload handler, but the user hasn't changed anything.
-      // We want to make sure the model remains unchanged in that case.
-      if (changed) {
-        this.originalInputValue = this.props.filename;
-      }
+      this.originalInputValue = this.props.filename;
       // pad.toData() doesn't seem to work when redrawing on a smaller canvas. Doesn't scale.
       // pad.toDataURL() is crude and memory-heavy but the advantage is that it will also work for appearance=annotate
       this.value = newValue;
@@ -389,11 +357,6 @@ class DrawWidget extends Widget {
           delete that.element.dataset.loadedUrl;
           that.element.dataset.filenamePostfix = '';
           $(that.element).val('').trigger('change');
-          if (that._updateWithDelay) {
-            // This ensures that an emptied canvas will not be considered a drawing to be captured
-            // in _forceUpdate, e.g. after the blur event fires on an empty canvas see issue #924
-            that._updateWithDelay = null;
-          }
           // Annotate file input
           that.$widget
               .find('input[type=file]')
