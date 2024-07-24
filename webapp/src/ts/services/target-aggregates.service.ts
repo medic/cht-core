@@ -35,7 +35,7 @@ export class TargetAggregatesService {
 
   private readonly NBR_MONTHS = 6;
 
-  private getIntervalTag (targetInterval) {
+  private getIntervalTag(targetInterval) {
     return moment(targetInterval.end).format('Y-MM');
   }
 
@@ -335,7 +335,6 @@ export class TargetAggregatesService {
       return;
     }
 
-    const settings = await this.settingsService.get();
     const isUserFacility = contactUuid === userFacilityId;
     const shouldLoadTargetDocs = isUserFacility || await this.contactTypesService.isPerson(contact);
     if (!shouldLoadTargetDocs) {
@@ -343,6 +342,7 @@ export class TargetAggregatesService {
     }
 
     const targetContact = isUserFacility ? userContactId : contactUuid;
+    const settings = await this.settingsService.get();
     const targetDocs = await this.fetchTargetDocs(settings, targetContact);
     return targetDocs.map(targetDoc => this.getTargetDetails(targetDoc, settings));
   }

@@ -164,7 +164,7 @@ export class FormService {
   }
 
   private async renderForm(formContext: EnketoFormContext) {
-    const { formDoc, instanceData, userContactId, userFacilityId} = formContext;
+    const { formDoc, instanceData, userContactId, userFacilityId } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());

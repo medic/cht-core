@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { combineLatest, of } from 'rxjs';
-import {exhaustMap, withLatestFrom} from 'rxjs/operators';
+import { exhaustMap, withLatestFrom } from 'rxjs/operators';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -175,7 +175,7 @@ export class ContactsEffects {
     await this.verifySelectedContactNotChanged(contactId);
     this.contactsActions.receiveSelectedContactTargetDoc(targetDocs);
 
-    await trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
+    trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
   }
 
   private loadTasks(contactId, trackName) {

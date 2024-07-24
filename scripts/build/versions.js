@@ -15,7 +15,7 @@ const isFeatureRelease = (branch) => branch.startsWith(`${packageJson.version}-F
 
 const getBranchVersion = (release) => {
   const branch = BRANCH === 'master' ? 'alpha' : escapeBranchName(BRANCH);
-  const base = isFeatureRelease ? branch : `${packageJson.version}-${branch}`;
+  const base = isFeatureRelease(branch) ? branch : `${packageJson.version}-${branch}`;
   return release ? base : `${base}.${BUILD_NUMBER}`;
 };
 
