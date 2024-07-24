@@ -271,9 +271,7 @@ describe('local person', () => {
 
         expect(settingsGetAll.calledOnce).to.be.true;
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
-        expect(queryDocsByKeyOuter.calledOnceWithExactly(
-          localContext.medicDb, 'medic-client/contacts_by_type'
-        )).to.be.true;
+        expect(queryDocsByKeyOuter.notCalled).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(isPerson.notCalled).to.be.true;
       });
