@@ -85,28 +85,23 @@ export class CHTScriptApiService {
 
   async getApi() {
     await this.isInitialized();
-    const v1 = {
-      hasPermissions: (permissions, user?, chtSettings?) => {
-        const userRoles = this.getRolesFromUser(user);
-        const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-        return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
-      },
-      hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
-        const userRoles = this.getRolesFromUser(user);
-        const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-        return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
-      },
-      getExtensionLib: (id) => {
-        return this.extensionLibs[id];
-      }
-    };
-
     return {
-      v1,
-      v2: {
-        ...v1,
+      v1: {
+        hasPermissions: (permissions, user?, chtSettings?) => {
+          const userRoles = this.getRolesFromUser(user);
+          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+          return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+        },
+        hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
+          const userRoles = this.getRolesFromUser(user);
+          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+          return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+        },
+        getExtensionLib: (id) => {
+          return this.extensionLibs[id];
+        },
         context: {
-          targetDocs: undefined
+          targetDocs: []
         }
       }
     };
