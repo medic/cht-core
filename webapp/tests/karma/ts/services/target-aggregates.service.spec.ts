@@ -1148,7 +1148,7 @@ describe('TargetAggregatesService', () => {
       expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
       expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
       expect(contactTypesService.isPerson.args[0]).to.deep.equal([{ _id: 'uuid' }]);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(2);
+      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
       expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([20]);
       expect(calendarIntervalService.getInterval.callCount).to.equal(3);
       expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([20, moment('2020-02-20').valueOf()]);
@@ -1160,12 +1160,12 @@ describe('TargetAggregatesService', () => {
         end_key: 'target~2020-02~uuid~\ufff0',
         include_docs: true,
       }]);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
+      expect(dbService.allDocs.args[1]).to.deep.equal([{
         start_key: 'target~2020-01~uuid~',
         end_key: 'target~2020-01~uuid~\ufff0',
         include_docs: true,
       }]);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
+      expect(dbService.allDocs.args[2]).to.deep.equal([{
         start_key: 'target~2019-12~uuid~',
         end_key: 'target~2019-12~uuid~\ufff0',
         include_docs: true,
@@ -1180,19 +1180,28 @@ describe('TargetAggregatesService', () => {
       contactTypesService.isPerson.resolves(false);
       uhcSettingsService.getMonthStartDate.returns(1);
       calendarIntervalService.getCurrent.returns({
-        start: moment('2023-01-01').valueOf(),
-        end: moment('2023-02-01').valueOf(),
+        start: moment('2023-07-01').valueOf(),
+        end: moment('2023-08-01').valueOf(),
       });
-      calendarIntervalService.getInterval.returns({
-        start: moment('2022-07-01').valueOf(),
-        end: moment('2022-08-01').valueOf()
-      });
+      calendarIntervalService.getInterval
+        .onCall(0).returns({
+          start: moment('2023-07-01').valueOf(),
+          end: moment('2023-08-01').valueOf()
+        })
+        .onCall(1).returns({
+          start: moment('2023-06-01').valueOf(),
+          end: moment('2023-07-01').valueOf()
+        })
+        .onCall(2).returns({
+          start: moment('2023-05-01').valueOf(),
+          end: moment('2023-06-01').valueOf()
+        });
 
       const targetDoc = {
-        _id: 'target~2020-02~usercontact~username',
+        _id: 'target~2023-07~usercontact~username',
         owner: 'uuid',
         updated_date: 100,
-        reporting_period: '2020-02',
+        reporting_period: '2023-07',
         targets: [
           { id: 'target1', value: { pass: 5, total: 5 } },
           { id: 'target2', value: { pass: 12, total: 21 } },
@@ -1201,63 +1210,50 @@ describe('TargetAggregatesService', () => {
       };
 
       const targetDoc2 = {
-        _id: 'target~2023-01~usercontact~username',
+        _id: 'target~2023-06~usercontact~username',
         owner: 'usercontact',
         updated_date: 100,
-        reporting_period: '2023-01',
+        reporting_period: '2023-06',
         targets: targetDoc.targets,
       };
 
       const targetDoc3 = {
-        _id: 'target~2022-12~usercontact~username',
+        _id: 'target~2023-105~usercontact~username',
         owner: 'usercontact',
         updated_date: 100,
-        reporting_period: '2022-01',
+        reporting_period: '2023-05',
         targets: targetDoc.targets,
       };
 
-      const targetDoc4 = {
-        _id: 'target~2022-10~usercontact~username',
-        owner: 'usercontact',
-        updated_date: 100,
-        reporting_period: '2022-01',
-        targets: targetDoc.targets,
-      };
-
-      dbService.allDocs.onCall(0).resolves({
-        rows: [
-          { id: targetDoc._id },
-          { id: 'target~2022-12~uuid2~username' },
-          { id: targetDoc2._id },
-          { id: 'target~2022-11~uuid2~username' },
-          { id: targetDoc3._id },
-          { id: 'target~2022-10~uuid3~username' },
-          { id: targetDoc4._id },
-          { id: 'target~2022-09~uuid4~username' },
-        ]
-      });
-      dbService.allDocs.onCall(1).resolves({ rows: [
-        { doc: targetDoc }, { doc: targetDoc2 }, { doc: targetDoc3 }, { doc: targetDoc4 },
-      ]});
+      dbService.allDocs.onCall(0).resolves({rows: [{ id: targetDoc._id, doc: targetDoc }]});
+      dbService.allDocs.onCall(1).resolves({rows: [{ id: targetDoc2._id, doc: targetDoc2 }]});
+      dbService.allDocs.onCall(2).resolves({rows: [{ id: targetDoc3._id, doc: targetDoc3 }]});
 
       const result = await service.getTargetDocs({ _id: 'facility' }, 'facility', 'usercontact');
 
-      expect(result).to.deep.equal([targetDoc, targetDoc2, targetDoc3, targetDoc4]);
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(2);
+      expect(result).to.deep.equal([targetDoc, targetDoc2, targetDoc3]);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
       expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
-      expect(contactTypesService.isPerson.callCount).to.equal(0);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(2);
+      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
       expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([1]);
-      expect(calendarIntervalService.getInterval.callCount).to.equal(1);
-      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2022-08-01').valueOf()]);
-      expect(dbService.allDocs.callCount).to.equal(2);
+      expect(calendarIntervalService.getInterval.callCount).to.equal(3);
+      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2023-08-01').valueOf()]);
+      expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([1, moment('2023-07-01').valueOf()]);
+      expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([1, moment('2023-06-01').valueOf()]);
+      expect(dbService.allDocs.callCount).to.equal(3);
       expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2023-02~usercontact~\ufff0',
-        end_key: 'target~2022-08~usercontact~',
-        descending: true
+        start_key: 'target~2023-08~usercontact~',
+        end_key: 'target~2023-08~usercontact~\ufff0',
+        include_docs: true,
       }]);
       expect(dbService.allDocs.args[1]).to.deep.equal([{
-        keys: [targetDoc._id, targetDoc2._id, targetDoc3._id, targetDoc4._id],
+        start_key: 'target~2023-07~usercontact~',
+        end_key: 'target~2023-07~usercontact~\ufff0',
+        include_docs: true,
+      }]);
+      expect(dbService.allDocs.args[2]).to.deep.equal([{
+        start_key: 'target~2023-06~usercontact~',
+        end_key: 'target~2023-06~usercontact~\ufff0',
         include_docs: true,
       }]);
     });
@@ -1294,8 +1290,9 @@ describe('TargetAggregatesService', () => {
         ]
       };
 
-      dbService.allDocs.onCall(0).resolves({ rows: [{ id: targetDoc._id }] });
-      dbService.allDocs.onCall(1).resolves({ rows: [{ doc: targetDoc }] });
+      dbService.allDocs.onCall(0).resolves({ rows: [{ id: targetDoc._id, doc: targetDoc }] });
+      dbService.allDocs.onCall(1).resolves({ rows: [] });
+      dbService.allDocs.onCall(2).resolves({ rows: [] });
 
       const result = await service.getTargetDocs({ _id: 'uuid' }, 'facility', 'contact');
 

@@ -112,7 +112,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports, undefined, []).then(actual => {
+    return service.get(contact, reports, [], []).then(actual => {
       expect(actual.fields).to.deep.equal([undefined]);
       expect(actual.cards).to.deep.equal([undefined]);
     });
@@ -240,7 +240,7 @@ describe('ContactSummary service', () => {
 
     Settings.resolves({ contact_summary: script });
 
-    const contactSummary = await service.get(contact, reports);
+    const contactSummary = await service.get(contact, reports, [], []);
 
     expect(contactSummary).to.deep.equal({
       cards: [],

@@ -63,7 +63,6 @@ export class TargetAggregatesService {
   private getOldIntervalTag(currentInterval, uhcMonthStartDate, monthsOld) {
     const oldDate = moment(currentInterval.end).subtract(monthsOld, 'months');
     const targetInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, oldDate.valueOf());
-
     return this.getIntervalTag(targetInterval);
   }
 
@@ -106,8 +105,8 @@ export class TargetAggregatesService {
     const allTargetDocs = [];
     const { targetInterval, uhcMonthStartDate } = this.getCurrentInterval(settings);
     for (let monthsOld = 0; monthsOld < this.NBR_MONTHS; monthsOld++) {
-      const interval = this.getOldIntervalTag(targetInterval, uhcMonthStartDate, monthsOld);
-      const intervalTargetDocs = await this.fetchTargetDocsForInterval(contactUuid, this.getIntervalTag(interval));
+      const intervalTag = this.getOldIntervalTag(targetInterval, uhcMonthStartDate, monthsOld);
+      const intervalTargetDocs = await this.fetchTargetDocsForInterval(contactUuid, intervalTag);
       allTargetDocs.push(...intervalTargetDocs);
     }
     return allTargetDocs;

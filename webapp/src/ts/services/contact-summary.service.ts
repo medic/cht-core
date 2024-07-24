@@ -82,7 +82,7 @@ export class ContactSummaryService {
     return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDocs));
   }
 
-  private async _get(contact, reports, lineage, targetDocs?) {
+  private async _get(contact, reports, lineage, targetDocs) {
     if (!this.settings) {
       this.settings = await this.settingsService.get();
     }
