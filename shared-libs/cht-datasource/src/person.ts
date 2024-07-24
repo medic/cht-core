@@ -68,12 +68,23 @@ export namespace v1 {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
 
-      return async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<T> => {
+      /**
+       * Returns an array of people for the provided page specifications.
+       * @param personType the type of people to return
+       * @param limit the maximum number of people to return. Default is 100.
+       * @param skip the number of people to skip. Default is 0.
+       * @returns an array of people for the provided page specifications.
+       * @throws Error if `personType` qualifier is invalid
+       * @throws Error if the provided `limit` value is `<=0`
+       * @throws Error if the provided `skip` value is `<0`
+       */
+      const curriedFn = async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<T> => {
         assertTypeQualifier(personType);
         assertLimitAndSkip(limit, skip);
 
         return fn(personType, limit, skip);
       };
+      return curriedFn;
     };
 
   /**
