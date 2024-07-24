@@ -65,11 +65,11 @@ export namespace v1 {
       const personTypes = contactTypeUtils.getPersonTypes(settings.getAll());
       const personTypesIds = personTypes.map(item => item.id);
 
-      const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
-
       if (!personTypesIds.includes(personType.contactType)) {
         throw new Error(`Invalid person type: ${personType.contactType}`);
       }
+
+      const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
 
       const docs = await getDocsByPage([personType.contactType], limit, skip);
 
