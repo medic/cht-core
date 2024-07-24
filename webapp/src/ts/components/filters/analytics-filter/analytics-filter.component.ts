@@ -1,6 +1,7 @@
 import { AfterContentChecked, AfterContentInit, Component, Input, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, ActivationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'mm-analytics-filters',
@@ -12,17 +13,20 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   subscriptions: Subscription = new Subscription();
 
   constructor(
+    private router: Router,
     private route: ActivatedRoute,
   ) { }
 
   ngAfterContentInit() {
-    const subscription = this.route.url.subscribe(() => this.setActiveModule());
+    const subscription = this.router.events
+      .pipe(filter(event => event instanceof ActivationEnd))
+      .subscribe((event: ActivationEnd) => this.setActiveModule(event?.snapshot?.data?.moduleId));
     this.subscriptions.add(subscription);
   }
 
   ngAfterContentChecked() {
     if (!this.activeModule && this.analyticsModules?.length) {
-      this.setActiveModule();
+      this.setActiveModule(this.route.snapshot?.firstChild?.data?.moduleId);
     }
   }
 
@@ -30,9 +34,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.subscriptions.unsubscribe();
   }
 
-  private setActiveModule() {
-    this.activeModule = this.analyticsModules?.find(module => {
-      return module.id === this.route.snapshot?.firstChild?.data?.moduleId;
-    });
+  private setActiveModule(moduleId) {
+    this.activeModule = this.analyticsModules?.find(module => module.id === moduleId);
   }
 }
