@@ -23,7 +23,7 @@
         [aggregate]="aggregate.aggregateValue">
       </mm-content-row>
     </ul>
-    <p *ngIf="error && !aggregates" class="alert alert-danger" role="alert">{{'analytics.target.aggregates.error' | translate}}</p>
+    <p *ngIf="error && !aggregates?.length" class="alert alert-danger" role="alert">{{'analytics.target.aggregates.error' | translate}}</p>
     <p class="loading-status" *ngIf="!error && !aggregates?.length">{{'analytics.target.aggregates.no.targets' | translate}}</p>
   </div>
 
