@@ -115,9 +115,11 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
-    const hasMultipleFacilities = await this.userSettingsService.hasMultipleFacilities();
-    const checkPermissions = await this.checkPermissions();
-    const isTargetAggregateEnabled = await this.isTargetAggregateEnabled();
+    const [hasMultipleFacilities, checkPermissions, isTargetAggregateEnabled] = await Promise.all([
+      this.userSettingsService.hasMultipleFacilities(),
+      this.checkPermissions(),
+      this.isTargetAggregateEnabled(),
+    ]);
 
     this.showFilterButton = !isAdmin &&
       hasMultipleFacilities &&
