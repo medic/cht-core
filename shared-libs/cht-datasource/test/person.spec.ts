@@ -228,7 +228,7 @@ describe('person', () => {
 
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
         const res = await generator.next();
-        await generator.next();
+        await generator.next(); // the exit call
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip0)).to.be.true;
@@ -246,7 +246,7 @@ describe('person', () => {
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
         const page1 = await generator.next();
         const page2 = await generator.next();
-        await generator.next();
+        await generator.next(); // the exit call
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.callCount).to.equal(2);
@@ -261,7 +261,7 @@ describe('person', () => {
 
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
         const res = await generator.next();
-        await generator.next();
+        await generator.next(); // the exit call
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip0)).to.be.true;
