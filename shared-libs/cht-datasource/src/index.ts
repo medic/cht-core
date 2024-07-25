@@ -100,6 +100,12 @@ export const getDatasource = (ctx: DataContext) => {
         getPageByType: (personType: string, limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), limit, skip
         ),
+
+        /**
+         * TODO: write this
+         * @param personType the type of people to return
+         */
+        getAll: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
       }
     }
   };
