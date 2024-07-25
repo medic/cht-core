@@ -68,7 +68,13 @@ export namespace v1 {
   const getPeopleGenerator = () => (context: DataContext) => {
     assertDataContext(context);
 
-    return async function* (personType: ContactTypeQualifier){
+    /**
+     * Creates an iterator-like object for fetching batches of people data.
+     * @param personType - The type of person to fetch
+     * @throws throws an error if the provided personType is invalid.
+     * @returns An iterator-like object with a next method for fetching data.
+     */
+    const curriedFn = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person[], void> {
       assertTypeQualifier(personType);
       const limit = 100;
       let skip = 0;
@@ -85,6 +91,7 @@ export namespace v1 {
         skip += limit;
       }
     };
+    return curriedFn;
   };
 
   /**
