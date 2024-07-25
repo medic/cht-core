@@ -16,9 +16,10 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   @Input() userFacilities;
   @Output() facilitySelected = new EventEmitter<string>();
   private globalActions;
+  DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
-  error;
   isOpen = false;
+  error;
   selectedFacility;
   facilityFilterLabel;
 
@@ -33,7 +34,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   async ngOnInit() {
     try {
       this.subscribeToStore();
-      await this.setFacilityLabel();
+      this.facilityFilterLabel = await this.setFacilityLabel() || this.DEFAULT_FACILITY_LABEL;
     } catch (err) {
       this.error = true;
       console.error('Error initializing Target Sidebar component', err);
@@ -63,22 +64,19 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   }
 
   private async setFacilityLabel() {
-    const FACILITY = 'Facility';
-    if (!this.selectedFacility) {
-      this.facilityFilterLabel = FACILITY;
+    if (!this.userFacilities?.length) {
       return;
     }
 
     try {
+      const facility = this.userFacilities[0];
       const settings = await this.settingsService.get();
-      const userFacilityType = this.contactTypesService.getTypeId(this.selectedFacility);
+      const userFacilityType = this.contactTypesService.getTypeId(facility);
       const placeType = settings.contact_types.find(type => type.id === userFacilityType);
-
-      this.facilityFilterLabel = placeType?.name_key || FACILITY;
+      return placeType?.name_key;
     } catch (err) {
       this.error = true;
       console.error('Error fetching facility label', err);
-      this.facilityFilterLabel = FACILITY;
     }
   }
 

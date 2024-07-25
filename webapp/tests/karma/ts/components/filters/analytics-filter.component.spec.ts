@@ -107,12 +107,15 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.true;
+    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ hasFacilityFilter: true });
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
   it('should open and close sidebar filter', () => {
+    sinon.resetHistory();
     component.openSidebar();
     component.openSidebar();
     component.openSidebar();
@@ -133,6 +136,8 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ hasFacilityFilter: false });
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
@@ -146,6 +151,8 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ hasFacilityFilter: true });
   }));
 
   it('should not display filter button if user old UI permissions', fakeAsync(() => {
@@ -158,6 +165,8 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ hasFacilityFilter: true });
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
@@ -171,6 +180,8 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ hasFacilityFilter: true });
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
@@ -184,6 +195,8 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
+    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ hasFacilityFilter: true });
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);

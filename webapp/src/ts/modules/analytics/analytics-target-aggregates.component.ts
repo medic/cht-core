@@ -39,11 +39,16 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.trackPerformance = this.performanceService.track();
-    this.subscribeToStore();
-    this.subscribeSidebarFilter();
-    this.enabled = await this.targetAggregatesService.isEnabled();
-    await this.loadUserFacilities();
+    try {
+      this.trackPerformance = this.performanceService.track();
+      this.enabled = await this.targetAggregatesService.isEnabled();
+      this.subscribeToStore();
+      this.subscribeSidebarFilter();
+      await this.loadUserFacilities();
+    } catch (error) {
+      console.error('Error loading aggregate targets', error);
+      this.targetAggregatesActions.setTargetAggregatesError(error);
+    }
   }
 
   ngOnDestroy(): void {
@@ -73,11 +78,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
   async getTargetAggregates(userFacility) {
     try {
-      if (!this.enabled) {
-        return;
-      }
-
-      const aggregates = await this.targetAggregatesService.getAggregates(userFacility._id);
+      const aggregates = this.enabled ? await this.targetAggregatesService.getAggregates(userFacility._id) : [];
       if (this.sidebarFilter.hasFacilityFilter) {
         aggregates?.forEach((aggregate) => aggregate.facility = userFacility.name);
       }
@@ -101,7 +102,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe(sidebarFilter => {
         this.sidebarFilter = sidebarFilter;
-        if (!this.initialLoad && this.sidebarFilter.defaultFilters) {
+        if (!this.initialLoad && this.sidebarFilter?.defaultFilters) {
           this.initialLoad = this.getTargetAggregates(this.sidebarFilter.defaultFilters.facility);
         }
       });
