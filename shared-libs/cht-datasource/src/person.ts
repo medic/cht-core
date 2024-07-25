@@ -68,27 +68,22 @@ export namespace v1 {
   const getPeopleGenerator = () => (context: DataContext) => {
     assertDataContext(context);
 
-    return async (personType: ContactTypeQualifier) => {
+    return async function* (personType: ContactTypeQualifier){
       assertTypeQualifier(personType);
       const limit = 100;
       let skip = 0;
 
-      return {
-        [Symbol.asyncIterator]: async function*() {
-          while (true) {
-            const docs = await context.bind(getPage)(personType, limit, skip);
+      while (true) {
+        const docs = await context.bind(getPage)(personType, limit, skip);
 
-            if (docs.length < 100) {
-              yield docs;
-              break;
-            }
+        yield docs;
 
-            skip += limit;
-
-            yield docs;
-          }
+        if (docs.length < limit) {
+          break;
         }
-      };
+
+        skip += limit;
+      }
     };
   };
 
