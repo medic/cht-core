@@ -26,8 +26,8 @@ describe('Apdex Performance Workflows', () => {
       await contactsPage.loadContactList(settingsProvider);
     });
 
-    (skip.loadCHWArea ? xit : it)('should load CHW area', async () => {
-      await contactsPage.loadCHWArea(settingsProvider);
+    (skip.loadChwArea ? xit : it)('should load CHW area', async () => {
+      await contactsPage.loadChwArea(settingsProvider);
     });
 
     (skip.loadHousehold ? xit : it)('should load household', async () => {

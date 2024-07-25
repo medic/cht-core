@@ -26,7 +26,7 @@
     "login": false,
 
     "loadContactList": false,
-    "loadCHWArea": false,
+    "loadChwArea": false,
     "loadHousehold": false,
     "loadPatient": false,
     "loadMessageList": false,
@@ -183,7 +183,7 @@
               // Optional. Use this when you want an equivalent of element.setValue(myValue)
               "value": "<String. Field value>",
               // Optional. Use this when you want to select an option from a dropdown. The dropdown will open with the "selector" property
-              "dropdownOption": "<String. XPath selector of dropdown>",
+              "dropdownOption": "<String. XPath selector to a dropdown option and clicks on it.>",
               // Optional. Number of scrolls to reach the field
               "scrollDown": 1,
               "scrollUp": 1
@@ -237,7 +237,7 @@ export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 | capabilities.noReset | Boolean | Default false. When set false, it deletes the app cache and storage data. If set to true, the app will start again in the last page it was before, review your configuration to take that start point. | No |
 | skip.login | Boolean | Default false. Skip login, and it's expected that the user has already login previous running the automation tests. | No |
 | skip.loadContactList | Boolean | Default false. Skip test for loading the contact list. | No |
-| skip.loadCHWArea | Boolean | Default false. Skip test for loading the CHT Area. | No |
+| skip.loadChwArea | Boolean | Default false. Skip test for loading the CHT Area. | No |
 | skip.loadHousehold | Boolean | Default false. Skip test for loading a household. | No |
 | skip.loadPatient | Boolean | Default false. Skip test for loading a patient. | No |
 | skip.searchContact | Boolean | Default false. Skip test for searching patient. | No |
@@ -256,8 +256,8 @@ export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 | commonElements | Object | Overrides selectors of system elements | No |
 | commonElements.fab | String | XPath selector to element | No |
 | commonElements.fabListTitle | String | XPath selector to element | No |
-| commonElements.formSubmit | String | XPath selector to element | No |
-| commonElements.formNext | String | XPath selector to element | No |
+| commonElements.formSubmit | String | Form's submit button label | No |
+| commonElements.formNext | String | Form's next button label | No |
 | commonElements.relaunchAppAssert | String | XPath selector to element | No |
 | commonElements.searchIcon | String | XPath selector to element | No |
 | pages | Object | Object containing the definition of the pages that the automation tests use. See Pages section below for more details. | Yes |

@@ -9,7 +9,7 @@ class ContactsPage extends Page {
     await super.loadAndAssertPage(page, commonElements);
   }
 
-  async loadCHWArea(settingsProvider) {
+  async loadChwArea(settingsProvider) {
     const page = settingsProvider.getPage('chwArea');
     const commonElements = settingsProvider.getCommonElements();
     await super.loadAndAssertPage(page, commonElements);

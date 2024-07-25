@@ -23,15 +23,23 @@ module.exports = class Page {
   }
 
   getButtonSelector(label) {
-    return `//*[@text="${label}"]`;
+    return `//android.widget.Button[@text="${label}"]`;
   }
 
   clickButton(label) {
     return this.clickElement(this.getButtonSelector(label));
   }
 
-  isButtonExisting(label) {
-    return $(this.getButtonSelector(label)).isExisting();
+  getLinkSelector(label) {
+    return `//android.widget.TextView[@text="${label}"]`;
+  }
+
+  clickLink(label) {
+    return this.clickElement(this.getLinkSelector(label));
+  }
+
+  isLinkExisting(label) {
+    return $(this.getLinkSelector(label)).isExisting();
   }
 
   async setValue(selector, value) {
@@ -160,8 +168,8 @@ module.exports = class Page {
 
     const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
     const FAB_LIST_TITLE = commonElements?.fabListTitle || '//android.widget.TextView[@text="New"]';
-    const FORM_SUBMIT_SELECTOR = commonElements?.formSubmit || '//android.widget.Button[@text="Submit"]';
-    const FORM_PAGE_NEXT_SELECTOR = commonElements?.formNext || '//android.widget.Button[@text="Next >"]';
+    const SUBMIT_BUTTON_LABEL = commonElements?.formSubmit || 'Submit';
+    const NEXT_PAGE_BUTTON_LABEL = commonElements?.formNext || 'Next >';
 
     if (form.useFAB) {
       await this.clickElement(FAB_SELECTOR);
@@ -174,19 +182,19 @@ module.exports = class Page {
       const page = form.pages[i];
 
       if (i > 0) {
-        await this.clickElement(FORM_PAGE_NEXT_SELECTOR);
+        await this.clickButton(NEXT_PAGE_BUTTON_LABEL);
       }
 
       await this.fillUpFormPage(page);
     }
 
-    await this.clickElement(FORM_SUBMIT_SELECTOR);
+    await this.clickButton(SUBMIT_BUTTON_LABEL);
     await this.assertMany(form.postSubmitAsserts);
     await this.navigate(form.postTestPath);
   }
 
   async relaunchApp(commonElements) {
-    const UI_ELEMENT = commonElements?.relaunchAppAssert || '//*[@text="People"]';
+    const UI_ELEMENT = commonElements?.relaunchAppAssert || '//android.widget.TextView[@text="People"]';
     await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
     await this.waitForDisplayedAndRetry(UI_ELEMENT);
