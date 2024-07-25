@@ -87,11 +87,16 @@ export namespace v1 {
       return curriedFn;
     };
 
-  // NOTE: there's probably a better name for this function
   const getPeopleGenerator = () => (context: DataContext) => {
     assertDataContext(context);
 
-    return async function* (personType: ContactTypeQualifier){
+    /**
+     * Creates an iterator-like object for fetching batches of people data.
+     * @param personType - The type of person to fetch
+     * @throws throws an error if the provided personType is invalid.
+     * @returns An iterator-like object with a next method for fetching data.
+     */
+    const curriedFn = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person[], void> {
       assertTypeQualifier(personType);
       const limit = 100;
       let skip = 0;
@@ -108,6 +113,7 @@ export namespace v1 {
         skip += limit;
       }
     };
+    return curriedFn;
   };
 
   /**
@@ -135,7 +141,16 @@ export namespace v1 {
   export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
   /**
-   * TODO: Write docs
+   * Returns a people generator function for fetching batches of people data.
+   * @param context the current data context
+   * @returns a generator function that creates an iterator-like object for fetching people data.
+   * @example
+   * const getAllIterator = Person.v1.getAll(ctx)(Qualifier.byContactType('person'));
+   * for await (const page of getAllIterator) {
+   *   for (const doc of page) {
+   *     ...
+   *   }
+   * }
    */
   export const getAll = getPeopleGenerator();
 }
