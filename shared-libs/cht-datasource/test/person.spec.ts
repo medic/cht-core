@@ -204,5 +204,90 @@ describe('person', () => {
         expect(getPage.notCalled).to.be.true;
       });
     });
+
+    describe('getAll', () => {
+      const personType = 'person';
+      const personTypeQualifier = {contactType: personType} as const;
+      const limit = 100;
+      const skip0 = 0;
+      const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
+      const person = { _id: 'person' } as Person.v1.Person;
+
+      let personGetPage: sinon.SinonStub;
+
+      beforeEach(() => {
+        personGetPage = sinon.stub(Person.v1, 'getPage');
+        dataContext.bind = sinon.stub().returns(personGetPage);
+      });
+
+      it('should get people generator with correct parameters', async () => {
+        isContactTypeQualifier.returns(true);
+        personGetPage.returns(people);
+
+        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
+        const res = await generator.next();
+        await generator.next();
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip0)).to.be.true;
+        expect(res.value).to.deep.equal(people);
+        expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+      });
+
+      it('should get people generator with multiple batches with correct parameters', async () => {
+        isContactTypeQualifier.returns(true);
+        const firstPage = Array.from({ length: 100 }, () => ({ ...person }));
+        const secondPage = Array.from({ length: 99 }, () => ({ ...person }));
+        personGetPage.onCall(0).returns(firstPage);
+        personGetPage.onCall(1).returns(secondPage);
+
+        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
+        const page1 = await generator.next();
+        const page2 = await generator.next();
+        await generator.next();
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(personGetPage.callCount).to.equal(2);
+        expect(page1.value).to.deep.equal(firstPage);
+        expect(page2.value).to.deep.equal(secondPage);
+        expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+      });
+
+      it('should handle empty result set', async () => {
+        isContactTypeQualifier.returns(true);
+        personGetPage.returns([]);
+
+        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
+        const res = await generator.next();
+        await generator.next();
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip0)).to.be.true;
+        expect(res.value).to.deep.equal([]);
+        expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+      });
+
+      it('should throw an error for invalid datacontext', () => {
+        const errMsg = 'Invalid data context [null].';
+        isContactTypeQualifier.returns(true);
+        assertDataContext.throws(new Error(errMsg));
+
+        expect(() => Person.v1.getAll(dataContext)).to.throw(errMsg);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(personGetPage.notCalled).to.be.true;
+        expect(isContactTypeQualifier.notCalled).to.be.true;
+      });
+
+      it('should throw an error for invalid personType', async () => {
+        isContactTypeQualifier.returns(false);
+
+        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
+        await expect(generator.next()).to.be.rejectedWith(`Invalid type [${JSON.stringify(personTypeQualifier)}].`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(personGetPage.notCalled).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+      });
+    });
   });
 });
