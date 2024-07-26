@@ -18,6 +18,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -66,6 +67,7 @@ describe('Contacts effects', () => {
         { provide: TasksForContactService, useValue: tasksForContactService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
+        { provide: SettingsService, useValue: {} },
       ]
     });
 
@@ -203,13 +205,21 @@ describe('Contacts effects', () => {
       actions$ = of(ContactActionList.selectContact({ id: 'contactid', silent: true }));
       const setSelected:any = ContactsActions.prototype.setSelectedContact;
       const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
-      contactViewModelGeneratorService.getContact.resolves({ _id: 'contactid', model: 'contact model' });
+      contactViewModelGeneratorService.getContact.resolves({
+        _id: 'contactid',
+        model: 'contact model',
+        doc: { _id: 'contactid', type: 'person' },
+      });
       const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
 
       await effects.selectContact.toPromise();
 
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
+      expect(setSelected.args[0]).to.deep.equal([{
+        _id: 'contactid',
+        model: 'contact model',
+        doc: { _id: 'contactid', type: 'person' },
+      }]);
       expect(setLoadingShowContent.callCount).to.equal(0);
       expect(setLoadingSelectedContact.callCount).to.equal(0);
       expect(settingSelected.callCount).to.equal(1);
@@ -219,25 +229,25 @@ describe('Contacts effects', () => {
       expect(performanceService.track.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:contact_data',
+        name: 'contact_detail:person:load:contact_data',
       });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_descendants',
+        name: 'contact_detail:person:load:load_descendants',
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_reports',
+        name: 'contact_detail:person:load:load_reports',
       });
       expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_targets',
+        name: 'contact_detail:person:load:load_targets',
       });
       expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_contact_summary',
+        name: 'contact_detail:person:load:load_contact_summary',
       });
       expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_tasks',
+        name: 'contact_detail:person:load:load_tasks',
       });
       expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({
-        name: 'contact_detail:contact:load',
+        name: 'contact_detail:person:load',
         recordApdex: true,
       });
     });
@@ -265,7 +275,10 @@ describe('Contacts effects', () => {
 
     describe('loading children', () => {
       it('should load children', async () => {
-        contactViewModelGeneratorService.getContact.resolves({ _id: 'contact', doc: { _id: 'contact' } });
+        contactViewModelGeneratorService.getContact.resolves({
+          _id: 'contact',
+          doc: { _id: 'contact', type: 'contact', contact_type: 'hospital' },
+        });
         contactViewModelGeneratorService.loadChildren.resolves([
           { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
           { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
@@ -276,7 +289,7 @@ describe('Contacts effects', () => {
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
-          { _id: 'contact', doc: { _id: 'contact' } },
+          { _id: 'contact', doc: { _id: 'contact', type: 'contact', contact_type: 'hospital' } },
           { getChildPlaces: true },
         ]);
         const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
@@ -285,6 +298,9 @@ describe('Contacts effects', () => {
           { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
           { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
         ]]);
+        expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
+          name: 'contact_detail:hospital:load:load_descendants',
+        });
       });
 
       it('should not load child places for user with one facility', async () => {

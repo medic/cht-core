@@ -15,6 +15,7 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -31,6 +32,7 @@ export class ContactsEffects {
     private performanceService: PerformanceService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private contactSummaryService: ContactSummaryService,
+    private contactTypesService: ContactTypesService,
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
@@ -55,7 +57,7 @@ export class ContactsEffects {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
       withLatestFrom(this.store.select(Selectors.getForms)),
-      exhaustMap(async ([{ payload: { id, silent } }, forms]) => {
+      exhaustMap(([{ payload: { id, silent } }, forms]) => {
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
@@ -73,7 +75,7 @@ export class ContactsEffects {
         const loadContact = this
           .loadContact(id)
           .then(contact => {
-            const contactType = contact?.doc?.contact_type;
+            const contactType = this.contactTypesService.getTypeId(contact?.doc);
             if (contactType) {
               trackName = trackName.map(part => part === 'contact' ? contactType : part);
             }

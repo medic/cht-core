@@ -1,14 +1,12 @@
-const { expect } = require('chai');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const constants = require('@constants');
 
-const auth = {
-  username: constants.USERNAME,
-  password: constants.PASSWORD
-};
-
 describe('audit log', () => {
+  const auth = {
+    username: constants.USERNAME,
+    password: constants.PASSWORD
+  };
 
   it('should mask password on login', async () => {
     const collectAuditLogs = await utils.collectHaproxyLogs(/POST,\/_session/);
