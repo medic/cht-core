@@ -16,7 +16,6 @@ describe('local lineage lib', () => {
   beforeEach(() => {
     debug = sinon.stub(logger, 'debug');
   });
-  //
   afterEach(() => sinon.restore());
 
   it('getLineageDocsById', async () => {
