@@ -91,10 +91,10 @@ export namespace v1 {
     assertDataContext(context);
 
     /**
-     * Creates an iterator-like object for fetching batches of people data.
-     * @param personType - The type of person to fetch
-     * @throws throws an error if the provided personType is invalid.
-     * @returns An iterator-like object with a next method for fetching data.
+     * Returns a generator that yeilds the persons with the given type.
+     * @param personType The type of person to fetch
+     * @returns a generator that yeilds the persons with the given type
+     * @throws Error if no person type is provided or if the type is not for a person
      */
     const curriedFn = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person[], void> {
       assertTypeQualifier(personType);
