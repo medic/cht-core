@@ -141,16 +141,10 @@ export namespace v1 {
   export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
   /**
-   * Returns a people generator function for fetching batches of people data.
+   * Returns a function for retrieving people from the given data context.
    * @param context the current data context
-   * @returns a generator function that creates an iterator-like object for fetching people data.
-   * @example
-   * const getAllIterator = Person.v1.getAll(ctx)(Qualifier.byContactType('person'));
-   * for await (const page of getAllIterator) {
-   *   for (const doc of page) {
-   *     ...
-   *   }
-   * }
+   * @returns a function for retrieving people
+   * @throws Error if a data context is not provided
    */
   export const getAll = getPeopleGenerator();
 }
