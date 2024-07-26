@@ -20,7 +20,7 @@ describe('local lineage lib', () => {
 
   it('getLineageDocsById', async () => {
     const uuid = '123';
-    const queryFn = sinon.stub().returns([]);
+    const queryFn = sinon.stub().resolves([]);
     const queryDocsByRange = sinon
       .stub(LocalDoc, 'queryDocsByRange')
       .returns(queryFn);
