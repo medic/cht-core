@@ -232,8 +232,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .filter(id => !!id);
     this.globalActions.setUserFacilityId(facilityIds);
 
-    const homePlaces = (await this.getDataRecordsService.get(facilityIds) || []).filter(place => !!place);
-    homePlaces.forEach(homePlace => homePlace.home = true);
+    let homePlaces = await this.getDataRecordsService.get(facilityIds);
+    homePlaces = homePlaces?.filter(place => !!place);
+    homePlaces?.forEach(homePlace => homePlace.home = true);
     return homePlaces;
   }
 
