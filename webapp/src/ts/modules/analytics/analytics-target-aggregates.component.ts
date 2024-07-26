@@ -21,7 +21,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
   userFacilities;
   initialLoad;
-  loading = false;
+  loading = true;
   enabled = false;
   aggregates: any = null;
   selected = null;
@@ -44,8 +44,9 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.enabled = await this.targetAggregatesService.isEnabled();
       this.subscribeToStore();
       this.subscribeSidebarFilter();
-      await this.loadUserFacilities();
+      await this.setDefaultFilters();
     } catch (error) {
+      this.loading = false;
       console.error('Error loading aggregate targets', error);
       this.targetAggregatesActions.setTargetAggregatesError(error);
     }
@@ -78,9 +79,9 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
   async getTargetAggregates(userFacility) {
     try {
-      const aggregates = this.enabled ? await this.targetAggregatesService.getAggregates(userFacility._id) : [];
+      const aggregates = this.enabled ? await this.targetAggregatesService.getAggregates(userFacility?._id) : [];
       if (this.sidebarFilter.hasFacilityFilter) {
-        aggregates?.forEach((aggregate) => aggregate.facility = userFacility.name);
+        aggregates?.forEach((aggregate) => aggregate.facility = userFacility?.name);
       }
       this.targetAggregatesActions.setTargetAggregates(aggregates);
       this.targetAggregatesActions.setTargetAggregatesLoaded(true);
@@ -109,12 +110,10 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
   }
 
-  private async loadUserFacilities() {
+  private async setDefaultFilters() {
     this.userFacilities = await this.userSettingsService.getUserFacility();
-    if (this.userFacilities?.length) {
-      this.globalActions.setSidebarFilter({
-        defaultFilters: { facility: { ...this.userFacilities[0] } }
-      });
-    }
+    this.globalActions.setSidebarFilter({
+      defaultFilters: { facility: this.userFacilities.length ? { ...this.userFacilities[0] } : null },
+    });
   }
 }
