@@ -291,7 +291,7 @@ describe('local person', () => {
         expect(isPerson.notCalled).to.be.true;
       });
 
-      it('returns null valued array if rows returned from database are not docs', async () => {
+      it('returns empty array if rows returned from database are not persons', async () => {
         const doc = { type: 'person'};
         const docs = [doc, doc, doc];
         queryDocsByKeyInner.resolves(docs);
