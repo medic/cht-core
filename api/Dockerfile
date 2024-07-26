@@ -12,8 +12,8 @@ RUN apk add --update --no-cache \
 
 WORKDIR /service
 
-COPY package.json package-lock.json ./
 COPY shared-libs ./shared-libs
+COPY package/node_modules ./node_modules
 COPY node_modules/@medic ./node_modules/@medic
 COPY api ./api
 

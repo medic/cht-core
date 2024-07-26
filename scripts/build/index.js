@@ -18,7 +18,7 @@ const {
   INTERNAL_CONTRIBUTOR
 } = process.env;
 const DEFAULT_API_PORT = 5988;
-const MODULES = ['webapp', 'api', 'sentinel', 'admin'];
+const MODULES = ['webapp', 'admin'];
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
@@ -193,12 +193,19 @@ const setDdocsVersion = () => {
 };
 
 const exec = async (command, args, options = ({})) => {
-  options.stdio = 'inherit';
+  options.stdio = options.stdio || 'inherit';
   const ci = spawn(command, args, options);
-  await new Promise((resolve, reject) => {
+  let output = '';
+  if (ci.stdout) {
+    ci.stdout.setEncoding('utf8');
+    ci.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+  }
+  return new Promise((resolve, reject) => {
     ci.on('close', (code) => {
       if (code === 0) {
-        return resolve();
+        return resolve(output);
       }
       return reject(new Error(`${command} exited with ${code}`));
     });
@@ -212,37 +219,41 @@ const npmCiModules = async () => {
   }
 };
 
-
-
-const buildSinglePlatformServiceImages = async () => {
-  for (const service of versions.SERVICES) {
-    console.log(`\n\nBuilding docker image for ${service}\n\n`);
-    const tag = versions.getImageTag(service);
-    await exec('npm', ['ci', '--omit=dev'], { cwd: service });
-    await exec('npm', ['dedupe'], { cwd: service });
-    await exec('docker', ['build', '-f', `./${service}/Dockerfile`, '--tag', tag, '.']);
-  }
+const makeWorkingDir = async () => {
+  const workingDir = await exec('mktemp', ['-d'], { stdio: 'pipe' });
+  return workingDir.trim();
 };
 
-const buildMultiPlatformServiceImages = async () => {
-  for (const service of versions.SERVICES) {
-    console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
-    const tag = versions.getImageTag(service);
-    await exec('npm', ['ci', '--omit=dev'], { cwd: service });
-    await exec('npm', ['dedupe'], { cwd: service });
-    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
-      '-f', `./${service}/Dockerfile`, '--tag', tag, '--push', '.']);
-  }
+const buildSinglePlatformServiceImage = async (service, tag) => {
+  console.log(`\n\nBuilding docker image for ${service} ${tag}\n\n`);
+  await exec('docker', ['build', '-f', `./${service}/Dockerfile`, '--tag', tag, '.']);
+};
+
+const buildMultiPlatformServiceImage = async (service, tag) => {
+  console.log(`\n\nBuilding and pushing multiplatform docker image for ${service} ${tag}\n\n`);
+  await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
+    '-f', `./${service}/Dockerfile`, '--tag', tag, '--push', '.']);
 };
 
 const buildServiceImages = async () => {
-  if (INTERNAL_CONTRIBUTOR) {
-    await buildMultiPlatformServiceImages();
-  } else {
-    await buildSinglePlatformServiceImages();
+  const d = await makeWorkingDir();
+  console.log('copying modules to working directory');
+  await exec('cp', ['-r', './node_modules', './package.json', './package-lock.json', workingDir]);
+  console.log('packing modules');
+  await exec('npm', ['pack'], { cwd: workingDir });
+  console.log('extracting modules');
+  await exec('tar', ['-Pxvzf', `${workingDir}/medic-4.10.0.tgz`]); // TODO grab the correct version
+  for (const service of versions.SERVICES) {
+    const tag = versions.getImageTag(service);
+    if (INTERNAL_CONTRIBUTOR) {
+      await buildMultiPlatformServiceImage(service, tag);
+    } else {
+      await buildSinglePlatformServiceImage(service, tag);
+    }
   }
 };
 
+// TODO reuse buildSinglePlatformServiceImage
 const buildSinglePlatformImages = async () => {
   for (const service of versions.INFRASTRUCTURE) {
     console.log(`\n\nBuilding docker image for ${service}\n\n`);
@@ -259,6 +270,7 @@ const buildInfrastructureImages = async () => {
   }
 };
 
+// TODO reuse buildMultiPlatformServiceImage
 const buildMultiPlatformImages = async () => {
   for (const service of versions.INFRASTRUCTURE) {
     console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
