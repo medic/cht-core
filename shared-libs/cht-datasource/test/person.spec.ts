@@ -169,7 +169,7 @@ describe('person', () => {
       it('throws an error if the qualifier is invalid', async () => {
         isContactTypeQualifier.returns(false);
 
-        await expect(Person.v1.getPage(dataContext)(invalidQualifier))
+        await expect(Person.v1.getPage(dataContext)(invalidQualifier, limit, skip))
           .to.be.rejectedWith(`Invalid type [${JSON.stringify(invalidQualifier)}].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;

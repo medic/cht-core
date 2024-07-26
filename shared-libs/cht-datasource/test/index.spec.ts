@@ -7,7 +7,6 @@ import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
-import { Doc } from '../src/libs/doc';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -93,7 +92,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage', 'getPage']);
+        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage', 'getPageByType']);
       });
 
       it('getByUuid', async () => {
@@ -136,7 +135,7 @@ describe('CHT Script API - getDatasource', () => {
         const personTypeQualifier = { contactType: personType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const returnedPeople = await person.getPage(personType, limit, skip);
+        const returnedPeople = await person.getPageByType(personType, limit, skip);
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;

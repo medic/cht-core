@@ -40,12 +40,15 @@ export namespace v1 {
     }
   };
 
-  const assertLimitAndSkip = (limit: unknown, skip: unknown) => {
-    if (typeof limit !== 'number' || limit <= 0) {
-      throw new Error('limit must be a positive number');
+  const assertLimit = (limit: unknown) => {
+    if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
+      throw new Error(`The limit must be a positive number: [${String(limit)}]`);
     }
-    if (typeof skip !== 'number' || skip < 0) {
-      throw new Error('skip must be a non-negative number');
+  };
+
+  const assertSkip = (skip: unknown) => {
+    if (typeof skip !== 'number' || !Number.isInteger(skip) || skip < 0) {
+      throw new Error(`The skip must be a non-negative number: [${String(skip)}]`);
     }
   };
 
@@ -59,32 +62,6 @@ export namespace v1 {
         assertPersonQualifier(qualifier);
         return fn(qualifier);
       };
-    };
-
-  const getPeople = <T>(
-    localFn: (c: LocalDataContext) => (personType: ContactTypeQualifier, limit: number, skip: number) => Promise<T>,
-    remoteFn: (c: RemoteDataContext) => (personType: ContactTypeQualifier, limit: number, skip: number) => Promise<T>
-  ) => (context: DataContext) => {
-      assertDataContext(context);
-      const fn = adapt(context, localFn, remoteFn);
-
-      /**
-       * Returns an array of people for the provided page specifications.
-       * @param personType the type of people to return
-       * @param limit the maximum number of people to return. Default is 100.
-       * @param skip the number of people to skip. Default is 0.
-       * @returns an array of people for the provided page specifications.
-       * @throws Error if no type is provided or if the type is not for a person
-       * @throws Error if the provided `limit` value is `<=0`
-       * @throws Error if the provided `skip` value is `<0`
-       */
-      const curriedFn = async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<T> => {
-        assertTypeQualifier(personType);
-        assertLimitAndSkip(limit, skip);
-
-        return fn(personType, limit, skip);
-      };
-      return curriedFn;
     };
 
   /**
@@ -109,5 +86,29 @@ export namespace v1 {
    * @returns a function for retrieving a paged array of people
    * @throws Error if a data context is not provided
    */
-  export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);
+  export const getPage = (
+    context: DataContext
+  ): (personType: ContactTypeQualifier, limit: number, skip: number) => Promise<Person[]> => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.getPage, Remote.Person.v1.getPage);
+
+    /**
+     * Returns an array of people for the provided page specifications.
+     * @param personType the type of people to return
+     * @param limit the maximum number of people to return. Default is 100.
+     * @param skip the number of people to skip. Default is 0.
+     * @returns an array of people for the provided page specifications.
+     * @throws Error if no type is provided or if the type is not for a person
+     * @throws Error if the provided `limit` value is `<=0`
+     * @throws Error if the provided `skip` value is `<0`
+     */
+    const curriedFn = async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<Person[]> => {
+      assertTypeQualifier(personType);
+      assertLimit(limit);
+      assertSkip(skip);
+
+      return fn(personType, limit, skip);
+    };
+    return curriedFn;
+  };
 }
