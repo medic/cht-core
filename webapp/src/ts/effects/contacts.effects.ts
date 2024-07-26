@@ -14,7 +14,6 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 
 @Injectable()
@@ -24,7 +23,7 @@ export class ContactsEffects {
 
   private selectedContact;
   private contactIdToLoad;
-  private userFacilityId;
+  private userFacilityIds;
 
   constructor(
     private actions$: Actions,
@@ -37,7 +36,6 @@ export class ContactsEffects {
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
     private routeSnapshotService: RouteSnapshotService,
-    private userSettingsService: UserSettingsService,
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -49,7 +47,7 @@ export class ContactsEffects {
     ).subscribe(([ selectedContact, contactIdToLoad, userFacilityId ]) => {
       this.selectedContact = selectedContact;
       this.contactIdToLoad = contactIdToLoad;
-      this.userFacilityId = userFacilityId;
+      this.userFacilityIds = userFacilityId;
     });
   }
 
@@ -136,23 +134,22 @@ export class ContactsEffects {
     return this.contactIdToLoad !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
   }
 
-  private async shouldGetDescendants(contactId) {
-    const userFacilityId: string[] = await this.getUserFacilityId();
-    if (!userFacilityId?.length) {
+  private shouldGetDescendants(contactId) {
+    if (!this.userFacilityIds?.length) {
       return true;
     }
 
-    if (userFacilityId.length > 1) {
+    if (this.userFacilityIds.length > 1) {
       return true;
     }
 
-    return userFacilityId[0] !== contactId;
+    return this.userFacilityIds[0] !== contactId;
   }
 
   private async loadDescendants(contactId, trackName) {
     const trackPerformance = this.performanceService.track();
-    const getChildPlaces = await this.shouldGetDescendants(contactId);
-    console.warn('Fetching descendants', getChildPlaces);
+    const getChildPlaces = this.shouldGetDescendants(contactId);
+
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, {getChildPlaces})
       .then(children => {
@@ -227,19 +224,5 @@ export class ContactsEffects {
       .finally(() => {
         trackPerformance?.stop({ name: [ ...trackName, 'load_contact_summary' ].join(':') });
       });
-  }
-
-  private async getUserFacilityId() {
-    if (this.userFacilityId) {
-      console.warn('it actually has the data, returning UserFacilityId');
-      return this.userFacilityId;
-    }
-
-    console.warn('calling getUserFacilityId because it is null');
-    const userSettings: any = await this.userSettingsService.get();
-    const ids = Array.isArray(userSettings?.facility_id) ? userSettings?.facility_id : [userSettings?.facility_id];
-
-    this.globalActions.setUserFacilityId(ids);
-    return ids;
   }
 }

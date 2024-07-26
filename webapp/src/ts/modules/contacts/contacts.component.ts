@@ -46,7 +46,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   filters: Filter = {};
   defaultFilters: Filter = {};
   moreItems;
-  usersHomePlace;
+  usersHomePlaces;
   contactTypes;
   childPlaces;
   allowedChildPlaces = [];
@@ -100,8 +100,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       ]);
 
       this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
-      this.usersHomePlace = homePlaceSummary;
-      this.isAllowedToSort = this.usersHomePlace?.length <= 1;
+      this.usersHomePlaces = homePlaceSummary;
+      if (this.usersHomePlaces && this.usersHomePlaces.length > 1) {
+        this.isAllowedToSort = false;
+      }
       this.lastVisitedDateExtras = viewLastVisitedDate;
       this.contactTypes = contactTypes;
 
@@ -138,8 +140,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.contactsActions.removeContactFromList({ _id: change.id });
       this.hasContacts = !!this.contactsList.length;
     }
-    if (this.usersHomePlace?.find(homePlace => homePlace._id === change.id)) {
-      this.usersHomePlace = await this.getUserHomePlaceSummary();
+    if (this.usersHomePlaces?.find(homePlace => homePlace._id === change.id)) {
+      this.usersHomePlaces = await this.getUserHomePlaceSummary();
     }
     const withIds =
       this.isSortedByLastVisited() &&
@@ -230,10 +232,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .filter(id => !!id);
     this.globalActions.setUserFacilityId(facilityIds);
 
-    const homePlaces = await this.getDataRecordsService.get(facilityIds) || [];
-    return homePlaces
-      .filter(place => !!place)
-      .forEach(homePlace => homePlace.home = true);
+    const homePlaces = (await this.getDataRecordsService.get(facilityIds) || []).filter(place => !!place);
+    homePlaces.forEach(homePlace => homePlace.home = true);
+    return homePlaces;
   }
 
   private canViewLastVisitedDate() {
@@ -262,7 +263,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private isPrimaryContact(contact) {
-    return this.usersHomePlace?.length === 1 && contact.home;
+    return this.usersHomePlaces && this.usersHomePlaces.length === 1 && contact.home;
   }
 
   private populateContactDetails(contact, type) {
@@ -331,9 +332,9 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private getChildren() {
     const filterChildPlaces = (children) => children.filter(child => !child.person);
 
-    if (this.usersHomePlace?.length) {
+    if (this.usersHomePlaces?.length) {
       // backwards compatibility with pre-flexible hierarchy users
-      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace[0]);
+      const homeType = this.contactTypesService.getTypeId(this.usersHomePlaces[0]);
       return this.contactTypesService
         .getChildren(homeType)
         .then(filterChildPlaces);
@@ -421,7 +422,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       .search('contacts', searchFilters, options, extensions, docIds)
       .then(updatedContacts => {
         // If you have a home place make sure it is at the top
-        this.usersHomePlace?.forEach(homePlace => {
+        this.usersHomePlaces?.forEach(homePlace => {
           const homeIndex = _findIndex(updatedContacts, (contact: any) => contact._id === homePlace._id);
 
           this.updateAdditionalListItem(homeIndex);
@@ -438,8 +439,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         });
 
         //  only show homeplaces facilities for multi-facility users
-        if (this.usersHomePlace?.length > 1 && !this.filters.search) {
-          const homePlaceIds = this.usersHomePlace.map(place => place._id);
+        if (this.usersHomePlaces?.length > 1 && !this.filters.search) {
+          const homePlaceIds = this.usersHomePlaces.map(place => place._id);
           updatedContacts = updatedContacts.filter(place => homePlaceIds.includes(place._id));
         }
 
@@ -484,7 +485,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getUserHomePlaceId() {
-    return this.usersHomePlace?.[0]?._id;
+    return this.usersHomePlaces?.[0]?._id;
   }
 
   private setLeftActionBar() {

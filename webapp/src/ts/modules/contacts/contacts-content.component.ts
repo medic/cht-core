@@ -107,7 +107,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       .select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityIds) => {
-        console.warn('userFacilityIds', userFacilityIds);
         const shouldDisplayHomePlace = userFacilityIds &&
           !this.filters?.search &&
           !this.route.snapshot.params.id &&
