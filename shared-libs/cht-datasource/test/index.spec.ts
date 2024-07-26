@@ -7,7 +7,6 @@ import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
-import { Doc } from '../src/libs/doc';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -93,7 +92,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage', 'getPage']);
+        expect(person).to.have.all.keys(['getAll', 'getByUuid', 'getByUuidWithLineage', 'getPage']);
       });
 
       it('getByUuid', async () => {
@@ -141,6 +140,24 @@ describe('CHT Script API - getDatasource', () => {
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
+      });
+
+      it('getAll', async () => {
+        const mockAsyncGenerator = async function* () {
+          yield [];
+        };
+        const personGetAll = sinon.stub().resolves(mockAsyncGenerator);
+        dataContextBind.returns(personGetAll);
+        const personType = 'person';
+        const personTypeQualifier = { contactType: personType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const res =  await person.getAll(personType);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
+        expect(personGetAll.calledOnceWithExactly(personTypeQualifier)).to.be.true;
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
     });

@@ -99,6 +99,14 @@ export const getDatasource = (ctx: DataContext) => {
         getPage: (personType: string, limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), limit, skip
         ),
+
+        /**
+         * Returns a `AsyncGenerator` for fetching batches of people data.
+         * @param personType the type of people to return
+         * @returns a `AsyncGenerator` for fetching batches of people data.
+         * @throws Error if no type is provided or if the type is not for a person
+         */
+        getAll: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
       }
     }
   };
