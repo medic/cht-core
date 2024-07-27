@@ -10,7 +10,11 @@ cp /usr/local/etc/haproxy/backend.cfg.template $BACKEND
 # shellcheck disable=SC2153
 for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
 do
-  echo "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr $HEALTHCHECK_ADDR agent-port 5555 resolvers docker_resolver resolve-prefer ipv4" >> $BACKEND
+  server="  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr $HEALTHCHECK_ADDR agent-port 5555"
+  if [[ -n "${DOCKER_DNS_RESOLVER:-}" ]]; then
+    server="${server} resolvers docker_resolver resolve-prefer ipv4"
+  fi
+  echo "${server}" >> $BACKEND
 done
 
 # Place environment variables into config
