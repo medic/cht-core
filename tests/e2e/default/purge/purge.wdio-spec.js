@@ -17,32 +17,30 @@ describe('purge', function() {
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const user = userFactory.build({ username: 'offlineuser-purge', place: healthCenter._id });
 
-  const purgeFn = (userCtx, contact, reports) => {
+  const filterPurgeReports = (userCtx, contact, reports) => {
     return reports.filter(r => r.form === 'purge').map(r => r._id);
   };
 
-  const purgeHomeVisitFn = (userCtx, contact, reports) => {
+  const filterHomeVisitReports = (userCtx, contact, reports) => {
     return reports.filter(r => r.form === 'home_visit').map(r => r._id);
   };
 
-  const purgeUsingChtApitFn = (userCtx, contact, reports, messages, chtScript, settings) => {
+  const filterByCht = (userCtx, contact, reports, messages, chtScript, settings) => {
     if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
-      return reports.filter(r => r.form === 'purge').map(r => r._id);
+      filterPurgeReports(userCtx, contact, reports);
     }
     return reports.map(r => r._id);
   };
 
-  const reportsToPurge = Array
-    .from({ length: 50 })
-    .map(() => genericReportFactory.report().build({ form: 'purge' }, { patient, submitter: contact }));
+  const generateReports = (reportsLength, formName) =>  Array
+    .from({ length: reportsLength })
+    .map(() => genericReportFactory.report().build({ form: formName }, { patient, submitter: contact }));
 
-  const homeVisits = Array
-    .from({ length: 125 })
-    .map(() => genericReportFactory.report().build({ form: 'home_visit' }, { patient, submitter: contact }));
+  const reportsToPurge = generateReports(50, 'purge');
 
-  const pregnancies = Array
-    .from({ length: 125 })
-    .map(() => genericReportFactory.report().build({ form: 'pregnancy' }, { patient, submitter: contact }));
+  const homeVisits = generateReports(125, 'home_visit');
+
+  const pregnancies = generateReports(125, 'pregnancy');
 
   const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
@@ -81,7 +79,7 @@ describe('purge', function() {
   });
 
   it('purging runs on sync', async () => {
-    await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
+    await updateSettings(filterPurgeReports); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([...places.values(), contact, patient]);
     await utils.createUsers([user]);
@@ -94,12 +92,11 @@ describe('purge', function() {
 
     await loginPage.login({ username: user.username, password: user.password, loadPage: true });
 
-    //await commonElements.sync();
     let allReports = await getAllReports();
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
     expect(allReports.map(r => r.form)).to.not.have.members(['purge']);
 
-    await updateSettings(purgeHomeVisitFn, true);
+    await updateSettings(filterHomeVisitReports, true);
     await runPurging();
 
     await commonElements.sync(true);
@@ -112,7 +109,7 @@ describe('purge', function() {
   });
 
   it('purging runs when using chtScriptApi', async () => {
-    await updateSettings(purgeUsingChtApitFn); // settings should be at the beginning of the changes feed
+    await updateSettings(filterByCht); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([...places.values(), contact, patient]);
     await utils.createUsers([user]);
