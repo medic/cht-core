@@ -12,7 +12,6 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GlobalActions } from '@mm-actions/global';
-import { Selectors } from '@mm-selectors/index';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
