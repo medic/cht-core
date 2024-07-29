@@ -67,7 +67,6 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
   it('should create component', fakeAsync(() => {
     expect(component).to.exist;
     expect(component.isOpen).to.be.false;
-    expect(component.error).to.be.undefined;
   }));
 
   it('should toggle sidebar filter', () => {
@@ -137,7 +136,6 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     flush();
 
     expect(component.facilityFilterLabel).to.equal(component.DEFAULT_FACILITY_LABEL);
-    expect(component.error).to.be.true;
     expect(settingsService.get.callCount).to.equal(1);
   }));
 

@@ -30,13 +30,9 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     this.globalActions = new GlobalActions(store);
   }
 
-  async ngOnInit() {
-    try {
-      this.subscribeToStore();
-      this.facilityFilterLabel = await this.setFacilityLabel() || this.DEFAULT_FACILITY_LABEL;
-    } catch (err) {
-      console.error('Error initializing Target Sidebar component', err);
-    }
+  ngOnInit() {
+    this.subscribeToStore();
+    this.setFacilityLabel();
   }
 
   ngOnDestroy() {
@@ -63,7 +59,7 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
 
   private async setFacilityLabel() {
     if (!this.userFacilities?.length) {
-      return;
+      this.facilityFilterLabel = this.DEFAULT_FACILITY_LABEL;
     }
 
     try {
@@ -71,9 +67,10 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
       const settings = await this.settingsService.get();
       const userFacilityType = this.contactTypesService.getTypeId(facility);
       const placeType = settings.contact_types.find(type => type.id === userFacilityType);
-      return placeType?.name_key;
+      this.facilityFilterLabel = placeType?.name_key || this.DEFAULT_FACILITY_LABEL;
     } catch (err) {
       console.error('Error fetching facility label', err);
+      this.facilityFilterLabel = this.DEFAULT_FACILITY_LABEL;
     }
   }
 
