@@ -64,6 +64,7 @@ export namespace v1 {
       };
     };
 
+<<<<<<< HEAD
   // NOTE: there's probably a better name for this function
   const getPeopleGenerator = () => (context: DataContext) => {
     assertDataContext(context);
@@ -94,6 +95,8 @@ export namespace v1 {
     return curriedFn;
   };
 
+=======
+>>>>>>> b02973b26 (Address PR comments)
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
