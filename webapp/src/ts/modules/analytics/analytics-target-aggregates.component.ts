@@ -20,7 +20,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   private trackPerformance;
   subscriptions: Subscription = new Subscription();
   userFacilities;
-  initialLoad;
   loading = true;
   enabled = false;
   aggregates: any = null;
@@ -43,7 +42,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.trackPerformance = this.performanceService.track();
       this.enabled = await this.targetAggregatesService.isEnabled();
       this.subscribeToStore();
-      this.subscribeSidebarFilter();
       await this.setDefaultFilters();
     } catch (error) {
       this.loading = false;
@@ -65,14 +63,17 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTargetAggregates),
       this.store.select(Selectors.getSelectedTargetAggregate),
       this.store.select(Selectors.getTargetAggregatesError),
+      this.store.select(Selectors.getSidebarFilter),
     ).subscribe(([
       aggregates,
       selected,
       error,
+      sidebarFilter,
     ]) => {
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;
+      this.sidebarFilter = sidebarFilter;
     });
     this.subscriptions.add(selectorsSubscription);
   }
@@ -98,22 +99,12 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private subscribeSidebarFilter() {
-    const subscription = this.store
-      .select(Selectors.getSidebarFilter)
-      .subscribe(sidebarFilter => {
-        this.sidebarFilter = sidebarFilter;
-        if (!this.initialLoad && this.sidebarFilter?.defaultFilters) {
-          this.initialLoad = this.getTargetAggregates(this.sidebarFilter.defaultFilters.facility);
-        }
-      });
-    this.subscriptions.add(subscription);
-  }
-
   private async setDefaultFilters() {
-    this.userFacilities = await this.userSettingsService.getUserFacility();
-    this.globalActions.setSidebarFilter({
-      defaultFilters: { facility: this.userFacilities.length ? { ...this.userFacilities[0] } : null },
-    });
+    this.userFacilities = await this.userSettingsService.getUserFacilities();
+    const defaultFilters = {
+      facility: this.userFacilities.length ? { ...this.userFacilities[0] } : null,
+    };
+    this.globalActions.setSidebarFilter({ defaultFilters });
+    await this.getTargetAggregates(defaultFilters.facility);
   }
 }
