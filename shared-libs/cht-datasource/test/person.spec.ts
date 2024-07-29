@@ -210,11 +210,13 @@ describe('person', () => {
     describe('getAll', () => {
       const personType = 'person';
       const personTypeQualifier = {contactType: personType} as const;
+      const limit = 100;
+      const skip = 0;
       const firstPerson = { _id: 'person1' } as Person.v1.Person;
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
       const people = [firstPerson, secondPerson, thirdPerson];
-      const mockGenerator = function* () {
+      const mockGenerator = async function* () {
         for (const person of people) {
           yield person;
         }
