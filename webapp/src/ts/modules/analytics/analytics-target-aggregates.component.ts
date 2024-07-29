@@ -81,7 +81,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     try {
       const aggregates = this.enabled ? await this.targetAggregatesService.getAggregates(userFacility?._id) : [];
       if (this.sidebarFilter.hasFacilityFilter) {
-        aggregates?.forEach((aggregate) => aggregate.facility = userFacility?.name);
+        aggregates.forEach((aggregate) => aggregate.facility = userFacility?.name);
       }
       this.targetAggregatesActions.setTargetAggregates(aggregates);
       this.targetAggregatesActions.setTargetAggregatesLoaded(true);
