@@ -1,5 +1,5 @@
-import { isContactTypeQualifier, isUuidQualifier, ContactTypeQualifier, UuidQualifier } from './qualifier';
-import { adapt, assertDataContext, DataContext } from './libs/data-context';
+import { ContactTypeQualifier, isContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
+import { adapt, assertDataContext, DataContext, getDocumentStream } from './libs/data-context';
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
@@ -87,35 +87,6 @@ export namespace v1 {
       return curriedFn;
     };
 
-  const getPeopleGenerator = () => (context: DataContext) => {
-    assertDataContext(context);
-
-    /**
-     * Returns a generator that yeilds the persons with the given type.
-     * @param personType The type of person to fetch
-     * @returns a generator that yeilds the persons with the given type
-     * @throws Error if no person type is provided or if the type is not for a person
-     */
-    const curriedFn = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person[], void> {
-      assertTypeQualifier(personType);
-      const limit = 100;
-      let skip = 0;
-
-      while (true) {
-        const docs = await context.bind(getPage)(personType, limit, skip);
-
-        yield docs;
-
-        if (docs.length < limit) {
-          break;
-        }
-
-        skip += limit;
-      }
-    };
-    return curriedFn;
-  };
-
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
@@ -141,10 +112,28 @@ export namespace v1 {
   export const getPage = getPeople(Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
   /**
-   * Returns a function for retrieving people from the given data context.
+   * Returns a generator function for retrieving people from the given data context.
    * @param context the current data context
-   * @returns a function for retrieving people
+   * @returns a generator function for retrieving people
    * @throws Error if a data context is not provided
    */
-  export const getAll = getPeopleGenerator();
+  export const getAll = (
+    context: DataContext
+  ): (personType: ContactTypeQualifier) => AsyncGenerator<v1.Person, void> => {
+    assertDataContext(context);
+
+    /**
+     * Returns a generator that yields the persons with the given type.
+     * @param personType The type of person to fetch
+     * @returns a generator that yields the persons with the given type
+     * @throws Error if no person type is provided or if the type is not for a person
+     */
+    return async function* (personType: ContactTypeQualifier): AsyncGenerator<Person, void> {
+      assertTypeQualifier(personType);
+      const getPage = context.bind(v1.getPage);
+      const limit = 100;
+      const skip = 0;
+      yield* getDocumentStream(getPage, { personType, limit, skip }) as AsyncGenerator<v1.Person, void>;
+    };
+  };
 }

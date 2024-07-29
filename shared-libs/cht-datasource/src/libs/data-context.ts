@@ -39,3 +39,26 @@ export const adapt = <T>(
   assertRemoteDataContext(context);
   return remote(context);
 };
+
+/** @internal */
+export const getDocumentStream = async function* <T, Args extends unknown[]>(
+  fetchFunction: (...args: Args) => Promise<T[]>,
+  fetchFunctionArgs: {
+    limit: number;
+    skip: number;
+  } & Record<string, unknown>
+): AsyncGenerator<unknown, void> {
+  const { limit } = fetchFunctionArgs;
+  let { skip } = fetchFunctionArgs;
+  const hasMoreResults = () => skip && skip % limit === 0;
+
+  do {
+    const docs = await fetchFunction(...(Object.values(fetchFunctionArgs) as Args));
+
+    for (const doc of docs) {
+      yield doc;
+    }
+
+    skip += docs.length;
+  } while (hasMoreResults());
+};
