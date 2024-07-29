@@ -19,7 +19,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
   isOpen = false;
-  error;
   selectedFacility;
   facilityFilterLabel;
 
@@ -36,7 +35,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
       this.subscribeToStore();
       this.facilityFilterLabel = await this.setFacilityLabel() || this.DEFAULT_FACILITY_LABEL;
     } catch (err) {
-      this.error = true;
       console.error('Error initializing Target Sidebar component', err);
     }
   }
@@ -75,7 +73,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
       const placeType = settings.contact_types.find(type => type.id === userFacilityType);
       return placeType?.name_key;
     } catch (err) {
-      this.error = true;
       console.error('Error fetching facility label', err);
     }
   }
