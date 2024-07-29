@@ -211,61 +211,57 @@ describe('person', () => {
       const personType = 'person';
       const personTypeQualifier = {contactType: personType} as const;
       const limit = 100;
-      const skip0 = 0;
-      const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
-      const person = { _id: 'person' } as Person.v1.Person;
+      const skip = 0;
+      const firstPerson = { _id: 'person1' } as Person.v1.Person;
+      const secondPerson = { _id: 'person2' } as Person.v1.Person;
+      const thirdPerson = { _id: 'person3' } as Person.v1.Person;
+      const people = [firstPerson, secondPerson, thirdPerson];
+      const mockGenerator = async function* () {
+        for (const person of people) {
+          yield person;
+        }
+      };
 
       let personGetPage: sinon.SinonStub;
+      let getDocumentStream: sinon.SinonStub;
 
       beforeEach(() => {
         personGetPage = sinon.stub(Person.v1, 'getPage');
         dataContext.bind = sinon.stub().returns(personGetPage);
+        getDocumentStream = sinon.stub(Context, 'getDocumentStream');
       });
 
       it('should get people generator with correct parameters', async () => {
         isContactTypeQualifier.returns(true);
-        personGetPage.returns(people);
+        getDocumentStream.returns(mockGenerator());
 
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
-        const res = await generator.next();
-        await generator.next(); // the exit call
+        const res = [];
+
+        for await (const person of generator) {
+          res.push(person);
+        }
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip0)).to.be.true;
-        expect(res.value).to.deep.equal(people);
-        expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
-      });
-
-      it('should get people generator with multiple batches with correct parameters', async () => {
-        isContactTypeQualifier.returns(true);
-        const firstPage = Array.from({ length: 100 }, () => ({ ...person }));
-        const secondPage = Array.from({ length: 99 }, () => ({ ...person }));
-        personGetPage.onCall(0).returns(firstPage);
-        personGetPage.onCall(1).returns(secondPage);
-
-        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
-        const page1 = await generator.next();
-        const page2 = await generator.next();
-        await generator.next(); // the exit call
-
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(personGetPage.callCount).to.equal(2);
-        expect(page1.value).to.deep.equal(firstPage);
-        expect(page2.value).to.deep.equal(secondPage);
+        expect(getDocumentStream.calledOnceWithExactly(personGetPage, {
+          personType: personTypeQualifier, limit, skip
+        })).to.be.true;
+        expect(res).to.be.deep.equal(people);
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
       });
 
       it('should handle empty result set', async () => {
         isContactTypeQualifier.returns(true);
-        personGetPage.returns([]);
+        getDocumentStream.returns([]);
 
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
         const res = await generator.next();
-        await generator.next(); // the exit call
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip0)).to.be.true;
-        expect(res.value).to.deep.equal([]);
+        expect(getDocumentStream.calledOnceWithExactly(personGetPage, {
+          personType: personTypeQualifier, limit, skip
+        })).to.be.true;
+        expect(res.value).to.equal(undefined);
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
       });
 

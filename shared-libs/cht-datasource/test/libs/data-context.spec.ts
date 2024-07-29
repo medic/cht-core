@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { adapt, assertDataContext } from '../../src/libs/data-context';
+import { adapt, assertDataContext, getDocumentStream } from '../../src/libs/data-context';
 import * as LocalContext from '../../src/local/libs/data-context';
 import * as RemoteContext from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
@@ -116,6 +116,63 @@ describe('context lib', () => {
       expect(local.notCalled).to.be.true;
       expect(assertRemoteDataContext.calledOnceWithExactly(context)).to.be.true;
       expect(remote.notCalled).to.be.true;
+    });
+  });
+
+  describe('getDocumentStream', () => {
+    let fetchFunctionStub: SinonStub;
+
+    beforeEach(() => {
+      fetchFunctionStub = sinon.stub();
+    });
+
+    it('yields document one by one', async () => {
+      const mockDocs = [{ id: 1 }, { id: 2 }, { id: 3 }];
+      const args = { limit: 4, skip: 0, extraArgs: 'value'};
+      fetchFunctionStub.resolves(mockDocs);
+
+      const generator = getDocumentStream(fetchFunctionStub, args);
+
+      const results = [];
+
+      for await (const doc of generator) {
+        results.push(doc);
+      }
+
+      expect(results).to.deep.equal(mockDocs);
+      expect(fetchFunctionStub.calledOnceWithExactly(...Object.values(args))).to.be.true;
+    });
+
+    it('should handle multiple pages',  async () => {
+      const mockDocs1 = [{ id: 1 }, { id: 2 }];
+      const mockDocs2 = [{ id: 3 }];
+
+      fetchFunctionStub.onFirstCall().resolves(mockDocs1);
+      fetchFunctionStub.onSecondCall().resolves(mockDocs2);
+
+      const generator = getDocumentStream(fetchFunctionStub, { limit: 2, skip: 0});
+
+      const results = [];
+      for await (const doc of generator) {
+        results.push(doc);
+      }
+
+      expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
+      expect(fetchFunctionStub.callCount).to.equal(2);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([2, 0]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([2, 0]);
+    });
+
+    it('should handle empty result', async () => {
+      fetchFunctionStub.resolves([]);
+
+      const generator = getDocumentStream(fetchFunctionStub, { limit: 10, skip: 0 });
+
+      const result = await generator.next();
+
+      expect(result.done).to.be.true;
+      expect(result.value).to.be.equal(undefined);
+      expect(fetchFunctionStub.calledOnce).to.be.true;
     });
   });
 });

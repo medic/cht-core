@@ -1,5 +1,5 @@
-import { isContactTypeQualifier, isUuidQualifier, ContactTypeQualifier, UuidQualifier } from './qualifier';
-import { adapt, assertDataContext, DataContext } from './libs/data-context';
+import { ContactTypeQualifier, isContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
+import { adapt, assertDataContext, DataContext, getDocumentStream } from './libs/data-context';
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
@@ -120,5 +120,31 @@ export namespace v1 {
       return fn(personType, limit, skip);
     };
     return curriedFn;
+  };
+
+  /**
+   * Returns a generator function for retrieving people from the given data context.
+   * @param context the current data context
+   * @returns a generator function for retrieving people
+   * @throws Error if a data context is not provided
+   */
+  export const getAll = (
+    context: DataContext
+  ): (personType: ContactTypeQualifier) => AsyncGenerator<v1.Person, void> => {
+    assertDataContext(context);
+
+    /**
+     * Returns a generator that yields the persons with the given type.
+     * @param personType The type of person to fetch
+     * @returns a generator that yields the persons with the given type
+     * @throws Error if no person type is provided or if the type is not for a person
+     */
+    return async function* (personType: ContactTypeQualifier): AsyncGenerator<Person, void> {
+      assertTypeQualifier(personType);
+      const getPage = context.bind(v1.getPage);
+      const limit = 100;
+      const skip = 0;
+      yield* getDocumentStream(getPage, { personType, limit, skip }) as AsyncGenerator<v1.Person, void>;
+    };
   };
 }
