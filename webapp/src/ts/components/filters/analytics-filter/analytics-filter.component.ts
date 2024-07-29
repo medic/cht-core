@@ -126,8 +126,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
       checkPermissions &&
       this.isTargetAggregates() &&
       isTargetAggregateEnabled;
-
-    this.globalActions.setSidebarFilter({ hasFacilityFilter: hasMultipleFacilities });
   }
 
   openSidebar() {

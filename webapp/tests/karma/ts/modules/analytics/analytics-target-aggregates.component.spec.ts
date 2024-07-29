@@ -39,7 +39,7 @@ describe('Analytics Target Aggregates Component', () => {
       setSidebarFilter: sinon.spy(GlobalActions.prototype, 'setSidebarFilter'),
       clearSidebarFilter: sinon.spy(GlobalActions.prototype, 'clearSidebarFilter'),
     };
-    userSettingsService = { getUserFacility: sinon.stub() };
+    userSettingsService = { getUserFacilities: sinon.stub() };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     const mockedSelectors = [
@@ -108,7 +108,7 @@ describe('Analytics Target Aggregates Component', () => {
 
   it('should set correct loading and error when TargetAggregates fails', fakeAsync(() => {
     sinon.reset();
-    userSettingsService.getUserFacility.resolves([
+    userSettingsService.getUserFacilities.resolves([
       { _id: 'id_1', type: 'district_hospital' },
       { _id: 'id_2', type: 'district_hospital' },
     ]);
@@ -130,7 +130,7 @@ describe('Analytics Target Aggregates Component', () => {
 
   it('should set aggregates disabled', fakeAsync(() => {
     sinon.reset();
-    userSettingsService.getUserFacility.resolves([
+    userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
     ]);
@@ -144,13 +144,6 @@ describe('Analytics Target Aggregates Component', () => {
       defaultFilters: { facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' } },
     });
 
-    store.overrideSelector(Selectors.getSidebarFilter, {
-      defaultFilters: { facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' } },
-      hasFacilityFilter: true,
-    });
-    store.refreshState();
-    flush();
-
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.false;
     expect(targetAggregatesService.getAggregates.notCalled).to.be.true;
@@ -163,7 +156,7 @@ describe('Analytics Target Aggregates Component', () => {
     sinon.reset();
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.getAggregates.resolves([ { title: 'aggregate-1' } ]);
-    userSettingsService.getUserFacility.resolves([
+    userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
     ]);
@@ -175,14 +168,6 @@ describe('Analytics Target Aggregates Component', () => {
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
       defaultFilters: { facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' } },
     });
-
-    store.overrideSelector(Selectors.getSidebarFilter, {
-      defaultFilters: { facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' } },
-      hasFacilityFilter: true,
-    });
-    store.refreshState();
-    flush();
-
     expect(component.enabled).to.be.true;
     expect(component.loading).to.be.false;
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
@@ -196,7 +181,7 @@ describe('Analytics Target Aggregates Component', () => {
 
   it('should set different aggregates when updateAggregateTargets is called with a new facility', fakeAsync(() => {
     sinon.reset();
-    userSettingsService.getUserFacility.resolves([
+    userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
     ]);
@@ -210,13 +195,6 @@ describe('Analytics Target Aggregates Component', () => {
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
       defaultFilters: { facility: { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' } },
     });
-
-    store.overrideSelector(Selectors.getSidebarFilter, {
-      defaultFilters: { facility: { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' } },
-      hasFacilityFilter: true,
-    });
-    store.refreshState();
-    flush();
 
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.true;
