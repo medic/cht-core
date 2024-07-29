@@ -903,8 +903,18 @@ const startApi = async (listen = true) => {
 };
 
 const stopHaproxy = () => stopService('haproxy');
-
 const startHaproxy = () => startService('haproxy');
+
+const stopCouchDb = async () => {
+  await stopService('couchdb-1.local');
+  await stopService('couchdb-2.local');
+  await stopService('couchdb-3.local');
+};
+const startCouchDb = async () => {
+  await startService('couchdb-1.local');
+  await startService('couchdb-2.local');
+  await startService('couchdb-3.local');
+};
 
 const saveCredentials = (key, password) => {
   const options = {
@@ -1593,4 +1603,6 @@ module.exports = {
   isMinimumChromeVersion,
   escapeBranchName,
   isK3D,
+  stopCouchDb,
+  startCouchDb,
 };
