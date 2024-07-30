@@ -341,7 +341,6 @@ export class TelemetryService {
       const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
-      console.log('!!!!!!!!!!', currentDB, key, value);
       return await this.storeIt(currentDB, key, value);
       //.finally(() => this.closeDataBase(currentDB));
     } catch (error) {
