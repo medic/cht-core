@@ -6,33 +6,28 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const constants = require('@constants');
 
-const docs = [
-  {
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const genericReportFactory = require('@factories/cht/reports/generic-report');
+
+describe('Webapp after upgrade', () => {
+  const district = placeFactory.place().build({
     _id: 'parent',
     type: 'district_hospital',
     name: 'DC',
-  },
-  {
+  });
+
+  const contact = personFactory.build({
     _id: 'contact',
     type: 'person',
     name: 'John',
-    parent: { _id: 'parent' },
-  },
-  {
-    _id: 'report',
-    type: 'data_record',
-    form: 'someform',
-    contact: { _id: 'contact', parent: { _id: 'parent' } },
-    fields: {
-      whatever: 1,
-    },
-    reported_date: Date.now(),
-  },
-];
+    parent: { _id: 'district' },
+  });
 
-describe('Webapp after upgrade', () => {
+  const report = genericReportFactory.report().build({ form: 'someform' }, { submitter: contact });
+
   before(async () => {
-    await utils.saveDocs(docs);
+    await utils.saveDocs([district, contact, report]);
   });
 
   it('should login with admin account', async () => {
