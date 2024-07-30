@@ -113,6 +113,7 @@ describe('Analytics Filter Component', () => {
   }));
 
   it('should open and close sidebar filter', () => {
+    sinon.resetHistory();
     component.openSidebar();
     component.openSidebar();
     component.openSidebar();

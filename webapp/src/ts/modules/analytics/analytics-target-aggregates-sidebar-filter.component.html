@@ -23,10 +23,10 @@
                   <input
                     type="radio"
                     name="facility"
-                    [value]="facility._id"
+                    [value]="facility"
                     class="filter-option-radio"
-                    [(ngModel)]="selectedFacilityId"
-                    (change)="fetchAggregateTargets(facility._id)">
+                    [checked]="facility._id === selectedFacility._id"
+                    (click)="fetchAggregateTargets(facility)">
                   <span class="filter-option-label">{{ facility.name }}</span>
                 </label>
               </div>

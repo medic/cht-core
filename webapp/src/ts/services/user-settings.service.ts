@@ -1,4 +1,5 @@
 import {Injectable} from '@angular/core';
+import { Place } from '@medic/cht-datasource';
 
 import { CacheService } from '@mm-services/cache.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -46,7 +47,7 @@ export class UserSettingsService {
     }
   }
 
-  get(): Promise<Object> {
+  get(): Promise<UserSettings> {
     const docId = this.userDocId();
     if (!docId) {
       return Promise.reject(new Error('UserCtx not found'));
@@ -71,11 +72,15 @@ export class UserSettingsService {
       });
   }
 
-  async getUserFacility() {
+  getUserFacilities(): Promise<Place.v1.Place[]> {
     return this
       .get()
       .then((userSettings: UserSettings) => {
-        return this.getDataRecordsService.get(userSettings.facility_id);
+        let userFacilities = userSettings.facility_id;
+        if (userFacilities && !Array.isArray(userFacilities)) {
+          userFacilities = [ userFacilities ];
+        }
+        return this.getDataRecordsService.get(userFacilities);
       })
       .catch((err) => {
         console.error('Error fetching user facility:', err);

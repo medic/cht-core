@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -6,7 +6,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Component({
   selector: 'mm-analytics-target-aggregates-sidebar-filter',
@@ -14,42 +13,30 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 })
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 
+  @Input() userFacilities;
   @Output() facilitySelected = new EventEmitter<string>();
   @Output() reportingPeriodSelected = new EventEmitter<string>();
   private globalActions;
+  DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
-  error;
   isOpen = false;
-  userFacilities;
   selectedFacility;
-  selectedFacilityId;
   facilityFilterLabel;
-  hasMultipleFacilities;
-  reportingPeriod = 'current';
 
   constructor(
     private store: Store,
     private contactTypesService: ContactTypesService,
     private settingsService: SettingsService,
-    private userSettingsService: UserSettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
-  async ngOnInit() {
-    try {
-      this.subscribeToStore();
-      await this.isMultiFacilityUser();
-      await this.loadUserFacility();
-      await this.setFacilityLabel();
-    } catch (err) {
-      this.error = true;
-      console.error('Error initializing Target Sidebar component', err);
-    }
+  ngOnInit() {
+    this.subscribeToStore();
+    this.setFacilityLabel();
   }
 
   ngOnDestroy() {
-    this.globalActions.clearSidebarFilter();
     this.subscriptions.unsubscribe();
   }
 
@@ -58,6 +45,9 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => {
         this.isOpen = filterState?.isOpen ?? false;
+        if (!this.selectedFacility && filterState?.defaultFilters?.facility) {
+          this.selectedFacility = filterState.defaultFilters.facility;
+        }
       });
 
     this.subscriptions.add(subscription);
@@ -68,47 +58,26 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
   }
 
-  private async isMultiFacilityUser() {
-    this.hasMultipleFacilities = await this.userSettingsService.hasMultipleFacilities();
-  }
-
-  private async loadUserFacility() {
-    if (!this.hasMultipleFacilities) {
-      return;
-    }
-    this.userFacilities = await this.userSettingsService.getUserFacility();
-    this.userFacilities.sort((a, b) => a.name.localeCompare(b.name));
-    
-    this.selectedFacility = this.userFacilities[0];
-    this.selectedFacilityId = this.userFacilities[0]._id;
-  }
-
   private async setFacilityLabel() {
-    if (!this.hasMultipleFacilities) {
-      return;
-    }
-
-    const FACILITY = 'Facility';
-    if (!this.selectedFacility) {
-      this.facilityFilterLabel = FACILITY;
-      return;
+    if (!this.userFacilities?.length) {
+      this.facilityFilterLabel = this.DEFAULT_FACILITY_LABEL;
     }
 
     try {
+      const facility = this.userFacilities[0];
       const settings = await this.settingsService.get();
-      const userFacilityType = this.contactTypesService.getTypeId(this.selectedFacility);
+      const userFacilityType = this.contactTypesService.getTypeId(facility);
       const placeType = settings.contact_types.find(type => type.id === userFacilityType);
-
-      this.facilityFilterLabel = placeType?.name_key || FACILITY;
+      this.facilityFilterLabel = placeType?.name_key || this.DEFAULT_FACILITY_LABEL;
     } catch (err) {
-      this.error = true;
       console.error('Error fetching facility label', err);
-      this.facilityFilterLabel = FACILITY;
+      this.facilityFilterLabel = this.DEFAULT_FACILITY_LABEL;
     }
   }
 
-  fetchAggregateTargets(facilityId) {
-    this.facilitySelected.emit(facilityId);
+  fetchAggregateTargets(facility) {
+    this.selectedFacility = facility;
+    this.facilitySelected.emit(this.selectedFacility);
   }
 
   onReportingPeriodChange() {

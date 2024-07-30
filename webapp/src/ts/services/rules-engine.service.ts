@@ -402,7 +402,7 @@ export class RulesEngineService implements OnDestroy {
     return this.ngZone.runOutsideAngular(() => this._fetchTargets());
   }
 
-  private _fetchTargets() {
+  private _fetchTargets(): Target[] {
     const trackName = [ 'rules-engine', 'targets' ];
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
@@ -443,4 +443,25 @@ export class RulesEngineService implements OnDestroy {
   contactsMarkedAsDirty(callback) {
     return this.observable.subscribe(callback);
   }
+}
+
+export enum TargetType {
+  COUNT = 'count',
+  PERCENT = 'percent'
+}
+
+export interface TargetValue {
+  pass: number;
+  percent?: number;
+  total: number;
+}
+
+export interface Target {
+  id: string;
+  type: TargetType;
+  icon: string;
+  translation_key: string;
+  subtitle_translation_key: string;
+  goal: number;
+  value: TargetValue;
 }
