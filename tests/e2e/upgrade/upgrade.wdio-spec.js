@@ -68,6 +68,11 @@ describe('Performing an upgrade', () => {
     });
   });
 
+  after(async () => {
+    await utils.deleteUsers([docs.user]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should have an upgrade_log after installing', async () => {
     const logs = await getUpgradeLogs();
     expect(logs.length).to.equal(1);

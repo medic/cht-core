@@ -30,6 +30,11 @@ describe('Webapp after upgrade', () => {
     await utils.saveDocs([district, contact, report]);
   });
 
+  after(async () => {
+    await utils.revertDb([/^form:/], true);
+  });
+
+
   it('should login with admin account', async () => {
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
   });

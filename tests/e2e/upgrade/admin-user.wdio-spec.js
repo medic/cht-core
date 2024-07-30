@@ -6,11 +6,11 @@ describe('admin users', () => {
     const adminUser = {
       username: 'admin2',
       password: 'medic.123',
-      roles: [ 'admin' ],
+      roles: ['admin'],
       contact: { name: 'Philip' },
       place: { name: 'place', type: 'district_hospital' },
     };
-    await utils.createUsers([ adminUser ]);
+    await utils.createUsers([adminUser]);
 
     const membership = await utils.request({ path: '/_membership' });
     const nodes = membership.all_nodes;
@@ -27,5 +27,7 @@ describe('admin users', () => {
       password: adminUser.password,
       adminApp: true
     });
+
+    await utils.deleteUsers([adminUser]);
   });
 });
