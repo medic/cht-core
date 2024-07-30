@@ -236,7 +236,7 @@ const buildMultiPlatformServiceImage = async (service, tag) => {
 };
 
 const buildServiceImages = async () => {
-  const d = await makeWorkingDir();
+  const workingDir = await makeWorkingDir();
   console.log('copying modules to working directory');
   await exec('cp', ['-r', './node_modules', './package.json', './package-lock.json', workingDir]);
   console.log('packing modules');
