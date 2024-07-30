@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as moment from 'moment';
 import { isString as _isString } from 'lodash-es';
-import { Contact } from '@medic/cht-datasource/dist/libs/contact';
+import { Person } from '@medic/cht-datasource';
 
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { DbService } from '@mm-services/db.service';
@@ -375,5 +375,5 @@ export interface AggregateTargetValue extends TargetValue {
 
 export interface ContactTargetValue {
   value: TargetValue;
-  contact: Contact;
+  contact: Person.v1.Person;
 }

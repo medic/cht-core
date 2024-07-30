@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import { Contact } from '@medic/cht-datasource/dist/libs/contact';
+import { Place } from '@medic/cht-datasource';
 
 import { CacheService } from '@mm-services/cache.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -72,7 +72,7 @@ export class UserSettingsService {
       });
   }
 
-  getUserFacilities(): Promise<Contact[]> {
+  getUserFacilities(): Promise<Place.v1.Place[]> {
     return this
       .get()
       .then((userSettings: UserSettings) => {
