@@ -123,7 +123,7 @@ describe('UserSettings service', () => {
     get.returns(Promise.resolve({ facility_id: ['facility_1', 'facility_2'] }));
     getDataRecords.resolves([{ _id: 'facility_1' }, { _id: 'facility_2' }]);
 
-    const result = await service.getUserFacility();
+    const result = await service.getUserFacilities();
 
     expect(result).to.deep.equal([{ _id: 'facility_1' }, { _id: 'facility_2' }]);
     expect(get.callCount).to.equal(1);
@@ -132,12 +132,26 @@ describe('UserSettings service', () => {
     expect(getDataRecords.args[0][0]).to.deep.equal(['facility_1', 'facility_2']);
   });
 
+  it('getUserFacility returns user facility from GetDataRecordService when facility_id is string', async () => {
+    userCtx.returns({ name: 'jack' });
+    get.returns(Promise.resolve({ facility_id: 'facility_1' }));
+    getDataRecords.resolves([{ _id: 'facility_1' }]);
+
+    const result = await service.getUserFacilities();
+
+    expect(result).to.deep.equal([{ _id: 'facility_1' }]);
+    expect(get.callCount).to.equal(1);
+    expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+    expect(getDataRecords.callCount).to.equal(1);
+    expect(getDataRecords.args[0][0]).to.deep.equal(['facility_1']);
+  });
+
   it('getUserFacility returns empty array when GetDataRecordsService throws an error', async () => {
     userCtx.returns({ name: 'jack' });
     get.returns(Promise.resolve({ facility_id: ['facility_1', 'facility_2'] }));
     getDataRecords.rejects({ error: 'failure' });
 
-    const result = await service.getUserFacility();
+    const result = await service.getUserFacilities();
 
     expect(result).to.deep.equal([]);
     expect(get.callCount).to.equal(1);

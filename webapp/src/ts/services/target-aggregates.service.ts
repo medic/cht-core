@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as moment from 'moment';
 import { isString as _isString } from 'lodash-es';
+import { Person } from '@medic/cht-datasource';
 
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { DbService } from '@mm-services/db.service';
@@ -13,6 +14,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { Target, TargetValue } from '@mm-services/rules-engine.service';
 
 @Injectable({
   providedIn: 'root'
@@ -290,7 +292,6 @@ export class TargetAggregatesService {
     const facilityIds = await this.getUserFacilityIds();
 
     // When no facilities assigned, this returns true to display an error indicating to assign facilities to the user
-    // When more than one facility, this returns false to display an error about the module being disabled.
     return !facilityIds || facilityIds.length > 0;
   }
 
@@ -298,7 +299,7 @@ export class TargetAggregatesService {
     return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId));
   }
 
-  private _getAggregates(facilityId?) {
+  private _getAggregates(facilityId?): Promise<AggregateTarget[]> {
     return this.settingsService
       .get()
       .then(settings => {
@@ -349,4 +350,30 @@ export class TargetAggregatesService {
       });
   }
 
+}
+
+export interface AggregateTarget extends Target {
+  aggregate: boolean;
+  hasGoal: boolean;
+  isPercent: boolean;
+  progressBar: boolean;
+  facility?: string;
+  heading: string;
+  values: ContactTargetValue[];
+  aggregateValue: AggregateTargetValue;
+  dhis?: {
+    dataElement?: string;
+    categoryOptionCombo?: string;
+    attributeOptionCombo?: string;
+  };
+}
+
+export interface AggregateTargetValue extends TargetValue {
+  hasGoal: boolean;
+  summary: string;
+}
+
+export interface ContactTargetValue {
+  value: TargetValue;
+  contact: Person.v1.Person;
 }
