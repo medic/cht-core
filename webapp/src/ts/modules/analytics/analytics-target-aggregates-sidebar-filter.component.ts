@@ -14,12 +14,14 @@ import { SettingsService } from '@mm-services/settings.service';
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 
   @Input() userFacilities;
-  @Output() facilitySelected = new EventEmitter<string>();
-  @Output() reportingPeriodSelected = new EventEmitter<string>();
+  @Output() facilitySelectionChanged = new EventEmitter<string>();
+  @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
   private globalActions;
+  readonly ReportingPeriod = ReportingPeriod;
   DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
   isOpen = false;
+  selectedReportingPeriod;
   selectedFacility;
   facilityFilterLabel;
 
@@ -48,6 +50,10 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
         if (!this.selectedFacility && filterState?.defaultFilters?.facility) {
           this.selectedFacility = filterState.defaultFilters.facility;
         }
+        
+        if (!this.selectedReportingPeriod && filterState?.defaultFilters?.reportingPeriod) {
+          this.selectedReportingPeriod = filterState.defaultFilters.reportingPeriod;
+        }
       });
 
     this.subscriptions.add(subscription);
@@ -75,12 +81,17 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
     }
   }
 
-  fetchAggregateTargets(facility) {
+  fetchAggregateTargetsByFacility(facility) {
     this.selectedFacility = facility;
-    this.facilitySelected.emit(this.selectedFacility);
+    this.facilitySelectionChanged.emit(this.selectedFacility);
   }
 
-  onReportingPeriodChange() {
-    this.reportingPeriodSelected.emit(this.reportingPeriod);
+  fetchAggregateTargetsByReportingPeriod() {
+    this.reportingPeriodSelectionChanged.emit(this.selectedReportingPeriod);
   }
+}
+
+export enum ReportingPeriod {
+  CURRENT = 'current',
+  PREVIOUS = 'previous',
 }

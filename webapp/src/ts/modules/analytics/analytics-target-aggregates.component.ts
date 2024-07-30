@@ -4,10 +4,11 @@ import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
-import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
+import { AggregateTarget, TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 @Component({
   selector: 'analytics-target-aggregates',
@@ -19,13 +20,15 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private trackPerformance;
   subscriptions: Subscription = new Subscription();
-  userFacilities;
   loading = true;
   enabled = false;
   aggregates: any = null;
   selected = null;
   error = null;
+  userFacilities;
   sidebarFilter;
+  reportingPeriodFilter;
+  facilityFilter;
 
   constructor(
     private store: Store,
@@ -78,12 +81,24 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
-  async getTargetAggregates(userFacility) {
+  async getTargetAggregates(userFacility, reportingPeriod) {
     try {
-      const aggregates = this.enabled ? await this.targetAggregatesService.getAggregates(userFacility?._id) : [];
-      if (this.userFacilities.length > 1) {
-        aggregates.forEach((aggregate) => aggregate.facility = userFacility?.name);
+      let aggregates: AggregateTarget[] = [];
+      if (this.enabled) {
+        this.facilityFilter = userFacility;
+        this.reportingPeriodFilter = reportingPeriod;
+        aggregates = await this.targetAggregatesService.getAggregates(
+          this.facilityFilter?._id, this.reportingPeriodFilter
+        );
       }
+
+      aggregates.forEach((aggregate) => {
+        if (this.userFacilities.length > 1) {
+          aggregate.facility = userFacility?.name;
+        }
+        aggregate.reportingPeriod = reportingPeriod;
+      });
+
       this.targetAggregatesActions.setTargetAggregates(aggregates);
       this.targetAggregatesActions.setTargetAggregatesLoaded(true);
 
@@ -101,10 +116,12 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
   private async setDefaultFilters() {
     this.userFacilities = await this.userSettingsService.getUserFacilities();
+    this.userFacilities.sort((a, b) => a.name.localeCompare(b.name));
     const defaultFilters = {
       facility: this.userFacilities.length ? { ...this.userFacilities[0] } : null,
+      reportingPeriod: ReportingPeriod.CURRENT,
     };
     this.globalActions.setSidebarFilter({ defaultFilters });
-    await this.getTargetAggregates(defaultFilters.facility);
+    await this.getTargetAggregates(defaultFilters.facility, defaultFilters.reportingPeriod);
   }
 }

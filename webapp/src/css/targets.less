@@ -163,8 +163,12 @@
   left: 0;
   right: 0;
 
-  .target-detail .heading-content .aggregate-targets-facility {
+  .target-detail .heading-content .aggregate-targets-details {
     display: block;
+    span:not(:last-child):after {
+      content: '\2022';
+      padding: 0 5px;
+    }
   }
 }
 

@@ -15,7 +15,7 @@
     <div class="sidebar-body">
       <mat-accordion multi>
         <!-- 1. Facility -->
-        <div class="filter-options-container" *ngIf="hasMultipleFacilities">
+        <div class="filter-options-container" *ngIf="userFacilities.length > 1">
             <span class="filter-options-title"> {{ facilityFilterLabel | translate }} </span>
             <ng-container *ngFor="let facility of userFacilities">
               <div class="filter-option-place">
@@ -26,7 +26,7 @@
                     [value]="facility"
                     class="filter-option-radio"
                     [checked]="facility._id === selectedFacility._id"
-                    (click)="fetchAggregateTargets(facility)">
+                    (click)="fetchAggregateTargetsByFacility(facility)">
                   <span class="filter-option-label">{{ facility.name }}</span>
                 </label>
               </div>
@@ -41,10 +41,10 @@
               <input
                 type="radio"
                 name="reportingPeriod"
-                value="current"
                 class="filter-option-radio"
-                [(ngModel)]="reportingPeriod"
-                (change)="onReportingPeriodChange()">
+                [value]="ReportingPeriod.CURRENT"
+                [(ngModel)]="selectedReportingPeriod"
+                (change)="fetchAggregateTargetsByReportingPeriod()">
               <span class="filter-option-label">{{ 'analytics.target.aggregates.this_month' | translate }}</span>
             </label>
           </div>
@@ -53,10 +53,10 @@
               <input
                 type="radio"
                 name="reportingPeriod"
-                value="previous"
                 class="filter-option-radio"
-                [(ngModel)]="reportingPeriod"
-                (change)="onReportingPeriodChange()">
+                [value]="ReportingPeriod.PREVIOUS"
+                [(ngModel)]="selectedReportingPeriod"
+                (change)="fetchAggregateTargetsByReportingPeriod()">
               <span class="filter-option-label">{{ 'analytics.target.aggregates.last_month' | translate }}</span>
             </label>
           </div>

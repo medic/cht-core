@@ -19,7 +19,7 @@
         [selected]="aggregate.selected"
         [icon]="aggregate.icon"
         [heading]="aggregate.heading"
-        [lineage]="aggregate.facility"
+        [lineage]="aggregate.facility ? [aggregate.facility, aggregate.reportingPeriod] : aggregate.reportingPeriod"
         [aggregate]="aggregate.aggregateValue">
       </mm-content-row>
     </ul>
@@ -34,8 +34,8 @@
     <mm-analytics-target-aggregates-sidebar-filter
       class="col-sm-3 sidebar-filter-wrapper"
       [userFacilities]="userFacilities"
-      (facilitySelected)="getTargetAggregates($event)"
-      (reportingPeriodSelected)="onReportingPeriodChange($event)">
+      (facilitySelectionChanged)="getTargetAggregates($event, reportingPeriodFilter)"
+      (reportingPeriodSelectionChanged)="getTargetAggregates(facilityFilter, $event)">
     </mm-analytics-target-aggregates-sidebar-filter>
   </div>
 </div>

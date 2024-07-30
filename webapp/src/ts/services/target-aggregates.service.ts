@@ -15,6 +15,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { Target, TargetValue } from '@mm-services/rules-engine.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 @Injectable({
   providedIn: 'root'
@@ -367,6 +368,7 @@ export interface AggregateTarget extends Target {
   isPercent: boolean;
   progressBar: boolean;
   facility?: string;
+  reportingPeriod?: ReportingPeriod;
   heading: string;
   values: ContactTargetValue[];
   aggregateValue: AggregateTargetValue;
