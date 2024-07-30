@@ -12,7 +12,7 @@ RUN apk add --update --no-cache \
 WORKDIR /service
 
 COPY shared-libs ./shared-libs
-COPY build/node_modules ./node_modules
+COPY node_modules ./node_modules
 COPY sentinel ./sentinel
 
 ENV NODE_PATH=/service/sentinel/node_modules
