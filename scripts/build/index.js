@@ -243,7 +243,8 @@ const buildServiceImages = async () => {
   await exec('npm', ['pack'], { cwd: workingDir });
   for (const service of versions.SERVICES) {
     console.log('extracting modules');
-    await exec('tar', ['-Pxvzf', `${workingDir}/medic-4.10.0.tgz`, '-C', './' + service]); // TODO grab the correct version
+    // TODO grab the correct version
+    await exec('tar', ['-Pxvzf', `${workingDir}/medic-4.10.0.tgz`, '-C', './' + service]);
     const tag = versions.getImageTag(service);
     if (INTERNAL_CONTRIBUTOR) {
       await buildMultiPlatformServiceImage(service, tag);
