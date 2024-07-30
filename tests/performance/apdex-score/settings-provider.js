@@ -11,6 +11,10 @@ const getIterations = () => {
   return SETTINGS_CACHE?.iterations;
 };
 
+const getTestsToSkip = () => {
+  return SETTINGS_CACHE?.skip;
+};
+
 const hasPrivacyPolicy = () => {
   return !!SETTINGS_CACHE?.hasPrivacyPolicy;
 };
@@ -38,6 +42,7 @@ const getCommonElements = () => {
 const settingsProvider = {
   getIterations,
   getInstanceURL,
+  getTestsToSkip,
   hasPrivacyPolicy,
   getCapabilitiesSettings,
   getUser,
