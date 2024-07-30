@@ -242,9 +242,7 @@ const buildServiceImages = async () => {
   console.log('packing modules');
   await exec('npm', ['pack'], { cwd: workingDir });
   console.log('extracting modules');
-  await exec('tar', ['-Pxvzf', `${workingDir}/medic-4.10.0.tgz`]); // TODO grab the correct version
-  console.log('moving package dir');
-  await exec('mv', [`${workingDir}/package`, '.']);
+  await exec('tar', ['-Pxvzf', `${workingDir}/medic-4.10.0.tgz`, '-C', './build']); // TODO grab the correct version
   for (const service of versions.SERVICES) {
     const tag = versions.getImageTag(service);
     if (INTERNAL_CONTRIBUTOR) {
