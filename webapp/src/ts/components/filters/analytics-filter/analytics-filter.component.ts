@@ -69,7 +69,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    this.globalActions.clearSidebarFilter();
   }
 
   private subscribeToStore() {
@@ -123,10 +122,10 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     ]);
 
     this.showFilterButton = !isAdmin &&
-                            hasMultipleFacilities &&
-                            checkPermissions &&
-                            this.isTargetAggregates() &&
-                            isTargetAggregateEnabled;
+      hasMultipleFacilities &&
+      checkPermissions &&
+      this.isTargetAggregates() &&
+      isTargetAggregateEnabled;
   }
 
   openSidebar() {

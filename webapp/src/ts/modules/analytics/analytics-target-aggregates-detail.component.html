@@ -16,6 +16,7 @@
             <div class="heading-content">
               <h2 *ngIf="selected.translation_key; else noTranslationKeyTpl">{{ selected.translation_key | translate }}</h2>
               <ng-template #noTranslationKeyTpl><h2>{{ selected.title | translateFrom }}</h2></ng-template>
+              <div class="aggregate-targets-facility" *ngIf="selected?.facility">{{ selected?.facility }}</div>
             </div>
           </div>
 

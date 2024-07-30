@@ -52,6 +52,7 @@ const openTargetDetails = async (targetID) => {
   const item = lineItem(targetID);
   await item.$('a').waitForClickable();
   await item.$('a').click();
+  await commonPage.waitForLoaders();
   await (await $('.target-detail.card h2')).waitForDisplayed();
 };
 
