@@ -11,45 +11,45 @@ const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
 const semver = require('semver');
 
-const testFrontend = BASE_VERSION === 'latest';
-
-const docs = dataFactory.createHierarchy({
-  name: 'offlineupgrade',
-  user: true,
-  nbrClinics: 1,
-  nbrPersons: 1,
-});
-
-
-const getDdocs = async () => {
-  const result = await utils.requestOnMedicDb({
-    path: '/_all_docs',
-    qs: {
-      start_key: JSON.stringify('_design'),
-      end_key: JSON.stringify('_design\ufff0'),
-      include_docs: true,
-    },
-  });
-
-  return result.rows.map(row => row.doc);
-};
-
-const getUpgradeLogs = async () => {
-  const logs = await utils.logsDb.allDocs({
-    startkey: 'upgrade_log',
-    endkey: 'upgrade_log\ufff0',
-    include_docs: true,
-  });
-  return logs.rows.map(row => row.doc);
-};
-
-const deleteUpgradeLogs = async () => {
-  const logs = await getUpgradeLogs();
-  logs.forEach(log => log._deleted = true);
-  await utils.logsDb.bulkDocs(logs);
-};
-
 describe('Performing an upgrade', () => {
+  const testFrontend = BASE_VERSION === 'latest';
+
+  const docs = dataFactory.createHierarchy({
+    name: 'offlineupgrade',
+    user: true,
+    nbrClinics: 1,
+    nbrPersons: 1,
+  });
+
+
+  const getDdocs = async () => {
+    const result = await utils.requestOnMedicDb({
+      path: '/_all_docs',
+      qs: {
+        start_key: JSON.stringify('_design'),
+        end_key: JSON.stringify('_design\ufff0'),
+        include_docs: true,
+      },
+    });
+
+    return result.rows.map(row => row.doc);
+  };
+
+  const getUpgradeLogs = async () => {
+    const logs = await utils.logsDb.allDocs({
+      startkey: 'upgrade_log',
+      endkey: 'upgrade_log\ufff0',
+      include_docs: true,
+    });
+    return logs.rows.map(row => row.doc);
+  };
+
+  const deleteUpgradeLogs = async () => {
+    const logs = await getUpgradeLogs();
+    logs.forEach(log => log._deleted = true);
+    await utils.logsDb.bulkDocs(logs);
+  };
+
   before(async () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
