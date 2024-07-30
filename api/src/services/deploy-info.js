@@ -1,5 +1,5 @@
 const db = require('../db');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 const ddocs = require('./setup/ddocs');
 const logger = require('@medic/logger');
 const semver = require('semver');

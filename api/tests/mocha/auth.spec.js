@@ -4,7 +4,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const auth = require('../../src/auth');
 const config = require('../../src/config');
-const environment = require('../../src/environment');
+const environment = require('@medic/environment');
 
 let req;
 

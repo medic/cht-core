@@ -14,6 +14,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -29,6 +30,7 @@ export class ContactsEffects {
     private performanceService: PerformanceService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private contactSummaryService: ContactSummaryService,
+    private contactTypesService: ContactTypesService,
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
@@ -71,7 +73,7 @@ export class ContactsEffects {
         const loadContact = this
           .loadContact(id)
           .then(contact => {
-            const contactType = contact?.doc?.contact_type;
+            const contactType = this.contactTypesService.getTypeId(contact?.doc);
             if (contactType) {
               trackName = trackName.map(part => part === 'contact' ? contactType : part);
             }
@@ -207,6 +209,10 @@ export class ContactsEffects {
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
+      .catch(error => {
+        this.contactsActions.updateSelectedContactSummary({ errorStack: error.stack });
+        throw error;
+      })
       .then(summary => {
         return this
           .verifySelectedContactNotChanged(contactId)

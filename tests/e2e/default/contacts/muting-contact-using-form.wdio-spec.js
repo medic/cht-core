@@ -10,9 +10,10 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-xdescribe('Mute/Unmute contacts using a specific form.', () => {
+describe('Mute/Unmute contacts using a specific form - ', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
+
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const person = personFactory.build({ parent: {_id: healthCenter._id, parent: healthCenter.parent} });
   const mutePerson = personFactory.build({
@@ -40,18 +41,17 @@ xdescribe('Mute/Unmute contacts using a specific form.', () => {
     await loginPage.login(offlineUser);
   });
 
-  it('Should mute a contact using the defined mute_forms (death_report).', async () => {
+  it('should mute a contact using the defined mute_forms (death_report).', async () => {
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
     await commonPage.waitForPageLoaded();
     await commonPage.sync();
 
-    expect(await (await contactPage.contactMuted()).isDisplayed()).to.be.true;
-
+    expect(await (await contactPage.contactCardSelectors.contactMuted()).isDisplayed()).to.be.true;
   });
 
-  it('Should unmute a contact using the defined unmute_forms (undo_death_report).', async () => {
+  it('should unmute a contact using the defined unmute_forms (undo_death_report).', async () => {
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('undo_death_report');
     await commonEnketoPage.selectRadioButton(
@@ -63,11 +63,10 @@ xdescribe('Mute/Unmute contacts using a specific form.', () => {
     await genericForm.submitForm();
     await commonPage.sync();
 
-    expect(await (await contactPage.contactMuted()).isDisplayed()).to.be.false;
-
+    expect(await (await contactPage.contactCardSelectors.contactMuted()).isDisplayed()).to.be.false;
   });
 
-  it('Should show a popup when trying to submit a non-unmuting form against a muted contact', async () => {
+  it('should show a popup when trying to submit a non-unmuting form against a muted contact', async () => {
     await utils.revertSettings(true);
     await commonPage.sync(true);
     await commonPage.goToPeople(mutePerson._id);

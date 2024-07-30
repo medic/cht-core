@@ -4,17 +4,11 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
-let brandingDoc;
-
 describe('Login page funcionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
   };
-
-  before(async () => {
-    brandingDoc = await utils.getDoc('branding');
-  });
 
   afterEach(async () => {
     await browser.reloadSession();
@@ -51,13 +45,11 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should change locale to French', async () => {
-      //French translations
       expect(await loginPage.changeLanguage('fr', frTranslations.user)).to.deep.equal(frTranslations);
       expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'fr', name: 'Français (French)' });
     });
 
     it('should change locale to Spanish', async () => {
-      //Spanish translations
       expect(await loginPage.changeLanguage('es', esTranslations.user)).to.deep.equal(esTranslations);
       expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'es', name: 'Español (Spanish)' });
     });
@@ -66,15 +58,19 @@ describe('Login page funcionality tests', () => {
   describe('Log out', () => {
     it('should show a warning before log out', async () => {
       await loginPage.cookieLogin(auth);
-      const warning = await commonPage.getLogoutMessage();
-      expect(warning).to.equal('You will need an internet connection to log back in.');
+      expect(await commonPage.getLogoutMessage()).to.equal('You will need an internet connection to log back in.');
     });
   });
 
   describe('Log in', () => {
-    const wrongUsername = 'fakeuser';
-    const wrongPassword = 'fakepass';
-    const incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
+    const WRONG_USERNAME = 'fakeuser';
+    const WRONG_PASSWORD = 'fakepass';
+    const INCORRECT_CREDENTIALS_TEXT = 'Incorrect user name or password. Please try again.';
+    let brandingDoc;
+
+    before(async () => {
+      brandingDoc = await utils.getDoc('branding');
+    });
 
     it('should log in using username and password fields', async () => {
       await loginPage.login(auth);
@@ -140,18 +136,18 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
-      await loginPage.login({ username: wrongUsername, password: '', loadPage: false });
-      expect(await loginPage.getErrorMessage()).to.equal(incorrectCredentialsText);
+      await loginPage.login({ username: WRONG_USERNAME, password: '', loadPage: false });
+      expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should try to sign in with blank auth and verify that credentials were incorrect', async () => {
       await loginPage.login({ username: '', password: '', loadPage: false });
-      expect(await loginPage.getErrorMessage()).to.equal(incorrectCredentialsText);
+      expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should try to sign in and verify that credentials were incorrect', async () => {
-      await loginPage.login({ username: wrongUsername, password: wrongPassword, loadPage: false });
-      expect(await loginPage.getErrorMessage()).to.equal(incorrectCredentialsText);
+      await loginPage.login({ username: WRONG_USERNAME, password: WRONG_PASSWORD, loadPage: false });
+      expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should hide and reveal password value, and login with a revealed password', async () => {

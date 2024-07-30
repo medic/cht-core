@@ -2,7 +2,7 @@ const _ = require('lodash');
 const path = require('path');
 
 const db = require('../db');
-const environment = require('../environment');
+const resources = require('../resources');
 const { info } = require('@medic/logger');
 const config = require('../config');
 
@@ -74,7 +74,7 @@ module.exports = {
    * @returns Boolean whether or not settings doc has been updated
    */
   update: (body, replace, overwrite) => {
-    const pathToDefaultConfig = path.join(environment.defaultDocsPath, 'settings.doc.json');
+    const pathToDefaultConfig = path.join(resources.defaultDocsPath, 'settings.doc.json');
     const defaultConfig = require(pathToDefaultConfig);
 
     return getDoc()

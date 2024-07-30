@@ -1,4 +1,3 @@
-const uuid = require('uuid').v4;
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
@@ -8,52 +7,43 @@ const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-const places = placeFactory.generateHierarchy();
-const clinic = places.get('clinic');
-const health_center = places.get('health_center');
-const district_hospital = places.get('district_hospital');
-
-const contact = personFactory.build({
-  _id: uuid(),
-  name: 'OfflineContact',
-  phone: '+12068881234',
-  place: health_center._id,
-  type: 'person',
-  parent: {
-    _id: health_center._id,
-    parent: health_center.parent
-  },
-});
-
-const offlineUser = userFactory.build({
-  username: 'offlineuser',
-  isOffline: true,
-  roles: ['chw'],
-  place: health_center._id,
-  contact: contact._id,
-});
-
-const patient = personFactory.build({
-  _id: uuid(),
-  parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
-});
-const xmlReport = reportFactory
-  .report()
-  .build(
-    { form: 'home_visit', content_type: 'xml' },
-    { patient, submitter: contact }
-  );
-
-const smsReport = reportFactory
-  .report()
-  .build(
-    { form: 'P',  patient_id: patient._id, },
-    { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id}, },
-  );
-
-describe('- EDIT permissions disabled', () => {
+describe('More Options Menu - Offline User - Edit permissions disabled', () => {
+  const places = placeFactory.generateHierarchy();
+  const clinic = places.get('clinic');
+  const health_center = places.get('health_center');
+  const district_hospital = places.get('district_hospital');
   let xmlReportId;
   let smsReportId;
+
+  const contact = personFactory.build({
+    place: health_center._id,
+    parent: { _id: health_center._id, parent: health_center.parent },
+  });
+
+  const offlineUser = userFactory.build({
+    isOffline: true,
+    place: health_center._id,
+    contact: contact._id,
+  });
+
+  const patient = personFactory.build({
+    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
+  });
+
+  const xmlReport = reportFactory
+    .report()
+    .build(
+      { form: 'home_visit', content_type: 'xml' },
+      { patient, submitter: contact }
+    );
+
+  const smsReport = reportFactory
+    .report()
+    .build(
+      { form: 'P',  patient_id: patient._id, },
+      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id}, },
+    );
+
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient]);
     let result = await utils.saveDoc(xmlReport);
@@ -68,19 +58,23 @@ describe('- EDIT permissions disabled', () => {
 
   after(async () => await utils.revertSettings(true));
 
-  xit(' - Contact Tab - contact selected', async () => {
-    await commonPage.goToPeople(patient._id);
-    await commonPage.closeReloadModal();
-    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+  describe('Contact tab', () => {
+    it('should hide the kebab menu.', async () => {
+      await commonPage.goToPeople(patient._id);
+      await commonPage.closeReloadModal();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    });
   });
 
-  it('- Report tab - menu not displayed when sms report selected', async () => {
-    await reportPage.goToReportById(smsReportId);
-    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
-  });
+  describe('Report tab', () => {
+    it('should hide the kebab menu when the sms report is opened.', async () => {
+      await reportPage.goToReportById(smsReportId);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    });
 
-  xit('- Report tab - menu not displayed when xml report selected', async () => {
-    await reportPage.goToReportById(xmlReportId);
-    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    it('should hide the kebab menu when the xml report is opened.', async () => {
+      await reportPage.goToReportById(xmlReportId);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    });
   });
 });
