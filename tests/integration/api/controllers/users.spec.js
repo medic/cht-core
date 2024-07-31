@@ -600,7 +600,7 @@ describe('Users API', () => {
     });
   });
 
-  xdescribe('token-login', () => {
+  describe('token-login', () => {
     let user;
 
     const getUser = (user) => {

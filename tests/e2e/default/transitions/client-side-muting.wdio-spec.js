@@ -211,7 +211,7 @@ describe('Muting', () => {
     });
   });
 
-  xdescribe('for an offline user', () => {
+  describe('for an offline user', () => {
     const updateSettings = async (settings) => {
       await setBrowserOffline();
       await utils.updateSettings(settings);

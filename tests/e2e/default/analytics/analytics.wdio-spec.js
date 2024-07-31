@@ -73,7 +73,7 @@ describe('Targets', () => {
     ]);
   });
 
-  xit('should display correct message when no target found', async () => {
+  it('should display correct message when no target found', async () => {
     const settings = await compileTargets();
     await updateSettings(settings);
     await analyticsPage.goToTargets();
@@ -85,7 +85,7 @@ describe('Targets', () => {
     expect(await emptySelection.getText()).to.equal('No target found.');
   });
 
-  xit('should display correct message when targets are disabled', async () => {
+  it('should display correct message when targets are disabled', async () => {
     const tasks = {
       targets: { enabled: false }
     };
@@ -101,7 +101,7 @@ describe('Targets', () => {
     );
   });
 
-  xit('should show error message for bad config', async () => {
+  it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
     await updateSettings(settings);
     await analyticsPage.goToTargets();

@@ -182,7 +182,7 @@ const waitForConflicts = async (getDoc) => {
   return utils.delayPromise(waitForConflicts(getDoc), 100);
 };
 
-xdescribe('Create user for contacts', () => {
+describe('Create user for contacts', () => {
   before(async () => {
     await utils.saveDocIfNotExists(BASIC_FORM_DOC);
     await utils.saveDocIfNotExists(OTHER_REPLACE_FORM_DOC);

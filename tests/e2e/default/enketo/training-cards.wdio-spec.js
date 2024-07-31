@@ -52,7 +52,7 @@ describe('Training Cards', () => {
     expect(await reportsPage.allReports()).to.be.empty;
   });
 
-  xit('should display training after it was canceled and the training doc was updated', async () => {
+  it('should display training after it was canceled and the training doc was updated', async () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
     // Unfinished trainings should appear again after reload.
@@ -81,7 +81,7 @@ describe('Training Cards', () => {
     );
   });
 
-  xit('should display training after privacy policy', async () => {
+  it('should display training after privacy policy', async () => {
     const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
     await utils.saveDocs([privacyPolicy]);
     await commonPage.goToReports();

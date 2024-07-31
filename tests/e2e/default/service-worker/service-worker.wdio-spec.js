@@ -141,7 +141,7 @@ describe('Service worker cache', () => {
     ].sort());
   });
 
-  xit('branding updates trigger login page refresh', async () => {
+  it('branding updates trigger login page refresh', async () => {
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     const branding = await utils.getDoc('branding');
     branding.title = 'Not Medic';
@@ -154,7 +154,7 @@ describe('Service worker cache', () => {
     expect(await browser.getTitle()).to.equal('Not Medic');
   });
 
-  xit('login page translation updates trigger login page refresh', async () => {
+  it('login page translation updates trigger login page refresh', async () => {
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
       'User Name': 'NotUsername',
@@ -170,7 +170,7 @@ describe('Service worker cache', () => {
     expect(await (await loginPage.loginButton()).getText()).to.equal('NotLogin');
   });
 
-  xit('adding new languages triggers login page refresh', async () => {
+  it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
     await commonPage.sync(true);
@@ -195,7 +195,7 @@ describe('Service worker cache', () => {
     await utils.revertSettings(true);
   });
 
-  xit('other translation updates do not trigger a login page refresh', async () => {
+  it('other translation updates do not trigger a login page refresh', async () => {
     await commonPage.sync(true);
 
     const cacheDetails = await getCachedRequests(true);
@@ -223,7 +223,7 @@ describe('Service worker cache', () => {
     await browser.throttle('online');
   });
 
-  xit('confirm fetch yields cached result', async () => {
+  it('confirm fetch yields cached result', async () => {
     const expectCachedState = async (expectCached, path, headers = {}) => {
       const result = await doFetch(path, headers);
       expect(result.body === 'cache').to.eq(expectCached, JSON.stringify({ path, headers }, null, 2));

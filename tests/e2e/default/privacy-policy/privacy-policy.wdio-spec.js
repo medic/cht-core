@@ -33,12 +33,12 @@ describe('Privacy policy', () => {
         await utils.revertDb([/^form:/], true);
       });
 
-      xit('should show the correct privacy policy on login', async () => {
+      it('should show the correct privacy policy on login', async () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
 
-      xit('should not show on refresh', async () => {
+      it('should not show on refresh', async () => {
         await browser.url('/');
         await (await commonElements.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
@@ -49,7 +49,7 @@ describe('Privacy policy', () => {
         await privacyPage.waitForPolicy(await privacyPage.privacyConfig(), englishTexts);
       });
 
-      xit('should not show on subsequent login', async () => {
+      it('should not show on subsequent login', async () => {
         await browser.reloadSession();
         await browser.url('/');
         await loginPage.login({ username: user.username, password: user.password });
@@ -72,7 +72,7 @@ describe('Privacy policy', () => {
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
 
-      xit('should show if the user policy changes', async () => {
+      it('should show if the user policy changes', async () => {
         await browser.setCookies({ name: 'locale', value: 'en' });
         await browser.refresh();
 
@@ -100,7 +100,7 @@ describe('Privacy policy', () => {
     });
   });
 
-  xdescribe('conflicts', () => {
+  describe('conflicts', () => {
     let passed = false;
 
     const conflictUser = userFactory.build({

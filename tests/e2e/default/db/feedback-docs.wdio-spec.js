@@ -16,7 +16,7 @@ const getServerFeedbackDocs = async () => {
   return response.rows.filter(row => row.id.includes('feedback'));
 };
 
-xdescribe('feedback docs', () => {
+describe('feedback docs', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), contact]);
     await utils.createUsers([user]);
