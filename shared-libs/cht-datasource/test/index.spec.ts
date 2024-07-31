@@ -143,7 +143,7 @@ describe('CHT Script API - getDatasource', () => {
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly({ personType: personTypeQualifier, limit, skip })).to.be.true;
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
 

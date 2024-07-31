@@ -40,6 +40,13 @@ export const adapt = <T>(
   return remote(context);
 };
 
+interface PaginationArgs {
+  limit: number;
+  skip: number;
+}
+
+type FetchFunctionArgs<TFields extends Record<string, unknown>> = PaginationArgs & TFields;
+
 /** @internal */
 export const getDocumentStream = async function* <S, T>(
   fetchFunction: (args: S, l: number, s: number) => Promise<T[]>,
