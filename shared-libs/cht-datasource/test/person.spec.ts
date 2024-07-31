@@ -147,7 +147,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);
 
-        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, limit, skip);
+        const result = await Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit, skip });
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -184,7 +184,11 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
+<<<<<<< HEAD
         await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip ))
+=======
+        await expect(Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit: invalidLimit, skip }))
+>>>>>>> b988b5782 (Avoid using spread operator in getDocumentStream function)
           .to.be.rejectedWith(`limit must be a positive number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -197,8 +201,11 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, limit, invalidSkip))
-          .to.be.rejectedWith(`skip must be a non-negative number`);
+        await expect(Person.v1.getPage(dataContext)({
+          personType: personTypeQualifier,
+          limit: limit,
+          skip: invalidSkip
+        })).to.be.rejectedWith(`skip must be a non-negative number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
