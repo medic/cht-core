@@ -70,39 +70,6 @@ export namespace v1 {
       };
     };
 
-<<<<<<< HEAD
-  // NOTE: there's probably a better name for this function
-  const getPeopleGenerator = () => (context: DataContext) => {
-    assertDataContext(context);
-
-    /**
-     * Creates an iterator-like object for fetching batches of people data.
-     * @param personType - The type of person to fetch
-     * @throws throws an error if the provided personType is invalid.
-     * @returns An iterator-like object with a next method for fetching data.
-     */
-    const curriedFn = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person[], void> {
-      assertTypeQualifier(personType);
-      const limit = 100;
-      let skip = 0;
-
-      while (true) {
-        const docs = await context.bind(getPage)(personType, limit, skip);
-
-        yield docs;
-
-        if (docs.length < limit) {
-          break;
-        }
-
-        skip += limit;
-      }
-    };
-    return curriedFn;
-  };
-
-=======
->>>>>>> b02973b26 (Address PR comments)
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
