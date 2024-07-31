@@ -26,6 +26,12 @@ export namespace v1 {
     readonly parent?: Place.v1.PlaceWithLineage | NormalizedParent,
   }
 
+  interface getPageParams {
+    personType: ContactTypeQualifier;
+    limit?: number;
+    skip?: number;
+  }
+
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
       throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
@@ -121,21 +127,22 @@ export namespace v1 {
    */
   export const getPage = (
     context: DataContext
-  ): (personType: ContactTypeQualifier, limit: number, skip: number) => Promise<Person[]> => {
+  ): ({ personType, limit, skip }: getPageParams) => Promise<Person[]> => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
     /**
      * Returns an array of people for the provided page specifications.
-     * @param personType the type of people to return
-     * @param limit the maximum number of people to return. Default is 100.
-     * @param skip the number of people to skip. Default is 0.
+     * @param params the function params
+     * @param params.personType the type of people to return
+     * @param params.limit the maximum number of people to return. Default is 100.
+     * @param params.skip the number of people to skip. Default is 0.
      * @returns an array of people for the provided page specifications.
      * @throws Error if no type is provided or if the type is not for a person
      * @throws Error if the provided `limit` value is `<=0`
      * @throws Error if the provided `skip` value is `<0`
      */
-    const curriedFn = async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<Person[]> => {
+    const curriedFn = async ({ personType, limit = 100, skip = 0}: getPageParams): Promise<Person[]> => {
       assertTypeQualifier(personType);
       assertLimit(limit);
       assertSkip(skip);
