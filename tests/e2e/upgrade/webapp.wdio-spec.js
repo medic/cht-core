@@ -24,7 +24,7 @@ describe('Webapp after upgrade', () => {
     parent: { _id: 'district' },
   });
 
-  const report = genericReportFactory.report().build({ form: 'someform' }, { submitter: contact });
+  const report = genericReportFactory.report().build({ form: 'someform' }, { patient: contact, submitter: contact });
 
   before(async () => {
     await utils.saveDocs([district, contact, report]);
