@@ -7,10 +7,7 @@ import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
-<<<<<<< HEAD
 import { Page } from '../src/libs/core';
-=======
->>>>>>> eff3972df (Add unit tests)
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -143,7 +140,7 @@ describe('CHT Script API - getDatasource', () => {
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly({ personType: personTypeQualifier, limit, skip })).to.be.true;
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
 

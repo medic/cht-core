@@ -140,7 +140,7 @@ describe('context lib', () => {
       }
 
       expect(results).to.deep.equal(mockDocs);
-      expect(fetchFunctionStub.calledOnceWithExactly(...Object.values(args))).to.be.true;
+      expect(fetchFunctionStub.calledOnceWithExactly(args)).to.be.true;
     });
 
     it('should handle multiple pages',  async () => {
@@ -159,8 +159,8 @@ describe('context lib', () => {
 
       expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
       expect(fetchFunctionStub.callCount).to.equal(2);
-      expect(fetchFunctionStub.firstCall.args).to.deep.equal([2, 0]);
-      expect(fetchFunctionStub.secondCall.args).to.deep.equal([2, 0]);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([{ limit: 2, skip: 0 }]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([{ limit: 2, skip: 0 }]);
     });
 
     it('should handle empty result', async () => {

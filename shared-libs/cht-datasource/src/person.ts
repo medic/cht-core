@@ -144,7 +144,7 @@ export namespace v1 {
       const getPage = context.bind(v1.getPage);
       const limit = 100;
       const skip = 0;
-      yield* getDocumentStream(getPage, { personType, limit, skip }) as AsyncGenerator<v1.Person, void>;
+      yield* getDocumentStream(getPage, { personType, limit, skip });
     };
   };
 }
