@@ -238,6 +238,8 @@ const buildMultiPlatformServiceImage = async (service, tag) => {
 const buildServiceImages = async () => {
   const workingDir = await makeWorkingDir();
   console.log('copying modules to working directory');
+  // TODO modify this to npm ci in the working dir instead of copying node_modules so we can
+  // conveniently drop devDependencies
   await exec('cp', ['-r', './node_modules', './package.json', './package-lock.json', workingDir]);
   console.log('packing modules');
   await exec('npm', ['pack'], { cwd: workingDir });
