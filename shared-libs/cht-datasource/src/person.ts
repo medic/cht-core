@@ -94,7 +94,7 @@ export namespace v1 {
    */
   export const getPage = (
     context: DataContext
-  ): ({ personType, limit, skip }: getPageParams) => Promise<Person[]> => {
+  ): ({ personType, limit, skip }: GetPageParams) => Promise<Person[]> => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
@@ -109,7 +109,7 @@ export namespace v1 {
      * @throws Error if the provided `limit` value is `<=0`
      * @throws Error if the provided `skip` value is `<0`
      */
-    const curriedFn = async ({ personType, limit = 100, skip = 0}: getPageParams): Promise<Person[]> => {
+    const curriedFn = async ({ personType, limit = 100, skip = 0}: GetPageParams): Promise<Person[]> => {
       assertTypeQualifier(personType);
       assertLimit(limit);
       assertSkip(skip);
