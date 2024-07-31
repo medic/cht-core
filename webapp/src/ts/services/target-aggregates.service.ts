@@ -42,6 +42,9 @@ export class TargetAggregatesService {
    * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
    * ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
    * ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
+   *
+   * getCurrentIntervalTag fetches targets of the current calendaristic month
+   * getPreviousIntervalTag fetches targets of the previous calendaristic month
    */
   private getCurrentIntervalTag(settings) {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
@@ -60,11 +63,11 @@ export class TargetAggregatesService {
    * Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
    */
-  private fetchLatestTargetDocs(settings, reportingPeriod?) {
-    const tag = reportingPeriod === 'previous'
-      ? this.getPreviousIntervalTag(settings)
-      : this.getCurrentIntervalTag(settings);
-    console.log('tag', tag);
+  private fetchLatestTargetDocs(settings, reportingPeriod?: ReportingPeriod) {
+    const tag = reportingPeriod === ReportingPeriod.CURRENT
+      ? this.getCurrentIntervalTag(settings)
+      : this.getPreviousIntervalTag(settings);
+
     const opts = {
       start_key: `target~${tag}~`,
       end_key: `target~${tag}~\ufff0`,
@@ -305,11 +308,11 @@ export class TargetAggregatesService {
     return !facilityIds || facilityIds.length > 0;
   }
 
-  getAggregates(facilityId?, reportingPeriod?) {
+  getAggregates(facilityId?, reportingPeriod?: ReportingPeriod) {
     return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId, reportingPeriod));
   }
 
-  private _getAggregates(facilityId?, reportingPeriod?): Promise<AggregateTarget[]> {
+  private _getAggregates(facilityId?, reportingPeriod?: ReportingPeriod): Promise<AggregateTarget[]> {
     return this.settingsService
       .get()
       .then(settings => {

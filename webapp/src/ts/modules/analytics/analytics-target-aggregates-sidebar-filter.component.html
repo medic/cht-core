@@ -14,11 +14,11 @@
 
     <div class="sidebar-body">
       <mat-accordion multi>
-        <!-- 1. Facility -->
+        <!-- Facility -->
         <div class="filter-options-container" *ngIf="userFacilities.length > 1">
             <span class="filter-options-title"> {{ facilityFilterLabel | translate }} </span>
             <ng-container *ngFor="let facility of userFacilities">
-              <div class="filter-option-place">
+              <div class="filter-radio-option">
                 <label class="filter-option-wrapper">
                   <input
                     type="radio"
@@ -26,38 +26,28 @@
                     [value]="facility"
                     class="filter-option-radio"
                     [checked]="facility._id === selectedFacility._id"
-                    (click)="fetchAggregateTargetsByFacility(facility)">
+                    (change)="fetchAggregateTargetsByFacility(facility)">
                   <span class="filter-option-label">{{ facility.name }}</span>
                 </label>
               </div>
             </ng-container>
         </div>
+      </mat-accordion>
 
-        <!-- 2. Reporting Period -->
+      <mat-accordion multi>
+        <!-- Reporting Period -->
         <div class="filter-options-container">
           <span class="filter-options-title">{{ 'analytics.target.aggregates.reporting_period' | translate }}</span>
-          <div class="filter-option-place">
+          <div class="filter-radio-option" *ngFor="let period of reportingPeriods">
             <label class="filter-option-wrapper">
               <input
                 type="radio"
                 name="reportingPeriod"
                 class="filter-option-radio"
-                [value]="ReportingPeriod.CURRENT"
+                [value]="period.value"
                 [(ngModel)]="selectedReportingPeriod"
                 (change)="fetchAggregateTargetsByReportingPeriod()">
-              <span class="filter-option-label">{{ 'analytics.target.aggregates.this_month' | translate }}</span>
-            </label>
-          </div>
-          <div class="filter-option-place">
-            <label class="filter-option-wrapper">
-              <input
-                type="radio"
-                name="reportingPeriod"
-                class="filter-option-radio"
-                [value]="ReportingPeriod.PREVIOUS"
-                [(ngModel)]="selectedReportingPeriod"
-                (change)="fetchAggregateTargetsByReportingPeriod()">
-              <span class="filter-option-label">{{ 'analytics.target.aggregates.last_month' | translate }}</span>
+              <span class="filter-option-label">{{ period.label | translate }}</span>
             </label>
           </div>
         </div>

@@ -18,6 +18,11 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
   private globalActions;
   readonly ReportingPeriod = ReportingPeriod;
+  readonly reportingPeriods = [
+    { value: ReportingPeriod.CURRENT, label: 'targets.this_month.subtitle' },
+    { value: ReportingPeriod.PREVIOUS, label: 'targets.last_month.subtitle' }
+  ];
+
   DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
   isOpen = false;
@@ -92,6 +97,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
 }
 
 export enum ReportingPeriod {
-  CURRENT = 'current',
-  PREVIOUS = 'previous',
+  CURRENT = 'This month',
+  PREVIOUS = 'Last month',
 }
