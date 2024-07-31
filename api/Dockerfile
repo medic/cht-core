@@ -12,9 +12,6 @@ RUN apk add --update --no-cache \
 
 WORKDIR /service
 
-# I don't think I need to copy the shared-libs but need to double check...
-COPY shared-libs ./shared-libs
-COPY node_modules/@medic ./node_modules/@medic
 COPY api ./api
 
 ENV NODE_PATH=/service/api/node_modules
