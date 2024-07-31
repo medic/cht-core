@@ -8,6 +8,7 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { InvalidArgumentError } from './libs/error';
 import { Page } from './libs/core';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -48,9 +49,9 @@ export namespace v1 {
     }
   };
 
-  const assertSkip = (skip: unknown) => {
-    if (typeof skip !== 'number' || !Number.isInteger(skip) || skip < 0) {
-      throw new InvalidArgumentError(`The skip must be a non-negative number: [${String(skip)}]`);
+  const assertCursor = (cursor: unknown) => {
+    if (typeof cursor !== 'string' || Number(cursor) < 0) {
+      throw new InvalidArgumentError(`The cursor must be a stringified non-negative number: [${String(cursor)}]`);
     }
   };
 
