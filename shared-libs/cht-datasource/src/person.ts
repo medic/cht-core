@@ -6,6 +6,7 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -36,19 +37,19 @@ export namespace v1 {
     qualifier: unknown
   ) => {
     if (!isContactTypeQualifier(qualifier)) {
-      throw new Error(`Invalid type [${JSON.stringify(qualifier)}].`);
+      throw new InvalidArgumentError(`Invalid type [${JSON.stringify(qualifier)}].`);
     }
   };
 
   const assertLimit = (limit: unknown) => {
     if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
-      throw new Error(`The limit must be a positive number: [${String(limit)}]`);
+      throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}]`);
     }
   };
 
   const assertSkip = (skip: unknown) => {
     if (typeof skip !== 'number' || !Number.isInteger(skip) || skip < 0) {
-      throw new Error(`The skip must be a non-negative number: [${String(skip)}]`);
+      throw new InvalidArgumentError(`The skip must be a non-negative number: [${String(skip)}]`);
     }
   };
 
