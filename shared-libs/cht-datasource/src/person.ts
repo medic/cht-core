@@ -28,7 +28,7 @@ export namespace v1 {
     readonly parent?: Place.v1.PlaceWithLineage | NormalizedParent,
   }
 
-  interface getPageParams {
+  interface GetPageParams {
     personType: ContactTypeQualifier;
     limit?: number;
     skip?: number;
