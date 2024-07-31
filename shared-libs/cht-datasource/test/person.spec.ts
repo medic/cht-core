@@ -145,7 +145,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, limit, skip);
+        const result = await Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit, skip });
 
         expect(result).to.equal(people);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -169,7 +169,7 @@ describe('person', () => {
       it('throws an error if the qualifier is invalid', async () => {
         isContactTypeQualifier.returns(false);
 
-        await expect(Person.v1.getPage(dataContext)(invalidQualifier))
+        await expect(Person.v1.getPage(dataContext)({personType: invalidQualifier}))
           .to.be.rejectedWith(`Invalid type [${JSON.stringify(invalidQualifier)}].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -182,7 +182,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip))
+        await expect(Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit: invalidLimit, skip }))
           .to.be.rejectedWith(`limit must be a positive number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -195,8 +195,11 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, limit, invalidSkip))
-          .to.be.rejectedWith(`skip must be a non-negative number`);
+        await expect(Person.v1.getPage(dataContext)({
+          personType: personTypeQualifier,
+          limit: limit,
+          skip: invalidSkip
+        })).to.be.rejectedWith(`skip must be a non-negative number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;

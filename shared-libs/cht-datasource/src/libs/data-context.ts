@@ -40,20 +40,24 @@ export const adapt = <T>(
   return remote(context);
 };
 
+interface PaginationArgs {
+  limit: number;
+  skip: number;
+}
+
+type FetchFunctionArgs<TFields extends Record<string, unknown>> = PaginationArgs & TFields;
+
 /** @internal */
-export const getDocumentStream = async function* <T, Args extends unknown[]>(
-  fetchFunction: (...args: Args) => Promise<T[]>,
-  fetchFunctionArgs: {
-    limit: number;
-    skip: number;
-  } & Record<string, unknown>
-): AsyncGenerator<unknown, void> {
+export const getDocumentStream = async function* <T, TFields extends Record<string, unknown>>(
+  fetchFunction: (args: FetchFunctionArgs<TFields>) => Promise<T[]>,
+  fetchFunctionArgs: FetchFunctionArgs<TFields>
+): AsyncGenerator<T, void> {
   const { limit } = fetchFunctionArgs;
   let { skip } = fetchFunctionArgs;
   const hasMoreResults = () => skip && skip % limit === 0;
 
   do {
-    const docs = await fetchFunction(...(Object.values(fetchFunctionArgs) as Args));
+    const docs = await fetchFunction(fetchFunctionArgs);
 
     for (const doc of docs) {
       yield doc;

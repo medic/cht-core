@@ -97,7 +97,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws Error if the provided skip is `< 0`
          */
         getPage: (personType: string, limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(
-          Qualifier.byContactType(personType), limit, skip
+          { personType: Qualifier.byContactType(personType), limit, skip }
         ),
 
         /**

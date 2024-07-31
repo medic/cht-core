@@ -78,7 +78,11 @@ export namespace v1 {
        * @throws Error if the provided `limit` value is `<=0`
        * @throws Error if the provided `skip` value is `<0`
        */
-      const curriedFn = async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<T> => {
+      const curriedFn = async ({personType, limit = 100, skip = 0}: {
+        personType: ContactTypeQualifier;
+        limit?: number;
+        skip?: number;
+      }): Promise<T> => {
         assertTypeQualifier(personType);
         assertLimitAndSkip(limit, skip);
 
@@ -133,7 +137,7 @@ export namespace v1 {
       const getPage = context.bind(v1.getPage);
       const limit = 100;
       const skip = 0;
-      yield* getDocumentStream(getPage, { personType, limit, skip }) as AsyncGenerator<v1.Person, void>;
+      yield* getDocumentStream(getPage, { personType, limit, skip });
     };
   };
 }
