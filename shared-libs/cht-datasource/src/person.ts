@@ -70,9 +70,10 @@ export namespace v1 {
 
       /**
        * Returns an array of people for the provided page specifications.
-       * @param personType the type of people to return
-       * @param limit the maximum number of people to return. Default is 100.
-       * @param skip the number of people to skip. Default is 0.
+       * @param params the function parameters
+       * @param params.personType the type of people to return
+       * @param params.limit the maximum number of people to return. Default is 100.
+       * @param params.skip the number of people to skip. Default is 0.
        * @returns an array of people for the provided page specifications.
        * @throws Error if `personType` qualifier is invalid
        * @throws Error if the provided `limit` value is `<=0`
@@ -126,12 +127,6 @@ export namespace v1 {
   ): (personType: ContactTypeQualifier) => AsyncGenerator<v1.Person, void> => {
     assertDataContext(context);
 
-    /**
-     * Returns a generator that yields the persons with the given type.
-     * @param personType The type of person to fetch
-     * @returns a generator that yields the persons with the given type
-     * @throws Error if no person type is provided or if the type is not for a person
-     */
     return async function* (personType: ContactTypeQualifier): AsyncGenerator<Person, void> {
       assertTypeQualifier(personType);
       const getPage = context.bind(v1.getPage);
