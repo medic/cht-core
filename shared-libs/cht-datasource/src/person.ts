@@ -28,6 +28,12 @@ export namespace v1 {
     readonly parent?: Place.v1.PlaceWithLineage | NormalizedParent,
   }
 
+  interface getPageParams {
+    personType: ContactTypeQualifier;
+    limit?: number;
+    skip?: number;
+  }
+
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
       throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
@@ -66,39 +72,6 @@ export namespace v1 {
       };
     };
 
-<<<<<<< HEAD
-  // NOTE: there's probably a better name for this function
-  const getPeopleGenerator = () => (context: DataContext) => {
-    assertDataContext(context);
-
-    /**
-     * Creates an iterator-like object for fetching batches of people data.
-     * @param personType - The type of person to fetch
-     * @throws throws an error if the provided personType is invalid.
-     * @returns An iterator-like object with a next method for fetching data.
-     */
-    const curriedFn = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person[], void> {
-      assertTypeQualifier(personType);
-      const limit = 100;
-      let skip = 0;
-
-      while (true) {
-        const docs = await context.bind(getPage)(personType, limit, skip);
-
-        yield docs;
-
-        if (docs.length < limit) {
-          break;
-        }
-
-        skip += limit;
-      }
-    };
-    return curriedFn;
-  };
-
-=======
->>>>>>> b02973b26 (Address PR comments)
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
@@ -133,9 +106,10 @@ export namespace v1 {
 
     /**
      * Returns an array of people for the provided page specifications.
-     * @param personType the type of people to return
-     * @param limit the maximum number of people to return. Default is 100.
-     * @param skip the number of people to skip. Default is 0.
+     * @param params the function params
+     * @param params.personType the type of people to return
+     * @param params.limit the maximum number of people to return. Default is 100.
+     * @param params.skip the number of people to skip. Default is 0.
      * @returns an array of people for the provided page specifications.
      * @throws Error if no type is provided or if the type is not for a person
      * @throws Error if the provided `limit` value is `<=0`
