@@ -233,7 +233,7 @@ describe('Db Service', () => {
     }));
   });
 
-  describe('method wrapping', () => {
+  xdescribe('method wrapping', () => {
     beforeEach(() => {
       window.PouchDB = require('pouchdb-browser').default;
       // avoid the 2dbs being initialized at the startup

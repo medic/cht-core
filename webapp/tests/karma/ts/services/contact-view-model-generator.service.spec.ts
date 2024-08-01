@@ -119,7 +119,9 @@ describe('ContactViewModelGenerator service', () => {
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
         { provide: GetDataRecordsService, useValue: getDataRecordsService },
-        { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
+        { provide: DbService, useValue: {
+          get: () => ({ query: dbQuery, get: dbGet, post: sinon.stub().resolves() }),
+        } },
       ]
     });
 

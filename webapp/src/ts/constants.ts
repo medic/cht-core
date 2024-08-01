@@ -33,7 +33,7 @@ const processChangesResponse = (response) => {
 };
 
 export const POUCHDB_OPTIONS = {
-  local: { auto_compaction: true, skip_setup: false },
+  local: { auto_compaction: true, skip_setup: false, adapter: 'indexeddb' },
   remote: {
     skip_setup: true,
     fetch: function(url, opts) {

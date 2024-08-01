@@ -19,6 +19,8 @@ export class TelemetryService {
   private hasTransitionFinished = false;
   private windowRef;
 
+  private currentPromise;
+
   constructor(
     private dbService:DbService,
     private sessionService:SessionService,
@@ -222,7 +224,8 @@ export class TelemetryService {
     }
 
     await this.indexedDbService.saveDatabaseName(currentDB); // Firefox support.
-    return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
+    // Avoid angular-pouch as digest isn't necessary here
+    return this.windowRef.PouchDB(currentDB, { adapter: 'indexeddb' });
   }
 
   private storeIt(db, key, value) {
@@ -248,7 +251,7 @@ export class TelemetryService {
 
       try {
         this.isAggregationRunning = true;
-        const db = this.windowRef.PouchDB(dbName);
+        const db = this.windowRef.PouchDB(dbName, { adapter: 'indexeddb' });
         await this.aggregate(db, dbName);
         await db.destroy();
         await this.indexedDbService.deleteDatabaseName(dbName); // Firefox support.
@@ -307,7 +310,19 @@ export class TelemetryService {
    * @memberof Telemetry
    */
   record (key, value?) {
-    return this.ngZone.runOutsideAngular(() => this._record(key, value));
+    return this.ngZone.runOutsideAngular(async () => {
+      if (this.currentPromise) {
+        try {
+          await this.currentPromise;
+        } catch (error) {
+          console.debug('Telemetry service :: Error:', error);
+        } finally {
+          this.currentPromise = null;
+        }
+      }
+      this.currentPromise = this._record(key, value);
+      return this.currentPromise;
+    });
   }
 
   private async _record(key, value?) {
@@ -326,9 +341,8 @@ export class TelemetryService {
       const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
-      await this
-        .storeIt(currentDB, key, value)
-        .finally(() => this.closeDataBase(currentDB));
+      return await this.storeIt(currentDB, key, value);
+      //.finally(() => this.closeDataBase(currentDB));
     } catch (error) {
       console.error('Error in telemetry service', error);
     }

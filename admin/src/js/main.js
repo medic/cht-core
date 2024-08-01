@@ -1,4 +1,5 @@
 window.PouchDB = require('pouchdb-browser');
+window.PouchDB.plugin(require('pouchdb-adapter-indexeddb'));
 window.$ = window.jQuery = require('jquery');
 require('../../node_modules/select2/dist/js/select2.full')(window.jQuery);
 
@@ -153,7 +154,7 @@ angular.module('adminApp', [
 ]);
 
 angular.module('adminApp').constant('POUCHDB_OPTIONS', {
-  local: { auto_compaction: true },
+  local: { auto_compaction: true, adapter: 'indexeddb' },
   remote: {
     skip_setup: true,
     fetch: function(url, opts) {

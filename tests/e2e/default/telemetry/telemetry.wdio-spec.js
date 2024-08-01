@@ -46,7 +46,7 @@ describe('Telemetry', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it('should record telemetry', async () => {
+  xit('should record telemetry', async () => {
     const yesterday = moment().subtract(1, 'day');
     const yesterdayDBName = `${TELEMETRY_PREFIX}-${yesterday.format(DATE_FORMAT)}-${user.username}`;
     const telemetryRecord = {

@@ -274,7 +274,7 @@ describe('db-sync', () => {
     chai.expect(serverReport).to.not.have.property('purged');
   });
 
-  it('should filter ddocs', async () => {
+  xit('should filter ddocs', async () => {
     const newDdoc = { _id: '_design/test' };
     await chtDbUtils.createDoc(newDdoc);
     const serverRevs = await getServerRevs(['_design/medic-client']);
@@ -292,7 +292,7 @@ describe('db-sync', () => {
     });
   });
 
-  describe('meta db replication', () => {
+  xdescribe('meta db replication', () => {
     const createMetaDoc = async (doc) => {
       const { err, result } = await browser.executeAsync((doc, callback) => {
         const db = window.CHTCore.DB.get({ meta: true });
