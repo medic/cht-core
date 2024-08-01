@@ -19,7 +19,6 @@ describe('Webapp after upgrade', () => {
 
   const contact = personFactory.build({
     _id: 'contact',
-    type: 'person',
     name: 'John',
     parent: { _id: 'district' },
   });
