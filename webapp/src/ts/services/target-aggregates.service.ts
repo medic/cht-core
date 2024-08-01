@@ -64,9 +64,9 @@ export class TargetAggregatesService {
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
    */
   private fetchLatestTargetDocs(settings, reportingPeriod?: ReportingPeriod) {
-    const tag = reportingPeriod === ReportingPeriod.CURRENT
-      ? this.getCurrentIntervalTag(settings)
-      : this.getPreviousIntervalTag(settings);
+    const tag = reportingPeriod === ReportingPeriod.PREVIOUS
+      ? this.getPreviousIntervalTag(settings)
+      : this.getCurrentIntervalTag(settings);
 
     const opts = {
       start_key: `target~${tag}~`,

@@ -3,6 +3,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { FormsModule } from '@angular/forms';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 
 import { Selectors } from '@mm-selectors/index';
@@ -38,6 +39,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     await TestBed
       .configureTestingModule({
         imports: [
+          FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule
         ],
@@ -55,6 +57,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
         fixture = TestBed.createComponent(AnalyticsTargetAggregatesSidebarFilterComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
+        component.userFacilities = [];
         fixture.detectChanges();
       });
   });

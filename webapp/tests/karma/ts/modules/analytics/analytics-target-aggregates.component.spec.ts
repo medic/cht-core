@@ -12,6 +12,7 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GlobalActions } from '@mm-actions/global';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
@@ -38,7 +39,12 @@ describe('Analytics Target Aggregates Component', () => {
       setSidebarFilter: sinon.spy(GlobalActions.prototype, 'setSidebarFilter'),
       clearSidebarFilter: sinon.spy(GlobalActions.prototype, 'clearSidebarFilter'),
     };
-    userSettingsService = { getUserFacilities: sinon.stub() };
+    userSettingsService = {
+      getUserFacilities: sinon.stub().resolves([
+        { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+        { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+      ])
+    };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     const mockedSelectors = [
@@ -140,7 +146,10 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(globalActions.setSidebarFilter.callCount).to.equal(1);
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: { facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' } },
+      defaultFilters: {
+        facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+        reportingPeriod: ReportingPeriod.CURRENT
+      },
     });
 
     expect(component.loading).to.be.false;
@@ -165,7 +174,10 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(globalActions.setSidebarFilter.callCount).to.equal(1);
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: { facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' } },
+      defaultFilters: {
+        facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+        reportingPeriod: ReportingPeriod.CURRENT
+      },
     });
     expect(component.enabled).to.be.true;
     expect(component.loading).to.be.false;
@@ -173,7 +185,7 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesActions.setTargetAggregatesError.notCalled).to.be.true;
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal([
-      { title: 'aggregate-1', facility: 'some-facility-1' },
+      { title: 'aggregate-1', facility: 'some-facility-1', reportingPeriod: ReportingPeriod.CURRENT },
     ]);
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
   }));
@@ -192,7 +204,10 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(globalActions.setSidebarFilter.callCount).to.equal(1);
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: { facility: { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' } },
+      defaultFilters: {
+        facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+        reportingPeriod: ReportingPeriod.CURRENT
+      },
     });
 
     expect(component.loading).to.be.false;
@@ -201,7 +216,7 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesActions.setTargetAggregatesError.notCalled).to.be.true;
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal([
-      { title: 'aggregate-1', facility: 'some-facility-2' },
+      { title: 'aggregate-1', facility: 'some-facility-1', reportingPeriod: ReportingPeriod.CURRENT },
     ]);
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
 
@@ -212,7 +227,10 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService.getAggregates.withArgs('facility_1').resolves(facilityTwoAggregates);
 
     // Fetch aggregates for user's second facility
-    component.getTargetAggregates({ _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' });
+    component.getTargetAggregates(
+      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+      ReportingPeriod.CURRENT
+    );
     flush();
 
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
