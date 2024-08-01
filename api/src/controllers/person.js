@@ -20,7 +20,7 @@ const checkUserPermissions = async (req) => {
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions();
+      await checkUserPermissions(req);
       const { uuid } = req.params;
       const person = await getPerson(req.query)(Qualifier.byUuid(uuid));
       if (!person) {
