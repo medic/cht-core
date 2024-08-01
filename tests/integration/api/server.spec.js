@@ -222,5 +222,12 @@ describe('server', () => {
       await utils.listenForApi();
       await utils.delayPromise(1000);
     });
+
+    xit('should work after restarting CouchDb @docker', async () => {
+      await utils.stopCouchDb();
+      await utils.startCouchDb();
+
+      await utils.listenForApi();
+    });
   });
 });
