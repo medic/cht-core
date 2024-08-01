@@ -2,9 +2,12 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
-const sidebarFilterBtn = () => $('.open-filter .fa-sliders');
+
+/*const sidebarFilterBtn = () => $('button*=Filter');//$('.open-filter .fa-sliders');
 const filterCloseBtn = () => $('.sidebar-close');
-const filterRadioBtn = () => $('.filter-options-container :nth-child(3) input');
+const filterOptionsContainer = () => $$('.filter-options-container')
+const filterOptionRadioBtn = (optionLabel) => $(`span*=${optionLabel}`).parentElement();*/
+
 const AGGREGATE_DETAIL_LIST = '.aggregate-detail li';
 const targetAggregateListItem = (contactId) => $(`${AGGREGATE_DETAIL_LIST}[data-record-id="${contactId}"] a`);
 const targetAggregateDetailTitle = (element) => element.$('h4');
@@ -15,8 +18,15 @@ const getTargetAggregateDetailGoal = (element) => element.$$('.goal');
 const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
 const lineItem = (elementId) => $(`${AGGREGATE_LIST}  li[data-record-id=${elementId}]`);
-const getAggregateDetailListElementByIndex = async (index) => {
-  return await $$(AGGREGATE_DETAIL_LIST)[index];
+const getAggregateDetailListElementByIndex = (index) => $$(AGGREGATE_DETAIL_LIST)[index];
+
+
+const sidebarFilter = {
+  filterBtn: () => $('button*=Filter'),
+  closeBtn: () => $('.sidebar-close'),
+  optionsContainer: () => $$('.filter-options-container'),
+  optionContainerByTitle: (title) => $('.filter-options-container').$(`span*=${title}`).parentElement(),
+  optionRadioBtn: (optionLabel) => /*$('.filter-option-place').*/$(`span*=${optionLabel}`).parentElement(),
 };
 
 const expectModulesToBeAvailable = async (modules) => {
@@ -126,16 +136,14 @@ const clickOnTargetAggregateListItem = async (contactId) => {
 };
 
 const openSidebarFilter = async () => {
-  if (!await (await filterCloseBtn()).isDisplayed()) {
-    await (await sidebarFilterBtn()).click();
-  }
-  return await (await filterCloseBtn()).waitForDisplayed();
+  await (await sidebarFilter.filterBtn()).waitForClickable();
+  await (await sidebarFilter.filterBtn()).click();
+  await (await sidebarFilter.closeBtn()).waitForDisplayed();
 };
 
-const selectFilterOption = async () => {
-  if (await (await filterCloseBtn()).isDisplayed()) {
-    await (await filterRadioBtn()).click();
-  }
+const selectFilterOption = async (option) => {
+  await (await sidebarFilter.optionRadioBtn(option)).waitForClickable();
+  await (await sidebarFilter.optionRadioBtn(option)).click();
 };
 
 module.exports = {
@@ -143,6 +151,7 @@ module.exports = {
   goToTargetAggregates,
   loadingStatus,
   aggregateList,
+  sidebarFilter,
   getTargetItem,
   openTargetDetails,
   expectTargetDetails,
