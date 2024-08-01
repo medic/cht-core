@@ -3,13 +3,11 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('admin users', () => {
   it('should allow to update the admin password and login successfully', async () => {
-    const adminUser = {
-      username: 'admin2',
-      password: 'medic.123',
+    const adminUser = userFactory.build({
       roles: ['admin'],
       contact: { name: 'Philip' },
       place: { name: 'place', type: 'district_hospital' },
-    };
+    });
     await utils.createUsers([adminUser]);
 
     const membership = await utils.request({ path: '/_membership' });
