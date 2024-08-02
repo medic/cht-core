@@ -15,7 +15,7 @@
     "./shared-libs/*"
   ],
   "scripts": {
-    "postinstall": "patch-package && cd webapp && ng cache clean && cd ..",
+    "-- TODO need to fix patch-package ... postinstall": "patch-package && cd webapp && ng cache clean && cd ..",
     "prepare": "husky install",
     "-- DEV BUILD SCRIPTS": "-----------------------------------------------------------------------------------------------",
     "build-ddocs": "mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/ && node scripts/build/cli setDdocsVersion && node scripts/build/cli setBuildInfo && node ./scripts/build/ddoc-compile.js primary && mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/",
