@@ -10,7 +10,6 @@
     "allure-report/**",
     "allure-report-bak/**",
     "api/build/**/*",
-    "api/dist/**/*",
     "api/extracted-resources/**/*",
     "api/src/enketo-transformer/**",
     "api/src/public/login/lib-bowser.js",
