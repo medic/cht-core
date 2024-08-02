@@ -24,14 +24,6 @@
         "no-console": "off",
         "compat/compat": "error"
       }
-    },
-    {
-      "files": [
-        "tests/**/*.js"
-      ],
-      "rules": {
-        "node/no-extraneous-require": "off" // maybe delete this?
-      }
     }
   ],
   "globals": {
