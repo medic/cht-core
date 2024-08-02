@@ -238,14 +238,9 @@ const buildMultiPlatformServiceImage = async (service, tag) => {
 const buildServiceImages = async () => {
   const workingDir = await makeWorkingDir();
   console.log('copying modules to working directory');
-  // TODO modify this to npm ci in the working dir instead of copying node_modules so we can
-  // conveniently drop devDependencies
-  await exec('cp', ['-r', './node_modules', './package.json', './package-lock.json', workingDir]);
-  console.log('packing modules');
-  await exec('npm', ['pack'], { cwd: workingDir });
-  console.log('extracting modules');
-  // TODO grab the correct version
-  await exec('tar', ['-Pxzf', `${workingDir}/medic-4.10.0.tgz`]);
+  await exec('cp', ['./package.json', './package-lock.json', workingDir]);
+  console.log('installing modules');
+  await exec('npm', ['ci', '--omit=dev'], { cwd: workingDir });
 
   console.log('working directory', workingDir);
   for (const service of versions.SERVICES) {
