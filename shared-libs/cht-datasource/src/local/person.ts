@@ -67,7 +67,7 @@ export namespace v1 {
       const personTypesIds = personTypes.map(item => item.id);
 
       if (!personTypesIds.includes(personType.contactType)) {
-        throw new InvalidArgumentError(`Invalid person type: ${personType.contactType}`);
+        throw new InvalidArgumentError(`Invalid contact type [${personType.contactType}]`);
       }
 
       const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');

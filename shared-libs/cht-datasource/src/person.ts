@@ -37,7 +37,7 @@ export namespace v1 {
     qualifier: unknown
   ) => {
     if (!isContactTypeQualifier(qualifier)) {
-      throw new InvalidArgumentError(`Invalid type [${JSON.stringify(qualifier)}].`);
+      throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
     }
   };
 

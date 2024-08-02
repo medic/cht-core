@@ -72,11 +72,12 @@ describe('remote person', () => {
     describe('getPage', () => {
       const limit = 3;
       const skip = 1;
-      const personTypeQualifier = {contactType: 'person'};
+      const personType = 'person';
+      const personTypeQualifier = {contactType: personType};
       const queryParam = {
         limit: limit.toString(),
         skip: skip.toString(),
-        ...personTypeQualifier
+        personType
       };
 
       it('returns people', async () => {
