@@ -158,6 +158,7 @@
     "shellcheck": "^2.2.0",
     "sinon": "^16.1.0",
     "tail": "^2.2.6",
+    "typedoc": "^0.26.5",
     "typescript": "^5.3.3",
     "uglify-js": "^3.17.4",
     "wdio-chromedriver-service": "^8.1.1",
