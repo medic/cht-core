@@ -28,6 +28,6 @@ export namespace v1 {
     limit: number,
     skip: number
   ): Promise<Person.v1.Person[]> => getPeople(remoteContext)(
-    {'limit': limit.toString(), 'skip': skip.toString(), 'contactType': personType.contactType}
+    {'limit': limit.toString(), 'skip': skip.toString(), 'personType': personType.contactType}
   );
 }

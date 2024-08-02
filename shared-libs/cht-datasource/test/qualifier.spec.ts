@@ -44,7 +44,7 @@ describe('qualifier', () => {
     ].forEach(contactType => {
       it(`throws an error for ${JSON.stringify(contactType)}`, () => {
         expect(() => byContactType(contactType as string)).to.throw(
-          `Invalid ContactType [${JSON.stringify(contactType)}].`
+          `Invalid contact type [${JSON.stringify(contactType)}].`
         );
       });
     });

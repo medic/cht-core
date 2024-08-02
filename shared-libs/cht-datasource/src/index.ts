@@ -36,6 +36,7 @@ export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
+export { InvalidArgumentError } from './libs/error';
 export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';

@@ -1,4 +1,5 @@
 import { isString, hasField, isRecord } from './libs/core';
+import { InvalidArgumentError } from './libs/error';
 
 /**
  * A qualifier that identifies an entity by its UUID.
@@ -41,7 +42,7 @@ export type ContactTypeQualifier = Readonly<{ contactType: string }>;
  */
 export const byContactType = (contactType: string): ContactTypeQualifier => {
   if (!isString(contactType) || contactType.length === 0) {
-    throw new Error(`Invalid ContactType [${JSON.stringify(contactType)}].`);
+    throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(contactType)}].`);
   }
 
   return { contactType };
