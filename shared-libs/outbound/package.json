@@ -11,9 +11,6 @@
   "dependencies": {
     "@medic/couch-request": "file:../couch-request",
     "@medic/logger": "file:../logger",
-    "@medic/settings": "file:../settings",
-    "object-path": "^0.11.8",
-    "request": "^2.88.2",
-    "url-join": "^4.0.1"
+    "@medic/settings": "file:../settings"
   }
 }
