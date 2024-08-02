@@ -306,7 +306,7 @@ describe('AppComponent', () => {
     await component.translationsLoaded;
 
     expect(jsonFormsService.get.callCount).to.equal(1);
-    expect(xmlFormsService.subscribe.callCount).to.equal(2);
+    expect(xmlFormsService.subscribe.callCount).to.equal(1);
 
     expect(xmlFormsService.subscribe.getCall(0).args[0]).to.equal('FormsFilter');
     expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal({
@@ -332,17 +332,6 @@ describe('AppComponent', () => {
         title: 'form2'
       }
     ]);
-
-    expect(xmlFormsService.subscribe.getCall(1).args[0]).to.equal('AddReportMenu');
-    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal({ reportForms: true });
-    expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
-    xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
-    expect(component.reportForms).to.have.deep.members([{
-      id: 'form:456',
-      code: '456',
-      icon: 'icon',
-      title: 'form2'
-    }]);
     expect(trainingCardsService.initTrainingCards.calledOnce).to.be.true;
   });
 

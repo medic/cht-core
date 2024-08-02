@@ -10,7 +10,6 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { DbService } from '@mm-services/db.service';
-import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-services/modal.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
@@ -179,16 +178,6 @@ export class ReportsEffects {
       }),
     );
   }, { dispatch: false });
-
-  private getContact(id) {
-    return this.dbService
-      .get()
-      .get(id)
-      .catch(err => {
-        // log the error but continue anyway
-        console.error('Error fetching contact for action bar', err);
-      });
-  }
 
   launchEditFacilityDialog = createEffect(() => {
     return this.actions$.pipe(
