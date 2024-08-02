@@ -145,7 +145,7 @@ const getSession = async () => {
     method: 'POST',
     uri: `${constants.BASE_URL}/_session`,
     json: true,
-    body: { name: auth.username, password: auth.password},
+    body: { name: auth.username, password: auth.password },
     auth,
     resolveWithFullResponse: true,
   };
@@ -819,10 +819,10 @@ const listenForApi = async () => {
 const dockerComposeCmd = (params) => {
   params = params.split(' ').filter(String);
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
-  params.unshift(...composeFiles, '-p', PROJECT_NAME);
+  params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', params, { env });
+    const cmd = spawn('docker', params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1211,7 +1211,7 @@ const prepK3DServices = async (defaultSettings) => {
   const helmChartPath = path.join(__dirname, '..', 'helm');
   const valesPath = path.join(helmChartPath, 'values.yaml');
   await runCommand(
-    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} `+
+    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} ` +
     `--kube-context k3d-${PROJECT_NAME} --values ${valesPath} --create-namespace`
   );
   await listenForApi();
@@ -1308,7 +1308,7 @@ const waitForLogs = (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let firstLine = false;
-  tail = (isDocker() || tail) ? '--tail=1': '';
+  tail = (isDocker() || tail) ? '--tail=1' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
@@ -1443,7 +1443,7 @@ const apiLogTestEnd = (name) => {
 
 const getDockerVersion = () => {
   try {
-    const response = execSync('docker-compose -v').toString();
+    const response = execSync('docker compose -v').toString();
     const version = response.match(semver.re[3])[0];
     return semver.major(version);
   } catch (err) {
@@ -1470,7 +1470,7 @@ const getContainerName = (service, project = PROJECT_NAME) => {
   return `deployment/cht-${service}`;
 };
 
-const getUpdatedPermissions  = async (roles, addPermissions, removePermissions) => {
+const getUpdatedPermissions = async (roles, addPermissions, removePermissions) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {
