@@ -83,7 +83,7 @@ The action checks out cht-core and then execute two scripts. One start medic-os 
 
 The script `start-ec2-cht.sh` begins by requesting an ec2 instance in the ca-central-1 region. While it is starting it gets the public DNS name of that instance. The instance is started with `user-data` script located at `cht-core/tests/scalability/prepare-ec2.sh`. AWS cli requires the script be encoded in base64. That step is handled in the start scripts.  This brings up CHT 4.x in Docker on that machine.
 
-While docker-compose is bringing up CHT, `start-ec2-cht.sh` starts to check for API to be up by curling  `https://$PublicDnsName/api/info` until a version number is returned.
+While docker compose is bringing up CHT, `start-ec2-cht.sh` starts to check for API to be up by curling  `https://$PublicDnsName/api/info` until a version number is returned.
 
 cht-conf and its dependencies are now installed. cht-conf then uploads the seed data which is located in `cht-core/tests/scalability/csv`. Then we wait for sentinel to process all these changes by checking the sentinel-meta-data processed sequence against the `_changes`  feed with the since request param.
 
