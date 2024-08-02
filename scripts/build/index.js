@@ -256,7 +256,6 @@ const buildServiceImages = async () => {
   }
 };
 
-// TODO reuse buildSinglePlatformServiceImage
 const buildSinglePlatformImages = async () => {
   for (const service of versions.INFRASTRUCTURE) {
     console.log(`\n\nBuilding docker image for ${service}\n\n`);
@@ -273,7 +272,6 @@ const buildInfrastructureImages = async () => {
   }
 };
 
-// TODO reuse buildMultiPlatformServiceImage
 const buildMultiPlatformImages = async () => {
   for (const service of versions.INFRASTRUCTURE) {
     console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
