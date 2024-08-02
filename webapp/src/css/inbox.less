@@ -921,154 +921,13 @@ a.fa:hover {
   font-weight: bold;
 }
 
-.inbox-items .selection-count,
-.general-actions .delete-all {
+.inbox-items .selection-count {
   display: none;
 }
 
 .tasks .warning {
   overflow: initial;
   color: @high-risk-color;
-}
-
-.action-container {
-  overflow: visible;
-  position: fixed;
-  bottom: 0;
-  top: inherit;
-  z-index: 10;
-  background: transparent;
-  pointer-events: none;
-
-  .actions {
-    max-width: 500px;
-    background-color: rgba(0, 0, 0, 0.65);
-    border-color: rgba(0, 0, 0, 0.8);
-    border-width: 1px;
-    border-style: solid;
-    text-align: center;
-    margin: 0 auto 10px;
-    pointer-events: auto;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
-    display: flex !important; // Support for old design: Overrides Bootstrap element.style
-    flex-direction: row;
-    justify-content: center;
-    min-height: 78px;
-
-    .dropdown-menu {
-      overflow-y: auto;
-      max-height: 350px;
-      width: 100%;
-    }
-
-.left-pane .action-container .dropdown-menu {
-  top: -3px !important; // Support for old design: Overrides Bootstrap element.style
-}
-
-> * {
-      margin: 10px 0 0;
-      flex-grow: 1;
-      max-width: 120px;
-      outline: 0;
-      border-bottom: 5px solid transparent;
-
-      > .mm-icon {
-        display: block;
-        height: 100%;
-        width: 100%;
-      }
-    }
-    .mm-icon {
-      .fa {
-        font-size: 30px;
-      }
-      &:hover {
-        text-decoration: none;
-      }
-      svg {
-        width: @icon-small;
-        height: @icon-small;
-      }
-    }
-
-    .fa-stack {
-      width: 30px;
-      height: 30px;
-      line-height: inherit;
-      .fa-plus {
-        left: 8px;
-        top: -4px;
-        text-shadow: 0 0 2px rgba(255, 255, 255, 1);
-        font-size: 20px;
-        color: #000000;
-      }
-    }
-
-    .sub-actions {
-      background-color: #ffffff;
-      height: 56px;
-      padding: 0;
-      margin: 0 0 1px 0;
-      border-radius: 0;
-      border: none;
-      display: flex;
-      max-width: none;
-      overflow-y: hidden;
-      box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
-
-      .mm-icon-caption {
-        border: none;
-        line-height: 1;
-        color: @label-color;
-        max-width: none;
-        padding: 6px 0 0;
-        .verify-icon {
-          display: block;
-          margin: 0 auto 3px auto;
-          svg {
-            width: 24px;
-            height: 24px;
-            path {
-              fill: @inactive-color;
-            }
-          }
-        }
-      }
-
-      .verify-error.active {
-        color: @report-review-error-color;
-        svg path {
-          fill: @report-review-error-color;
-        }
-      }
-
-      .verify-valid.active {
-        color: @report-review-verified-color;
-        svg path {
-          fill: @report-review-verified-color;
-        }
-      }
-    }
-  }
-}
-
-.messages .action-container .actions > :hover {
-  border-bottom-color: @messages-color;
-}
-
-.reports .action-container .actions > * {
-  &:hover,
-  &.active {
-    border-bottom-color: @reports-color;
-  }
-}
-
-.contacts .action-container .actions > :hover {
-  border-bottom-color: @contacts-color;
-}
-
-.action-container .actions >.mm-icon-disabled:hover {
-  border-bottom-color: transparent;
 }
 
 .reporting,
@@ -1445,8 +1304,7 @@ mm-search-bar {
       height: 60px;
     }
   }
-  .inbox-items .selection-count,
-  .general-actions .delete-all {
+  .inbox-items .selection-count {
     display: block;
   }
   .contacts h4 {
@@ -1606,22 +1464,6 @@ mm-search-bar {
   }
   .item-content .reply .note {
     display: inline;
-  }
-  .action-container {
-    .inner > div {
-      padding: 0;
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      .actions {
-        box-shadow: none;
-        border-width: 1px 0 0 0;
-        margin: 0;
-        padding: 0;
-        border-radius: 0;
-        max-width: 100%;
-      }
-    }
   }
 
   .left-pane {
@@ -1797,15 +1639,6 @@ mm-search-bar {
     }
     .inner {
       height: 60px;
-    }
-  }
-  .action-container .actions {
-    min-height: 50px;
-    p {
-      font-size: @font-extra-extra-small;
-    }
-    .mm-icon {
-      min-height: 50px;
     }
   }
   .content .page {

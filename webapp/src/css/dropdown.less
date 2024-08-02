@@ -33,47 +33,6 @@
     font-size: @font-small;
   }
 
-  &.with-icon li > a {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    vertical-align: middle;
-    > span {
-      margin-right: 10px;
-    }
-    .content {
-      flex-grow: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    img,
-    svg {
-      width: @icon-small;
-      height: @icon-small;
-    }
-    &:after {
-      color: @label-color;
-      content: '\f054'; // http://fontawesome.io/icon/chevron-right/
-      font-family: FontAwesome;
-    }
-  }
-
-}
-
-.dropup .dropdown-menu.mm-dropdown-menu {
-  padding: 0;
-  border-top: 5px solid @label-color;
-  border-radius: 0;
-  box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
-  max-width: 90%;
-  margin-bottom: 1px;
-
-  li {
-    border-bottom: 1px solid @separator-color;
-    > a {
-      padding: 10px;
-    }
-  }
 }
 
 .mm-dropdown {
@@ -255,28 +214,10 @@
     left: 10px;
     right: 10px;
   }
-
-  .dropup .mm-dropdown-menu {
-    position: absolute;
-    top: auto;
-    bottom: 100%;
-    padding: 0;
-    border-top: 5px solid @label-color;
-    left: 0;
-    right: 0;
-    margin-bottom: 1px;
-
-    li > a {
-      padding: 3px 0;
-    }
-  }
 }
 
 @media (max-width: @media-small-mobile) {
   .open .mm-dropdown-menu {
     top: 101px;
-  }
-  .dropup .mm-dropdown-menu {
-    top: auto;
   }
 }
