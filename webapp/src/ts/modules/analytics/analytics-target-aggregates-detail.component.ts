@@ -9,6 +9,7 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
+import { ReportingPeriod } from './analytics-target-aggregates-sidebar-filter.component';
 
 @Component({
   selector: 'analytics-target-aggregates-detail',
@@ -20,6 +21,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   subscriptions: Subscription = new Subscription();
   selected: any = null;
   error: any = null;
+  reportingPeriod;
   private prevAggregateId;
   private prevAggregates;
   private aggregates = null;
@@ -58,6 +60,9 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;
+      if (this.selected) {
+        this.reportingPeriod = this.getReportingPeriodText();
+      }
     });
     this.subscriptions.add(subscriptionStore);
   }
@@ -109,5 +114,15 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     const title = this.translateService.instant('analytics.target.aggregates');
     this.globalActions.setTitle(title);
     this.targetAggregatesActions.setSelectedTargetAggregate(aggregateDetails);
+  }
+
+  getReportingPeriodText(): string {
+    const aggregateSubtitle = this.translateService.instant(this.selected.subtitle_translation_key);
+
+    if (this.selected.reportingPeriod === ReportingPeriod.CURRENT) {
+      return aggregateSubtitle;
+    }
+
+    return `${aggregateSubtitle} (${this.selected.reportingMonth})`;
   }
 }

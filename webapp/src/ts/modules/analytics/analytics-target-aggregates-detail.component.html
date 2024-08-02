@@ -18,7 +18,6 @@
               <ng-template #noTranslationKeyTpl><h2>{{ selected.title | translateFrom }}</h2></ng-template>
               <div class="aggregate-targets-details">
                 <span *ngIf="selected?.facility">{{ selected?.facility }}</span>
-                <span>{{ selected?.reportingPeriod | translate }}</span>
               </div>
             </div>
           </div>
@@ -38,7 +37,7 @@
           </div>
           <div class="col-xs-6 col-md-8 text-right">
             <h3 *ngIf="selected.subtitle_translation_key">
-              {{ selected.subtitle_translation_key | translate }}
+              {{ reportingPeriod }}
             </h3>
           </div>
         </div>

@@ -1133,6 +1133,64 @@ describe('TargetAggregatesService', () => {
     });
   });
 
+  describe('getReportingMonth', () => {
+    it('should return the correct month for the current reporting period', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getCurrent.returns({
+        start: moment('2024-08-01').valueOf(),
+        end: moment('2024-08-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.CURRENT);
+
+      expect(result).to.equal('August');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([1]);
+    });
+
+    it('should return the correct month for the previous reporting period', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2024-07-01').valueOf(),
+        end: moment('2024-07-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
+
+      expect(result).to.equal('July');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.args[0]).to.deep.equal([1]);
+    });
+  });
+
   describe('getAggregateDetails', () => {
     it('should return nothing when no targetId or aggregates provided', () => {
       expect(service.getAggregateDetails()).to.equal(undefined);
