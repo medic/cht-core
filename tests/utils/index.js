@@ -28,7 +28,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
 let originalSettings;
-let dockerVersion;
 let infrastructure = 'docker';
 const isDocker = () => infrastructure === 'docker';
 const isK3D = () => !isDocker();
@@ -1441,34 +1440,13 @@ const apiLogTestEnd = (name) => {
     .catch(() => console.warn('Error logging test end - ignoring'));
 };
 
-const getDockerVersion = () => {
-  try {
-    const response = execSync('docker compose -v').toString();
-    const version = response.match(semver.re[3])[0];
-    return semver.major(version);
-  } catch (err) {
-    console.error(err);
-    return 1;
-  }
-};
-
 const updateContainerNames = (project = PROJECT_NAME) => {
-  dockerVersion = dockerVersion || getDockerVersion();
-
   Object.entries(SERVICES).forEach(([key, service]) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
   });
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
-const getContainerName = (service, project = PROJECT_NAME) => {
-  if (isDocker()) {
-    dockerVersion = dockerVersion || getDockerVersion();
-    const separator = dockerVersion === 2 ? '-' : '_';
-    return `${project}${separator}${service}${separator}1`;
-  }
-
-  return `deployment/cht-${service}`;
-};
+const getContainerName = (service, project = PROJECT_NAME) => [project, service, 1].join('-');
 
 const getUpdatedPermissions = async (roles, addPermissions, removePermissions) => {
   const settings = await getSettings();
