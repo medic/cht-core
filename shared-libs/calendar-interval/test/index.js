@@ -252,6 +252,35 @@ describe('CalendarInterval', () => {
     });
   });
 
+  describe('getPrevious', () => {
+    it('returns 1st of previous month when month start is 1', () => {
+      clock = sinon.useFakeTimers(moment('2018-02-20 21:10:01').valueOf());
+      chai.expect(service.getPrevious(1)).to.deep.equal({
+        start: moment('2018-01-01 00:00:00').valueOf(),
+        end: moment('2018-01-31 23:59:59:999').valueOf(),
+      });
+      clock.restore();
+    });
+
+    it('returns n-th of the previous month when month start is n <= current date', () => {
+      clock = sinon.useFakeTimers(moment('2018-03-20 21:10:01').valueOf());
+      chai.expect(service.getPrevious(15)).to.deep.equal({
+        start: moment('2018-02-15 00:00:00').valueOf(),
+        end: moment('2018-03-14 23:59:59:999').valueOf(),
+      });
+      clock.restore();
+    });
+
+    it('returns n-th of two months ago when month start is n > current date', () => {
+      clock = sinon.useFakeTimers(moment('2018-03-10 21:10:01').valueOf());
+      chai.expect(service.getPrevious(20)).to.deep.equal({
+        start: moment('2018-01-20 00:00:00').valueOf(),
+        end: moment('2018-02-19 23:59:59:999').valueOf(),
+      });
+      clock.restore();
+    });
+  });
+
   describe('getInterval', () => {
     it('returns 1st of current month when month start is not set or incorrect', () => {
       let timestamp;
