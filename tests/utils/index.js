@@ -10,7 +10,6 @@ const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 // by default, mustache escapes slashes, which messes with paths and urls.
 mustache.escape = (text) => text;
-const semver = require('semver');
 const moment = require('moment');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
