@@ -185,7 +185,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.contactsActions.clearSelection();
     this.globalActions.clearFilters();
     this.globalActions.unsetSelected();
-    this.globalActions.setLeftActionBar({});
   }
 
   private subscribeToStore() {
@@ -454,7 +453,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.error = false;
         this.initScroll();
         this.updateFastActions();
-        this.setLeftActionBar();
       })
       .catch(err => {
         this.error = true;
@@ -489,21 +487,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.usersHomePlaces?.[0]?._id;
   }
 
-  private setLeftActionBar() {
-    if (this.destroyed) {
-      // don't update the actionbar if the component has already been destroyed
-      // this callback can be queued up and persist even after component destruction
-      return;
-    }
-
-    this.globalActions.setLeftActionBar({
-      exportFn: () => this.exportContacts(),
-      hasResults: this.hasContacts,
-      userFacilityId: this.getUserHomePlaceId(),
-      childPlaces: this.allowedChildPlaces,
-    });
-  }
-
   private async updateFastActions() {
     if (this.destroyed) {
       // Don't update the fast actions, if the component has already been destroyed
@@ -536,7 +519,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
-        this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
         this.updateFastActions();
       }
     );

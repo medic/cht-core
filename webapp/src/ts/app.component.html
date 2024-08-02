@@ -12,8 +12,6 @@
 
   <mm-privacy-policy [overlay]="true" *ngIf="showPrivacyPolicy && !privacyPolicyAccepted"></mm-privacy-policy>
 
-  <mm-actionbar *ngIf="useOldActionBar" [reportForms]="reportForms"></mm-actionbar>
-
   <div class="container-fluid" *ngIf="initialisationComplete">
     <mm-header
       [adminUrl]="adminUrl"

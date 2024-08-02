@@ -33,7 +33,6 @@ import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-fil
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
@@ -70,7 +69,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,
-    ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
     AnalyticsFilterComponent,
@@ -113,7 +111,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,
-    ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
     ErrorLogComponent,

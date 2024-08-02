@@ -84,8 +84,6 @@ describe('Contacts content component', () => {
       includes: sinon.stub()
     };
     globalActions = {
-      setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
-      updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar'),
       unsetSelected: sinon.spy(GlobalActions.prototype, 'unsetSelected'),
     };
     mutingTransition = { isUnmuteForm: sinon.stub() };

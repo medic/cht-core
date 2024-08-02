@@ -50,7 +50,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private settings;
   private childTypesBySelectedContact: Record<string, any>[] = [];
   private filters;
-  canDeleteContact = false; // this disables the "Delete" button until children load
   fastActionList?: FastAction[];
   relevantReportForms;
   childContactTypes;
@@ -99,7 +98,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
     this.contactsActions.clearSelection();
-    this.globalActions.setRightActionBar({});
   }
 
   private getUserFacility() {
@@ -148,20 +146,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(reduxSubscription);
 
-    const childrenSubscription = this.store
-      .select(Selectors.getSelectedContactChildren)
-      .subscribe((selectedContactChildren) => {
-        const canDelete = !!selectedContactChildren?.every(group => !group.contacts?.length);
-
-        if (this.canDeleteContact === canDelete) {
-          return;
-        }
-
-        this.canDeleteContact = canDelete;
-        this.globalActions.updateRightActionBar({ canDelete: this.canDeleteContact });
-      });
-    this.subscriptions.add(childrenSubscription);
-
     const contactDocSubscription = this.store
       .select(Selectors.getSelectedContactDoc)
       .subscribe(async (contactDoc) => {
@@ -170,7 +154,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         }
         await this.setChildTypesBySelectedContact();
         await this.setSettings();
-        await Promise.all([this.setRightActionBar(), this.updateFastActions()]);
+        await this.updateFastActions();
         this.subscribeToAllContactXmlForms();
         this.subscribeToSelectedContactXmlForms();
       });
@@ -267,19 +251,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       .slice(0, this.DISPLAY_LIMIT);
   }
 
-  private async setRightActionBar() {
-    await this.setUserSettings();
-
-    this.globalActions.setRightActionBar({
-      relevantForms: [], // This disables the "New Action" button until forms load
-      sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
-      canDelete: this.canDeleteContact,
-      canEdit: this.isOnlineOnly || !this.userSettings?.facility_id?.includes(this.selectedContact?.doc?._id),
-      openContactMutedModal: (form) => this.openContactMutedModal(form),
-      openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo),
-    });
-  }
-
   private async updateFastActions() {
     this.fastActionList = await this.fastActionButtonService.getContactRightSideActions({
       xmlReportForms: this.relevantReportForms,
@@ -356,9 +327,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
         this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
         this.updateFastActions();
-        this.globalActions.updateRightActionBar({
-          childTypes: this.getModelsFromChildTypes(allowedChildTypes)
-        });
       }
     );
     this.subscriptions.add(this.subscriptionAllContactForms);
@@ -390,31 +358,20 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.relevantReportForms = forms
-          .map(xForm => {
-            const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
-            const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
-            return {
-              id: xForm._id,
-              code: xForm.internalId,
-              title: xForm.title,
-              titleKey: xForm.translation_key,
-              icon: xForm.icon,
-              showUnmuteModal: isMuted && !isUnmuteForm,
-            };
-          });
+        this.relevantReportForms = forms.map(xForm => {
+          const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
+          const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
+          return {
+            id: xForm._id,
+            code: xForm.internalId,
+            title: xForm.title,
+            titleKey: xForm.translation_key,
+            icon: xForm.icon,
+            showUnmuteModal: isMuted && !isUnmuteForm,
+          };
+        });
 
         this.updateFastActions();
-
-        const oldActionsBarForms = this.relevantReportForms
-          .map(form => {
-            const title = form.titleKey ?
-              this.translateService.instant(form.titleKey) : this.translateFromService.get(form.title);
-            return { ...form, title };
-          })
-          .sort((a, b) => a.title?.localeCompare(b.title));
-
-        this.globalActions.updateRightActionBar({ relevantForms: oldActionsBarForms });
       }
     );
     this.subscriptions.add(this.subscriptionSelectedContactForms);

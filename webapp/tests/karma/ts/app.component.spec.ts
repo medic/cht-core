@@ -31,7 +31,6 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
 import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
 import { GlobalActions } from '@mm-actions/global';
-import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
@@ -175,7 +174,6 @@ describe('AppComponent', () => {
       .configureTestingModule({
         declarations: [
           AppComponent,
-          ActionbarComponent,
           SnackbarComponent,
         ],
         imports: [

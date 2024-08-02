@@ -11,7 +11,6 @@ import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { SessionService } from '@mm-services/session.service';
-import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 import { ReportsActions } from '@mm-actions/reports';
 
 
@@ -41,7 +40,6 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   reportsList;
   selectedReportDoc;
-  useOldActionBar = false;
   verifyingReport = false;
   processingReportVerification = false;
 
@@ -77,7 +75,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSelectedReportDoc),
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getVerifyingReport),
-      this.store.select(Selectors.getLoadingSubActionBar),
+      this.store.select(Selectors.getProcessingReportVerification),
     ).subscribe(([
       reportsList,
       snapshotData,
@@ -85,7 +83,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       selectedReportDoc,
       selectMode,
       verifyingReport,
-      loadingSubActionBar,
+      processingReportVerification,
     ]) => {
       this.reportsList = reportsList;
       this.snapshotData = snapshotData;
@@ -93,7 +91,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       this.selectedReportDoc = selectedReportDoc;
       this.selectMode = selectMode;
       this.verifyingReport = verifyingReport;
-      this.processingReportVerification = loadingSubActionBar;
+      this.processingReportVerification = processingReportVerification;
     });
     this.subscription.add(storeSubscription);
   }
@@ -112,7 +110,6 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     this.hasExportPermission = await this.authService.any([[ 'can_export_all' ], [ 'can_export_messages' ]]);
     this.hasVerifyPermission = await this.authService.has('can_verify_reports');
     this.hasEditVerifyPermission = await this.authService.has('can_edit_verification');
-    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   deleteReport() {
