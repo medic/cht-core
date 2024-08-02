@@ -256,12 +256,17 @@ const buildServiceImages = async () => {
   }
 };
 
-// TODO reuse buildSinglePlatformServiceImage
 const buildSinglePlatformImages = async () => {
   for (const service of versions.INFRASTRUCTURE) {
-    console.log(`\n\nBuilding docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
-    await exec('docker', ['build', '-f', `./Dockerfile`, '--tag', tag, '.'], { cwd: service });
+    await buildSinglePlatformServiceImage(service, tag);
+  }
+};
+
+const buildMultiPlatformImages = async () => {
+  for (const service of versions.INFRASTRUCTURE) {
+    const tag = versions.getImageTag(service);
+    buildMultiPlatformServiceImage(service, tag);
   }
 };
 
@@ -272,17 +277,7 @@ const buildInfrastructureImages = async () => {
     await buildSinglePlatformImages();
   }
 };
-
-// TODO reuse buildMultiPlatformServiceImage
-const buildMultiPlatformImages = async () => {
-  for (const service of versions.INFRASTRUCTURE) {
-    console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
-    const tag = versions.getImageTag(service);
-    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
-      '-f', `./Dockerfile`, '--tag', tag, '--push', '.'], { cwd: service });
-  }
-};
-
+  
 const saveServiceImages = async () => {
   for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
     console.log(`\n\nSaving docker image for ${service}\n\n`);
