@@ -1445,7 +1445,10 @@ const updateContainerNames = (project = PROJECT_NAME) => {
   });
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
-const getContainerName = (service, project = PROJECT_NAME) => [project, service, 1].join('-');
+
+const getContainerName = (service, project = PROJECT_NAME) => {
+  return isDocker() ? `${project}-${service}-1` : `deployment/cht-${service}`;
+};
 
 const getUpdatedPermissions = async (roles, addPermissions, removePermissions) => {
   const settings = await getSettings();
