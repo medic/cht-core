@@ -7,7 +7,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const { genericForm } = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-describe('Fast action button', () => {
+describe('FAB actions', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
