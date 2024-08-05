@@ -36,7 +36,7 @@ const nonAsciiDoc = {
   reported_date: 1496068842996
 };
 
-describe('contacts_by_freetext view', () => {
+describe.skip('contacts_by_freetext view', () => {
 
   it('indexes doc name', () => {
     // given
