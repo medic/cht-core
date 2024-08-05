@@ -7,7 +7,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const { genericForm } = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-describe('FAB + Actionbar', () => {
+describe('Fast action button', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
@@ -25,30 +25,28 @@ describe('FAB + Actionbar', () => {
     await utils.revertSettings(false);
   });
 
-  describe('FAB', () => {
-    it('should show new household and new person create option', async () => {
-      await commonElements.goToPeople(healthCenter._id);
-      const fabLabels = await commonElements.getFastActionItemsLabels();
+  it('should show new household and new person create option', async () => {
+    await commonElements.goToPeople(healthCenter._id);
+    const fabLabels = await commonElements.getFastActionItemsLabels();
 
-      expect(fabLabels).to.include.members(['New household', 'New person']);
-    });
+    expect(fabLabels).to.include.members(['New household', 'New person']);
+  });
 
-    it('should show fab when user only has can_create_places permission', async () => {
-      await utils.updatePermissions(onlineUser.roles, [], ['can_create_people']);
-      await commonElements.goToPeople(healthCenter._id);
+  it('should show fab when user only has can_create_places permission', async () => {
+    await utils.updatePermissions(onlineUser.roles, [], ['can_create_people']);
+    await commonElements.goToPeople(healthCenter._id);
 
-      await commonElements.clickFastActionFAB({ waitForList: false });
-      const formTitle = await genericForm.getFormTitle();
-      expect(formTitle).to.equal('New household');
-    });
+    await commonElements.clickFastActionFAB({ waitForList: false });
+    const formTitle = await genericForm.getFormTitle();
+    expect(formTitle).to.equal('New household');
+  });
 
-    it('should show fab when user only has can_create_people permission', async () => {
-      await utils.updatePermissions(onlineUser.roles, [], ['can_create_places']);
-      await commonElements.goToPeople(healthCenter._id);
+  it('should show fab when user only has can_create_people permission', async () => {
+    await utils.updatePermissions(onlineUser.roles, [], ['can_create_places']);
+    await commonElements.goToPeople(healthCenter._id);
 
-      await commonElements.clickFastActionFAB({ waitForList: false });
-      const formTitle = await genericForm.getFormTitle();
-      expect(formTitle).to.equal('New person');
-    });
+    await commonElements.clickFastActionFAB({ waitForList: false });
+    const formTitle = await genericForm.getFormTitle();
+    expect(formTitle).to.equal('New person');
   });
 });
