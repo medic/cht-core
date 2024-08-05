@@ -10,7 +10,6 @@ import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { SessionService } from '@mm-services/session.service';
 import { ReportsActions } from '@mm-actions/reports';
 
 
@@ -48,7 +47,6 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private responsiveService: ResponsiveService,
-    private sessionService: SessionService,
     private matBottomSheet: MatBottomSheet,
     private matDialog: MatDialog,
   ) {

@@ -12,7 +12,6 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
@@ -21,7 +20,6 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
-import { TranslateService } from '@mm-services/translate.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
@@ -63,8 +61,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private router: Router,
     private changesService: ChangesService,
     private contactChangeFilterService: ContactChangeFilterService,
-    private translateService: TranslateService,
-    private translateFromService: TranslateFromService,
     private xmlFormsService: XmlFormsService,
     private modalService: ModalService,
     private contactTypesService: ContactTypesService,

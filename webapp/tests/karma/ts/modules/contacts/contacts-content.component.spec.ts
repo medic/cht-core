@@ -14,7 +14,6 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ModalService } from '@mm-services/modal.service';
 import { GlobalActions } from '@mm-actions/global';
 import { SettingsService } from '@mm-services/settings.service';
@@ -40,7 +39,6 @@ describe('Contacts content component', () => {
   let contactChangeFilterService;
   let selectedContact;
   let xmlFormsService;
-  let translateFromService;
   let modalService;
   let globalActions;
   let settingsService;
@@ -64,7 +62,6 @@ describe('Contacts content component', () => {
     settings = {};
     settingsService = { get: sinon.stub().resolves(settings) };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
-    translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub() };
     sessionService = {
       isAdmin: sinon.stub().returns(false),
@@ -136,7 +133,6 @@ describe('Contacts content component', () => {
           { provide: SessionService, useValue: sessionService },
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: XmlFormsService, useValue: xmlFormsService },
-          { provide: TranslateFromService, useValue: translateFromService },
           { provide: ModalService, useValue: modalService },
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ContactMutedService, useValue: contactMutedService },
