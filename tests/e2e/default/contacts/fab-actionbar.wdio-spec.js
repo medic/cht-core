@@ -51,41 +51,4 @@ describe('FAB + Actionbar', () => {
       expect(formTitle).to.equal('New person');
     });
   });
-
-  describe('Action bar', () => {
-    it('should show new household and new person create option', async () => {
-      await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar']);
-      await commonElements.goToPeople(healthCenter._id);
-      const actionBarLabels = await commonElements.getActionBarLabels();
-
-      expect(actionBarLabels).to.have.members([
-        'New household',
-        'New person',
-        'New action',
-      ]);
-    });
-
-    it('should not show new person when missing permission', async () => {
-      await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_people']);
-      await commonElements.goToPeople(healthCenter._id);
-      const actionBarLabels = await commonElements.getActionBarLabels();
-
-      expect(actionBarLabels).to.have.members([
-        'New household',
-        'New action',
-      ]);
-    });
-
-    it('should not show new place when missing permission', async () => {
-      await utils.updatePermissions(onlineUser.roles, ['can_view_old_action_bar'], ['can_create_places']);
-      await commonElements.goToPeople(healthCenter._id);
-      const actionBarLabels = await commonElements.getActionBarLabels();
-
-      expect(actionBarLabels).to.have.members([
-        'New person',
-        'New action',
-      ]);
-    });
-  });
-
 });
