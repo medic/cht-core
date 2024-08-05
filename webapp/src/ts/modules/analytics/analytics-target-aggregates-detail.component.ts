@@ -116,13 +116,11 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     this.targetAggregatesActions.setSelectedTargetAggregate(aggregateDetails);
   }
 
-  getReportingPeriodText(): string {
-    const aggregateSubtitle = this.translateService.instant(this.selected.subtitle_translation_key);
-
+  private getReportingPeriodText(): string {
     if (this.selected.reportingPeriod === ReportingPeriod.CURRENT) {
-      return aggregateSubtitle;
+      return this.translateService.instant(this.selected.subtitle_translation_key);
     }
 
-    return `${aggregateSubtitle} (${this.selected.reportingMonth})`;
+    return this.selected.reportingMonth;
   }
 }

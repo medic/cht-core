@@ -1189,6 +1189,33 @@ describe('TargetAggregatesService', () => {
       expect(calendarIntervalService.getPrevious.callCount).to.equal(1);
       expect(calendarIntervalService.getPrevious.args[0]).to.deep.equal([1]);
     });
+
+    it('should return "Last month" when getIntervalTag fails to get the correct month name', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+      translateService.instant = sinon.stub().returns('Last month');
+      settingsService.get.rejects({ some: 'err' });
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2024-07-01').valueOf(),
+        end: moment('2024-07-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
+
+      expect(result).to.equal('Last month');
+      expect(translateService.instant.calledWith('targets.last_month.subtitle')).to.be.true;
+    });
   });
 
   describe('getAggregateDetails', () => {

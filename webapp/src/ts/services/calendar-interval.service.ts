@@ -12,7 +12,7 @@ export class CalendarIntervalService {
     return CalendarInterval.getCurrent(startDate);
   }
 
-  getPrevious(startDate) {
-    return CalendarInterval.getPrevious(startDate);
+  getPrevious(startDate, referenceDate?) {
+    return CalendarInterval.getPrevious(startDate, referenceDate);
   }
 }
