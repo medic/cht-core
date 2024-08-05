@@ -1,5 +1,6 @@
 const utils = require('@utils');
-const commonElements = require('../common/common.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+
 const privacyWrapper = () => $('#privacy-policy-wrapper');
 const privacyAccept = async () => (await privacyWrapper()).$('.btn');
 const privacyConfig = () => $('.privacy-policy.configuration');
@@ -7,11 +8,6 @@ const privacyConfig = () => $('.privacy-policy.configuration');
 const goToPrivacyPolicyConfig = async () => {
   await browser.url(utils.getBaseUrl() + 'privacy-policy');
   await (await privacyConfig()).waitForDisplayed();
-};
-
-const getPrivacyPolicyFromOverlay = async () => {
-  (await privacyWrapper()).waitForDisplayed();
-  return (await privacyWrapper()).getText();
 };
 
 const acceptPrivacyPolicy = async () => {
@@ -49,7 +45,6 @@ const waitAndAcceptPolicy = async (elm, { header, paragraph, language }, sync = 
 
 module.exports = {
   goToPrivacyPolicyConfig,
-  getPrivacyPolicyFromOverlay,
   acceptPrivacyPolicy,
   updatePrivacyPolicy,
   privacyWrapper,
