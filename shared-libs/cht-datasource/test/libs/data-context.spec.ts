@@ -121,6 +121,8 @@ describe('context lib', () => {
 
   describe('getDocumentStream', () => {
     let fetchFunctionStub: SinonStub;
+    const limit = 100;
+    const skip = 0;
 
     beforeEach(() => {
       fetchFunctionStub = sinon.stub();
@@ -128,10 +130,10 @@ describe('context lib', () => {
 
     it('yields document one by one', async () => {
       const mockDocs = [{ id: 1 }, { id: 2 }, { id: 3 }];
-      const args = { limit: 4, skip: 0, extraArgs: 'value'};
+      const extraArg = 'value';
       fetchFunctionStub.resolves(mockDocs);
 
-      const generator = getDocumentStream(fetchFunctionStub, args);
+      const generator = getDocumentStream(fetchFunctionStub, extraArg);
 
       const results = [];
 
@@ -140,17 +142,19 @@ describe('context lib', () => {
       }
 
       expect(results).to.deep.equal(mockDocs);
-      expect(fetchFunctionStub.calledOnceWithExactly(args)).to.be.true;
+      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, limit, skip)).to.be.true;
     });
 
     it('should handle multiple pages',  async () => {
-      const mockDocs1 = [{ id: 1 }, { id: 2 }];
-      const mockDocs2 = [{ id: 3 }];
+      const mockDoc = { id: 1 };
+      const mockDocs1 = Array.from({ length: 100 }, () => ({ ...mockDoc }));
+      const mockDocs2 = [{ id: 101 }];
+      const extraArg = 'value';
 
       fetchFunctionStub.onFirstCall().resolves(mockDocs1);
       fetchFunctionStub.onSecondCall().resolves(mockDocs2);
 
-      const generator = getDocumentStream(fetchFunctionStub, { limit: 2, skip: 0});
+      const generator = getDocumentStream(fetchFunctionStub, extraArg);
 
       const results = [];
       for await (const doc of generator) {
@@ -159,8 +163,8 @@ describe('context lib', () => {
 
       expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
       expect(fetchFunctionStub.callCount).to.equal(2);
-      expect(fetchFunctionStub.firstCall.args).to.deep.equal([{ limit: 2, skip: 0 }]);
-      expect(fetchFunctionStub.secondCall.args).to.deep.equal([{ limit: 2, skip: 0 }]);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, limit, skip]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, limit, skip + limit]);
     });
 
     it('should handle empty result', async () => {

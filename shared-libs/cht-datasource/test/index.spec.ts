@@ -92,7 +92,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getAll', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
+        expect(person).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
       });
 
       it('getByUuid', async () => {
@@ -139,11 +139,12 @@ describe('CHT Script API - getDatasource', () => {
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPage.calledOnceWithExactly({ personType: personTypeQualifier, limit, skip })).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
 
       it('getAll', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         const mockAsyncGenerator = async function* () {
           yield [];
         };
@@ -153,7 +154,7 @@ describe('CHT Script API - getDatasource', () => {
         const personTypeQualifier = { contactType: personType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const res =  await person.getAll(personType);
+        const res =  await person.getByType(personType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
@@ -171,7 +172,7 @@ describe('CHT Script API - getDatasource', () => {
         const personTypeQualifier = { contactType: personType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const res =  await person.getAll(personType);
+        const res =  await person.getByType(personType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
