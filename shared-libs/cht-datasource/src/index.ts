@@ -107,7 +107,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns a `AsyncGenerator` for fetching batches of people data.
          * @throws Error if no type is provided or if the type is not for a person
          */
-        getAll: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
+        getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
       }
     }
   };
