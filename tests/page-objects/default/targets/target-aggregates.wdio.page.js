@@ -33,7 +33,9 @@ const sidebarFilter = {
 const TARGET_DETAIL = '.target-detail';
 const targetDetail = {
   title: (titleValue) => $(TARGET_DETAIL).$(`h2=${titleValue}`),
-  breadcrumbs: (value) => $(TARGET_DETAIL).$(`span*=${value}`),
+  counter: () => $(`${TARGET_DETAIL} .cell p`),
+  place: (value) => $(TARGET_DETAIL).$(`span*=${value}`),
+  period: (periodValue) => $('.aggregate-detail .action-header').$(`h3=${periodValue}`),
 };
 
 const expectModulesToBeAvailable = async (modules) => {
@@ -60,11 +62,12 @@ const checkContentDisabled = async () => {
 
 const getTargetItem = async (target, period, place) => {
   const item = lineItem(target.id);
-  const placeValue = place ? await (await item.$(`li*=${place}`)).isDisplayed() : false;
+  /*const placeValue = place ?  : false;
+  const periodValue = period === 'Last Month' = */
   return {
     title: await (await item.$('h4')).getText(),
     status: await (await item.$('.aggregate-status span')).getText(),
-    place: placeValue,
+    place: await (await item.$(`li*=${place}`)).isDisplayed(),
     period: await (await item.$(`li*=${period}`)).isDisplayed(),
   };
 };
@@ -75,16 +78,6 @@ const openTargetDetails = async (target) => {
   await item.click();
   await commonPage.waitForLoaders();
   await (await targetDetail.title(target.title)).waitForDisplayed();
-};
-
-const assertTargetDetails = async (target, period, place = '') => {
-  /*expect(await $('.target-detail h2').getText()).to.equal(target.title);
-  expect(await $('.target-detail .cell p').getText()).to.equal(target.counter);*/
-  expect(await (await targetDetail.title(target.title)).isDisplayed()).to.be.true;
-  expect(await (await targetDetail.breadcrumbs(period)).isDisplayed()).to.be.true;
-  if (place) {
-    expect(await (await targetDetail.breadcrumbs(place)).isDisplayed()).to.be.true;
-  }
 };
 
 const getAggregateDetailListLength = async () => {
@@ -166,9 +159,9 @@ module.exports = {
   loadingStatus,
   aggregateList,
   sidebarFilter,
+  targetDetail,
   getTargetItem,
   openTargetDetails,
-  assertTargetDetails,
   targetAggregateListItem,
   getAggregateDetailListLength,
   getAggregateDetailListElementByIndex,

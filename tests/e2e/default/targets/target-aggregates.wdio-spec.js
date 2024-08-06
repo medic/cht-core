@@ -16,48 +16,6 @@ const personFactory = require('@factories/cht/contacts/person');
 describe('Target aggregates', () => {
   const RANDOM_NUMBER = (max) => Math.floor(Math.random() * max);
 
-  const expectTargets = async (targets, period, place = '') => {
-    expect(await (await targetAggregatesPage.aggregateList()).length).to.equal(targets.length);
-    for (const target of targets) {
-      const targetItem = await (await targetAggregatesPage.getTargetItem(target, period, place));
-      expect(target.title).to.equal(targetItem.title);
-      expect(target.status).to.equal(targetItem.counter);
-      expect(targetItem.period).to.be.true;
-      if (place){
-        expect(targetItem.place).to.be.true;
-      }
-    }
-  };
-
-  const expectContacts = async (contacts, target) => {
-    contacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
-    expect(await targetAggregatesPage.getAggregateDetailListLength()).to.equal(contacts.length);
-    // eslint-disable-next-line guard-for-in
-    for (const idx in contacts) {
-      const contact = contacts[idx];
-      const lineItem = await targetAggregatesPage.getAggregateDetailListElementByIndex(idx);
-      const lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(lineItem);
-      expect(await lineItemInfo.recordId).to.equal(contact._id);
-      expect(await lineItemInfo.title).to.equal(contact.name);
-      expect(await lineItemInfo.detail).to.equal(contact.counter);
-      if (!target.progressBar) {
-        expect(await lineItemInfo.progressBar.length).to.equal(0);
-      } else {
-        if (!contact.progress) {
-          expect(await lineItemInfo.progressBar.isDisplayed).to.be.false;
-        } else {
-          expect(await lineItemInfo.progressBar.value).to.equal(contact.progress);
-        }
-      }
-      if (!target.goal) {
-        expect(await lineItemInfo.goal.length).to.equal(0);
-      } else {
-        const text = await lineItemInfo.goal.value;
-        expect(text.indexOf(target.goal)).not.to.equal(-1);
-      }
-    }
-  };
-
   const updateSettings = async (targetsConfig, user, contactSummary) => {
     const settings = await utils.getSettings();
     const tasks = settings.tasks;
@@ -67,14 +25,6 @@ describe('Target aggregates', () => {
     await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
     await commonPage.closeReloadModal();
     await commonPage.goToBase();
-  };
-
-  const validateCardFields = async (values) => {
-    const conditionCard = $$('.meta .card')[1].$('.row');
-    await conditionCard.waitForDisplayed();
-    for (const value of values) {
-      expect(await (await conditionCard.$(`p=${value}`)).isDisplayed()).to.be.true;
-    }
   };
 
   describe('DB admin', () => {
@@ -235,6 +185,95 @@ describe('Target aggregates', () => {
       [/^form:/],
     ];
 
+    const getLastMonth = () => {
+      const newDate = new Date();
+      newDate.setDate(1);
+      newDate.setMonth(newDate.getMonth() - 1);
+      return newDate.toLocaleString('default', { month: 'long' });
+    };
+
+    const assertTargets = async (targets, period, place) => {
+      expect(await (await targetAggregatesPage.aggregateList()).length).to.equal(targets.length);
+      for (const target of targets) {
+        const targetItem = await (await targetAggregatesPage.getTargetItem(target, period, place));
+        expect(target.title).to.equal(targetItem.title);
+        expect(target.status).to.equal(targetItem.counter);
+        if (period !== 'This month') {
+          expect(targetItem.period).to.be.true;
+        }
+        if (place !== 'userWithOnePlace'){
+          expect(targetItem.place).to.be.true;
+        }
+      }
+    };
+
+    const assertTargetDetails = async (target, period, place = '') => {
+      expect(await (await targetAggregatesPage.targetDetail.title(target.title)).isDisplayed()).to.be.true;
+      expect(await (await targetAggregatesPage.targetDetail.counter()).getText()).to.equal(target.counter);
+      if (period !== 'This month') {
+        expect(await (await targetAggregatesPage.targetDetail.period(period)).isDisplayed()).to.be.true;
+      }
+      if (place !== 'userWithOnePlace'){
+        expect(await (await targetAggregatesPage.targetDetail.place(period)).isDisplayed()).to.be.true;
+      }
+    };
+
+    const assertData = async (contacts, expectedTargets, period, place) => {
+      await assertTargets(expectedTargets, period, place);
+      for (const target of expectedTargets) {
+        await targetAggregatesPage.openTargetDetails(target);
+        await assertTargetDetails(target, period, place);
+        const expectedContacts = contacts.map(contact => ({
+          _id: contact._id,
+          name: contact.name,
+          counter: TARGET_VALUES_BY_CONTACT[contact.name][target.id].counter,
+          progress: TARGET_VALUES_BY_CONTACT[contact.name][target.id].progress,
+        }));
+        await expectContacts(expectedContacts, target);
+      }
+    };
+
+    const expectContacts = async (contacts, target) => {
+      contacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
+      expect(await targetAggregatesPage.getAggregateDetailListLength()).to.equal(contacts.length);
+      // eslint-disable-next-line guard-for-in
+      for (const idx in contacts) {
+        const contact = contacts[idx];
+        const lineItem = await targetAggregatesPage.getAggregateDetailListElementByIndex(idx);
+        const lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(lineItem);
+        expect(await lineItemInfo.recordId).to.equal(contact._id);
+        expect(await lineItemInfo.title).to.equal(contact.name);
+        expect(await lineItemInfo.detail).to.equal(contact.counter);
+        if (!target.progressBar) {
+          expect(await lineItemInfo.progressBar.length).to.equal(0);
+        } else {
+          if (!contact.progress) {
+            expect(await lineItemInfo.progressBar.isDisplayed).to.be.false;
+          } else {
+            expect(await lineItemInfo.progressBar.value).to.equal(contact.progress);
+          }
+        }
+        if (!target.goal) {
+          expect(await lineItemInfo.goal.length).to.equal(0);
+        } else {
+          const text = await lineItemInfo.goal.value;
+          expect(text.indexOf(target.goal)).not.to.equal(-1);
+        }
+      }
+    };
+
+    const validateCardFields = async (values) => {
+      const conditionCard = $$('.meta .card')[1].$('.row');
+      await conditionCard.waitForDisplayed();
+      for (const value of values) {
+        expect(await (await conditionCard.$(`p=${value}`)).isDisplayed()).to.be.true;
+      }
+    };
+
+    const getDocsByPlace = (placeId) => {
+      return docs.filter(doc => doc.type === 'person' && doc.parent.parent._id === placeId);
+    };
+
     before(async () => {
       await utils.saveDocs([ ...docs, districtHospital1, districtHospital2, contactWithManyPlaces, userWithManyPlaces]);
       await utils.createUsers([onlineUser]);
@@ -279,15 +318,14 @@ describe('Target aggregates', () => {
           { id: 'percent_no_goal', title: 'percent no goal', counter: '0%', progressBar: true, goal: false },
           { id: 'percent_with_goal', title: 'percent with goal', counter: '0 of 5', progressBar: true, goal: '80%' },
         ];
-        const expectedContacts = docs
-          .filter(doc => doc.type === 'person' && doc.parent.parent._id === districtHospital1._id)
+        const expectedContacts = getDocsByPlace(districtHospital1._id)
           .map(contact => ({ _id: contact._id, name: contact.name, counter: 'No data', progress: 0 }));
 
-        await expectTargets(expectedTargets, 'This month');
+        await assertTargets(expectedTargets, 'This month', 'userWithOnePlace');
 
         for (const target of expectedTargets) {
           await targetAggregatesPage.openTargetDetails(target);
-          await targetAggregatesPage.assertTargetDetails(target, 'This month');
+          await assertTargetDetails(target, 'This month', 'userWithOnePlace');
           await expectContacts(expectedContacts, target);
         }
       });
@@ -307,26 +345,23 @@ describe('Target aggregates', () => {
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
 
-        const contacts = docs.filter(doc => doc.type === 'person' && doc.parent.parent._id === districtHospital1._id);
+        const contacts = getDocsByPlace(districtHospital1._id);
 
-        await expectTargets(expectedTargets, 'This month');
-        for (const target of expectedTargets) {
-          await targetAggregatesPage.openTargetDetails(target);
-          await targetAggregatesPage.assertTargetDetails(target, 'This month');
-          const expectedContacts = contacts.map(contact => ({
-            _id: contact._id,
-            name: contact.name,
-            counter: TARGET_VALUES_BY_CONTACT[contact.name][target.id].counter,
-            progress: TARGET_VALUES_BY_CONTACT[contact.name][target.id].progress,
-          }));
-          await expectContacts(expectedContacts, target);
-        }
+        await assertData(contacts, expectedTargets, 'This month', 'userWithOnePlace');
 
         // refreshing with an open target works correctly
         const target = expectedTargets[2];
         await targetAggregatesPage.openTargetDetails(target);
         await browser.refresh();
-        await targetAggregatesPage.assertTargetDetails(target, 'This month');
+        await assertTargetDetails(target, 'This month', 'userWithOnePlace');
+
+        await targetAggregatesPage.openSidebarFilter();
+        expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(1);
+        await targetAggregatesPage.selectFilterOption('Last month');
+
+        const lastMonth = getLastMonth();
+        await assertData(contacts, expectedTargets, lastMonth, 'userWithOnePlace');
+
       });
 
       it('should route to contact-detail on list item click and display contact summary target card', async () => {
@@ -376,7 +411,7 @@ describe('Target aggregates', () => {
           { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
         ];
 
-        await expectTargets(expectedTargets, 'This month');
+        await assertTargets(expectedTargets, 'This month', 'userWithOnePlace');
         await targetAggregatesPage.openTargetDetails(expectedTargets[0]);
         await targetAggregatesPage.clickOnTargetAggregateListItem(clarissa._id);
         // wait until contact-summary is loaded
@@ -387,7 +422,7 @@ describe('Target aggregates', () => {
         await validateCardFields(['yesterday Clarissa', '40', '50%']);
 
         await browser.back();
-        await targetAggregatesPage.assertTargetDetails(expectedTargets[0], 'This month');
+        await assertTargetDetails(expectedTargets[0], 'This month', 'userWithOnePlace');
 
         await targetAggregatesPage.openTargetDetails(expectedTargets[1]);
 
@@ -400,7 +435,7 @@ describe('Target aggregates', () => {
         await validateCardFields(['yesterday Prometheus', '18', '15%']);
 
         await browser.back();
-        await targetAggregatesPage.assertTargetDetails(expectedTargets[1], 'This month');
+        await assertTargetDetails(expectedTargets[1], 'This month', 'userWithOnePlace');
       });
     });
 
@@ -427,6 +462,10 @@ describe('Target aggregates', () => {
       });
 
       it('should filter aggregates by place', async () => {
+        const contactsDh1 = getDocsByPlace(districtHospital1._id);
+        const contactsDh2 = getDocsByPlace(districtHospital2._id);
+        const lastMonth = getLastMonth();
+
         await utils.saveDocs(targetDocs);
         await updateSettings(TARGETS_CONFIG, userWithManyPlaces);
         await commonPage.sync(true);
@@ -435,11 +474,19 @@ describe('Target aggregates', () => {
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
 
+        await assertData(contactsDh1, TARGETS_CONFIG, 'This month', districtHospital1.name);
+
         await targetAggregatesPage.openSidebarFilter();
 
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
 
-        await targetAggregatesPage.openTargetDetails({id: 'count_with_goal', title: 'count with goal'});
+        await targetAggregatesPage.selectFilterOption('District Hospital 2');
+        await assertData(contactsDh2, TARGETS_CONFIG, 'This month', districtHospital2.name);
+
+        await targetAggregatesPage.selectFilterOption('Last month');
+        await assertData(contactsDh2, TARGETS_CONFIG, lastMonth, districtHospital2.name);
+
+        /*wait targetAggregatesPage.openTargetDetails({id: 'count_with_goal', title: 'count with goal'});
 
         const firstLineItem = await targetAggregatesPage.getAggregateDetailListElementByIndex(0);
         let lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(firstLineItem);
@@ -448,7 +495,7 @@ describe('Target aggregates', () => {
         await targetAggregatesPage.selectFilterOption('District Hospital 2');
         await commonPage.waitForPageLoaded();
         lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(firstLineItem);
-        expect(await lineItemInfo.title).to.equal('Esteban');
+        expect(await lineItemInfo.title).to.equal('Esteban');*/
       });
 
     });
