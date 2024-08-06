@@ -28,7 +28,9 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
 
   beforeEach(waitForAsync(() => {
     targetAggregatesService = {
-      getAggregateDetails: sinon.stub()
+      getAggregateDetails: sinon.stub(),
+      isPreviousPeriod: sinon.stub(),
+      isCurrentPeriod: sinon.stub(),
     };
     targetAggregatesActions = {
       setSelectedTargetAggregate: sinon.stub(TargetAggregatesActions.prototype, 'setSelectedTargetAggregate')
@@ -210,9 +212,10 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       subtitle_translation_key: 'targets.this_month.subtitle',
       reportingPeriod: ReportingPeriod.CURRENT
     };
+    targetAggregatesService.isCurrentPeriod.resolves(true);
     translateService.instant = sinon.stub().returns('This month');
 
-    const result = (component as any).getReportingPeriodText();
+    const result = (component as any).getReportingPeriodText(component.selected.reportingPeriod);
     expect(result).to.equal('This month');
   });
 
@@ -223,24 +226,11 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       reportingPeriod: ReportingPeriod.PREVIOUS,
       reportingMonth: 'April'
     };
+    targetAggregatesService.isPreviousPeriod.resolves(true);
     translateService.instant = sinon.stub().returns('This month');
 
 
-    const result = (component as any).getReportingPeriodText();
-    expect(result).to.equal('April');
-  });
-
-  it('should return month name as reporting period text when ReportingPeriod.PREVIOUS', () => {
-    sinon.reset();
-    component.selected = {
-      subtitle_translation_key: 'targets.this_month.subtitle',
-      reportingPeriod: ReportingPeriod.PREVIOUS,
-      reportingMonth: 'April'
-    };
-    translateService.instant = sinon.stub().returns('This month');
-
-
-    const result = (component as any).getReportingPeriodText();
+    const result = (component as any).getReportingPeriodText(component.selected.reportingPeriod);
     expect(result).to.equal('April');
   });
 });
