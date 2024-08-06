@@ -1,7 +1,13 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
-const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
+const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li.content-row`);
+
+/*const sidebarFilterBtn = () => $('button*=Filter');//$('.open-filter .fa-sliders');
+const filterCloseBtn = () => $('.sidebar-close');
+const filterOptionsContainer = () => $$('.filter-options-container')
+const filterOptionRadioBtn = (optionLabel) => $(`span*=${optionLabel}`).parentElement();*/
+
 const AGGREGATE_DETAIL_LIST = '.aggregate-detail li';
 const targetAggregateListItem = (contactId) => $(`${AGGREGATE_DETAIL_LIST}[data-record-id="${contactId}"] a`);
 const targetAggregateDetailTitle = (element) => element.$('h4');
@@ -11,9 +17,23 @@ const getTargetAggregateDetailProgressBar = (element) => element.$(`${AGGREGATE_
 const getTargetAggregateDetailGoal = (element) => element.$$('.goal');
 const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
-const lineItem = (elementId) => $(`${AGGREGATE_LIST}  li[data-record-id=${elementId}]`);
-const getAggregateDetailListElementByIndex = async (index) => {
-  return await $$(AGGREGATE_DETAIL_LIST)[index];
+const lineItem = (elementId) => $(`${AGGREGATE_LIST} li[data-record-id=${elementId}]`);
+//const lineItem = (targetTitle) => $(AGGREGATE_LIST).$(`li*=${targetTitle}`);
+const getAggregateDetailListElementByIndex = (index) => $$(AGGREGATE_DETAIL_LIST)[index];
+
+
+const sidebarFilter = {
+  filterBtn: () => $('button*=Filter'),
+  closeBtn: () => $('.sidebar-close'),
+  optionsContainer: () => $$('.filter-options-container'),
+  optionContainerByTitle: (title) => $('.filter-options-container').$(`span*=${title}`).parentElement(),
+  optionRadioBtn: (optionLabel) => $(`span*=${optionLabel}`).parentElement(),
+};
+
+const TARGET_DETAIL = '.target-detail';
+const targetDetail = {
+  title: (titleValue) => $(TARGET_DETAIL).$(`h2=${titleValue}`),
+  breadcrumbs: (value) => $(TARGET_DETAIL).$(`span*=${value}`),
 };
 
 const expectModulesToBeAvailable = async (modules) => {
@@ -38,27 +58,33 @@ const checkContentDisabled = async () => {
   await (await $(CONTENT_DISABLED)).waitForDisplayed();
 };
 
-const getTargetItem = async (target) => {
+const getTargetItem = async (target, period, place) => {
   const item = lineItem(target.id);
-  await (await item.$('h4')).waitForDisplayed();
-  await (await item.$('.aggregate-status span')).waitForDisplayed();
+  const placeValue = place ? await (await item.$(`li*=${place}`)).isDisplayed() : false;
   return {
     title: await (await item.$('h4')).getText(),
-    status: await (await item.$('.aggregate-status span')).getText()
+    status: await (await item.$('.aggregate-status span')).getText(),
+    place: placeValue,
+    period: await (await item.$(`li*=${period}`)).isDisplayed(),
   };
 };
 
-const openTargetDetails = async (targetID) => {
-  const item = lineItem(targetID);
-  await item.$('a').waitForClickable();
-  await item.$('a').click();
+const openTargetDetails = async (target) => {
+  const item = lineItem(target.id);
+  await item.waitForClickable();
+  await item.click();
   await commonPage.waitForLoaders();
-  await (await $('.target-detail.card h2')).waitForDisplayed();
+  await (await targetDetail.title(target.title)).waitForDisplayed();
 };
 
-const expectTargetDetails = async (target) => {
-  expect(await $('.target-detail h2').getText()).to.equal(target.title);
-  expect(await $('.target-detail .cell p').getText()).to.equal(target.counter);
+const assertTargetDetails = async (target, period, place = '') => {
+  /*expect(await $('.target-detail h2').getText()).to.equal(target.title);
+  expect(await $('.target-detail .cell p').getText()).to.equal(target.counter);*/
+  expect(await (await targetDetail.title(target.title)).isDisplayed()).to.be.true;
+  expect(await (await targetDetail.breadcrumbs(period)).isDisplayed()).to.be.true;
+  if (place) {
+    expect(await (await targetDetail.breadcrumbs(place)).isDisplayed()).to.be.true;
+  }
 };
 
 const getAggregateDetailListLength = async () => {
@@ -123,19 +149,33 @@ const clickOnTargetAggregateListItem = async (contactId) => {
   await (await targetAggregateListItem(contactId)).click();
 };
 
+const openSidebarFilter = async () => {
+  await (await sidebarFilter.filterBtn()).waitForClickable();
+  await (await sidebarFilter.filterBtn()).click();
+  await (await sidebarFilter.closeBtn()).waitForDisplayed();
+};
+
+const selectFilterOption = async (option) => {
+  await (await sidebarFilter.optionRadioBtn(option)).waitForClickable();
+  await (await sidebarFilter.optionRadioBtn(option)).click();
+};
+
 module.exports = {
   expectModulesToBeAvailable,
   goToTargetAggregates,
   loadingStatus,
   aggregateList,
+  sidebarFilter,
   getTargetItem,
   openTargetDetails,
-  expectTargetDetails,
+  assertTargetDetails,
   targetAggregateListItem,
   getAggregateDetailListLength,
   getAggregateDetailListElementByIndex,
   getAggregateDetailElementInfo,
   clickOnTargetAggregateListItem,
   checkContentDisabled,
+  openSidebarFilter,
+  selectFilterOption,
 };
 
