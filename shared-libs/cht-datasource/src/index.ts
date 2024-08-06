@@ -96,6 +96,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws Error if no type is provided or if the type is not for a person
          * @throws Error if the provided limit is `<= 0`
          * @throws Error if the provided skip is `< 0`
+         * @see {@link getByType} which provides the same data, but without having to manually account for paging
          */
         getPageByType: (personType: string, limit = 100, skip = 0) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), limit, skip

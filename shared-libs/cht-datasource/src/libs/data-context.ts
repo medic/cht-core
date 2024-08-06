@@ -40,24 +40,21 @@ export const adapt = <T>(
   return remote(context);
 };
 
-interface PaginationArgs {
-  limit: number;
-  skip: number;
-}
-
-type FetchFunctionArgs<TFields extends Record<string, unknown>> = PaginationArgs & TFields;
-
 /** @internal */
-export const getDocumentStream = async function* <T, TFields extends Record<string, unknown>>(
-  fetchFunction: (args: FetchFunctionArgs<TFields>) => Promise<T[]>,
-  fetchFunctionArgs: FetchFunctionArgs<TFields>
+export const getDocumentStream = async function* <S, T>(
+  fetchFunction: (args: S, l: number, s: number) => Promise<T[]>,
+  fetchFunctionArgs: S
 ): AsyncGenerator<T, void> {
-  const { limit } = fetchFunctionArgs;
-  let { skip } = fetchFunctionArgs;
+  const limit = 100;
+  let skip = 0;
+  // TODO: found a bug in this function where if limit is 1
+  // then it will always return true but right now since limit
+  // is hardcoded to 100, it won't but if limit is made to be
+  // dynamic then, change this implementation
   const hasMoreResults = () => skip && skip % limit === 0;
 
   do {
-    const docs = await fetchFunction(fetchFunctionArgs);
+    const docs = await fetchFunction(fetchFunctionArgs, limit, skip);
 
     for (const doc of docs) {
       yield doc;

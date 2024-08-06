@@ -93,23 +93,19 @@ export namespace v1 {
    * @param context the current data context
    * @returns a function for retrieving a paged array of people
    * @throws Error if a data context is not provided
+   * @see {@link getAll} which provides the same data, but without having to manually account for paging
    */
   export const getPage = (
     context: DataContext
-  ): (
-    personType: ContactTypeQualifier,
-    limit: number,
-    skip: number
-  ) => Promise<Page<Person>> => {
+  ): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
     /**
      * Returns an array of people for the provided page specifications.
-     * @param params the function params
-     * @param params.personType the type of people to return
-     * @param params.limit the maximum number of people to return. Default is 100.
-     * @param params.skip the number of people to skip. Default is 0.
+     * @param personType the type of people to return
+     * @param limit the maximum number of people to return. Default is 100.
+     * @param skip the number of people to skip. Default is 0.
      * @returns an array of people for the provided page specifications.
      * @throws Error if no type is provided or if the type is not for a person
      * @throws Error if the provided `limit` value is `<=0`
@@ -137,15 +133,20 @@ export namespace v1 {
    */
   export const getAll = (
     context: DataContext
-  ): (personType: ContactTypeQualifier) => AsyncGenerator<v1.Person, void> => {
+  ): typeof curriedGen => {
     assertDataContext(context);
 
-    return async function* (personType: ContactTypeQualifier): AsyncGenerator<Person, void> {
+    /**
+     * Returns a generator for fetching all people with the given type
+     * @param personType the type of people to return
+     * @returns a generator for fetching all people with the given type
+     * @throws Error if no type is provided or if the type is not for a person
+     */
+    const curriedGen = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person, void> {
       assertTypeQualifier(personType);
       const getPage = context.bind(v1.getPage);
-      const limit = 100;
-      const skip = 0;
-      yield* getDocumentStream(getPage, { personType, limit, skip });
+      yield* getDocumentStream(getPage, personType);
     };
+    return curriedGen;
   };
 }

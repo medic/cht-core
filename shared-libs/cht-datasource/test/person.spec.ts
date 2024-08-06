@@ -147,7 +147,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);
 
-        const result = await Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit, skip });
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, limit, skip);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -184,7 +184,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit: invalidLimit, skip }))
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip ))
           .to.be.rejectedWith(`limit must be a positive number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -197,11 +197,8 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)({
-          personType: personTypeQualifier,
-          limit: limit,
-          skip: invalidSkip
-        })).to.be.rejectedWith(`skip must be a non-negative number`);
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, limit, invalidSkip))
+          .to.be.rejectedWith(`skip must be a non-negative number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
@@ -213,13 +210,11 @@ describe('person', () => {
     describe('getAll', () => {
       const personType = 'person';
       const personTypeQualifier = {contactType: personType} as const;
-      const limit = 100;
-      const skip = 0;
       const firstPerson = { _id: 'person1' } as Person.v1.Person;
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
       const people = [firstPerson, secondPerson, thirdPerson];
-      const mockGenerator = async function* () {
+      const mockGenerator = function* () {
         for (const person of people) {
           yield person;
         }
@@ -246,9 +241,7 @@ describe('person', () => {
         }
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(getDocumentStream.calledOnceWithExactly(personGetPage, {
-          personType: personTypeQualifier, limit, skip
-        })).to.be.true;
+        expect(getDocumentStream.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
         expect(res).to.be.deep.equal(people);
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
       });
@@ -261,9 +254,7 @@ describe('person', () => {
         const res = await generator.next();
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(getDocumentStream.calledOnceWithExactly(personGetPage, {
-          personType: personTypeQualifier, limit, skip
-        })).to.be.true;
+        expect(getDocumentStream.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
         expect(res.value).to.equal(undefined);
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
       });
