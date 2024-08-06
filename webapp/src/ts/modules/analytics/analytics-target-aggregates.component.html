@@ -1,13 +1,16 @@
 <div class="page" *ngIf="!enabled || loading">
-  <div class="item-content empty-selection disabled"
-    *ngIf="!loading; else loaderTpl">
+  <div class="item-content empty-selection disabled" *ngIf="!loading; else loaderTpl">
     <div>{{'analytics.target.aggregates.disabled' | translate}}</div>
   </div>
 </div>
 
-<div class="inbox page target-aggregates" *ngIf="enabled && !loading"
+<div
+  class="inbox page target-aggregates"
+  *ngIf="enabled && !loading"
   [ngClass]="{'sidebar-open': !!sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
-  <div id="target-aggregates-list" class="inbox-items left-pane"
+  <div
+    id="target-aggregates-list"
+    class="inbox-items left-pane"
     [ngClass]="{ 'col-sm-3': !!sidebarFilter.isOpen, 'col-sm-4': !sidebarFilter.isOpen }">
     <ul>
       <mm-content-row *ngFor="let aggregate of aggregates" [id]="aggregate.id"
@@ -18,15 +21,20 @@
         [aggregate]="aggregate.aggregateValue">
       </mm-content-row>
     </ul>
-    <p *ngIf="error && !aggregates?.length" class="alert alert-danger"
-      role="alert">{{'analytics.target.aggregates.error' | translate}}</p>
-    <p class="loading-status" *ngIf="!error && !aggregates?.length">
-      {{'analytics.target.aggregates.no.targets' | translate}}</p>
+    <p
+      *ngIf="error && !aggregates?.length"
+      class="alert alert-danger" role="alert">
+      {{ 'analytics.target.aggregates.error' | translate }}
+    </p>
+    <p
+      class="loading-status"
+      *ngIf="!error && !aggregates?.length">
+      {{ 'analytics.target.aggregates.no.targets' | translate }}
+    </p>
   </div>
 
   <div class="content-pane right-pane">
-    <div class="item-content"
-      [ngClass]="{ 'col-sm-6': !!sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
+    <div class="item-content" [ngClass]="{ 'col-sm-6': !!sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
       <router-outlet></router-outlet>
     </div>
     <mm-analytics-target-aggregates-sidebar-filter

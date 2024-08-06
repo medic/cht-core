@@ -64,6 +64,10 @@ export class TargetAggregatesService {
     return reportingPeriod === ReportingPeriod.PREVIOUS;
   }
 
+  isCurrentPeriod(reportingPeriod) {
+    return reportingPeriod === ReportingPeriod.CURRENT;
+  }
+
   /**
    * Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>

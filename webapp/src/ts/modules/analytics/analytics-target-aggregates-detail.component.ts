@@ -9,7 +9,6 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
-import { ReportingPeriod } from './analytics-target-aggregates-sidebar-filter.component';
 
 @Component({
   selector: 'analytics-target-aggregates-detail',
@@ -61,7 +60,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.selected = selected;
       this.error = error;
       if (this.selected) {
-        this.reportingPeriod = this.getReportingPeriodText();
+        this.reportingPeriod = this.getReportingPeriodText(this.selected);
       }
     });
     this.subscriptions.add(subscriptionStore);
@@ -116,8 +115,8 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     this.targetAggregatesActions.setSelectedTargetAggregate(aggregateDetails);
   }
 
-  private getReportingPeriodText(): string {
-    if (this.selected.reportingPeriod === ReportingPeriod.CURRENT) {
+  private getReportingPeriodText(aggregate) {
+    if (this.targetAggregatesService.isCurrentPeriod(aggregate.reportingPeriod)) {
       return this.translateService.instant(this.selected.subtitle_translation_key);
     }
 
