@@ -120,9 +120,9 @@ export namespace v1 {
   };
 
   /**
-   * Returns a generator function for retrieving people from the given data context.
+   * Returns a function for getting a generator that fetches people from the given data context.
    * @param context the current data context
-   * @returns a generator function for retrieving people
+   * @returns a function for getting a generator that fetches people
    * @throws Error if a data context is not provided
    */
   export const getAll = (
