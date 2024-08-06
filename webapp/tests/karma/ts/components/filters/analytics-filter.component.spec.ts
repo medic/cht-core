@@ -12,7 +12,6 @@ import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Analytics Filter Component', () => {
@@ -22,7 +21,6 @@ describe('Analytics Filter Component', () => {
   let sessionService;
   let telemetryService;
   let targetAggregatesService;
-  let userSettingsService;
   let globalActions;
   let route;
   let router;
@@ -37,9 +35,6 @@ describe('Analytics Filter Component', () => {
     telemetryService = { record: sinon.stub() };
     targetAggregatesService = {
       isEnabled: sinon.stub().resolves(false),
-    };
-    userSettingsService = {
-      hasMultipleFacilities: sinon.stub().resolves(true)
     };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
@@ -73,7 +68,6 @@ describe('Analytics Filter Component', () => {
           { provide: SessionService, useValue: sessionService },
           { provide: TelemetryService, useValue: telemetryService },
           { provide: TargetAggregatesService, useValue: targetAggregatesService },
-          { provide: UserSettingsService, useValue: userSettingsService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
         ]
@@ -102,7 +96,6 @@ describe('Analytics Filter Component', () => {
       .withArgs(['can_view_old_filter_and_search', 'can_view_old_action_bar'])
       .resolves(false);
     sessionService.isAdmin.returns(false);
-    userSettingsService.hasMultipleFacilities.resolves(true);
     route.snapshot.firstChild.data.moduleId = 'target-aggregates';
     targetAggregatesService.isEnabled.resolves(true);
 
@@ -112,7 +105,6 @@ describe('Analytics Filter Component', () => {
     expect(component.showFilterButton).to.be.true;
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
   it('should open and close sidebar filter', () => {
@@ -128,19 +120,6 @@ describe('Analytics Filter Component', () => {
     expect(telemetryService.record.calledTwice).to.be.true;
     expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics:target_aggregates:open']);
   });
-
-  it('should not display filter button if user does not have multipleFacilities', fakeAsync(() => {
-    sinon.resetHistory();
-    userSettingsService.hasMultipleFacilities.resolves(false);
-
-    component.ngOnInit();
-    flush();
-
-    expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
-  }));
 
   it('should not display filter button if user is admin', fakeAsync(() => {
     sinon.resetHistory();
@@ -164,7 +143,6 @@ describe('Analytics Filter Component', () => {
     expect(component.showFilterButton).to.be.false;
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
   it('should not display filter button if targetAggregate is not enabled', fakeAsync(() => {
@@ -177,7 +155,6 @@ describe('Analytics Filter Component', () => {
     expect(component.showFilterButton).to.be.false;
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
   it('should not display filter button if module is not target aggregates', fakeAsync(() => {
@@ -190,7 +167,6 @@ describe('Analytics Filter Component', () => {
     expect(component.showFilterButton).to.be.false;
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-    expect(userSettingsService.hasMultipleFacilities.callCount).to.equal(1);
   }));
 
   it('should update the active module when route changes', fakeAsync(() => {
