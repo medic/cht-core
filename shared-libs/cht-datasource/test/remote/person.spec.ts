@@ -81,11 +81,12 @@ describe('remote person', () => {
 
       it('returns people', async () => {
         const doc = [{ type: 'person' }, {type: 'person'}];
-        getResourcesInner.resolves(doc);
+        const expectedResponse = { data: doc, cursor: '-1' };
+        getResourcesInner.resolves(expectedResponse);
 
         const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, limit, skip);
 
-        expect(result).to.equal(doc);
+        expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
