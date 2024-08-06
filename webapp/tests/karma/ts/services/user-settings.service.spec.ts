@@ -187,7 +187,7 @@ describe('UserSettings service', () => {
         changesCallback({ id: 'org.couchdb.user:jack', changes: [{ rev: '5-xyz' }] });
         return service.get();
       })
-      .then((second:any) => {
+      .then((second: any) => {
         expect(second.id).to.equal('j');
         expect(get.callCount).to.equal(2);
       });
