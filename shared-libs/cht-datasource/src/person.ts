@@ -102,10 +102,9 @@ export namespace v1 {
 
     /**
      * Returns an array of people for the provided page specifications.
-     * @param params the function params
-     * @param params.personType the type of people to return
-     * @param params.limit the maximum number of people to return. Default is 100.
-     * @param params.skip the number of people to skip. Default is 0.
+     * @param personType the type of people to return
+     * @param limit the maximum number of people to return. Default is 100.
+     * @param skip the number of people to skip. Default is 0.
      * @returns an array of people for the provided page specifications.
      * @throws Error if no type is provided or if the type is not for a person
      * @throws Error if the provided `limit` value is `<=0`

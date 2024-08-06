@@ -147,7 +147,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);
 
-        const result = await Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit, skip });
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, limit, skip);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -185,10 +185,14 @@ describe('person', () => {
         getPage.resolves(people);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip ))
 =======
         await expect(Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit: invalidLimit, skip }))
 >>>>>>> b988b5782 (Avoid using spread operator in getDocumentStream function)
+=======
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip ))
+>>>>>>> 90cc4cae2 (Remove limit and skip as arguments for getDocumentStream function)
           .to.be.rejectedWith(`limit must be a positive number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -201,11 +205,8 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)({
-          personType: personTypeQualifier,
-          limit: limit,
-          skip: invalidSkip
-        })).to.be.rejectedWith(`skip must be a non-negative number`);
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, limit, invalidSkip))
+          .to.be.rejectedWith(`skip must be a non-negative number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
@@ -217,13 +218,11 @@ describe('person', () => {
     describe('getAll', () => {
       const personType = 'person';
       const personTypeQualifier = {contactType: personType} as const;
-      const limit = 100;
-      const skip = 0;
       const firstPerson = { _id: 'person1' } as Person.v1.Person;
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
       const people = [firstPerson, secondPerson, thirdPerson];
-      const mockGenerator = async function* () {
+      const mockGenerator = function* () {
         for (const person of people) {
           yield person;
         }
