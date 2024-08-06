@@ -128,6 +128,8 @@ describe('person', () => {
 
     describe('getPage', () => {
       const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
+      const cursor = '-1';
+      const pageData = { data: people, cursor };
       const limit = 3;
       const skip = 1;
       const invalidLimit = -1;
@@ -143,11 +145,11 @@ describe('person', () => {
 
       it('retrieves people from the data context', async () => {
         isContactTypeQualifier.returns(true);
-        getPage.resolves(people);
+        getPage.resolves(pageData);
 
         const result = await Person.v1.getPage(dataContext)(personTypeQualifier, limit, skip);
 
-        expect(result).to.equal(people);
+        expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
         expect(getPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
