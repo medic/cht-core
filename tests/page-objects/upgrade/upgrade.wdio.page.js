@@ -50,6 +50,26 @@ const getBuild = async () => {
   return await (await version()).getText();
 };
 
+const upgradeVersion = async (branch, tag, testFrontend=true) => {
+  await goToUpgradePage();
+  await expandPreReleasesAccordion();
+
+  const installButton = await getInstallButton(branch, tag);
+  await installButton.scrollIntoView({ block: 'center', inline: 'center' });
+  await installButton.click();
+  await (await upgradeModalConfirm()).click();
+
+  await (await cancelUpgradeButton()).waitForDisplayed();
+  await (await deploymentInProgress()).waitForDisplayed();
+  await (await deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
+
+  if (testFrontend) {
+    // https://github.com/medic/cht-core/issues/9186
+    // this is an unfortunate incompatibility between current API and admin app in the old version
+    await (await deploymentComplete()).waitForDisplayed();
+  }
+};
+
 module.exports = {
   cancelUpgradeButton,
   deploymentInProgress,
@@ -60,4 +80,5 @@ module.exports = {
   expandPreReleasesAccordion,
   upgradeModalConfirm,
   getBuild,
+  upgradeVersion,
 };

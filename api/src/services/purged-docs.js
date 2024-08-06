@@ -1,6 +1,6 @@
 const db = require('../db');
 const dbWatcher = require('./db-watcher');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 const purgingUtils = require('@medic/purging-utils');
 const config = require('../config');
 const configWatcher = require('./config-watcher');

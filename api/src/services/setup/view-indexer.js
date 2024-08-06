@@ -2,7 +2,7 @@ const request = require('@medic/couch-request');
 const _ = require('lodash');
 
 const upgradeLogService = require('./upgrade-log');
-const environment = require('../../environment');
+const environment = require('@medic/environment');
 const { DATABASES } = require('./databases');
 const ddocsService = require('./ddocs');
 

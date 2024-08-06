@@ -1,10 +1,17 @@
-
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const moment = require('moment');
 const utils = require('@utils');
 
 describe('should renew token', () => {
+  const getCtxCookieExpiry = async () => {
+    const userCtxCookie = await browser.getCookies('userCtx');
+    const momentObj = moment.unix(userCtxCookie[0].expiry);
+    if (!momentObj.isValid()) {
+      throw new Error(`Unable to construct moment object from cookie expiration: ${userCtxCookie}`);
+    }
+    return momentObj;
+  };
 
   beforeEach(async () => {
     await loginPage.cookieLogin();
@@ -27,12 +34,3 @@ describe('should renew token', () => {
     }
   });
 });
-
-const getCtxCookieExpiry = async () => {
-  const userCtxCookie = await browser.getCookies('userCtx');
-  const momentObj = moment.unix(userCtxCookie[0].expiry);
-  if (!momentObj.isValid()) {
-    throw new Error(`Unable to construct moment object from cookie expiration: ${userCtxCookie}`);
-  }
-  return momentObj;
-};

@@ -12,6 +12,7 @@ services:
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
       - "HEALTHCHECK_ADDR=${HEALTHCHECK_ADDR:-healthcheck}"
+      - "DOCKER_DNS_RESOLVER=true"
     logging:
       driver: "local"
       options:

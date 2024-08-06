@@ -1,6 +1,6 @@
 const request = require('@medic/couch-request');
 const url = require('url');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 
 const addMemberToDb = () => {
   const securityObject = {

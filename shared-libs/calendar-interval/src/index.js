@@ -64,7 +64,12 @@ module.exports = {
   // [12-31 -> 01-30], [01-31 -> 02-[28|29]], [03-01 -> 03-30], [03-31 -> 04-30], [05-01 -> 05-30], [05-31 - 06-30]
   getCurrent: (intervalStartDate) => getInterval(intervalStartDate),
 
-  getPrevious: (intervalStartDate) => getPreviousInterval(intervalStartDate),
+  getPrevious: (intervalStartDate, referenceDate) => {
+    if (referenceDate) {
+      return getPreviousInterval(intervalStartDate, moment(referenceDate));
+    }
+    return getPreviousInterval(intervalStartDate);
+  },
 
   /**
    * Returns the timestamps of the start and end of the a calendar interval that contains a reference date

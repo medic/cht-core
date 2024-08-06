@@ -1,5 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
@@ -24,6 +24,7 @@ describe('Analytics Filter Component', () => {
   let globalActions;
   let route;
   let router;
+  let routerEventSubject;
   let store: MockStore;
 
   beforeEach(async () => {
@@ -42,10 +43,12 @@ describe('Analytics Filter Component', () => {
       snapshot: { queryParams: { query: '' }, firstChild: { data: { moduleId: 'some-module' } } },
       url: of([])
     };
+    routerEventSubject = new Subject();
     router = {
       navigate: sinon.stub(),
       events: of(),
     };
+    router.events.pipe = sinon.stub().returns(routerEventSubject);
 
     const mockedSelectors = [
       { selector: Selectors.getSidebarFilter, value: {} },
@@ -164,5 +167,29 @@ describe('Analytics Filter Component', () => {
     expect(component.showFilterButton).to.be.false;
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+  }));
+
+  it('should update the active module when route changes', fakeAsync(() => {
+    component.analyticsModules = [
+      { id: 'targets' },
+      { id: 'target-aggregates' },
+    ];
+
+    routerEventSubject.next({ snapshot: { data: { moduleId: 'random-module' } } });
+    flush();
+
+    expect(component.activeModule).to.be.undefined;
+
+    routerEventSubject.next({ snapshot: { data: { moduleId: 'targets' } } });
+    flush();
+
+    expect(component.activeModule).to.not.be.undefined;
+    expect(component.activeModule.id).to.equal('targets');
+
+    routerEventSubject.next({ snapshot: { data: { moduleId: 'target-aggregates' } } });
+    flush();
+
+    expect(component.activeModule).to.not.be.undefined;
+    expect(component.activeModule.id).to.equal('target-aggregates');
   }));
 });

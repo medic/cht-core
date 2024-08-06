@@ -9,7 +9,7 @@ import {
   Output
 } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -55,13 +55,18 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   }
 
   ngAfterContentInit() {
-    const subscription = this.route.url.subscribe(() => this.setActiveModule());
-    this.subscriptions.add(subscription);
+    const routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof ActivationEnd))
+      .subscribe((event: ActivationEnd) => this.setActiveModule(event?.snapshot?.data?.moduleId));
+    this.subscriptions.add(routerSubscription);
+
+    const routeSubscription = this.route.url.subscribe(() => this.setActiveModule());
+    this.subscriptions.add(routeSubscription);
   }
 
   ngAfterContentChecked() {
     if (!this.activeModule && this.analyticsModules?.length) {
-      this.setActiveModule();
+      this.setActiveModule(this.route.snapshot?.firstChild?.data?.moduleId);
     }
   }
 
@@ -80,9 +85,11 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     return this.route.snapshot?.firstChild?.data?.moduleId;
   }
 
-  private setActiveModule() {
-    const currentModuleId = this.getCurrentModuleId();
-    this.activeModule = this.analyticsModules?.find(module => module.id === currentModuleId);
+  private setActiveModule(moduleId?: string) {
+    if (!moduleId) {
+      moduleId = this.getCurrentModuleId();
+    }
+    this.activeModule = this.analyticsModules?.find(module => module.id === moduleId);
   }
 
   private subscribeToRouteChanges() {

@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Place } from '@medic/cht-datasource';
 
 import { CacheService } from '@mm-services/cache.service';
@@ -13,11 +13,11 @@ import { LanguageService } from '@mm-services/language.service';
 export class UserSettingsService {
   private readonly cache;
   constructor(
-    private cacheService:CacheService,
+    private cacheService: CacheService,
     private getDataRecordsService: GetDataRecordsService,
-    private dbService:DbService,
-    private languageService:LanguageService,
-    private sessionService:SessionService,
+    private dbService: DbService,
+    private languageService: LanguageService,
+    private sessionService: SessionService,
   ) {
     this.cache = this.cacheService.register({
       get: callback => {
@@ -78,7 +78,7 @@ export class UserSettingsService {
       .then((userSettings: UserSettings) => {
         let userFacilities = userSettings.facility_id;
         if (userFacilities && !Array.isArray(userFacilities)) {
-          userFacilities = [ userFacilities ];
+          userFacilities = [userFacilities];
         }
         return this.getDataRecordsService.get(userFacilities);
       })
@@ -104,7 +104,7 @@ export class UserSettingsService {
 
   setAsKnown(): Promise<Object> {
     return this.get()
-      .then((userSettings:any) => {
+      .then((userSettings: any) => {
         userSettings.known = true;
         return this.put(userSettings);
       });

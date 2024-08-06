@@ -92,12 +92,10 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
         );
       }
 
-      aggregates.forEach((aggregate) => {
-        if (this.userFacilities.length > 1) {
-          aggregate.facility = userFacility?.name;
-        }
-        aggregate.reportingPeriod = reportingPeriod;
-      });
+      const reportingMonth = await this.targetAggregatesService.getReportingMonth(reportingPeriod);
+
+      aggregates = aggregates
+        .map(aggregate => this.formatAggregate(aggregate, userFacility, reportingPeriod, reportingMonth));
 
       this.targetAggregatesActions.setTargetAggregates(aggregates);
       this.targetAggregatesActions.setTargetAggregatesLoaded(true);
@@ -108,10 +106,28 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
       this.trackPerformance?.stop({
-        name: [ 'analytics', 'target_aggregates', 'load' ].join(':'),
+        name: ['analytics', 'target_aggregates', 'load'].join(':'),
         recordApdex: true,
       });
     }
+  }
+
+  private formatAggregate(aggregate, userFacility, reportingPeriod, reportingMonth) {
+    const filtersToDisplay: string[] = [];
+
+    if (this.userFacilities.length > 1 && this.facilityFilter?.name) {
+      aggregate.facility = userFacility?.name;
+      filtersToDisplay.push(this.facilityFilter.name);
+    }
+
+    aggregate.reportingMonth = reportingMonth;
+    aggregate.reportingPeriod = reportingPeriod;
+    if (this.targetAggregatesService.isPreviousPeriod(aggregate.reportingPeriod)) {
+      filtersToDisplay.push(aggregate.reportingMonth);
+    }
+    aggregate.filtersToDisplay = filtersToDisplay;
+
+    return aggregate;
   }
 
   private async setDefaultFilters() {
