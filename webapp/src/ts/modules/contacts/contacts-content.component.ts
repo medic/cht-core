@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
 import * as moment from 'moment';
-import { groupBy as _groupBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -381,36 +380,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     return childTypes
       .filter(contactType => forms?.find(form => form._id === contactType.create_form))
       .sort((a, b) => a.id?.localeCompare(b.id));
-  }
-
-  private getModelsFromChildTypes(childTypes) {
-    const grouped = _groupBy(childTypes, type => type.person ? 'persons' : 'places');
-    const models: {
-      menu_key: string;
-      menu_icon: string;
-      permission: string;
-      types: any[];
-    }[] = [];
-
-    if (grouped.places) {
-      models.push({
-        menu_key: 'Add place',
-        menu_icon: 'fa-building',
-        permission: 'can_create_places',
-        types: grouped.places
-      });
-    }
-
-    if (grouped.persons) {
-      models.push({
-        menu_key: 'Add person',
-        menu_icon: 'fa-user',
-        permission: 'can_create_people',
-        types: grouped.persons
-      });
-    }
-
-    return models;
   }
 
   private openContactMutedModal(form) {
