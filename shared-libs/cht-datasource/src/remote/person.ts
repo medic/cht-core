@@ -1,4 +1,4 @@
-import { Nullable } from '../libs/core';
+import { Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { getResource, getResources, RemoteDataContext } from './libs/data-context';
@@ -27,7 +27,7 @@ export namespace v1 {
     personType: ContactTypeQualifier,
     limit: number,
     skip: number
-  ): Promise<Person.v1.Person[]> => getPeople(remoteContext)(
+  ): Promise<Page<Person.v1.Person>> => getPeople(remoteContext)(
     {'limit': limit.toString(), 'skip': skip.toString(), 'contactType': personType.contactType}
   );
 }

@@ -6,6 +6,7 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
+import { Page } from './libs/core';
 
 /** */
 export namespace v1 {
@@ -103,7 +104,11 @@ export namespace v1 {
      * @throws Error if the provided `limit` value is `<=0`
      * @throws Error if the provided `skip` value is `<0`
      */
-    const curriedFn = async (personType: ContactTypeQualifier, limit = 100, skip = 0): Promise<Person[]> => {
+    const curriedFn = async (
+      personType: ContactTypeQualifier,
+      limit = 100,
+      skip = 0
+    ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
       assertLimit(limit);
       assertSkip(skip);

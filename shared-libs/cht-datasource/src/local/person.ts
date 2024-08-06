@@ -1,6 +1,6 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { deepCopy, isNonEmptyArray, Nullable } from '../libs/core';
+import { deepCopy, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
@@ -61,9 +61,13 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    return async (personType: ContactTypeQualifier, limit: number, skip: number): Promise<Person.v1.Person[]> => {
+    return async (
+      personType: ContactTypeQualifier,
+      limit: number,
+      skip: number
+    ): Promise<Page<Person.v1.Person>> => {
       const personTypes = contactTypeUtils.getPersonTypes(settings.getAll());
-      const personTypesIds = personTypes.map(item => item.id);
+      const personTypesIds = personTypes.map((item) => item.id);
 
       if (!personTypesIds.includes(personType.contactType)) {
         throw new Error(`Invalid person type: ${personType.contactType}`);
@@ -71,9 +75,41 @@ export namespace v1 {
 
       const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
 
-      const docs = await getDocsByPage([personType.contactType], limit, skip);
+      const fetchAndFilter = async (
+        currentLimit: number,
+        currentSkip: number,
+        personDocs: Person.v1.Person[],
+        totalDocsFetched = 0,
+      ): Promise<Page<Person.v1.Person>> => {
+        const docs = await getDocsByPage([personType.contactType], currentLimit, currentSkip);
+        if (docs.length === 0) {
+          return { data: personDocs, cursor: '-1' };
+        }
 
-      return docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc, doc?._id));
+        const tempFilteredDocs = docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc, doc?._id));
+
+        personDocs.push(...tempFilteredDocs);
+        totalDocsFetched += docs.length;
+
+        if (personDocs.length >= limit) {
+          let cursor: number;
+          if (docs.length < currentLimit) {
+            cursor = -1;
+          } else {
+            cursor = skip + totalDocsFetched - (personDocs.length - limit);
+          }
+          return { data: personDocs.slice(0, limit), cursor: cursor.toString() };
+        }
+
+        return fetchAndFilter(
+          (currentLimit - tempFilteredDocs.length) * 2,
+          currentSkip + currentLimit,
+          personDocs,
+          totalDocsFetched
+        );
+      };
+
+      return fetchAndFilter(limit, skip, []);
     };
   };
 }
