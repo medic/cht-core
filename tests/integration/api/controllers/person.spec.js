@@ -157,17 +157,20 @@ describe('Person API', () => {
       expect(responsePeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
     });
 
-    [
-      ['does not have can_view_contacts permission', userNoPerms],
-      ['is not an online user', offlineUser]
-    ].forEach(([description, user]) => {
-      it(`throws error when user ${description}`, async () => {
-        const opts = {
-          path: `/api/v1/person`,
-          auth: { username: user.username, password: user.password },
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-      });
+    it(`throws error when user does not have can_view_contacts permission`, async () => {
+      const opts = {
+        path: `/api/v1/person`,
+        auth: { username: userNoPerms.username, password: userNoPerms.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it(`throws error when user is not an online user`, async () => {
+      const opts = {
+        path: `/api/v1/person`,
+        auth: { username: offlineUser.username, password: offlineUser.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
 
     it('throws 400 error when personType is invalid', async () => {
