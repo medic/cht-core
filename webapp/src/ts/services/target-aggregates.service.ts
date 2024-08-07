@@ -23,18 +23,18 @@ import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregat
 export class TargetAggregatesService {
 
   constructor(
-    private uhcSettingsService: UHCSettingsService,
-    private dbService: DbService,
-    private translateService: TranslateService,
-    private translateFromService: TranslateFromService,
-    private searchService: SearchService,
-    private getDataRecordsService: GetDataRecordsService,
-    private userSettingsService: UserSettingsService,
-    private contactTypesService: ContactTypesService,
-    private authService: AuthService,
-    private settingsService: SettingsService,
-    private calendarIntervalService: CalendarIntervalService,
-    private ngZone: NgZone,
+    private uhcSettingsService:UHCSettingsService,
+    private dbService:DbService,
+    private translateService:TranslateService,
+    private translateFromService:TranslateFromService,
+    private searchService:SearchService,
+    private getDataRecordsService:GetDataRecordsService,
+    private userSettingsService:UserSettingsService,
+    private contactTypesService:ContactTypesService,
+    private authService:AuthService,
+    private settingsService:SettingsService,
+    private calendarIntervalService:CalendarIntervalService,
+    private ngZone:NgZone,
   ) { }
 
   /**
@@ -251,7 +251,7 @@ export class TargetAggregatesService {
   }
 
   private async getUserFacilityIds(): Promise<string[] | undefined> {
-    const { facility_id }: any = await this.userSettingsService.get();
+    const { facility_id }:any = await this.userSettingsService.get();
     if (!facility_id?.length) {
       return;
     }
@@ -260,7 +260,7 @@ export class TargetAggregatesService {
 
   private async getHomePlace(facilityId?) {
     if (facilityId) {
-      const places = await this.getDataRecordsService.get([facilityId]);
+      const places = await this.getDataRecordsService.get([ facilityId ]);
       return places?.[0];
     }
 
@@ -281,7 +281,7 @@ export class TargetAggregatesService {
         if (!homePlaceSummary) {
           const message = 'Your user does not have an associated contact, or does not have access to the ' +
             'associated contact.';
-          const err: any = new Error(message);
+          const err:any = new Error(message);
           err.translationKey = 'analytics.target.aggregates.error.no.contact';
           throw err;
         }
@@ -347,7 +347,7 @@ export class TargetAggregatesService {
             this.getSupervisedContacts(facilityId),
             this.fetchLatestTargetDocs(settings, reportingPeriod)
           ])
-          .then(([contacts, latestTargetDocs]) => this.aggregateTargets(latestTargetDocs, contacts, targetsConfig));
+          .then(([ contacts, latestTargetDocs ]) => this.aggregateTargets(latestTargetDocs, contacts, targetsConfig));
       });
   }
 

@@ -27,9 +27,9 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
       getTypeId: sinon.stub().returns('district_hospital')
     };
     settingsService = {
-      get: sinon.stub().resolves(
-        { contact_types: [{ id: 'district_hospital', name_key: 'District Hospital', }] }
-      )
+      get: sinon
+        .stub()
+        .resolves({ contact_types: [{ id: 'district_hospital', name_key: 'District Hospital', }] })
     };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
