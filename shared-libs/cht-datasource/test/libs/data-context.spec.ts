@@ -130,8 +130,9 @@ describe('context lib', () => {
 
     it('yields document one by one', async () => {
       const mockDocs = [{ id: 1 }, { id: 2 }, { id: 3 }];
+      const mockPage = { data: mockDocs, cursor: '-1' };
       const extraArg = 'value';
-      fetchFunctionStub.resolves(mockDocs);
+      fetchFunctionStub.resolves(mockPage);
 
       const generator = getDocumentStream(fetchFunctionStub, extraArg);
 
@@ -148,11 +149,13 @@ describe('context lib', () => {
     it('should handle multiple pages',  async () => {
       const mockDoc = { id: 1 };
       const mockDocs1 = Array.from({ length: 100 }, () => ({ ...mockDoc }));
+      const mockPage1 = { data: mockDocs1, cursor: '100' };
       const mockDocs2 = [{ id: 101 }];
+      const mockPage2 = { data: mockDocs2, cursor: '-1' };
       const extraArg = 'value';
 
-      fetchFunctionStub.onFirstCall().resolves(mockDocs1);
-      fetchFunctionStub.onSecondCall().resolves(mockDocs2);
+      fetchFunctionStub.onFirstCall().resolves(mockPage1);
+      fetchFunctionStub.onSecondCall().resolves(mockPage2);
 
       const generator = getDocumentStream(fetchFunctionStub, extraArg);
 
@@ -168,7 +171,7 @@ describe('context lib', () => {
     });
 
     it('should handle empty result', async () => {
-      fetchFunctionStub.resolves([]);
+      fetchFunctionStub.resolves({ data: [], cursor: '-1' });
 
       const generator = getDocumentStream(fetchFunctionStub, { limit: 10, skip: 0 });
 
