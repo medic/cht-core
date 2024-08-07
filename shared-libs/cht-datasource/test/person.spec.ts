@@ -184,15 +184,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip ))
-=======
-        await expect(Person.v1.getPage(dataContext)({ personType: personTypeQualifier, limit: invalidLimit, skip }))
->>>>>>> b988b5782 (Avoid using spread operator in getDocumentStream function)
-=======
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip ))
->>>>>>> 90cc4cae2 (Remove limit and skip as arguments for getDocumentStream function)
           .to.be.rejectedWith(`limit must be a positive number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
