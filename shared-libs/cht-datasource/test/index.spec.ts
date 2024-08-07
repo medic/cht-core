@@ -154,24 +154,7 @@ describe('CHT Script API - getDatasource', () => {
         const personTypeQualifier = { contactType: personType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const res =  await person.getByType(personType);
-
-        expect(res).to.deep.equal(mockAsyncGenerator);
-        expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
-        expect(personGetAll.calledOnceWithExactly(personTypeQualifier)).to.be.true;
-        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
-      });
-
-      it('getAll', async () => {
-        const mockAsyncGenerator = async function* () {
-          yield [];
-        };
-        const personGetAll = sinon.stub().resolves(mockAsyncGenerator);
-        dataContextBind.returns(personGetAll);
-        const personType = 'person';
-        const personTypeQualifier = { contactType: personType };
-        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
-
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const res =  await person.getByType(personType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
