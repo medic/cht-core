@@ -152,9 +152,12 @@ describe('Person API', () => {
           ...offlineUserPlaceHierarchy
         }
       ];
-      const responsePeople = await getPage(Qualifier.byContactType(personType), limit, skip);
+      const responsePage = await getPage(Qualifier.byContactType(personType), limit, skip);
+      const responsePeople = responsePage.data;
+      const responseCursor = responsePage.cursor;
 
       expect(responsePeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
+      expect(responseCursor).to.be.equal('-1');
     });
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {
