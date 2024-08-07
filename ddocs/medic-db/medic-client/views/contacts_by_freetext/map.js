@@ -1,5 +1,5 @@
 function(doc) {
-  var skip = [ '_id' ];
+  var include = [ 'name', 'external_id', 'notes' ];
 
   var usedKeys = [];
   var emitMaybe = function(key, value) {
@@ -16,7 +16,7 @@ function(doc) {
       return;
     }
     key = key.toLowerCase();
-    if (skip.indexOf(key) === -1 || /_date$/.test(key)) {
+    if (include.indexOf(key) === -1 || /_date$/.test(key)) {
       return;
     }
     if (typeof value === 'string') {
