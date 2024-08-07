@@ -244,7 +244,6 @@ const buildServiceImages = async () => {
 
   console.log('working directory', workingDir);
   for (const service of versions.SERVICES) {
-    await exec('rsync', ['-r', '-p', './shared-libs', service]);
     await exec('rsync', ['-r', '-p', `${workingDir}/node_modules`, service]);
 
     const tag = versions.getImageTag(service);
