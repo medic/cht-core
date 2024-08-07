@@ -155,6 +155,7 @@
           if (errorCode === 401) {
             return redirectToLogin(dbInfo);
           }
+          utils.feedback(err);
           setUiError(err);
           throw (err);
         }
