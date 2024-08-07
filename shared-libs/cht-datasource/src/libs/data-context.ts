@@ -1,4 +1,4 @@
-import { hasField, isRecord } from './core';
+import { hasField, isRecord, Page } from './core';
 import { isLocalDataContext, LocalDataContext } from '../local/libs/data-context';
 import { assertRemoteDataContext, isRemoteDataContext, RemoteDataContext } from '../remote/libs/data-context';
 
@@ -42,24 +42,20 @@ export const adapt = <T>(
 
 /** @internal */
 export const getDocumentStream = async function* <S, T>(
-  fetchFunction: (args: S, l: number, s: number) => Promise<T[]>,
+  fetchFunction: (args: S, l: number, s: number) => Promise<Page<T>>,
   fetchFunctionArgs: S
 ): AsyncGenerator<T, void> {
   const limit = 100;
   let skip = 0;
-  // TODO: found a bug in this function where if limit is 1
-  // then it will always return true but right now since limit
-  // is hardcoded to 100, it won't but if limit is made to be
-  // dynamic then, change this implementation
-  const hasMoreResults = () => skip && skip % limit === 0;
+  const hasMoreResults = () => skip !== -1;
 
   do {
     const docs = await fetchFunction(fetchFunctionArgs, limit, skip);
 
-    for (const doc of docs) {
+    for (const doc of docs.data) {
       yield doc;
     }
 
-    skip += docs.length;
+    skip = Number(docs.cursor);
   } while (hasMoreResults());
 };
