@@ -5,37 +5,42 @@ const $ = require( 'jquery' );
 const phoneNumber = require('@medic/phone-number');
 require( 'enketo-core/src/js/plugins' );
 
+const isContactPhoneValid = (settings, fieldValue) => {
+  if (phoneNumber.validate(settings, fieldValue)) {
+    return true;
+  }
+
+  console.error( 'invalid phone number: "' + fieldValue + '"' );
+  return false;
+};
+
+const getContactIdsForPhone = (phoneNumber) => window.CHTCore.DB
+  .get()
+  .query('medic-client/contacts_by_phone', { key: phoneNumber })
+  .then(results => results.rows.map(row => row.id));
+
+const isContactPhoneUnique = async (settings, fieldValue) => {
+  const normalizedNumber = phoneNumber.normalize(settings, fieldValue);
+  const contactIds = await getContactIdsForPhone(normalizedNumber);
+  const contactBeingEdited = $('#contact-form').attr('data-editing');
+  if (!contactIds.length || contactBeingEdited && contactIds.includes(contactBeingEdited)) {
+    return true;
+  }
+
+  console.error('phone number not unique: "' + fieldValue + '"');
+  return false;
+};
+
+
 // Set up enketo validation for `phone` input type
 FormModel.prototype.types.tel = {
-  validate: function( fieldValue ) {
-    return window.CHTCore.Settings
-      .get()
-      .then( function( settings ) {
-        if ( !phoneNumber.validate( settings, fieldValue ) ) {
-          throw new Error( 'invalid phone number: "' + fieldValue + '"' );
-        }
-        return phoneNumber.normalize( settings, fieldValue );
-      } )
-      .then( function( phoneNumber ) {
-        // Check the phone number is unique.  N.B. this makes the
-        // assumption that we have an object type `person` with a
-        // field `phone`.
+  validate: async ( fieldValue ) => {
+    const settings = await window.CHTCore.Settings.get();
+    if (!isContactPhoneValid(settings, fieldValue)) {
+      return false;
+    }
 
-        const DB = window.CHTCore.DB;
-        return DB.get().query('medic-client/contacts_by_phone', { key: phoneNumber });
-      } )
-      .then( function( res ) {
-        if ( res.rows.length === 0 ) {
-          return true;
-        }
-
-        const contactBeingEdited = $('#contact-form').attr('data-editing');
-        if ( res.rows[ 0 ].id !== contactBeingEdited ) {
-          throw new Error( 'phone number not unique: "' + fieldValue + '"' );
-        }
-
-        return true;
-      } );
+    return isContactPhoneUnique(settings, fieldValue);
   },
 };
 
