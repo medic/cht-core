@@ -7,6 +7,7 @@ import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
+import { Page } from '../src/libs/core';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
