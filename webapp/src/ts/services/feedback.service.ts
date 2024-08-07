@@ -54,7 +54,6 @@ export class FeedbackService {
   ];
 
   private readonly FEEDBACK_LEVEL = 'error';
-  private readonly localStorageKeys = 'cht_feedback_ids';
 
   // converts the logCircularBuffer into an ordered array of log events
   private getLog() {
@@ -219,32 +218,9 @@ export class FeedbackService {
     };
   }
 
-  private getSavedForLaterDocIds () {
-    return JSON.parse(window.localStorage.getItem(this.localStorageKeys) || JSON.stringify([]));
-  }
-
-  private saveForReload(feedbackDoc) {
-    const keys = this.getSavedForLaterDocIds();
-    keys.push(feedbackDoc._id);
-    window.localStorage.setItem(feedbackDoc._id, JSON.stringify(feedbackDoc));
-    window.localStorage.setItem(this.localStorageKeys, JSON.stringify(keys));
-  }
-
-  private removeFromReload(feedbackDoc) {
-    const keys = this.getSavedForLaterDocIds();
-    const idx = keys.indexOf(feedbackDoc._id);
-    keys.splice(idx, 1);
-    window.localStorage.removeItem(feedbackDoc._id);
-    window.localStorage.setItem(this.localStorageKeys, JSON.stringify(keys));
-  }
-
   private async createAndSave(info, isManual?) {
     const feedbackDoc = await this.create(info, isManual);
-    this.saveForReload(feedbackDoc);
-    console.warn('save for reload');
-    const response = await this.dbService.get({ meta: true }).post(feedbackDoc);
-    this.removeFromReload(feedbackDoc);
-    return response;
+    return await this.dbService.get({ meta: true }).post(feedbackDoc);
   }
 
   private submitExisting() {
@@ -255,13 +231,6 @@ export class FeedbackService {
         // these for simplicity
       });
     });
-    const keys = this.getSavedForLaterDocIds();
-    keys.forEach(key => {
-      const doc = JSON.parse(window.localStorage.getItem(key) || JSON.stringify([]));2
-      this.removeFromReload(doc);
-      this.dbService.get({ meta: true }).post(doc);
-    });
-
   }
 
   init () {
