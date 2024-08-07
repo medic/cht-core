@@ -1,5 +1,5 @@
 function(doc) {
-  var skip = [ '_id' ];
+  var include = [ 'patient_uuid', 'patient_name', 'form' ];
 
   var usedKeys = [];
   var emitMaybe = function(key, value) {
@@ -16,7 +16,7 @@ function(doc) {
       return;
     }
     key = key.toLowerCase();
-    if (skip.indexOf(key) === -1 || /_date$/.test(key)) {
+    if (include.indexOf(key) === -1 || /_date$/.test(key)) {
       return;
     }
     if (typeof value === 'string') {
@@ -32,7 +32,9 @@ function(doc) {
 
   if (doc.type === 'data_record' && doc.form) {
     Object.keys(doc).forEach(function(key) {
-      emitField(key, doc[key], doc.reported_date);
+      if (include.includes(key)) {
+        emitField(key, doc[key], doc.reported_date);
+      }
     });
     if (doc.fields) {
       Object.keys(doc.fields).forEach(function(key) {
