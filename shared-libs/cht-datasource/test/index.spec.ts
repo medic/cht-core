@@ -126,8 +126,8 @@ describe('CHT Script API - getDatasource', () => {
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
 
-      it('getPage', async () => {
-        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: '-1'};
+      it('getPageByType', async () => {
+        const expectedPeople: Person.v1.Person[] = [];
         const personGetPage = sinon.stub().resolves(expectedPeople);
         dataContextBind.returns(personGetPage);
         const personType = 'person';
@@ -144,7 +144,7 @@ describe('CHT Script API - getDatasource', () => {
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
 
-      it('getAll', async () => {
+      it('getByType', async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         const mockAsyncGenerator = async function* () {
           yield [];
