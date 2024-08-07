@@ -28,12 +28,6 @@ export namespace v1 {
     readonly parent?: Place.v1.PlaceWithLineage | NormalizedParent,
   }
 
-  interface getPageParams {
-    personType: ContactTypeQualifier;
-    limit?: number;
-    skip?: number;
-  }
-
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
       throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
