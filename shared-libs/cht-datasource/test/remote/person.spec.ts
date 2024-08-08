@@ -71,13 +71,12 @@ describe('remote person', () => {
 
     describe('getPage', () => {
       const limit = 3;
-      const skip = 1;
-      const personType = 'person';
-      const personTypeQualifier = {contactType: personType};
+      const cursor = '1';
+      const personTypeQualifier = {contactType: 'person'};
       const queryParam = {
         limit: limit.toString(),
-        skip: skip.toString(),
-        personType
+        cursor,
+        ...personTypeQualifier
       };
 
       it('returns people', async () => {
@@ -85,7 +84,7 @@ describe('remote person', () => {
         const expectedResponse = { data: doc, cursor: '-1' };
         getResourcesInner.resolves(expectedResponse);
 
-        const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, limit, skip);
+        const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
@@ -95,7 +94,7 @@ describe('remote person', () => {
       it('returns empty array if docs are not found', async () => {
         getResourcesInner.resolves([]);
 
-        const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, limit, skip);
+        const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, cursor, limit);
 
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;

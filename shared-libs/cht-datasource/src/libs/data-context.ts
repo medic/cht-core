@@ -42,20 +42,20 @@ export const adapt = <T>(
 
 /** @internal */
 export const getDocumentStream = async function* <S, T>(
-  fetchFunction: (args: S, l: number, s: number) => Promise<Page<T>>,
+  fetchFunction: (args: S, s: string, l: number) => Promise<Page<T>>,
   fetchFunctionArgs: S
 ): AsyncGenerator<T, void> {
   const limit = 100;
-  let skip = 0;
-  const hasMoreResults = () => skip !== -1;
+  let cursor = '0';
+  const hasMoreResults = () => cursor !== '-1';
 
   do {
-    const docs = await fetchFunction(fetchFunctionArgs, limit, skip);
+    const docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
 
     for (const doc of docs.data) {
       yield doc;
     }
 
-    skip = Number(docs.cursor);
+    cursor = docs.cursor;
   } while (hasMoreResults());
 };

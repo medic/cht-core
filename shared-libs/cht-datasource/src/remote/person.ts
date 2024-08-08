@@ -25,9 +25,9 @@ export namespace v1 {
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
     personType: ContactTypeQualifier,
+    cursor: string,
     limit: number,
-    skip: number
   ): Promise<Page<Person.v1.Person>> => getPeople(remoteContext)(
-    {'limit': limit.toString(), 'skip': skip.toString(), 'personType': personType.contactType}
+    {'limit': limit.toString(), 'contactType': personType.contactType, cursor}
   );
 }

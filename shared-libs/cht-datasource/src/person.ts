@@ -98,8 +98,8 @@ export namespace v1 {
     /**
      * Returns an array of people for the provided page specifications.
      * @param personType the type of people to return
+     * @param cursor the number of people to skip. Default is 0.
      * @param limit the maximum number of people to return. Default is 100.
-     * @param skip the number of people to skip. Default is 0.
      * @returns an array of people for the provided page specifications.
      * @throws Error if no type is provided or if the type is not for a person
      * @throws Error if the provided `limit` value is `<=0`
@@ -107,14 +107,14 @@ export namespace v1 {
      */
     const curriedFn = async (
       personType: ContactTypeQualifier,
+      cursor = '0',
       limit = 100,
-      skip = 0
     ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
       assertLimit(limit);
-      assertSkip(skip);
+      assertCursor(cursor);
 
-      return fn(personType, limit, skip);
+      return fn(personType, cursor, limit);
     };
     return curriedFn;
   };
@@ -136,10 +136,10 @@ export namespace v1 {
      * @returns a generator for fetching all people with the given type
      * @throws Error if no type is provided or if the type is not for a person
      */
-    const curriedGen = async function* (personType: ContactTypeQualifier): AsyncGenerator<Person, void> {
+    const curriedGen = (personType: ContactTypeQualifier): AsyncGenerator<Person, void> => {
       assertTypeQualifier(personType);
       const getPage = context.bind(v1.getPage);
-      yield* getDocumentStream(getPage, personType);
+      return getDocumentStream(getPage, personType);
     };
     return curriedGen;
   };
