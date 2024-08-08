@@ -113,7 +113,12 @@ export abstract class AbstractDataContext implements DataContext {
   readonly bind = <T>(fn: (ctx: DataContext) => T): T => fn(this);
 }
 
-/** @internal */
+/**
+ * Represents a page of results. The `data` array contains the results for this page. The `cursor` field contains a
+ * key that can be used to fetch the next page of results. If no `cursor` value is returned, there are no additional
+ * results available. (Note that no assumptions should be made about the _contents_ of the cursor string.)
+ * @typeParam T the type of the data in the page
+ */
 export interface Page<T> {
   readonly data: T[];
   readonly cursor: string;
