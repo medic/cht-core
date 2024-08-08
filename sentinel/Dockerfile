@@ -11,9 +11,6 @@ RUN apk add --update --no-cache \
 
 WORKDIR /service
 
-COPY package.json package-lock.json ./
-COPY shared-libs ./shared-libs
-COPY node_modules/@medic ./node_modules/@medic
 COPY sentinel ./sentinel
 
 ENV NODE_PATH=/service/sentinel/node_modules

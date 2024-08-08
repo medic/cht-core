@@ -10,8 +10,6 @@
   "dependencies": {
     "@medic/cht-datasource": "file:../cht-datasource",
     "@medic/contact-types-utils": "file:../contact-types-utils",
-    "@medic/lineage": "file:../lineage",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.1"
+    "@medic/lineage": "file:../lineage"
   }
 }
