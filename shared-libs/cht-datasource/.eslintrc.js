@@ -43,7 +43,8 @@ module.exports = {
             MethodDefinition: true,
           },
           publicOnly: true,
-        }]
+        }],
+        ['jsdoc/check-tag-names']: ['error', { definedTags: ['typeParam'] }],
       }
     }
   ]
