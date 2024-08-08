@@ -8,7 +8,6 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { InvalidArgumentError } from './libs/error';
 import { Page } from './libs/core';
-import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {

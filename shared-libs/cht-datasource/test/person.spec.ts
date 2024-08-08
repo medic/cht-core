@@ -276,7 +276,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(false);
 
         expect(() => Person.v1.getAll(dataContext)(personTypeQualifier))
-          .to.throw(`Invalid type [${JSON.stringify(personTypeQualifier)}]`);
+          .to.throw(`Invalid contact type [${JSON.stringify(personTypeQualifier)}]`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;

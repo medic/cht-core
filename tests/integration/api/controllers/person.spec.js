@@ -116,7 +116,7 @@ describe('Person API', () => {
   describe('GET /api/v1/person', async () => {
     const getPage = Person.v1.getPage(dataContext);
     const limit = 100;
-    const skip = 0;
+    const cursor = '0';
     const personType = 'person';
     const invalidContactType = 'invalidPerson';
     const onlineUserPlaceHierarchy = {
@@ -152,7 +152,7 @@ describe('Person API', () => {
           ...offlineUserPlaceHierarchy
         }
       ];
-      const responsePage = await getPage(Qualifier.byContactType(personType), limit, skip);
+      const responsePage = await getPage(Qualifier.byContactType(personType), cursor, limit);
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -203,10 +203,10 @@ describe('Person API', () => {
         .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]"}`);
     });
 
-    it('throws 400 error when skip is invalid', async () => {
+    it('throws 400 error when cursor is invalid', async () => {
       const queryParams = {
         personType,
-        skip: -1
+        cursor: '-1'
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
@@ -214,7 +214,9 @@ describe('Person API', () => {
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The skip must be a non-negative number: [${-1}]"}`);
+        .to.be.rejectedWith(
+          `400 - {"code":400,"error":"The cursor must be a stringified non-negative number: [${-1}]"}`
+        );
     });
   });
 });

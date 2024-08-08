@@ -32,11 +32,9 @@ module.exports = {
       await checkUserPermissions(req);
 
       const personType  = Qualifier.byContactType(req.query.personType);
-      const limit = req.query.limit !== undefined ? Number(req.query.limit) : 100;
-      const skip = req.query.skip !== undefined ? Number(req.query.skip) : 0;
+      const limit = Number(req.query.limit) || 100;
 
-      // TODO: change this when #9281 gets merged
-      const docs = await getPageByType()( personType, limit, skip );
+      const docs = await getPageByType()( personType, req.query.cursor, limit );
 
       return res.json(docs);
     }),
