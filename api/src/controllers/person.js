@@ -1,4 +1,4 @@
-const { Person, Qualifier, InvalidArgumentError } = require('@medic/cht-datasource');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
@@ -28,25 +28,17 @@ module.exports = {
       }
       return res.json(person);
     }),
-    getPageByType: serverUtils.doOrError(async (req, res) => {
+    getAll: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      try {
-        const personType  = Qualifier.byContactType(req.query.personType);
-        const limit = req.query.limit !== undefined ? Number(req.query.limit) : 100;
-        const skip = req.query.skip !== undefined ? Number(req.query.skip) : 0;
+      const personType  = Qualifier.byContactType(req.query.personType);
+      const limit = req.query.limit !== undefined ? Number(req.query.limit) : 100;
+      const skip = req.query.skip !== undefined ? Number(req.query.skip) : 0;
 
-        // TODO: change this when #9281 gets merged
-        const docs = await getPageByType()( personType, limit, skip );
+      // TODO: change this when #9281 gets merged
+      const docs = await getPageByType()( personType, limit, skip );
 
-        return res.json(docs);
-      } catch (err) {
-        if (err instanceof InvalidArgumentError) {
-          return serverUtils.error({status: 400, message: err.message}, req, res);
-        }
-
-        throw err;
-      }
+      return res.json(docs);
     }),
   },
 };

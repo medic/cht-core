@@ -190,7 +190,7 @@ describe('Person Controller', () => {
         hasAllPermissions.returns(true);
         personGetPageByType.resolves(people);
 
-        await controller.v1.getPageByType(req, res);
+        await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
@@ -205,7 +205,7 @@ describe('Person Controller', () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
-        await controller.v1.getPageByType(req, res);
+        await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
@@ -219,7 +219,7 @@ describe('Person Controller', () => {
         const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
-        await controller.v1.getPageByType(req, res);
+        await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
@@ -236,7 +236,7 @@ describe('Person Controller', () => {
         hasAllPermissions.returns(true);
         personGetPageByType.throws(new InvalidArgumentError(errorMessage));
 
-        await controller.v1.getPageByType(req, res);
+        await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
@@ -252,7 +252,7 @@ describe('Person Controller', () => {
         hasAllPermissions.returns(true);
         personGetPageByType.throws(err);
 
-        await controller.v1.getPageByType(req, res);
+        await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;

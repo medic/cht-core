@@ -480,7 +480,7 @@ app.postJson('/api/v1/people', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
-app.get('/api/v1/person', person.v1.getPageByType);
+app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);

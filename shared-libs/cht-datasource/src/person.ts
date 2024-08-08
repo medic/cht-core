@@ -31,7 +31,7 @@ export namespace v1 {
 
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
-      throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+      throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
     }
   };
 
