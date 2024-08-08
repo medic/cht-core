@@ -42,10 +42,12 @@ describe('Analytics Target Aggregates Component', () => {
       clearSidebarFilter: sinon.spy(GlobalActions.prototype, 'clearSidebarFilter'),
     };
     userSettingsService = {
-      getUserFacilities: sinon.stub().resolves([
-        { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-        { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
-      ])
+      getUserFacilities: sinon
+        .stub()
+        .resolves([
+          { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+          { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+        ])
     };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
