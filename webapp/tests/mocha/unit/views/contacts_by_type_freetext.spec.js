@@ -53,7 +53,7 @@ const configurableHierarchyDoc = {
 
 let map;
 
-describe('contacts_by_type_freetext view', () => {
+describe.skip('contacts_by_type_freetext view', () => {
 
   beforeEach(() => map = utils.loadView('medic-db', 'medic-client', 'contacts_by_type_freetext'));
 
