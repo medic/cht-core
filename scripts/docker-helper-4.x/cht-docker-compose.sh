@@ -155,17 +155,13 @@ required_apps_installed(){
   echo "${error}"
 }
 
-docker_installed(){
+docker_not_installed(){
   # special check for docker.  We want to be sure both "docker" is installed AND
   # that "docker compose" is installed.  We deprecated "docker-compose" in CHT Core #8781
   if [ -n "$(required_apps_installed "docker")" ];then
     echo "Docker not installed"
   else
-    docker compose &>/dev/null # sending output to /dev/null because we don't want it printed
-
-    if [ ! $? -eq 0 ]; then
-        echo "Docker Compose not installed"
-    fi
+    docker compose &>/dev/null || echo "Docker Compose not installed"
   fi
 }
 
@@ -270,7 +266,7 @@ get_system_and_docker_info(){
   echo $"$info" | column -t
 }
 
-if [ -n "$(required_apps_installed "docker")" ];then
+if [ "$(docker_not_installed)" ];then
   echo ""
   echo -e "${red}\"docker\" or \"docker compose\" is not installed or could not be found. Please install and try again!${noColor}"
   show_help_existing_stop_and_destroy
