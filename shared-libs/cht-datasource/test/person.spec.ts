@@ -272,7 +272,7 @@ describe('person', () => {
         expect(isContactTypeQualifier.notCalled).to.be.true;
       });
 
-      it('should throw an error for invalid personType', async () => {
+      it('should throw an error for invalid personType', () => {
         isContactTypeQualifier.returns(false);
 
         expect(() => Person.v1.getAll(dataContext)(personTypeQualifier))
