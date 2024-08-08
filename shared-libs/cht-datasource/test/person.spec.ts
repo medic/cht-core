@@ -128,12 +128,11 @@ describe('person', () => {
 
     describe('getPage', () => {
       const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
-      const cursor = '-1';
+      const cursor = '1';
       const pageData = { data: people, cursor };
       const limit = 3;
-      const skip = 1;
       const invalidLimit = -1;
-      const invalidSkip = -1;
+      const invalidCursor = '-1';
       const personTypeQualifier = {contactType: 'person'} as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
@@ -147,12 +146,12 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);
 
-        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, limit, skip);
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, cursor, limit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
-        expect(getPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(getPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
       });
 
@@ -171,7 +170,7 @@ describe('person', () => {
       it('throws an error if the qualifier is invalid', async () => {
         isContactTypeQualifier.returns(false);
 
-        await expect(Person.v1.getPage(dataContext)(invalidQualifier, limit, skip))
+        await expect(Person.v1.getPage(dataContext)(invalidQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid type [${JSON.stringify(invalidQualifier)}].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -184,7 +183,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidLimit, skip ))
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, cursor, invalidLimit))
           .to.be.rejectedWith(`limit must be a positive number`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -193,12 +192,12 @@ describe('person', () => {
         expect(getPage.notCalled).to.be.true;
       });
 
-      it('throws an error if skip is invalid', async () => {
+      it('throws an error if cursor is invalid', async () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, limit, invalidSkip))
-          .to.be.rejectedWith(`skip must be a non-negative number`);
+        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidCursor, limit))
+          .to.be.rejectedWith(`The cursor must be a stringified non-negative number: [${String(invalidCursor)}]`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
@@ -218,6 +217,9 @@ describe('person', () => {
         for (const person of people) {
           yield person;
         }
+      };
+      const emptyMockGenerator = function* () {
+        // empty
       };
 
       let personGetPage: sinon.SinonStub;
@@ -248,7 +250,7 @@ describe('person', () => {
 
       it('should handle empty result set', async () => {
         isContactTypeQualifier.returns(true);
-        getDocumentStream.returns([]);
+        getDocumentStream.returns(emptyMockGenerator());
 
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
         const res = await generator.next();
@@ -273,9 +275,8 @@ describe('person', () => {
       it('should throw an error for invalid personType', async () => {
         isContactTypeQualifier.returns(false);
 
-        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
-        await expect(generator.next()).to.be.rejectedWith(`Invalid type [${JSON.stringify(personTypeQualifier)}].`);
-
+        expect(() => Person.v1.getAll(dataContext)(personTypeQualifier))
+          .to.throw(`Invalid type [${JSON.stringify(personTypeQualifier)}]`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;

@@ -63,8 +63,8 @@ export namespace v1 {
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
     return async (
       personType: ContactTypeQualifier,
+      cursor: string,
       limit: number,
-      skip: number
     ): Promise<Page<Person.v1.Person>> => {
       const personTypes = contactTypeUtils.getPersonTypes(settings.getAll());
       const personTypesIds = personTypes.map((item) => item.id);
@@ -73,43 +73,45 @@ export namespace v1 {
         throw new Error(`Invalid person type: ${personType.contactType}`);
       }
 
+      // Adding a number skip variable here so as not to confuse ourselves
+      const skip = Number(cursor) || 0;
       const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
 
       const fetchAndFilter = async (
         currentLimit: number,
         currentSkip: number,
-        personDocs: Person.v1.Person[],
-        totalDocsFetched = 0,
+        currentPersonDocs: Person.v1.Person[] = [],
       ): Promise<Page<Person.v1.Person>> => {
         const docs = await getDocsByPage([personType.contactType], currentLimit, currentSkip);
-        if (docs.length === 0) {
-          return { data: personDocs, cursor: '-1' };
+        const noMoreResults = docs.length < currentLimit;
+        const newPersonDocs = docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc, doc?._id));
+        const overFetchCount = currentPersonDocs.length + newPersonDocs.length - limit || 0;
+        const totalPeople = [...currentPersonDocs, ...newPersonDocs].slice(0, limit);
+
+        if (noMoreResults) {
+          return { data: totalPeople, cursor: '-1' };
         }
 
-        const tempFilteredDocs = docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc, doc?._id));
+        if (totalPeople.length === limit) {
+          const nextSkip = currentSkip + currentLimit - overFetchCount;
 
-        personDocs.push(...tempFilteredDocs);
-        totalDocsFetched += docs.length;
-
-        if (personDocs.length >= limit) {
-          let cursor: number;
-          if (docs.length < currentLimit) {
-            cursor = -1;
-          } else {
-            cursor = skip + totalDocsFetched - (personDocs.length - limit);
-          }
-          return { data: personDocs.slice(0, limit), cursor: cursor.toString() };
+          return { data: totalPeople, cursor: nextSkip.toString() };
         }
+
+        // Re-fetch twice as many docs as we need to limit number of recursions
+        const missingCount = currentLimit - newPersonDocs.length;
+        logger.debug(`Found [${missingCount.toString()}] invalid persons. Re-fetching additional records.`);
+        const nextLimit = missingCount * 2;
+        const nextSkip = currentSkip + currentLimit;
 
         return fetchAndFilter(
-          (currentLimit - tempFilteredDocs.length) * 2,
-          currentSkip + currentLimit,
-          personDocs,
-          totalDocsFetched
+          nextLimit,
+          nextSkip,
+          totalPeople,
         );
       };
 
-      return fetchAndFilter(limit, skip, []);
+      return fetchAndFilter(limit, skip);
     };
   };
 }

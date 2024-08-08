@@ -122,7 +122,7 @@ describe('context lib', () => {
   describe('getDocumentStream', () => {
     let fetchFunctionStub: SinonStub;
     const limit = 100;
-    const skip = 0;
+    const cursor = '0';
 
     beforeEach(() => {
       fetchFunctionStub = sinon.stub();
@@ -143,7 +143,7 @@ describe('context lib', () => {
       }
 
       expect(results).to.deep.equal(mockDocs);
-      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, limit, skip)).to.be.true;
+      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, cursor, limit)).to.be.true;
     });
 
     it('should handle multiple pages',  async () => {
@@ -166,8 +166,8 @@ describe('context lib', () => {
 
       expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
       expect(fetchFunctionStub.callCount).to.equal(2);
-      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, limit, skip]);
-      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, limit, skip + limit]);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, cursor, limit]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, (Number(cursor) + limit).toString(), limit]);
     });
 
     it('should handle empty result', async () => {

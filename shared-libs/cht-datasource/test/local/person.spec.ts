@@ -227,7 +227,7 @@ describe('local person', () => {
 
     describe('getPage', () => {
       const limit = 3;
-      const skip = 0;
+      const cursor = '0';
       const personIdentifier = 'person';
       const personTypeQualifier = {contactType: personIdentifier} as const;
       const invalidPersonTypeQualifier = { contactType: 'invalid' } as const;
@@ -253,7 +253,7 @@ describe('local person', () => {
           data: docs
         };
 
-        const res = await Person.v1.getPage(localContext)(personTypeQualifier, limit, skip);
+        const res = await Person.v1.getPage(localContext)(personTypeQualifier, cursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(4);
@@ -261,7 +261,7 @@ describe('local person', () => {
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, skip)).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, Number(cursor))).to.be.true;
         expect(isPerson.callCount).to.equal(3);
         expect(isPerson.getCall(0).args).to.deep.equal([settings, doc]);
         expect(isPerson.getCall(1).args).to.deep.equal([settings, doc]);
@@ -269,7 +269,7 @@ describe('local person', () => {
       });
 
       it('throws an error if person identifier is invalid/does not exist', async () => {
-        await expect(Person.v1.getPage(localContext)(invalidPersonTypeQualifier, limit, skip)).to.be.rejectedWith(
+        await expect(Person.v1.getPage(localContext)(invalidPersonTypeQualifier, cursor, limit)).to.be.rejectedWith(
           `Invalid person type: ${invalidPersonTypeQualifier.contactType}`
         );
 
@@ -287,7 +287,7 @@ describe('local person', () => {
           cursor: '-1'
         };
 
-        const res = await Person.v1.getPage(localContext)(personTypeQualifier, limit, skip);
+        const res = await Person.v1.getPage(localContext)(personTypeQualifier, cursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.calledOnce).to.be.true;
@@ -295,7 +295,7 @@ describe('local person', () => {
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, skip)).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, Number(cursor))).to.be.true;
         expect(isPerson.notCalled).to.be.true;
       });
 
@@ -311,7 +311,7 @@ describe('local person', () => {
           data: docs
         };
 
-        const res = await Person.v1.getPage(localContext)(personTypeQualifier, limit, skip);
+        const res = await Person.v1.getPage(localContext)(personTypeQualifier, cursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(7);
@@ -320,7 +320,7 @@ describe('local person', () => {
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
         expect(queryDocsByKeyInner.callCount).to.be.equal(2);
-        expect(queryDocsByKeyInner.firstCall.args).to.deep.equal([[personIdentifier], limit, skip]);
+        expect(queryDocsByKeyInner.firstCall.args).to.deep.equal([[personIdentifier], limit, Number(cursor)]);
         expect(queryDocsByKeyInner.secondCall.args).to.deep.equal([[personIdentifier], 4, 3]);
         expect(isPerson.callCount).to.equal(6);
         expect(isPerson.getCall(0).args).to.deep.equal([settings, doc]);

@@ -132,15 +132,15 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(personGetPage);
         const personType = 'person';
         const limit = 2;
-        const skip = 1;
+        const cursor = '1';
         const personTypeQualifier = { contactType: personType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const returnedPeople = await person.getPageByType(personType, limit, skip);
+        const returnedPeople = await person.getPageByType(personType, cursor, limit);
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
 
