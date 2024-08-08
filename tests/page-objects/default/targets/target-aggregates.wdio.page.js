@@ -3,24 +3,10 @@ const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li.content-row`);
 
-/*const sidebarFilterBtn = () => $('button*=Filter');//$('.open-filter .fa-sliders');
-const filterCloseBtn = () => $('.sidebar-close');
-const filterOptionsContainer = () => $$('.filter-options-container')
-const filterOptionRadioBtn = (optionLabel) => $(`span*=${optionLabel}`).parentElement();*/
-
-const AGGREGATE_DETAIL_LIST = '.aggregate-detail li';
-const targetAggregateListItem = (contactId) => $(`${AGGREGATE_DETAIL_LIST}[data-record-id="${contactId}"] a`);
-const targetAggregateDetailTitle = (element) => element.$('h4');
-const targetAggregateDetailDetail = (element) => element.$('.detail');
-const AGGREGATE_DETAIL_PROGRESS_BAR = '.progress-bar';
-const getTargetAggregateDetailProgressBar = (element) => element.$(`${AGGREGATE_DETAIL_PROGRESS_BAR} span`);
-const getTargetAggregateDetailGoal = (element) => element.$$('.goal');
 const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
 const lineItem = (elementId) => $(`${AGGREGATE_LIST} li[data-record-id=${elementId}]`);
-//const lineItem = (targetTitle) => $(AGGREGATE_LIST).$(`li*=${targetTitle}`);
-const getAggregateDetailListElementByIndex = (index) => $$(AGGREGATE_DETAIL_LIST)[index];
-
+const getAggregateDetailListElementByIndex = (index) => $$(AGGREGATE_DETAIL_CONTACT_LIST)[index];
 
 const sidebarFilter = {
   filterBtn: () => $('button*=Filter'),
@@ -35,7 +21,35 @@ const targetDetail = {
   title: (titleValue) => $(TARGET_DETAIL).$(`h2=${titleValue}`),
   counter: () => $(`${TARGET_DETAIL} .cell p`),
   place: (value) => $(TARGET_DETAIL).$(`span*=${value}`),
-  period: (periodValue) => $('.aggregate-detail .action-header').$(`h3=${periodValue}`),
+  period: (periodValue) => $('.aggregate-detail .action-header').$(`h3*=${periodValue}`),
+};
+
+const AGGREGATE_DETAIL_CONTACT_LIST = '.aggregate-detail li';
+const AGGREGATE_DETAIL_PROGRESS_BAR = '.progress-bar';
+
+const aggregateDetailContactItem = (contactId) => {
+  return $(`${AGGREGATE_DETAIL_CONTACT_LIST}[data-record-id="${contactId}"]`); // a
+};
+
+const aggregateDetailContactsProcessBar = async (contactId) => {
+  const contactItem = await aggregateDetailContactItem(contactId);
+  return contactItem.$(`${AGGREGATE_DETAIL_PROGRESS_BAR} span`);
+};
+
+const aggregateDetailContactsGoal = async (contactId) => {
+  const contactItem = await aggregateDetailContactItem(contactId);
+  return contactItem.$$('.goal');
+};
+
+const getAggregateDetailContact = async (contactId) => {
+  const contactItem = await aggregateDetailContactItem(contactId);
+  return {
+    recordId: await contactItem.getAttribute('data-record-id'),
+    name: await contactItem.$('h4').getText(),
+    detail: await contactItem.$('.detail').getText(),
+    progressBar: await getAggregateTargetProgressBar(contactId),
+    goal: await getAggregateTargetGoal(contactId),
+  };
 };
 
 const expectModulesToBeAvailable = async (modules) => {
@@ -62,11 +76,9 @@ const checkContentDisabled = async () => {
 
 const getTargetItem = async (target, period, place) => {
   const item = lineItem(target.id);
-  /*const placeValue = place ?  : false;
-  const periodValue = period === 'Last Month' = */
   return {
     title: await (await item.$('h4')).getText(),
-    status: await (await item.$('.aggregate-status span')).getText(),
+    counter: await (await item.$('.aggregate-status span')).getText(),
     place: await (await item.$(`li*=${place}`)).isDisplayed(),
     period: await (await item.$(`li*=${period}`)).isDisplayed(),
   };
@@ -81,65 +93,41 @@ const openTargetDetails = async (target) => {
 };
 
 const getAggregateDetailListLength = async () => {
-  return await $$(AGGREGATE_DETAIL_LIST).length;
+  return await $$(AGGREGATE_DETAIL_CONTACT_LIST).length;
 };
 
-
-const getAggregateDetailProgressBarLength = async (element) => {
-  return await (await element.$$(AGGREGATE_DETAIL_PROGRESS_BAR)).length;
-};
-
-const getAggregateDetailProgressBarValue = async (element) => {
-  return await (await getTargetAggregateDetailProgressBar(element)).getText();
-};
-
-const getAggregateDetailGoalLength = async (element) => {
-  return await (await getTargetAggregateDetailGoal(element)).length;
-};
-
-const getAggregateDetailGoalValue = async (element) => {
-  return await (await getTargetAggregateDetailGoal(element)[0]).getText();
-};
-
-const getAggregateTargetProgressBar = async (element) => {
-  const length = await getAggregateDetailProgressBarLength(element);
+const getAggregateTargetProgressBar = async (contactId) => {
+  const length = await (await aggregateDetailContactItem(contactId)).$$(AGGREGATE_DETAIL_PROGRESS_BAR).length;
   if (!length) {
     return { length };
   }
 
-  const isDisplayed = await (await getTargetAggregateDetailProgressBar(element)).isDisplayed();
+  const progressBar = await aggregateDetailContactsProcessBar(contactId);
+
+  const isDisplayed = await progressBar.isDisplayed();
   return {
     length,
     isDisplayed,
-    value: isDisplayed && await getAggregateDetailProgressBarValue(element),
+    value: isDisplayed && await progressBar.getText(),
   };
 };
 
-const getAggregateTargetGoal = async (element) => {
-  const length = await getAggregateDetailGoalLength(element);
+const getAggregateTargetGoal = async (contactId) => {
+  const goal = await aggregateDetailContactsGoal(contactId);
+  const length =  goal.length;
   if (!length) {
     return { length };
   }
 
   return {
     length,
-    value: await getAggregateDetailGoalValue(element),
-  };
-};
-
-const getAggregateDetailElementInfo = async (element) => {
-  return {
-    recordId: await element.getAttribute('data-record-id'),
-    title: await (await targetAggregateDetailTitle(element)).getText(),
-    detail: await (await targetAggregateDetailDetail(element)).getText(),
-    progressBar: await getAggregateTargetProgressBar(element),
-    goal: await getAggregateTargetGoal(element),
+    value: await goal[0].getText(),
   };
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
-  await (await targetAggregateListItem(contactId)).waitForClickable();
-  await (await targetAggregateListItem(contactId)).click();
+  await (await aggregateDetailContactItem(contactId)).waitForClickable();
+  await (await aggregateDetailContactItem(contactId)).click();
 };
 
 const openSidebarFilter = async () => {
@@ -162,10 +150,11 @@ module.exports = {
   targetDetail,
   getTargetItem,
   openTargetDetails,
-  targetAggregateListItem,
   getAggregateDetailListLength,
   getAggregateDetailListElementByIndex,
-  getAggregateDetailElementInfo,
+  getAggregateDetailContact,
+  getAggregateTargetProgressBar,
+  getAggregateTargetGoal,
   clickOnTargetAggregateListItem,
   checkContentDisabled,
   openSidebarFilter,
