@@ -1,5 +1,3 @@
-const moment = require('moment');
-const _ = require('lodash');
 const fs = require('fs');
 const uuid = require('uuid').v4;
 const utils = require('@utils');
@@ -12,20 +10,10 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const userSettingsFactory = require('@factories/cht/users/user-settings');
 const personFactory = require('@factories/cht/contacts/person');
+const helperFunctions = require('./utils/aggregates-helper-functions');
+const targetAggregatesConfig = require('./config/target-aggregates');
 
 describe('Target aggregates', () => {
-  const RANDOM_NUMBER = (max) => Math.floor(Math.random() * max);
-
-  const updateSettings = async (targetsConfig, user, contactSummary) => {
-    const settings = await utils.getSettings();
-    const tasks = settings.tasks;
-    tasks.targets.items = targetsConfig;
-    const permissions = settings.permissions;
-    permissions.can_aggregate_targets = user.roles;
-    await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
-    await commonPage.closeReloadModal();
-    await commonPage.goToBase();
-  };
 
   describe('DB admin', () => {
     before(async () => await loginPage.cookieLogin());
@@ -46,7 +34,7 @@ describe('Target aggregates', () => {
       ]);
 
       await targetAggregatesPage.goToTargetAggregates(true);
-      expect(await (await targetAggregatesPage.aggregateList()).length).to.equal(0);
+      expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
       expect(await targetAggregatesPage.loadingStatus().isDisplayed()).to.be.true;
       expect(await analyticsPage.emptySelectionNoError().isDisplayed()).to.be.true;
     });
@@ -65,65 +53,12 @@ describe('Target aggregates', () => {
     });
   });
 
-  describe('User with a one or more places assigned', () => {
+  describe('User with one or more places assigned', () => {
+    const CURRENT_PERIOD = 'This month';
     const NAMES_DH1 = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
 
-    const TARGETS_CONFIG = [
-      {
-        id: 'count_no_goal',
-        type: 'count',
-        title: 'count no goal',
-        aggregate: true,
-        subtitle_translation_key: 'targets.all_time.subtitle'
-      },
-      {
-        id: 'count_with_goal',
-        type: 'count',
-        title: 'count with goal',
-        goal: 20,
-        aggregate: true,
-        subtitle_translation_key: 'targets.all_time.subtitle'
-      },
-      {
-        id: 'percent_no_goal',
-        type: 'percent',
-        title: 'percent no goal',
-        aggregate: true,
-        subtitle_translation_key: 'targets.all_time.subtitle'
-      },
-      {
-        id: 'percent_with_goal',
-        type: 'percent',
-        title: 'percent with goal',
-        aggregate: true, goal: 80,
-        subtitle_translation_key: 'targets.this_month.subtitle'
-      },
-      {
-        id: 'percent_achieved',
-        type: 'percent',
-        title: 'percent achieved',
-        aggregate: true, goal: 10,
-        subtitle_translation_key: 'targets.this_month.subtitle'
-      },
-    ];
-
-    const TARGET_VALUES_BY_CONTACT = (contactNames) => {
-      const defaultValue = {
-        count_no_goal: { value: { pass: 5, total: 5 }, counter: '5', progress: 0 },
-        count_with_goal: { value: { pass: 10, total: 10 }, counter: '10', progress: '10' },
-        percent_no_goal: { value: { pass: 10, total: 20 }, counter: '50% (10 of 20)', progress: '50%' },
-        percent_with_goal: { value: { pass: 19, total: 20 }, counter: '95% (19 of 20)', progress: '95%' },
-        percent_achieved: { value: { pass: 2, total: 4 }, counter: '50% (2 of 4)', progress: '50%' },
-      };
-
-      return Object.fromEntries(
-        contactNames.map(name => [name, defaultValue])
-      );
-    };
-
-    const TARGET_VALUES_BY_CONTACT_DH1 = TARGET_VALUES_BY_CONTACT(NAMES_DH1);
-    const TARGET_VALUES_BY_CONTACT_DH2 = TARGET_VALUES_BY_CONTACT(NAMES_DH2);
+    const TARGET_VALUES_BY_CONTACT = helperFunctions.generateTargetValuesByContact([...NAMES_DH1, ...NAMES_DH2]);
     
     const districtHospital1 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 1' });
     const districtHospital2 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 2' });
@@ -144,161 +79,34 @@ describe('Target aggregates', () => {
     });
     const userWithManyPlacesPass = uuid();
 
-    const generateHealthCenter = (parent, idx, otherPlace) => {
-      const place = placeFactory.place().build({ type: 'health_center', parent: { _id: parent._id } });
-      const contact = personFactory.build({
-        name: otherPlace === true ? NAMES_DH2[idx] : NAMES_DH1[idx],
-        parent: { _id: place._id, parent: place.parent }
+    const contactDocs = [];
+    const targetDocs = [];
+    Array
+      .from({ length: 5 })
+      .forEach((e, i) => {
+        const district1Data =
+          helperFunctions.generateContactsAndTargets(districtHospital1, NAMES_DH1[i], TARGET_VALUES_BY_CONTACT);
+        const district2Data =
+          helperFunctions.generateContactsAndTargets(districtHospital2, NAMES_DH2[i], TARGET_VALUES_BY_CONTACT);
+
+        contactDocs.push(...district1Data.contacts, ...district2Data.contacts);
+        targetDocs.push(...district1Data.targets, ...district2Data.targets);
       });
-      place.contact = { _id: contact._id, parent: contact.parent };
-      return [place, contact];
-    };
-
-    const docs = _.flattenDeep([
-      Array.from({ length: 5 }).map((e, i) => generateHealthCenter(districtHospital1, i, false)),
-      Array.from({ length: 5 }).map((e, i) => generateHealthCenter(districtHospital2, i, true)),
-    ]);
-
-    const docTags = [
-      // current targets
-      moment().format('YYYY-MM'),
-      // next month targets, in case the reporting period switches mid-test
-      moment().date(10).add(1, 'month').format('YYYY-MM'),
-    ];
-
-    const targetDocs = _.flatten(docs
-      .filter(doc => doc.type === 'person')
-      .map(contact => {
-        const genTarget = (target) => {
-          const value = TARGET_VALUES_BY_CONTACT_DH1[contact.name] &&
-            TARGET_VALUES_BY_CONTACT_DH1[contact.name][target.id].value ||
-            { pass: RANDOM_NUMBER(100), total: RANDOM_NUMBER(100) };
-          return { id: target.id, value };
-        };
-
-        return docTags.map(tag => ({
-          _id: `target~${tag}~${contact._id}~irrelevant`,
-          reporting_period: tag,
-          targets: TARGETS_CONFIG.map(genTarget),
-          owner: contact._id,
-          user: 'irrelevant',
-        }));
-      }));
 
     const DOCS_TO_KEEP = [
       districtHospital1._id,
       districtHospital2._id,
-      ...docs.map(doc => doc._id),
+      ...contactDocs.map(doc => doc._id),
       'fixture:user:supervisor',
       'org.couchdb.user:supervisor',
       '^target~',
       [/^form:/],
     ];
 
-    const getLastMonth = () => {
-      const newDate = new Date();
-      newDate.setDate(1);
-      newDate.setMonth(newDate.getMonth() - 1);
-      return newDate.toLocaleString('default', { month: 'long' });
-    };
-
-    const assertTitle = async (itemTitle, targetTitle) => {
-      expect(itemTitle).to.equal(targetTitle);
-      expect(await (await targetAggregatesPage.targetDetail.title(targetTitle)).isDisplayed()).to.be.true;
-    };
-
-    const assertCounter = async (itemCounter, targetCounter) => {
-      expect(itemCounter).to.equal(targetCounter);
-      expect(await (await targetAggregatesPage.targetDetail.counter()).getText()).to.equal(targetCounter);
-    };
-
-    const assertPlace = async (itemPlace, place) => {
-      expect(itemPlace).to.be.true;
-      expect(await (await targetAggregatesPage.targetDetail.place(place)).isDisplayed()).to.be.true;
-    };
-
-    const assertPeriod = async (itemPeriod, period) => {
-      expect(itemPeriod).to.be.true;
-      expect(await (await targetAggregatesPage.targetDetail.period(period)).isDisplayed()).to.be.true;
-    };
-
-    const assertData = async (contacts, expectedTargets, period, place, assertContactValues = true) => {
-      await targetAggregatesPage.openTargetDetails(expectedTargets[0]);
-      expect(await targetAggregatesPage.aggregateList().length).to.equal(expectedTargets.length);
-      for (const target of expectedTargets) {
-        const targetItem = await targetAggregatesPage.getTargetItem(target, period, place);
-        await targetAggregatesPage.openTargetDetails(target);
-        await assertTitle(targetItem.title, target.title);
-        if (period === 'This month') {
-          await assertCounter(targetItem.counter, target.counter);
-          if (place !== 'onePlace') {
-            await assertPlace(targetItem.place, place);
-          }
-        } else {
-          await assertPeriod(targetItem.period, period);
-          if (place !== 'onePlace') {
-            await assertPlace(targetItem.place, place);
-          }
-        }
-
-        const targetValuesByContact = place === 'District Hospital 2' ?
-          TARGET_VALUES_BY_CONTACT_DH2 :
-          TARGET_VALUES_BY_CONTACT_DH1;
-
-        const  expectedContacts = contacts[0].counter ? contacts : contacts.map(contact => ({
-          _id: contact._id,
-          name: contact.name,
-          counter: targetValuesByContact[contact.name][target.id].counter,
-          progress: targetValuesByContact[contact.name][target.id].progress,
-        }));
-
-        await assertContacts(expectedContacts, target, assertContactValues);
-      }
-    };
-
-    const assertContacts = async (contacts, target, assertContactValues) => {
-      contacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
-      expect(await targetAggregatesPage.getAggregateDetailListLength()).to.equal(contacts.length);
-
-      for (const contact of contacts) {
-        const lineContactInfo = await targetAggregatesPage.getAggregateDetailContact(contact._id);
-        expect(lineContactInfo.recordId).to.equal(contact._id);
-        expect(lineContactInfo.name).to.equal(contact.name);
-        if (assertContactValues) {
-          expect(lineContactInfo.detail).to.equal(contact.counter);
-          if (!target.progressBar) {
-            expect(await lineContactInfo.progressBar.length).to.equal(0);
-          } else {
-            if (!contact.progress) {
-              expect(await lineContactInfo.progressBar.isDisplayed).to.be.false;
-            } else {
-              expect(await lineContactInfo.progressBar.value).to.equal(contact.progress);
-            }
-          }
-          if (!target.goal) {
-            expect(await lineContactInfo.goal.length).to.equal(0);
-          } else {
-            const text = await lineContactInfo.goal.value;
-            expect(text.indexOf(target.goal)).not.to.equal(-1);
-          }
-        }
-      }
-    };
-
-    const validateCardFields = async (values) => {
-      const conditionCard = $$('.meta .card')[1].$('.row');
-      await conditionCard.waitForDisplayed();
-      for (const value of values) {
-        expect(await (await conditionCard.$(`p=${value}`)).isDisplayed()).to.be.true;
-      }
-    };
-
-    const getDocsByPlace = (placeId) => {
-      return docs.filter(doc => doc.type === 'person' && doc.parent.parent._id === placeId);
-    };
-
     before(async () => {
-      await utils.saveDocs([ ...docs, districtHospital1, districtHospital2, contactWithManyPlaces, userWithManyPlaces]);
+      await utils.saveDocs([
+        ...contactDocs, districtHospital1, districtHospital2, contactWithManyPlaces, userWithManyPlaces
+      ]);
       await utils.createUsers([onlineUser]);
       await utils.request({
         path: `/_users/${userWithManyPlaces._id}`,
@@ -320,52 +128,50 @@ describe('Target aggregates', () => {
       });
 
       it('should display no data when no targets are uploaded', async () => {
-        const targetsConfig = [
-          { id: 'not_aggregate', type: 'count', title: { en: 'my task' } },
-          { id: 'count_no_goal', type: 'count', title: { en: 'count no goal' }, aggregate: true },
-          { id: 'count_with_goal', type: 'count', title: { en: 'count with goal' }, goal: 20, aggregate: true },
-          { id: 'also_not_aggregate', type: 'count', title: { en: 'my task' } },
-          { id: 'percent_no_goal', type: 'percent', title: { en: 'percent no goal' }, aggregate: true },
-          { id: 'percent_with_goal', type: 'percent', title: { en: 'percent with goal' }, aggregate: true, goal: 80 },
-          { id: 'also_also_not_aggregate', type: 'count', title: { en: 'my task' }, aggregate: false },
-        ];
-
-        await updateSettings(targetsConfig, onlineUser);
+        await helperFunctions.updateSettings(
+          targetAggregatesConfig.TARGETS_CONFIG_WITH_AND_WITHOUT_AGGREGATES, onlineUser
+        );
 
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
 
-        const expectedTargets = [
-          { id: 'count_no_goal', title: 'count no goal', counter: '0', progressBar: false, goal: false },
-          { id: 'count_with_goal', title: 'count with goal', counter: '0 of 5', progressBar: true, goal: 20 },
-          { id: 'percent_no_goal', title: 'percent no goal', counter: '0%', progressBar: true, goal: false },
-          { id: 'percent_with_goal', title: 'percent with goal', counter: '0 of 5', progressBar: true, goal: '80%' },
-        ];
-
-        const expectedContacts = getDocsByPlace(districtHospital1._id)
+        const expectedContacts = helperFunctions.getDocsByPlace(contactDocs, districtHospital1._id)
           .map(contact => ({ _id: contact._id, name: contact.name, counter: 'No data', progress: 0 }));
 
-        await assertData(expectedContacts, expectedTargets, 'This month', 'onePlace');
+        const context = {
+          contacts: expectedContacts,
+          period: CURRENT_PERIOD,
+          isCurrentPeriod: true,
+          place: districtHospital1.name
+        };
+
+        const asserts = { hasMultipleFacilities: false, contactValues: true };
+
+        await helperFunctions.assertData(
+          context, TARGET_VALUES_BY_CONTACT, targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS, asserts
+        );
       });
 
       it('should display correct data', async () => {
-        const expectedTargets = [
-          { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '25' },
-          { id: 'count_with_goal', title: 'count with goal', progressBar: true, goal: 20, counter: '0 of 5' },
-          { id: 'percent_no_goal', title: 'percent no goal', progressBar: true, goal: false, counter: '50%' },
-          { id: 'percent_with_goal', title: 'percent with goal', progressBar: true, goal: '80%', counter: '5 of 5' },
-          { id: 'percent_achieved', title: 'percent achieved', progressBar: true, goal: '10%', counter: '5 of 5' },
-        ];
+        const expectedTargets = targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS;
 
         await utils.saveDocs(targetDocs);
-        await updateSettings(TARGETS_CONFIG, onlineUser);
+        await helperFunctions.updateSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, onlineUser);
 
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
 
-        const contacts = getDocsByPlace(districtHospital1._id);
+        const contacts = helperFunctions.getDocsByPlace(contactDocs, districtHospital1._id);
 
-        await assertData(contacts, expectedTargets, 'This month', 'onePlace');
+        const context = {
+          contacts,
+          period: CURRENT_PERIOD,
+          isCurrentPeriod: true,
+          place: districtHospital1.name
+        };
+        const asserts = { hasMultipleFacilities: false, contactValues: true };
+
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
         // refreshing with an open target works correctly
         const target = expectedTargets[2];
@@ -378,8 +184,11 @@ describe('Target aggregates', () => {
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(1);
         await targetAggregatesPage.selectFilterOption('Last month');
 
-        const lastMonth = getLastMonth();
-        await assertData(contacts, expectedTargets, lastMonth, 'onePlace', false);
+        context.period = helperFunctions.getLastMonth();
+        context.isCurrentPeriod = false;
+        asserts.contactValues = false;
+
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
       });
 
@@ -391,8 +200,8 @@ describe('Target aggregates', () => {
         const contactSummaryScript = fs
           .readFileSync(`${__dirname}/config/contact-summary-target-aggregates.js`, 'utf8');
 
-        const clarissa = docs.find(doc => doc.name === NAMES_DH1[0]);
-        const prometheus = docs.find(doc => doc.name === NAMES_DH1[1]);
+        const clarissa = contactDocs.find(doc => doc.name === NAMES_DH1[0]);
+        const prometheus = contactDocs.find(doc => doc.name === NAMES_DH1[1]);
         const targets = {
           'Clarissa': [
             { id: 'a_target', value: { total: 50, pass: 40 } },
@@ -405,7 +214,7 @@ describe('Target aggregates', () => {
         };
 
         const targetsForContact = (contact) => {
-          return docTags.map(tag => ({
+          return helperFunctions.docTags.map(tag => ({
             _id: `target~${tag}~${contact._id}~irrelevant`,
             reporting_period: tag,
             targets: targets[contact.name],
@@ -420,7 +229,7 @@ describe('Target aggregates', () => {
         ];
 
         await utils.saveDocs(targetDocs);
-        await updateSettings(targetsConfig, onlineUser, contactSummaryScript);
+        await helperFunctions.updateSettings(targetsConfig, onlineUser, contactSummaryScript);
 
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
@@ -430,9 +239,18 @@ describe('Target aggregates', () => {
           { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
         ];
 
-        const expectedContacts = getDocsByPlace(districtHospital1._id)
+        const expectedContacts = helperFunctions.getDocsByPlace(contactDocs, districtHospital1._id)
           .map(contact => ({ _id: contact._id, name: contact.name, counter: 'No data', progress: 0 }));
-        await assertData(expectedContacts, expectedTargets, 'This month', 'onePlace', false);
+
+        const context = {
+          contacts: expectedContacts,
+          period: CURRENT_PERIOD,
+          isCurrentPeriod: true,
+          place: districtHospital1.name
+        };
+        const asserts = { hasMultipleFacilities: false, contactValues: false };
+
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
         await targetAggregatesPage.openTargetDetails(expectedTargets[0]);
         await targetAggregatesPage.clickOnTargetAggregateListItem(clarissa._id);
@@ -441,13 +259,13 @@ describe('Target aggregates', () => {
         // assert that the activity card exists and has the right fields.
         expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
 
-        await validateCardFields(['yesterday Clarissa', '40', '50%']);
+        await helperFunctions.validateCardFields(['yesterday Clarissa', '40', '50%']);
 
         await browser.back();
 
         const firstTargetItem =
-          await (await targetAggregatesPage.getTargetItem(expectedTargets[0], 'This month', 'onePlace'));
-        await assertTitle(firstTargetItem.title, expectedTargets[0].title);
+          await (await targetAggregatesPage.getTargetItem(expectedTargets[0], CURRENT_PERIOD, districtHospital1.name));
+        await helperFunctions.assertTitle(firstTargetItem.title, expectedTargets[0].title);
 
         await targetAggregatesPage.openTargetDetails(expectedTargets[1]);
 
@@ -457,12 +275,12 @@ describe('Target aggregates', () => {
         expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
         // assert that the activity card exists and has the right fields.
         expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-        await validateCardFields(['yesterday Prometheus', '18', '15%']);
+        await helperFunctions.validateCardFields(['yesterday Prometheus', '18', '15%']);
 
         await browser.back();
         const secondTargetItem =
-          await (await targetAggregatesPage.getTargetItem(expectedTargets[1], 'This month', 'onePlace'));
-        await assertTitle(secondTargetItem.title, expectedTargets[1].title);
+          await (await targetAggregatesPage.getTargetItem(expectedTargets[1], CURRENT_PERIOD, districtHospital1.name));
+        await helperFunctions.assertTitle(secondTargetItem.title, expectedTargets[1].title);
       });
     });
 
@@ -488,42 +306,46 @@ describe('Target aggregates', () => {
       });
 
       it('should filter aggregates by place and period', async () => {
-        const expectedTargets = [
-          { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '0' },
-          { id: 'count_with_goal', title: 'count with goal', progressBar: true, goal: 20, counter: '0 of 5' },
-          { id: 'percent_no_goal', title: 'percent no goal', progressBar: true, goal: false, counter: '0%' },
-          { id: 'percent_with_goal', title: 'percent with goal', progressBar: true, goal: '80%', counter: '0 of 5' },
-          { id: 'percent_achieved', title: 'percent achieved', progressBar: true, goal: '10%', counter: '0 of 5' },
-        ];
-
-        const lastMonth = getLastMonth();
+        const expectedTargets = targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS;
 
         await utils.saveDocs(targetDocs);
-        await updateSettings(TARGETS_CONFIG, userWithManyPlaces);
+        await helperFunctions.updateSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, userWithManyPlaces);
         await commonPage.sync(true);
         await browser.refresh();
 
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
 
-        const contactsDh1 = getDocsByPlace(districtHospital1._id);
-        const contactsDh2 = getDocsByPlace(districtHospital2._id);
+        const contactsDh1 = helperFunctions.getDocsByPlace(contactDocs, districtHospital1._id);
+        const contactsDh2 = helperFunctions.getDocsByPlace(contactDocs, districtHospital2._id);
 
-        await assertData(contactsDh1, expectedTargets, 'This month', districtHospital1.name, false);
+        const context = {
+          contacts: contactsDh1,
+          period: CURRENT_PERIOD,
+          isCurrentPeriod: true,
+          place: districtHospital1.name,
+        };
+        const asserts = { hasMultipleFacilities: true, contactValues: false };
+
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
 
         await targetAggregatesPage.selectFilterOption('Last month');
-        await assertData(contactsDh1, expectedTargets, lastMonth, districtHospital1.name, false);
+        context.period = helperFunctions.getLastMonth();
+        context.isCurrentPeriod = false;
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
+        await targetAggregatesPage.selectFilterOption(districtHospital2.name);
+        context.contacts = contactsDh2;
+        context.place = districtHospital2.name;
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
-        await targetAggregatesPage.selectFilterOption('District Hospital 2');
-        await assertData(contactsDh2, expectedTargets, lastMonth, districtHospital2.name, false);
-
-        await targetAggregatesPage.selectFilterOption('This month');
-        await assertData(contactsDh2, expectedTargets, 'This month', districtHospital2.name, false);
-
+        await targetAggregatesPage.selectFilterOption(CURRENT_PERIOD);
+        context.period = CURRENT_PERIOD;
+        context.isCurrentPeriod = true;
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
       });
 
     });
