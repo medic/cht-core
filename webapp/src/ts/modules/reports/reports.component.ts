@@ -104,7 +104,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.error = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-    this.setActionBarData();
   }
 
   async ngAfterViewInit() {
@@ -122,7 +121,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsActions.setSelectedReports([]);
     this.globalActions.setSelectMode(false);
     this.globalActions.unsetSelected();
-    this.globalActions.setLeftActionBar({});
   }
 
   private async checkPermissions() {
@@ -219,7 +217,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         if (change.deleted) {
           this.reportsActions.removeReportFromList({ _id: change.id });
           this.hasReports = this.reportsList.length;
-          this.setActionBarData();
         } else {
           this.query({ silent: true, limit: this.reportsList.length });
         }
@@ -301,7 +298,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.errorSyntax = false;
 
         this.initScroll();
-        this.setActionBarData();
       })
       .catch(err => {
         this.error = true;
@@ -377,19 +373,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   listTrackBy(index, report) {
     return report._id + report._rev + report.read + report.selected;
-  }
-
-  private setActionBarData() {
-    if (this.destroyed) {
-      // don't update the actionbar if the component has already been destroyed
-      // this callback can be queued up and persist even after component destruction
-      return;
-    }
-
-    this.globalActions.setLeftActionBar({
-      exportFn: () => this.exportReports(),
-      hasResults: this.hasReports,
-    });
   }
 
   exportReports() {

@@ -65,7 +65,6 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     this.loadingForm = true;
     this.globalActions.setShowContent(true);
     this.setCancelCallback();
-    this.globalActions.clearRightActionBar();
   }
 
   ngOnDestroy() {
