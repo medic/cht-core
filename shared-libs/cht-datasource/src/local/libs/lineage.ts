@@ -10,7 +10,7 @@ import {
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
-import { queryDocsByKey } from './doc';
+import { queryDocsByRange } from './doc';
 import logger from '@medic/logger';
 
 /**
@@ -18,9 +18,10 @@ import logger from '@medic/logger';
  * sorted such that the identified document is the first element and the parent documents are in order of lineage.
  * @internal
  */
-export const getLineageDocsById = (
-  medicDb: PouchDB.Database<Doc>
-): (id: string) => Promise<Nullable<Doc>[]> => queryDocsByKey(medicDb, 'medic-client/docs_by_id_lineage');
+export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
+  const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
+  return (id: string) => fn([id], [id, {}]);
+};
 
 /** @internal */
 export const getPrimaryContactIds = (places: NonEmptyArray<Nullable<Doc>>): string[] => places

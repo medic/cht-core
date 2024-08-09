@@ -7,6 +7,7 @@ import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
+import { Page } from '../src/libs/core';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -92,7 +93,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage']);
+        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage', 'getPageByType']);
       });
 
       it('getByUuid', async () => {
@@ -123,6 +124,24 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getPage', async () => {
+        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: '-1'};
+        const personGetPage = sinon.stub().resolves(expectedPeople);
+        dataContextBind.returns(personGetPage);
+        const personType = 'person';
+        const limit = 2;
+        const skip = 1;
+        const personTypeQualifier = { contactType: personType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const returnedPeople = await person.getPageByType(personType, limit, skip);
+
+        expect(returnedPeople).to.equal(expectedPeople);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
     });
   });

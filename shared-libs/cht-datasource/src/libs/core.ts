@@ -112,3 +112,9 @@ export const findById = <T extends Identifiable>(values: T[], id: string): Nulla
 export abstract class AbstractDataContext implements DataContext {
   readonly bind = <T>(fn: (ctx: DataContext) => T): T => fn(this);
 }
+
+/** @internal */
+export interface Page<T> {
+  readonly data: T[];
+  readonly cursor: string;
+}

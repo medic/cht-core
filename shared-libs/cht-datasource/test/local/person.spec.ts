@@ -224,5 +224,109 @@ describe('local person', () => {
         expect(deepCopy.notCalled).to.be.true;
       });
     });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const skip = 0;
+      const personIdentifier = 'person';
+      const personTypeQualifier = {contactType: personIdentifier} as const;
+      const invalidPersonTypeQualifier = { contactType: 'invalid' } as const;
+      const personType = [{person: true, id: personIdentifier}] as Record<string, unknown>[];
+      let getPersonTypes: SinonStub;
+      let queryDocsByKeyInner: SinonStub;
+      let queryDocsByKeyOuter: SinonStub;
+
+      beforeEach(() => {
+        queryDocsByKeyInner = sinon.stub();
+        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
+        getPersonTypes = sinon.stub(contactTypeUtils, 'getPersonTypes').returns(personType);
+        settingsGetAll.returns(settings);
+        isPerson.returns(true);
+      });
+
+      it('returns a page of people', async () => {
+        const doc = { type: 'person'};
+        const docs = [doc, doc, doc];
+        queryDocsByKeyInner.resolves(docs);
+        const expectedResult = {
+          cursor: '3',
+          data: docs
+        };
+
+        const res = await Person.v1.getPage(localContext)(personTypeQualifier, limit, skip);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.callCount).to.equal(4);
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, skip)).to.be.true;
+        expect(isPerson.callCount).to.equal(3);
+        expect(isPerson.getCall(0).args).to.deep.equal([settings, doc]);
+        expect(isPerson.getCall(1).args).to.deep.equal([settings, doc]);
+        expect(isPerson.getCall(2).args).to.deep.equal([settings, doc]);
+      });
+
+      it('throws an error if person identifier is invalid/does not exist', async () => {
+        await expect(Person.v1.getPage(localContext)(invalidPersonTypeQualifier, limit, skip)).to.be.rejectedWith(
+          `Invalid person type: ${invalidPersonTypeQualifier.contactType}`
+        );
+
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(queryDocsByKeyOuter.notCalled).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(isPerson.notCalled).to.be.true;
+      });
+
+      it('returns empty array if people does not exist', async () => {
+        queryDocsByKeyInner.resolves([]);
+        const expectedResult = {
+          data: [],
+          cursor: '-1'
+        };
+
+        const res = await Person.v1.getPage(localContext)(personTypeQualifier, limit, skip);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, skip)).to.be.true;
+        expect(isPerson.notCalled).to.be.true;
+      });
+
+      it('returns page of people by refetching the database if the previous lot consisted on non-persons', async () => {
+        const doc = { type: 'person'};
+        const docs = [doc, doc, doc];
+        queryDocsByKeyInner.resolves(docs);
+        isPerson.onFirstCall().returns(false);
+        isPerson.onSecondCall().returns(false);
+        isPerson.returns(true);
+        const expectedResult = {
+          cursor: '-1',
+          data: docs
+        };
+
+        const res = await Person.v1.getPage(localContext)(personTypeQualifier, limit, skip);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.callCount).to.equal(7);
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.callCount).to.be.equal(2);
+        expect(queryDocsByKeyInner.firstCall.args).to.deep.equal([[personIdentifier], limit, skip]);
+        expect(queryDocsByKeyInner.secondCall.args).to.deep.equal([[personIdentifier], 4, 3]);
+        expect(isPerson.callCount).to.equal(6);
+        expect(isPerson.getCall(0).args).to.deep.equal([settings, doc]);
+        expect(isPerson.getCall(1).args).to.deep.equal([settings, doc]);
+        expect(isPerson.getCall(2).args).to.deep.equal([settings, doc]);
+      });
+    });
   });
 });
