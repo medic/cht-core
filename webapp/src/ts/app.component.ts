@@ -44,7 +44,6 @@ import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
@@ -477,12 +476,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async subscribeToSideFilterStore() {
-    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
-
-    if (isDisabled) {
-      return;
-    }
-
     this.store
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
