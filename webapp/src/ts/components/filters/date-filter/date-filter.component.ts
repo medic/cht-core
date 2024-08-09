@@ -137,18 +137,12 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     return true;
   }
 
-  applyFilter(dateRange, skipSearch?) {
+  applyFilter(dateRange) {
     if (!this.validateDateRange(dateRange)) {
       return;
     }
 
     this.globalActions.setFilter({ date: dateRange });
-
-    if (skipSearch) {
-      // ToDo: Backward compatibility with the "reports-filters" component, remove this "skipSearch"
-      //  once we delete that component. The new "mm-reports-sidebar-filter" doesn't need it.
-      return;
-    }
 
     this.search.emit();
   }
@@ -173,12 +167,12 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
       rect.right <= (window.innerWidth || document.documentElement.clientWidth);
   }
 
-  clear(skipSearch?) {
+  clear() {
     if (this.disabled) {
       return;
     }
 
-    this.applyFilter(undefined, skipSearch);
+    this.applyFilter(undefined);
   }
 
   countSelected() {

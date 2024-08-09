@@ -5,13 +5,11 @@ import {
   ViewChild,
   Input,
   OnInit,
-  NgZone,
-  AfterViewChecked,
   AfterViewInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
-import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
+import { sortBy as _sortBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import {
@@ -29,24 +27,18 @@ import { Selectors } from '@mm-selectors/index';
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter, AfterViewChecked {
+export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter {
   private globalActions;
   private isOnlineOnly;
-  inlineFilter: InlineFilter;
+  filter: InlineFilter;
   facilities: Record<string, any>[] = [];
-  flattenedFacilities: any[] = [];
   displayedFacilities: Record<string, any>[] = [];
 
   private totalFacilitiesDisplayed = 0;
-  private listHasScroll = false;
   private togglingFacilities = false;
-  private scrollEventListenerAdded = false;
-  private displayNewFacilityQueued = false;
-  private readonly MAX_LIST_HEIGHT = 300; // this is set in CSS
   private subscriptions: Subscription = new Subscription();
 
   @Input() disabled;
-  @Input() inline;
   @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
   
@@ -57,11 +49,10 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     private store:Store,
     private placeHierarchyService:PlaceHierarchyService,
     private translateService:TranslateService,
-    private ngZone:NgZone,
     private sessionService:SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
+    this.filter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   ngOnInit() {
@@ -69,9 +60,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   ngAfterViewInit() {
-    if (this.inline) {
-      this.subscribeToSidebarStore();
-    }
+    this.subscribeToSidebarStore();
   }
 
   private subscribeToSidebarStore() {
@@ -79,7 +68,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       .select(Selectors.getSidebarFilter)
       .subscribe(sidebarFilter => {
         if (sidebarFilter?.isOpen && !this.facilities?.length) {
-          this.loadFacilities();
+          return this.loadFacilities();
         }
       });
     this.subscriptions.add(subscription);
@@ -96,12 +85,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       .get()
       .then((hierarchy = []) => {
         this.facilities = this.sortHierarchyAndAddFacilityLabels(hierarchy);
-        if (this.inline) {
-          this.displayedFacilities = this.facilities;
-        } else {
-          this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
-          this.displayOneMoreFacility();
-        }
+        this.displayedFacilities = this.facilities;
       })
       .catch(err => console.error('Error loading facilities', err));
   }
@@ -115,52 +99,6 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     this.displayedFacilities = this.facilities.slice(0, this.totalFacilitiesDisplayed);
   }
 
-  private addOnScrollEventListener() {
-    if (this.scrollEventListenerAdded || !this.facilities.length) {
-      return;
-    }
-
-    this.scrollEventListenerAdded = true;
-    this.ngZone.runOutsideAngular(() => {
-      $('#facility-dropdown-list').on('scroll', (event) => {
-        // the scroll event is triggered for every scrolled pixel.
-        // don't queue displaying another facility if the previous one hasn't yet been displayed
-        if (this.displayNewFacilityQueued) {
-          return;
-        }
-        // visible height + pixel scrolled >= total height - 100
-        if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
-          this.displayNewFacilityQueued = true;
-          setTimeout(() => {
-            this.ngZone.run(() => this.displayOneMoreFacility());
-          });
-        }
-      });
-    });
-  }
-
-  ngAfterViewChecked() {
-    if (this.inline) {
-      return;
-    }
-    // add the scroll event listener after we have a list element to attach it to!
-    this.addOnScrollEventListener();
-
-    // we've displayed the queued facility within this change detection cycle, next scroll should load one more
-    this.displayNewFacilityQueued = false;
-
-    // keep displaying facilities until we have a scroll or we've displayed all
-    if (!this.listHasScroll && this.facilities.length && this.totalFacilitiesDisplayed < this.facilities.length) {
-      const listHeight = $('#facility-dropdown-list')[0]?.scrollHeight;
-      const hasScroll = listHeight > this.MAX_LIST_HEIGHT;
-      if (!hasScroll) {
-        setTimeout(() => this.displayOneMoreFacility());
-      } else {
-        this.listHasScroll = true;
-      }
-    }
-  }
-
   async setDefault(facility) {
     if (!facility) {
       // Should avoid dead-ends and apply empty filter.
@@ -170,7 +108,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
     const descendants = await this.placeHierarchyService.getDescendants(facility._id, true);
     const descendantIds = descendants.map(descendant => descendant.doc._id);
-    this.toggle(facility._id, [ facility._id, ...descendantIds ], this.inlineFilter);
+    this.toggle(facility._id, [ facility._id, ...descendantIds ]);
   }
 
   private sortHierarchyAndAddFacilityLabels(hierarchy) {
@@ -219,17 +157,17 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return facilities;
   }
 
-  private toggle(facilityId, hierarchy:string[], filter) {
+  private toggle(facilityId, hierarchy:string[]) {
     this.togglingFacilities = true;
-    const newToggleValue = !filter.selected.has(facilityId);
+    const newToggleValue = !this.filter.selected.has(facilityId);
 
     // Exclude places with already correct toggle state, then toggle the rest.
     hierarchy
-      .filter(facilityId => filter.selected.has(facilityId) !== newToggleValue)
-      .forEach(facilityId => filter.toggle(facilityId));
+      .filter(facilityId => this.filter.selected.has(facilityId) !== newToggleValue)
+      .forEach(facilityId => this.filter.toggle(facilityId));
 
     this.togglingFacilities = false;
-    this.applyFilter(Array.from(filter.selected));
+    this.applyFilter(Array.from(this.filter.selected) as string[]);
   }
 
   itemLabel(facility) {
@@ -245,20 +183,15 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       return;
     }
 
-    if (this.inline) {
-      this.inlineFilter.clear();
-      return;
-    }
-
-    this.dropdownFilter?.clear(false);
+    this.filter.clear();
   }
 
   countSelected() {
-    return this.inline && this.inlineFilter?.countSelected();
+    return this.filter?.countSelected();
   }
 
-  select(selectedParent, facility, filter, isCheckBox = false) {
-    if (!isCheckBox && this.inline) {
+  select(selectedParent, facility, isCheckBox = false) {
+    if (!isCheckBox) {
       facility.toggle = !facility.toggle;
       return;
     }
@@ -270,6 +203,6 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     const hierarchy = this
       .getFacilitiesRecursive(facility)
       .map(descendant => descendant.doc._id);
-    this.toggle(facility.doc._id, hierarchy, filter);
+    this.toggle(facility.doc._id, hierarchy);
   }
 }
