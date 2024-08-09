@@ -1,21 +1,9 @@
-import {
-  Component,
-  EventEmitter,
-  Output,
-  ViewChild,
-  Input,
-  OnInit,
-  AfterViewInit
-} from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit, AfterViewInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { sortBy as _sortBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
-import {
-  MultiDropdownFilterComponent,
-  MultiDropdownFilter,
-} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { SessionService } from '@mm-services/session.service';
@@ -41,9 +29,6 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   @Input() disabled;
   @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
-  
-  // initialize variable to avoid change detection errors
-  @ViewChild(MultiDropdownFilterComponent) dropdownFilter = new MultiDropdownFilter();
 
   constructor(
     private store:Store,

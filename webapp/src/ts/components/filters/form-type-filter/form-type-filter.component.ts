@@ -1,22 +1,10 @@
-import {
-  Component,
-  EventEmitter,
-  OnDestroy,
-  Output,
-  ViewChild,
-  Input,
-  OnInit
-} from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, Input, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { sortBy as _sortBy } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import {
-  MultiDropdownFilterComponent,
-  MultiDropdownFilter,
-} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { InlineFilter } from '@mm-components/filters/inline-filter';
 
@@ -29,21 +17,15 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   private formsSubscription;
   forms;
   subscriptions: Subscription = new Subscription();
-  inlineFilter: InlineFilter;
+  filter: InlineFilter;
 
   @Input() disabled;
-  @Input() inline;
   @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
-  // initialize variable to avoid change detection errors
-  @ViewChild(MultiDropdownFilterComponent) dropdownFilter = new MultiDropdownFilter();
-
-  constructor(
-    private store:Store,
-  ) {
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
-    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
+    this.filter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   ngOnInit() {
@@ -92,15 +74,10 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
       return;
     }
 
-    if (this.inline) {
-      this.inlineFilter.clear();
-      return;
-    }
-
-    this.dropdownFilter?.clear(false);
+    this.filter.clear();
   }
 
   countSelected() {
-    return this.inline && this.inlineFilter?.countSelected();
+    return this.filter?.countSelected();
   }
 }
