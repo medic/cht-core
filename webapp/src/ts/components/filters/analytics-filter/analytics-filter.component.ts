@@ -18,7 +18,6 @@ import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
@@ -45,7 +44,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     private sessionService: SessionService,
     private telemetryService: TelemetryService,
     private targetAggregatesService: TargetAggregatesService,
-    private userSettingsService: UserSettingsService
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -122,14 +120,12 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
-    const [hasMultipleFacilities, checkPermissions, isTargetAggregateEnabled] = await Promise.all([
-      this.userSettingsService.hasMultipleFacilities(),
+    const [checkPermissions, isTargetAggregateEnabled] = await Promise.all([
       this.checkPermissions(),
       this.isTargetAggregateEnabled(),
     ]);
 
     this.showFilterButton = !isAdmin &&
-      hasMultipleFacilities &&
       checkPermissions &&
       this.isTargetAggregates() &&
       isTargetAggregateEnabled;

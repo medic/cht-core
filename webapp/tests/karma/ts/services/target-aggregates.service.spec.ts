@@ -20,6 +20,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 describe('TargetAggregatesService', () => {
   let service: TargetAggregatesService;
@@ -55,7 +56,10 @@ describe('TargetAggregatesService', () => {
     };
     uhcSettingsService = {getMonthStartDate: sinon.stub()};
     translateFromService = {get: sinon.stub()};
-    calendarIntervalService = {getCurrent: sinon.stub().returns({end: 100})};
+    calendarIntervalService = {
+      getCurrent: sinon.stub().returns({ end: 100 }),
+      getPrevious: sinon.stub().returns({ end: 100 }),
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -562,6 +566,44 @@ describe('TargetAggregatesService', () => {
       expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
       expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
       expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([12]);
+    });
+
+    it('should fetch correct latest target docs when getAggregates is called with previous period', async () => {
+      const facilityId = 'facility123';
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
+      contactTypesService.getTypeId.returns('district');
+      contactTypesService.getChildren.resolves([{ id: 'health_center' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2019-07-01').valueOf(),
+        end: moment('2019-07-31').valueOf(),
+      });
+
+      const result = await service.getAggregates(facilityId, ReportingPeriod.PREVIOUS);
+
+      expect(result.length).to.equal(1);
+      expect(result[0].id).to.equal('target');
+      expect(result[0].values.length).to.equal(0);
+
+      expect(dbService.allDocs.callCount).to.equal(1);
+      expect(dbService.allDocs.args[0]).to.deep.equal([{
+        start_key: 'target~2019-07~',
+        end_key: 'target~2019-07~\ufff0',
+        include_docs: true
+      }]);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
+      expect(calendarIntervalService.getPrevious.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.args[0]).to.deep.equal([1]);
     });
 
     it('should exclude non-aggregable targets and hydrate aggregates', async () => {
@@ -1088,6 +1130,91 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[1], value: { pass: 7, total: 7, percent: 100 } },
         ]
       });
+    });
+  });
+
+  describe('getReportingMonth', () => {
+    it('should return the correct month for the current reporting period', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getCurrent.returns({
+        start: moment('2024-08-01').valueOf(),
+        end: moment('2024-08-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.CURRENT);
+
+      expect(result).to.equal('August');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([1]);
+    });
+
+    it('should return the correct month for the previous reporting period', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2024-07-01').valueOf(),
+        end: moment('2024-07-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
+
+      expect(result).to.equal('July');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.args[0]).to.deep.equal([1]);
+    });
+
+    it('should return "Last month" when getIntervalTag fails to get the correct month name', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.get.resolves({ facility_id: 'home' });
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+      translateService.instant = sinon.stub().returns('Last month');
+      settingsService.get.rejects({ some: 'err' });
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2024-07-01').valueOf(),
+        end: moment('2024-07-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
+
+      expect(result).to.equal('Last month');
+      expect(translateService.instant.calledWith('targets.last_month.subtitle')).to.be.true;
     });
   });
 

@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Place } from '@medic/cht-datasource';
 
 import { CacheService } from '@mm-services/cache.service';
@@ -14,7 +14,7 @@ export class UserSettingsService {
   private readonly cache;
   constructor(
     private cacheService:CacheService,
-    private getDataRecordsService: GetDataRecordsService,
+    private getDataRecordsService:GetDataRecordsService,
     private dbService:DbService,
     private languageService:LanguageService,
     private sessionService:SessionService,

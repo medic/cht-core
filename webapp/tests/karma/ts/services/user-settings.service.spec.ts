@@ -81,7 +81,7 @@ describe('UserSettings service', () => {
 
   it('hasMultipleFacilities returns true when user has multiple facilities', async () => {
     userCtx.returns({ name: 'jack' });
-    get.returns(Promise.resolve({ facility_id: ['facility_1', 'facility_2']}));
+    get.returns(Promise.resolve({ facility_id: ['facility_1', 'facility_2'] }));
     hasMultipleFacilities = sinon.spy(service, 'hasMultipleFacilities');
 
     const result = await service.hasMultipleFacilities();
@@ -184,7 +184,7 @@ describe('UserSettings service', () => {
       .then((first:any) => {
         expect(first.id).to.equal('j');
         expect(get.callCount).to.equal(1);
-        changesCallback({ id: 'org.couchdb.user:jack', changes: [ { rev: '5-xyz' } ] });
+        changesCallback({ id: 'org.couchdb.user:jack', changes: [{ rev: '5-xyz' }] });
         return service.get();
       })
       .then((second:any) => {

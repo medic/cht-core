@@ -11,4 +11,8 @@ export class CalendarIntervalService {
   getCurrent(startDate) {
     return CalendarInterval.getCurrent(startDate);
   }
+
+  getPrevious(startDate, referenceDate?) {
+    return CalendarInterval.getPrevious(startDate, referenceDate);
+  }
 }
