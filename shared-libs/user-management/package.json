@@ -13,9 +13,6 @@
     "@medic/lineage": "file:../lineage",
     "@medic/phone-number": "file:../phone-number",
     "@medic/settings": "file:../settings",
-    "@medic/task-utils": "file:../task-utils",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.1",
-    "simple-password-tester": "^1.0.0"
+    "@medic/task-utils": "file:../task-utils"
   }
 }

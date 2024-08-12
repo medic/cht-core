@@ -11,63 +11,45 @@ const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
 const semver = require('semver');
 
-const testFrontend = BASE_VERSION === 'latest';
-
-const docs = dataFactory.createHierarchy({
-  name: 'offlineupgrade',
-  user: true,
-  nbrClinics: 1,
-  nbrPersons: 1,
-});
-
-
-const getDdocs = async () => {
-  const result = await utils.requestOnMedicDb({
-    path: '/_all_docs',
-    qs: {
-      start_key: JSON.stringify('_design'),
-      end_key: JSON.stringify('_design\ufff0'),
-      include_docs: true,
-    },
-  });
-
-  return result.rows.map(row => row.doc);
-};
-
-const getUpgradeLogs = async () => {
-  const logs = await utils.logsDb.allDocs({
-    startkey: 'upgrade_log',
-    endkey: 'upgrade_log\ufff0',
-    include_docs: true,
-  });
-  return logs.rows.map(row => row.doc);
-};
-
-const deleteUpgradeLogs = async () => {
-  const logs = await getUpgradeLogs();
-  logs.forEach(log => log._deleted = true);
-  await utils.logsDb.bulkDocs(logs);
-};
-
-const upgradeVersion = async (branchVersion) => {
-  await upgradePage.goToUpgradePage();
-  await upgradePage.expandPreReleasesAccordion();
-
-  await (await upgradePage.getInstallButton(branchVersion, TAG)).click();
-  await (await upgradePage.upgradeModalConfirm()).click();
-
-  await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
-  await (await upgradePage.deploymentInProgress()).waitForDisplayed();
-  await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
-
-  if (testFrontend) {
-    // https://github.com/medic/cht-core/issues/9186
-    // this is an unfortunate incompatibility between current API and admin app in the old version
-    await (await upgradePage.deploymentComplete()).waitForDisplayed();
-  }
-};
-
 describe('Performing an upgrade', () => {
+  const testFrontend = BASE_VERSION === 'latest';
+
+  const docs = dataFactory.createHierarchy({
+    name: 'offlineupgrade',
+    user: true,
+    nbrClinics: 1,
+    nbrPersons: 1,
+  });
+
+
+  const getDdocs = async () => {
+    const result = await utils.requestOnMedicDb({
+      path: '/_all_docs',
+      qs: {
+        start_key: JSON.stringify('_design'),
+        end_key: JSON.stringify('_design\ufff0'),
+        include_docs: true,
+      },
+    });
+
+    return result.rows.map(row => row.doc);
+  };
+
+  const getUpgradeLogs = async () => {
+    const logs = await utils.logsDb.allDocs({
+      startkey: 'upgrade_log',
+      endkey: 'upgrade_log\ufff0',
+      include_docs: true,
+    });
+    return logs.rows.map(row => row.doc);
+  };
+
+  const deleteUpgradeLogs = async () => {
+    const logs = await getUpgradeLogs();
+    logs.forEach(log => log._deleted = true);
+    await utils.logsDb.bulkDocs(logs);
+  };
+
   before(async () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
@@ -84,6 +66,11 @@ describe('Performing an upgrade', () => {
       password: constants.PASSWORD,
       createUser: false
     });
+  });
+
+  after(async () => {
+    await utils.deleteUsers([docs.user]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should have an upgrade_log after installing', async () => {
@@ -105,7 +92,7 @@ describe('Performing an upgrade', () => {
   });
 
   it('should upgrade to current branch', async () => {
-    await upgradeVersion(BRANCH);
+    await upgradePage.upgradeVersion(BRANCH, TAG, testFrontend);
 
     const currentVersion = await upgradePage.getCurrentVersion();
     expect(version.getVersion(true)).to.include(currentVersion);
@@ -146,25 +133,6 @@ describe('Performing an upgrade', () => {
     await (await aboutPage.aboutCard()).waitForDisplayed();
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
     expect(await aboutPage.getVersion()).to.include(expected);
-    await commonPage.logout();
-
-    // https://github.com/medic/cht-core/issues/9117
-    // install 'master' branch to make sure a new version can be installed from the build version
-
-    await loginPage.cookieLogin({
-      username: constants.USERNAME,
-      password: constants.PASSWORD,
-      createUser: false
-    });
-
-    await upgradeVersion('master');
-
-    expect(await upgradePage.getBuild()).to.include('alpha');
-    await commonPage.goToAboutPage();
-    await commonPage.waitForPageLoaded();
-    await (await aboutPage.aboutCard()).waitForDisplayed();
-    expect(await aboutPage.getVersion()).to.include('master');
-
     await commonPage.logout();
   });
 

@@ -3,7 +3,8 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
-const environment = require('./environment');
+const environment = require('@medic/environment');
+const resources = require('./resources');
 const config = require('./config');
 const db = require('./db');
 const dataContext = require('./services/data-context');
@@ -250,7 +251,7 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(environment.webappPath, 'index.html')); // Webapp's index - entry point
+    res.sendFile(path.join(resources.webappPath, 'index.html')); // Webapp's index - entry point
   }
 });
 
@@ -261,7 +262,7 @@ app.get('/dbinfo', connectedUserLog, (req, res) => {
 
 app.get(
   [`/medic/_design/medic/_rewrite/`, appPrefix],
-  (req, res) => res.sendFile(path.join(environment.webappPath, 'appcache-upgrade.html'))
+  (req, res) => res.sendFile(path.join(resources.webappPath, 'appcache-upgrade.html'))
 );
 
 app.all('/+medic(/*)?', (req, res, next) => {
@@ -281,8 +282,8 @@ app.all(adminAppPrefix, (req, res, next) => {
 });
 app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
-app.use(express.static(environment.staticPath));
-app.use(express.static(environment.webappPath));
+app.use(express.static(resources.staticPath));
+app.use(express.static(resources.webappPath));
 app.get('/extension-libs', extensionLibs.list);
 app.get('/extension-libs/:name', extensionLibs.get);
 app.get(routePrefix + 'login', login.get);
@@ -767,7 +768,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(environment.webappPath, 'service-worker.js'));
+  res.sendFile(path.join(resources.webappPath, 'service-worker.js'));
 });
 
 /**

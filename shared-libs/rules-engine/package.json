@@ -19,10 +19,6 @@
   "homepage": "https://github.com/medic/medic/tree/master/shared-libs/rules-engine#readme",
   "dependencies": {
     "@medic/calendar-interval": "file:../calendar-interval",
-    "@medic/registration-utils": "file:../registration-utils",
-    "cht-nootils": "^4.0.2",
-    "lodash": "^4.17.21",
-    "md5": "^2.3.0",
-    "nools": "^0.4.4"
+    "@medic/registration-utils": "file:../registration-utils"
   }
 }

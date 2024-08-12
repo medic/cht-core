@@ -51,7 +51,7 @@ describe('cht-form web component - Edit Person Form', () => {
 
     await genericForm.nextPage();
 
-    const personInfo = await contactPage.getCurrentPersonEditFormValues('male', 'chw');
+    const personInfo = await contactPage.getCurrentPersonEditFormValues('Male', 'CHW');
     expect(personInfo.name).to.equal('Filippo');
     expect(personInfo.shortName).to.equal('Fili');
     expect(personInfo.dateOfBirth).to.equal('2000-09-20');

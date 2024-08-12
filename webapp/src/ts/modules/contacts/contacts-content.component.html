@@ -6,7 +6,7 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedContact && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedContact && !loadingContent && !summaryErrorStack">
     <div>{{'No contact selected' | translate}}</div>
   </div>
 
@@ -14,7 +14,11 @@
     <div>{{'contact.select.error' | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent">
+  <div class="item-content" *ngIf="!!summaryErrorStack && !loadingContent">
+    <error-log [errorStack]="summaryErrorStack" [errorFor]="'contacts'"></error-log>
+  </div>
+
+  <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent && !summaryErrorStack">
     <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
     <div class="material">
       <div class="body meta">
