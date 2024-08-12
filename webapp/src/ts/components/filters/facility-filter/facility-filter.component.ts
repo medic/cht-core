@@ -5,20 +5,19 @@ import { sortBy as _sortBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
-import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { InlineFilter } from '@mm-components/filters/inline-filter';
+import { Filter } from '@mm-components/filters/filter';
 import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter {
-  private globalActions;
+export class FacilityFilterComponent implements OnInit, AfterViewInit {
+  private globalActions: GlobalActions;
   private isOnlineOnly;
-  filter: InlineFilter;
+  filter: Filter;
   facilities: Record<string, any>[] = [];
   displayedFacilities: Record<string, any>[] = [];
 
@@ -37,7 +36,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     private sessionService:SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.filter = new InlineFilter(this.applyFilter.bind(this));
+    this.filter = new Filter(this.applyFilter.bind(this));
   }
 
   ngOnInit() {

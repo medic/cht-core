@@ -4,13 +4,12 @@ import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-freetext-filter',
   templateUrl: './freetext-filter.component.html'
 })
-export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilter {
+export class FreetextFilterComponent implements OnDestroy, OnInit {
   private globalActions;
 
   subscription: Subscription = new Subscription();

@@ -5,19 +5,18 @@ import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { AbstractFilter } from '@mm-components/filters/abstract-filter';
-import { InlineFilter } from '@mm-components/filters/inline-filter';
+import { Filter } from '@mm-components/filters/filter';
 
 @Component({
   selector: 'mm-form-type-filter',
   templateUrl: './form-type-filter.component.html'
 })
-export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter {
-  private globalActions;
+export class FormTypeFilterComponent implements OnDestroy, OnInit {
+  private globalActions: GlobalActions;
   private formsSubscription;
   forms;
   subscriptions: Subscription = new Subscription();
-  filter: InlineFilter;
+  filter: Filter;
 
   @Input() disabled;
   @Input() fieldId;
@@ -25,7 +24,7 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
-    this.filter = new InlineFilter(this.applyFilter.bind(this));
+    this.filter = new Filter(this.applyFilter.bind(this));
   }
 
   ngOnInit() {

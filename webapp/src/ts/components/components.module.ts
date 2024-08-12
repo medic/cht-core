@@ -28,7 +28,6 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
-import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
@@ -64,7 +63,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     FastActionButtonComponent,
     SearchBarComponent,
     MultiselectBarComponent,
-    ResetFiltersComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
@@ -106,7 +104,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     SearchBarComponent,
     MultiselectBarComponent,
     FreetextFilterComponent,
-    ResetFiltersComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,

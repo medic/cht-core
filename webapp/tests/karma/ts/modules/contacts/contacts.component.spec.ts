@@ -23,7 +23,6 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
-import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { NavigationService } from '@mm-services/navigation.service';
@@ -129,7 +128,6 @@ describe('Contacts component', () => {
           ContactsMoreMenuComponent,
           FreetextFilterComponent,
           NavigationComponent,
-          ResetFiltersComponent,
           SortFilterComponent,
           FastActionButtonComponent,
           SearchBarComponent

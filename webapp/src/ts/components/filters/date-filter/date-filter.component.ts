@@ -10,7 +10,6 @@ interface LocaleWithWeekSpec extends moment.Locale {
 }
 
 import { GlobalActions } from '@mm-actions/global';
-import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { Selectors } from '@mm-selectors/index';
 
@@ -18,8 +17,8 @@ import { Selectors } from '@mm-selectors/index';
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html'
 })
-export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, AfterViewInit {
-  private globalActions;
+export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
+  private globalActions: GlobalActions;
   private subscription: Subscription = new Subscription();
   inputLabel;
   error?: string;
