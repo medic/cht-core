@@ -71,7 +71,6 @@ describe('Target aggregates', () => {
     
     const userWithManyPlaces = userSettingsFactory.build({
       _id: 'org.couchdb.user:offline_many_facilities',
-      id: 'org.couchdb.user:offline_many_facilities',
       name: 'offline_many_facilities',
       roles: [ 'chw' ],
       facility_id: [ districtHospital1._id, districtHospital2._id ],
