@@ -66,17 +66,6 @@
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "^17.0.2",
-    "@angular-devkit/build-angular": "^17.3.2",
-    "@angular-eslint/builder": "^17.3.0",
-    "@angular-eslint/eslint-plugin": "^17.3.0",
-    "@angular-eslint/eslint-plugin-template": "^17.3.0",
-    "@angular-eslint/schematics": "^17.3.0",
-    "@angular-eslint/template-parser": "^17.3.0",
-    "@angular/cli": "^17.3.2",
-    "@angular/compiler": "^17.3.2",
-    "@angular/compiler-cli": "^17.3.2",
-    "@angular/localize": "^17.3.2",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@faker-js/faker": "^8.0.2",
