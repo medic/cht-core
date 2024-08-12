@@ -84,10 +84,12 @@ describe('Target aggregates', () => {
     Array
       .from({ length: 5 })
       .forEach((e, i) => {
-        const district1Data =
-          helperFunctions.generateContactsAndTargets(districtHospital1, NAMES_DH1[i], TARGET_VALUES_BY_CONTACT);
-        const district2Data =
-          helperFunctions.generateContactsAndTargets(districtHospital2, NAMES_DH2[i], TARGET_VALUES_BY_CONTACT);
+        const district1Data = helperFunctions.generateContactsAndTargets(
+          districtHospital1, NAMES_DH1[i], TARGET_VALUES_BY_CONTACT,
+        );
+        const district2Data = helperFunctions.generateContactsAndTargets(
+          districtHospital2, NAMES_DH2[i], TARGET_VALUES_BY_CONTACT,
+        );
 
         contactDocs.push(...district1Data.contacts, ...district2Data.contacts);
         targetDocs.push(...district1Data.targets, ...district2Data.targets);
@@ -135,7 +137,8 @@ describe('Target aggregates', () => {
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
 
-        const expectedContacts = helperFunctions.getDocsByPlace(contactDocs, districtHospital1._id)
+        const expectedContacts = helperFunctions
+          .getDocsByPlace(contactDocs, districtHospital1._id)
           .map(contact => ({ _id: contact._id, name: contact.name, counter: 'No data', progress: 0 }));
 
         const context = {
@@ -239,7 +242,8 @@ describe('Target aggregates', () => {
           { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
         ];
 
-        const expectedContacts = helperFunctions.getDocsByPlace(contactDocs, districtHospital1._id)
+        const expectedContacts = helperFunctions
+          .getDocsByPlace(contactDocs, districtHospital1._id)
           .map(contact => ({ _id: contact._id, name: contact.name, counter: 'No data', progress: 0 }));
 
         const context = {
