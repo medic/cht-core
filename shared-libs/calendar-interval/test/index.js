@@ -296,7 +296,7 @@ describe('CalendarInterval', () => {
       clock.restore();
     });
 
-    it('returns correct previos period when incorrect start date values', () => {
+    it('returns correct previous period when incorrect start date values', () => {
       clock = sinon.useFakeTimers(moment('2018-02-10').valueOf());
       [null, undefined, -1, 'date', false, 0, 35].forEach((invalidStart) => {
         chai.expect(service.getPrevious(invalidStart)).to.deep.equal({
@@ -307,7 +307,7 @@ describe('CalendarInterval', () => {
       clock.restore();
     });
 
-    it('returns correct previos period when start date same as current date', () => {
+    it('returns correct previous period when start date same as current date', () => {
       clock = sinon.useFakeTimers(moment('2018-04-15').valueOf());
       chai.expect(service.getPrevious(15)).to.deep.equal({
         start: moment('2018-03-15 00:00:00').valueOf(),
