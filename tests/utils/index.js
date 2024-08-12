@@ -10,7 +10,6 @@ const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 // by default, mustache escapes slashes, which messes with paths and urls.
 mustache.escape = (text) => text;
-const semver = require('semver');
 const moment = require('moment');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const userSettings = require('@factories/cht/users/user-settings');
@@ -28,7 +27,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
 let originalSettings;
-let dockerVersion;
 let infrastructure = 'docker';
 const isDocker = () => infrastructure === 'docker';
 const isK3D = () => !isDocker();
@@ -145,7 +143,7 @@ const getSession = async () => {
     method: 'POST',
     uri: `${constants.BASE_URL}/_session`,
     json: true,
-    body: { name: auth.username, password: auth.password},
+    body: { name: auth.username, password: auth.password },
     auth,
     resolveWithFullResponse: true,
   };
@@ -819,10 +817,10 @@ const listenForApi = async () => {
 const dockerComposeCmd = (params) => {
   params = params.split(' ').filter(String);
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
-  params.unshift(...composeFiles, '-p', PROJECT_NAME);
+  params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', params, { env });
+    const cmd = spawn('docker', params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1211,7 +1209,7 @@ const prepK3DServices = async (defaultSettings) => {
   const helmChartPath = path.join(__dirname, '..', 'helm');
   const valesPath = path.join(helmChartPath, 'values.yaml');
   await runCommand(
-    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} `+
+    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} ` +
     `--kube-context k3d-${PROJECT_NAME} --values ${valesPath} --create-namespace`
   );
   await listenForApi();
@@ -1308,7 +1306,7 @@ const waitForLogs = (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let firstLine = false;
-  tail = (isDocker() || tail) ? '--tail=1': '';
+  tail = (isDocker() || tail) ? '--tail=1' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
@@ -1441,36 +1439,18 @@ const apiLogTestEnd = (name) => {
     .catch(() => console.warn('Error logging test end - ignoring'));
 };
 
-const getDockerVersion = () => {
-  try {
-    const response = execSync('docker-compose -v').toString();
-    const version = response.match(semver.re[3])[0];
-    return semver.major(version);
-  } catch (err) {
-    console.error(err);
-    return 1;
-  }
-};
-
 const updateContainerNames = (project = PROJECT_NAME) => {
-  dockerVersion = dockerVersion || getDockerVersion();
-
   Object.entries(SERVICES).forEach(([key, service]) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
   });
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
-const getContainerName = (service, project = PROJECT_NAME) => {
-  if (isDocker()) {
-    dockerVersion = dockerVersion || getDockerVersion();
-    const separator = dockerVersion === 2 ? '-' : '_';
-    return `${project}${separator}${service}${separator}1`;
-  }
 
-  return `deployment/cht-${service}`;
+const getContainerName = (service, project = PROJECT_NAME) => {
+  return isDocker() ? `${project}-${service}-1` : `deployment/cht-${service}`;
 };
 
-const getUpdatedPermissions  = async (roles, addPermissions, removePermissions) => {
+const getUpdatedPermissions = async (roles, addPermissions, removePermissions) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {

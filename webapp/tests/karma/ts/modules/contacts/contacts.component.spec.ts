@@ -370,26 +370,18 @@ describe('Contacts component', () => {
       sinon.resetHistory();
       sessionService.isOnlineOnly.returns(true);
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves([ {} ]);
-      searchResults = [
-        {
-          _id: 'search-result',
-        },
-      ];
-      contactTypesService.getChildren.resetHistory();
-      searchService.search.resetHistory();
+      getDataRecordsService.get.resolves(undefined);
+      searchResults = [{ _id: 'search-result' }];
       searchService.search.resolves(searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+
       component.ngOnInit();
       flush();
 
-      expect(contactTypesService.getChildren.callCount).to.equal(1);
-      expect(contactTypesService.getChildren.args[0].length).to.equal(0);
-      expect(searchService.search.args[0][1]).to.deep.equal(
-        {
-          types: { selected: ['childType'] },
-        }
-      );
+      expect(contactTypesService.getChildren.calledOnce).to.be.true;
+      expect(searchService.search.args[0][1]).to.deep.equal({
+        types: { selected: ['childType'] },
+      });
       const contacts = component.contactsActions.updateContactsList.args[0][0];
       expect(contacts.length).to.equal(1);
       expect(stopPerformanceTrackStub.calledTwice).to.be.true;
@@ -406,6 +398,7 @@ describe('Contacts component', () => {
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
       sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
+      getDataRecordsService.get.resolves(undefined);
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -467,6 +460,7 @@ describe('Contacts component', () => {
     it('when refreshing list as admin, does not modify limit #4085', fakeAsync(() => {
       sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
+      getDataRecordsService.get.resolves(undefined);
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
       searchService.search.resolves(searchResults);

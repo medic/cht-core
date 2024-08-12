@@ -15,10 +15,10 @@ const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
 
 const {
-  MARKET_URL_READ='https://staging.dev.medicmobile.org',
-  STAGING_SERVER='_couch/builds_4',
+  MARKET_URL_READ = 'https://staging.dev.medicmobile.org',
+  STAGING_SERVER = '_couch/builds_4',
   HAPROXY_PORT,
-  BASE_VERSION='latest',
+  BASE_VERSION = 'latest',
   TAG,
 } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
@@ -92,8 +92,8 @@ const dockerComposeCmd = (...params) => {
   params.unshift('-p', 'upgrade');
 
   return new Promise((resolve, reject) => {
-    console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params]);
-    const cmd = spawn('docker-compose', ['-f', UPGRADE_SERVICE_DC, ...params], { env });
+    console.log(...['docker compose', '-f', UPGRADE_SERVICE_DC, ...params]);
+    const cmd = spawn('docker', ['compose', '-f', UPGRADE_SERVICE_DC, ...params], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -141,8 +141,8 @@ const servicesStartTimeout = () => {
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs:
-  // order is important, because we want to upgrade from an older version to current version. validate the upgrade
-  // and then upgrade to master
+    // order is important, because we want to upgrade from an older version to current version. validate the upgrade
+    // and then upgrade to master
     [
       'upgrade.wdio-spec.js',
       'admin-user.wdio-spec.js',

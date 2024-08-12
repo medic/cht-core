@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const constants = require('@constants');
 
-const runDockerCommand = (command, params, env=process.env) => {
+const runDockerCommand = (command, params, env = process.env) => {
   return new Promise((resolve, reject) => {
     const cmd = spawn(command, params, { cwd: path.join(__dirname, 'keep-alive-script'), env });
     const output = [];
@@ -18,15 +18,15 @@ const runScript = async () => {
   const env = { ...process.env };
   env.USER = constants.USERNAME;
   env.PASSWORD = constants.PASSWORD;
-  return await runDockerCommand('docker-compose', ['up', '--build', '--force-recreate'], env);
+  return await runDockerCommand('docker', ['compose', 'up', '--build', '--force-recreate'], env);
 };
 const getLogs = async () => {
-  return await runDockerCommand('docker-compose', ['logs', '--no-log-prefix']);
+  return await runDockerCommand('docker', ['compose', 'logs', '--no-log-prefix']);
 };
 
 describe('logging in through API directly', () => {
   after(async () => {
-    await runDockerCommand('docker-compose', ['down', '--remove-orphans']);
+    await runDockerCommand('docker', ['compose', 'down', '--remove-orphans']);
   });
 
   it('should allow logins @docker', async () => {
