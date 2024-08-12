@@ -67,6 +67,7 @@ describe('generate service worker', () => {
       globPatterns: [
         '!webapp/service-worker.js',
         'webapp/manifest.json',
+        'webapp/deploy-info.json',
         'webapp/audio/*',
         'webapp/img/*',
         'webapp/*.js',

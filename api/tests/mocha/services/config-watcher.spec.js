@@ -14,6 +14,7 @@ const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
 const manifest = require('../../../src/services/manifest');
 const environment = require('@medic/environment');
+const deployInfo = require('../../../src/services/deploy-info');
 
 describe('Configuration', () => {
   beforeEach(() => {
@@ -32,6 +33,7 @@ describe('Configuration', () => {
     sinon.stub(fs, 'watch');
     sinon.stub(translations, 'getTranslationDocs');
     sinon.stub(dbWatcher, 'listen');
+    sinon.stub(deployInfo, 'store');
   });
 
   afterEach(() => {
@@ -67,6 +69,7 @@ describe('Configuration', () => {
         chai.expect(config.setTranslationCache.callCount).to.equal(1);
         chai.expect(config.setTranslationCache.args[0]).to.deep.equal([{}]);
 
+        chai.expect(deployInfo.store.calledOnce).to.equal(true);
         chai.expect(db.createVault.callCount).to.equal(1);
       });
     });
