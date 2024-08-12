@@ -244,8 +244,7 @@ const buildServiceImages = async () => {
 
   console.log('working directory', workingDir);
   for (const service of versions.SERVICES) {
-    await exec('cp', ['-r', `${workingDir}/node_modules`, service]);
-    await exec('cp', ['-r', './shared-libs', service]);
+    await exec('cp', ['-a', `${workingDir}/node_modules`, service]);
 
     const tag = versions.getImageTag(service);
     if (INTERNAL_CONTRIBUTOR) {
