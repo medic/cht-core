@@ -3,6 +3,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { FormsModule } from '@angular/forms';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 
 import { Selectors } from '@mm-selectors/index';
@@ -11,6 +12,7 @@ import { AnalyticsTargetAggregatesSidebarFilterComponent }
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { GlobalActions } from '@mm-actions/global';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 describe('Analytics Target Aggregate Sidebar Filter Component', () => {
   let component: AnalyticsTargetAggregatesSidebarFilterComponent;
@@ -24,9 +26,11 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     contactTypesService = {
       getTypeId: sinon.stub().returns('district_hospital')
     };
-    settingsService = { get: sinon.stub().resolves(
-      { contact_types: [{ id: 'district_hospital', name_key: 'District Hospital', }] }
-    )};
+    settingsService = {
+      get: sinon
+        .stub()
+        .resolves({ contact_types: [{ id: 'district_hospital', name_key: 'District Hospital', }] })
+    };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
@@ -38,6 +42,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     await TestBed
       .configureTestingModule({
         imports: [
+          FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule
         ],
@@ -55,6 +60,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
         fixture = TestBed.createComponent(AnalyticsTargetAggregatesSidebarFilterComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
+        component.userFacilities = [];
         fixture.detectChanges();
       });
   });
@@ -68,6 +74,14 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     expect(component).to.exist;
     expect(component.isOpen).to.be.false;
   }));
+
+  it('should unsubscribe from observables on component destroy', () => {
+    const unsubscribeSpy = sinon.spy(component.subscriptions, 'unsubscribe');
+
+    component.ngOnDestroy();
+
+    expect(unsubscribeSpy.callCount).to.equal(1);
+  });
 
   it('should toggle sidebar filter', () => {
     component.toggleSidebarFilter();
@@ -159,7 +173,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
 
   it('should set default facilityFilterLabel when contact type is not found', fakeAsync(() => {
     sinon.resetHistory();
-    const settings = { contact_types: [ { id: 'health_center', name_key: 'Health Center' }] };
+    const settings = { contact_types: [{ id: 'health_center', name_key: 'Health Center' }] };
     component.userFacilities = [
       { _id: 'id_1', type: 'district_hospital' },
       { _id: 'id_2', type: 'district_hospital' },
@@ -174,4 +188,35 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
     expect(settingsService.get.callCount).to.equal(1);
     expect(contactTypesService.getTypeId.callCount).to.equal(1);
   }));
+
+  it('should emit selected facility when fetchAggregateTargetsByFacility is called', () => {
+    const facility = { _id: 'place_1', type: 'district_hospital' };
+    const spyFacility = sinon.spy(component.facilitySelectionChanged, 'emit');
+
+    component.fetchAggregateTargetsByFacility(facility);
+
+    expect(component.selectedFacility).to.deep.equal(facility);
+    expect(spyFacility.callCount).to.equal(1);
+    expect(spyFacility.firstCall.args[0]).to.deep.equal(facility);
+  });
+
+  it('should emit default current reporting period when fetchAggregateTargetsByReportingPeriod is called', () => {
+    const spyReportingPeriod = sinon.spy(component.reportingPeriodSelectionChanged, 'emit');
+
+    component.selectedReportingPeriod = ReportingPeriod.CURRENT;
+    component.fetchAggregateTargetsByReportingPeriod();
+
+    expect(spyReportingPeriod.callCount).to.equal(1);
+    expect(spyReportingPeriod.firstCall.args[0]).to.equal(ReportingPeriod.CURRENT);
+  });
+
+  it('should emit previous reporting period when toggled', () => {
+    const spyReportingPeriod = sinon.spy(component.reportingPeriodSelectionChanged, 'emit');
+
+    component.selectedReportingPeriod = ReportingPeriod.PREVIOUS;
+    component.fetchAggregateTargetsByReportingPeriod();
+
+    expect(spyReportingPeriod.callCount).to.equal(1);
+    expect(spyReportingPeriod.firstCall.args[0]).to.equal(ReportingPeriod.PREVIOUS);
+  });
 });
