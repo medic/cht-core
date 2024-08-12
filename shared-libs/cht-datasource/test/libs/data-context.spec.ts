@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { adapt, assertDataContext } from '../../src/libs/data-context';
+import { adapt, assertDataContext, getDocumentStream } from '../../src/libs/data-context';
 import * as LocalContext from '../../src/local/libs/data-context';
 import * as RemoteContext from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
@@ -116,6 +116,70 @@ describe('context lib', () => {
       expect(local.notCalled).to.be.true;
       expect(assertRemoteDataContext.calledOnceWithExactly(context)).to.be.true;
       expect(remote.notCalled).to.be.true;
+    });
+  });
+
+  describe('getDocumentStream', () => {
+    let fetchFunctionStub: SinonStub;
+    const limit = 100;
+    const cursor = '0';
+
+    beforeEach(() => {
+      fetchFunctionStub = sinon.stub();
+    });
+
+    it('yields document one by one', async () => {
+      const mockDocs = [{ id: 1 }, { id: 2 }, { id: 3 }];
+      const mockPage = { data: mockDocs, cursor: '-1' };
+      const extraArg = 'value';
+      fetchFunctionStub.resolves(mockPage);
+
+      const generator = getDocumentStream(fetchFunctionStub, extraArg);
+
+      const results = [];
+
+      for await (const doc of generator) {
+        results.push(doc);
+      }
+
+      expect(results).to.deep.equal(mockDocs);
+      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, cursor, limit)).to.be.true;
+    });
+
+    it('should handle multiple pages',  async () => {
+      const mockDoc = { id: 1 };
+      const mockDocs1 = Array.from({ length: 100 }, () => ({ ...mockDoc }));
+      const mockPage1 = { data: mockDocs1, cursor: '100' };
+      const mockDocs2 = [{ id: 101 }];
+      const mockPage2 = { data: mockDocs2, cursor: '-1' };
+      const extraArg = 'value';
+
+      fetchFunctionStub.onFirstCall().resolves(mockPage1);
+      fetchFunctionStub.onSecondCall().resolves(mockPage2);
+
+      const generator = getDocumentStream(fetchFunctionStub, extraArg);
+
+      const results = [];
+      for await (const doc of generator) {
+        results.push(doc);
+      }
+
+      expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
+      expect(fetchFunctionStub.callCount).to.equal(2);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, cursor, limit]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, (Number(cursor) + limit).toString(), limit]);
+    });
+
+    it('should handle empty result', async () => {
+      fetchFunctionStub.resolves({ data: [], cursor: '-1' });
+
+      const generator = getDocumentStream(fetchFunctionStub, { limit: 10, skip: 0 });
+
+      const result = await generator.next();
+
+      expect(result.done).to.be.true;
+      expect(result.value).to.be.equal(undefined);
+      expect(fetchFunctionStub.calledOnce).to.be.true;
     });
   });
 });

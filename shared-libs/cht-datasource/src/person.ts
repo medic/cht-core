@@ -1,5 +1,5 @@
-import { isContactTypeQualifier, isUuidQualifier, ContactTypeQualifier, UuidQualifier } from './qualifier';
-import { adapt, assertDataContext, DataContext } from './libs/data-context';
+import { ContactTypeQualifier, isContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
+import { adapt, assertDataContext, DataContext, getDocumentStream } from './libs/data-context';
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
@@ -47,9 +47,9 @@ export namespace v1 {
     }
   };
 
-  const assertSkip = (skip: unknown) => {
-    if (typeof skip !== 'number' || !Number.isInteger(skip) || skip < 0) {
-      throw new Error(`The skip must be a non-negative number: [${String(skip)}]`);
+  const assertCursor = (cursor: unknown) => {
+    if (typeof cursor !== 'string' || Number(cursor) < 0) {
+      throw new Error(`The cursor must be a stringified non-negative number: [${String(cursor)}]`);
     }
   };
 
@@ -86,22 +86,19 @@ export namespace v1 {
    * @param context the current data context
    * @returns a function for retrieving a paged array of people
    * @throws Error if a data context is not provided
+   * @see {@link getAll} which provides the same data, but without having to manually account for paging
    */
   export const getPage = (
     context: DataContext
-  ): (
-    personType: ContactTypeQualifier,
-    limit: number,
-    skip: number
-  ) => Promise<Page<Person>> => {
+  ): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
     /**
      * Returns an array of people for the provided page specifications.
      * @param personType the type of people to return
+     * @param cursor the number of people to skip. Default is 0.
      * @param limit the maximum number of people to return. Default is 100.
-     * @param skip the number of people to skip. Default is 0.
      * @returns an array of people for the provided page specifications.
      * @throws Error if no type is provided or if the type is not for a person
      * @throws Error if the provided `limit` value is `<=0`
@@ -109,15 +106,40 @@ export namespace v1 {
      */
     const curriedFn = async (
       personType: ContactTypeQualifier,
+      cursor = '0',
       limit = 100,
-      skip = 0
     ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
       assertLimit(limit);
-      assertSkip(skip);
+      assertCursor(cursor);
 
-      return fn(personType, limit, skip);
+      return fn(personType, cursor, limit);
     };
     return curriedFn;
+  };
+
+  /**
+   * Returns a function for getting a generator that fetches people from the given data context.
+   * @param context the current data context
+   * @returns a function for getting a generator that fetches people
+   * @throws Error if a data context is not provided
+   */
+  export const getAll = (
+    context: DataContext
+  ): typeof curriedGen => {
+    assertDataContext(context);
+
+    /**
+     * Returns a generator for fetching all people with the given type
+     * @param personType the type of people to return
+     * @returns a generator for fetching all people with the given type
+     * @throws Error if no type is provided or if the type is not for a person
+     */
+    const curriedGen = (personType: ContactTypeQualifier): AsyncGenerator<Person, void> => {
+      assertTypeQualifier(personType);
+      const getPage = context.bind(v1.getPage);
+      return getDocumentStream(getPage, personType);
+    };
+    return curriedGen;
   };
 }

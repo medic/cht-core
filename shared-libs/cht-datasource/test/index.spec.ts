@@ -93,7 +93,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage', 'getPageByType']);
+        expect(person).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
       });
 
       it('getByUuid', async () => {
@@ -126,21 +126,41 @@ describe('CHT Script API - getDatasource', () => {
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
 
-      it('getPage', async () => {
+      it('getPageByType', async () => {
         const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: '-1'};
         const personGetPage = sinon.stub().resolves(expectedPeople);
         dataContextBind.returns(personGetPage);
         const personType = 'person';
         const limit = 2;
-        const skip = 1;
+        const cursor = '1';
         const personTypeQualifier = { contactType: personType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const returnedPeople = await person.getPageByType(personType, limit, skip);
+        const returnedPeople = await person.getPageByType(personType, cursor, limit);
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
+      });
+
+      it('getByType', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        const mockAsyncGenerator = async function* () {
+          yield [];
+        };
+        const personGetAll = sinon.stub().resolves(mockAsyncGenerator);
+        dataContextBind.returns(personGetAll);
+        const personType = 'person';
+        const personTypeQualifier = { contactType: personType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        const res =  await person.getByType(personType);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
+        expect(personGetAll.calledOnceWithExactly(personTypeQualifier)).to.be.true;
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
     });
