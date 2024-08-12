@@ -5,6 +5,7 @@ const isClientHuman = require('./is-client-human');
 const logger = require('@medic/logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const cookie = require('./services/cookie');
+const {InvalidArgumentError} = require('@medic/cht-datasource');
 
 const wantsJSON = req => req.accepts(['text', 'json']) === 'json';
 
@@ -63,6 +64,11 @@ module.exports = {
       logger.warn(`Non-numeric error code: ${code}`);
       code = 500;
     }
+
+    if (err instanceof InvalidArgumentError) {
+      code = 400;
+    }
+
     if (code === 401) {
       return module.exports.notLoggedIn(req, res, showPrompt);
     }

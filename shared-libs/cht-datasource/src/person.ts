@@ -6,6 +6,7 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
+import { InvalidArgumentError } from './libs/error';
 import { Page } from './libs/core';
 
 /** */
@@ -29,7 +30,7 @@ export namespace v1 {
 
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
-      throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+      throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
     }
   };
 
@@ -37,19 +38,19 @@ export namespace v1 {
     qualifier: unknown
   ) => {
     if (!isContactTypeQualifier(qualifier)) {
-      throw new Error(`Invalid type [${JSON.stringify(qualifier)}].`);
+      throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
     }
   };
 
   const assertLimit = (limit: unknown) => {
     if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
-      throw new Error(`The limit must be a positive number: [${String(limit)}]`);
+      throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}]`);
     }
   };
 
   const assertCursor = (cursor: unknown) => {
     if (typeof cursor !== 'string' || Number(cursor) < 0) {
-      throw new Error(`The cursor must be a stringified non-negative number: [${String(cursor)}]`);
+      throw new InvalidArgumentError(`The cursor must be a stringified non-negative number: [${String(cursor)}]`);
     }
   };
 

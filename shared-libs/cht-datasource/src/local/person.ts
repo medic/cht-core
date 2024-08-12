@@ -7,6 +7,7 @@ import { getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
+import {InvalidArgumentError} from '../libs/error';
 
 /** @internal */
 export namespace v1 {
@@ -70,7 +71,7 @@ export namespace v1 {
       const personTypesIds = personTypes.map((item) => item.id);
 
       if (!personTypesIds.includes(personType.contactType)) {
-        throw new Error(`Invalid person type: ${personType.contactType}`);
+        throw new InvalidArgumentError(`Invalid contact type [${personType.contactType}]`);
       }
 
       // Adding a number skip variable here so as not to confuse ourselves

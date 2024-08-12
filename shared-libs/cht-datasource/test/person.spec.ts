@@ -171,7 +171,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(false);
 
         await expect(Person.v1.getPage(dataContext)(invalidQualifier, cursor, limit))
-          .to.be.rejectedWith(`Invalid type [${JSON.stringify(invalidQualifier)}].`);
+          .to.be.rejectedWith(`Invalid contact type [${JSON.stringify(invalidQualifier)}].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
@@ -276,7 +276,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(false);
 
         expect(() => Person.v1.getAll(dataContext)(personTypeQualifier))
-          .to.throw(`Invalid type [${JSON.stringify(personTypeQualifier)}]`);
+          .to.throw(`Invalid contact type [${JSON.stringify(personTypeQualifier)}]`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;

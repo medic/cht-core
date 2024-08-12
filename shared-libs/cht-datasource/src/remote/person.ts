@@ -28,6 +28,6 @@ export namespace v1 {
     cursor: string,
     limit: number,
   ): Promise<Page<Person.v1.Person>> => getPeople(remoteContext)(
-    {'limit': limit.toString(), 'contactType': personType.contactType, cursor}
+    {'limit': limit.toString(), 'personType': personType.contactType, cursor}
   );
 }
