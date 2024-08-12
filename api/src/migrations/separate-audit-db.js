@@ -1,6 +1,6 @@
 const {promisify} = require('util');
 const db = require('../db');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 const logger = require('@medic/logger');
 const async = require('async');
 

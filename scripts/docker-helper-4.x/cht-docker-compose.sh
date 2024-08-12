@@ -155,6 +155,16 @@ required_apps_installed(){
   echo "${error}"
 }
 
+docker_not_installed(){
+  # special check for docker.  We want to be sure both "docker" is installed AND
+  # that "docker compose" is installed.  We deprecated "docker-compose" in CHT Core #8781
+  if [ -n "$(required_apps_installed "docker")" ];then
+    echo "Docker not installed"
+  else
+    docker compose &>/dev/null || echo "Docker Compose not installed"
+  fi
+}
+
 get_nginx_container_id() {
   docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet  2>/dev/null
 }
@@ -256,9 +266,9 @@ get_system_and_docker_info(){
   echo $"$info" | column -t
 }
 
-if [ -n "$(required_apps_installed "docker-compose")" ];then
+if [ "$(docker_not_installed)" ];then
   echo ""
-  echo -e "${red}\"docker-compose\" is not installed or could not be found. Please install and try again!${noColor}"
+  echo -e "${red}\"docker\" or \"docker compose\" is not installed or could not be found. Please install and try again!${noColor}"
   show_help_existing_stop_and_destroy
   exit 0
 fi
@@ -421,7 +431,7 @@ projectURL=$(get_local_ip_url "$(get_lan_ip)")
 if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 
 echo "";echo "homedir: $homeDir"
-docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
+docker compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
 if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
 
 set +e
@@ -458,9 +468,9 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-docker exec -it "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
-docker exec -it "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
-docker exec -it "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
+docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
+docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
+docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
 
 echo ""
 echo ""

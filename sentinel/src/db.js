@@ -1,7 +1,8 @@
 const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
+const environment = require('@medic/environment');
 
-const { COUCH_URL, UNIT_TEST_ENV } = process.env;
+const { UNIT_TEST_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
@@ -51,18 +52,14 @@ if (UNIT_TEST_ENV) {
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
   module.exports.queryMedic = stubMe('queryMedic');
-} else if (COUCH_URL) {
+} else {
   const PouchDB = require('pouchdb-core');
   PouchDB.plugin(require('pouchdb-adapter-http'));
   PouchDB.plugin(require('pouchdb-session-authentication'));
   PouchDB.plugin(require('pouchdb-mapreduce'));
   PouchDB.plugin(require('pouchdb-replication'));
 
-  // strip trailing slash from to prevent bugs in path matching
-  const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
-  const parsedUrl = new URL(couchUrl);
-
-  module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+  const couchUrl = environment.couchUrl;
 
   const fetchFn = (url, opts) => {
     // Adding audit flags (haproxy) Service and user that made the request initially.
@@ -72,13 +69,12 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.medicDbName = parsedUrl.pathname.replace('/', '');
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
     fetch: fetchFn,
   });
 
-  module.exports.allDbs = () => request.get({ url: `${module.exports.serverUrl}/_all_dbs`, json: true });
-  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
+  module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
+  module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -90,9 +86,8 @@ if (UNIT_TEST_ENV) {
       logger.error('Error when closing db: %o', err);
     }
   };
-  module.exports.couchUrl = couchUrl;
-  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch: fetchFn });
-  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
+  module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
+  module.exports.users = new PouchDB(`${environment.serverUrl}/_users`);
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
@@ -104,11 +99,4 @@ if (UNIT_TEST_ENV) {
       body,
     });
   };
-} else {
-  logger.warn(
-    'Please define a COUCH_URL in your environment e.g. \n' +
-      'export COUCH_URL=\'http://admin:123qwe@localhost:5984/medic\'\n\n' +
-      'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
-  );
-  process.exit(1);
 }
