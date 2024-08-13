@@ -21,8 +21,6 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   selected: any = null;
   error: any = null;
   reportingPeriod;
-  private prevAggregateId;
-  private prevAggregates;
   private aggregates = null;
   private viewInited = new Subject();
 
@@ -71,19 +69,13 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.route.params,
       this.viewInited,
       this.store.select(Selectors.getTargetAggregatesLoaded),
-      this.store.select(Selectors.getTargetAggregates),
-    ).subscribe(([params, inited, loaded, aggregates]) => {
+    ).subscribe(([ params, inited, loaded ]) => {
       if (loaded && inited && params) {
         setTimeout(() => {
+          console.warn('aggregates---2');
           // two birds with one stone
           // both this component and the parent (analytics-target-aggregates) need to be updated
-          const aggregatesChanged = !isEqual(this.prevAggregates, aggregates);
-
-          if (params.id !== this.prevAggregateId || aggregatesChanged) {
-            this.prevAggregateId = params.id;
-            this.prevAggregates = aggregates;
-            this.getAggregatesDetail(params.id);
-          }
+          this.getAggregatesDetail(params.id);
         });
       }
     });
@@ -92,6 +84,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
 
   private getAggregatesDetail(aggregateId) {
     if (!aggregateId) {
+      console.warn('aggregates---3', aggregateId);
       this.globalActions.setShowContent(false);
       this.targetAggregatesActions.setSelectedTargetAggregate(null);
       this.globalActions.setTitle();
@@ -102,6 +95,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     const aggregateDetails = this.targetAggregatesService.getAggregateDetails(aggregateId, this.aggregates);
 
     if (!aggregateDetails) {
+      console.warn('aggregates---4', aggregateDetails);
       console.error(`Error selecting target: target with id ${aggregateId} not found`);
       const err:any = new Error('Error selecting target: no target found');
       err.translationKey = 'analytics.target.aggregates.error.not.found';
@@ -109,7 +103,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.globalActions.setTitle();
       return;
     }
-
+    console.warn('aggregates---5', aggregateDetails);
     const title = this.translateService.instant('analytics.target.aggregates');
     this.globalActions.setTitle(title);
     this.targetAggregatesActions.setSelectedTargetAggregate(aggregateDetails);
