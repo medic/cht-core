@@ -89,8 +89,6 @@
     "@wdio/mocha-framework": "^8.35.0",
     "@wdio/spec-reporter": "^8.32.4",
     "allure-commandline": "^2.24.0",
-    "angular-jsdoc": "^1.5.1",
-    "angular-mocks": "^1.8.3",
     "browserify": "^17.0.0",
     "browserify-ngannotate": "^2.0.0",
     "chai": "^4.3.8",
@@ -153,8 +151,7 @@
     "typescript": "^5.3.3",
     "uglify-js": "^3.17.4",
     "wdio-chromedriver-service": "^8.1.1",
-    "webpack-bundle-analyzer": "^4.9.1",
-    "zone.js": "^0.14.4"
+    "webpack-bundle-analyzer": "^4.9.1"
   },
   "dependencies": {
     "async": "^3.2.1",
@@ -185,8 +182,11 @@
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",
     "pouchdb-adapter-http": "^7.3.1",
+    "pouchdb-browser": "^7.3.1",
     "pouchdb-core": "^7.3.1",
+    "pouchdb-debug": "^7.2.1",
     "pouchdb-find": "^7.3.1",
+    "pouchdb-generate-replication-id": "^7.3.1",
     "pouchdb-mapreduce": "^7.3.1",
     "pouchdb-replication": "^7.3.1",
     "pouchdb-session-authentication": "^1.1.0",
