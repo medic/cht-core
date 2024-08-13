@@ -23,6 +23,11 @@ describe('Feedback docs', () => {
     await loginPage.login(user);
   });
 
+  after(async () => {
+    await utils.deleteUsers([user]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should create and sync a feedback doc', async () => {
     await browser.execute(() => console.error('woot', new Error('w00t')));
     await browser.waitUntil(async () => (await chtDbUtils.getFeedbackDocs()).length > 0);

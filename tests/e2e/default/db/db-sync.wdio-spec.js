@@ -102,6 +102,10 @@ describe('db-sync', () => {
     await (await commonElements.analyticsTab()).waitForDisplayed();
   });
 
+  after(async () => {
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should not filter allowed docs', async () => {
     await chtDbUtils.updateDoc(report1, { extra: '1' });
     await chtDbUtils.updateDoc(report2, { extra: '2' });

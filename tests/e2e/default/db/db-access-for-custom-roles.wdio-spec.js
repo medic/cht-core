@@ -40,6 +40,11 @@ describe('Database access for new roles', () => {
     await utils.createUsers([user]);
   });
 
+  after(async () => {
+    await utils.deleteUsers([user]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('user with custom role should be able to log in', async () => {
     await loginPage.login({ username: user.username, password: user.password });
   });
