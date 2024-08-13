@@ -181,7 +181,10 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     // Selecting a different user's facility which triggers changes to the aggregates
     const newAggregates = ['new aggregate 1', 'new aggregate 2'];
     store.overrideSelector(Selectors.getTargetAggregates, newAggregates);
+    store.overrideSelector(Selectors.getTargetAggregatesLoaded, false);
     store.refreshState();
+
+    tick();
 
     targetAggregatesService.getAggregateDetails.returns({
       an: 'aggregate1_updated',
@@ -189,6 +192,9 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       heading: 'translated title 1 updated'
     });
     translateService.instant = sinon.stub().returns('target aggregate 1 updated');
+
+    store.overrideSelector(Selectors.getTargetAggregatesLoaded, true);
+    store.refreshState();
 
     tick();
 

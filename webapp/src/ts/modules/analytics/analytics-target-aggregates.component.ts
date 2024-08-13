@@ -84,6 +84,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   async getTargetAggregates(userFacility, reportingPeriod) {
     try {
       let aggregates: AggregateTarget[] = [];
+      this.targetAggregatesActions.setTargetAggregatesLoaded(false);
       if (this.enabled) {
         this.facilityFilter = userFacility;
         this.reportingPeriodFilter = reportingPeriod;
