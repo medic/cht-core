@@ -93,7 +93,6 @@
     "@angular-eslint/template-parser": "^17.3.0",
     "@angular/cli": "^17.3.2",
     "@angular/compiler-cli": "^17.3.2",
-    "@angular/localize": "^17.3.2",
-    "diff": "^5.2.0"
+    "@angular/localize": "^17.3.2"
   }
 }

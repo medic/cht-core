@@ -102,6 +102,7 @@
     "couchdb-compile": "^1.11.2",
     "csv-writer": "^1.6.0",
     "deep-equal-in-any-order": "^2.0.6",
+    "diff": "^5.2.0",
     "doctoc": "^2.2.1",
     "eslint": "^8.49.0",
     "eslint-plugin-angular": "^4.1.0",
