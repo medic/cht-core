@@ -69,10 +69,6 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   }
 
   private async setFacilityLabel() {
-    if (!this.userFacilities?.length) {
-      this.facilityFilterLabel = this.DEFAULT_FACILITY_LABEL;
-    }
-
     try {
       const facility = this.userFacilities[0];
       const settings = await this.settingsService.get();

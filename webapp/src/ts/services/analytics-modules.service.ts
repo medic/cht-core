@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { SettingsService } from '@mm-services/settings.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
-export const AGGREGATE_TARGETS_ID: string = 'target-aggregates';
+export const AGGREGATE_TARGETS_ID = 'target-aggregates';
 
 @Injectable({
   providedIn: 'root'
