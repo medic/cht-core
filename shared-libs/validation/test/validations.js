@@ -136,7 +136,7 @@ describe('validations', () => {
     const view = sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different' }],
     });
-    const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
           id: 'different',
