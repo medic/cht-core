@@ -16,13 +16,10 @@ export class FreetextFilterComponent implements OnDestroy, OnInit {
   inputText;
 
   @Input() disabled;
-  @Input() mobileDropdown;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild('freetextInput') inputElement;
 
-  constructor(
-    private store: Store,
-  ) {
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
   }
 

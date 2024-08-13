@@ -8,7 +8,6 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ChangesService } from '@mm-services/changes.service';
@@ -134,7 +133,6 @@ describe('Reports Component', () => {
           RouterTestingModule,
           ComponentsModule,
           BrowserAnimationsModule,
-          BsDropdownModule.forRoot(),
           MatExpansionModule
         ],
         declarations: [

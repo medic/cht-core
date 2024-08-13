@@ -19,9 +19,6 @@ import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
 } from '@mm-components/status-icons/status-icons.template';
-import {
-  MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
@@ -54,7 +51,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     ContentRowListItemComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
-    MultiDropdownFilterComponent,
     DateFilterComponent,
     FacilityFilterComponent,
     FormTypeFilterComponent,

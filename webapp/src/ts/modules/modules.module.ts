@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -83,7 +82,6 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     PipesModule,
     RouterModule,
     ComponentsModule,
-    BsDropdownModule,
     FormsModule,
     DirectivesModule,
     MatIconModule,

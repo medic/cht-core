@@ -10,7 +10,6 @@ interface LocaleWithWeekSpec extends moment.Locale {
 }
 
 import { GlobalActions } from '@mm-actions/global';
-import { ResponsiveService } from '@mm-services/responsive.service';
 import { Selectors } from '@mm-selectors/index';
 
 @Component({
@@ -28,7 +27,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   @Input() disabled;
-  @Input() isRange;
   @Input() isStartDate;
   @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
@@ -36,7 +34,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private store: Store,
-    private responsiveService: ResponsiveService,
     private datePipe: DatePipe,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -56,8 +53,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     const datepicker:any = $(`#${this.fieldId}`).daterangepicker(
       {
-        singleDatePicker: !this.isRange,
-        startDate: this.isRange ? moment().subtract(1, 'months') : moment(),
+        singleDatePicker: true,
+        startDate: moment(),
         endDate: moment(),
         maxDate: moment(),
         opens: 'center',
@@ -89,9 +86,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
     });
 
     datepicker.on('hide.daterangepicker', (element, picker) => {
-      if (this.isRange) {
-        return;
-      }
       let date = this.isStartDate ? this.dateRange.from : this.dateRange.to;
       if (!date) {
         date = moment();
@@ -103,21 +97,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
         picker.setEndDate(date);
       }
     });
-
-    datepicker.on('mm.dateSelected.daterangepicker', (e, picker) => {
-      if (this.responsiveService.isMobile() && this.isRange) {
-        // mobile version - only show one calendar at a time
-        if (picker.container.is('.show-from')) {
-          picker.container.removeClass('show-from').addClass('show-to');
-        } else {
-          picker.container.removeClass('show-to').addClass('show-from');
-        }
-      }
-    });
-
-    if (this.isRange) {
-      $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
-    }
   }
 
   private setError(error) {
@@ -147,10 +126,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private createDateRange(from, to) {
-    if (this.isRange) {
-      return { from, to };
-    }
-
     if (this.isStartDate) {
       return { ...this.dateRange, from };
     }
@@ -181,22 +156,17 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   setLabel(dateRange) {
     this.inputLabel = '';
-    const divider = ' - ';
     const format = 'd MMM';
     const dates = {
       from: dateRange.from ? this.datePipe.transform(dateRange.from, format) : undefined,
       to: dateRange.to ? this.datePipe.transform(dateRange.to, format) : undefined,
     };
 
-    if (dates.from && (this.isRange || this.isStartDate)) {
+    if (dates.from && this.isStartDate) {
       this.inputLabel += dates.from;
     }
 
-    if (this.isRange && dates.to) {
-      this.inputLabel += divider;
-    }
-
-    if (dates.to && (this.isRange || !this.isStartDate)) {
+    if (dates.to && !this.isStartDate) {
       this.inputLabel += dates.to;
     }
   }
