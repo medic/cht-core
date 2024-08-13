@@ -82,5 +82,17 @@
     "**/jquery": "3.2.x",
     "**/pouchdb-browser": "^7.2.2",
     "**/moment": "^2.26.2"
+  },
+  "devDependencies": {
+    "@angular-builders/custom-webpack": "^17.0.2",
+    "@angular-devkit/build-angular": "^17.3.2",
+    "@angular-eslint/builder": "^17.3.0",
+    "@angular-eslint/eslint-plugin": "^17.3.0",
+    "@angular-eslint/eslint-plugin-template": "^17.3.0",
+    "@angular-eslint/schematics": "^17.3.0",
+    "@angular-eslint/template-parser": "^17.3.0",
+    "@angular/cli": "^17.3.2",
+    "@angular/compiler-cli": "^17.3.2",
+    "@angular/localize": "^17.3.2"
   }
 }
