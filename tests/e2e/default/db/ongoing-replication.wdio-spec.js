@@ -33,6 +33,8 @@ describe('ongoing replication', function() {
     await utils.stopSentinel();
     await sentinelUtils.skipToSeq();
     await utils.startSentinel();
+    await utils.deleteUsers([userAllowedDocs.user]);
+    await utils.revertDb([/^form:/], true);
   });
 
   afterEach(async () => {

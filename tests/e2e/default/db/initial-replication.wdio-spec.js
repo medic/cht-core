@@ -116,6 +116,9 @@ describe('initial-replication', () => {
   after(async () => {
     await sentinelUtils.skipToSeq();
     await utils.startSentinel();
+    await utils.deleteUsers([userAllowedDocs.user]);
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
   });
 
   afterEach(async () => {

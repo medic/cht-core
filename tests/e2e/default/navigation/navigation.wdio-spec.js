@@ -75,6 +75,12 @@ describe('Navigation tests', () => {
         await loginPage.login(user);
       });
 
+      after(async () => {
+        await utils.deleteUsers([user]);
+        await utils.revertDb([/^form:/], true);
+        await utils.revertSettings(true);
+      });
+
       it('should display tab labels, when some tabs are enabled', async () => {
         const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
         expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Reports', 'People']);
