@@ -1,6 +1,8 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Place } from '@medic/cht-datasource';
 
 import { CacheService } from '@mm-services/cache.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LanguageService } from '@mm-services/language.service';
@@ -12,6 +14,7 @@ export class UserSettingsService {
   private readonly cache;
   constructor(
     private cacheService:CacheService,
+    private getDataRecordsService:GetDataRecordsService,
     private dbService:DbService,
     private languageService:LanguageService,
     private sessionService:SessionService,
@@ -44,20 +47,45 @@ export class UserSettingsService {
     }
   }
 
-  get(): Promise<Object> {
+  get(): Promise<UserSettings> {
     const docId = this.userDocId();
     if (!docId) {
       return Promise.reject(new Error('UserCtx not found'));
     }
 
     return new Promise((resolve, reject) => {
-      this.cache((err, userSettings) => {
+      this.cache((err, userSettings: UserSettings) => {
         if (err) {
           return reject(err);
         }
         resolve(userSettings);
       });
     });
+  }
+
+  async hasMultipleFacilities(): Promise<boolean> {
+    return this
+      .get()
+      .then((userSettings: UserSettings) => {
+        const userFacility = userSettings.facility_id;
+        return Array.isArray(userFacility) && userFacility.length > 1;
+      });
+  }
+
+  getUserFacilities(): Promise<Place.v1.Place[]> {
+    return this
+      .get()
+      .then((userSettings: UserSettings) => {
+        let userFacilities = userSettings.facility_id;
+        if (userFacilities && !Array.isArray(userFacilities)) {
+          userFacilities = [ userFacilities ];
+        }
+        return this.getDataRecordsService.get(userFacilities);
+      })
+      .catch((err) => {
+        console.error('Error fetching user facility:', err);
+        return [];
+      });
   }
 
   async getWithLanguage(): Promise<Object> {
@@ -82,4 +110,13 @@ export class UserSettingsService {
       });
   }
 
+}
+
+interface UserSettings {
+  _id: string;
+  contact_id: string;
+  facility_id: string[];
+  name: string;
+  roles: string[];
+  type: string;
 }

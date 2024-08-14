@@ -13,7 +13,7 @@
     "os": false
   },
   "scripts": {
-    "postinstall": "patch-package",
+    "postinstall": "patch-package && ng cache clean",
     "unit:mocha": "UNIT_TEST_ENV=1 mocha 'tests/mocha/**/*.spec.js'",
     "unit:mocha:tz": "TZ=Canada/Pacific npm run unit:mocha && TZ=Africa/Monrovia npm run unit:mocha && TZ=Pacific/Auckland npm run unit:mocha",
     "unit:cht-form": "ng test cht-form",
@@ -40,47 +40,44 @@
     "@ngrx/store": "^17.1.1",
     "@ngx-translate/core": "^14.0.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
-    "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.6.0",
     "bootstrap": "^3.4.1",
     "bootstrap-daterangepicker": "^2.1.30",
-    "bowser": "^2.11.0",
     "core-js": "^3.30.2",
     "enketo-core": "^7.2.5",
     "eurodigit": "^3.1.3",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^3.2.31",
-    "gsm": "^0.1.4",
     "jquery": "3.5.1",
-    "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
-    "moment": "^2.29.1",
-    "mustache": "^4.2.0",
     "ngrx-store-logger": "^0.2.4",
     "ngx-bootstrap": "^11.0.2",
     "ngx-cookie-service": "^17.1.0",
-    "object-path": "^0.11.8",
     "odk-xform-compact-record-representation-for-sms": "^1.0.1",
     "openrosa-xpath-evaluator": "^2.0.13",
     "partial-json-parser": "^1.2.2",
     "pojo2xml": "^1.7.2",
-    "pouchdb-browser": "^7.3.1",
-    "pouchdb-debug": "^7.2.1",
-    "pouchdb-generate-replication-id": "^7.3.1",
     "rxjs": "^7.8.1",
     "select2": "4.0.3",
     "signature_pad": "2.3.x",
-    "simple-password-tester": "^1.0.0",
     "tslib": "^2.5.3",
-    "uuid": "^9.0.1",
     "zone.js": "^0.14.4"
   },
   "overrides": {
     "minimist": ">=1.2.6"
   },
   "resolutions": {
-    "**/jquery": "3.2.x",
-    "**/pouchdb-browser": "^7.2.2",
-    "**/moment": "^2.26.2"
+    "**/jquery": "3.2.x"
+  },
+  "devDependencies": {
+    "@angular-builders/custom-webpack": "^17.0.2",
+    "@angular-devkit/build-angular": "^17.3.2",
+    "@angular-eslint/builder": "^17.3.0",
+    "@angular-eslint/eslint-plugin": "^17.3.0",
+    "@angular-eslint/eslint-plugin-template": "^17.3.0",
+    "@angular-eslint/schematics": "^17.3.0",
+    "@angular-eslint/template-parser": "^17.3.0",
+    "@angular/cli": "^17.3.2",
+    "@angular/compiler-cli": "^17.3.2",
+    "@angular/localize": "^17.3.2"
   }
 }
