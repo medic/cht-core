@@ -12,6 +12,8 @@ import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.compone
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
 
+export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
+
 @Component({
   selector: 'mm-header',
   templateUrl: './header.component.html'
