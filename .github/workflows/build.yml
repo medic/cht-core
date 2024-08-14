@@ -8,7 +8,7 @@ env:
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
-  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
+  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL_REVERT_THIS_CHANGE && 'true' }}
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
   ECR_PUBLIC_REPO: 'public.ecr.aws/medic'
