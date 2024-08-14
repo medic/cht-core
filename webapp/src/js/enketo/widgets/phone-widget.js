@@ -34,14 +34,8 @@ const isContactPhoneUnique = async (settings, fieldValue) => {
 
 // Set up enketo validation for `phone` input type
 FormModel.prototype.types.tel = {
-  validate: async ( fieldValue ) => {
-    const settings = await window.CHTCore.Settings.get();
-    if (!isContactPhoneValid(settings, fieldValue)) {
-      return false;
-    }
-
-    return isContactPhoneUnique(settings, fieldValue);
-  },
+  validate: ( fieldValue ) => window.CHTCore.Settings.get()
+    .then(settings => isContactPhoneValid(settings, fieldValue) && isContactPhoneUnique(settings, fieldValue)),
 };
 
 /**

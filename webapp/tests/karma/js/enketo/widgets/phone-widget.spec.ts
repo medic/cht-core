@@ -12,6 +12,7 @@ describe('Enketo: Phone Widget', () => {
   const DENORMALIZED_NUMBER = '+1 (650) 222-3333';
   const NORMALIZED_NUMBER = '+16502223333';
 
+  let consoleError;
   let phoneNumberValidate;
   let phoneNumberNormalize;
   let settingsService;
@@ -43,6 +44,7 @@ describe('Enketo: Phone Widget', () => {
   after(() => window.CHTCore = originalCHTCore);
   
   beforeEach(() => {
+    consoleError = sinon.stub(console, 'error');
     phoneNumberValidate = sinon.stub(phoneNumber, 'validate');
     phoneNumberNormalize = sinon.stub(phoneNumber, 'normalize').returns(NORMALIZED_NUMBER);
     settingsService = { get: sinon.stub().resolves(SETTINGS) };
@@ -159,34 +161,37 @@ describe('Enketo: Phone Widget', () => {
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
+      expect(consoleError.notCalled).to.be.true;
     });
 
-    it('throws error for invalid phone number', async () => {
+    it('returns false for invalid phone number', async () => {
       phoneNumberValidate.returns(false);
 
-      await expect(FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER)).to.be
-        .rejectedWith(`invalid phone number: "${DENORMALIZED_NUMBER}"`);
+      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
 
+      expect(result).to.be.false;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.notCalled).to.be.true;
       expect(dbService.get.notCalled).to.be.true;
       expect(dbQuery.notCalled).to.be.true;
+      expect(consoleError.calledOnceWithExactly(`invalid phone number: "${DENORMALIZED_NUMBER}"`)).to.be.true;
     });
 
-    it('throws error for duplicate phone number', async () => {
+    it('returns false for duplicate phone number', async () => {
       buildContactFormHtml('my-contact-id');
       phoneNumberValidate.returns(true);
       dbQuery.resolves({ rows: [{ id: 'some-id' }] });
 
-      await expect(FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER)).to.be
-        .rejectedWith(`phone number not unique: "${DENORMALIZED_NUMBER}"`);
+      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
 
+      expect(result).to.be.false;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
+      expect(consoleError.calledOnceWithExactly(`phone number not unique: "${DENORMALIZED_NUMBER}"`)).to.be.true;
     });
 
     it('returns true for a duplicate phone number when it is for the contact being edited', async () => {
@@ -203,6 +208,7 @@ describe('Enketo: Phone Widget', () => {
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
+      expect(consoleError.notCalled).to.be.true;
     });
   });
 });
