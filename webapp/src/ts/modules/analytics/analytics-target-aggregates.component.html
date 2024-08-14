@@ -4,23 +4,46 @@
   </div>
 </div>
 
-<div class="page target-aggregates" *ngIf="enabled && !loading">
-  <div id="target-aggregates-list" class="col-sm-4 inbox-items left-pane">
+<div
+  class="inbox page target-aggregates"
+  *ngIf="enabled && !loading"
+  [ngClass]="{'sidebar-open': !!sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
+  <div
+    id="target-aggregates-list"
+    class="inbox-items left-pane"
+    [ngClass]="{ 'col-sm-3': !!sidebarFilter.isOpen, 'col-sm-4': !sidebarFilter.isOpen }">
     <ul>
-      <mm-content-row *ngFor="let aggregate of aggregates"
-        [id]="aggregate.id"
+      <mm-content-row
+        *ngFor="let aggregate of aggregates" [id]="aggregate.id"
         [route]="['/', 'analytics', 'target-aggregates', aggregate.id]"
-        [selected]="aggregate.selected"
-        [icon]="aggregate.icon"
+        [selected]="aggregate.selected" [icon]="aggregate.icon"
         [heading]="aggregate.heading"
+        [lineage]="aggregate.filtersToDisplay?.length ? aggregate.filtersToDisplay : null"
         [aggregate]="aggregate.aggregateValue">
       </mm-content-row>
     </ul>
-    <p *ngIf="error && !aggregates" class="alert alert-danger" role="alert">{{'analytics.target.aggregates.error' | translate}}</p>
-    <p class="loading-status" *ngIf="!error && !aggregates?.length">{{'analytics.target.aggregates.no.targets' | translate}}</p>
+    <p
+      *ngIf="error && !aggregates?.length"
+      class="alert alert-danger" role="alert">
+      {{ 'analytics.target.aggregates.error' | translate }}
+    </p>
+    <p
+      class="loading-status"
+      *ngIf="!error && !aggregates?.length">
+      {{ 'analytics.target.aggregates.no.targets' | translate }}
+    </p>
   </div>
 
-  <router-outlet></router-outlet>
+  <div class="content-pane right-pane">
+    <div class="item-content" [ngClass]="{ 'col-sm-6': !!sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
+      <router-outlet></router-outlet>
+    </div>
+    <mm-analytics-target-aggregates-sidebar-filter
+      class="col-sm-3 sidebar-filter-wrapper" [userFacilities]="userFacilities"
+      (facilitySelectionChanged)="getTargetAggregates($event, reportingPeriodFilter)"
+      (reportingPeriodSelectionChanged)="getTargetAggregates(facilityFilter, $event)">
+    </mm-analytics-target-aggregates-sidebar-filter>
+  </div>
 </div>
 
 <ng-template #loaderTpl>

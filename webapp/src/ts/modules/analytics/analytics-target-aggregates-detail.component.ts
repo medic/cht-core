@@ -19,6 +19,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   subscriptions: Subscription = new Subscription();
   selected: any = null;
   error: any = null;
+  reportingPeriod;
   private aggregates = null;
   private viewInited = new Subject();
 
@@ -55,6 +56,9 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;
+      if (this.selected) {
+        this.reportingPeriod = this.getReportingPeriodText(this.selected);
+      }
     });
     this.subscriptions.add(subscriptionStore);
   }
@@ -99,5 +103,13 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     const title = this.translateService.instant('analytics.target.aggregates');
     this.globalActions.setTitle(title);
     this.targetAggregatesActions.setSelectedTargetAggregate(aggregateDetails);
+  }
+
+  private getReportingPeriodText(aggregate) {
+    if (this.targetAggregatesService.isCurrentPeriod(aggregate.reportingPeriod)) {
+      return this.translateService.instant(this.selected.subtitle_translation_key);
+    }
+
+    return this.selected.reportingMonth;
   }
 }

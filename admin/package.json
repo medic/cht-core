@@ -11,27 +11,19 @@
     "angular-sanitize": "^1.8.3",
     "angular-translate": "^2.19.0",
     "angular-ui-bootstrap": "^2.5.6",
-    "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
     "bootstrap": "^3.4.1",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^3.2.31",
-    "gsm": "^0.1.4",
     "jquery": "^3.5.1",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.1",
-    "mustache": "^4.2.0",
     "ng-redux": "^4.4.5",
-    "object-path": "^0.11.8",
-    "pouchdb-browser": "^7.3.1",
-    "properties": "^1.2.1",
     "redux": "^4.2.0",
-    "select2": "^4.0.13",
-    "simple-password-tester": "^1.0.0",
-    "uuid": "^8.3.2"
+    "select2": "^4.0.13"
   },
   "resolutions": {
-    "**/jquery": "3.2.x",
-    "**/pouchdb-browser": "^7.2.2"
+    "**/jquery": "3.2.x"
+  },
+  "devDependencies": {
+    "angular-jsdoc": "^1.5.1",
+    "angular-mocks": "^1.8.3"
   }
 }

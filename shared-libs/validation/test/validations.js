@@ -24,6 +24,7 @@ describe('validations', () => {
     config = {};
     translate = sinon.stub().returnsArg(0);
     sinon.stub(logger, 'debug');
+    sinon.stub(logger, 'error');
 
     validation.init({ db, config, translate });
   });
@@ -136,7 +137,7 @@ describe('validations', () => {
     const view = sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different' }],
     });
-    const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
           id: 'different',
@@ -155,6 +156,7 @@ describe('validations', () => {
       patient_id: '111',
     };
     return validation.validate(doc, validations).then(errors => {
+      assert.equal(logger.error.callCount, 0);
       assert.equal(view.callCount, 1);
       assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
