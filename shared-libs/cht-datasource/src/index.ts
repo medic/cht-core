@@ -96,7 +96,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns a page of people for the provided specifications
          * @throws Error if no type is provided or if the type is not for a person
          * @throws Error if the provided limit is `<= 0`
-         * @throws Error if the provided cursor is `< 0`
+         * @throws Error if the provided cursor is not a valid page token
          * @see {@link getByType} which provides the same data, but without having to manually account for paging
          */
         getPageByType: (personType: string, cursor = '0', limit = 100) => ctx.bind(Person.v1.getPage)(
