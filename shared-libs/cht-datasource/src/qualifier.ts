@@ -30,7 +30,7 @@ export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifie
 };
 
 /**
-A qualifier that identifies contacts based on type.
+ * A qualifier that identifies contacts based on type.
  */
 export type ContactTypeQualifier = Readonly<{ contactType: string }>;
 
