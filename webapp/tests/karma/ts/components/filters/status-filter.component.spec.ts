@@ -45,24 +45,24 @@ describe('Status Filter Component', () => {
   });
 
   it('should clear the filter', () => {
-    const inlineFilterClearSpy = sinon.spy(component.filter, 'clear');
+    const filterClearSpy = sinon.spy(component.filter, 'clear');
     component.filter.selected.add('valid');
     component.filter.selected.add('unverified');
 
     component.clear();
 
-    expect(inlineFilterClearSpy.calledOnce).to.be.true;
+    expect(filterClearSpy.calledOnce).to.be.true;
     expect(component.filter.selected.size).to.equal(0);
   });
 
   it('should count selected items in the filter', () => {
-    const inlineFilterCountSelectedSpy = sinon.spy(component.filter, 'countSelected');
+    const filterCountSelectedSpy = sinon.spy(component.filter, 'countSelected');
     component.filter.selected.add('valid');
     component.filter.selected.add('unverified');
 
     const result = component.countSelected();
 
-    expect(inlineFilterCountSelectedSpy.calledOnce).to.be.true;
+    expect(filterCountSelectedSpy.calledOnce).to.be.true;
     expect(result).to.equal(2);
   });
 
@@ -132,11 +132,11 @@ describe('Status Filter Component', () => {
   });
 
   it('should do nothing if component is disabled', () => {
-    const inlineFilterClearSpy = sinon.spy(component.filter, 'clear');
+    const filterClearSpy = sinon.spy(component.filter, 'clear');
     component.disabled = true;
 
     component.clear();
 
-    expect(inlineFilterClearSpy.notCalled).to.be.true;
+    expect(filterClearSpy.notCalled).to.be.true;
   });
 });
