@@ -90,7 +90,8 @@ export const getDatasource = (ctx: DataContext) => {
         /**
          * Returns an array of people for the provided page specifications.
          * @param personType the type of people to return
-         * @param cursor a value representing the index of the first person to return
+         * @param cursor the token identifying which page to retrieve. A falsy value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
          * @param limit the maximum number of people to return. Default is 100.
          * @returns an array of people for the provided page specifications
          * @throws Error if no type is provided or if the type is not for a person
