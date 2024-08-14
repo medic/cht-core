@@ -4,7 +4,6 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
 
-const PAGE_SIZE = 50;
 describe('Infinite scrolling', () => {
   before(async () => {
     const reports = Array
@@ -15,6 +14,8 @@ describe('Infinite scrolling', () => {
   });
 
   it('should load multiple pages of reports', async () => {
+    const PAGE_SIZE = 50;
+
     await commonPage.goToReports();
     let nbrReports = await reportsPage.getAllReportsText();
     expect(nbrReports.length).to.equal(PAGE_SIZE);
