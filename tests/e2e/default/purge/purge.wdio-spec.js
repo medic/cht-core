@@ -27,7 +27,7 @@ describe('purge', function() {
 
   const filterByCht = (userCtx, contact, reports, messages, chtScript, settings) => {
     if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
-      filterPurgeReports(userCtx, contact, reports);
+      return reports.filter(r => r.form === 'purge').map(r => r._id);
     }
     return reports.map(r => r._id);
   };
@@ -90,7 +90,7 @@ describe('purge', function() {
 
     await runPurging();
 
-    await loginPage.login({ username: user.username, password: user.password, loadPage: true });
+    await loginPage.login(user);
 
     let allReports = await getAllReports();
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
@@ -120,7 +120,7 @@ describe('purge', function() {
 
     await runPurging();
 
-    await loginPage.login({ username: user.username, password: user.password, loadPage: true });
+    await loginPage.login(user);
 
     await commonElements.sync();
     const allReports = await getAllReports();
