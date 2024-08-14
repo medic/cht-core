@@ -104,7 +104,7 @@ export namespace v1 {
      * @returns a page of people for the provided specification
      * @throws Error if no type is provided or if the type is not for a person
      * @throws Error if the provided `limit` value is `<=0`
-     * @throws Error if the provided `skip` value is `<0`
+     * @throws Error if the provided cursor is not a valid page token
      */
     const curriedFn = async (
       personType: ContactTypeQualifier,
