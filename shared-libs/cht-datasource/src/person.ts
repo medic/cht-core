@@ -48,9 +48,9 @@ export namespace v1 {
     }
   };
 
-  const assertCursor = (cursor: unknown) => {
-    if (typeof cursor !== 'string' || Number(cursor) < 0) {
-      throw new InvalidArgumentError(`The cursor must be a stringified non-negative number: [${String(cursor)}]`);
+  const assertCursor = (cursor: unknown): asserts cursor is string | undefined => {
+    if (cursor && (typeof cursor !== 'string' || Number(cursor) < 0)) {
+      throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}]`);
     }
   };
 
