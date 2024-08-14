@@ -9,6 +9,7 @@ import {
   AnalyticsTargetAggregatesDetailComponent
 } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
 import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
+import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
 
 export const routes:Routes = [
   {
@@ -30,7 +31,7 @@ export const routes:Routes = [
       {
         path: 'target-aggregates',
         component: AnalyticsTargetAggregatesComponent,
-        data: { moduleId: 'target-aggregates' },
+        data: { moduleId: AGGREGATE_TARGETS_ID },
         children: [
           {
             path: '',

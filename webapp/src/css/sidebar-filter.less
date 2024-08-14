@@ -99,6 +99,67 @@
       overflow-y: auto;
       overflow-x: hidden;
 
+      .filter-options-container {
+        padding-top: 25px;
+        padding-left: 18px;
+        padding-right: 18px;
+        width: 100%;
+
+        .filter-options-title {
+          display: block;
+          height: 20px;
+          font-weight: bold;
+          font-size: @font-medium;
+          color: @gray-ultra-dark;
+        }
+
+        .filter-radio-option {
+          padding-top: 20px;
+
+          .filter-option-wrapper {
+            display: flex;
+            align-items: center;
+            margin: 0;
+
+            .filter-option-radio {
+              -webkit-appearance: none;
+              -moz-appearance: none;
+              appearance: none;
+              min-width: 20px;
+              min-height: 20px;
+              border: 3px solid @gray-medium-dark;
+              border-radius: 50%;
+              outline: none;
+              margin: 0;
+              position: relative;
+            }
+
+            .filter-option-radio:checked {
+              border-color: @blue-dark;
+            }
+
+            .filter-option-radio:checked::after {
+              content: '';
+              min-width: 7px;
+              min-height: 7px;
+              background: @blue-dark;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              border-radius: 50%;
+            }
+          }
+
+          .filter-option-label {
+            font-size: @font-medium;
+            font-weight: normal;
+            color: @gray-ultra-dark;
+            padding-left: 10px;
+          }
+        }
+      }
+
       mat-expansion-panel {
         margin: 0;
         box-shadow: none;
@@ -198,7 +259,7 @@
 
           &.group-header {
             font-size: @font-medium;
-            color: @filter-text-color;
+            color: @filter-secondary-text-color;
             padding: 0 0 10px 0;
 
             &:not(:first-child) {
@@ -215,14 +276,14 @@
             white-space: normal;
             color: @text-normal-color;
             font-size: @font-medium;
-            padding-left: 30px;
+            padding-left: 31px;
             margin-bottom: 15px;
 
             &:before {
               content: '\f096'; // http://fontawesome.io/icon/square-o/
               font-family: FontAwesome;
               font-size: @font-extra-extra-large;
-              color: @filter-text-color;
+              color: @form-field-border;
               vertical-align: middle;
               margin: 5px 7px 5px -30px;
             }
@@ -258,7 +319,7 @@
               cursor: pointer;
               width: @accordion-chevron-width;
               font-size: @font-extra-large;
-              color: @filter-text-color;
+              color: @filter-arrow-color;
               display: block;
               position: absolute;
               top: 0;

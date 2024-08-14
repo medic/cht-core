@@ -50,6 +50,11 @@ const getInterval = (intervalStartDate, referenceDate = moment()) => {
   };
 };
 
+const getPreviousInterval = (intervalStartDate, referenceDate = moment()) => {
+  referenceDate = referenceDate.clone().subtract(1, 'month');
+  return getInterval(intervalStartDate, referenceDate);
+};
+
 module.exports = {
   // Returns the timestamps of the start and end of the current calendar interval
   // @param {Number} [intervalStartDate=1] - day of month when interval starts (1 - 31)
@@ -58,6 +63,17 @@ module.exports = {
   // f.e. `intervalStartDate` === 31 would generate next intervals :
   // [12-31 -> 01-30], [01-31 -> 02-[28|29]], [03-01 -> 03-30], [03-31 -> 04-30], [05-01 -> 05-30], [05-31 - 06-30]
   getCurrent: (intervalStartDate) => getInterval(intervalStartDate),
+
+  /** Returns the timestamps of the start and the end of the previous calendar interval
+   *  intervalStartDate: Number. Day of the month when interval starts
+   *  referenceDate: Date.
+   */
+  getPrevious: (intervalStartDate, referenceDate) => {
+    if (referenceDate) {
+      return getPreviousInterval(intervalStartDate, moment(referenceDate));
+    }
+    return getPreviousInterval(intervalStartDate);
+  },
 
   /**
    * Returns the timestamps of the start and end of the a calendar interval that contains a reference date

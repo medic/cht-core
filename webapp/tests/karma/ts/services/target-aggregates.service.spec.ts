@@ -20,6 +20,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 describe('TargetAggregatesService', () => {
   let service: TargetAggregatesService;
@@ -48,14 +49,20 @@ describe('TargetAggregatesService', () => {
     };
     getDataRecordsService = {get: sinon.stub()};
     searchService = {search: sinon.stub()};
-    userSettingsService = {get: sinon.stub()};
+    userSettingsService = {
+      get: sinon.stub(),
+      getUserFacilities: sinon.stub(),
+    };
     dbService = {
       get: sinon.stub(),
       allDocs: sinon.stub()
     };
     uhcSettingsService = {getMonthStartDate: sinon.stub()};
     translateFromService = {get: sinon.stub()};
-    calendarIntervalService = {getCurrent: sinon.stub().returns({end: 100})};
+    calendarIntervalService = {
+      getCurrent: sinon.stub().returns({ end: 100 }),
+      getPrevious: sinon.stub().returns({ end: 100 }),
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -86,53 +93,56 @@ describe('TargetAggregatesService', () => {
   describe('isEnabled', () => {
     it('should return true when user has permission and user has one facility assigned as array', async () => {
       authService.has.resolves(true);
-      userSettingsService.get.resolves({ facility_id: [ 'facility-1' ] });
+      userSettingsService.getUserFacilities.resolves([{ _id: [ 'facility-1' ], name: 'Facility 1' }]);
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(true);
       expect(authService.has.callCount).to.equal(1);
       expect(authService.has.args[0]).to.deep.equal(['can_aggregate_targets']);
-      expect(userSettingsService.get.calledOnce).to.be.true;
+      expect(userSettingsService.getUserFacilities.calledOnce).to.be.true;
     });
 
     it('should return true when user has permission and user has one facility assigned as string', async () => {
       authService.has.resolves(true);
-      userSettingsService.get.resolves({ facility_id: 'facility-1' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(true);
       expect(authService.has.callCount).to.equal(1);
       expect(authService.has.args[0]).to.deep.equal(['can_aggregate_targets']);
-      expect(userSettingsService.get.calledOnce).to.be.true;
+      expect(userSettingsService.getUserFacilities.calledOnce).to.be.true;
     });
 
     it('should return false when user does not have permission', async () => {
       authService.has.resolves(false);
-      userSettingsService.get.resolves({ facility_id: [ 'facility-1' ] });
+      userSettingsService.getUserFacilities.resolves([{ _id: ['facility-1'], name: 'Facility 1' }]);
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(false);
-      expect(userSettingsService.get.notCalled).to.be.true;
+      expect(userSettingsService.getUserFacilities.notCalled).to.be.true;
     });
 
-    it('should return false when user has more than one facility assigned', async () => {
+    it('should return true when user has more than one facility assigned', async () => {
       authService.has.resolves(true);
-      userSettingsService.get.resolves({ facility_id: [ 'facility-1', 'facility-2' ] });
+      userSettingsService.getUserFacilities.resolves([
+        { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+        { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+      ]);
 
       const result = await service.isEnabled();
 
-      expect(result).to.equal(false);
-      expect(userSettingsService.get.calledOnce).to.be.true;
+      expect(result).to.equal(true);
+      expect(userSettingsService.getUserFacilities.calledOnce).to.be.true;
     });
   });
 
   describe('getAggregates', () => {
     it('should throw error if getting settings fails', () => {
       settingsService.get.rejects({ err: 'some' });
-      userSettingsService.get.resolves({ facility_id: 'aaa' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
 
       return service
         .getAggregates()
@@ -148,7 +158,7 @@ describe('TargetAggregatesService', () => {
           type: 'count'
         }]
       } } });
-      userSettingsService.get.rejects({ err: 'some' });
+      userSettingsService.getUserFacilities.rejects({ err: 'some' });
       dbService.allDocs.resolves({ rows: [] });
 
       return service
@@ -210,7 +220,7 @@ describe('TargetAggregatesService', () => {
           type: 'count'
         }]
       } } });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -223,7 +233,7 @@ describe('TargetAggregatesService', () => {
       expect(result.length).to.equal(1);
       expect(result[0].id).to.equal('target');
       expect(settingsService.get.callCount).to.equal(1);
-      expect(userSettingsService.get.callCount).to.equal(1);
+      expect(userSettingsService.getUserFacilities.callCount).to.equal(1);
       expect(getDataRecordsService.get.callCount).to.equal(2);
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[ 'home' ]]);
       expect(getDataRecordsService.get.args[1]).to.deep.equal([[]]);
@@ -247,7 +257,7 @@ describe('TargetAggregatesService', () => {
           type: 'count'
         }]
       } } });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -290,7 +300,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }, { id: 'type2' }]);
@@ -358,7 +368,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -429,7 +439,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -465,7 +475,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'person' }, { id: 'person2' }]);
@@ -488,11 +498,50 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[ 'home' ]]);
     });
 
+    it('should call getAggregates with provided facilityId when fetching aggregates', async () => {
+      const facilityId = 'facility123';
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
+      contactTypesService.getTypeId.returns('district');
+      contactTypesService.getChildren.resolves([{ id: 'health_center' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(12);
+      calendarIntervalService.getCurrent.returns({
+        start: moment('2019-05-12').valueOf(),
+        end: moment('2019-06-11').valueOf(),
+      });
+
+      const result = await service.getAggregates(facilityId);
+
+      expect(result.length).to.equal(1);
+      expect(result[0].id).to.equal('target');
+
+      expect(getDataRecordsService.get.callCount).to.equal(2);
+      expect(getDataRecordsService.get.args[0]).to.deep.equal([[facilityId]]);
+      expect(dbService.allDocs.callCount).to.equal(1);
+      expect(dbService.allDocs.args[0]).to.deep.equal([{
+        start_key: 'target~2019-06~',
+        end_key: 'target~2019-06~\ufff0',
+        include_docs: true
+      }]);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
+      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([12]);
+    });
+
     it('should fetch correct latest target docs', async () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }};
       settingsService.get.resolves(config);
 
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -525,6 +574,44 @@ describe('TargetAggregatesService', () => {
       expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([12]);
     });
 
+    it('should fetch correct latest target docs when getAggregates is called with previous period', async () => {
+      const facilityId = 'facility123';
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
+      contactTypesService.getTypeId.returns('district');
+      contactTypesService.getChildren.resolves([{ id: 'health_center' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2019-07-01').valueOf(),
+        end: moment('2019-07-31').valueOf(),
+      });
+
+      const result = await service.getAggregates(facilityId, ReportingPeriod.PREVIOUS);
+
+      expect(result.length).to.equal(1);
+      expect(result[0].id).to.equal('target');
+      expect(result[0].values.length).to.equal(0);
+
+      expect(dbService.allDocs.callCount).to.equal(1);
+      expect(dbService.allDocs.args[0]).to.deep.equal([{
+        start_key: 'target~2019-07~',
+        end_key: 'target~2019-07~\ufff0',
+        include_docs: true
+      }]);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
+      expect(calendarIntervalService.getPrevious.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.args[0]).to.deep.equal([1]);
+    });
+
     it('should exclude non-aggregable targets and hydrate aggregates', async () => {
       const config = { tasks: { targets: { items: [
         { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
@@ -535,7 +622,7 @@ describe('TargetAggregatesService', () => {
       ] } }};
       translateService.instant = sinon.stub().returnsArg(0);
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -653,7 +740,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -791,7 +878,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -850,7 +937,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -932,7 +1019,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -1008,7 +1095,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -1049,6 +1136,91 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[1], value: { pass: 7, total: 7, percent: 100 } },
         ]
       });
+    });
+  });
+
+  describe('getReportingMonth', () => {
+    it('should return the correct month for the current reporting period', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getCurrent.returns({
+        start: moment('2024-08-01').valueOf(),
+        end: moment('2024-08-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.CURRENT);
+
+      expect(result).to.equal('August');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
+      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([1]);
+    });
+
+    it('should return the correct month for the previous reporting period', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2024-07-01').valueOf(),
+        end: moment('2024-07-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
+
+      expect(result).to.equal('July');
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.callCount).to.equal(1);
+      expect(calendarIntervalService.getPrevious.args[0]).to.deep.equal([1]);
+    });
+
+    it('should return "Last month" when getIntervalTag fails to get the correct month name', async () => {
+      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
+      settingsService.get.resolves(config);
+
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
+      getDataRecordsService.get.resolves([]);
+      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
+      contactTypesService.getTypeId.returns('home_type');
+      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      searchService.search.resolves([]);
+      translateService.instant = sinon.stub().returns('Last month');
+      settingsService.get.rejects({ some: 'err' });
+
+      dbService.allDocs.resolves({ rows: [] });
+
+      uhcSettingsService.getMonthStartDate.returns(1);
+      calendarIntervalService.getPrevious.returns({
+        start: moment('2024-07-01').valueOf(),
+        end: moment('2024-07-31').valueOf(),
+      });
+
+      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
+
+      expect(result).to.equal('Last month');
+      expect(translateService.instant.calledWith('targets.last_month.subtitle')).to.be.true;
     });
   });
 
