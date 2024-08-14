@@ -251,11 +251,11 @@ export class TargetAggregatesService {
   }
 
   private async getUserFacilityIds(): Promise<string[] | undefined> {
-    const { facility_id }:any = await this.userSettingsService.get();
-    if (!facility_id?.length) {
+    const userFacilities = await this.userSettingsService.getUserFacilities();
+    if (!userFacilities?.length) {
       return;
     }
-    return Array.isArray(facility_id) ? facility_id : [facility_id];
+    return userFacilities.map(facility => facility._id);
   }
 
   private async getHomePlace(facilityId?) {

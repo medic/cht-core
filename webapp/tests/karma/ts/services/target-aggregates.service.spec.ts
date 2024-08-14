@@ -49,7 +49,10 @@ describe('TargetAggregatesService', () => {
     };
     getDataRecordsService = {get: sinon.stub()};
     searchService = {search: sinon.stub()};
-    userSettingsService = {get: sinon.stub()};
+    userSettingsService = {
+      get: sinon.stub(),
+      getUserFacilities: sinon.stub(),
+    };
     dbService = {
       get: sinon.stub(),
       allDocs: sinon.stub()
@@ -90,53 +93,56 @@ describe('TargetAggregatesService', () => {
   describe('isEnabled', () => {
     it('should return true when user has permission and user has one facility assigned as array', async () => {
       authService.has.resolves(true);
-      userSettingsService.get.resolves({ facility_id: [ 'facility-1' ] });
+      userSettingsService.getUserFacilities.resolves([{ _id: [ 'facility-1' ], name: 'Facility 1' }]);
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(true);
       expect(authService.has.callCount).to.equal(1);
       expect(authService.has.args[0]).to.deep.equal(['can_aggregate_targets']);
-      expect(userSettingsService.get.calledOnce).to.be.true;
+      expect(userSettingsService.getUserFacilities.calledOnce).to.be.true;
     });
 
     it('should return true when user has permission and user has one facility assigned as string', async () => {
       authService.has.resolves(true);
-      userSettingsService.get.resolves({ facility_id: 'facility-1' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(true);
       expect(authService.has.callCount).to.equal(1);
       expect(authService.has.args[0]).to.deep.equal(['can_aggregate_targets']);
-      expect(userSettingsService.get.calledOnce).to.be.true;
+      expect(userSettingsService.getUserFacilities.calledOnce).to.be.true;
     });
 
     it('should return false when user does not have permission', async () => {
       authService.has.resolves(false);
-      userSettingsService.get.resolves({ facility_id: [ 'facility-1' ] });
+      userSettingsService.getUserFacilities.resolves([{ _id: ['facility-1'], name: 'Facility 1' }]);
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(false);
-      expect(userSettingsService.get.notCalled).to.be.true;
+      expect(userSettingsService.getUserFacilities.notCalled).to.be.true;
     });
 
     it('should return true when user has more than one facility assigned', async () => {
       authService.has.resolves(true);
-      userSettingsService.get.resolves({ facility_id: [ 'facility-1', 'facility-2' ] });
+      userSettingsService.getUserFacilities.resolves([
+        { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+        { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+      ]);
 
       const result = await service.isEnabled();
 
       expect(result).to.equal(true);
-      expect(userSettingsService.get.calledOnce).to.be.true;
+      expect(userSettingsService.getUserFacilities.calledOnce).to.be.true;
     });
   });
 
   describe('getAggregates', () => {
     it('should throw error if getting settings fails', () => {
       settingsService.get.rejects({ err: 'some' });
-      userSettingsService.get.resolves({ facility_id: 'aaa' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
 
       return service
         .getAggregates()
@@ -152,7 +158,7 @@ describe('TargetAggregatesService', () => {
           type: 'count'
         }]
       } } });
-      userSettingsService.get.rejects({ err: 'some' });
+      userSettingsService.getUserFacilities.rejects({ err: 'some' });
       dbService.allDocs.resolves({ rows: [] });
 
       return service
@@ -214,7 +220,7 @@ describe('TargetAggregatesService', () => {
           type: 'count'
         }]
       } } });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -227,7 +233,7 @@ describe('TargetAggregatesService', () => {
       expect(result.length).to.equal(1);
       expect(result[0].id).to.equal('target');
       expect(settingsService.get.callCount).to.equal(1);
-      expect(userSettingsService.get.callCount).to.equal(1);
+      expect(userSettingsService.getUserFacilities.callCount).to.equal(1);
       expect(getDataRecordsService.get.callCount).to.equal(2);
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[ 'home' ]]);
       expect(getDataRecordsService.get.args[1]).to.deep.equal([[]]);
@@ -251,7 +257,7 @@ describe('TargetAggregatesService', () => {
           type: 'count'
         }]
       } } });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -294,7 +300,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }, { id: 'type2' }]);
@@ -362,7 +368,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -433,7 +439,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -469,7 +475,7 @@ describe('TargetAggregatesService', () => {
       settingsService.get.resolves({
         tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }
       });
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'person' }, { id: 'person2' }]);
@@ -497,7 +503,7 @@ describe('TargetAggregatesService', () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
       settingsService.get.resolves(config);
 
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
       contactTypesService.getTypeId.returns('district');
@@ -535,7 +541,7 @@ describe('TargetAggregatesService', () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }};
       settingsService.get.resolves(config);
 
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -573,7 +579,7 @@ describe('TargetAggregatesService', () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
       settingsService.get.resolves(config);
 
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
       contactTypesService.getTypeId.returns('district');
@@ -616,7 +622,7 @@ describe('TargetAggregatesService', () => {
       ] } }};
       translateService.instant = sinon.stub().returnsArg(0);
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
@@ -734,7 +740,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -872,7 +878,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -931,7 +937,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -1013,7 +1019,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -1089,7 +1095,7 @@ describe('TargetAggregatesService', () => {
       ];
 
       settingsService.get.resolves(config);
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getChildren.resolves([{ id: 'type1' }]);
@@ -1138,7 +1144,7 @@ describe('TargetAggregatesService', () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
       settingsService.get.resolves(config);
 
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
       contactTypesService.getTypeId.returns('home_type');
@@ -1166,7 +1172,7 @@ describe('TargetAggregatesService', () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
       settingsService.get.resolves(config);
 
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
       contactTypesService.getTypeId.returns('home_type');
@@ -1194,7 +1200,7 @@ describe('TargetAggregatesService', () => {
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
       settingsService.get.resolves(config);
 
-      userSettingsService.get.resolves({ facility_id: 'home' });
+      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
       contactTypesService.getTypeId.returns('home_type');
