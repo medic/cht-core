@@ -1,12 +1,30 @@
 <div class="mm-status-filter" [id]="fieldId">
   <ul class="filter-options">
-    <li role="presentation" class="dropdown-header group-header">{{ 'status.review.title' | translate }}</li>
-    <li role="presentation" *ngFor="let status of statuses.verified" [class.selected]="filter?.selected.has(status)" [class.disabled]="disabled">
+    <li
+      role="presentation"
+      class="dropdown-header group-header">
+      {{ 'status.review.title' | translate }}
+    </li>
+
+    <li
+      role="presentation"
+      *ngFor="let status of statuses.verified"
+      [class.selected]="filter?.selected.has(status)"
+      [class.disabled]="disabled">
       <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="!disabled && filter?.toggle(status)">{{ 'status.review.' + status | translate }}</a>
     </li>
 
-    <li role="presentation" class="dropdown-header group-header">{{ 'status.sms.title' | translate }}</li>
-    <li role="presentation" *ngFor="let status of statuses.valid" [class.selected]="filter?.selected.has(status)" [class.disabled]="disabled">
+    <li
+      role="presentation"
+      class="dropdown-header group-header">
+      {{ 'status.sms.title' | translate }}
+    </li>
+
+    <li
+      role="presentation"
+      *ngFor="let status of statuses.valid"
+      [class.selected]="filter?.selected.has(status)"
+      [class.disabled]="disabled">
       <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="!disabled && filter?.toggle(status)">{{ 'status.sms.' + status | translate }}</a>
     </li>
   </ul>
