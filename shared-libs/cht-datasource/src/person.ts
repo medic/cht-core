@@ -42,7 +42,7 @@ export namespace v1 {
     }
   };
 
-  const assertLimit = (limit: unknown) => {
+  const assertLimit = (limit: unknown): asserts limit is number => {
     if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
       throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}]`);
     }
