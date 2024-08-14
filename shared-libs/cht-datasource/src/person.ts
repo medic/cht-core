@@ -1,5 +1,5 @@
 import { ContactTypeQualifier, isContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
-import { adapt, assertDataContext, DataContext, getDocumentStream } from './libs/data-context';
+import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Remote from './remote';
 import * as Local from './local';
@@ -7,7 +7,7 @@ import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { InvalidArgumentError } from './libs/error';
-import { Page } from './libs/core';
+import { getPagedGenerator, Nullable, Page } from './libs/core';
 
 /** */
 export namespace v1 {
@@ -42,13 +42,13 @@ export namespace v1 {
     }
   };
 
-  const assertLimit = (limit: unknown): asserts limit is number => {
+  const assertLimit: (limit: unknown) => asserts limit is number = (limit: unknown) => {
     if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
       throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}]`);
     }
   };
 
-  const assertCursor = (cursor: unknown): asserts cursor is string | undefined => {
+  const assertCursor: (cursor: unknown) => asserts cursor is string | null = (cursor: unknown) => {
     if (cursor && (typeof cursor !== 'string' || Number(cursor) < 0)) {
       throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}]`);
     }
@@ -108,12 +108,12 @@ export namespace v1 {
      */
     const curriedFn = async (
       personType: ContactTypeQualifier,
-      cursor = '0',
+      cursor: Nullable<string> = null,
       limit = 100,
     ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
-      assertLimit(limit);
       assertCursor(cursor);
+      assertLimit(limit);
 
       return fn(personType, cursor, limit);
     };
@@ -130,6 +130,7 @@ export namespace v1 {
     context: DataContext
   ): typeof curriedGen => {
     assertDataContext(context);
+    const getPage = context.bind(v1.getPage);
 
     /**
      * Returns a generator for fetching all people with the given type
@@ -137,10 +138,9 @@ export namespace v1 {
      * @returns a generator for fetching all people with the given type
      * @throws Error if no type is provided or if the type is not for a person
      */
-    const curriedGen = (personType: ContactTypeQualifier): AsyncGenerator<Person, void> => {
+    const curriedGen = (personType: ContactTypeQualifier): AsyncGenerator<Person, null> => {
       assertTypeQualifier(personType);
-      const getPage = context.bind(v1.getPage);
-      return getDocumentStream(getPage, personType);
+      return getPagedGenerator(getPage, personType);
     };
     return curriedGen;
   };

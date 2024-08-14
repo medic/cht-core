@@ -1,4 +1,4 @@
-import { hasField, isRecord, Page } from './core';
+import { hasField, isRecord } from './core';
 import { isLocalDataContext, LocalDataContext } from '../local/libs/data-context';
 import { assertRemoteDataContext, isRemoteDataContext, RemoteDataContext } from '../remote/libs/data-context';
 
@@ -38,24 +38,4 @@ export const adapt = <T>(
   }
   assertRemoteDataContext(context);
   return remote(context);
-};
-
-/** @internal */
-export const getDocumentStream = async function* <S, T>(
-  fetchFunction: (args: S, s: string, l: number) => Promise<Page<T>>,
-  fetchFunctionArgs: S
-): AsyncGenerator<T, void> {
-  const limit = 100;
-  let cursor = '0';
-  const hasMoreResults = () => cursor !== '-1';
-
-  do {
-    const docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
-
-    for (const doc of docs.data) {
-      yield doc;
-    }
-
-    cursor = docs.cursor;
-  } while (hasMoreResults());
 };

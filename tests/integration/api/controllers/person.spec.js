@@ -157,7 +157,7 @@ describe('Person API', () => {
       const responseCursor = responsePage.cursor;
 
       expect(responsePeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
-      expect(responseCursor).to.be.equal('-1');
+      expect(responseCursor).to.be.equal(null);
     });
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {
@@ -215,7 +215,7 @@ describe('Person API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"The cursor must be a stringified non-negative number: [${-1}]"}`
+          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]"}`
         );
     });
   });

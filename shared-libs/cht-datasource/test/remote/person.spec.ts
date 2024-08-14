@@ -82,7 +82,7 @@ describe('remote person', () => {
 
       it('returns people', async () => {
         const doc = [{ type: 'person' }, {type: 'person'}];
-        const expectedResponse = { data: doc, cursor: '-1' };
+        const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
         const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, cursor, limit);

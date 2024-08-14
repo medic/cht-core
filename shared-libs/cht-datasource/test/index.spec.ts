@@ -127,7 +127,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getPageByType', async () => {
-        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: '-1'};
+        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: null};
         const personGetPage = sinon.stub().resolves(expectedPeople);
         dataContextBind.returns(personGetPage);
         const personType = 'person';

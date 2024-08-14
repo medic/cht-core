@@ -62,9 +62,11 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
+    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+
     return async (
       personType: ContactTypeQualifier,
-      cursor: string,
+      cursor: Nullable<string>,
       limit: number,
     ): Promise<Page<Person.v1.Person>> => {
       const personTypes = contactTypeUtils.getPersonTypes(settings.getAll());
@@ -76,7 +78,6 @@ export namespace v1 {
 
       // Adding a number skip variable here so as not to confuse ourselves
       const skip = Number(cursor) || 0;
-      const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
 
       const fetchAndFilter = async (
         currentLimit: number,
@@ -90,7 +91,7 @@ export namespace v1 {
         const totalPeople = [...currentPersonDocs, ...newPersonDocs].slice(0, limit);
 
         if (noMoreResults) {
-          return { data: totalPeople, cursor: '-1' };
+          return { data: totalPeople, cursor: null };
         }
 
         if (totalPeople.length === limit) {

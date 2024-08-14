@@ -121,5 +121,26 @@ export abstract class AbstractDataContext implements DataContext {
  */
 export interface Page<T> {
   readonly data: T[];
-  readonly cursor: string;
+  readonly cursor: Nullable<string>;
 }
+
+/** @internal */
+export const getPagedGenerator = async function* <S, T>(
+  fetchFunction: (args: S, s: Nullable<string>, l: number) => Promise<Page<T>>,
+  fetchFunctionArgs: S
+): AsyncGenerator<T, null> {
+  const limit = 100;
+  let cursor: Nullable<string> =  null;
+
+  do {
+    const docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
+
+    for (const doc of docs.data) {
+      yield doc;
+    }
+
+    cursor = docs.cursor;
+  } while (cursor);
+
+  return null;
+};

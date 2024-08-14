@@ -25,9 +25,14 @@ export namespace v1 {
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
     personType: ContactTypeQualifier,
-    cursor: string,
+    cursor: Nullable<string>,
     limit: number,
-  ): Promise<Page<Person.v1.Person>> => getPeople(remoteContext)(
-    {'limit': limit.toString(), 'personType': personType.contactType, cursor}
-  );
+  ): Promise<Page<Person.v1.Person>> => {
+    const queryParams = {
+      'limit': limit.toString(),
+      'personType': personType.contactType,
+      ...(cursor ? { cursor } : {})
+    };
+    return getPeople(remoteContext)(queryParams);
+  };
 }

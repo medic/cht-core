@@ -27,6 +27,7 @@
  * const myPerson = await datasource.v1.person.getByUuid(myUuid);
  */
 import { hasAnyPermission, hasPermissions } from './auth';
+import { Nullable } from './libs/core';
 import { assertDataContext, DataContext } from './libs/data-context';
 import * as Person from './person';
 import * as Place from './place';
@@ -99,7 +100,11 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws Error if the provided cursor is not a valid page token
          * @see {@link getByType} which provides the same data, but without having to manually account for paging
          */
-        getPageByType: (personType: string, cursor = '0', limit = 100) => ctx.bind(Person.v1.getPage)(
+        getPageByType: (
+          personType: string,
+          cursor: Nullable<string> = null,
+          limit = 100
+        ) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), cursor, limit
         ),
 

@@ -3,6 +3,7 @@ import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
 import * as Context from '../src/libs/data-context';
+import * as Core from '../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import { DataContext } from '../src';
@@ -197,7 +198,7 @@ describe('person', () => {
         getPage.resolves(people);
 
         await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidCursor, limit))
-          .to.be.rejectedWith(`The cursor must be a stringified non-negative number: [${String(invalidCursor)}]`);
+          .to.be.rejectedWith(`Invalid cursor token: [${String(invalidCursor)}]`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
@@ -223,17 +224,17 @@ describe('person', () => {
       };
 
       let personGetPage: sinon.SinonStub;
-      let getDocumentStream: sinon.SinonStub;
+      let getPagedGenerator: sinon.SinonStub;
 
       beforeEach(() => {
         personGetPage = sinon.stub(Person.v1, 'getPage');
         dataContext.bind = sinon.stub().returns(personGetPage);
-        getDocumentStream = sinon.stub(Context, 'getDocumentStream');
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
       });
 
       it('should get people generator with correct parameters', async () => {
         isContactTypeQualifier.returns(true);
-        getDocumentStream.returns(mockGenerator());
+        getPagedGenerator.returns(mockGenerator());
 
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
         const res = [];
@@ -243,20 +244,20 @@ describe('person', () => {
         }
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(getDocumentStream.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
         expect(res).to.be.deep.equal(people);
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
       });
 
       it('should handle empty result set', async () => {
         isContactTypeQualifier.returns(true);
-        getDocumentStream.returns(emptyMockGenerator());
+        getPagedGenerator.returns(emptyMockGenerator());
 
         const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
         const res = await generator.next();
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(getDocumentStream.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
         expect(res.value).to.equal(undefined);
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
       });
