@@ -822,7 +822,7 @@ const dockerComposeCmd = (params) => {
   params.unshift(...composeFiles, '-p', PROJECT_NAME);
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', params, { env });
+    const cmd = spawn('docker compose', params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1433,7 +1433,7 @@ const apiLogTestEnd = (name) => {
 
 const getDockerVersion = () => {
   try {
-    const response = execSync('docker-compose -v').toString();
+    const response = execSync('docker compose -v').toString();
     const version = response.match(semver.re[3])[0];
     return semver.major(version);
   } catch (err) {
