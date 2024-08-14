@@ -13,7 +13,7 @@
 
   <mm-privacy-policy [overlay]="true" *ngIf="showPrivacyPolicy && !privacyPolicyAccepted"></mm-privacy-policy>
 
-  <div class="container-fluid" *ngIf="initialisationComplete">
+  <div class="container-fluid" *ngIf="initialisationComplete" [class.old-nav]="hasOldNav">
     <mm-header [adminUrl]="adminUrl" [canLogOut]="canLogOut"></mm-header>
     
     <div class="row content">

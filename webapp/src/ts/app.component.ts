@@ -47,6 +47,7 @@ import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -91,6 +92,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   replicationStatus;
   androidAppVersion;
   unreadCount = {};
+  hasOldNav = false;
   initialisationComplete = false;
   trainingCardFormId = false;
 
@@ -304,6 +306,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.enableOldNav();
     this.subscribeToSideFilterStore();
   }
 
@@ -479,6 +482,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.store
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+  }
+
+  private async enableOldNav() {
+    this.useOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
   }
 
   private initForms() {

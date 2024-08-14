@@ -89,6 +89,18 @@ body {
   }
 }
 
+.old-nav {
+  .header {
+    display: none;
+  }
+
+  .content {
+    .page {
+      top: @filters-desktop-height;
+    }
+  }
+}
+
 .bootstrap-layer {
   z-index: 11;
   background-color: #f2f2f3;
@@ -342,7 +354,7 @@ body {
 }
 
 .filters {
-  height: 58px;
+  height: @filters-desktop-height;
   white-space: nowrap;
   padding: 5px 0;
 
@@ -1297,6 +1309,14 @@ mm-search-bar {
 }
 
 @media (max-width: @media-mobile) {
+  .old-nav {
+    .content {
+      .page {
+        top: 50px;
+      }
+    }
+  }
+
   .fast-action-trigger:not(.embed-fast-action) {
     position: fixed;
     bottom: 17px;
