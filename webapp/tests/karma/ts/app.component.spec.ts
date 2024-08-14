@@ -44,6 +44,7 @@ import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -268,6 +269,42 @@ describe('AppComponent', () => {
     expect(modalService.show.calledOnce).to.be.true;
     expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
   });
+
+  it('should set useOldNav to be false by default', fakeAsync(async () => {
+    sessionService.isAdmin.returns(false);
+    authService.has
+      .withArgs(OLD_NAV_PERMISSION)
+      .resolves(false);
+    await getComponent();
+    await component.ngAfterViewInit();
+    tick();
+
+    expect(component.useOldNav).to.be.false;
+  }));
+
+  it('should set useOldNav to be true if user has permission', fakeAsync(async () => {
+    sessionService.isAdmin.returns(false);
+    authService.has
+      .withArgs(OLD_NAV_PERMISSION)
+      .resolves(true);
+    await getComponent();
+    await component.ngAfterViewInit();
+    tick();
+
+    expect(component.useOldNav).to.be.true;
+  }));
+
+  it('should set useOldNav to be false if user has permission but is admin', fakeAsync(async () => {
+    sessionService.isAdmin.returns(true);
+    authService.has
+      .withArgs(OLD_NAV_PERMISSION)
+      .resolves(true);
+    await getComponent();
+    await component.ngAfterViewInit();
+    tick();
+
+    expect(component.useOldNav).to.be.false;
+  }));
 
   it('should set isSidebarFilterOpen true when filter state is open', fakeAsync(async () => {
     authService.has.resolves(false);
