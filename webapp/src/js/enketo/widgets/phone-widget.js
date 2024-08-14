@@ -32,10 +32,22 @@ const isContactPhoneUnique = async (settings, fieldValue) => {
 };
 
 
-// Set up enketo validation for `phone` input type
+// Set up enketo validation for data types
 FormModel.prototype.types.tel = {
   validate: ( fieldValue ) => window.CHTCore.Settings.get()
+    .then(settings => isContactPhoneValid(settings, fieldValue)),
+};
+FormModel.prototype.types.unique_tel = {
+  validate: ( fieldValue ) => window.CHTCore.Settings.get()
     .then(settings => isContactPhoneValid(settings, fieldValue) && isContactPhoneUnique(settings, fieldValue)),
+};
+
+// Remove this when we no longer support the tel xlsxform type
+const deprecated = {
+  // 'string' questions with the `numbers` appearance also become input[type="tel"].
+  // So, here we need to also specify the data-type-xml to avoid collisions.
+  selector: 'input[type="tel"][data-type-xml="tel"]',
+  isDeprecated: ($wrapper) => !$wrapper.hasClass('or-appearance-tel'),
 };
 
 /**
@@ -48,6 +60,9 @@ class PhoneWidget extends Widget {
     super(element, options);
 
     const $input = $( this.element );
+    const $wrapper = $input.closest('.question');
+    const uniqueTel = $wrapper.attr('data-cht-unique_tel') === 'true' || deprecated.isDeprecated($wrapper);
+    $input.attr('data-type-xml', uniqueTel ? 'unique_tel' : 'tel');
 
     // Add a proxy input field, which will send its input, formatted, to the real input field.
     // TODO(estellecomment): format the visible field onBlur to user-friendly format.
@@ -71,9 +86,7 @@ class PhoneWidget extends Widget {
   }
 
   static get selector() {
-    // 'string' questions with the `numbers` appearance also become input[type="tel"].
-    // So, here we need to also specify the data-type-xml to avoid collisions.
-    return 'input[type="tel"][data-type-xml="tel"]';
+    return `.or-appearance-tel input, ${deprecated.selector}`;
   }
 }
 

@@ -23,7 +23,21 @@ describe('Enketo: Phone Widget', () => {
   const inputSelector = (name) => $('input[name="' + name + '"]');
   const proxySelector = (name) => inputSelector(name).prev();
 
-  const buildHtml = (type = 'tel') => {
+
+  const buildHtml = (chtUniqueTel) => {
+    const chtUniqueTelData = chtUniqueTel ? `data-cht-unique_tel="${chtUniqueTel}"` : '';
+    const html =
+      `<div id="phone-widget-test">
+        <label class="question non-select or-appearance-numbers or-appearance-tel" ${chtUniqueTelData}>
+          <span lang="" class="question-label active">person.field.phone</span>
+          <span class="required">*</span>
+          <input type="tel" name="${inputName}" data-type-xml="string" >
+        </label>
+      </div>`;
+    document.body.insertAdjacentHTML('afterbegin', html);
+  };
+
+  const buildDeprecatedHtml = (type = 'tel') => {
     const html = 
       '<div id="phone-widget-test"><label class="question non-select"> \
          <span lang="" class="question-label active">person.field.phone</span> \
@@ -62,8 +76,8 @@ describe('Enketo: Phone Widget', () => {
     $('#contact-form').remove();
   });
 
-  it('should be placed in DOM when widget is added', () => {
-    buildHtml();
+  it('should be placed in DOM when deprecated widget is added', () => {
+    buildDeprecatedHtml();
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -75,10 +89,33 @@ describe('Enketo: Phone Widget', () => {
     expect(proxyInput.length).to.equal(1);
     expect(proxyInput.is(':visible')).to.equal(true);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+    expect(input.attr('data-type-xml')).to.equal('unique_tel');
+  });
+
+  [
+    ['true', 'unique_tel'],
+    ['false', 'tel'],
+    [undefined, 'tel']
+  ].forEach(([chtUniqueTel, expectedDataType]) => {
+    it(`should be placed in DOM when widget is added with the data-cht-unique_tel attribute: ${chtUniqueTel}`, () => {
+      buildHtml(chtUniqueTel);
+      const input = inputSelector(inputName);
+      const proxyInput = proxySelector(inputName);
+
+      new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+
+      // Check a proxy input field is added, and the real one is hidden.
+      expect($('input').length).to.equal(2);
+      expect(input.is(':visible')).to.equal(false);
+      expect(proxyInput.length).to.equal(1);
+      expect(proxyInput.is(':visible')).to.equal(true);
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(input.attr('data-type-xml')).to.equal(expectedDataType);
+    });
   });
 
   it('should format input when input value change', async () => {
-    buildHtml();
+    buildDeprecatedHtml();
     await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
@@ -98,7 +135,7 @@ describe('Enketo: Phone Widget', () => {
   });
 
   it('should still format if no settings are found', () => {
-    buildHtml();
+    buildDeprecatedHtml();
     // Not awaiting the settings to be returned
     new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
@@ -115,7 +152,7 @@ describe('Enketo: Phone Widget', () => {
 
   it('should not format invalid input', () => {
     phoneNumberNormalize.returns(false);
-    buildHtml();
+    buildDeprecatedHtml();
     new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
@@ -130,7 +167,7 @@ describe('Enketo: Phone Widget', () => {
   });
 
   it('should keep formatted input when value is valid', () => {
-    buildHtml();
+    buildDeprecatedHtml();
     new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
@@ -145,15 +182,15 @@ describe('Enketo: Phone Widget', () => {
   });
 
   it('should not modify non-phone fields', () => {
-    buildHtml('other');
+    buildDeprecatedHtml('other');
     expect($(PhoneWidget.selector).length).to.equal(0);
   });
 
-  describe('types.tel validate', () => {
+  describe('types.unique_tel validate', () => {
     it('returns true for a valid phone number', async () => {
       phoneNumberValidate.returns(true);
 
-      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
+      const result = await FormModel.prototype.types.unique_tel.validate(DENORMALIZED_NUMBER);
 
       expect(result).to.be.true;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
@@ -167,7 +204,7 @@ describe('Enketo: Phone Widget', () => {
     it('returns false for invalid phone number', async () => {
       phoneNumberValidate.returns(false);
 
-      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
+      const result = await FormModel.prototype.types.unique_tel.validate(DENORMALIZED_NUMBER);
 
       expect(result).to.be.false;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
@@ -183,7 +220,7 @@ describe('Enketo: Phone Widget', () => {
       phoneNumberValidate.returns(true);
       dbQuery.resolves({ rows: [{ id: 'some-id' }] });
 
-      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
+      const result = await FormModel.prototype.types.unique_tel.validate(DENORMALIZED_NUMBER);
 
       expect(result).to.be.false;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
@@ -200,7 +237,7 @@ describe('Enketo: Phone Widget', () => {
       phoneNumberValidate.returns(true);
       dbQuery.resolves({ rows: [{ id: contactId }] });
 
-      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
+      const result = await FormModel.prototype.types.unique_tel.validate(DENORMALIZED_NUMBER);
 
       expect(result).to.be.true;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
@@ -209,6 +246,34 @@ describe('Enketo: Phone Widget', () => {
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
       expect(consoleError.notCalled).to.be.true;
+    });
+  });
+
+  describe('types.tel validate', () => {
+    it('returns true for a valid phone number', async () => {
+      phoneNumberValidate.returns(true);
+
+      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
+
+      expect(result).to.be.true;
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
+      expect(phoneNumberNormalize.notCalled).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
+      expect(consoleError.notCalled).to.be.true;
+    });
+
+    it('returns false for invalid phone number', async () => {
+      phoneNumberValidate.returns(false);
+
+      const result = await FormModel.prototype.types.tel.validate(DENORMALIZED_NUMBER);
+
+      expect(result).to.be.false;
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
+      expect(phoneNumberNormalize.notCalled).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
+      expect(consoleError.calledOnceWithExactly(`invalid phone number: "${DENORMALIZED_NUMBER}"`)).to.be.true;
     });
   });
 });
