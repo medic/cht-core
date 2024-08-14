@@ -58,6 +58,29 @@ describe('Reports Subject', () => {
     expect(openReportInfo.senderPhone).to.equal(senderPhone);
   };
 
+  const baseReport = (reportId, form, userPhone, fields) => {
+    return {
+      _id: reportId,
+      form: form,
+      type: 'data_record',
+      from: userPhone,
+      fields: fields,
+    };
+  };
+
+  const createSmsReport = async (reportId, form, userPhone, message, fields, errors = [], ) => {
+    const report = baseReport(reportId, form, userPhone, fields);
+    report.sms_message = {
+      from: userPhone,
+      message: message,
+      form: form,
+    };
+    report.errors = errors;
+
+    await utils.saveDocs([report]);
+    await sentinelUtils.waitForSentinel([report._id]);
+  };
+
   before(async () => {
     await utils.updateSettings(appSettings.WITH_SMS_FORMS, true);
     await utils.saveDocs([...places.values(), person]);
@@ -70,145 +93,56 @@ describe('Reports Subject', () => {
   afterEach(async () => await utils.deleteAllDocs([/^form:/].concat(...places.values()).concat(person._id)));
 
   it('should create a report using patient_id', async () => {
-    const report = {
-      _id: 'REF_REF_V1',
-      form: 'RR',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        patient_id: person.patient_id
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!RR!${person.patient_id}`,
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport(
+      'REF_REF_V1',
+      'RR',
+      user.phone,
+      `1!RR!${person.patient_id}`,
+      { patient_id: person.patient_id }
+    );
     await verifyListReportContent({ formName: 'REF_REF' });
     await verifyOpenReportContent({ formName: 'REF_REF', subject: person.name });
   });
 
   it('should create a report using doc id', async () => {
-    const report = {
-      _id: 'REF_REF_V2',
-      form: 'RR',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        patient_id: person._id
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!RR!${person._id}`,
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport(
+      'REF_REF_V2',
+      'RR',
+      user.phone,
+      `1!RR!${person._id}`,
+      { patient_id: person._id }
+    );
     await verifyListReportContent({ formName: 'REF_REF' });
     await verifyOpenReportContent({ formName: 'REF_REF', subject: person.name });
   });
 
   it('should create a report using unknown patient_id ', async () => {
-    const report = {
-      _id: 'REF_REF_I',
-      form: 'RR',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        patient_id: '111111'
-      },
-      sms_message: {
-        from: user.phone,
-        message: '1!RR!111111',
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('REF_REF_I', 'RR', user.phone, `1!RR!111111`, { patient_id: '111111' });
     await verifyListReportContent({ formName: 'REF_REF', subject: 'Unknown subject' });
     await verifyOpenReportContent({ formName: 'REF_REF', subject: 'Unknown subject' });
   });
 
   it('should create a report using patient name', async () => {
-    const report = {
-      _id: 'NAM_NAM_V',
-      form: 'NN',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        patient_name: person.name
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!NN!${person.name}`,
-        form: 'NN',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('NAM_NAM_V', 'NN', user.phone, `1!NN!${person.name}`, { patient_name: person.name } );
     await verifyListReportContent({ formName: 'NAM_NAM' });
     await verifyOpenReportContent({ formName: 'NAM_NAM', subject: person.name });
   });
 
   it('should create a report using missing required patient name', async () => {
-    const report = {
-      _id: 'NAM_NAM_I',
-      form: 'NN',
-      type: 'data_record',
-      from: user.phone,
-      errors: [
-        {
-          fields: 'patient_name',
-          code: 'sys.missing_fields'
-        }
-      ],
-      fields: {
-        patient_name: ''
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!RR!`,
-        form: 'NN',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport(
+      'NAM_NAM_I',
+      'NN',
+      user.phone,
+      '1!RR!',
+      { patient_name: '' },
+      [{ fields: 'patient_name', code: 'sys.missing_fields' }]
+    );
     await verifyListReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
     await verifyOpenReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
   });
 
   it('should create a report using place_id with a place_uuid', async () => {
-    const report = {
-      _id: 'PREF_PREF_V',
-      form: 'P',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        place_id: clinic._id
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!P!${clinic._id}`,
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('PREF_PREF_V', 'P', user.phone, `1!P!${clinic._id}`, { place_id: clinic._id });
     await verifyListReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
@@ -222,24 +156,7 @@ describe('Reports Subject', () => {
   });
 
   it('should create a report using place_id with a shortcode', async () => {
-    const report = {
-      _id: 'PREF_PREF_V',
-      form: 'P',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        place_id: clinic.place_id
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!P!${clinic.place_id}`,
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('PREF_PREF_V', 'P', user.phone, `1!P!${clinic.place_id}`, { place_id: clinic.place_id });
     await verifyListReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
@@ -253,47 +170,13 @@ describe('Reports Subject', () => {
   });
 
   it('should create a report using unknown place_id', async () => {
-    const report = {
-      _id: 'PREF_PREF_I',
-      form: 'P',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        place_id: '12'
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!P!12`,
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('PREF_PREF_I', 'P', user.phone, '1!P!12', { place_id: '12' });
     await verifyListReportContent({ formName: 'PID_PID', subject: 'Unknown subject' });
     await verifyOpenReportContent({ formName: 'PID_PID', subject: 'Unknown subject' });
   });
 
   it('should create a report which has an unknown sender and a known subject', async () => {
-    const report = {
-      _id: 'PID_US',
-      form: 'P',
-      type: 'data_record',
-      from: '555',
-      fields: {
-        place_id: clinic._id
-      },
-      sms_message: {
-        from: '555',
-        message: `1!P!${clinic._id}`,
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('PID_US', 'P', '555', `1!P!${clinic._id}`, { place_id: clinic._id });
     await verifyListReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
@@ -309,24 +192,7 @@ describe('Reports Subject', () => {
   });
 
   it('should create a report which has an unknown sender with no phone number', async () => {
-    const report = {
-      _id: 'PID_USNP',
-      form: 'P',
-      type: 'data_record',
-      from: '',
-      fields: {
-        place_id: clinic._id
-      },
-      sms_message: {
-        from: '',
-        message: `1!P!${clinic._id}`,
-        form: 'RR',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('PID_USNP', 'P', '', `1!P!${clinic._id}`, { place_id: clinic._id });
     await verifyListReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
@@ -342,22 +208,10 @@ describe('Reports Subject', () => {
   });
 
   it('changes to a loaded or list report should be reflected in the UI ',  async () => {
-    const reportTest = {
-      _id: 'REF_REF_V3',
-      form: 'RR',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        patient_id: person.patient_id
-      },
-      contact: {
-        _id: user.contact._id,
-        parent: user.parent,
-      },
-    };
-
-    await utils.saveDocs([reportTest]);
-    await sentinelUtils.waitForSentinel([reportTest._id]);
+    const report = baseReport('REF_REF_V3', 'RR', user.phone, { patient_id: person.patient_id });
+    report.contact = { _id: user.contact._id, parent: user.parent };
+    await utils.saveDocs([report]);
+    await sentinelUtils.waitForSentinel([report._id]);
 
     await verifyListReportContent({ formName: 'REF_REF' });
     await verifyOpenReportContent({ formName: 'REF_REF', subject: person.name });
@@ -381,7 +235,7 @@ describe('Reports Subject', () => {
     await utils.createUsers([newUser]);
 
     // change both patient and submitter
-    const reportDoc = await utils.getDoc(reportTest._id);
+    const reportDoc = await utils.getDoc(report._id);
     reportDoc.contact = {_id: newUser.contact._id, parent: newUser.contact.parent};
     reportDoc.fields.patient_id = newPerson.patient_id;
     await utils.saveDoc(reportDoc);
@@ -405,24 +259,7 @@ describe('Reports Subject', () => {
   });
 
   it('should create a report which does not have a subject', async () => {
-    const report = {
-      _id: 'SURVEY_REPORT',
-      form: 'S',
-      type: 'data_record',
-      from: user.phone,
-      fields: {
-        survey_subject: 'something'
-      },
-      sms_message: {
-        from: user.phone,
-        message: `1!S!something`,
-        form: 'S',
-      },
-    };
-
-    await utils.saveDocs([report]);
-    await sentinelUtils.waitForSentinel([report._id]);
-
+    await createSmsReport('SURVEY_REPORT', 'S', user.phone, '1!S!something', { survey_subject: 'something' });
     await verifyListReportContent({ formName: 'SURVEY', subject: user.contact.name });
     await verifyOpenReportContent({ formName: 'SURVEY', senderName: `${user.contact.name}`});
   });
