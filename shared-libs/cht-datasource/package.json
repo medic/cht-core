@@ -17,7 +17,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
-    "@medic/logger": "file:../logger",
-    "typedoc": "^0.25.13"
+    "@medic/logger": "file:../logger"
   }
 }
