@@ -2,13 +2,13 @@ const utils = require('@utils');
 const login = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
+const smsPregnancy = require('@factories/cht/reports/sms-pregnancy');
 
 describe('Infinite scrolling', () => {
   before(async () => {
     const reports = Array
       .from({ length: 200 })
-      .map(() => smsPregancy.pregnancy().build());
+      .map(() => smsPregnancy.pregnancy().build());
     await utils.saveDocs(reports);
     await login.cookieLogin({ createUser: false });
   });
