@@ -14,7 +14,7 @@ describe('Feedback service', () => {
   let mockConsole;
   let mockWindow;
   let mockDocument;
-  let getLocal;
+  let getServiceWorker;
   let service:FeedbackService;
   let languageService;
 
@@ -30,19 +30,18 @@ describe('Feedback service', () => {
       info: sinon.stub(),
       log: sinon.stub()
     };
-    getLocal = sinon.stub();
+    getServiceWorker = sinon.stub();
     mockWindow = sinon.stub();
     languageService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => metaDb } },
-        { provide: VersionService, useValue: { getLocal } },
+        { provide: VersionService, useValue: { getServiceWorker } },
         { provide: SessionService, useValue: { userCtx: () => ({ name: 'fred' }) } },
         { provide: LanguageService, useValue: languageService }
       ]
     });
-
     service = TestBed.inject(FeedbackService);
   });
 
@@ -54,7 +53,7 @@ describe('Feedback service', () => {
   it('should submit feedback when there is an unhandled error', fakeAsync(() => {
     metaDb.post.resolves();
     metaDb.allDocs.resolves({ rows: [] });
-    getLocal.resolves(({ version: '0.5.0' }));
+    getServiceWorker.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('es');
     service._setOptions({
       console: mockConsole,
@@ -103,7 +102,7 @@ describe('Feedback service', () => {
   it('should log history restricted to 20 lines', async () => {
     metaDb.post.resolves();
     metaDb.allDocs.resolves({ rows: [] });
-    getLocal.resolves(({ version: '0.5.0' }));
+    getServiceWorker.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('en');
     service.init();
     service._setOptions({
@@ -132,7 +131,7 @@ describe('Feedback service', () => {
     clock = sinon.useFakeTimers();
     metaDb.post.resolves();
     metaDb.allDocs.resolves({ rows: [] });
-    getLocal.resolves(({ version: '0.5.0' }));
+    getServiceWorker.resolves(({ version: '0.5.0' }));
     mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
     languageService.get.resolves('en');
     service.init();
@@ -155,7 +154,7 @@ describe('Feedback service', () => {
   it('should record device id in feedback doc', async () => {
     metaDb.post.resolves();
     metaDb.allDocs.resolves({ rows: [] });
-    getLocal.resolves(({ version: '0.5.0' }));
+    getServiceWorker.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('en');
     service._setOptions({
       console: mockConsole,
