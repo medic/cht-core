@@ -13,7 +13,7 @@ function usage() {
   echo
   echo "Note: Logs may contain Personally Identifiable Information (PII). Handle and store them securely."
   exit 1
-}qq
+}
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   usage

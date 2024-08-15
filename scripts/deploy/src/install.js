@@ -84,7 +84,7 @@ const helmInstallOrUpdate = function(valuesFile, namespace, values, image_tag) {
       child_process.execSync(`helm install ${project_name} ${CHT_CHART_NAME}` + //NoSONAR
         ` --version ${chart_version} --namespace ${namespace} ${createNamespaceFlag}` + //NoSONAR
         ` --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' }); //NoSONAR
-      console.log(`Instance at ${values.ingress.host} installed successfully.`);
+      console.log(`Instance installed successfully: https://${values.ingress.host}`);
     }
   } catch (err) {
     console.error(JSON.stringify(err));
