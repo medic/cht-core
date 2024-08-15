@@ -3,7 +3,7 @@
 function usage() {
   echo "Usage: $0 <namespace> [since]"
   echo
-  echo "This script saves logs from all pods within the specified namespace into local files and then creates a tar.gz archive of these logs."
+  echo "This script saves current and previous logs from all pods within the specified namespace into local files and then creates a tar.gz archive of these logs."
   echo
   echo "Arguments:"
   echo "  namespace   - The namespace from which to retrieve and archive pod logs."
@@ -36,10 +36,25 @@ fi
 
 # Loop through all pod names and fetch logs, saving them to individual files
 for POD in $PODS; do
+  echo "Fetching logs for pod: $POD"
+
+  # Fetch current logs
   if [ -z "$SINCE" ]; then
-    kubectl -n $NAMESPACE logs $POD > "$LOG_DIR/$POD.log"
+    kubectl -n $NAMESPACE logs $POD > "$LOG_DIR/${POD}_current.log"
   else
-    kubectl -n $NAMESPACE logs --since=$SINCE $POD > "$LOG_DIR/$POD.log"
+    kubectl -n $NAMESPACE logs --since=$SINCE $POD > "$LOG_DIR/${POD}_current.log"
+  fi
+
+  # Fetch previous logs
+  if [ -z "$SINCE" ]; then
+    kubectl -n $NAMESPACE logs --previous $POD > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
+  else
+    kubectl -n $NAMESPACE logs --since=$SINCE --previous $POD > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
+  fi
+
+  # If previous log file is empty, remove it
+  if [ ! -s "$LOG_DIR/${POD}_previous.log" ]; then
+    rm "$LOG_DIR/${POD}_previous.log"
   fi
 done
 

@@ -49,45 +49,73 @@ const determineNamespace = function(values) {
   return namespace;
 };
 
-const get_image_tag = async function(chtversion) {
+const getImageTag = async function(chtversion) {
   const response = await fetch(`https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${chtversion}`);
   const data = await response.json();
-  const tag = data.tags && data.tags.find(tag => tag.container_name === 'cht-api');
+  const tag = data.tags && data.tags[0];
   if (!tag) {
     return Promise.reject(new UserRuntimeError('cht image tag not found'));
   }
   return tag.image.split(':').pop();
 };
 
-const get_chart_version = function(values) {
+const getChartVersion = function(values) {
   return values.cht_chart_version || DEFAULT_CHART_VERSION;
 };
 
-const helmInstallOrUpdate = function(valuesFile, namespace, values, image_tag) { //NoSONAR
-  const chart_version = get_chart_version(values);
+const helmCmd = (action, positionalArgs, params) => {
+  const flagsArray = Object.entries(params).map(([key, value]) => {
+    if (value === true) {
+      return `--${key}`;
+    }
+    if (value) {
+      return `--${key} ${value}`;
+    }
+    return ''; //If value is falsy, don't include the flag
+  }).filter(Boolean);
+
+  const command = `helm ${action} ${positionalArgs.join(' ')} ${flagsArray.join(' ')}`;
+  return child_process.execSync(command, { stdio: 'inherit' });
+};
+
+const helmInstallOrUpdate = function(valuesFile, namespace, values, imageTag) {
+  const chartVersion = getChartVersion(values);
   ensureMedicHelmRepo();
-  const project_name = values.project_name || '';
+  const projectName = values.project_name || '';
   const namespaceExists = checkNamespaceExists(namespace);
 
   try {
-    const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString(); //NoSONAR
-    if (releaseExists.includes(project_name)) { //NoSONAR
+    const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString().includes(projectName);
+
+    const commonOpts = {
+      'version': chartVersion,
+      'namespace': namespace,
+      'values': valuesFile,
+      'set': `cht_image_tag=${imageTag}`
+    };
+
+    if (releaseExists) {
       console.log('Release exists. Performing upgrade.');
-      child_process.execSync(`helm upgrade` + //NoSONAR
-        ` --install ${project_name} ${CHT_CHART_NAME}` + //NoSONAR
-        ` --version ${chart_version} --namespace ${namespace}` + //NoSONAR
-        ` --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' }); //NoSONAR
-      console.log(`Instance at ${values.ingress.host} upgraded successfully.`);
-    } else {
-      console.log('Release does not exist. Performing install.');
-      const createNamespaceFlag = namespaceExists ? '' : '--create-namespace';
-      child_process.execSync(`helm install ${project_name} ${CHT_CHART_NAME}` + //NoSONAR
-        ` --version ${chart_version} --namespace ${namespace} ${createNamespaceFlag}` + //NoSONAR
-        ` --values ${valuesFile} --set cht_image_tag=${image_tag}`, { stdio: 'inherit' }); //NoSONAR
-      console.log(`Instance installed successfully: https://${values.ingress.host}`);
+      helmCmd('upgrade', [projectName, CHT_CHART_NAME], {
+        install: true,
+        ...commonOpts
+      });
+      console.log(`Instance at https://${values.ingress.host} upgraded successfully.`);
+      return;
     }
+
+    console.log('Release does not exist. Performing install.');
+    helmCmd('install', [projectName, CHT_CHART_NAME], {
+      ...commonOpts,
+      'create-namespace': !namespaceExists
+    });
+    console.log(`Instance installed successfully: https://${values.ingress.host}`);
+
   } catch (err) {
-    console.error(JSON.stringify(err));
+    console.error(err.message);
+    if (err.stack) {
+      console.error(err.stack);
+    }
     process.exit(1);
   }
 };
@@ -109,14 +137,17 @@ const ensureMedicHelmRepo = function() {
     if (!medicRepo) {
       console.log(`Helm repo ${MEDIC_REPO_NAME} not found, adding..`);
       child_process.execSync(`helm repo add ${MEDIC_REPO_NAME} ${MEDIC_REPO_URL}`, { stdio: 'inherit' }); //NoSONAR
+      return;
     } else if (medicRepo.url.replace(/\/$/, '') !== MEDIC_REPO_URL) {
       throw new UserRuntimeError(`Medic repo found but url not matching '${MEDIC_REPO_URL}', see: helm repo list`);
-    } else {
-      // Always get the latest
-      child_process.execSync(`helm repo update ${MEDIC_REPO_NAME}`, { stdio: 'inherit' }); //NoSONAR
     }
+    // Get the latest
+    child_process.execSync(`helm repo update ${MEDIC_REPO_NAME}`, { stdio: 'inherit' }); //NoSONAR
   } catch (err) {
-    console.error(JSON.stringify(err));
+    console.error(err.message);
+    if (err.stack) {
+      console.error(err.stack);
+    }
     process.exit(1);
   }
 };
@@ -129,8 +160,8 @@ const install = async function(f) {
     await obtainCertificateAndKey(values);
     createSecret(namespace, values);
   }
-  const image_tag = await get_image_tag(values.chtversion);
-  helmInstallOrUpdate(f, namespace, values, image_tag);
+  const imageTag = await getImageTag(values.chtversion);
+  helmInstallOrUpdate(f, namespace, values, imageTag);
 };
 
 export { install, helmInstallOrUpdate, ensureMedicHelmRepo };

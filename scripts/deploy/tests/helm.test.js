@@ -41,7 +41,7 @@ describe('helmInstallOrUpdate function', () => {
       'STATUS          CHART           APP VERSION     NAMESPACE\n' +
       'test-project    1               2023-07-05 10:00:00.000000000 +0000 UTC deployed        ' +
       'cht-chart-4x-1.0.0   1.0.0           test-namespace'));
-    const upgradeCommand = `helm upgrade --install test-project ${CHT_CHART_NAME} --version 5.0.0 ` +
+    const upgradeCommand = `helm upgrade test-project ${CHT_CHART_NAME} --install --version 5.0.0 ` +
       `--namespace ${fakeNamespace} --values ${fakeValuesFile} --set cht_image_tag=${fakeImageTag}`;
     child_process.execSync.withArgs(upgradeCommand, { stdio: 'inherit' })
       .returns(Buffer.from('Release "test-project" has been upgraded. Happy Helming!'));
@@ -69,7 +69,7 @@ describe('helmInstallOrUpdate function', () => {
       .returns(Buffer.from(''));
 
     const installCommand = `helm install test-project ${CHT_CHART_NAME} --version 5.0.0 --namespace ${fakeNamespace} ` +
-      `--create-namespace --values ${fakeValuesFile} --set cht_image_tag=${fakeImageTag}`;
+      `--values ${fakeValuesFile} --set cht_image_tag=${fakeImageTag} --create-namespace`;
     child_process.execSync.withArgs(installCommand, { stdio: 'inherit' })
       .returns(Buffer.from('Release "test-project" has been installed. Happy Helming!'));
 
