@@ -270,7 +270,7 @@ describe('AppComponent', () => {
     expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
   });
 
-  it('should set useOldNav to be false by default', fakeAsync(async () => {
+  it('should set hasOldNav to be false by default', fakeAsync(async () => {
     sessionService.isAdmin.returns(false);
     authService.has
       .withArgs(OLD_NAV_PERMISSION)
@@ -279,10 +279,10 @@ describe('AppComponent', () => {
     await component.ngAfterViewInit();
     tick();
 
-    expect(component.useOldNav).to.be.false;
+    expect(component.hasOldNav).to.be.false;
   }));
 
-  it('should set useOldNav to be true if user has permission', fakeAsync(async () => {
+  it('should set hasOldNav to be true if user has permission and is not admin', fakeAsync(async () => {
     sessionService.isAdmin.returns(false);
     authService.has
       .withArgs(OLD_NAV_PERMISSION)
@@ -291,10 +291,10 @@ describe('AppComponent', () => {
     await component.ngAfterViewInit();
     tick();
 
-    expect(component.useOldNav).to.be.true;
+    expect(component.hasOldNav).to.be.true;
   }));
 
-  it('should set useOldNav to be false if user has permission but is admin', fakeAsync(async () => {
+  it('should set hasOldNav to be false if user has permission but is admin', fakeAsync(async () => {
     sessionService.isAdmin.returns(true);
     authService.has
       .withArgs(OLD_NAV_PERMISSION)
@@ -303,7 +303,7 @@ describe('AppComponent', () => {
     await component.ngAfterViewInit();
     tick();
 
-    expect(component.useOldNav).to.be.false;
+    expect(component.hasOldNav).to.be.false;
   }));
 
   it('should set isSidebarFilterOpen true when filter state is open', fakeAsync(async () => {
