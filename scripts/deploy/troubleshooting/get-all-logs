@@ -44,7 +44,7 @@ for POD in $PODS; do
 done
 
 # Create a tar.gz archive of the log files
-tar -czf "$NAMESPACE-logs_$TIMESTAMP.tar.gz" -C "$LOG_DIR" .
+tar -czf "$NAMESPACE-logs_$TIMESTAMP.tar.gz"  "$LOG_DIR" 
 if [ $? -eq 0 ]; then
   echo "Logs archived in $NAMESPACE-logs_$TIMESTAMP.tar.gz"
   echo "Note: Logs may contain Personally Identifiable Information (PII). Handle and store them securely."
