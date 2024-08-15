@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 import { DbService } from '@mm-services/db.service';
 
@@ -38,17 +39,12 @@ export class VersionService {
       });
   }
 
-  getServiceWorker ():Promise<{ version }> {
-    return new Promise((resolve, reject) => {
-      this.http
-        .get('/deploy-info.json')
-        .subscribe({
-          next: response => resolve({
-            version: this.getDeployVersion(response),
-          }),
-          error: error => reject(error),
-        });
-    });
+  async getServiceWorker():Promise<{ version }> {
+    const obs = this.http.get('/deploy-info.json');
+    const response = await firstValueFrom(obs);
+    return {
+      version: this.getDeployVersion(response),
+    };
   }
 
   getRemoteRev() {
