@@ -16,7 +16,6 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { AuthService } from '@mm-services/auth.service';
-import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
@@ -59,7 +58,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   selectModeAvailable = false;
   showContent?: boolean;
   enketoEdited?: boolean;
-  useSidebarFilter = true;
   isSidebarFilterOpen = false;
   isExporting = false;
   userParentPlace;
@@ -126,8 +124,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private async checkPermissions() {
     this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
     const isAdmin = this.sessionService.isAdmin();
-    const isDisabled = !isAdmin && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
-    this.useSidebarFilter = !isDisabled;
     this.canDefaultFilter = !isAdmin && this.isOnlineOnly && await this.authService.has(CAN_DEFAULT_FACILITY_FILTER);
   }
 
@@ -178,10 +174,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private subscribeSidebarFilter() {
-    if (!this.useSidebarFilter) {
-      return;
-    }
-
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);

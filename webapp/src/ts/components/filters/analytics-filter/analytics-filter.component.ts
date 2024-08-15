@@ -14,12 +14,9 @@ import { Subscription, filter } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
-import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
-import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
 
 @Component({
@@ -40,7 +37,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     private store: Store,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService,
     private sessionService: SessionService,
     private telemetryService: TelemetryService,
     private targetAggregatesService: TargetAggregatesService,
@@ -99,17 +95,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.subscriptions.add(routeSubscription);
   }
 
-  private checkPermissions() {
-    const permissions = [
-      OLD_REPORTS_FILTER_PERMISSION,
-      OLD_ACTION_BAR_PERMISSION
-    ];
-
-    return this.authService
-      .has(permissions)
-      .then((permissions) => permissions === false);
-  }
-
   private isTargetAggregates() {
     return this.getCurrentModuleId() === AGGREGATE_TARGETS_ID;
   }
@@ -120,15 +105,9 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
-    const [checkPermissions, isTargetAggregateEnabled] = await Promise.all([
-      this.checkPermissions(),
-      this.isTargetAggregateEnabled(),
-    ]);
+    const isTargetAggregateEnabled = await this.isTargetAggregateEnabled();
 
-    this.showFilterButton = !isAdmin &&
-      checkPermissions &&
-      this.isTargetAggregates() &&
-      isTargetAggregateEnabled;
+    this.showFilterButton = !isAdmin && this.isTargetAggregates() && isTargetAggregateEnabled;
   }
 
   openSidebar() {

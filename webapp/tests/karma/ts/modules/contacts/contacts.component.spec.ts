@@ -20,11 +20,9 @@ import { AuthService } from '@mm-services/auth.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
-import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
-import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { NavigationService } from '@mm-services/navigation.service';
@@ -127,11 +125,9 @@ describe('Contacts component', () => {
         ],
         declarations: [
           ContactsComponent,
-          ContactsFiltersComponent,
           ContactsMoreMenuComponent,
           FreetextFilterComponent,
           NavigationComponent,
-          ResetFiltersComponent,
           SortFilterComponent,
           FastActionButtonComponent,
           SearchBarComponent

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
@@ -21,14 +21,13 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './contacts.component.html'
 })
-export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ContactsComponent implements OnInit, OnDestroy {
   private readonly PAGE_SIZE = 25;
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
@@ -56,7 +55,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   sortDirection = this.defaultSortDirection;
   isAllowedToSort = true;
   additionalListItem = false;
-  useSearchNewDesign = true;
   enketoEdited?: boolean;
   selectedContact;
 
@@ -170,11 +168,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
     this.subscription.add(changesSubscription);
-  }
-
-  async ngAfterViewInit() {
-    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
-    this.useSearchNewDesign = !isDisabled;
   }
 
   ngOnDestroy() {
