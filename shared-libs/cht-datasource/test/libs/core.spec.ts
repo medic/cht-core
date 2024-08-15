@@ -205,7 +205,7 @@ describe('core lib', () => {
     });
   });
 
-  describe('getDocumentStream', () => {
+  describe('getPagedGenerator', () => {
     let fetchFunctionStub: SinonStub;
     const limit = 100;
     const cursor = null;
