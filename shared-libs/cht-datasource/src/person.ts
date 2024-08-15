@@ -48,7 +48,7 @@ export namespace v1 {
     }
   };
 
-  const assertCursor: (cursor: unknown) => asserts cursor is string | null = (cursor: unknown) => {
+  const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
     if (cursor && (typeof cursor !== 'string' || Number(cursor) < 0)) {
       throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}]`);
     }
