@@ -133,7 +133,7 @@ describe('person', () => {
       const pageData = { data: people, cursor };
       const limit = 3;
       const invalidLimit = -1;
-      const invalidCursor = '-1';
+      const invalidCursor = '';
       const personTypeQualifier = {contactType: 'person'} as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;

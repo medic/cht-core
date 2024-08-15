@@ -228,6 +228,7 @@ describe('local person', () => {
     describe('getPage', () => {
       const limit = 3;
       const cursor = null;
+      const notNullCursor = '5';
       const personIdentifier = 'person';
       const personTypeQualifier = {contactType: personIdentifier} as const;
       const invalidPersonTypeQualifier = { contactType: 'invalid' } as const;
@@ -263,9 +264,29 @@ describe('local person', () => {
         ).to.be.true;
         expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, Number(cursor))).to.be.true;
         expect(isPerson.callCount).to.equal(3);
-        expect(isPerson.getCall(0).args).to.deep.equal([settings, doc]);
-        expect(isPerson.getCall(1).args).to.deep.equal([settings, doc]);
-        expect(isPerson.getCall(2).args).to.deep.equal([settings, doc]);
+        isPerson.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+      });
+
+      it('returns a page of people when cursor is not null', async () => {
+        const doc = { type: 'person'};
+        const docs = [doc, doc, doc];
+        queryDocsByKeyInner.resolves(docs);
+        const expectedResult = {
+          cursor: '8',
+          data: docs
+        };
+
+        const res = await Person.v1.getPage(localContext)(personTypeQualifier, notNullCursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.callCount).to.equal(4);
+        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, Number(notNullCursor))).to.be.true;
+        expect(isPerson.callCount).to.equal(3);
+        isPerson.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
       });
 
       it('throws an error if person identifier is invalid/does not exist', async () => {
