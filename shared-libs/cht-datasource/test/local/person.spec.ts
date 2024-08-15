@@ -324,9 +324,7 @@ describe('local person', () => {
         expect(queryDocsByKeyInner.firstCall.args).to.deep.equal([[personIdentifier], limit, Number(cursor)]);
         expect(queryDocsByKeyInner.secondCall.args).to.deep.equal([[personIdentifier], 4, 3]);
         expect(isPerson.callCount).to.equal(6);
-        expect(isPerson.getCall(0).args).to.deep.equal([settings, doc]);
-        expect(isPerson.getCall(1).args).to.deep.equal([settings, doc]);
-        expect(isPerson.getCall(2).args).to.deep.equal([settings, doc]);
+        isPerson.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
       });
     });
   });
