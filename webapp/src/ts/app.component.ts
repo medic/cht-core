@@ -485,7 +485,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async enableOldNav() {
-    this.useOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
+    this.hasOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
   }
 
   private initForms() {
