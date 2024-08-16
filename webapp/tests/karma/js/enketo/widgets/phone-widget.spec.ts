@@ -94,6 +94,8 @@ describe('Enketo: Phone Widget', () => {
 
   [
     ['true', 'unique_tel'],
+    ['true()', 'tel'],
+    ['TRUE', 'tel'],
     ['false', 'tel'],
     [undefined, 'tel']
   ].forEach(([chtUniqueTel, expectedDataType]) => {
