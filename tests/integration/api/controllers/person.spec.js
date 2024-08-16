@@ -2,11 +2,8 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
-const chai = require('chai');
 const { expect } = require('chai');
-const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 const userFactory = require('@factories/cht/users/users');
-chai.use(deepEqualInAnyOrder);
 
 describe('Person API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -116,7 +113,7 @@ describe('Person API', () => {
   describe('GET /api/v1/person', async () => {
     const getPage = Person.v1.getPage(dataContext);
     const limit = 100;
-    const cursor = '0';
+    const cursor = null;
     const personType = 'person';
     const invalidContactType = 'invalidPerson';
     const onlineUserPlaceHierarchy = {
@@ -134,7 +131,7 @@ describe('Person API', () => {
       }
     };
 
-    it('returns a page of people', async () => {
+    it('returns a page of people for no limit and cursor passed', async () => {
       const expectedPeople = [
         contact0,
         contact1,
@@ -152,7 +149,7 @@ describe('Person API', () => {
           ...offlineUserPlaceHierarchy
         }
       ];
-      const responsePage = await getPage(Qualifier.byContactType(personType), cursor, limit);
+      const responsePage = await getPage(Qualifier.byContactType(personType));
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 

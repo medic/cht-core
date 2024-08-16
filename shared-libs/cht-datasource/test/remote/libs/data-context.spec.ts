@@ -152,13 +152,8 @@ describe('remote context lib', () => {
   });
 
   describe('getResources', () => {
-    let params: Record<string, string>;
-    let stringifiedParams: string;
-
-    beforeEach(() => {
-      params = {abc: 'xyz'};
-      stringifiedParams = new URLSearchParams(params).toString();
-    });
+    const params = {abc: 'xyz'};
+    const stringifiedParams = new URLSearchParams(params).toString();
 
     it('fetches a resource with a path', async () => {
       const path = 'path';

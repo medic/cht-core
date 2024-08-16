@@ -32,7 +32,7 @@ module.exports = {
       await checkUserPermissions(req);
 
       const personType  = Qualifier.byContactType(req.query.personType);
-      const limit = Number(req.query.limit) || 100;
+      const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
 
       const docs = await getPageByType()( personType, req.query.cursor, limit );
 

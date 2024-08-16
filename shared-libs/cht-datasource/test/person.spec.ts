@@ -132,8 +132,6 @@ describe('person', () => {
       const cursor = '1';
       const pageData = { data: people, cursor };
       const limit = 3;
-      const invalidLimit = -1;
-      const invalidCursor = '';
       const personTypeQualifier = {contactType: 'person'} as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
@@ -143,7 +141,20 @@ describe('person', () => {
         adapt.returns(getPage);
       });
 
-      it('retrieves people from the data context', async () => {
+      it('retrieves people from the data context when cursor is null', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, null, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+        expect(getPage.calledOnceWithExactly(personTypeQualifier, null, limit)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+      });
+
+      it('retrieves people from the data context when cursor is not null', async () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);
 
@@ -180,30 +191,49 @@ describe('person', () => {
         expect(getPage.notCalled).to.be.true;
       });
 
-      it('throws an error if limit is invalid', async () => {
-        isContactTypeQualifier.returns(true);
-        getPage.resolves(people);
+      [
+        -1,
+        null,
+        {},
+        '',
+        0,
+        1.1,
+        false
+      ].forEach((limitValue) => {
+        it(`throws an error if limit is invalid: ${String(limitValue)}`, async () => {
+          isContactTypeQualifier.returns(true);
+          getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, cursor, invalidLimit))
-          .to.be.rejectedWith(`limit must be a positive number`);
+          await expect(Person.v1.getPage(dataContext)(personTypeQualifier, cursor, limitValue as number))
+            .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
 
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
-        expect(getPage.notCalled).to.be.true;
+          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+          expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage))
+            .to.be.true;
+          expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+          expect(getPage.notCalled).to.be.true;
+        });
       });
 
-      it('throws an error if cursor is invalid', async () => {
-        isContactTypeQualifier.returns(true);
-        getPage.resolves(people);
+      [
+        {},
+        '',
+        1,
+        false,
+      ].forEach((skipValue) => {
+        it('throws an error if cursor is invalid', async () => {
+          isContactTypeQualifier.returns(true);
+          getPage.resolves(people);
 
-        await expect(Person.v1.getPage(dataContext)(personTypeQualifier, invalidCursor, limit))
-          .to.be.rejectedWith(`Invalid cursor token: [${String(invalidCursor)}]`);
+          await expect(Person.v1.getPage(dataContext)(personTypeQualifier, skipValue as string, limit))
+            .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
 
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
-        expect(getPage.notCalled).to.be.true;
+          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+          expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage))
+            .to.be.true;
+          expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+          expect(getPage.notCalled).to.be.true;
+        });
       });
     });
 
@@ -232,33 +262,15 @@ describe('person', () => {
         getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
       });
 
-      it('should get people generator with correct parameters', async () => {
+      it('should get people generator with correct parameters', () => {
         isContactTypeQualifier.returns(true);
-        getPagedGenerator.returns(mockGenerator());
+        getPagedGenerator.returns(mockGenerator);
 
-        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
-        const res = [];
+        const generator =   Person.v1.getAll(dataContext)(personTypeQualifier);
 
-        for await (const person of generator) {
-          res.push(person);
-        }
-
+        expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(getPagedGenerator.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
-        expect(res).to.be.deep.equal(people);
-        expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
-      });
-
-      it('should handle empty result set', async () => {
-        isContactTypeQualifier.returns(true);
-        getPagedGenerator.returns(emptyMockGenerator());
-
-        const generator =  Person.v1.getAll(dataContext)(personTypeQualifier);
-        const res = await generator.next();
-
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(getPagedGenerator.calledOnceWithExactly(personGetPage, personTypeQualifier)).to.be.true;
-        expect(res.value).to.equal(undefined);
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
       });
 

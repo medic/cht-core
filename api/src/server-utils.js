@@ -58,15 +58,15 @@ module.exports = {
     if (typeof err === 'string') {
       return module.exports.serverError(err, req, res);
     }
+
     // https://github.com/nodejs/node/issues/9027
     let code = err.code || err.statusCode || err.status || 500;
+    if (err instanceof InvalidArgumentError) {
+      code = 400;
+    }
     if (!Number.isInteger(code)) {
       logger.warn(`Non-numeric error code: ${code}`);
       code = 500;
-    }
-
-    if (err instanceof InvalidArgumentError) {
-      code = 400;
     }
 
     if (code === 401) {
