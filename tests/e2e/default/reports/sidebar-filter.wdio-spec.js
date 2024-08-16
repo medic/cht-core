@@ -32,50 +32,54 @@ describe('Reports Sidebar Filter', () => {
 
   const patient = personFactory.build({ parent: healthCenterUser });
   const today = moment();
+  const pregnancyHealthCenter = reportFactory
+    .report()
+    .build(
+      {
+        form: 'pregnancy',
+        reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
+      },
+      { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' }}
+    );
+  const pregnancyDistrictHospital = reportFactory
+    .report()
+    .build(
+      {
+        form: 'pregnancy',
+        reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
+      },
+      { patient, submitter: districtHospitalContact, fields: { lmp_date: 'Feb 16, 2022' }}
+    );
+  const visitHealthCenter = reportFactory
+    .report()
+    .build(
+      {
+        form: 'pregnancy_home_visit',
+        reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
+      },
+      { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' }}
+    );
+  const visitDistrictHospital = reportFactory
+    .report()
+    .build(
+      {
+        form: 'pregnancy_home_visit',
+        reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
+      },
+      { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' }}
+    );
   const reports = [
-    reportFactory
-      .report()
-      .build(
-        {
-          form: 'P',
-          reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
-        },
-        { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' }}
-      ),
-    reportFactory
-      .report()
-      .build(
-        {
-          form: 'P',
-          reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
-        },
-        { patient, submitter: districtHospitalContact, fields: { lmp_date: 'Feb 16, 2022' }}
-      ),
-    reportFactory
-      .report()
-      .build(
-        {
-          form: 'V',
-          reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
-        },
-        { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' }}
-      ),
-    reportFactory
-      .report()
-      .build(
-        {
-          form: 'V',
-          reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
-        },
-        { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' }}
-      ),
+    pregnancyHealthCenter,
+    pregnancyDistrictHospital,
+    visitHealthCenter,
+    visitDistrictHospital
   ];
-  let savedReports;
 
   before(async () => {
     await utils.saveDocs([ ...places.values(), patient ]);
-    savedReports = (await utils.saveDocs(reports)).map(result => result.id);
     await utils.createUsers([ districtHospitalUser, healthCenterUser ]);
+    const savedReports = await utils.saveDocs(reports);
+    savedReports.forEach((savedReport, index) => reports[index]._id = savedReport.id);
   });
 
   afterEach(async () => {
@@ -84,15 +88,12 @@ describe('Reports Sidebar Filter', () => {
   });
 
   it('should filter by date', async () => {
-    const pregnancyDistrictHospital = savedReports[1];
-    const visitDistrictHospital = savedReports[3];
-
     await loginPage.login(districtHospitalUser);
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
     await (await reportsPage.firstReport()).waitForDisplayed();
-    expect((await reportsPage.allReports()).length).to.equal(savedReports.length);
+    expect((await reportsPage.allReports()).length).to.equal(reports.length);
     
     await reportsPage.openSidebarFilter();
     await reportsPage.openSidebarFilterDateAccordion();
@@ -101,14 +102,28 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     expect((await reportsPage.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(pregnancyDistrictHospital)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(visitDistrictHospital)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(pregnancyDistrictHospital._id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(visitDistrictHospital._id)).isDisplayed()).to.be.true;
+  });
+
+  it('should filter by form', async () => {
+    await loginPage.login(districtHospitalUser);
+    await commonPage.waitForPageLoaded();
+
+    await commonPage.goToReports();
+    await (await reportsPage.firstReport()).waitForDisplayed();
+    expect((await reportsPage.allReports()).length).to.equal(reports.length);
+
+    await reportsPage.openSidebarFilter();
+    await reportsPage.filterByForm('Pregnancy home visit');
+    await commonPage.waitForPageLoaded();
+
+    expect((await reportsPage.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(visitDistrictHospital._id)).isDisplayed()).to.be.true;
   });
 
   it('should filter by user associated place when the permission to default filter is enabled', async () => {
-    const pregnancyHealthCenter = savedReports[0];
-    const visitHealthCenter = savedReports[2];
-
     await loginPage.login(healthCenterUser);
     await commonPage.waitForPageLoaded();
 
@@ -122,8 +137,8 @@ describe('Reports Sidebar Filter', () => {
     await (await reportsPage.firstReport()).waitForDisplayed();
 
     expect((await reportsPage.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(visitHealthCenter)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter._id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
   });
 });
 

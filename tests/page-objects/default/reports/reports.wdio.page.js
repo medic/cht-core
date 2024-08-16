@@ -34,6 +34,8 @@ const reviewReportCloseButton = () => $(`${REVIEW_REPORT_CONTAINER} .panel-heade
 
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion mat-expansion-panel-header');
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion mat-panel-description');
+const sidebarFilterFormAccordionHeader = () => $('#form-filter-accordion mat-expansion-panel-header');
+const sidebarFilterFormAccordionBody = () => $('#form-filter-accordion mat-panel-description');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
 const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
@@ -252,6 +254,13 @@ const openSidebarFilterDateAccordion = async () => {
   return (await sidebarFilterDateAccordionBody()).waitForDisplayed();
 };
 
+const filterByForm = async (formName) => {
+  await (await sidebarFilterFormAccordionHeader()).click();
+  await (await sidebarFilterFormAccordionBody()).waitForDisplayed();
+  const option = sidebarFilterFormAccordionBody().$(`a*=${formName}`);
+  await (await option).click();
+};
+
 const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await (await fieldPromise).waitForDisplayed();
   await (await fieldPromise).click();
@@ -464,6 +473,7 @@ module.exports = {
   openSidebarFilterDateAccordion,
   setSidebarFilterFromDate,
   setSidebarFilterToDate,
+  filterByForm,
   setDateInput,
   getFieldValue,
   setBikDateInput,
