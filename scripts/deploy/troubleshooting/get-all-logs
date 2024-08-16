@@ -24,10 +24,10 @@ SINCE=${2:-} # Optional since parameter
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 LOG_DIR=$(mktemp -d "${NAMESPACE}-logs_${TIMESTAMP}-XXXXXX")
 
-trap "rm -rf '$LOG_DIR'" EXIT
+trap 'rm -rf "$LOG_DIR"' EXIT
 
 # Get a list of all pod names in the namespace
-PODS=$(kubectl -n $NAMESPACE get pods -o jsonpath="{.items[*].metadata.name}")
+PODS=$(kubectl -n "$NAMESPACE" get pods -o jsonpath="{.items[*].metadata.name}")
 
 if [ -z "$PODS" ]; then
   echo "No Pods found in Namespace $NAMESPACE."
@@ -40,16 +40,16 @@ for POD in $PODS; do
 
   # Fetch current logs
   if [ -z "$SINCE" ]; then
-    kubectl -n $NAMESPACE logs $POD > "$LOG_DIR/${POD}_current.log"
+    kubectl -n "$NAMESPACE" logs "$POD" > "$LOG_DIR/${POD}_current.log"
   else
-    kubectl -n $NAMESPACE logs --since=$SINCE $POD > "$LOG_DIR/${POD}_current.log"
+    kubectl -n "$NAMESPACE" logs --since="$SINCE" "$POD" > "$LOG_DIR/${POD}_current.log"
   fi
 
   # Fetch previous logs
   if [ -z "$SINCE" ]; then
-    kubectl -n $NAMESPACE logs --previous $POD > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
+    kubectl -n "$NAMESPACE" logs --previous "$POD" > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
   else
-    kubectl -n $NAMESPACE logs --since=$SINCE --previous $POD > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
+    kubectl -n "$NAMESPACE" logs --since="$SINCE" --previous "$POD" > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
   fi
 
   # If previous log file is empty, remove it
@@ -59,7 +59,7 @@ for POD in $PODS; do
 done
 
 # Create a tar.gz archive of the log files
-tar -czf "$NAMESPACE-logs_$TIMESTAMP.tar.gz"  "$LOG_DIR" 
+tar -czf "$NAMESPACE-logs_$TIMESTAMP.tar.gz" "$LOG_DIR"
 if [ $? -eq 0 ]; then
   echo "Logs archived in $NAMESPACE-logs_$TIMESTAMP.tar.gz"
   echo "Note: Logs may contain Personally Identifiable Information (PII). Handle and store them securely."
