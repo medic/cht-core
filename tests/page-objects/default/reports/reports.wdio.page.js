@@ -38,6 +38,8 @@ const sidebarFilterFormAccordionHeader = () => $('#form-filter-accordion mat-exp
 const sidebarFilterFormAccordionBody = () => $('#form-filter-accordion mat-panel-description');
 const sidebarFilterFacilityAccordionHeader = () => $('#place-filter-accordion mat-expansion-panel-header');
 const sidebarFilterFacilityAccordionBody = () => $('#place-filter-accordion mat-panel-description');
+const sidebarFilterStatusAccordionHeader = () => $('#status-filter-accordion mat-expansion-panel-header');
+const sidebarFilterStatusAccordionBody = () => $('#status-filter-accordion mat-panel-description');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
 const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
@@ -260,6 +262,14 @@ const filterByForm = async (formName) => {
   await (await sidebarFilterFormAccordionHeader()).click();
   await (await sidebarFilterFormAccordionBody()).waitForDisplayed();
   const option = sidebarFilterFormAccordionBody().$(`a*=${formName}`);
+  await (await option).waitForDisplayed();
+  await (await option).click();
+};
+
+const filterByStatus = async (statusOption) => {
+  await (await sidebarFilterStatusAccordionHeader()).click();
+  await (await sidebarFilterStatusAccordionBody()).waitForDisplayed();
+  const option = sidebarFilterStatusAccordionBody().$(`a*=${statusOption}`);
   await (await option).waitForDisplayed();
   await (await option).click();
 };
@@ -492,6 +502,7 @@ module.exports = {
   setSidebarFilterToDate,
   filterByForm,
   filterByFacility,
+  filterByStatus,
   setDateInput,
   getFieldValue,
   setBikDateInput,

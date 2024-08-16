@@ -37,6 +37,7 @@ describe('Reports Sidebar Filter', () => {
     .build(
       {
         form: 'pregnancy',
+        verified: true,
         reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
       },
       { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' }}
@@ -55,6 +56,7 @@ describe('Reports Sidebar Filter', () => {
     .build(
       {
         form: 'pregnancy_home_visit',
+        verified: false,
         reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
       },
       { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' }}
@@ -64,6 +66,7 @@ describe('Reports Sidebar Filter', () => {
     .build(
       {
         form: 'pregnancy_home_visit',
+        verified: true,
         reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
       },
       { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' }}
@@ -138,6 +141,23 @@ describe('Reports Sidebar Filter', () => {
     expect((await reportsPage.allReports()).length).to.equal(2);
     expect(await (await reportsPage.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
     expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter._id)).isDisplayed()).to.be.true;
+  });
+
+  it('should filter by status', async () => {
+    await loginPage.login(districtHospitalUser);
+    await commonPage.waitForPageLoaded();
+
+    await commonPage.goToReports();
+    await (await reportsPage.firstReport()).waitForDisplayed();
+    expect((await reportsPage.allReports()).length).to.equal(reports.length);
+
+    await reportsPage.openSidebarFilter();
+    await reportsPage.filterByStatus('Reviewed: correct');
+    await commonPage.waitForPageLoaded();
+
+    expect((await reportsPage.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter._id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(visitDistrictHospital._id)).isDisplayed()).to.be.true;
   });
 
   it('should filter by user associated place when the permission to default filter is enabled', async () => {
