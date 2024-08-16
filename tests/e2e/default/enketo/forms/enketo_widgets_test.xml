@@ -44,12 +44,6 @@
           <text id="/enketo_widgets_test/cascading_widgets:label">
             <value>Cascading Select widgets</value>
           </text>
-          <text id="/enketo_widgets_test/enketo_test_select/phone:jr:constraintMsg">
-            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
-          </text>
-          <text id="/enketo_widgets_test/enketo_test_select/phone:label">
-            <value>Phone Number</value>
-          </text>
           <text id="/enketo_widgets_test/enketo_test_select/select1_spinner/a:label">
             <value>option a</value>
           </text>
@@ -173,11 +167,10 @@
         </translation>
       </itext>
       <instance>
-        <enketo_widgets_test delimiter="#" id="enketo_widgets_test" prefix="J1!enketo_widgets_test!" version="2023-09-11 00:00:00">
+        <enketo_widgets_test delimiter="#" id="enketo_widgets_test" prefix="J1!enketo_widgets_test!" version="2024-08-16 00:00:00">
           <enketo_test_select>
             <select_spinner/>
             <select1_spinner/>
-            <phone/>
           </enketo_test_select>
           <cascading_widgets>
             <group1>
@@ -217,6 +210,38 @@
         </enketo_widgets_test>
       </instance>
       <instance id="contact-summary"/>
+      <instance id="list">
+        <root>
+          <item>
+            <itextId>static_instance-list-0</itextId>
+            <name>a</name>
+          </item>
+          <item>
+            <itextId>static_instance-list-1</itextId>
+            <name>b</name>
+          </item>
+          <item>
+            <itextId>static_instance-list-2</itextId>
+            <name>c</name>
+          </item>
+          <item>
+            <itextId>static_instance-list-3</itextId>
+            <name>d</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="countries">
+        <root>
+          <item>
+            <itextId>static_instance-countries-0</itextId>
+            <name>nl</name>
+          </item>
+          <item>
+            <itextId>static_instance-countries-1</itextId>
+            <name>usa</name>
+          </item>
+        </root>
+      </instance>
       <instance id="cities">
         <root>
           <item>
@@ -251,99 +276,66 @@
           </item>
         </root>
       </instance>
-      <instance id="list">
-        <root>
-          <item>
-            <itextId>static_instance-list-0</itextId>
-            <name>a</name>
-          </item>
-          <item>
-            <itextId>static_instance-list-1</itextId>
-            <name>b</name>
-          </item>
-          <item>
-            <itextId>static_instance-list-2</itextId>
-            <name>c</name>
-          </item>
-          <item>
-            <itextId>static_instance-list-3</itextId>
-            <name>d</name>
-          </item>
-        </root>
-      </instance>
       <instance id="neighborhoods">
         <root>
           <item>
             <itextId>static_instance-neighborhoods-0</itextId>
             <country>usa</country>
-            <name>bronx</name>
             <city>nyc</city>
+            <name>bronx</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-1</itextId>
             <country>usa</country>
-            <name>harlem</name>
             <city>nyc</city>
+            <name>harlem</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-2</itextId>
             <country>usa</country>
-            <name>belair</name>
             <city>la</city>
+            <name>belair</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-3</itextId>
             <country>nl</country>
-            <name>wes</name>
             <city>ams</city>
+            <name>wes</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-4</itextId>
             <country>usa</country>
-            <name>parkhill</name>
             <city>den</city>
+            <name>parkhill</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-5</itextId>
             <country>nl</country>
-            <name>haven</name>
             <city>rot</city>
+            <name>haven</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-6</itextId>
             <country>nl</country>
-            <name>dam</name>
             <city>ams</city>
+            <name>dam</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-7</itextId>
             <country>nl</country>
-            <name>centrum</name>
             <city>rot</city>
+            <name>centrum</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-8</itextId>
             <country>nl</country>
-            <name>havendr</name>
             <city>dro</city>
-          </item>
-        </root>
-      </instance>
-      <instance id="countries">
-        <root>
-          <item>
-            <itextId>static_instance-countries-0</itextId>
-            <name>nl</name>
-          </item>
-          <item>
-            <itextId>static_instance-countries-1</itextId>
-            <name>usa</name>
+            <name>havendr</name>
           </item>
         </root>
       </instance>
       <bind nodeset="/enketo_widgets_test/enketo_test_select/select_spinner" type="select"/>
       <bind nodeset="/enketo_widgets_test/enketo_test_select/select1_spinner" type="select1"/>
-      <bind constraint="true()" jr:constraintMsg="jr:itext('/enketo_widgets_test/enketo_test_select/phone:jr:constraintMsg')" nodeset="/enketo_widgets_test/enketo_test_select/phone" required="true()" type="tel"/>
       <bind nodeset="/enketo_widgets_test/cascading_widgets/group1/country" type="select1"/>
       <bind nodeset="/enketo_widgets_test/cascading_widgets/group1/city" type="select1"/>
       <bind nodeset="/enketo_widgets_test/cascading_widgets/group1/neighborhood" type="select1"/>
@@ -405,9 +397,6 @@
           <value>d</value>
         </item>
       </select1>
-      <input ref="/enketo_widgets_test/enketo_test_select/phone">
-        <label ref="jr:itext('/enketo_widgets_test/enketo_test_select/phone:label')"/>
-      </input>
     </group>
     <group appearance="field-list" ref="/enketo_widgets_test/cascading_widgets">
       <label ref="jr:itext('/enketo_widgets_test/cascading_widgets:label')"/>
