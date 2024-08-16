@@ -81,7 +81,7 @@ describe('Enketo: Phone Widget', () => {
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
-    new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+    new PhoneWidget($(PhoneWidget.selector)[0]);
 
     // Check a proxy input field is added, and the real one is hidden.
     expect($('input').length).to.equal(2);
@@ -102,7 +102,7 @@ describe('Enketo: Phone Widget', () => {
       const input = inputSelector(inputName);
       const proxyInput = proxySelector(inputName);
 
-      new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+      new PhoneWidget($(PhoneWidget.selector)[0]);
 
       // Check a proxy input field is added, and the real one is hidden.
       expect($('input').length).to.equal(2);
@@ -116,7 +116,7 @@ describe('Enketo: Phone Widget', () => {
 
   it('should format input when input value change', async () => {
     buildHtml();
-    await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+    await new PhoneWidget($(PhoneWidget.selector)[0]);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -139,7 +139,7 @@ describe('Enketo: Phone Widget', () => {
     const expectedError = new Error('could not get settings');
     settingsService.get.rejects(expectedError);
 
-    await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+    await new PhoneWidget($(PhoneWidget.selector)[0]);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -156,7 +156,7 @@ describe('Enketo: Phone Widget', () => {
   it('should not format invalid input', async () => {
     phoneNumberNormalize.returns(false);
     buildHtml();
-    await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+    await new PhoneWidget($(PhoneWidget.selector)[0]);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -171,7 +171,7 @@ describe('Enketo: Phone Widget', () => {
 
   it('should keep formatted input when value is valid', async () => {
     buildHtml();
-    await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+    await new PhoneWidget($(PhoneWidget.selector)[0]);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 

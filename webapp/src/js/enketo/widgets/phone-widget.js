@@ -56,16 +56,13 @@ const deprecated = {
    * @extends Widget
    */
 class PhoneWidget extends Widget {
-  constructor( element, options, Settings = window.CHTCore.Settings ) {
-    super(element, options);
-
+  _init() {
     const $input = $( this.element );
     const $wrapper = $input.closest('.question');
     const uniqueTel = $wrapper.attr('data-cht-unique_tel') === 'true' || deprecated.isDeprecated($wrapper);
     $input.attr('data-type-xml', uniqueTel ? 'unique_tel' : 'tel');
 
     // Add a proxy input field, which will send its input, formatted, to the real input field.
-    // TODO(estellecomment): format the visible field onBlur to user-friendly format.
     const $proxyInput = $input.clone();
     $proxyInput.addClass('ignore');
     $proxyInput.removeAttr('data-relevant');
@@ -76,7 +73,7 @@ class PhoneWidget extends Widget {
 
     $input.hide();
 
-    return Settings.get()
+    return window.CHTCore.Settings.get()
       .then(settings => formatAndCopy( $proxyInput, $input, settings ))
       .catch(err => {
         console.error('Error getting settings:', err);
