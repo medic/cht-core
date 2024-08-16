@@ -31,7 +31,7 @@ describe('well-known', () => {
             ['62:BF:C1:78:24:D8:4D:5C:B4:E1:8B:66:98:EA:14:16:57:6F:A4:E5:96:CD:93:81:B2:65:19:71:A7:80:EA:4D']
         }
       }];
-      await utils.updateSettings({ assetlinks }, true);
+      await utils.updateSettings({ assetlinks }, { ignoreReload: true });
 
       const response = await utils.request(Object.assign(
         { path: '/.well-known/assetlinks.json' },

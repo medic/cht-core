@@ -38,7 +38,7 @@ const assertDocIds = (response, ...expectedIds) => {
   const receivedIds = response.doc_ids_revs
     .map(pair => pair.id)
     .filter(id => !isFormOrTranslation(id));
-  expect(receivedIds).to.include.members([ ...expectedIds, ...DEFAULT_EXPECTED ]);
+  expect(receivedIds).to.include.members([...expectedIds, ...DEFAULT_EXPECTED]);
 };
 
 const users = [
@@ -198,7 +198,7 @@ describe('replication', () => {
     await utils.createUsers(users, true);
   });
 
-  after( async () => {
+  after(async () => {
     // Clean up like normal
     await utils.revertDb([], true);// And also revert users we created in before
     await utils.deleteUsers(users, true);
@@ -277,7 +277,7 @@ describe('replication', () => {
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
 
-      await utils.saveDocs([ ...allowedBob, ...allowedSteve, ...deniedDocs ]);
+      await utils.saveDocs([...allowedBob, ...allowedSteve, ...deniedDocs]);
       const [responseBob, responseSteve] = await Promise.all([
         await requestDocs('bob'),
         await requestDocs('steve')
@@ -294,7 +294,7 @@ describe('replication', () => {
 
       it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled',
         async () => {
-          await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
+          await utils.updateSettings({ district_admins_access_unallocated_messages: true }, { ignoreReload: true });
           await utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' });
           const response = await requestDocs('bob');
           assertDocIds(response, ...bobsIds, 'unallocated_report');
@@ -337,7 +337,7 @@ describe('replication', () => {
       });
 
       it('should show contacts to a user only if they are within the configured depth', async () => {
-        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true);
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, { ignoreReload: true });
         const response = await requestDocs('chw');
         assertDocIds(response, ...chwIds, 'depth_clinic');
 
@@ -353,7 +353,7 @@ describe('replication', () => {
               { role: 'analytics', depth: 2 },
             ]
           },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(docs);
         const response = await requestDocs('chw');
@@ -423,7 +423,7 @@ describe('replication', () => {
 
         await utils.updateSettings(
           { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(contacts);
         await utils.saveDocs(reports);
@@ -498,7 +498,7 @@ describe('replication', () => {
             replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }],
             permissions,
           },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(contacts);
         await utils.saveDocs(reports);
@@ -563,7 +563,7 @@ describe('replication', () => {
 
         await utils.updateSettings(
           { replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(docs);
         const response = await requestDocs('chw');
@@ -577,13 +577,13 @@ describe('replication', () => {
           _id: 'clinic_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } } }
         };
         const healthCenterPatient = {
           _id: 'health_center_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+          parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
         };
         return utils.saveDocs([patient, healthCenterPatient]);
       });
@@ -598,7 +598,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -611,7 +611,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -619,11 +619,11 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: ''},
+          fields: { patient_id: 'health_center_patient', needs_signoff: '' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
@@ -634,15 +634,15 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
-        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true);
-        await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, { ignoreReload: true });
+        await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
-        assertDocIds(await requestDocs('chw-boss'), ...chwBossIds,  'health_center_patient', 'health_center_report');
+        assertDocIds(await requestDocs('chw-boss'), ...chwBossIds, 'health_center_patient', 'health_center_report');
         assertDocIds(await requestDocs('supervisor'), ...supervisorIds);
         assertDocIds(await requestDocs('bob'), ...bobsIds, 'bob_report');
       });
@@ -657,7 +657,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -670,7 +670,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -678,11 +678,11 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
@@ -693,12 +693,12 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
-        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }]}, true);
-        await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, { ignoreReload: true });
+        await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
         assertDocIds(
@@ -730,7 +730,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -743,7 +743,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -751,11 +751,11 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
@@ -766,12 +766,12 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
-        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }]}, true);
-        await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] }, { ignoreReload: true });
+        await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
         assertDocIds(
@@ -1020,14 +1020,14 @@ describe('replication', () => {
         type: 'data_record',
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
-        fields: { },
+        fields: {},
       },
       {
         _id: 'not_purged_2',
         type: 'data_record',
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
-        fields: { },
+        fields: {},
       },
       {
         _id: 'purged_1',
@@ -1035,7 +1035,7 @@ describe('replication', () => {
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         to_be_purged: true,
-        fields: { },
+        fields: {},
       },
       {
         _id: 'purged_2',
@@ -1043,11 +1043,11 @@ describe('replication', () => {
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         to_be_purged: true,
-        fields: { },
+        fields: {},
       },
     ];
 
-    const purgeFn = function(userCtx, contact, reports) {
+    const purgeFn = function (userCtx, contact, reports) {
       return reports.filter(r => r.to_be_purged).map(r => r._id);
     };
 
@@ -1076,7 +1076,7 @@ describe('replication', () => {
       await utils.saveDocs(reports);
 
       const seq = await sentinelUtils.getCurrentSeq();
-      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
+      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, { ignoreReload: true });
       await utils.stopSentinel();
       await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);
@@ -1099,13 +1099,13 @@ describe('replication', () => {
 
       await utils.saveDocs(reports);
       const seq = await sentinelUtils.getCurrentSeq();
-      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
+      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, { ignoreReload: true });
       await utils.stopSentinel();
       await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);
 
       const response = await requestDeletes('bob', [...savedIds, ...deletedIds, ...getIds(reports)]);
-      expect(response.doc_ids).to.have.members([ ...deletedIds, 'purged_1', 'purged_2']);
+      expect(response.doc_ids).to.have.members([...deletedIds, 'purged_1', 'purged_2']);
     });
   });
 });

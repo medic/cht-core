@@ -106,7 +106,7 @@ describe('Bikram Sambat date display', () => {
     const contactSummaryFile = path.join(__dirname, 'bikram-sambat-contact-template-config.js');
 
     const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
-    await utils.updateSettings({ contact_summary: contactSummary, forms, registrations, transitions }, true);
+    await utils.updateSettings({ contact_summary: contactSummary, forms, registrations, transitions }, { ignoreReload: true });
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
@@ -263,7 +263,7 @@ describe('Bikram Sambat date display', () => {
       id: 'lmp-id-bs-parts',
       from: '+9779876543210',
       content: `${formIdBSParts} Shrestha ` +
-      `${lmpBSParts.year} ${lmpBSParts.month} ${lmpBSParts.day}`
+        `${lmpBSParts.year} ${lmpBSParts.month} ${lmpBSParts.day}`
     });
 
     await commonPage.goToPeople();

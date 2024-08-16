@@ -92,7 +92,7 @@ const transitionsConfig = {
       }],
     }]
   }],
-  update_clinics: [ {
+  update_clinics: [{
     form: 'TEMP',
     messages: [
       {
@@ -164,10 +164,10 @@ const transitionsConfig = {
 
 const formsConfig = {
   MUTE: {
-    meta: { label: { en: 'Mute' }, code: 'MUTE'},
+    meta: { label: { en: 'Mute' }, code: 'MUTE' },
     fields: {
       patient_id: {
-        labels: { short: { translation_key: 'patient_id' }},
+        labels: { short: { translation_key: 'patient_id' } },
         position: 1,
         type: 'string',
         length: [5, 13],
@@ -176,10 +176,10 @@ const formsConfig = {
     }
   },
   DEATH: {
-    meta: { label: { en: 'Death reporting' }, code: 'DEATH'},
+    meta: { label: { en: 'Death reporting' }, code: 'DEATH' },
     fields: {
       patient_id: {
-        labels: { short: { translation_key: 'patient_id' }},
+        labels: { short: { translation_key: 'patient_id' } },
         position: 1,
         type: 'string',
         length: [5, 13],
@@ -188,17 +188,17 @@ const formsConfig = {
     }
   },
   TEMP: {
-    meta: { label: { en: 'Fever reporting' }, code: 'TEMP'},
+    meta: { label: { en: 'Fever reporting' }, code: 'TEMP' },
     fields: {
       patient_id: {
-        labels: { short: { translation_key: 'patient_id' }},
+        labels: { short: { translation_key: 'patient_id' } },
         position: 0,
         type: 'string',
         length: [5, 13],
         required: true
       },
       temp: {
-        labels: { short: { translation_key: 'temp' }},
+        labels: { short: { translation_key: 'temp' } },
         position: 1,
         type: 'string',
         length: [1, 2],
@@ -251,12 +251,12 @@ const expectTransitions = (infodoc, ...transitions) => {
 const processSMS = (settings) => {
   let ids;
   const watchChanges = apiUtils.getApiSmsChanges(messages);
-  return utils.updateSettings(settings, true)
+  return utils.updateSettings(settings, { ignoreReload: true })
     .then(() => Promise.all([
       watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ]))
-    .then(([ changes ]) => {
+    .then(([changes]) => {
       ids = changes.map(change => change.id);
     })
     .then(() => sentinelUtils.waitForSentinel(ids))
@@ -268,8 +268,8 @@ const processSMS = (settings) => {
     ]));
 };
 
-const chw1Lineage = { _id: contacts[3]._id,  parent: contacts[3].parent };
-const chw2Lineage = { _id: contacts[4]._id,  parent: contacts[4].parent };
+const chw1Lineage = { _id: contacts[3]._id, parent: contacts[3].parent };
+const chw2Lineage = { _id: contacts[4]._id, parent: contacts[4].parent };
 
 describe('Transitions public_form', () => {
   before(async () => {
@@ -289,7 +289,7 @@ describe('Transitions public_form', () => {
       transitionsConfig
     );
 
-    const [ docs, infos, patient1, patient2 ] = await processSMS(settings);
+    const [docs, infos, patient1, patient2] = await processSMS(settings);
     let doc;
     let info;
 
@@ -361,7 +361,7 @@ describe('Transitions public_form', () => {
       transitionsConfig
     );
 
-    const [ docs, infos, patient1, patient2 ] = await processSMS(settings);
+    const [docs, infos, patient1, patient2] = await processSMS(settings);
     let doc;
     let info;
 
@@ -437,7 +437,7 @@ describe('Transitions public_form', () => {
       transitionsConfig
     );
 
-    const [ docs, infos, patient1, patient2 ] = await processSMS(settings);
+    const [docs, infos, patient1, patient2] = await processSMS(settings);
     let doc;
     let info;
 

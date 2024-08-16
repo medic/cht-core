@@ -272,7 +272,7 @@ describe('reminders', () => {
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(3, 'minute'));
         return utils.updateSettings(
           { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
-          true
+          { ignoreReload: true }
         );
       })
       .then(() => restartSentinel())
@@ -375,7 +375,7 @@ describe('reminders', () => {
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(1, 'minute'));
         return utils.updateSettings(
           { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
-          true
+          { ignoreReload: true }
         );
       })
       .then(() => restartSentinel())

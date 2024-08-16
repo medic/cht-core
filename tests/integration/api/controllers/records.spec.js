@@ -33,7 +33,7 @@ describe('Import Records', () => {
         }
       }
     }
-  }, true));
+  }, { ignoreReload: true }));
 
   describe('JSON', () => {
     it('parses and stores the passed JSON', () => {
@@ -66,7 +66,7 @@ describe('Import Records', () => {
           include_docs: true,
           reduce: false
         }))
-        .then(({rows}) => {
+        .then(({ rows }) => {
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({
@@ -110,7 +110,7 @@ describe('Import Records', () => {
           include_docs: true,
           reduce: false
         }))
-        .then(({rows}) => {
+        .then(({ rows }) => {
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({
@@ -151,7 +151,7 @@ describe('Import Records', () => {
           include_docs: true,
           reduce: false
         }))
-        .then(({rows}) => {
+        .then(({ rows }) => {
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({

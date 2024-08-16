@@ -29,14 +29,14 @@ describe('Token login', () => {
       },
       app_url: utils.getOrigin()
     };
-    return utils.updateSettings(settings, true);
+    return utils.updateSettings(settings, { ignoreReload: true });
   };
 
   const createUser = (user) => {
     return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
   };
 
-  const getUser = id => utils.request({ path: `/_users/${id}`});
+  const getUser = id => utils.request({ path: `/_users/${id}` });
 
   const getTokenUrl = ({ token_login: { token } } = {}) => {
     const id = `token:login:${token}`;

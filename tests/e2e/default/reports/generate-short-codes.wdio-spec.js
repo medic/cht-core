@@ -29,7 +29,7 @@ describe('generating short codes', () => {
   };
 
   const registrations = [{
-    form: 'CASEID', events: [ { name: 'on_create', trigger: 'add_case' } ]
+    form: 'CASEID', events: [{ name: 'on_create', trigger: 'add_case' }]
   }];
 
   const transitions = {
@@ -38,7 +38,7 @@ describe('generating short codes', () => {
 
   before(async () => {
     await utils.saveDocs(docs);
-    await utils.updateSettings({forms, registrations, transitions}, true);
+    await utils.updateSettings({ forms, registrations, transitions }, { ignoreReload: true });
 
     await loginPage.cookieLogin();
   });

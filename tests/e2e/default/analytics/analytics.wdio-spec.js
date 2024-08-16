@@ -12,11 +12,6 @@ const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
-const updateSettings = async (settings) => {
-  await utils.updateSettings(settings, 'api');
-  await commonPage.sync(true);
-  await browser.refresh();
-};
 
 const compileTargets = async (targetsFileName = 'targets-config.js') => {
   await chtConfUtils.initializeConfigDir();
@@ -75,7 +70,8 @@ describe('Targets', () => {
 
   it('should display correct message when no target found', async () => {
     const settings = await compileTargets();
-    await updateSettings(settings);
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
+
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
@@ -89,7 +85,7 @@ describe('Targets', () => {
     const tasks = {
       targets: { enabled: false }
     };
-    await updateSettings({ tasks });
+    await utils.updateSettings({ tasks }, { ignoreReload: 'api', sync: true, refresh: true });
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
@@ -103,7 +99,7 @@ describe('Targets', () => {
 
   it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
-    await updateSettings(settings);
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
     await analyticsPage.goToTargets();
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

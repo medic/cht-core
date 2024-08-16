@@ -129,7 +129,7 @@ const setReportContact = (report, username) => {
   }
   if (typeof username === 'string') {
     const user = users.find(u => u.username === username);
-    report.contact = {_id: user.contact._id, parent: {_id: user.place._id, parent: {_id: 'PARENT_PLACE'}}};
+    report.contact = { _id: user.contact._id, parent: { _id: user.place._id, parent: { _id: 'PARENT_PLACE' } } };
   } else {
     report.contact = username;
   }
@@ -344,10 +344,10 @@ describe('db-doc handler', () => {
         chai.expect(results[3])
           .to.deep.include(patients.find(patient => patient._id === 'fixture:offline:clinic:patient'));
 
-        chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-        chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-        chai.expect(results[6]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-        chai.expect(results[7]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+        chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+        chai.expect(results[6]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+        chai.expect(results[7]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
       });
     });
 
@@ -369,18 +369,24 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']),
-          allowed: true },
+        {
+          doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: true
+        },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
-          allowed: true },
+        {
+          doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: true
+        },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
-          allowed: true },
+        {
+          doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: true
+        },
 
         { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
@@ -398,18 +404,24 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']),
-          allowed: false },
+        {
+          doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: false
+        },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
-          allowed: false },
+        {
+          doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: false
+        },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
-          allowed: false },
+        {
+          doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: false
+        },
       ];
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
@@ -422,7 +434,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include(reportScenarios[idx].doc);
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -446,7 +458,7 @@ describe('db-doc handler', () => {
       ];
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
-        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
+        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true)
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
@@ -456,7 +468,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include(reportScenarios[idx].doc);
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -481,7 +493,7 @@ describe('db-doc handler', () => {
 
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
-        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }]}, true)
+        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] }, true)
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(
           reportScenarios.map(scenario => utils
@@ -493,7 +505,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include(reportScenarios[idx].doc);
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -652,7 +664,7 @@ describe('db-doc handler', () => {
               if (patientsToDelete[idx]._id.startsWith('temp:offline')) {
                 chai.expect(result).to.deep.include(patientsToDelete[idx]);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
               }
             });
           })
@@ -665,7 +677,7 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc, idx);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' }, idx);
               }
             });
           })
@@ -680,7 +692,7 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc, idx);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' }, idx);
               }
             });
           })
@@ -697,7 +709,7 @@ describe('db-doc handler', () => {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
                 chai.expect(result._deleted).to.equal(true);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
               }
             });
           });
@@ -765,7 +777,7 @@ describe('db-doc handler', () => {
 
         const docs = reportScenarios.map(scenario => scenario.doc);
         return utils
-          .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true)
           .then(() => utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
             _.defaults({ path: `/${patient._id}` }, offlineRequestOptions)
@@ -773,7 +785,7 @@ describe('db-doc handler', () => {
           .then(results => {
             // cannot read patients
             results.forEach(result => {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             });
           })
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
@@ -785,7 +797,7 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
               }
             });
           })
@@ -798,7 +810,7 @@ describe('db-doc handler', () => {
           .then(results => {
             // cannot read deleted patients
             results.forEach(result => {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             });
           })
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
@@ -810,7 +822,7 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' }, idx);
               }
             });
           })
@@ -825,7 +837,7 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
               }
             });
           })
@@ -842,7 +854,7 @@ describe('db-doc handler', () => {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
                 chai.expect(result._deleted).to.equal(true);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
               }
             });
           });
@@ -1063,8 +1075,8 @@ describe('db-doc handler', () => {
       };
 
       return utils
-        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2 }]}, true)
-        .then(() => utils.saveDocs([ allowedTask, deniedTask, allowedTarget, deniedTarget ]))
+        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2 }] }, true)
+        .then(() => utils.saveDocs([allowedTask, deniedTask, allowedTarget, deniedTarget]))
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/task1' }, offlineRequestOptions)),
           utils.requestOnTestDb(_.defaults({ path: '/task2' }, offlineRequestOptions)).catch(err => err),
@@ -1073,9 +1085,9 @@ describe('db-doc handler', () => {
         ]))
         .then(results => {
           chai.expect(results[0]).to.deep.include(allowedTask);
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           chai.expect(results[2]).to.deep.include(allowedTarget);
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         })
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, supervisorRequestOptions)),
@@ -1094,13 +1106,13 @@ describe('db-doc handler', () => {
           // supervisor can see the user's contact
           chai.expect(results[0]._id).to.equal('fixture:user:offline');
           // supervisor can't see the user's user-settings document
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           // supervisor has replication depth of 2
-          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
 
           // supervisor can't see the any user's tasks
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
 
           // supervisor can see both targets
           chai.expect(results[5]).to.deep.include(allowedTarget);
@@ -1134,9 +1146,9 @@ describe('db-doc handler', () => {
         .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
         .then(result => {
           // user can't see the unallocated report without permissions
-          chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         })
-        .then(() => utils.updateSettings(settings, true))
+        .then(() => utils.updateSettings(settings, { ignoreReload: true }))
         .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
         .then(result => {
           // user can see the unallocated report with permissions
@@ -1150,14 +1162,14 @@ describe('db-doc handler', () => {
           _id: 'insensitive_report_1',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:offline'},
+          contact: { _id: 'fixture:offline' },
           patient_id: 'fixture:offline'
         },
         {
           _id: 'insensitive_report_2',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:offline'},
+          contact: { _id: 'fixture:offline' },
           patient_id: 'fixture:offline',
           fields: { private: true },
         },
@@ -1165,7 +1177,7 @@ describe('db-doc handler', () => {
           _id: 'insensitive_report_3',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           patient_id: 'fixture:offline',
           fields: { private: false },
         },
@@ -1173,28 +1185,28 @@ describe('db-doc handler', () => {
           _id: 'insensitive_report_4',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           fields: { private: false, place_id: 'shortcode:offline', },
         },
         {
           _id: 'insensitive_report_5',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           fields: { private: false, patient_id: 'shortcode:user:offline', },
         },
         {
           _id: 'insensitive_report_6',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:offline'},
+          contact: { _id: 'fixture:offline' },
           fields: { private: true, patient_id: 'shortcode:user:offline', },
         },
         {
           _id: 'sensitive_report_1',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           patient_id: 'fixture:user:offline',
           fields: { private: true },
         },
@@ -1202,7 +1214,7 @@ describe('db-doc handler', () => {
           _id: 'sensitive_report_2',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           patient_id: 'shortcode:user:offline',
           fields: { private: true },
         },
@@ -1210,28 +1222,28 @@ describe('db-doc handler', () => {
           _id: 'sensitive_report_3',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           fields: { private: true, place_id: 'shortcode:offline', },
         },
         {
           _id: 'sensitive_report_4',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           fields: { private: true, place_id: 'fixture:offline', },
         },
         {
           _id: 'sensitive_report_5',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           fields: { private: true, patient_uuid: 'fixture:user:offline', },
         },
         {
           _id: 'sensitive_report_6',
           type: 'data_record',
           form: 'a',
-          contact: { _id: 'fixture:online'},
+          contact: { _id: 'fixture:online' },
           fields: { private: true, patient_id: 'shortcode:user:offline', },
         },
       ];
@@ -1250,7 +1262,7 @@ describe('db-doc handler', () => {
               chai.expect(result).excluding('_rev').to.deep.equal(originalDoc);
             } else {
               // a private report, expect an error
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -1279,8 +1291,8 @@ describe('db-doc handler', () => {
       ])
         .then(([allowed, denied, forbidden]) => {
           chai.expect(allowed).to.include({ id: 'allowed_doc_post', ok: true, });
-          chai.expect(denied).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(forbidden).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(denied).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(forbidden).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
 
           return Promise.all([
             utils.getDoc('allowed_doc_post'),
@@ -1382,7 +1394,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -1407,7 +1419,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
+        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true)
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))
@@ -1416,7 +1428,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -1466,9 +1478,9 @@ describe('db-doc handler', () => {
         ])
         .then(results => {
           chai.expect(results[0]).to.deep.include({ ok: true, id: 'task1' });
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           chai.expect(results[2]).to.deep.include({ ok: true, id: 'target1' });
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         });
     });
 
@@ -1531,12 +1543,12 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           chai.expect(results[0]).to.include({ ok: true, id: 'n_put_1' });
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           chai.expect(results[2]).to.include({ ok: true, id: 'a_put_1', });
 
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
 
           const ids = ['a_put_1', 'a_put_2', 'd_put_1', 'd_put_2', 'n_put_1', 'n_put_2'];
 
@@ -1604,10 +1616,10 @@ describe('db-doc handler', () => {
             .catch(err => err)));
         })
         .then(results => {
-          chai.expect(results[0]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict'});
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict'});
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 409, 'responseBody.error': 'conflict' });
         });
     });
 
@@ -1631,18 +1643,24 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:offline:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']),
-          allowed: true },
+        {
+          doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: true
+        },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
-          allowed: true },
+        {
+          doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: true
+        },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id']), allowed: true },
         { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_uuid']), allowed: true },
-        { doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
-          allowed: true },
+        {
+          doc: reportForPatient('fixture:offline:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: true
+        },
 
         { doc: reportForPatient('fixture:online:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:patient', null, ['patient_id']), allowed: false },
@@ -1660,18 +1678,24 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', null, []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']),
-          allowed: false },
+        {
+          doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_id', 'patient_uuid']),
+          allowed: false
+        },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', []), allowed: true },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
-          allowed: false },
+        {
+          doc: reportForPatient('fixture:online:clinic:patient', 'offline', ['patient_id', 'patient_uuid']),
+          allowed: false
+        },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', []), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_uuid']), allowed: false },
-        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
-          allowed: false },
+        {
+          doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id', 'patient_uuid']),
+          allowed: false
+        },
       ];
       return Promise
         .all(reportScenarios.map(scenario => utils.requestOnTestDb(
@@ -1682,7 +1706,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -1707,7 +1731,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
+        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true)
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))
@@ -1716,7 +1740,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -1736,13 +1760,15 @@ describe('db-doc handler', () => {
 
       return utils
         .saveDocs(existentReports.map(scenario => scenario.doc))
-        .then(results =>  {
+        .then(results => {
           reportScenarios = [
             { doc: setReportPatient(existentReports[0].doc, 'fixture:online:patient', ['patient_id']), allowed: false },
             { doc: setReportContact(existentReports[1].doc, 'offline'), allowed: true },
 
-            { doc: setReportPatient(existentReports[2].doc, 'fixture:offline:patient', ['patient_uuid']),
-              allowed: false },
+            {
+              doc: setReportPatient(existentReports[2].doc, 'fixture:offline:patient', ['patient_uuid']),
+              allowed: false
+            },
             { doc: setReportContact(existentReports[3].doc, 'offline'), allowed: false },
           ];
           results.forEach((result, i) => reportScenarios[i].doc._rev = result.rev);
@@ -1755,7 +1781,7 @@ describe('db-doc handler', () => {
             if (reportScenarios[idx].allowed) {
               chai.expect(result).to.deep.include({ ok: true, id: reportScenarios[idx].doc._id });
             } else {
-              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
             }
           });
         });
@@ -1796,7 +1822,7 @@ describe('db-doc handler', () => {
         targets: [],
       };
 
-      const docs = [ allowedTask, deniedTask, allowedTarget, deniedTarget ];
+      const docs = [allowedTask, deniedTask, allowedTarget, deniedTarget];
 
       return utils
         .saveDocsRevs(docs)
@@ -1809,9 +1835,9 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           chai.expect(results[0]).to.deep.include({ ok: true, id: 'task1' });
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           chai.expect(results[2]).to.deep.include({ ok: true, id: 'target1' });
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         });
     });
 
@@ -1840,7 +1866,7 @@ describe('db-doc handler', () => {
         ]))
         .then(results => {
           chai.expect(results[0]).to.deep.include({ id: 'allowed_del', ok: true });
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
 
           return Promise.all([
             utils.getDoc('allowed_del').catch(err => err),
@@ -1912,10 +1938,10 @@ describe('db-doc handler', () => {
         .then(results => {
           chai.expect(results[0]).to.equal('my attachment content');
           chai.expect(results[1]).to.deep.include(
-            { statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' }}
+            { statusCode: 404, responseBody: { error: 'bad_request', reason: 'Invalid rev format' } }
           );
           chai.expect(results[2]).to.deep.include(
-            { statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' }}
+            { statusCode: 403, responseBody: { error: 'forbidden', reason: 'Insufficient privileges' } }
           );
 
           return Promise.all([
@@ -1985,7 +2011,7 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           chai.expect(results[0]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
           chai.expect(results[3]).to.equal('my attachment content');
         });
@@ -2039,7 +2065,7 @@ describe('db-doc handler', () => {
               { path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions
             )).catch(err => err),
             utils.requestOnTestDb(Object.assign(
-              { path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions
+              { path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}` }, offlineRequestOptions
             )).catch(err => err),
           ]);
         })
@@ -2048,7 +2074,7 @@ describe('db-doc handler', () => {
           chai.expect(results[1]).to.equal('my attachment content');
 
           chai.expect(results[2]).to.deep.nested.include({ statusCode: 404, 'responseBody.error': 'bad_request' });
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
 
           return Promise.all([
             utils.getDoc('allowed_attach_1'),
@@ -2123,8 +2149,8 @@ describe('db-doc handler', () => {
             .catch(err => err))
         ))
         .then(results => {
-          chai.expect(results[0]).to.deep.include({ ok: true,  id: 'a_with_attachments' });
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[0]).to.deep.include({ ok: true, id: 'a_with_attachments' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
 
           return Promise.all([
             utils.requestOnTestDb({ path: '/a_with_attachments' }),
@@ -2161,7 +2187,7 @@ describe('db-doc handler', () => {
           type: 'person',
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
-        chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
       });
     });
 
@@ -2215,11 +2241,11 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           chai.expect(results[0]).to.deep.include({ ok: true, id: 'n_put_1' });
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           chai.expect(results[2]).to.deep.include({ ok: true, id: 'a_put_1' });
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[5]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         });
     });
 
@@ -2344,7 +2370,7 @@ describe('db-doc handler', () => {
         return utils.requestOnTestDb(offlineRequestOptions).catch(err => err);
       })
       .then(result => {
-        chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         return utils.getDoc('fb1');
       })
       .then(result => {
@@ -2365,9 +2391,9 @@ describe('db-doc handler', () => {
         .then(results => {
           chai.expect(results[0]._id).to.equal('_design/medic-client');
 
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         });
     });
 
@@ -2389,10 +2415,10 @@ describe('db-doc handler', () => {
             .catch(err => err),
         ])
         .then(results => {
-          chai.expect(results[0]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          chai.expect(results[0]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[2]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
         });
     });
 
@@ -2422,7 +2448,7 @@ describe('db-doc handler', () => {
         ])
         .then(results => {
           results.forEach(result => {
-            chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden' });
           });
         });
     });

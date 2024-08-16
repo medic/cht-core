@@ -43,7 +43,7 @@ describe('Target aggregates', () => {
       const settings = await utils.getSettings();
       const tasks = settings.tasks;
       tasks.targets.items[0].aggregate = true;
-      await utils.updateSettings({ tasks }, true);
+      await utils.updateSettings({ tasks }, { ignoreReload: true });
       await commonPage.closeReloadModal();
 
       await commonPage.goToAnalytics();
@@ -59,7 +59,7 @@ describe('Target aggregates', () => {
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
 
     const TARGET_VALUES_BY_CONTACT = helperFunctions.generateTargetValuesByContact([...NAMES_DH1, ...NAMES_DH2]);
-    
+
     const districtHospital1 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 1' });
     const districtHospital2 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 2' });
 
@@ -68,12 +68,12 @@ describe('Target aggregates', () => {
     });
 
     const onlineUser = userFactory.build({ place: districtHospital1._id, roles: ['program_officer'] });
-    
+
     const userWithManyPlaces = userSettingsFactory.build({
       _id: 'org.couchdb.user:offline_many_facilities',
       name: 'offline_many_facilities',
-      roles: [ 'chw' ],
-      facility_id: [ districtHospital1._id, districtHospital2._id ],
+      roles: ['chw'],
+      facility_id: [districtHospital1._id, districtHospital2._id],
       contact_id: contactWithManyPlaces._id
     });
     const userWithManyPlacesPass = uuid();
@@ -129,7 +129,7 @@ describe('Target aggregates', () => {
       });
 
       it('should display no data when no targets are uploaded', async () => {
-        await helperFunctions.updateSettings(
+        await helperFunctions.updateAggregateTargetsSettings(
           targetAggregatesConfig.TARGETS_CONFIG_WITH_AND_WITHOUT_AGGREGATES, onlineUser
         );
 
@@ -158,7 +158,7 @@ describe('Target aggregates', () => {
         const expectedTargets = targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS;
 
         await utils.saveDocs(targetDocs);
-        await helperFunctions.updateSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, onlineUser);
+        await helperFunctions.updateAggregateTargetsSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, onlineUser);
 
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
@@ -231,7 +231,7 @@ describe('Target aggregates', () => {
         ];
 
         await utils.saveDocs(targetDocs);
-        await helperFunctions.updateSettings(targetsConfig, onlineUser, contactSummaryScript);
+        await helperFunctions.updateAggregateTargetsSettings(targetsConfig, onlineUser, contactSummaryScript);
 
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);
@@ -299,20 +299,20 @@ describe('Target aggregates', () => {
 
       it('should display only the targets sections and show the correct message ' +
         'when target aggregates are disabled', async () => {
-        await browser.url('/#/analytics/target-aggregates');
+          await browser.url('/#/analytics/target-aggregates');
 
-        const emptySelection = await analyticsPage.noSelectedTarget();
-        await (emptySelection).waitForDisplayed();
-        await commonPage.waitForLoaderToDisappear(emptySelection);
+          const emptySelection = await analyticsPage.noSelectedTarget();
+          await (emptySelection).waitForDisplayed();
+          await commonPage.waitForLoaderToDisappear(emptySelection);
 
-        expect(await emptySelection.getText()).to.equal('Target aggregates are disabled');
-      });
+          expect(await emptySelection.getText()).to.equal('Target aggregates are disabled');
+        });
 
       it('should filter aggregates by place and period', async () => {
         const expectedTargets = targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS;
 
         await utils.saveDocs(targetDocs);
-        await helperFunctions.updateSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, userWithManyPlaces);
+        await helperFunctions.updateAggregateTargetsSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, userWithManyPlaces);
         await commonPage.sync(true);
         await browser.refresh();
 

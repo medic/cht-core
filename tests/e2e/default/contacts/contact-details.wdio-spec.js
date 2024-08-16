@@ -17,14 +17,9 @@ describe('Contact details page.', () => {
     const DOCS_DISPLAY_LIMIT = 50;
     const ROLE = 'notchw';
 
-    const parent = placeFactory.place().build({_id: 'dist1', type: 'district_hospital'});
-    const user = userFactory.build({username: 'offlineuser', roles: [ROLE]});
-    const patient = personFactory.build({parent: {_id: user.place._id, parent: {_id: parent._id}}});
-
-    const updateSettings = async (settings) => {
-      await utils.revertSettings(true);
-      await utils.updateSettings(settings, true);
-    };
+    const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+    const user = userFactory.build({ username: 'offlineuser', roles: [ROLE] });
+    const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
 
     const waitForContactLoaded = async (expectTasks) => {
       await commonElements.waitForPageLoaded();
@@ -42,13 +37,13 @@ describe('Contact details page.', () => {
     };
 
     const newReports = Array
-      .from({length: 40})
+      .from({ length: 40 })
       .map(() => reportFactory.report().build(
-        {form: 'pregnancy_danger_sign'},
+        { form: 'pregnancy_danger_sign' },
         {
           patient,
           submitter: user.contact,
-          fields: {t_danger_signs_referral_follow_up: 'yes'},
+          fields: { t_danger_signs_referral_follow_up: 'yes' },
         }
       ));
 
@@ -56,13 +51,13 @@ describe('Contact details page.', () => {
     oldReportDate.setMonth(new Date().setMonth() - 4);
 
     const oldReports = Array
-      .from({length: 20})
+      .from({ length: 20 })
       .map(() => reportFactory.report().build(
-        {form: 'pregnancy', reported_date: oldReportDate},
+        { form: 'pregnancy', reported_date: oldReportDate },
         {
           patient,
           submitter: user.contact,
-          fields: {t_danger_signs_referral_follow_up: 'yes'},
+          fields: { t_danger_signs_referral_follow_up: 'yes' },
         }
       ));
 
@@ -76,12 +71,13 @@ describe('Contact details page.', () => {
 
     const updatePermissions = async (roleValue, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();
-      settings.roles[roleValue] = {offline: true};
+      settings.roles[roleValue] = { offline: true };
       addPermissions.map(permission => settings.permissions[permission].push(roleValue));
       removePermissions.forEach(permission => {
         settings.permissions[permission] = settings.permissions[permission].filter(r => r !== roleValue);
       });
-      await updateSettings({roles: settings.roles, permissions: settings.permissions});
+      await utils.updateSettings({ roles: settings.roles, permissions: settings.permissions }, { revert: true, ignoreReload: true });
+
     };
 
     before(async () => {
@@ -117,11 +113,11 @@ describe('Contact details page.', () => {
     it('should show contact summary that has the full context for reports > 50' +
       ' validate that the pregnancy card is always displayed', async () => {
 
-      expect(await contactPage.pregnancyCardSelectors.pregnancyCard().isDisplayed()).to.be.true;
-      const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
-      expect(pregnancyCardInfo.weeksPregnant).to.equal('12');
-      expect(pregnancyCardInfo.risk).to.equal('High risk');
-    });
+        expect(await contactPage.pregnancyCardSelectors.pregnancyCard().isDisplayed()).to.be.true;
+        const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
+        expect(pregnancyCardInfo.weeksPregnant).to.equal('12');
+        expect(pregnancyCardInfo.risk).to.equal('High risk');
+      });
 
     it('should not show reports when permission is disabled', async () => {
       await updatePermissions(ROLE, [], ['can_view_reports']);

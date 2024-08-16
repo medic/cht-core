@@ -8,13 +8,11 @@ const targetAggregatesConfig = require('../config/target-aggregates');
 
 const generateRandomNumber = (max) => Math.floor(Math.random() * max);
 
-const updateSettings = async (targetsConfig, user, contactSummary) => {
+const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummary) => {
   const settings = await utils.getSettings();
-  const tasks = settings.tasks;
-  tasks.targets.items = targetsConfig;
-  const permissions = settings.permissions;
-  permissions.can_aggregate_targets = user.roles;
-  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
+  settings.tasks.targets.items = targetsConfig;
+  settings.permissions.can_aggregate_targets = user.roles;
+  await utils.updateSettings({ tasks: settings.tasks, permissions: settings.permissions, contact_summary: contactSummary }, { ignoreReload: true });
   await commonPage.closeReloadModal();
   await commonPage.goToBase();
 };
@@ -43,7 +41,7 @@ const docTags = [
 const genTarget = (target, contact, targetValuesByContact) => {
   const targetValues = targetValuesByContact[contact.name];
   const value = targetValues[target.id]?.value;
-  if (value ) {
+  if (value) {
     return { id: target.id, value };
   }
 
@@ -54,13 +52,13 @@ const genTarget = (target, contact, targetValuesByContact) => {
 };
 
 const generateContactsAndTargets = (parent, contactName, targetValuesByContact) => {
-  const place = placeFactory.place().build({type: 'health_center', parent: {_id: parent._id}});
+  const place = placeFactory.place().build({ type: 'health_center', parent: { _id: parent._id } });
 
   const contact = personFactory.build({
     name: contactName,
-    parent: {_id: place._id, parent: place.parent}
+    parent: { _id: place._id, parent: place.parent }
   });
-  place.contact = {_id: contact._id, parent: contact.parent};
+  place.contact = { _id: contact._id, parent: contact.parent };
 
   const targets = docTags.map(tag => ({
     _id: `target~${tag}~${contact._id}~irrelevant`,
@@ -181,7 +179,7 @@ const getDocsByPlace = (contactDocs, placeId) => {
 };
 
 module.exports = {
-  updateSettings,
+  updateAggregateTargetsSettings,
   generateTargetValuesByContact,
   docTags,
   generateContactsAndTargets,

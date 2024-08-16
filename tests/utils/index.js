@@ -526,15 +526,25 @@ const waitForSettingsUpdateLogs = (type) => {
  *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
  * @return {Promise}        completion promise
  */
-const updateSettings = async (updates, ignoreReload) => {
-  const watcher = ignoreReload &&
-    Object.keys(updates).length &&
-    await waitForSettingsUpdateLogs(ignoreReload);
+
+const updateSettings = async (updates, options = {}) => {
+  const { ignoreReload = false, sync = false, refresh = false, revert = false } = options;
+  if (revert) {
+    await revertSettings(true);
+  }
+  const watcher = ignoreReload && Object.keys(updates).length && await waitForSettingsUpdateLogs(ignoreReload);
   await updateCustomSettings(updates);
   if (!ignoreReload) {
-    return await commonElements.closeReloadModal(true);
+    await commonElements.closeReloadModal(true);
+  } else if (watcher) {
+    await watcher.promise;
   }
-  return watcher && await watcher.promise;
+  if (sync) {
+    await commonPage.sync(true);
+  }
+  if (refresh) {
+    await browser.refresh();
+  }
 };
 
 const revertCustomSettings = () => {

@@ -61,7 +61,7 @@ const people = [
     name: 'Albert Einstenin',
     type: 'person',
     patient_id: 'einstein',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -69,7 +69,7 @@ const people = [
     name: 'Charles Darwin',
     type: 'person',
     patient_id: 'darwin',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -77,7 +77,7 @@ const people = [
     name: 'Nikola Tesla',
     type: 'person',
     patient_id: 'tesla',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -85,7 +85,7 @@ const people = [
     name: 'Leonardo da Vinci',
     type: 'person',
     patient_id: 'leonardo',
-    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -93,7 +93,7 @@ const people = [
     name: 'Francisco Goya',
     type: 'person',
     patient_id: 'goya',
-    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -101,7 +101,7 @@ const people = [
     name: 'Wolfgang Amadeus Mozart',
     type: 'person',
     patient_id: 'mozart',
-    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -109,7 +109,7 @@ const people = [
     name: 'Napoleon Bonaparte',
     type: 'person',
     patient_id: 'napoleon',
-    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -117,7 +117,7 @@ const people = [
     name: 'Julius Caesar',
     type: 'person',
     patient_id: 'caesar',
-    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
   {
@@ -125,7 +125,7 @@ const people = [
     name: 'Queen Victoria',
     type: 'person',
     patient_id: 'victoria',
-    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   },
 ];
@@ -185,7 +185,7 @@ describe('Tasks group landing page', () => {
 
     const tasksFilePath = path.join(__dirname, 'config/tasks-group-config.js');
     const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-    await utils.updateSettings({ tasks }, 'api');
+    await utils.updateSettings({ tasks }, { ignoreReload: 'api' });
   });
 
   describe('for chw', () => {

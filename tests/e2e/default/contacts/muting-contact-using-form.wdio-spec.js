@@ -15,12 +15,12 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
   const healthCenter = places.get('health_center');
 
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
-  const person = personFactory.build({ parent: {_id: healthCenter._id, parent: healthCenter.parent} });
+  const person = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const mutePerson = personFactory.build({
     patient_id: 12345,
     name: 'mutedPerson',
     muted: new Date(),
-    parent: {_id: healthCenter._id, parent: healthCenter.parent}
+    parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
 
   const settings_mute = {
@@ -36,7 +36,7 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
 
   before(async () => {
     await utils.saveDocs([...places.values(), person, mutePerson]);
-    await utils.updateSettings(settings_mute, true);
+    await utils.updateSettings(settings_mute, { ignoreReload: true });
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });

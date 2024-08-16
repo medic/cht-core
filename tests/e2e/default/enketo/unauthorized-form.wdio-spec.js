@@ -8,14 +8,13 @@ const utils = require('@utils');
 
 describe('Unauthorized form', () => {
 
-  const updateSettings = async (customPlaceType, permissions = {}) => {
+  const updateUnauthorizedFormSettings = async (customPlaceType, permissions = {}) => {
     const settings = await utils.getSettings();
     const newSettings = {
-      contact_types: [ ...settings.contact_types, customPlaceType ],
+      contact_types: [...settings.contact_types, customPlaceType],
       permissions: { ...settings.permissions, ...permissions },
     };
-    await utils.updateSettings(newSettings, true);
-    await commonPage.sync(true);
+    await utils.updateSettings(newSettings, { ignoreReload: true, sync: true });
   };
 
   const EXPECTED_UNAUTHORIZED_MESSAGE = 'Error loading form. Your user is not authorized to access this form. ' +
@@ -23,15 +22,15 @@ describe('Unauthorized form', () => {
 
   const PLACE_XML_PATH = `${__dirname}/forms/unauthorized-place.xml`;
   const customPlaceType = customTypeFactory.customType().build({}, { name: 'unauthorized-contact-form' });
-  const customPlace = customTypeFactory.formsForTypes([ { id: customPlaceType.id } ], PLACE_XML_PATH)[0];
+  const customPlace = customTypeFactory.formsForTypes([{ id: customPlaceType.id }], PLACE_XML_PATH)[0];
 
   const places = placeFactory.generateHierarchy();
-  const offlineUser = userFactory.build({ place: places.get('district_hospital')._id, roles: [ 'chw' ] });
+  const offlineUser = userFactory.build({ place: places.get('district_hospital')._id, roles: ['chw'] });
 
   before(async () => {
     customPlace.context = { permission: 'can_create_clinic' };
-    await utils.saveDocs([ ...places.values(), customPlace ]);
-    await utils.createUsers([ offlineUser ]);
+    await utils.saveDocs([...places.values(), customPlace]);
+    await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
 
@@ -46,7 +45,7 @@ describe('Unauthorized form', () => {
 
   it('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
     await commonPage.goToPeople();
-    await updateSettings(customPlaceType);
+    await updateUnauthorizedFormSettings(customPlaceType);
 
     await commonPage.goToUrl(`#/contacts/add/${customPlaceType.id}`);
     await commonPage.waitForPageLoaded();
@@ -56,7 +55,7 @@ describe('Unauthorized form', () => {
 
   it('should not display unauthorized error message in contacts tab when user has the form permission', async () => {
     await commonPage.goToPeople();
-    await updateSettings(customPlaceType, { can_create_clinic: [ 'chw' ] });
+    await updateUnauthorizedFormSettings(customPlaceType, { can_create_clinic: ['chw'] });
 
     await commonPage.goToUrl(`#/contacts/add/${customPlaceType.id}`);
     await commonPage.waitForPageLoaded();

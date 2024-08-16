@@ -111,7 +111,7 @@ describe('Sentinel queue drain', () => {
     await utils.listenForApi();
 
     const settings = { transitions: { update_clinics: true } };
-    await utils.updateSettings(settings, 'api');
+    await utils.updateSettings(settings, { ignoreReload: 'api' });
 
     const doc = {
       _id: uuid(),

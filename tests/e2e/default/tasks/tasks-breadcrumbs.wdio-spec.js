@@ -52,7 +52,7 @@ describe('Tasks tab breadcrumbs', () => {
   });
   const supervisor = userFactory.build({
     username: 'supervisor_tasks',
-    roles: [ 'chw_supervisor' ],
+    roles: ['chw_supervisor'],
     place: districtHospital._id,
     contact: supervisorContact._id,
   });
@@ -61,7 +61,7 @@ describe('Tasks tab breadcrumbs', () => {
     name: 'patient1',
     type: 'person',
     patient_id: 'patient1',
-    parent: { _id: clinic._id, parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }}},
+    parent: { _id: clinic._id, parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } } },
     reported_date: new Date().getTime(),
   });
   const patient2 = personFactory.build({
@@ -69,7 +69,7 @@ describe('Tasks tab breadcrumbs', () => {
     name: 'patient2',
     type: 'person',
     patient_id: 'patient2',
-    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }},
+    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
     reported_date: new Date().getTime(),
   });
   const contactWithManyPlaces = personFactory.build({
@@ -80,8 +80,8 @@ describe('Tasks tab breadcrumbs', () => {
     language: 'en',
     known: true,
     type: 'user-settings',
-    roles: [ 'chw' ],
-    facility_id: [ healthCenter1._id, healthCenter2._id ],
+    roles: ['chw'],
+    facility_id: [healthCenter1._id, healthCenter2._id],
     contact_id: contactWithManyPlaces._id,
     name: 'offline_many_facilities'
   };
@@ -97,7 +97,7 @@ describe('Tasks tab breadcrumbs', () => {
       method: 'PUT',
       body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
     });
-    await utils.createUsers([ chw, supervisor ]);
+    await utils.createUsers([chw, supervisor]);
     await sentinelUtils.waitForSentinel();
 
     await chtConfUtils.initializeConfigDir();
@@ -107,7 +107,7 @@ describe('Tasks tab breadcrumbs', () => {
 
     const tasksFilePath = path.join(__dirname, 'config/tasks-breadcrumbs-config.js');
     const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-    await utils.updateSettings({ tasks }, 'api');
+    await utils.updateSettings({ tasks }, { ignoreReload: 'api' });
   });
 
   describe('for chw', () => {

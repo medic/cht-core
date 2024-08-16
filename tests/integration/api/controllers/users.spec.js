@@ -245,7 +245,7 @@ describe('Users API', () => {
           body: {
             fullname: 'Awesome Guy'
           },
-          auth: { username, password},
+          auth: { username, password },
         })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
@@ -310,7 +310,7 @@ describe('Users API', () => {
       };
       return utils
         .revertSettings(true)
-        .then(() => utils.updateSettings({ transitions: { generate_patient_id_on_people: true }}, true))
+        .then(() => utils.updateSettings({ transitions: { generate_patient_id_on_people: true } }, { ignoreReload: true }))
         .then(() => utils.saveDoc(parentPlace))
         .then(() => {
           const opts = {
@@ -347,7 +347,7 @@ describe('Users API', () => {
 
           return utils.getDocs([userSettings.contact_id, ...userSettings.facility_id]);
         })
-        .then(([ contact, place ]) => {
+        .then(([contact, place]) => {
           chai.expect(contact.patient_id).to.not.be.undefined;
           chai.expect(contact).to.deep.include({
             name: 'Philip',
@@ -692,7 +692,7 @@ describe('Users API', () => {
       };
       return utils.request(opts).then(response => {
         chai.expect(response.headers['set-cookie']).to.be.undefined;
-        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: expired ? 'expired': 'invalid' } });
+        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: expired ? 'expired' : 'invalid' } });
       });
     };
 
@@ -726,9 +726,9 @@ describe('Users API', () => {
               contact: { id: 'fixture:user:testuser' },
             });
 
-            return Promise.all([ getUser(user), getUserSettings(user) ]);
+            return Promise.all([getUser(user), getUserSettings(user)]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
           })
@@ -748,9 +748,9 @@ describe('Users API', () => {
               'user-settings': { id: getUserId(user.username) },
             });
 
-            return Promise.all([ getUser(user), getUserSettings(user) ]);
+            return Promise.all([getUser(user), getUserSettings(user)]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user, { roles: ['new_role'] });
             expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
           })
@@ -769,9 +769,9 @@ describe('Users API', () => {
               contact: { id: 'fixture:user:testuser' },
             });
 
-            return Promise.all([ getUser(user), getUserSettings(user) ]);
+            return Promise.all([getUser(user), getUserSettings(user)]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
             chai.expect(user.token_login).to.be.undefined;
@@ -794,9 +794,9 @@ describe('Users API', () => {
               'user-settings': { id: getUserId(user.username) },
             });
 
-            return Promise.all([ getUser(user), getUserSettings(user) ]);
+            return Promise.all([getUser(user), getUserSettings(user)]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user, { roles: ['new_role'] });
             expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
             chai.expect(user.token_login).to.be.undefined;
@@ -820,9 +820,9 @@ describe('Users API', () => {
               contact: { id: 'fixture:user:testuser' },
             });
 
-            return Promise.all([ getUser(user), getUserSettings(user) ]);
+            return Promise.all([getUser(user), getUserSettings(user)]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
             chai.expect(user.token_login).to.be.undefined;
@@ -843,9 +843,9 @@ describe('Users API', () => {
               'user-settings': { id: getUserId(user.username) },
             });
 
-            return Promise.all([ getUser(user), getUserSettings(user) ]);
+            return Promise.all([getUser(user), getUserSettings(user)]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user, { roles: ['new_role'] });
             expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
             chai.expect(user.token_login).to.be.undefined;
@@ -888,7 +888,7 @@ describe('Users API', () => {
           },
         ];
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        await utils.updateSettings(settings, true);
+        await utils.updateSettings(settings, { ignoreReload: true });
         await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
         const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
 
@@ -956,7 +956,7 @@ describe('Users API', () => {
           },
         ];
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        await utils.updateSettings(settings, true);
+        await utils.updateSettings(settings, { ignoreReload: true });
         await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
 
         const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
@@ -964,7 +964,7 @@ describe('Users API', () => {
           {
             error: {
               message:
-                  'The password is too easy to guess. Include a range of types of characters to increase the score.',
+                'The password is too easy to guess. Include a range of types of characters to increase the score.',
               translationKey: 'password.weak'
             },
           },
@@ -1028,7 +1028,7 @@ describe('Users API', () => {
           },
         ];
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        await utils.updateSettings(settings, true);
+        await utils.updateSettings(settings, { ignoreReload: true });
         await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
         const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
 
@@ -1141,7 +1141,7 @@ describe('Users API', () => {
             enabled: true,
           },
         };
-        await utils.updateSettings(settings, true);
+        await utils.updateSettings(settings, { ignoreReload: true });
         await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
         const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
         response.forEach((responseUser, index) => {
@@ -1164,10 +1164,10 @@ describe('Users API', () => {
           expectCorrectUser(userInDb, extraProps);
           expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
           chai.expect(userInDb.token_login).to.be.ok;
-          chai.expect(userInDb.token_login).to.have.keys(['active', 'token', 'expiration_date' ]);
+          chai.expect(userInDb.token_login).to.have.keys(['active', 'token', 'expiration_date']);
           chai.expect(userInDb.token_login).to.include({ active: true });
           chai.expect(userSettings.token_login).to.be.ok;
-          chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date' ]);
+          chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date']);
 
           const tokenUrl = `${utils.getOrigin()}/medic/login/token/${userInDb.token_login.token}`;
           const loginTokenDoc = await utils.getDoc(getLoginTokenDocId(userInDb.token_login.token));
@@ -1214,11 +1214,11 @@ describe('Users API', () => {
           });
 
           chai.expect(userInDb.token_login).to.be.ok;
-          chai.expect(userInDb.token_login).to.have.keys([ 'active', 'token', 'expiration_date', 'login_date' ]);
+          chai.expect(userInDb.token_login).to.have.keys(['active', 'token', 'expiration_date', 'login_date']);
           chai.expect(userInDb.token_login.active).to.equal(false);
 
           chai.expect(userSettings.token_login).to.be.ok;
-          chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date' ]);
+          chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date']);
           chai.expect(userSettings.token_login.active).to.equal(false);
           await expectTokenLoginToFail(tokenUrl);
         }
@@ -1237,7 +1237,7 @@ describe('Users API', () => {
           .catch(err => {
             chai.expect(err.response).to.shallowDeepEqual({
               statusCode: 400,
-              body: { code: 400, error: { message: 'Missing required fields: phone' }}
+              body: { code: 400, error: { message: 'Missing required fields: phone' } }
             });
           });
       });
@@ -1257,12 +1257,12 @@ describe('Users API', () => {
           .catch(err => {
             chai.expect(err.response).to.shallowDeepEqual({
               statusCode: 400,
-              body: { code: 400, error: { message: 'Missing required fields: phone' }}
+              body: { code: 400, error: { message: 'Missing required fields: phone' } }
             });
 
-            return Promise.all([ getUser(user), getUserSettings(user) ]);
+            return Promise.all([getUser(user), getUserSettings(user)]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
             chai.expect(user.token_login).to.be.undefined;
@@ -1299,16 +1299,16 @@ describe('Users API', () => {
               getUserSettings(user),
             ]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
 
             chai.expect(user.token_login).to.be.ok;
-            chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date' ]);
+            chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date']);
             chai.expect(user.token_login).to.include({ active: true });
 
             chai.expect(userSettings.token_login).to.be.ok;
-            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date' ]);
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date']);
 
             tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}`;
 
@@ -1336,17 +1336,17 @@ describe('Users API', () => {
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
-          .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
-          .then(([ user, userSettings ]) => {
+          .then(() => Promise.all([getUser(user), getUserSettings(user)]))
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
 
             chai.expect(user.token_login).to.be.ok;
-            chai.expect(user.token_login).to.have.keys([ 'active', 'token', 'expiration_date', 'login_date' ]);
+            chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date', 'login_date']);
             chai.expect(user.token_login.active).to.equal(false);
 
             chai.expect(userSettings.token_login).to.be.ok;
-            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date' ]);
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date']);
             chai.expect(userSettings.token_login.active).to.equal(false);
           })
           .then(() => expectTokenLoginToFail(tokenUrl)); // fails the 2nd time!
@@ -1377,7 +1377,7 @@ describe('Users API', () => {
               getUserSettings(user),
             ]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
 
@@ -1386,7 +1386,7 @@ describe('Users API', () => {
             chai.expect(user.token_login).to.include({ active: true });
 
             chai.expect(userSettings.token_login).to.be.ok;
-            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date' ]);
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date']);
 
             tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}`;
 
@@ -1414,17 +1414,17 @@ describe('Users API', () => {
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
-          .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
-          .then(([ user, userSettings ]) => {
+          .then(() => Promise.all([getUser(user), getUserSettings(user)]))
+          .then(([user, userSettings]) => {
             expectCorrectUser(user);
             expectCorrectUserSettings(userSettings);
 
             chai.expect(user.token_login).to.be.ok;
-            chai.expect(user.token_login).to.have.keys([ 'active', 'token', 'expiration_date', 'login_date' ]);
+            chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date', 'login_date']);
             chai.expect(user.token_login.active).to.equal(false);
 
             chai.expect(userSettings.token_login).to.be.ok;
-            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date' ]);
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date']);
             chai.expect(userSettings.token_login.active).to.equal(false);
           })
           .then(() => expectTokenLoginToFail(tokenUrl)); // fails the 2nd time!
@@ -1449,8 +1449,8 @@ describe('Users API', () => {
             chai.expect(response.token_login).to.be.undefined;
           })
           .then(() => expectPasswordLoginToFail(user))
-          .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
-          .then(([ user, userSettings ]) => {
+          .then(() => Promise.all([getUser(user), getUserSettings(user)]))
+          .then(([user, userSettings]) => {
             chai.expect(user.token_login).to.deep.equal(tokenLogin);
             chai.expect(userSettings.token_login)
               .to.deep.equal({ active: true, expiration_date: tokenLogin.expiration_date });
@@ -1485,7 +1485,7 @@ describe('Users API', () => {
               getUserSettings(user),
             ]);
           })
-          .then(([ user, userSettings ]) => {
+          .then(([user, userSettings]) => {
             chai.expect(user.token_login).not.to.deep.equal(firstTokenLogin);
             chai.expect(userSettings.token_login)
               .to.deep.equal({ active: true, expiration_date: user.token_login.expiration_date });
@@ -1496,7 +1496,7 @@ describe('Users API', () => {
               getLoginTokenDocId(secondTokenLogin.token),
             ]);
           })
-          .then(([ firstTokenLoginDoc, secondTokenLoginDoc ]) => {
+          .then(([firstTokenLoginDoc, secondTokenLoginDoc]) => {
             const firstUrl = `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}`;
             const secondUrl = `${utils.getOrigin()}/medic/login/token/${secondTokenLogin.token}`;
 
@@ -1539,7 +1539,7 @@ describe('Users API', () => {
               utils.getDoc(getLoginTokenDocId(firstTokenLogin.token))
             ]);
           })
-          .then(([ user, userSettings, smsDoc]) => {
+          .then(([user, userSettings, smsDoc]) => {
             chai.expect(user.token_login).to.be.undefined;
             chai.expect(userSettings.token_login).to.be.undefined;
 
@@ -1634,7 +1634,7 @@ describe('Users API', () => {
         roles: ['program_officer']
       }));
 
-      await utils.saveDocs([ facility, person ]);
+      await utils.saveDocs([facility, person]);
       await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
 
       await utils.updatePermissions(['program_officer'], ['can_view_users']);
@@ -2026,7 +2026,7 @@ describe('Users API', () => {
 
       const userDoc = await utils.usersDb.get(result.user.id);
       expect(userDoc.facility_id).to.deep.equal(updatePayload.place);
-      const userSettingsDoc =  await utils.getDoc(result.user.id);
+      const userSettingsDoc = await utils.getDoc(result.user.id);
       expect(userSettingsDoc.facility_id).to.deep.equal(updatePayload.place);
     });
 

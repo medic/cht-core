@@ -8,7 +8,7 @@ const dataFactory = require('@factories/cht/generate');
 const path = require('path');
 const chtConfUtils = require('@utils/cht-conf');
 
-describe('ongoing replication', function() {
+describe('ongoing replication', function () {
   const userAllowedDocs = dataFactory.createHierarchy({ name: 'base', user: true, nbrClinics: 2 });
   const userDeniedDocs = dataFactory.createHierarchy({ name: 'other', nbrClinics: 2 });
 
@@ -170,7 +170,7 @@ describe('ongoing replication', function() {
 
   it('should download settings updates', async () => {
     await commonPage.sync();
-    await utils.updateSettings({ test: true }, 'api');
+    await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
     await commonPage.sync(true);
     const [settings] = await chtDbUtils.getDocs(['settings']);
     expect(settings.settings.test).to.equal(true);
