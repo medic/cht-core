@@ -155,7 +155,7 @@ describe('Person Controller', () => {
       });
     });
 
-    describe('getPageByType', () => {
+    describe('getAll', () => {
       let personGetPageByType;
       let qualifierByContactType;
       const personType = 'person';
