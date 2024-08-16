@@ -40,7 +40,7 @@ describe('Reports Sidebar Filter', () => {
         verified: true,
         reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
       },
-      { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' }}
+      { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' } }
     );
   const pregnancyDistrictHospital = reportFactory
     .report()
@@ -49,7 +49,7 @@ describe('Reports Sidebar Filter', () => {
         form: 'pregnancy',
         reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
       },
-      { patient, submitter: districtHospitalContact, fields: { lmp_date: 'Feb 16, 2022' }}
+      { patient, submitter: districtHospitalContact, fields: { lmp_date: 'Feb 16, 2022' } }
     );
   const visitHealthCenter = reportFactory
     .report()
@@ -59,7 +59,7 @@ describe('Reports Sidebar Filter', () => {
         verified: false,
         reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
       },
-      { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' }}
+      { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' } }
     );
   const visitDistrictHospital = reportFactory
     .report()
@@ -69,7 +69,7 @@ describe('Reports Sidebar Filter', () => {
         verified: true,
         reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
       },
-      { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' }}
+      { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' } }
     );
   const reports = [
     pregnancyHealthCenter,
