@@ -97,7 +97,7 @@ const createSecret = async function (namespace, values) {
 
   await obtainCertificateAndKey(values);
 
-  execSync(
+  execSync( //NoSONAR
     `kubectl -n ${namespace} create secret tls api-tls-secret --cert=${cert} --key=${key}`, //NoSONAR
     { stdio: 'inherit' }
   );

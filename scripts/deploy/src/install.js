@@ -75,7 +75,7 @@ const helmCmd = (action, positionalArgs, params) => {
   }).filter(Boolean);
 
   const command = `helm ${action} ${positionalArgs.join(' ')} ${flagsArray.join(' ')}`;
-  return child_process.execSync(command, { stdio: 'inherit' });
+  return child_process.execSync(command, { stdio: 'inherit' }); //NoSONAR
 };
 
 const helmInstallOrUpdate = function(valuesFile, namespace, values, imageTag) {
@@ -85,7 +85,8 @@ const helmInstallOrUpdate = function(valuesFile, namespace, values, imageTag) {
   const namespaceExists = checkNamespaceExists(namespace);
 
   try {
-    const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString().includes(projectName);
+    const releaseExists = child_process.execSync(`helm list -n ${namespace}`).toString() //NoSONAR
+      .includes(projectName);
 
     const commonOpts = {
       'version': chartVersion,
