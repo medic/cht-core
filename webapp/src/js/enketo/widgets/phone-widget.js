@@ -76,13 +76,12 @@ class PhoneWidget extends Widget {
 
     $input.hide();
 
-    // TODO(estellecomment): move this to a catch clause, when settings aren't found.
-    formatAndCopy( $proxyInput, $input, {} );
-
     return Settings.get()
-      .then( function( settings ) {
-        formatAndCopy( $proxyInput, $input, settings );
-      } );
+      .then(settings => formatAndCopy( $proxyInput, $input, settings ))
+      .catch(err => {
+        console.error('Error getting settings:', err);
+        formatAndCopy( $proxyInput, $input, {} );
+      });
   }
 
   static get selector() {

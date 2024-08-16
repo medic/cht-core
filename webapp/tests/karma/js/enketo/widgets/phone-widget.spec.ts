@@ -24,7 +24,7 @@ describe('Enketo: Phone Widget', () => {
   const proxySelector = (name) => inputSelector(name).prev();
 
 
-  const buildHtml = (chtUniqueTel) => {
+  const buildHtml = (chtUniqueTel?) => {
     const chtUniqueTelData = chtUniqueTel ? `data-cht-unique_tel="${chtUniqueTel}"` : '';
     const html =
       `<div id="phone-widget-test">
@@ -115,7 +115,7 @@ describe('Enketo: Phone Widget', () => {
   });
 
   it('should format input when input value change', async () => {
-    buildDeprecatedHtml();
+    buildHtml();
     await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
@@ -129,15 +129,17 @@ describe('Enketo: Phone Widget', () => {
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.args).to.deep.equal([
-      [{ }, DENORMALIZED_NUMBER],
+      // [{ }, DENORMALIZED_NUMBER],
       [SETTINGS, DENORMALIZED_NUMBER]
     ]);
   });
 
-  it('should still format if no settings are found', () => {
-    buildDeprecatedHtml();
-    // Not awaiting the settings to be returned
-    new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+  it('should still format if there was an error getting settings', async () => {
+    buildHtml();
+    const expectedError = new Error('could not get settings');
+    settingsService.get.rejects(expectedError);
+
+    await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -148,12 +150,13 @@ describe('Enketo: Phone Widget', () => {
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.calledOnceWithExactly({ }, DENORMALIZED_NUMBER)).to.be.true;
+    expect(consoleError.calledOnceWithExactly('Error getting settings:', expectedError)).to.be.true;
   });
 
-  it('should not format invalid input', () => {
+  it('should not format invalid input', async () => {
     phoneNumberNormalize.returns(false);
-    buildDeprecatedHtml();
-    new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+    buildHtml();
+    await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -163,12 +166,12 @@ describe('Enketo: Phone Widget', () => {
 
     expect(input.val()).to.equal(DENORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-    expect(phoneNumberNormalize.calledOnceWithExactly({ }, DENORMALIZED_NUMBER)).to.be.true;
+    expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
   });
 
-  it('should keep formatted input when value is valid', () => {
-    buildDeprecatedHtml();
-    new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
+  it('should keep formatted input when value is valid', async () => {
+    buildHtml();
+    await new PhoneWidget($(PhoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -178,7 +181,7 @@ describe('Enketo: Phone Widget', () => {
 
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-    expect(phoneNumberNormalize.calledOnceWithExactly({ }, NORMALIZED_NUMBER)).to.be.true;
+    expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, NORMALIZED_NUMBER)).to.be.true;
   });
 
   it('should not modify non-phone fields', () => {
