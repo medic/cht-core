@@ -131,7 +131,7 @@
     "karma-spec-reporter": "^0.0.36",
     "less": "^4.2.0",
     "loose-envify": "^1.4.0",
-    "mocha": "^10.2.0",
+    "mocha": "^10.7.3",
     "module-alias": "^2.2.3",
     "moment-locales-webpack-plugin": "^1.2.0",
     "nodemon": "^3.0.1",
