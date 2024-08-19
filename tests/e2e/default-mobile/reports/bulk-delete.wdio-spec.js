@@ -13,6 +13,7 @@ describe('Bulk delete reports', () => {
   const contact = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const offlineUser = userFactory.build({
     username: 'offline_chw_bulk_delete',
+    roles: ['chw'],
     place: healthCenter._id,
     contact: contact._id,
   });
@@ -42,6 +43,7 @@ describe('Bulk delete reports', () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient ]);
     await utils.createUsers([ offlineUser ]);
+    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
     await loginPage.login(offlineUser);
   });
