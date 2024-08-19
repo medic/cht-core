@@ -262,7 +262,7 @@ const filterByForm = async (formName) => {
   await (await sidebarFilterFormAccordionHeader()).click();
   await (await sidebarFilterFormAccordionBody()).waitForDisplayed();
   const option = sidebarFilterFormAccordionBody().$(`a*=${formName}`);
-  await (await option).waitForDisplayed();
+  await (await option).waitForClickable();
   await (await option).click();
 };
 
@@ -270,7 +270,7 @@ const filterByStatus = async (statusOption) => {
   await (await sidebarFilterStatusAccordionHeader()).click();
   await (await sidebarFilterStatusAccordionBody()).waitForDisplayed();
   const option = sidebarFilterStatusAccordionBody().$(`a*=${statusOption}`);
-  await (await option).waitForDisplayed();
+  await (await option).waitForClickable();
   await (await option).click();
 };
 
@@ -279,11 +279,12 @@ const filterByFacility = async (parentFacility, reportFacility) => {
   await (await sidebarFilterFacilityAccordionBody()).waitForDisplayed();
 
   const parent = sidebarFilterFacilityAccordionBody().$(`a*=${parentFacility}`);
-  parent.waitForDisplayed();
+  await parent.waitForDisplayed();
+  await parent.waitForClickable();
   await (await parent).click();
 
   const facility = await sidebarFilterFacilityAccordionBody().$('.mm-dropdown-submenu').$(`a*=${reportFacility}`);
-  await facility.waitForDisplayed();
+  await facility.waitForClickable();
   const checkbox = facility.previousElement();
   await (await checkbox).click();
 };
