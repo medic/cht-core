@@ -16,13 +16,14 @@ describe('FAB actions', () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), patient ]);
     await utils.createUsers([ onlineUser ]);
+    await utils.updatePermissions(onlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(onlineUser);
   });
 
   afterEach(async () => {
     await browser.refresh();
     await commonPage.waitForPageLoaded();
-    await utils.revertSettings(false);
+    await utils.revertSettings(true);
   });
 
   it('should show new household and new person create option', async () => {
@@ -33,7 +34,7 @@ describe('FAB actions', () => {
   });
 
   it('should show fab when user only has can_create_places permission', async () => {
-    await utils.updatePermissions(onlineUser.roles, [], ['can_create_people']);
+    await utils.updatePermissions(onlineUser.roles, ['can_view_old_navigation'], ['can_create_people'], true);
     await commonElements.goToPeople(healthCenter._id);
 
     await commonElements.clickFastActionFAB({ waitForList: false });
@@ -42,7 +43,7 @@ describe('FAB actions', () => {
   });
 
   it('should show fab when user only has can_create_people permission', async () => {
-    await utils.updatePermissions(onlineUser.roles, [], ['can_create_places']);
+    await utils.updatePermissions(onlineUser.roles, ['can_view_old_navigation'], ['can_create_places'], true);
     await commonElements.goToPeople(healthCenter._id);
 
     await commonElements.clickFastActionFAB({ waitForList: false });

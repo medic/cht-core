@@ -27,6 +27,7 @@ describe('ongoing replication', function() {
   before(async () => {
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
+    await utils.updatePermissions(['chw'], ['can_view_old_navigation'], [], true);
 
     await saveData(userAllowedDocs);
     await saveData(userDeniedDocs);
