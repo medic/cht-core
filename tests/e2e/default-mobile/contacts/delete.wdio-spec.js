@@ -17,7 +17,6 @@ describe('Delete Contacts', () => {
     await utils.saveDocs([ ...places.values() ]);
     patientDocs = await utils.saveDocs([ patient ]);
     await utils.createUsers([ onlineUser ]);
-    await utils.updatePermissions(onlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(onlineUser);
     await commonElements.goToPeople();
   });

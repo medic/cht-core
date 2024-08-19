@@ -36,7 +36,6 @@ describe('Navigation', () => {
     reportDocs = await utils.saveDocs(reports);
     patientDocs = await utils.saveDocs([ patient ]);
     await utils.createUsers([ offlineUser ]);
-    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
   });
 
