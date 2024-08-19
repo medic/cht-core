@@ -38,7 +38,10 @@ describe('Report', () => {
     parent: { _id: clinic._id, parent: clinic.parent }
   });
 
-  const report = pregnancyFactory.build({ contact: chwContact, fields: { patient_id: person._id, case_id: 'case-12' } });
+  const report = pregnancyFactory.build({ 
+    contact: chwContact, 
+    fields: { patient_id: person._id, case_id: 'case-12' } 
+  });
 
   before(async () => {
     await utils.saveDocs([...places.values(), person, chwContact]);
