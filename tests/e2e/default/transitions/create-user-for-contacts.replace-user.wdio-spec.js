@@ -82,6 +82,7 @@ const SETTINGS = utils.deepFreeze({
 
 const loginAsUser = async (user) => {
   await utils.createUsers([user]);
+  await utils.updatePermissions(['program_officer', 'mm-online', 'chw'], ['can_view_old_navigation'], [], true);
   newUsers.push(user.username);
   await loginPage.login(user);
   await commonPage.waitForPageLoaded();

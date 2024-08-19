@@ -110,6 +110,7 @@ describe('initial-replication', () => {
     // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
+    await utils.updatePermissions(['chw'], ['can_view_old_navigation'], [], true);
 
     await utils.saveDocs(userAllowedDocs.clinics);
     await utils.saveDocs(userDeniedDocs.clinics);

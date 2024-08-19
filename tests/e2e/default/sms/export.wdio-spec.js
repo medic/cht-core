@@ -23,6 +23,7 @@ describe('Export Messages', () => {
     await fileDownloadUtils.setupDownloadFolder();
     await utils.saveDocs([ ...places.values(), patient ]);
     await utils.createUsers([ onlineUser ]);
+    await utils.updatePermissions(onlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();

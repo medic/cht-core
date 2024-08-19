@@ -176,6 +176,7 @@ describe('Tasks group landing page', () => {
   before(async () => {
     await utils.saveDocs([...places, ...clinics, ...people]);
     await utils.createUsers([chw, supervisor]);
+    await utils.updatePermissions([chw.roles, supervisor.roles], ['can_view_old_navigation'], [], true);
     await sentinelUtils.waitForSentinel();
 
     await chtConfUtils.initializeConfigDir();

@@ -25,6 +25,7 @@ describe('More Options Menu - Offline User - Delete permissions disabled', () =>
     isOffline: true,
     place: health_center._id,
     contact: contact._id,
+    roles: ['chw'],
   });
 
   const patient = personFactory.build({
@@ -49,6 +50,8 @@ describe('More Options Menu - Offline User - Delete permissions disabled', () =>
     xmlReportId = (await utils.saveDoc(xmlReport)).id;
     smsReportId = (await utils.saveDoc(smsReport)).id;
     await utils.createUsers([offlineUser]);
+    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
+    await utils.revertSettings(false);
     await loginPage.login(offlineUser);
     await utils.updatePermissions(offlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
     await commonPage.closeReloadModal();
