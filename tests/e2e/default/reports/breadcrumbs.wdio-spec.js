@@ -38,6 +38,7 @@ describe('Reports tab breadcrumbs', () => {
   };
   const offlineUser = userFactory.build({
     username: 'offlineuser_breadcrumbs',
+    roles: ['chw'],
     isOffline: true,
     place: healthCenter1._id,
     contact: offlineUserContact._id,
@@ -104,6 +105,7 @@ describe('Reports tab breadcrumbs', () => {
       body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
     });
     await utils.createUsers([ onlineUser, offlineUser ]);
+    await utils.updatePermissions(['chw', 'program_officer'], ['can_view_old_navigation'], [], true);
   });
 
   afterEach(async () => await commonElements.logout());

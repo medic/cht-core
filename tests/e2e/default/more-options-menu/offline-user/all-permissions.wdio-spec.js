@@ -27,6 +27,7 @@ describe('More Options Menu - Offline User', () => {
     isOffline: true,
     place: health_center._id,
     contact: contact._id,
+    roles: ['chw'],
   });
 
   const patient = personFactory.build({
@@ -52,10 +53,14 @@ describe('More Options Menu - Offline User', () => {
     xmlReportId = (await utils.saveDoc(xmlReport)).id;
     smsReportId = (await utils.saveDoc(smsReport)).id;
     await utils.createUsers([offlineUser]);
+    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
   });
 
-  afterEach(async () => await commonPage.goToBase());
+  afterEach(async () => {
+    await utils.revertSettings(true);
+    await commonPage.goToBase();
+  });
 
   describe('All permissions enabled', () => {
 
@@ -124,10 +129,11 @@ describe('More Options Menu - Offline User', () => {
 
   describe('All permissions disabled', () => {
     before(async () => {
+      const allowOldNav = 'can_view_old_navigation';
       const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all',
         'can_export_contacts', 'can_export_messages',
         'can_delete_reports', 'can_update_reports'];
-      await utils.updatePermissions(offlineUser.roles, [], allPermissions, true);
+      await utils.updatePermissions(offlineUser.roles, [allowOldNav], allPermissions, true);
       await commonPage.sync(true);
     });
 

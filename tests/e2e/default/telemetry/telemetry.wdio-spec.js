@@ -19,6 +19,7 @@ const setupUser = () => {
     username: Faker.internet.userName().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
     password: 'Secret_1',
     place: districtHospital._id,
+    roles: ['chw'],
     contact: contact._id,
     known: true,
   });
@@ -42,6 +43,7 @@ describe('Telemetry', () => {
     ({ docs, user } = setupUser());
     await utils.saveDocs(docs);
     await utils.createUsers([user]);
+    await utils.updatePermissions(user.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
   });
