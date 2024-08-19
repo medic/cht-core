@@ -262,6 +262,7 @@ const filterByForm = async (formName) => {
   await (await sidebarFilterFormAccordionHeader()).click();
   await (await sidebarFilterFormAccordionBody()).waitForDisplayed();
   const option = sidebarFilterFormAccordionBody().$(`a*=${formName}`);
+  await (await option).waitForDisplayed();
   await (await option).waitForClickable();
   await (await option).click();
 };
@@ -270,6 +271,7 @@ const filterByStatus = async (statusOption) => {
   await (await sidebarFilterStatusAccordionHeader()).click();
   await (await sidebarFilterStatusAccordionBody()).waitForDisplayed();
   const option = sidebarFilterStatusAccordionBody().$(`a*=${statusOption}`);
+  await (await option).waitForDisplayed();
   await (await option).waitForClickable();
   await (await option).click();
 };
@@ -284,6 +286,7 @@ const filterByFacility = async (parentFacility, reportFacility) => {
   await (await parent).click();
 
   const facility = await sidebarFilterFacilityAccordionBody().$('.mm-dropdown-submenu').$(`a*=${reportFacility}`);
+  await facility.waitForDisplayed();
   await facility.waitForClickable();
   const checkbox = facility.previousElement();
   await (await checkbox).click();
@@ -291,6 +294,7 @@ const filterByFacility = async (parentFacility, reportFacility) => {
 
 const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await (await fieldPromise).waitForDisplayed();
+  await (await fieldPromise).waitForClickable();
   await (await fieldPromise).click();
 
   const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
