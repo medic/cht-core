@@ -7,7 +7,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 
-describe('Report', () => {
+describe('Report - Send message action', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const clinic = places.get('clinic');
