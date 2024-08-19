@@ -31,7 +31,7 @@ const patient = personFactory.build({
   patient_id: 'the_patient_id',
   parent: { _id: 'health_center', parent: { _id: 'district' } },
 });
-const user = userFactory.build({ username: 'offlineuser-purge', place: 'health_center', roles: ['chw'] });
+const user = userFactory.build({ username: 'offlineuser-purge', place: 'health_center' });
 const purgeFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'purge').map(r => r._id);
 };
@@ -99,8 +99,6 @@ describe('purge', function() {
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
     await utils.createUsers([user]);
-    await utils.updatePermissions([user.roles], ['can_view_old_navigation'], [], true);
-    await utils.revertSettings(true);
     await utils.saveDocs(reportsToPurge);
     await utils.saveDocs(homeVisits);
     await utils.saveDocs(pregnancies);
@@ -132,8 +130,6 @@ describe('purge', function() {
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
     await utils.createUsers([user]);
-    await utils.updatePermissions([user.roles], ['can_view_old_navigation'], [], true);
-    await utils.revertSettings(true);
     await utils.saveDocs(reportsToPurge);
     await utils.saveDocs(homeVisits);
     await utils.saveDocs(pregnancies);

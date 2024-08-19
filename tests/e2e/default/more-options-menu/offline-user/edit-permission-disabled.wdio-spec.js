@@ -24,7 +24,6 @@ describe('More Options Menu - Offline User - Edit permissions disabled', () => {
     isOffline: true,
     place: health_center._id,
     contact: contact._id,
-    roles: ['chw'],
   });
 
   const patient = personFactory.build({
@@ -53,7 +52,7 @@ describe('More Options Menu - Offline User - Edit permissions disabled', () => {
     smsReportId = result.id;
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
-    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], ['can_edit']);
+    await utils.updatePermissions(offlineUser.roles, [], ['can_edit']);
     await commonPage.closeReloadModal();
   });
 

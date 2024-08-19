@@ -76,7 +76,6 @@ describe('Reports Sidebar Filter', () => {
     await utils.saveDocs([ ...places.values(), patient ]);
     savedReports = (await utils.saveDocs(reports)).map(result => result.id);
     await utils.createUsers([ districtHospitalUser, healthCenterUser ]);
-    await utils.updatePermissions(['chw'], ['can_view_old_navigation'], [], true);
   });
 
   afterEach(async () => {
@@ -94,7 +93,7 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.goToReports();
     await (await reportsPage.firstReport()).waitForDisplayed();
     expect((await reportsPage.allReports()).length).to.equal(savedReports.length);
-
+    
     await reportsPage.openSidebarFilter();
     await reportsPage.openSidebarFilterDateAccordion();
     await reportsPage.setSidebarFilterFromDate();
@@ -110,8 +109,6 @@ describe('Reports Sidebar Filter', () => {
     const pregnancyHealthCenter = savedReports[0];
     const visitHealthCenter = savedReports[2];
 
-    await utils.updatePermissions(['program_officer'], ['can_view_old_navigation'], [], true);
-    await utils.revertSettings(false);
     await loginPage.login(healthCenterUser);
     await commonPage.waitForPageLoaded();
 
