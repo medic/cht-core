@@ -9,7 +9,7 @@
   text-align: center;
   position: relative;
   &, &:focus {
-    .button-text;
+    .new-button-text;
   }
   &:hover, &.active {
     .button-text-hover;
@@ -18,7 +18,29 @@
 
 .mm-icon-inverse {
   &, &:focus {
-    .button-text-inverse;
+    .new-button-text-inverse;
+  }
+}
+
+.old-nav {
+  .mm-icon {
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    &, &:focus {
+      .button-text;
+    }
+    &:hover, &.active {
+      .button-text-hover;
+    }
+  }
+}
+
+.old-nav {
+  .mm-icon-inverse {
+    &, &:focus {
+      .button-text-inverse;
+    }
   }
 }
 

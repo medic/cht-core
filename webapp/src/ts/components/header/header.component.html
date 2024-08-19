@@ -6,7 +6,7 @@
       </div>
     </a>
 
-    <div class="extras">
+    <div class="extras" *ngIf="hasOldNav">
 
       <span class="dropdown options" dropdown>
         <a href dropdownToggle (click)="false" id="header-dropdown-link" aria-controls="header-dropdown">

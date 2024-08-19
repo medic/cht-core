@@ -27,64 +27,94 @@
 
 body {
   overflow-y: hidden;
-  .app-root.messages {
-    .header .tabs .selected,
-    .filters {
+  .app-root {
+    .header .tabs .selected {
+      background-color: @tab-selected-color;
+    }
+
+    &.messages .filters {
       background-color: @messages-color;
     }
-  }
-  .app-root.tasks {
-    .header .tabs .selected,
-    .filters {
+    &.tasks .filters {
       background-color: @tasks-color;
     }
-  }
-  .app-root.reports {
-    .header .tabs .selected,
-    .filters {
+    &.reports .filters {
       background-color: @reports-color;
     }
-  }
-  .app-root.analytics {
-    .header .tabs .selected,
-    .filters {
+    &.analytics .filters {
       background-color: @analytics-color;
     }
-  }
-  .app-root.contacts {
-    .header .tabs .selected,
-    .filters {
+    &.contacts .filters {
       background-color: @contacts-color;
     }
-  }
-  .app-root.user {
-    .header .tabs .selected,
-    .filters {
+    &.user .filters {
       background-color: @admin-color;
     }
-  }
-  .app-root.about,
-  .app-root.testing,
-  .app-root.privacy-policy {
-    .header .tabs .selected,
-    .filters {
-      background-color: @help-color;
-    }
-    .filters {
-      height: 0;
-    }
-    .page {
-      top: 75px;
-    }
-    .partners > h3 {
-      margin-top: 100px;
-    }
-  }
-  .app-root.error,
-  .app-root.testing {
-    .header .tabs .selected,
-    .filters {
+    &.error .filters,
+    &testing .filters {
       background-color: @error-color;
+    }
+
+    &.about,
+    &.testing,
+    &.privacy-policy {
+      .filters {
+        background-color: @help-color;
+        height: 0;
+      }
+      .page {
+        top: 75px;
+      }
+      .partners > h3 {
+        margin-top: 100px;
+      }
+    }
+
+    &.old-nav {
+      &.messages {
+        .header .tabs .selected {
+          background-color: @messages-color;
+        }
+      }
+      &.tasks {
+        .header .tabs .selected {
+          background-color: @tasks-color;
+        }
+      }
+      &.reports {
+        .header .tabs .selected {
+          background-color: @reports-color;
+        }
+      }
+      &.analytics {
+        .header .tabs .selected {
+          background-color: @analytics-color;
+        }
+      }
+      &.contacts {
+        .header .tabs .selected {
+          background-color: @contacts-color;
+        }
+      }
+      &.user {
+        .header .tabs .selected {
+          background-color: @admin-color;
+        }
+      }
+      &.error,
+      &.testing {
+        .header .tabs .selected {
+          background-color: @error-color;
+        }
+      }
+
+      &.about,
+      &.testing,
+      &.privacy-policy {
+        .header .tabs .selected {
+          background-color: @messages-color;
+        }
+      }
     }
   }
 }
@@ -115,226 +145,240 @@ body {
 
 .header {
   display: none;
+  background-color: @top-header-color;
+  text-align: center;
+  padding-top: 5px;
+  z-index: 3;
+  position: relative;
+  .button-text-inverse;
+
+  .inner {
+    height: 60px;
+  }
+
+  a {
+    .button-text-inverse;
+    outline: 0;
+    padding-top: 3px;
+  }
+
+  .mm-icon {
+    margin: 0 auto;
+    font-size: 1.5rem;
+  }
+
+  .logo {
+    float: left;
+    opacity: 0.9;
+    padding: 2px 10px;
+    img {
+      height: 50px;
+    }
+  }
+
+  .extras,
+  .tabs {
+    &,
+    a {
+      height: 100%;
+    }
+    a {
+      display: inline-block;
+    }
+  }
+
+  .extras {
+    float: right;
+    padding-right: 5px;
+
+    a {
+      width: @header-bar-extras;
+      margin-top: 10px;
+      border-radius: @radius-size @radius-size 0 0;
+
+      .mm-icon {
+        width: inherit;
+      }
+    }
+
+    .dropdown-menu a {
+      border-radius: 0;
+    }
+
+    .open > a {
+      background-color: #ffffff;
+
+      .mm-icon {
+        color: @top-header-color;
+      }
+    }
+  }
+
+  .dropdown ul a {
+    width: 100%;
+    height: auto;
+  }
+
+  .dropdown.options.open.show {
+    display: inline !important; // Overriding BS' "display" that uses !important;
+  }
+
+  .options .dropdown-menu {
+    width: @header-dropdown-width;
+    top: 0 !important; // Overriding element.style
+    left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
+    margin-top: 30px;
+    font-size: 0;
+    a {
+      text-shadow: none;
+      padding: 10px 20px;
+      color: #262626;
+      margin-top: 0;
+      white-space: normal;
+      font-size: 1rem;
+    }
+    .disabled a {
+      color: #999999;
+    }
+    .divider {
+      margin: 0;
+    }
+    .sync-status {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      a {
+        padding-top: 0;
+        padding-bottom: 0;
+        color: @label-color;
+        &:hover {
+          background-color: transparent;
+          cursor: default;
+        }
+      }
+      .success {
+        color: @ok-color;
+      }
+      .required {
+        color: @error-color;
+      }
+    }
+  }
+
+  .tabs {
+    overflow: hidden;
+    white-space: nowrap;
+
+    .button-label {
+      top: -5px;
+      position: relative;
+    }
+
+    a {
+      border-radius: @radius-size @radius-size 0 0;
+      cursor: pointer;
+      min-width: 80px;
+      padding-left: 5px;
+      padding-right: 5px;
+
+      .mm-icon {
+        display: block;
+        padding: 5px 0;
+
+        svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+          &, &:before {
+            display: block;
+            margin: auto;
+            height: 24px;
+            max-width: 24px;
+            overflow: hidden;
+          }
+        }
+      }
+
+      &.selected {
+        .button-label,
+        .mm-icon:hover,
+        .resource-icon {
+          .new-button-text;
+        }
+      }
+
+      @media (hover: hover) { // Prevents sticky hover state in mobile devices.
+        &:hover:not(.selected) {
+          &.messages-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @messages-color;
+              fill: @messages-color;
+            }
+          }
+
+          &.tasks-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @tasks-color;
+              fill: @tasks-color;
+            }
+          }
+
+          &.reports-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @reports-color;
+              fill: @reports-color;
+            }
+          }
+
+          &.analytics-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @analytics-color;
+              fill: @analytics-color;
+            }
+          }
+
+          &.contacts-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @contacts-color;
+              fill: @contacts-color;
+            }
+          }
+        }
+      }
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+      }
+    }
+  }
 }
 
 .old-nav {
   .header {
     display: block;
-    background-color: @top-header-color;
-    text-align: center;
-    padding-top: 5px;
-    z-index: 3;
-    position: relative;
-    .button-text-inverse;
-
-    .inner {
-      height: 60px;
-    }
-
-    a {
-      .button-text-inverse;
-      outline: 0;
-      padding-top: 3px;
-    }
-
-    .mm-icon {
-      margin: 0 auto;
-      font-size: 1.5rem;
-    }
-
-    .logo {
-      float: left;
-      opacity: 0.9;
-      padding: 2px 10px;
-      img {
-        height: 50px;
-      }
-    }
-
-    .extras,
     .tabs {
-      &,
       a {
-        height: 100%;
-      }
-      a {
-        display: inline-block;
-      }
-    }
-
-    .extras {
-      float: right;
-      padding-right: 5px;
-
-      a {
-        width: @header-bar-extras;
-        margin-top: 10px;
-        border-radius: @radius-size @radius-size 0 0;
-
-        .mm-icon {
-          width: inherit;
-        }
-      }
-
-      .dropdown-menu a {
-        border-radius: 0;
-      }
-
-      .open > a {
-        background-color: #ffffff;
-
-        .mm-icon {
-          color: @top-header-color;
-        }
-      }
-    }
-
-    .dropdown ul a {
-      width: 100%;
-      height: auto;
-    }
-
-    .dropdown.options.open.show {
-      display: inline !important; // Overriding BS' "display" that uses !important;
-    }
-
-    .options .dropdown-menu {
-      width: @header-dropdown-width;
-      top: 0 !important; // Overriding element.style
-      left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
-      margin-top: 30px;
-      font-size: 0;
-      a {
-        text-shadow: none;
-        padding: 10px 20px;
-        color: #262626;
-        margin-top: 0;
-        white-space: normal;
-        font-size: 1rem;
-      }
-      .disabled a {
-        color: #999999;
-      }
-      .divider {
-        margin: 0;
-      }
-      .sync-status {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        a {
-          padding-top: 0;
-          padding-bottom: 0;
-          color: @label-color;
-          &:hover {
-            background-color: transparent;
-            cursor: default;
-          }
-        }
-        .success {
-          color: @ok-color;
-        }
-        .required {
-          color: @error-color;
-        }
-      }
-    }
-
-    .tabs {
-      overflow: hidden;
-      white-space: nowrap;
-
-      .button-label {
-        top: -5px;
-        position: relative;
-      }
-
-      a {
-        border-radius: @radius-size @radius-size 0 0;
-        cursor: pointer;
-        min-width: 80px;
-        padding-left: 5px;
-        padding-right: 5px;
-
         .mm-icon {
           display: block;
-          padding: 5px 0;
-
-          svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
-            &, &:before {
-              display: block;
-              margin: auto;
-              height: 24px;
-              max-width: 24px;
-              overflow: hidden;
-            }
-          }
         }
-
         &.selected {
           .button-label,
           .mm-icon:hover,
           .resource-icon {
             .button-text;
           }
-        }
-
-        @media (hover: hover) { // Prevents sticky hover state in mobile devices.
-          &:hover:not(.selected) {
-            &.messages-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @messages-color;
-                fill: @messages-color;
-              }
-            }
-
-            &.tasks-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @tasks-color;
-                fill: @tasks-color;
-              }
-            }
-
-            &.reports-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @reports-color;
-                fill: @reports-color;
-              }
-            }
-
-            &.analytics-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @analytics-color;
-                fill: @analytics-color;
-              }
-            }
-
-            &.contacts-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @contacts-color;
-                fill: @contacts-color;
-              }
-            }
-          }
-        }
-
-        &:hover,
-        &:focus {
-          text-decoration: none;
         }
       }
     }
@@ -1310,14 +1354,65 @@ mm-search-bar {
 }
 
 @media (max-width: @media-mobile) {
+  .header {
+    display: block;
+    background-color: @bottom-navbar-color;
+    text-align: center;
+    padding-top: 5px;
+    z-index: 9999;
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+    .inner {
+      height: @bottom-navbar-height;
+    }
+    .tabs {
+      a {
+        flex-grow: 1;
+        min-width: 60px;
+        max-width: 70px;
+      }
+    }
+  }
   .old-nav {
+    .header {
+      background-color: @top-header-color;
+      z-index: 3;
+      position: relative;
+      .inner {
+        height: 60px;
+      }
+      .dropdown-menu {
+        margin: 30px 0 0 0;
+        top: 8px;
+        right: 5px;
+      }
+      .tabs {
+        display: flex;
+        flex-direction: row;
+        a {
+          min-width: 70px;
+          max-width: 100px;
+        }
+      }
+      .logo {
+        display: none;
+      }
+      .extras a {
+        padding-top: 2px;
+        margin-top: 2px;
+
+        .fa-bars {
+          font-size: @font-extra-extra-large;
+        }
+      }
+    }
     .content {
       .page {
         top: 115px;
       }
     }
   }
-
   .fast-action-trigger:not(.embed-fast-action) {
     position: fixed;
     bottom: 17px;
@@ -1417,33 +1512,6 @@ mm-search-bar {
     .sort-dropdown {
       position: absolute;
       right: 0;
-    }
-  }
-  .header {
-    .dropdown-menu {
-      margin: 0;
-      top: 8px;
-      right: 5px;
-    }
-    .tabs {
-      display: flex;
-      flex-direction: row;
-      a {
-        flex-grow: 1;
-        min-width: 70px;
-        max-width: 100px;
-      }
-    }
-    .logo {
-      display: none;
-    }
-    .extras a {
-      padding-top: 2px;
-      margin-top: 2px;
-
-      .fa-bars {
-        font-size: @font-extra-extra-large;
-      }
     }
   }
 
@@ -1640,24 +1708,26 @@ mm-search-bar {
   .right-side-filter {
     padding-right: 6px;
   }
-  .header {
-    .tabs {
-      padding-left: 2px;
-      a {
-        min-width: 40px;
-        .button-label {
-          font-size: @font-extra-extra-small;
+  .old-nav {
+    .header {
+      .tabs {
+        padding-left: 2px;
+        a {
+          min-width: 40px;
+          .button-label {
+            font-size: @font-extra-extra-small;
+          }
         }
-      }
 
-      // Use bigger font when there are 4 or less tabs.
-      .elements-label(a, button-label, 4, @font-extra-small);
-    }
-    .mm-badge-overlay {
-      right: 10%;
-    }
-    .inner {
-      height: 60px;
+        // Use bigger font when there are 4 or less tabs.
+        .elements-label(a, button-label, 4, @font-extra-small);
+      }
+      .mm-badge-overlay {
+        right: 10%;
+      }
+      .inner {
+        height: 60px;
+      }
     }
   }
   .content .page {
