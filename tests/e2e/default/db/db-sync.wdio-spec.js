@@ -196,7 +196,6 @@ describe('db-sync', () => {
       method: 'PUT',
       body: restrictedUser
     });
-    await utils.updatePermissions(restrictedUser.roles, ['can_view_old_navigation'], [], true);
     await sentinelUtils.waitForSentinel();
     await loginPage.login({ username: restrictedUserName, password: restrictedPass });
     await (await commonElements.analyticsTab()).waitForDisplayed();

@@ -9,7 +9,7 @@ const userFactory = require('@factories/cht/users/users');
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const contact = personFactory.build({ parent: { _id: clinic._id, parent: clinic.parent }, });
-const user = userFactory.build({ contact: contact._id, place: clinic._id, roles: ['chw'] });
+const user = userFactory.build({ contact: contact._id, place: clinic._id });
 
 const getServerFeedbackDocs = async () => {
   const response = await utils.request({ path: `/medic-user-${user.username}-meta/_all_docs` });
@@ -20,7 +20,6 @@ describe('feedback docs', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), contact]);
     await utils.createUsers([user]);
-    await utils.updatePermissions(user.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(user);
   });
 

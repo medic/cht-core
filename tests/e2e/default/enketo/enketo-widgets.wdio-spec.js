@@ -81,7 +81,6 @@ describe('Enketo Widgets', () => {
     await utils.saveDoc(districtHospital);
     await utils.createUsers([offlineUser]);
     await sentinelUtils.waitForSentinel(); // we expect a shortcode to be generated for the user's contact
-    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
   });
 

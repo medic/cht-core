@@ -46,7 +46,6 @@ describe('Targets', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), owl]);
     await utils.createUsers([chw]);
-    await utils.updatePermissions(chw.roles, ['can_view_old_navigation'], [], true);
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login(chw);
@@ -86,7 +85,7 @@ describe('Targets', () => {
     expect(await emptySelection.getText()).to.equal('No target found.');
   });
 
-  it.skip('should display correct message when targets are disabled', async () => {
+  it('should display correct message when targets are disabled', async () => {
     const tasks = {
       targets: { enabled: false }
     };
@@ -102,7 +101,7 @@ describe('Targets', () => {
     );
   });
 
-  it.skip('should show error message for bad config', async () => {
+  it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
     await updateSettings(settings);
     await analyticsPage.goToTargets();

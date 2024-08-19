@@ -32,7 +32,6 @@ describe('Unauthorized form', () => {
     customPlace.context = { permission: 'can_create_clinic' };
     await utils.saveDocs([ ...places.values(), customPlace ]);
     await utils.createUsers([ offlineUser ]);
-    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
   });
 
