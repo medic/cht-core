@@ -39,7 +39,6 @@ describe('Tasks', () => {
     isOffline: true,
     place: healthCenter._id,
     contact: contact._id,
-    roles: ['chw'],
   });
   const owl = personFactory.build({
     name: 'Owl',
@@ -49,7 +48,6 @@ describe('Tasks', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), contact, owl]);
     await utils.createUsers([chw]);
-    await utils.updatePermissions(chw.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(chw);
   });
 

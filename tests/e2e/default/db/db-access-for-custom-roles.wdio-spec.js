@@ -46,11 +46,6 @@ describe('Database access for new roles', () => {
     await utils.saveDocs(docs);
     await addRole(newRole);
     await utils.createUsers([user]);
-    await utils.updatePermissions(user.roles, ['can_view_old_navigation'], [], true);
-  });
-
-  after(async () => {
-    await utils.revertSettings(true);
   });
 
   it('user with custom role should be able to log in', async () => {

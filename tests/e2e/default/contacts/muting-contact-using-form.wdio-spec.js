@@ -38,12 +38,7 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
     await utils.saveDocs([...places.values(), person, mutePerson]);
     await utils.updateSettings(settings_mute, true);
     await utils.createUsers([offlineUser]);
-    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
-  });
-
-  afterEach(async () => {
-    await utils.revertSettings(true);
   });
 
   it('should mute a contact using the defined mute_forms (death_report).', async () => {

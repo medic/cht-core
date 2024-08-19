@@ -59,7 +59,6 @@ const settingsNoTransitions = utils.deepFreeze({
 
 const offlineUser = utils.deepFreeze(userFactory.build({
   username: 'offline_user_create',
-  roles: ['chw'],
   place: district._id,
 }));
 
@@ -135,7 +134,6 @@ describe('Create user when adding contact', () => {
 
   it('Creates a new user while offline', async () => {
     await utils.createUsers([offlineUser]);
-    await utils.updatePermissions(['chw'], ['can_view_old_navigation'], [], true);
     newUsers.push(offlineUser.username);
 
     await utils.updateSettings(settings, 'sentinel');

@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 
 
 describe('Navigation tests', () => {
-  describe.skip('Navigation functionality', () => {
+  describe('Navigation functionality', () => {
     before(async () => {
       await loginPage.cookieLogin();
     });
@@ -47,7 +47,7 @@ describe('Navigation tests', () => {
     const districtHospital = places.get('district_hospital');
     const user = userFactory.build({ place: districtHospital._id, roles: ['chw'] });
 
-    describe.skip('as admin', () => {
+    describe('as admin', () => {
       before(async () => {
         await loginPage.cookieLogin();
       });
@@ -72,7 +72,7 @@ describe('Navigation tests', () => {
           'can_view_tasks_tab'
         ];
 
-        await utils.updatePermissions(user.roles, ['can_view_old_navigation'], permissionsToRemove);
+        await utils.updatePermissions(user.roles, [], permissionsToRemove);
         await loginPage.login(user);
       });
 

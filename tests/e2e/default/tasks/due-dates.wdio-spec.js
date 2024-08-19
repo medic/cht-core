@@ -56,7 +56,6 @@ describe('Task list due dates', () => {
   before(async () => {
     await utils.saveDocs(contacts);
     await utils.createUsers([ chw ]);
-    await utils.updatePermissions(chw.roles, ['can_view_old_navigation'], [], true);
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login({ username: chw.username, password: chw.password });

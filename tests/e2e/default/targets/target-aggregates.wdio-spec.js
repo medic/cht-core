@@ -15,7 +15,7 @@ const targetAggregatesConfig = require('./config/target-aggregates');
 
 describe('Target aggregates', () => {
 
-  describe.skip('DB admin', () => {
+  describe('DB admin', () => {
     before(async () => await loginPage.cookieLogin());
 
     after(async () => {
@@ -59,7 +59,7 @@ describe('Target aggregates', () => {
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
 
     const TARGET_VALUES_BY_CONTACT = helperFunctions.generateTargetValuesByContact([...NAMES_DH1, ...NAMES_DH2]);
-
+    
     const districtHospital1 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 1' });
     const districtHospital2 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 2' });
 
@@ -68,7 +68,7 @@ describe('Target aggregates', () => {
     });
 
     const onlineUser = userFactory.build({ place: districtHospital1._id, roles: ['program_officer'] });
-
+    
     const userWithManyPlaces = userSettingsFactory.build({
       _id: 'org.couchdb.user:offline_many_facilities',
       name: 'offline_many_facilities',
@@ -109,7 +109,6 @@ describe('Target aggregates', () => {
         ...contactDocs, districtHospital1, districtHospital2, contactWithManyPlaces, userWithManyPlaces
       ]);
       await utils.createUsers([onlineUser]);
-      await utils.updatePermissions(['program_officer', 'chw'], ['can_view_old_navigation'], [], true);
       await utils.request({
         path: `/_users/${userWithManyPlaces._id}`,
         method: 'PUT',

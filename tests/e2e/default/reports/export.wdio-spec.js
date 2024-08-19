@@ -44,7 +44,6 @@ describe('Export Reports', () => {
     await utils.saveDocs([ ...places.values(), patient ]);
     (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
     await utils.createUsers([ onlineUser ]);
-    await utils.updatePermissions(onlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToReports();

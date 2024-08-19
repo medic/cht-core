@@ -78,7 +78,6 @@ describe('Message Tab - Sender Data', () => {
       body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
     });
     await utils.createUsers([ onlineUser, offlineUser ]);
-    await utils.updatePermissions([onlineUser.roles, offlineUser.roles], ['can_view_old_navigation'], [], true);
   });
 
   afterEach(async () => {

@@ -93,7 +93,6 @@ describe('Service worker cache', () => {
   before(async () => {
     await utils.saveDoc(district);
     await utils.createUsers([chw]);
-    await utils.updatePermissions(chw.roles, ['can_view_old_navigation'], [], true);
     await login();
   });
 

@@ -12,7 +12,7 @@ describe('Privacy policy', () => {
   const frenchTexts = privacyPolicyFactory.french;
   const spanishTexts = privacyPolicyFactory.spanish;
   const users = [
-    userFactory.build({ username: 'offlineuser', isOffline: true, roles: ['chw'] }),
+    userFactory.build({ username: 'offlineuser', isOffline: true }),
     userFactory.build({ username: 'onlineuser', roles: ['program_officer']})
   ];
 
@@ -25,7 +25,6 @@ describe('Privacy policy', () => {
         await browser.url('/');
         await utils.saveDocs([parent, privacyPolicy]);
         await utils.createUsers([user]);
-        await utils.updatePermissions(['chw', 'program_officer'], ['can_view_old_navigation'], [], true);
         await loginPage.login({ username: user.username, password: user.password, privacyPolicy: true });
       });
 
@@ -106,14 +105,12 @@ describe('Privacy policy', () => {
 
     const conflictUser = userFactory.build({
       username: 'newoffline',
-      known: false,
-      roles: ['chw'],
+      known: false
     });
 
     before(async () => {
       await utils.saveDocs([parent, privacyPolicy]);
       await utils.createUsers([conflictUser]);
-      await utils.updatePermissions(conflictUser.roles, ['can_view_old_navigation'], [], true);
       await browser.reloadSession();
       await browser.url('/');
       await loginPage.login({ username: conflictUser.username, password: conflictUser.password, privacyPolicy: true });

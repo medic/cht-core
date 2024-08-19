@@ -49,7 +49,6 @@ describe('Tasks tab breadcrumbs', () => {
     isOffline: true,
     place: healthCenter1._id,
     contact: chwContact._id,
-    roles: ['chw'],
   });
   const supervisor = userFactory.build({
     username: 'supervisor_tasks',
@@ -99,7 +98,6 @@ describe('Tasks tab breadcrumbs', () => {
       body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
     });
     await utils.createUsers([ chw, supervisor ]);
-    await utils.updatePermissions(['chw', 'chw_supervisor'], ['can_view_old_navigation'], [], true);
     await sentinelUtils.waitForSentinel();
 
     await chtConfUtils.initializeConfigDir();
