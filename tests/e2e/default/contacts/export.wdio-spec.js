@@ -22,7 +22,6 @@ describe('Export Contacts ', () => {
     const contactDocs = await utils.saveDocs([ ...places.values(), patient ]);
     contactDocs.forEach(savedContact => savedContactIds.push(savedContact.id));
     await utils.createUsers([ onlineUser ]);
-    await utils.updatePermissions(onlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToPeople();

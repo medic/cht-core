@@ -52,7 +52,6 @@ describe('Contact Delivery Form', () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), pregnantWoman, pregnantWoman2, pregnantWoman3 ]);
     await utils.createUsers([offlineUser]);
-    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.hideSnackbar();

@@ -34,7 +34,6 @@ describe('Edit ', () => {
   before(async () => {
     await utils.saveDocs([...places.values()]);
     await utils.createUsers([offlineUser, onlineUser]);
-    await utils.updatePermissions(['chw', 'program_officer'], ['can_view_old_navigation'], [], true);
   });
 
   it('should update a contact, delete the same contact then unassign primary contact from facility', async () => {

@@ -27,7 +27,6 @@ describe('DB Object Widget', () => {
     await commonEnketoPage.uploadForm('db-object-widget');
     await utils.saveDocs([ ...places.values(), area2, personArea1, personArea2 ]);
     await utils.createUsers([ offlineUser ]);
-    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
   });
 
