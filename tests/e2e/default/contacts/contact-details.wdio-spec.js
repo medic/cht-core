@@ -113,11 +113,11 @@ describe('Contact details page.', () => {
     it('should show contact summary that has the full context for reports > 50' +
       ' validate that the pregnancy card is always displayed', async () => {
 
-        expect(await contactPage.pregnancyCardSelectors.pregnancyCard().isDisplayed()).to.be.true;
-        const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
-        expect(pregnancyCardInfo.weeksPregnant).to.equal('12');
-        expect(pregnancyCardInfo.risk).to.equal('High risk');
-      });
+      expect(await contactPage.pregnancyCardSelectors.pregnancyCard().isDisplayed()).to.be.true;
+      const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
+      expect(pregnancyCardInfo.weeksPregnant).to.equal('12');
+      expect(pregnancyCardInfo.risk).to.equal('High risk');
+    });
 
     it('should not show reports when permission is disabled', async () => {
       await updatePermissions(ROLE, [], ['can_view_reports']);
