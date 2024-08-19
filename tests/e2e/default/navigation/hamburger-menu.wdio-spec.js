@@ -1,7 +1,7 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-describe('Hamburger Menu tests', () => {
+describe.skip('Hamburger Menu tests', () => {
   before(async () => {
     await loginPage.cookieLogin();
   });

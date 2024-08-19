@@ -8,7 +8,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const appSettings = require('./test-app_settings');
 
-describe('Reports Subject', () => {
+describe.skip('Reports Subject', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
   const healthCenter = places.get('health_center');

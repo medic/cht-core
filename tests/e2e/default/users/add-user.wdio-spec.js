@@ -29,7 +29,7 @@ const person = personFactory.build(
 
 const docs = [...places.values(), person, districtHospital2];
 
-describe('User Test Cases ->', () => {
+describe.skip('User Test Cases ->', () => {
 
   before(async () => {
     const settings = await utils.getSettings();

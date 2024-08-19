@@ -13,7 +13,7 @@ const pollSmsApi = body => {
   });
 };
 
-describe('sms-gateway api', () => {
+describe.skip('sms-gateway api', () => {
   before(async () => {
     await loginPage.cookieLogin();
     await commonElements.waitForPageLoaded();

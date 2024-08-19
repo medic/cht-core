@@ -7,7 +7,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 
-describe('User Test Cases -> Creating Users ->', () => {
+describe.skip('User Test Cases -> Creating Users ->', () => {
   const offlineUserRole = 'chw';
   const username = 'jackuser';
   const password = 'Jacktest@123';

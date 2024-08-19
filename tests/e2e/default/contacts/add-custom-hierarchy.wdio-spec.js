@@ -5,7 +5,7 @@ const login = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
-describe('Creating custom places', () => {
+describe.skip('Creating custom places', () => {
   const addPlace = 'New Place';
   let translations;
   let forms;

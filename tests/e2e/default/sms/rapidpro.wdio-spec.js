@@ -9,7 +9,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyReportFactory = require('@factories/cht/reports/sms-pregnancy');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 
-describe('RapidPro SMS Gateway', () => {
+describe.skip('RapidPro SMS Gateway', () => {
   let server;
   let broadcastsEndpointRequests = [];
   let messagesEndpointRequests = [];

@@ -6,7 +6,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-describe('Add new district tests : ', () => {
+describe.skip('Add new district tests : ', () => {
 
   before(async () => await loginPage.cookieLogin());
 

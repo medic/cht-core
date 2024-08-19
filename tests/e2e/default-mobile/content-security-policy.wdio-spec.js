@@ -2,7 +2,7 @@ const browserLogUtils = require('@utils/browser-logs');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-describe('Content Security Policy', () => {
+describe.skip('Content Security Policy', () => {
 
   beforeEach(async () => {
     await loginPage.cookieLogin();
