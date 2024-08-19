@@ -143,11 +143,14 @@ const closeFastActionList = async () => {
 };
 
 const isReportActionDisplayed = async () => {
-  await browser.pause(500);
-  const exists = await (await reportsFastActionFAB()).isExisting();
-  await (await reportsFastActionFAB()).waitForDisplayed();
+  return await browser.waitUntil(async () => {
+    const exists = await (await reportsFastActionFAB()).isExisting();
+    if (exists) {
+      await (await reportsFastActionFAB()).waitForDisplayed();
+    }
 
-  return exists;
+    return exists;
+  });
 };
 
 const isMessagesListPresent = () => {
