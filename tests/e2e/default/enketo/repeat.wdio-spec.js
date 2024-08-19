@@ -24,6 +24,7 @@ describe('RepeatForm', () => {
   before(async () => {
     await utils.saveDocs(hierarchy.places);
     await utils.createUsers([hierarchy.user]);
+    await utils.updatePermissions(['chw'], ['can_view_old_navigation'], [], true);
     await commonEnketoPage.uploadForm('repeat-translation-count');
     await commonEnketoPage.uploadForm('repeat-translation-button');
     await commonEnketoPage.uploadForm('repeat-translation-select');

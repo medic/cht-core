@@ -34,6 +34,7 @@ describe('Training Cards', () => {
     await utils.saveDocs([ parent, patient ]);
     await utils.saveDoc(formDoc);
     await utils.createUsers([ user ]);
+    await utils.updatePermissions(user.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(user);
     await commonElements.waitForPageLoaded();
   });

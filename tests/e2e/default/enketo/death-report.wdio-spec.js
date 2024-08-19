@@ -22,6 +22,7 @@ describe('Submit a death report', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), person]);
     await utils.createUsers([offlineUser]);
+    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
   });
 

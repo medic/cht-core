@@ -25,6 +25,7 @@ describe('Health Facility ANC Reminder task', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
+    await utils.updatePermissions(offlineUser.roles, ['can_view_old_navigation'], [], true);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople(pregnantWoman._id);

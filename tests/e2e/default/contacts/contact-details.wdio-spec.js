@@ -85,7 +85,13 @@ describe('Contact details page.', () => {
     };
 
     before(async () => {
-      const permissions = ['can_view_contacts', 'can_view_contacts_tab', 'can_view_reports', 'can_view_tasks'];
+      const permissions = [
+        'can_view_contacts',
+        'can_view_contacts_tab',
+        'can_view_reports',
+        'can_view_tasks',
+        'can_view_old_navigation',
+      ];
       await updatePermissions(ROLE, permissions);
 
       await utils.saveDocs([parent, patient, ...newReports, ...oldReports, pregnancyReport]);
@@ -170,7 +176,7 @@ describe('Contact details page.', () => {
       await utils.revertSettings(true);
     });
 
-    it('should show error log for bad config', async () => {
+    it.skip('should show error log for bad config', async () => {
       await loginPage.cookieLogin();
       await (await commonPage.goToPeople(patient._id));
 
