@@ -5,7 +5,7 @@ const utils = require('@utils');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-describe.skip('Submit Z-Score form', () => {
+describe('Submit Z-Score form', () => {
   const charts = [
     {
       id: 'weight-for-age',

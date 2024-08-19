@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 
-describe.skip('Reports tab messages', () => {
+describe('Reports tab messages', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const health_center = places.get('health_center');

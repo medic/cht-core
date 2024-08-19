@@ -11,7 +11,7 @@ const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
 const semver = require('semver');
 
-describe.skip('Performing an upgrade', () => {
+describe('Performing an upgrade', () => {
   const testFrontend = BASE_VERSION === 'latest';
 
   const docs = dataFactory.createHierarchy({

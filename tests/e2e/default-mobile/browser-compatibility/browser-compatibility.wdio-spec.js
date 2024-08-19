@@ -6,7 +6,7 @@ const ANDROID_VERSION = '13';
 const SUPPORTED_CHROME_VERSION = '118.0.5993.112';
 const OUTDATED_CHROME_VERSION = '74.0.5993.112';
 
-describe.skip('Browser Compatibility Modal', () => {
+describe('Browser Compatibility Modal', () => {
   const newChromeVersion =
     `Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; IN2010) AppleWebKit/537.36 (KHTML, like Gecko) ` +
     `Chrome/${SUPPORTED_CHROME_VERSION} Mobile Safari/537.36`;

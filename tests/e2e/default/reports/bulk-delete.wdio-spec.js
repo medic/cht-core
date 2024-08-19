@@ -3,7 +3,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-describe.skip('Bulk delete reports', () => {
+describe('Bulk delete reports', () => {
   const docs = [
     {
       fields: {

@@ -19,7 +19,7 @@ const settings = {
   ],
 };
 
-describe.skip('Enabling/disabling languages', () => {
+describe('Enabling/disabling languages', () => {
 
   afterEach(async () => {
     await utils.revertSettings(true);

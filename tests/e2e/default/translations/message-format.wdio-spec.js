@@ -5,7 +5,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactElements = require('@page-objects/default/contacts/contacts.wdio.page');
 const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
 
-describe.skip('MessageFormat', () => {
+describe('MessageFormat', () => {
   const createContact = async () => {
     await utils.saveDoc(district_hospital);
   };
