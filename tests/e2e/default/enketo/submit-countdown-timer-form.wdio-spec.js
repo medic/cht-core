@@ -6,7 +6,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-describe.skip('Countdown timer widget', () => {
+describe('Countdown timer widget', () => {
 
   before(async () => {
     await commonEnketoPage.uploadForm('countdown-timer');

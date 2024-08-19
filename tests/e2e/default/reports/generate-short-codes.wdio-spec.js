@@ -20,7 +20,7 @@ const contact = personFactory.build(
 
 const docs = [...places.values(), contact];
 
-describe.skip('generating short codes', () => {
+describe('generating short codes', () => {
   const forms = {
     'CASEID': {
       'meta': { 'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form' },

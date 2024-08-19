@@ -2,7 +2,7 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 
-describe.skip('admin users', () => {
+describe('admin users', () => {
   it('should allow to update the admin password and login successfully', async () => {
     const adminUser = userFactory.build({
       roles: ['admin'],

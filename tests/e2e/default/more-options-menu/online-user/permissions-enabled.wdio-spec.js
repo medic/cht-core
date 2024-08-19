@@ -8,7 +8,7 @@ const userFactory = require('@factories/cht/users/users');
 const utils = require('@utils');
 const sms = require('@utils/sms');
 
-describe.skip('More Options Menu - Online User - Permissions enabled', () => {
+describe('More Options Menu - Online User - Permissions enabled', () => {
   describe('Options displayed when there are no messages, contacts or people created', () => {
     before(async () => await loginPage.cookieLogin());
 

@@ -5,7 +5,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
 
 const PAGE_SIZE = 50;
-describe.skip('Infinite scrolling', () => {
+describe('Infinite scrolling', () => {
   before(async () => {
     const reports = Array
       .from({ length: 200 })

@@ -15,7 +15,7 @@ const options = {
   userName: username
 };
 
-describe.skip('Create user meta db : ', () => {
+describe('Create user meta db : ', () => {
 
   before(async () => await loginPage.cookieLogin());
 

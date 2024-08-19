@@ -4,7 +4,7 @@ const login = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
-describe.skip('Infinite scrolling', () => {
+describe('Infinite scrolling', () => {
   const PAGE_SIZE = 25;
 
   before(async () => {

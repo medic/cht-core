@@ -3,7 +3,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 
-describe.skip('Create new lineage structure ', () => {
+describe('Create new lineage structure ', () => {
   const centerName = 'Franklin';
   const centerContact = 'Center Contact';
   const area = 'Georgia';

@@ -5,7 +5,7 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-describe.skip('Submit Enketo form', () => {
+describe('Submit Enketo form', () => {
 
   before(async () => {
     await commonEnketoPage.uploadForm('assessment');

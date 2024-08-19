@@ -8,7 +8,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const offlineUser = userFactory.build({ username: 'offline-user-admin', isOffline: true });
 const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
-describe.skip('Acessing the admin app', () => {
+describe('Acessing the admin app', () => {
   afterEach(async () => {
     await browser.reloadSession();
     await browser.url('/');

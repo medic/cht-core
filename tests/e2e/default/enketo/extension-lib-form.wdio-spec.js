@@ -5,7 +5,7 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const { extensionLibDoc } = require('@page-objects/default/enketo/custom-doc.wdio.page');
 
-describe.skip('Extension lib xpath function', () => {
+describe('Extension lib xpath function', () => {
 
   before(async () => {
     await commonEnketoPage.uploadForm('extension-lib-average-calculator');

@@ -4,7 +4,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const constants = require('@constants');
 
-describe.skip('Performing an upgrade from current branch to master', () => {
+describe('Performing an upgrade from current branch to master', () => {
   it('should upgrade from current version to master', async () => {
     await loginPage.cookieLogin({
       username: constants.USERNAME,

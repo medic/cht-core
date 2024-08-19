@@ -8,7 +8,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const sms = require('@utils/sms');
 
-describe.skip('More Options Menu - Online User - Permissions disabled', () => {
+describe('More Options Menu - Online User - Permissions disabled', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const health_center = places.get('health_center');

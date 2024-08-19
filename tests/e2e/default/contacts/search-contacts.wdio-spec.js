@@ -6,7 +6,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 
-describe.skip('Contact Search', () => {
+describe('Contact Search', () => {
   const places = placeFactory.generateHierarchy();
 
   const sittuHospital = placeFactory.place().build({

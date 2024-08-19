@@ -3,7 +3,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const moment = require('moment');
 const utils = require('@utils');
 
-describe.skip('should renew token', () => {
+describe('should renew token', () => {
   const getCtxCookieExpiry = async () => {
     const userCtxCookie = await browser.getCookies('userCtx');
     const momentObj = moment.unix(userCtxCookie[0].expiry);

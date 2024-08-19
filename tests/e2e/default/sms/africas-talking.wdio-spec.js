@@ -9,7 +9,7 @@ const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
 const CREDENTIAL_PASS = 'yabbadabbadoo';
 const CREDENTIAL_KEY = 'africastalking.com:incoming';
 
-describe.skip('africas talking api', () => {
+describe('africas talking api', () => {
   before( () => utils.saveCredentials(CREDENTIAL_KEY, CREDENTIAL_PASS) );
 
   describe('- gateway submits new WT sms messages', () => {
