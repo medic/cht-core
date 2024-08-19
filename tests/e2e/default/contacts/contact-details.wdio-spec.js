@@ -76,7 +76,10 @@ describe('Contact details page.', () => {
       removePermissions.forEach(permission => {
         settings.permissions[permission] = settings.permissions[permission].filter(r => r !== roleValue);
       });
-      await utils.updateSettings({ roles: settings.roles, permissions: settings.permissions }, { revert: true, ignoreReload: true });
+      await utils.updateSettings(
+        { roles: settings.roles, permissions: settings.permissions },
+        { revert: true, ignoreReload: true }
+      );
 
     };
 
