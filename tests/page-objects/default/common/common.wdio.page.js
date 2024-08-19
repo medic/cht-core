@@ -29,6 +29,8 @@ const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`)
 const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
+const reportsContentSelector = '#reports-content';
+const reportsFastActionFAB = () => $(`${reportsContentSelector} .fast-action-fab-button mat-icon`);
 
 const actionBar = () => $('.detail-actions.right-pane');
 const actionBarActions = () => $$('.detail-actions.right-pane span');
@@ -138,6 +140,17 @@ const closeFastActionList = async () => {
   await (await fastActionListContainer()).waitForDisplayed();
   await (await fastActionListCloseButton()).waitForClickable();
   await (await fastActionListCloseButton()).click();
+};
+
+const isReportActionDisplayed = async () => {
+  return await browser.waitUntil(async () => {
+    const exists = await (await reportsFastActionFAB()).isExisting();
+    if (exists) {
+      await (await reportsFastActionFAB()).waitForDisplayed();
+    }
+
+    return exists;
+  });
 };
 
 const isMessagesListPresent = () => {
@@ -528,5 +541,7 @@ module.exports = {
   goToUrl,
   getFastActionItemsLabels,
   getActionBarLabels,
-  getErrorLog
+  getErrorLog,
+  reportsFastActionFAB,
+  isReportActionDisplayed
 };
