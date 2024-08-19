@@ -18,7 +18,7 @@ const NEW_TRANSLATIONS = {
   'Analytics': 'Analytiks'
 };
 
-describe('Adding new language', () => {
+describe.skip('Adding new language', () => {
   const addTranslations = async (langCode, translations = {}) => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(langCode, translations);

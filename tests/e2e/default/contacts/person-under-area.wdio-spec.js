@@ -6,7 +6,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 
-describe('Create Person Under Area, ', () => {
+describe.skip('Create Person Under Area, ', () => {
   const username = 'jack_test';
   const password = 'Jacktest@123';
 

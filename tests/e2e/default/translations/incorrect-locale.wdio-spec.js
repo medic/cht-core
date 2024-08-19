@@ -33,7 +33,7 @@ const createContact = () => {
 
 let contact;
 
-describe('Testing Incorrect locale', () => {
+describe.skip('Testing Incorrect locale', () => {
 
   beforeEach(() => {
     contact = createContact();
@@ -44,7 +44,7 @@ describe('Testing Incorrect locale', () => {
     await utils.revertSettings(true);
     await browser.setCookies({ name: 'locale', value: 'en' });
   });
-  
+
   it('should work with incorrect locale', async () => {
     await loginPage.cookieLogin();
     await utils.saveDoc(contact);

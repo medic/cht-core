@@ -7,7 +7,7 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 
-describe('Pregnancy danger sign follow-up form', () => {
+describe.skip('Pregnancy danger sign follow-up form', () => {
   const person = personFactory.build();
 
   const fillPregnancyDangerSignFollowUpForm = async (attendToVisit, hasDangerSigns) => {

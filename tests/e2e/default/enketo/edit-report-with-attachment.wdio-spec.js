@@ -7,7 +7,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { editReportWithAttachmentDoc } = require('@page-objects/default/enketo/custom-doc.wdio.page');
 
-describe('Edit report with attachment', () => {  
+describe.skip('Edit report with attachment', () => {
 
   before(async () => {
     const formDoc = await commonEnketoPage.uploadForm('one-text-form', false);

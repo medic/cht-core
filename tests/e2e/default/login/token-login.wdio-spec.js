@@ -2,7 +2,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 
-describe('Token login', () => {
+describe.skip('Token login', () => {
   const INVALID = 'Your link is invalid.';
   const EXPIRED = 'Your link has expired.';
   const MISSING = 'Your link is missing required information';

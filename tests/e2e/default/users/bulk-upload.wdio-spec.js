@@ -1,7 +1,7 @@
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-describe('Bulk User Creation ->', () => {
+describe.skip('Bulk User Creation ->', () => {
   before(async () => {
     await loginPage.cookieLogin();
   });

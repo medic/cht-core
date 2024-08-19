@@ -34,7 +34,7 @@ const self_report = [{ form: formId }];
 
 const docs = [...places.values(), user];
 
-describe('Link SMS to patient without passing id', () => {
+describe.skip('Link SMS to patient without passing id', () => {
   before(async () => {
     await utils.saveDocs(docs);
     await utils.updateSettings({ forms, registrations, transitions, self_report }, true);

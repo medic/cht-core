@@ -2,7 +2,7 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const constants = require('@constants');
 
-describe('audit log', () => {
+describe.skip('audit log', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD

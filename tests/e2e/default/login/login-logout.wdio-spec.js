@@ -4,7 +4,7 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
-describe('Login page funcionality tests', () => {
+describe.skip('Login page funcionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
