@@ -1,41 +1,83 @@
-#!/bin/bash
+#!/usr/bin/env node
 
-# Check if Python is installed
-if ! command -v python3 &> /dev/null ; then
-    echo "Python is not installed. Please install Python 3."
-    exit 1
-fi
+import { install } from './src/install.js';
+import fs from 'fs';
+import semver from 'semver';
+import path from 'path';
 
-# Check if pip is installed
-if ! command -v pip3 &> /dev/null ; then
-    echo "pip is not installed. Please install pip for Python 3."
-    exit 1
-fi
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-# Check if Invoke is installed
-if ! python3 -c "import invoke" &> /dev/null ; then
-    echo "Invoke is not installed. Installing it..."
-    pip3 install invoke --quiet
-fi
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-# Check if PyYAML is installed
-if ! python3 -c "import yaml" &> /dev/null ; then
-    echo "PyYAML is not installed. Installing it..."
-    pip3 install PyYAML --quiet
-fi
+const validateNodeVersion = function() {
+  const packageJsonPath = path.resolve(__dirname, 'package.json');
 
-# Check if requests is installed
-if ! python3 -c "import requests" &> /dev/null ; then
-    echo "Requests is not installed. Installing it..."
-    pip3 install requests --quiet
-fi
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const requiredNodeVersion = packageJson.engines && packageJson.engines.node;
 
-# Validate that -f argument is provided
-if [[ $1 != "-f" || -z $2 ]]; then
-    echo "No values file provided. Please specify a values file using -f <file>"
-    exit 1
-fi
+    if (requiredNodeVersion && !semver.satisfies(process.version, requiredNodeVersion)) {
+      console.error(`Invalid Node.js version. Required: ${requiredNodeVersion}. Current: ${process.version}`);
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error('Error reading package.json:', err.message);
+    process.exit(1);
+  }
+};
 
-# Pass command line arguments to invoke script
-# shellcheck disable=SC2068 # wontfix script will be replaced "soon"
-invoke install $@
+const validateArguments = function() {
+  const args = process.argv.slice(2);
+  if (args.length < 2 || args[0] !== '-f' || !args[1]) {
+    console.error('No values file provided. Please specify a values file using -f <file>');
+    process.exit(1);
+  }
+  if (validateFileExists(args[1])) {
+    return args;
+  }
+};
+
+const validateFileExists = function(filePath) {
+  try {
+    fs.accessSync(filePath);
+    return true;
+  } catch (err) {
+    console.error(`File not found: ${filePath}`);
+    process.exit(1);
+  }
+};
+
+const runInstallScript = async function(args) {
+  try {
+    const valuesFilePath = args[1];
+    await install(valuesFilePath);
+  } catch (err) {
+    console.error('Error executing the install script:', err.message);
+    console.error(JSON.stringify(err));
+    process.exit(1);
+  }
+};
+
+const main = async function() {
+  validateNodeVersion();
+  const args = validateArguments();
+  await runInstallScript(args);
+};
+
+if (import.meta.url === `file://${process.argv[1]}`) { //Make sure the script is being run directly and not being imported
+  main().catch((err) => {
+    console.error('An error occurred:', err.message);
+    console.error(JSON.stringify(err));
+    process.exit(1);
+  });
+}
+
+export {
+  main,
+  validateNodeVersion,
+  validateArguments,
+  validateFileExists,
+  runInstallScript
+};
