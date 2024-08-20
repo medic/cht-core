@@ -29,8 +29,8 @@ const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`)
 const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
-const reportsContentSelector = '#reports-content';
-const reportsFastActionFAB = () => $(`${reportsContentSelector} .fast-action-fab-button mat-icon`);
+const REPORTS_CONTENT_SELECTOR = '#reports-content';
+const reportsFastActionFAB = () => $(`${REPORTS_CONTENT_SELECTOR} .fast-action-fab-button mat-icon`);
 
 const actionBar = () => $('.detail-actions.right-pane');
 const actionBarActions = () => $$('.detail-actions.right-pane span');
