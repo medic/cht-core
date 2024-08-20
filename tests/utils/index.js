@@ -540,7 +540,7 @@ const updateSettings = async (updates, options = {}) => {
     await watcher.promise;
   }
   if (sync) {
-    await commonElements.sync(true);
+    await commonPage.sync(true);
   }
   if (refresh) {
     await browser.refresh();

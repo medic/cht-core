@@ -312,10 +312,7 @@ describe('Target aggregates', () => {
         const expectedTargets = targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS;
 
         await utils.saveDocs(targetDocs);
-        await helperFunctions.updateAggregateTargetsSettings(
-          targetAggregatesConfig.TARGETS_DEFAULT_CONFIG,
-          userWithManyPlaces
-        );
+        await helperFunctions.updateAggregateTargetsSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, userWithManyPlaces);
         await commonPage.sync(true);
         await browser.refresh();
 

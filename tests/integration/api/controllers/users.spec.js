@@ -310,10 +310,7 @@ describe('Users API', () => {
       };
       return utils
         .revertSettings(true)
-        .then(() => utils.updateSettings(
-          { transitions: { generate_patient_id_on_people: true } },
-          { ignoreReload: true }
-        ))
+        .then(() => utils.updateSettings({ transitions: { generate_patient_id_on_people: true } }, { ignoreReload: true }))
         .then(() => utils.saveDoc(parentPlace))
         .then(() => {
           const opts = {

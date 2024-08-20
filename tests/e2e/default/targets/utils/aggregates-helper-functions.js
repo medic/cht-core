@@ -12,10 +12,7 @@ const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummar
   const settings = await utils.getSettings();
   settings.tasks.targets.items = targetsConfig;
   settings.permissions.can_aggregate_targets = user.roles;
-  await utils.updateSettings(
-    { tasks: settings.tasks, permissions: settings.permissions, contact_summary: contactSummary },
-    { ignoreReload: true }
-  );
+  await utils.updateSettings({ tasks: settings.tasks, permissions: settings.permissions, contact_summary: contactSummary }, { ignoreReload: true });
   await commonPage.closeReloadModal();
   await commonPage.goToBase();
 };

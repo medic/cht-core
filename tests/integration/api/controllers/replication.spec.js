@@ -337,10 +337,7 @@ describe('replication', () => {
       });
 
       it('should show contacts to a user only if they are within the configured depth', async () => {
-        await utils.updateSettings(
-          { replication_depth: [{ role: 'district_admin', depth: 1 }] },
-          { ignoreReload: true }
-        );
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, { ignoreReload: true });
         const response = await requestDocs('chw');
         assertDocIds(response, ...chwIds, 'depth_clinic');
 
@@ -580,10 +577,7 @@ describe('replication', () => {
           _id: 'clinic_patient',
           type: 'person',
           reported_date: 1,
-          parent: {
-            _id: 'fixture:chwville',
-            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
-          }
+          parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } } }
         };
         const healthCenterPatient = {
           _id: 'health_center_patient',
@@ -644,10 +638,7 @@ describe('replication', () => {
           }
         };
 
-        await utils.updateSettings(
-          { replication_depth: [{ role: 'district_admin', depth: 1 }] },
-          { ignoreReload: true }
-        );
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, { ignoreReload: true });
         await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -706,10 +697,7 @@ describe('replication', () => {
           }
         };
 
-        await utils.updateSettings(
-          { replication_depth: [{ role: 'district_admin', depth: 1 }] },
-          { ignoreReload: true }
-        );
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, { ignoreReload: true });
         await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -782,10 +770,7 @@ describe('replication', () => {
           }
         };
 
-        await utils.updateSettings(
-          { replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] },
-          { ignoreReload: true }
-        );
+        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] }, { ignoreReload: true });
         await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -1091,10 +1076,7 @@ describe('replication', () => {
       await utils.saveDocs(reports);
 
       const seq = await sentinelUtils.getCurrentSeq();
-      await utils.updateSettings(
-        { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
-        { ignoreReload: true }
-      );
+      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, { ignoreReload: true });
       await utils.stopSentinel();
       await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);
@@ -1117,10 +1099,7 @@ describe('replication', () => {
 
       await utils.saveDocs(reports);
       const seq = await sentinelUtils.getCurrentSeq();
-      await utils.updateSettings(
-        { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
-        { ignoreReload: true }
-      );
+      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, { ignoreReload: true });
       await utils.stopSentinel();
       await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);
