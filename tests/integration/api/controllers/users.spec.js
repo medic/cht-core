@@ -31,9 +31,9 @@ describe('Users API', () => {
       method: 'POST',
       simple: false,
       noAuth: true,
-      body: { user: user.username, password: user.password },
+      body: {user: user.username, password: user.password},
       followRedirect: false,
-      headers: { 'X-Forwarded-For': randomIp() },
+      headers: {'X-Forwarded-For': randomIp()},
     };
 
     return utils
@@ -55,14 +55,14 @@ describe('Users API', () => {
       method: 'POST',
       simple: false,
       noAuth: true,
-      body: { user: user.username, password: user.password },
-      headers: { 'X-Forwarded-For': randomIp() },
+      body: {user: user.username, password: user.password},
+      headers: {'X-Forwarded-For': randomIp()},
     };
 
     return utils
       .requestOnMedicDb(opts)
       .then(response => {
-        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
+        chai.expect(response).to.deep.include({statusCode: 401, body: {error: 'Not logged in'}});
       });
   };
 
@@ -164,7 +164,7 @@ describe('Users API', () => {
     });
 
     after(async () => {
-      const { _rev } = await utils.request(`/_users/${getUserId(username)}`);
+      const {_rev} = await utils.request(`/_users/${getUserId(username)}`);
       await utils.request({
         path: `/_users/${getUserId(username)}`,
         method: 'PUT',
@@ -210,7 +210,7 @@ describe('Users API', () => {
           body: {
             place: newPlaceId
           },
-          auth: { username, password },
+          auth: {username, password},
         })
         .then(() => fail('You should get a 401 in this situation'))
         .catch(err => {
@@ -226,7 +226,7 @@ describe('Users API', () => {
           body: {
             type: 'national-manager'
           },
-          auth: { username, password },
+          auth: {username, password},
         })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
@@ -245,7 +245,7 @@ describe('Users API', () => {
           body: {
             fullname: 'Awesome Guy'
           },
-          auth: { username, password },
+          auth: {username, password},
         })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
@@ -283,9 +283,9 @@ describe('Users API', () => {
           password: password // keeping it the same, but the security check will be equivilent,
           // our code can't know it's the same!
         },
-        auth: { username, password }
+        auth: {username, password}
       });
-      expect(response).to.deep.nested.include({ 'user.id': getUserId(username) });
+      expect(response).to.deep.nested.include({'user.id': getUserId(username)});
     });
 
     it('allows users to update their password with just basic auth', async () => {
@@ -296,9 +296,9 @@ describe('Users API', () => {
           password: password // keeping it the same, but the security check will be equivilent,
           // our code can't know it's the same!
         },
-        auth: { username, password }
+        auth: {username, password}
       });
-      expect(response).to.deep.nested.include({ 'user.id': getUserId(username) });
+      expect(response).to.deep.nested.include({'user.id': getUserId(username)});
     });
 
     it('should work with enabled transitions', () => {
@@ -310,7 +310,9 @@ describe('Users API', () => {
       };
       return utils
         .revertSettings(true)
-        .then(() => utils.updateSettings({ transitions: { generate_patient_id_on_people: true } }, { ignoreReload: true }))
+        .then(() => utils.updateSettings(
+          {transitions: {generate_patient_id_on_people: true}}, {ignoreReload: true}
+        ))
         .then(() => utils.saveDoc(parentPlace))
         .then(() => {
           const opts = {
@@ -321,8 +323,8 @@ describe('Users API', () => {
               password: password,
               roles: ['district_admin'],
               name: 'Philip',
-              contact: { name: 'Philip' },
-              place: { name: 'PhilipPlace', type: 'health_center', parent: 'PARENT_PLACE' },
+              contact: {name: 'Philip'},
+              place: {name: 'PhilipPlace', type: 'health_center', parent: 'PARENT_PLACE'},
             },
           };
 
@@ -341,8 +343,8 @@ describe('Users API', () => {
           utils.request('/_users/org.couchdb.user:philip')
         ]))
         .then(([userSettings, user]) => {
-          chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
-          chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
+          chai.expect(userSettings).to.include({name: 'philip', type: 'user-settings'});
+          chai.expect(user).to.deep.include({name: 'philip', type: 'user', roles: ['district_admin']});
           chai.expect(userSettings.facility_id).to.deep.equal(user.facility_id);
 
           return utils.getDocs([userSettings.contact_id, ...userSettings.facility_id]);
@@ -351,15 +353,15 @@ describe('Users API', () => {
           chai.expect(contact.patient_id).to.not.be.undefined;
           chai.expect(contact).to.deep.include({
             name: 'Philip',
-            parent: { _id: place._id, parent: place.parent },
+            parent: {_id: place._id, parent: place.parent},
             type: 'person',
           });
 
           chai.expect(place.place_id).to.not.be.undefined;
           chai.expect(place).to.deep.include({
-            contact: { _id: contact._id, parent: contact.parent },
+            contact: {_id: contact._id, parent: contact.parent},
             name: 'PhilipPlace',
-            parent: { _id: 'PARENT_PLACE' },
+            parent: {_id: 'PARENT_PLACE'},
             type: 'health_center',
           });
         });
@@ -431,7 +433,7 @@ describe('Users API', () => {
       const docs = Array.from(Array(nbrOfflineDocs), () => ({
         _id: `random_contact_${uuid()}`,
         type: `clinic`,
-        parent: { _id: 'fixture:offline' }
+        parent: {_id: 'fixture:offline'}
       }));
       docs.push(...Array.from(Array(nbrTasks), () => ({
         _id: `task~org.couchdb.user:offline~${uuid()}`,
@@ -452,13 +454,13 @@ describe('Users API', () => {
     beforeEach(() => {
       offlineRequestOptions = {
         path: '/api/v1/users-info',
-        auth: { username: 'offline', password },
+        auth: {username: 'offline', password},
         method: 'GET'
       };
 
       onlineRequestOptions = {
         path: '/api/v1/users-info',
-        auth: { username: 'online', password },
+        auth: {username: 'online', password},
         method: 'GET'
       };
     });
@@ -489,7 +491,7 @@ describe('Users API', () => {
     it('auth should check for mm-online role when requesting other user docs', () => {
       const requestOptions = {
         path: '/api/v1/users-info?role=district_admin&facility_id=fixture:offline',
-        auth: { username: 'offlineonline', password },
+        auth: {username: 'offlineonline', password},
         method: 'GET'
       };
 
@@ -508,7 +510,7 @@ describe('Users API', () => {
     it('auth should check for mm-online role when requesting with missing params', () => {
       const requestOptions = {
         path: '/api/v1/users-info',
-        auth: { username: 'offlineonline', password },
+        auth: {username: 'offlineonline', password},
         method: 'GET'
       };
 
@@ -562,7 +564,7 @@ describe('Users API', () => {
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
-      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      onlineRequestOptions.headers = {'Content-Type': 'application/json'};
       return utils
         .request(onlineRequestOptions)
         .then(resp => chai.expect(resp).to.equal('should have thrown'))
@@ -591,11 +593,11 @@ describe('Users API', () => {
         facility_id: 'IdonTExist'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
-      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
+      onlineRequestOptions.headers = {'Content-Type': 'application/json'};
       return utils
         .request(onlineRequestOptions)
         .then(resp => {
-          chai.expect(resp).to.deep.equal({ total_docs: docsForAll, warn_docs: docsForAll, warn: false, limit: 10000 });
+          chai.expect(resp).to.deep.equal({total_docs: docsForAll, warn_docs: docsForAll, warn: false, limit: 10000});
         });
     });
   });
@@ -604,11 +606,11 @@ describe('Users API', () => {
     let user;
 
     const getUser = (user) => {
-      const opts = { path: `/_users/${getUserId(user.username)}` };
+      const opts = {path: `/_users/${getUserId(user.username)}`};
       return utils.request(opts);
     };
     const getUserSettings = (user) => {
-      return utils.requestOnMedicDb({ path: `/${getUserId(user.username)}` });
+      return utils.requestOnMedicDb({path: `/${getUserId(user.username)}`});
     };
 
     const parentPlace = {
@@ -669,10 +671,10 @@ describe('Users API', () => {
         noAuth: true,
         followRedirect: false,
         body: {},
-        headers: { 'X-Forwarded-For': randomIp() },
+        headers: {'X-Forwarded-For': randomIp()},
       };
       return utils.request(opts).then(response => {
-        chai.expect(response).to.include({ statusCode: 302, body: '/' });
+        chai.expect(response).to.include({statusCode: 302, body: '/'});
         chai.expect(response.headers['set-cookie']).to.be.an('array');
         chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
         chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
@@ -688,11 +690,11 @@ describe('Users API', () => {
         followRedirect: false,
         resolveWithFullResponse: true,
         body: {},
-        headers: { 'X-Forwarded-For': randomIp() },
+        headers: {'X-Forwarded-For': randomIp()},
       };
       return utils.request(opts).then(response => {
         chai.expect(response.headers['set-cookie']).to.be.undefined;
-        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: expired ? 'expired' : 'invalid' } });
+        chai.expect(response).to.deep.include({statusCode: 401, body: {error: expired ? 'expired' : 'invalid'}});
       });
     };
 
@@ -703,7 +705,7 @@ describe('Users API', () => {
         body: {},
       };
 
-      const viewifyMessage = ({ uuid, message, to }) => ({ to, id: uuid, content: message });
+      const viewifyMessage = ({uuid, message, to}) => ({to, id: uuid, content: message});
 
       return utils.request(opts).then(response => {
         const messages = to ? response.messages.filter(message => message.to === to) : response.messages;
@@ -718,12 +720,12 @@ describe('Users API', () => {
     describe('when token-login configuration is missing', () => {
       it('should create and update a user correctly w/o token_login', () => {
         return utils
-          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .request({path: '/api/v1/users', method: 'POST', body: user})
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
-              contact: { id: 'fixture:user:testuser' },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
+              contact: {id: 'fixture:user:testuser'},
             });
 
             return Promise.all([getUser(user), getUserSettings(user)]);
@@ -739,20 +741,20 @@ describe('Users API', () => {
               phone: '12345',
             };
 
-            const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
+            const opts = {path: `/api/v1/users/${user.username}`, body: updates, method: 'POST'};
             return utils.request(opts);
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
             });
 
             return Promise.all([getUser(user), getUserSettings(user)]);
           })
           .then(([user, userSettings]) => {
-            expectCorrectUser(user, { roles: ['new_role'] });
-            expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+            expectCorrectUser(user, {roles: ['new_role']});
+            expectCorrectUserSettings(userSettings, {roles: ['new_role'], phone: '12345'});
           })
           .then(() => expectPasswordLoginToWork(user));
       });
@@ -761,12 +763,12 @@ describe('Users API', () => {
         user.token_login = true;
 
         return utils
-          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .request({path: '/api/v1/users', method: 'POST', body: user})
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
-              contact: { id: 'fixture:user:testuser' },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
+              contact: {id: 'fixture:user:testuser'},
             });
 
             return Promise.all([getUser(user), getUserSettings(user)]);
@@ -785,20 +787,20 @@ describe('Users API', () => {
               token_login: true,
             };
 
-            const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
+            const opts = {path: `/api/v1/users/${user.username}`, body: updates, method: 'POST'};
             return utils.request(opts);
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
             });
 
             return Promise.all([getUser(user), getUserSettings(user)]);
           })
           .then(([user, userSettings]) => {
-            expectCorrectUser(user, { roles: ['new_role'] });
-            expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+            expectCorrectUser(user, {roles: ['new_role']});
+            expectCorrectUserSettings(userSettings, {roles: ['new_role'], phone: '12345'});
             chai.expect(user.token_login).to.be.undefined;
             chai.expect(userSettings.token_login).to.be.undefined;
           })
@@ -808,16 +810,16 @@ describe('Users API', () => {
 
     describe('when token-login is configured', () => {
       it('should create and update a user correctly w/o token_login', () => {
-        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}};
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
+          .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
-              contact: { id: 'fixture:user:testuser' },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
+              contact: {id: 'fixture:user:testuser'},
             });
 
             return Promise.all([getUser(user), getUserSettings(user)]);
@@ -835,19 +837,19 @@ describe('Users API', () => {
               phone: '12345',
             };
 
-            return utils.request({ path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' });
+            return utils.request({path: `/api/v1/users/${user.username}`, body: updates, method: 'POST'});
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
             });
 
             return Promise.all([getUser(user), getUserSettings(user)]);
           })
           .then(([user, userSettings]) => {
-            expectCorrectUser(user, { roles: ['new_role'] });
-            expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+            expectCorrectUser(user, {roles: ['new_role']});
+            expectCorrectUserSettings(userSettings, {roles: ['new_role'], phone: '12345'});
             chai.expect(user.token_login).to.be.undefined;
             chai.expect(userSettings.token_login).to.be.undefined;
           })
@@ -887,16 +889,16 @@ describe('Users API', () => {
             roles: ['district_admin', 'this', 'user', 'will', 'fail']
           },
         ];
-        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        await utils.updateSettings(settings, { ignoreReload: true });
-        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
-        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}};
+        await utils.updateSettings(settings, {ignoreReload: true});
+        await utils.addTranslations('en', {token_login_sms: 'Instructions sms'});
+        const response = await utils.request({path: '/api/v1/users', method: 'POST', body: users});
 
         chai.expect(response).to.shallowDeepEqual([
           {
-            user: { id: getUserId(users[0].username) },
-            'user-settings': { id: getUserId(users[0].username) },
-            contact: { id: users[0].contact._id },
+            user: {id: getUserId(users[0].username)},
+            'user-settings': {id: getUserId(users[0].username)},
+            contact: {id: users[0].contact._id},
           },
           {
             error: {
@@ -955,11 +957,11 @@ describe('Users API', () => {
             roles: ['district_admin', 'this', 'user', 'will', 'not', 'be', 'created']
           },
         ];
-        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        await utils.updateSettings(settings, { ignoreReload: true });
-        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+        const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}};
+        await utils.updateSettings(settings, {ignoreReload: true});
+        await utils.addTranslations('en', {token_login_sms: 'Instructions sms'});
 
-        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        const response = await utils.request({path: '/api/v1/users', method: 'POST', body: users});
         chai.expect(response).to.shallowDeepEqual([
           {
             error: {
@@ -972,9 +974,9 @@ describe('Users API', () => {
             error: 'Missing required fields: password'
           },
           {
-            user: { id: getUserId(users[2].username) },
-            'user-settings': { id: getUserId(users[2].username) },
-            contact: { id: users[2].contact._id },
+            user: {id: getUserId(users[2].username)},
+            'user-settings': {id: getUserId(users[2].username)},
+            contact: {id: users[2].contact._id},
           },
         ]);
       });
@@ -1027,15 +1029,15 @@ describe('Users API', () => {
             roles: ['district_admin', 'mm-online2']
           },
         ];
-        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        await utils.updateSettings(settings, { ignoreReload: true });
-        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
-        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}};
+        await utils.updateSettings(settings, {ignoreReload: true});
+        await utils.addTranslations('en', {token_login_sms: 'Instructions sms'});
+        const response = await utils.request({path: '/api/v1/users', method: 'POST', body: users});
 
         chai.expect(response).to.shallowDeepEqual(users.map(user => ({
-          user: { id: getUserId(user.username) },
-          'user-settings': { id: getUserId(user.username) },
-          contact: { id: user.contact._id },
+          user: {id: getUserId(user.username)},
+          'user-settings': {id: getUserId(user.username)},
+          contact: {id: user.contact._id},
         })));
 
         for (const user of users) {
@@ -1047,7 +1049,7 @@ describe('Users API', () => {
             roles: user.roles,
           };
           expectCorrectUser(userInDb, extraProps);
-          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+          expectCorrectUserSettings(userSettings, {...extraProps, contact_id: user.contact._id});
           chai.expect(userInDb.token_login).to.be.undefined;
           chai.expect(userSettings.token_login).to.be.undefined;
           await expectPasswordLoginToWork(user);
@@ -1062,12 +1064,12 @@ describe('Users API', () => {
             method: 'POST',
           });
           chai.expect(updateResponse).to.shallowDeepEqual({
-            user: { id: getUserId(user.username) },
-            'user-settings': { id: getUserId(user.username) },
+            user: {id: getUserId(user.username)},
+            'user-settings': {id: getUserId(user.username)},
           });
 
           [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
-          expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
+          expectCorrectUser(userInDb, {...extraProps, roles: ['new_role']});
           expectCorrectUserSettings(userSettings, {
             ...extraProps,
             contact_id: user.contact._id,
@@ -1141,14 +1143,14 @@ describe('Users API', () => {
             enabled: true,
           },
         };
-        await utils.updateSettings(settings, { ignoreReload: true });
-        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
-        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        await utils.updateSettings(settings, {ignoreReload: true});
+        await utils.addTranslations('en', {token_login_sms: 'Instructions sms'});
+        const response = await utils.request({path: '/api/v1/users', method: 'POST', body: users});
         response.forEach((responseUser, index) => {
           chai.expect(responseUser).to.shallowDeepEqual({
-            user: { id: getUserId(users[index].username) },
-            'user-settings': { id: getUserId(users[index].username) },
-            contact: { id: users[index].contact._id },
+            user: {id: getUserId(users[index].username)},
+            'user-settings': {id: getUserId(users[index].username)},
+            contact: {id: users[index].contact._id},
           });
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
@@ -1162,10 +1164,10 @@ describe('Users API', () => {
             roles: user.roles,
           };
           expectCorrectUser(userInDb, extraProps);
-          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+          expectCorrectUserSettings(userSettings, {...extraProps, contact_id: user.contact._id});
           chai.expect(userInDb.token_login).to.be.ok;
           chai.expect(userInDb.token_login).to.have.keys(['active', 'token', 'expiration_date']);
-          chai.expect(userInDb.token_login).to.include({ active: true });
+          chai.expect(userInDb.token_login).to.include({active: true});
           chai.expect(userSettings.token_login).to.be.ok;
           chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date']);
 
@@ -1179,10 +1181,10 @@ describe('Users API', () => {
           chai.expect(loginTokenDoc.tasks.length).to.equal(2);
           chai.expect(loginTokenDoc.tasks).to.shallowDeepEqual([
             {
-              messages: [{ to: user.phone, message: 'Instructions sms' }],
+              messages: [{to: user.phone, message: 'Instructions sms'}],
             },
             {
-              messages: [{ to: user.phone, message: tokenUrl }],
+              messages: [{to: user.phone, message: tokenUrl}],
             },
           ]);
 
@@ -1200,12 +1202,12 @@ describe('Users API', () => {
             method: 'POST',
           });
           chai.expect(updateResponse).to.shallowDeepEqual({
-            user: { id: getUserId(user.username) },
-            'user-settings': { id: getUserId(user.username) },
+            user: {id: getUserId(user.username)},
+            'user-settings': {id: getUserId(user.username)},
           });
 
           [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
-          expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
+          expectCorrectUser(userInDb, {...extraProps, roles: ['new_role']});
           expectCorrectUserSettings(userSettings, {
             ...extraProps,
             contact_id: user.contact._id,
@@ -1225,39 +1227,39 @@ describe('Users API', () => {
       });
 
       it('should throw an error when phone is missing when creating a user with token_login', () => {
-        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}};
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
           .then(() => {
             user.token_login = true;
-            return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
+            return utils.request({path: '/api/v1/users', method: 'POST', body: user});
           })
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
             chai.expect(err.response).to.shallowDeepEqual({
               statusCode: 400,
-              body: { code: 400, error: { message: 'Missing required fields: phone' } }
+              body: {code: 400, error: {message: 'Missing required fields: phone'}}
             });
           });
       });
 
       it('should throw an error when phone is missing when updating a user with token_login', () => {
-        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true }, app_url: 'https://host/' };
+        const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}, app_url: 'https://host/'};
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
+          .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => {
             user.token_login = true;
             user.roles = ['whatever'];
-            return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
+            return utils.request({path: '/api/v1/users', method: 'POST', body: user});
           })
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
             chai.expect(err.response).to.shallowDeepEqual({
               statusCode: 400,
-              body: { code: 400, error: { message: 'Missing required fields: phone' } }
+              body: {code: 400, error: {message: 'Missing required fields: phone'}}
             });
 
             return Promise.all([getUser(user), getUserSettings(user)]);
@@ -1285,13 +1287,13 @@ describe('Users API', () => {
         let tokenUrl;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
+          .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
-              contact: { id: 'fixture:user:testuser' },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
+              contact: {id: 'fixture:user:testuser'},
             });
             chai.expect(response.token_login).to.have.keys('expiration_date');
             return Promise.all([
@@ -1305,7 +1307,7 @@ describe('Users API', () => {
 
             chai.expect(user.token_login).to.be.ok;
             chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date']);
-            chai.expect(user.token_login).to.include({ active: true });
+            chai.expect(user.token_login).to.include({active: true});
 
             chai.expect(userSettings.token_login).to.be.ok;
             chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date']);
@@ -1323,11 +1325,11 @@ describe('Users API', () => {
             chai.expect(loginTokenDoc.tasks.length).to.equal(2);
             chai.expect(loginTokenDoc.tasks).to.shallowDeepEqual([
               {
-                messages: [{ to: '+40755898989', message: 'Instructions sms' }],
+                messages: [{to: '+40755898989', message: 'Instructions sms'}],
                 state: 'pending',
               },
               {
-                messages: [{ to: '+40755898989', message: tokenUrl }],
+                messages: [{to: '+40755898989', message: tokenUrl}],
                 state: 'pending',
               }
             ]);
@@ -1353,23 +1355,23 @@ describe('Users API', () => {
       });
 
       it('should update a user correctly with token_login', () => {
-        const settings = { token_login: { translation_key: 'sms_text', enabled: true }, app_url: utils.getOrigin() };
+        const settings = {token_login: {translation_key: 'sms_text', enabled: true}, app_url: utils.getOrigin()};
         let tokenUrl;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { sms_text: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.addTranslations('en', {sms_text: 'Instructions sms'}))
+          .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => {
             const updates = {
               phone: '+40755696969',
               token_login: true,
             };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            return utils.request({path: `/api/v1/users/${user.username}`, method: 'POST', body: updates});
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
-              user: { id: getUserId(user.username) },
-              'user-settings': { id: getUserId(user.username) },
+              user: {id: getUserId(user.username)},
+              'user-settings': {id: getUserId(user.username)},
             });
             chai.expect(response.token_login).to.have.keys('expiration_date');
             return Promise.all([
@@ -1383,7 +1385,7 @@ describe('Users API', () => {
 
             chai.expect(user.token_login).to.be.ok;
             chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date']);
-            chai.expect(user.token_login).to.include({ active: true });
+            chai.expect(user.token_login).to.include({active: true});
 
             chai.expect(userSettings.token_login).to.be.ok;
             chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date']);
@@ -1401,11 +1403,11 @@ describe('Users API', () => {
             chai.expect(loginTokenDoc.tasks.length).to.equal(2);
             chai.expect(loginTokenDoc.tasks).to.shallowDeepEqual([
               {
-                messages: [{ to: '+40755696969', message: 'Instructions sms' }],
+                messages: [{to: '+40755696969', message: 'Instructions sms'}],
                 state: 'pending',
               },
               {
-                messages: [{ to: '+40755696969', message: tokenUrl }],
+                messages: [{to: '+40755696969', message: tokenUrl}],
                 state: 'pending',
               }
             ]);
@@ -1431,19 +1433,19 @@ describe('Users API', () => {
       });
 
       it('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
-        const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
+        const settings = {token_login: {translation_key: 'login_sms', enabled: true}, app_url: utils.getOrigin()};
         user.token_login = true;
         user.phone = '+40755232323';
         let tokenLogin;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
+          .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => getUser(user))
           .then(user => tokenLogin = user.token_login)
           .then(() => {
-            const updates = { roles: ['whatever'] };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            const updates = {roles: ['whatever']};
+            return utils.request({path: `/api/v1/users/${user.username}`, method: 'POST', body: updates});
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
@@ -1453,7 +1455,7 @@ describe('Users API', () => {
           .then(([user, userSettings]) => {
             chai.expect(user.token_login).to.deep.equal(tokenLogin);
             chai.expect(userSettings.token_login)
-              .to.deep.equal({ active: true, expiration_date: tokenLogin.expiration_date });
+              .to.deep.equal({active: true, expiration_date: tokenLogin.expiration_date});
 
             return utils.getDoc(getLoginTokenDocId(user.token_login.token));
           })
@@ -1463,20 +1465,20 @@ describe('Users API', () => {
       });
 
       it('should clear the old SMS tasks when token is re-generated', () => {
-        const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
+        const settings = {token_login: {translation_key: 'login_sms', enabled: true}, app_url: utils.getOrigin()};
         user.token_login = true;
         user.phone = '+40755242424';
         let firstTokenLogin;
         let secondTokenLogin;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
+          .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
           .then(() => {
-            const updates = { phone: '+40755989898', token_login: true };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            const updates = {phone: '+40755989898', token_login: true};
+            return utils.request({path: `/api/v1/users/${user.username}`, method: 'POST', body: updates});
           })
           .then(response => {
             chai.expect(response.token_login).to.have.keys('expiration_date');
@@ -1488,7 +1490,7 @@ describe('Users API', () => {
           .then(([user, userSettings]) => {
             chai.expect(user.token_login).not.to.deep.equal(firstTokenLogin);
             chai.expect(userSettings.token_login)
-              .to.deep.equal({ active: true, expiration_date: user.token_login.expiration_date });
+              .to.deep.equal({active: true, expiration_date: user.token_login.expiration_date});
 
             secondTokenLogin = user.token_login;
             return utils.getDocs([
@@ -1501,12 +1503,12 @@ describe('Users API', () => {
             const secondUrl = `${utils.getOrigin()}/medic/login/token/${secondTokenLogin.token}`;
 
             chai.expect(firstTokenLoginDoc.tasks).to.shallowDeepEqual([
-              { state: 'cleared', messages: [{ to: '+40755242424', message: 'Instructions sms' }] },
-              { state: 'cleared', messages: [{ to: '+40755242424', message: firstUrl }] },
+              {state: 'cleared', messages: [{to: '+40755242424', message: 'Instructions sms'}]},
+              {state: 'cleared', messages: [{to: '+40755242424', message: firstUrl}]},
             ]);
             chai.expect(secondTokenLoginDoc.tasks).to.shallowDeepEqual([
-              { state: 'pending', messages: [{ to: '+40755989898', message: 'Instructions sms' }] },
-              { state: 'pending', messages: [{ to: '+40755989898', message: secondUrl }] },
+              {state: 'pending', messages: [{to: '+40755989898', message: 'Instructions sms'}]},
+              {state: 'pending', messages: [{to: '+40755989898', message: secondUrl}]},
             ]);
 
             return Promise.all([
@@ -1517,19 +1519,19 @@ describe('Users API', () => {
       });
 
       it('should disable token_login for a user when requested', () => {
-        const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
+        const settings = {token_login: {translation_key: 'login_sms', enabled: true}, app_url: utils.getOrigin()};
         user.token_login = true;
         user.phone = '+40755969696';
         let firstTokenLogin;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
+          .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
           .then(() => {
-            const updates = { token_login: false, password };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            const updates = {token_login: false, password};
+            return utils.request({path: `/api/v1/users/${user.username}`, method: 'POST', body: updates});
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
@@ -1545,8 +1547,8 @@ describe('Users API', () => {
 
             const tokenUrl = `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}`;
             chai.expect(smsDoc.tasks).to.shallowDeepEqual([
-              { state: 'cleared', messages: [{ to: '+40755969696', message: 'Instructions sms' }] },
-              { state: 'cleared', messages: [{ to: '+40755969696', message: tokenUrl }] },
+              {state: 'cleared', messages: [{to: '+40755969696', message: 'Instructions sms'}]},
+              {state: 'cleared', messages: [{to: '+40755969696', message: tokenUrl}]},
             ]);
 
             return expectTokenLoginToFail(tokenUrl);
@@ -1556,7 +1558,7 @@ describe('Users API', () => {
     });
 
     it('should non-admin users cannot edit token_login docs', () => {
-      const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
+      const settings = {token_login: {translation_key: 'login_sms', enabled: true}, app_url: utils.getOrigin()};
       user.token_login = true;
       user.phone = '+40755969696';
 
@@ -1580,9 +1582,9 @@ describe('Users API', () => {
 
       return utils
         .updateSettings(settings, true)
-        .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-        .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: onlineUser }))
-        .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+        .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
+        .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: onlineUser}))
+        .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
         .then(() => getUser(user))
         .then(user => {
           tokenLoginDocId = `token:login:${user.token_login.token}`;
@@ -1592,7 +1594,7 @@ describe('Users API', () => {
           chai.expect(tokenLoginDoc.user).to.equal('org.couchdb.user:testuser');
 
           const onlineRequestOpts = {
-            auth: { user: 'onlineuser', password },
+            auth: {user: 'onlineuser', password},
             method: 'PUT',
             path: `/${tokenLoginDoc._id}`,
             body: tokenLoginDoc,
@@ -1618,13 +1620,13 @@ describe('Users API', () => {
     let userProgramOfficer;
 
     before(async () => {
-      facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
+      facility = placeFactory.place().build({type: 'district_hospital', reported_date: null});
       person = utils.deepFreeze(
-        personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null })
+        personFactory.build({role: 'chw', parent: {_id: facility._id}, reported_date: null})
       );
       facility.contact = person._id;
       facility = utils.deepFreeze(facility);
-      user = userFactory.build({ username: 'chw111', place: facility._id, contact: person._id, roles: ['chw'] });
+      user = userFactory.build({username: 'chw111', place: facility._id, contact: person._id, roles: ['chw']});
       delete user.password;
       user = utils.deepFreeze(user);
       userProgramOfficer = utils.deepFreeze(userFactory.build({
@@ -1635,7 +1637,7 @@ describe('Users API', () => {
       }));
 
       await utils.saveDocs([facility, person]);
-      await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
+      await utils.createUsers([{...user, password}, {...userProgramOfficer, password}]);
 
       await utils.updatePermissions(['program_officer'], ['can_view_users']);
     });
@@ -1661,7 +1663,7 @@ describe('Users API', () => {
     it('retrieves a user with can_view_users permission', async () => {
       const users = await utils.request({
         path: `/api/v2/users/${user.username}`,
-        auth: { username: userProgramOfficer.username, password },
+        auth: {username: userProgramOfficer.username, password},
       });
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
@@ -1676,7 +1678,7 @@ describe('Users API', () => {
         await utils.request({
           path: `/api/v2/users/invalidUsername`,
         });
-      } catch ({ error }) {
+      } catch ({error}) {
         expect(error.code).to.equal(404);
         expect(error.error).to
           .match(/Failed to find user with name \[invalidUsername\] in the \[(users|medic)\] database./);
@@ -1690,9 +1692,9 @@ describe('Users API', () => {
       try {
         await utils.request({
           path: `/api/v2/users/${userProgramOfficer.username}`,
-          auth: { username: user.username, password },
+          auth: {username: user.username, password},
         });
-      } catch ({ error }) {
+      } catch ({error}) {
         expect(error.code).to.equal(403);
         expect(error.error).to.equal('Insufficient privileges');
         return;
@@ -1704,7 +1706,7 @@ describe('Users API', () => {
     it('retrieves self even when user does not have can_view_users permission', async () => {
       const users = await utils.request({
         path: `/api/v2/users/${user.username}`,
-        auth: { username: user.username, password },
+        auth: {username: user.username, password},
       });
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
@@ -1726,7 +1728,7 @@ describe('Users API', () => {
     });
 
     it('should create and get all users', async () => {
-      const users = Array.from({ length: 10 }).map(() => ({
+      const users = Array.from({length: 10}).map(() => ({
         username: uuid(),
         password: password,
         place: {
@@ -1740,9 +1742,9 @@ describe('Users API', () => {
         roles: ['district_admin', 'mm-online']
       }));
 
-      await utils.request({ path: '/api/v2/users', method: 'POST', body: users });
+      await utils.request({path: '/api/v2/users', method: 'POST', body: users});
 
-      const savedUsers = await utils.request({ path: '/api/v2/users' });
+      const savedUsers = await utils.request({path: '/api/v2/users'});
       for (const user of users) {
         const savedUser = savedUsers.find(savedUser => savedUser.username === user.username);
         expect(savedUser).to.deep.nested.include({
@@ -1759,41 +1761,41 @@ describe('Users API', () => {
       const facilityE = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
-        body: { type: 'health_center', name: 'Facility E', parent: 'PARENT_PLACE' },
+        body: {type: 'health_center', name: 'Facility E', parent: 'PARENT_PLACE'},
       });
       const facilityF = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
-        body: { type: 'health_center', name: 'Facility F', parent: 'PARENT_PLACE' },
+        body: {type: 'health_center', name: 'Facility F', parent: 'PARENT_PLACE'},
       });
       const contactA = await utils.request({
         path: '/api/v1/people',
         method: 'POST',
-        body: { name: 'Contact A', place: facilityE.id },
+        body: {name: 'Contact A', place: facilityE.id},
       });
       const contactB = await utils.request({
         path: '/api/v1/people',
         method: 'POST',
-        body: { name: 'Contact B', place: facilityE.id },
+        body: {name: 'Contact B', place: facilityE.id},
       });
       const contactC = await utils.request({
         path: '/api/v1/people',
         method: 'POST',
-        body: { name: 'Contact C', place: facilityF.id },
+        body: {name: 'Contact C', place: facilityF.id},
       });
 
-      const userFactory = ({ contact, place }) => ({
+      const userFactory = ({contact, place}) => ({
         username: uuid(),
         password: password,
         roles: ['district_admin', 'mm-online'],
         contact,
         place,
       });
-      const user1 = userFactory({ contact: contactA.id, place: facilityE.id });
-      const user2 = userFactory({ contact: contactA.id, place: facilityE.id });
-      const user3 = userFactory({ contact: contactB.id, place: facilityE.id });
-      const user4 = userFactory({ contact: contactC.id, place: facilityF.id });
-      const user5 = userFactory({ contact: contactC.id, place: facilityF.id });
+      const user1 = userFactory({contact: contactA.id, place: facilityE.id});
+      const user2 = userFactory({contact: contactA.id, place: facilityE.id});
+      const user3 = userFactory({contact: contactB.id, place: facilityE.id});
+      const user4 = userFactory({contact: contactC.id, place: facilityF.id});
+      const user5 = userFactory({contact: contactC.id, place: facilityF.id});
       const [user1Response, user2Response, user3Response, user4Response, user5Response] = await utils.request({
         path: '/api/v2/users',
         method: 'POST',
@@ -1832,7 +1834,7 @@ describe('Users API', () => {
 
       filteredUsers = await utils.request({
         path: '/api/v2/users',
-        qs: { facility_id: facilityE.id },
+        qs: {facility_id: facilityE.id},
       });
       expect(filteredUsers.length).to.equal(3);
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
@@ -1856,7 +1858,7 @@ describe('Users API', () => {
 
       filteredUsers = await utils.request({
         path: '/api/v2/users',
-        qs: { contact_id: contactA.id },
+        qs: {contact_id: contactA.id},
       });
       expect(filteredUsers.length).to.equal(2);
       expect(filteredUsers.find(user => user.id === user1Response.user.id)).to.deep.nested.include({
@@ -1874,7 +1876,7 @@ describe('Users API', () => {
 
       filteredUsers = await utils.request({
         path: '/api/v2/users',
-        qs: { contact_id: contactC.id },
+        qs: {contact_id: contactC.id},
       });
       expect(filteredUsers.length).to.equal(1);
       expect(filteredUsers.find(user => user.id === user4Response.user.id)).to.deep.nested.include({
@@ -1886,17 +1888,17 @@ describe('Users API', () => {
 
       filteredUsers = await utils.request({
         path: '/api/v2/users',
-        qs: { contact_id: 'non_existent_contact' },
+        qs: {contact_id: 'non_existent_contact'},
       });
       expect(filteredUsers.length).to.equal(0);
 
       filteredUsers = await utils.request({
         path: '/api/v2/users',
-        qs: { facility_id: 'non_existent_facility' },
+        qs: {facility_id: 'non_existent_facility'},
       });
       expect(filteredUsers.length).to.equal(0);
 
-      const allUsers = await utils.request({ path: '/api/v2/users' });
+      const allUsers = await utils.request({path: '/api/v2/users'});
       expect(allUsers.map(user => user.id)).to.not.include(user5Response.user.id);
     });
   });
@@ -1907,16 +1909,16 @@ describe('Users API', () => {
 
     before(async () => {
       const placeAttributes = {
-        parent: { _id: parentPlace._id },
+        parent: {_id: parentPlace._id},
         type: 'health_center',
       };
       places = [
-        placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
-        placeFactory.place().build({ ...placeAttributes, name: 'place2' }),
-        placeFactory.place().build({ ...placeAttributes, name: 'place3' }),
+        placeFactory.place().build({...placeAttributes, name: 'place1'}),
+        placeFactory.place().build({...placeAttributes, name: 'place2'}),
+        placeFactory.place().build({...placeAttributes, name: 'place3'}),
       ];
       contact = personFactory.build({
-        parent: { _id: places[0]._id, parent: places[0].parent },
+        parent: {_id: places[0]._id, parent: places[0].parent},
       });
       await utils.saveDocs([...places, contact]);
     });
@@ -1935,7 +1937,7 @@ describe('Users API', () => {
         roles: ['national_admin']
       };
 
-      const onlineResult = await utils.request({ path: '/api/v3/users', method: 'POST', body: onlineUserPayload });
+      const onlineResult = await utils.request({path: '/api/v3/users', method: 'POST', body: onlineUserPayload});
       const onlineUserDoc = await utils.getDoc(onlineResult.user.id);
       const onlineUserSettingsDoc = await utils.getDoc(onlineResult['user-settings'].id);
 
@@ -1959,7 +1961,7 @@ describe('Users API', () => {
         roles: ['chw']
       };
 
-      const offlineResult = await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
+      const offlineResult = await utils.request({path: '/api/v3/users', method: 'POST', body: offlineUserPayload});
       const offlineUserDoc = await utils.usersDb.get(offlineResult.user.id);
       const offlineUserSettingsDoc = await utils.getDoc(offlineResult['user-settings'].id);
 
@@ -1986,7 +1988,7 @@ describe('Users API', () => {
       };
 
       try {
-        await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
+        await utils.request({path: '/api/v3/users', method: 'POST', body: offlineUserPayload});
         expect.fail('Should have thrown');
       } catch (error) {
         expect(error.statusCode).to.equal(400);
@@ -2004,7 +2006,7 @@ describe('Users API', () => {
         roles: ['national_admin']
       };
 
-      const result = await utils.request({ path: '/api/v3/users', method: 'POST', body: onlineUserPayload });
+      const result = await utils.request({path: '/api/v3/users', method: 'POST', body: onlineUserPayload});
 
       const onlineUserDoc = await utils.getDoc(result.user.id);
 
@@ -2041,7 +2043,7 @@ describe('Users API', () => {
       };
 
       try {
-        await utils.request({ path: '/api/v3/users', method: 'POST', body: onlineUserPayload });
+        await utils.request({path: '/api/v3/users', method: 'POST', body: onlineUserPayload});
         expect.expect.fail('Should have thrown');
       } catch (err) {
         expect(err.responseBody.code).to.equal(400);
@@ -2057,7 +2059,7 @@ describe('Users API', () => {
       };
 
       try {
-        await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
+        await utils.request({path: '/api/v3/users', method: 'POST', body: offlineUserPayload});
         expect.expect.fail('Should have thrown');
       } catch (err) {
         expect(err.responseBody.code).to.equal(400);

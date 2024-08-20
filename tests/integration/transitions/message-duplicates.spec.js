@@ -32,7 +32,7 @@ const settings = {
 const getPostOpts = (path, body) => ({
   path: path,
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {'Content-Type': 'application/json'},
   body: body
 });
 
@@ -41,7 +41,7 @@ const postMessages = (messages) => {
   return Promise
     .all([
       watchChanges,
-      utils.request(getPostOpts('/api/sms', { messages: messages }))
+      utils.request(getPostOpts('/api/sms', {messages: messages}))
     ])
     .then(([changes]) => changes.map(change => change.id));
 };
@@ -64,26 +64,26 @@ describe('message duplicates', () => {
     };
 
     const firstMessages = [
-      Object.assign({ id: uuid() }, message1),
-      Object.assign({ id: uuid() }, message2),
-      Object.assign({ id: uuid() }, message1),
-      Object.assign({ id: uuid() }, message1),
+      Object.assign({id: uuid()}, message1),
+      Object.assign({id: uuid()}, message2),
+      Object.assign({id: uuid()}, message1),
+      Object.assign({id: uuid()}, message1),
     ];
 
     const secondMessages = [
-      Object.assign({ id: uuid() }, message1),
-      Object.assign({ id: uuid() }, message2),
-      Object.assign({ id: uuid() }, message1),
+      Object.assign({id: uuid()}, message1),
+      Object.assign({id: uuid()}, message2),
+      Object.assign({id: uuid()}, message1),
     ];
 
     const thirdMessages = [
-      Object.assign({ id: uuid() }, message1),
-      Object.assign({ id: uuid() }, message2),
-      Object.assign({ id: uuid() }, message1),
+      Object.assign({id: uuid()}, message1),
+      Object.assign({id: uuid()}, message2),
+      Object.assign({id: uuid()}, message1),
     ];
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => postMessages(firstMessages))
       .then(ids => utils.getDocs(ids))
       .then(docs => {
@@ -92,7 +92,7 @@ describe('message duplicates', () => {
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const task = doc.tasks[0];
-          chai.expect(task.messages[0]).to.include({ message: 'Await further instructions' });
+          chai.expect(task.messages[0]).to.include({message: 'Await further instructions'});
           // we have no duplicate, 3x message1 + 1x message2
           chai.expect(task.state).to.equal('forwarded-to-gateway');
           chai.expect(task.state_history.length).to.equal(2);
@@ -106,7 +106,7 @@ describe('message duplicates', () => {
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const task = doc.tasks[0];
-          chai.expect(task.messages[0]).to.include({ message: 'Await further instructions' });
+          chai.expect(task.messages[0]).to.include({message: 'Await further instructions'});
           // still no duplicates, 5x message1, 2x message2
           chai.expect(task.state).to.equal('forwarded-to-gateway');
           chai.expect(task.state_history.length).to.equal(2);
@@ -123,7 +123,7 @@ describe('message duplicates', () => {
           const task = doc.tasks[0];
           // message1 is duplicated (7x), message2 not duplicated (3x)
           if (recipient === message1.from) {
-            chai.expect(task.messages[0]).to.include({ message: 'Await further instructions' });
+            chai.expect(task.messages[0]).to.include({message: 'Await further instructions'});
             chai.expect(task.state).to.equal('duplicate');
             chai.expect(task.state_history.length).to.equal(1);
           } else {
@@ -135,25 +135,25 @@ describe('message duplicates', () => {
   });
 
   it('should mark as duplicate using configured limit', () => {
-    Object.assign(settings, { sms: { duplicate_limit: 3, outgoing_service: 'medic-gateway' } });
+    Object.assign(settings, {sms: {duplicate_limit: 3, outgoing_service: 'medic-gateway'}});
     const message = {
       from: 'new-duplicate-phone',
       content: 'SICK'
     };
 
     const firstMessages = [
-      Object.assign({ id: uuid() }, message),
-      Object.assign({ id: uuid() }, message),
-      Object.assign({ id: uuid() }, message),
+      Object.assign({id: uuid()}, message),
+      Object.assign({id: uuid()}, message),
+      Object.assign({id: uuid()}, message),
     ];
 
     const secondMessages = [
-      Object.assign({ id: uuid() }, message),
-      Object.assign({ id: uuid() }, message),
+      Object.assign({id: uuid()}, message),
+      Object.assign({id: uuid()}, message),
     ];
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => postMessages(firstMessages))
       .then(ids => utils.getDocs(ids))
       .then(docs => {
@@ -166,7 +166,7 @@ describe('message duplicates', () => {
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const task = doc.tasks[0];
-          chai.expect(task.messages[0]).to.include({ message: 'Await further instructions' });
+          chai.expect(task.messages[0]).to.include({message: 'Await further instructions'});
           // we have no duplicate, 3x message1
           chai.expect(task.state).to.equal('forwarded-to-gateway');
           chai.expect(task.state_history.length).to.equal(2);
@@ -181,7 +181,7 @@ describe('message duplicates', () => {
 
           const task = doc.tasks[0];
           // message1 is duplicated (5x)
-          chai.expect(task.messages[0]).to.include({ message: 'Await further instructions' });
+          chai.expect(task.messages[0]).to.include({message: 'Await further instructions'});
           chai.expect(task.state).to.equal('duplicate');
           chai.expect(task.state_history.length).to.equal(1);
         });

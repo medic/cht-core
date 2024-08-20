@@ -299,20 +299,23 @@ describe('Target aggregates', () => {
 
       it('should display only the targets sections and show the correct message ' +
         'when target aggregates are disabled', async () => {
-          await browser.url('/#/analytics/target-aggregates');
+        await browser.url('/#/analytics/target-aggregates');
 
-          const emptySelection = await analyticsPage.noSelectedTarget();
-          await (emptySelection).waitForDisplayed();
-          await commonPage.waitForLoaderToDisappear(emptySelection);
+        const emptySelection = await analyticsPage.noSelectedTarget();
+        await (emptySelection).waitForDisplayed();
+        await commonPage.waitForLoaderToDisappear(emptySelection);
 
-          expect(await emptySelection.getText()).to.equal('Target aggregates are disabled');
-        });
+        expect(await emptySelection.getText()).to.equal('Target aggregates are disabled');
+      });
 
       it('should filter aggregates by place and period', async () => {
         const expectedTargets = targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS;
 
         await utils.saveDocs(targetDocs);
-        await helperFunctions.updateAggregateTargetsSettings(targetAggregatesConfig.TARGETS_DEFAULT_CONFIG, userWithManyPlaces);
+        await helperFunctions.updateAggregateTargetsSettings(
+          targetAggregatesConfig.TARGETS_DEFAULT_CONFIG,
+          userWithManyPlaces
+        );
         await commonPage.sync(true);
         await browser.refresh();
 
