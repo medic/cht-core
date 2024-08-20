@@ -47,17 +47,17 @@ const outboundConfig = (port, minute, hour) => ({
 });
 
 const docs = [
-  { _id: 'test-aaa' },
-  { _id: 'test-zzz' },
-  { _id: 'cron-test' }
+  {_id: 'test-aaa'},
+  {_id: 'test-zzz'},
+  {_id: 'cron-test'}
 ];
 
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const destinationApp = express();
-const jsonParser = bodyParser.json({ limit: '32mb' });
-const inboxes = { working: [], broken: [] };
+const jsonParser = bodyParser.json({limit: '32mb'});
+const inboxes = {working: [], broken: []};
 destinationApp.use(jsonParser);
 destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body) && res.send('true'));
 destinationApp.post('/test-broken', (req, res) => inboxes.broken.push(req.body) && res.status(500).end());
@@ -76,11 +76,11 @@ const waitForPushes = (expectedTasks = 1) => {
   });
 };
 
-const getTasks = () => utils.sentinelDb.allDocs({ start_key: 'task:outbound:', end_key: 'task:outbound:\ufff0' });
+const getTasks = () => utils.sentinelDb.allDocs({start_key: 'task:outbound:', end_key: 'task:outbound:\ufff0'});
 
 const wipeTasks = () => {
   return getTasks().then(result => {
-    const docsToDelete = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+    const docsToDelete = result.rows.map(row => ({_id: row.id, _rev: row.value.rev, _deleted: true}));
     return utils.sentinelDb.bulkDocs(docsToDelete);
   });
 };
@@ -112,7 +112,7 @@ describe('Outbound', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs(docs))
       // pushes will fail if destination server is not up, so tasks will get created
       .then(() => waitForPushes(3))
@@ -128,18 +128,18 @@ describe('Outbound', () => {
         chai.expect(inboxes.broken).to.have.lengthOf(1);
 
         chai.expect(inboxes.working).to.have.deep.members([
-          { id: 'test-aaa' },
-          { id: 'test-aaa' },
-          { id: 'test-zzz' },
-          { id: 'test-zzz' },
-          { id: 'cron-test' }
+          {id: 'test-aaa'},
+          {id: 'test-aaa'},
+          {id: 'test-zzz'},
+          {id: 'test-zzz'},
+          {id: 'cron-test'}
         ]);
 
         chai.expect(inboxes.broken).to.have.deep.members([
-          { id: 'test-aaa' }
+          {id: 'test-aaa'}
         ]);
       })
-      .then(() => utils.sentinelDb.allDocs({ keys: docs.map(doc => `task:outbound:${doc._id}`), include_docs: true }))
+      .then(() => utils.sentinelDb.allDocs({keys: docs.map(doc => `task:outbound:${doc._id}`), include_docs: true}))
       .then(tasksResult => {
         chai.expect(tasksResult.rows).to.have.lengthOf(3);
         chai.expect(tasksResult.rows[0].doc).excluding('created').to.deep.equal({

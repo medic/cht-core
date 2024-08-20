@@ -26,13 +26,13 @@ describe('death_reporting', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: { death_reporting: false },
+      transitions: {death_reporting: false},
       death_reporting: {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
       },
-      forms: { DEAD: { } }
+      forms: {DEAD: {}}
     };
 
     const doc = {
@@ -43,11 +43,11 @@ describe('death_reporting', () => {
       fields: {
         patient_id: 'person'
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -62,13 +62,13 @@ describe('death_reporting', () => {
 
   it('should be skipped when enabled but have no matching config', () => {
     const settings = {
-      transitions: { death_reporting: true },
+      transitions: {death_reporting: true},
       death_reporting: {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
       },
-      forms: { MAYBE_DEAD: { } }
+      forms: {MAYBE_DEAD: {}}
     };
 
     const doc = {
@@ -79,11 +79,11 @@ describe('death_reporting', () => {
       fields: {
         patient_id: 'person'
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -98,13 +98,13 @@ describe('death_reporting', () => {
 
   it('should be skipped when patient is not found', () => {
     const settings = {
-      transitions: { death_reporting: true },
+      transitions: {death_reporting: true},
       death_reporting: {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
       },
-      forms: { DEAD: { } }
+      forms: {DEAD: {}}
     };
 
     const doc = {
@@ -115,11 +115,11 @@ describe('death_reporting', () => {
       fields: {
         patient_id: 'other'
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -134,13 +134,13 @@ describe('death_reporting', () => {
 
   it('should work with patient_uuid field', () => {
     const settings = {
-      transitions: { death_reporting: true },
+      transitions: {death_reporting: true},
       death_reporting: {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
       },
-      forms: { DEAD: { } }
+      forms: {DEAD: {}}
     };
 
     const doc = {
@@ -152,16 +152,16 @@ describe('death_reporting', () => {
         patient_id: '',
         patient_uuid: 'person',
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'death_reporting.ok': true});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
@@ -171,13 +171,13 @@ describe('death_reporting', () => {
 
   it('should add date_of_death field to patient with patient_id', () => {
     const settings = {
-      transitions: { death_reporting: true },
+      transitions: {death_reporting: true},
       death_reporting: {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'date'
       },
-      forms: { DEAD: { } }
+      forms: {DEAD: {}}
     };
 
     const doc = {
@@ -188,16 +188,16 @@ describe('death_reporting', () => {
       fields: {
         patient_id: '12345'
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'death_reporting.ok': true});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
@@ -211,13 +211,13 @@ describe('death_reporting', () => {
 
   it('should add dod field with patient_uuid linkage and custom field, not update dod and remove dod', () => {
     const settings = {
-      transitions: { death_reporting: true },
+      transitions: {death_reporting: true},
       death_reporting: {
         mark_deceased_forms: ['DEAD'],
         undo_deceased_forms: ['UNDEAD'],
         date_field: 'fields.time_of_death'
       },
-      forms: { DEAD: { }, UNDEAD: { } }
+      forms: {DEAD: {}, UNDEAD: {}}
     };
 
     const doc = {
@@ -229,7 +229,7 @@ describe('death_reporting', () => {
         patient_id: 'person',
         time_of_death: 123456789
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     const doc2 = {
@@ -241,7 +241,7 @@ describe('death_reporting', () => {
         patient_id: 'person',
         time_of_death: 9876544321
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     const doc3 = {
@@ -252,16 +252,16 @@ describe('death_reporting', () => {
       fields: {
         patient_id: 'person',
       },
-      contact: { _id: 'person2' }
+      contact: {_id: 'person2'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'death_reporting.ok': true});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
@@ -281,7 +281,7 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc3._id))
       .then(() => sentinelUtils.getInfoDoc(doc3._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'death_reporting.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'death_reporting.ok': true});
       })
       .then(() => utils.getDoc('person'))
       .then(person => {

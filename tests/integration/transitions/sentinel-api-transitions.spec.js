@@ -14,24 +14,24 @@ const contacts = [
     _id: 'health_center',
     name: 'Health Center',
     type: 'health_center',
-    parent: { _id: 'district_hospital' },
+    parent: {_id: 'district_hospital'},
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic1',
     name: 'Clinic',
     type: 'clinic',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: {_id: 'clinic1', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw1',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic1', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     phone: 'phone1',
     name: 'chw1',
     reported_date: new Date().getTime()
@@ -41,7 +41,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient1',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic1', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     reported_date: new Date().getTime()
   },
   {
@@ -49,24 +49,24 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient2',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic1', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic2',
     name: 'Clinic',
     type: 'clinic',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
     contact: {
       _id: 'chw2',
-      parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: {_id: 'clinic2', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw2',
     type: 'person',
-    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic2', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     phone: 'phone2',
     name: 'chw2',
     reported_date: new Date().getTime()
@@ -76,7 +76,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient3',
-    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic2', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     reported_date: new Date().getTime()
   },
   {
@@ -84,7 +84,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient4',
-    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic2', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     reported_date: new Date().getTime()
   }
 ];
@@ -139,13 +139,13 @@ const transitionsConfig = {
       }],
     }]
   },
-  default_responses: { start_date: '2018-01-01' },
+  default_responses: {start_date: '2018-01-01'},
   registrations: [{
     form: 'CHILD',
     events: [{
       name: 'on_create',
       trigger: 'add_patient',
-      params: { patient_id_field: 'our_patient_id', patient_name_field: 'our_patient_name' },
+      params: {patient_id_field: 'our_patient_id', patient_name_field: 'our_patient_name'},
       bool_expr: ''
     }, {
       name: 'on_create',
@@ -182,10 +182,10 @@ const transitionsConfig = {
 
 const formsConfig = {
   MUTE: {
-    meta: { label: { en: 'Mute' }, code: 'MUTE'},
+    meta: {label: {en: 'Mute'}, code: 'MUTE'},
     fields: {
       patient_id: {
-        labels: { short: { translation_key: 'patient_id' }},
+        labels: {short: {translation_key: 'patient_id'}},
         position: 1,
         type: 'string',
         length: [5, 13],
@@ -194,10 +194,10 @@ const formsConfig = {
     }
   },
   DEATH: {
-    meta: { label: { en: 'Death reporting' }, code: 'DEATH'},
+    meta: {label: {en: 'Death reporting'}, code: 'DEATH'},
     fields: {
       patient_id: {
-        labels: { short: { translation_key: 'patient_id' }},
+        labels: {short: {translation_key: 'patient_id'}},
         position: 1,
         type: 'string',
         length: [5, 13],
@@ -206,17 +206,17 @@ const formsConfig = {
     }
   },
   TEMP: {
-    meta: { label: { en: 'Fever reporting' }, code: 'TEMP'},
+    meta: {label: {en: 'Fever reporting'}, code: 'TEMP'},
     fields: {
       patient_id: {
-        labels: { short: { translation_key: 'patient_id' }},
+        labels: {short: {translation_key: 'patient_id'}},
         position: 0,
         type: 'string',
         length: [5, 13],
         required: true
       },
       temp: {
-        labels: { short: { translation_key: 'temp' }},
+        labels: {short: {translation_key: 'temp'}},
         position: 1,
         type: 'string',
         length: [1, 2],
@@ -225,17 +225,17 @@ const formsConfig = {
     }
   },
   CHILD: {
-    meta: { label: { en: 'Child registration' }, code: 'CHILD'},
+    meta: {label: {en: 'Child registration'}, code: 'CHILD'},
     fields: {
       our_patient_id: {
-        labels: { short: { translation_key: 'patient_id' }},
+        labels: {short: {translation_key: 'patient_id'}},
         position: 0,
         type: 'string',
         length: [5, 13],
         required: true
       },
       our_patient_name: {
-        labels: { short: { translation_key: 'patient_name' }},
+        labels: {short: {translation_key: 'patient_name'}},
         position: 1,
         type: 'string',
         length: [2, 10],
@@ -290,7 +290,7 @@ const messages = [{
 const getPostOpts = (path, body) => ({
   path: path,
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {'Content-Type': 'application/json'},
   body: body
 });
 
@@ -313,11 +313,11 @@ const expectTransitions = (infodoc, ...transitions) => {
 
 const isUntransitionedDoc = doc => {
   return doc._rev.startsWith('1-') &&
-         (!doc.errors || !doc.errors.length) &&
-         !doc.tasks.length &&
-         !doc.scheduled_tasks &&
-         !doc.contact &&
-         !doc.patient_id;
+    (!doc.errors || !doc.errors.length) &&
+    !doc.tasks.length &&
+    !doc.scheduled_tasks &&
+    !doc.contact &&
+    !doc.patient_id;
 };
 
 const contactsRevs = [];
@@ -344,7 +344,7 @@ describe('transitions', () => {
         update_clinics: true
       },
       forms: formsConfig,
-      update_clinics: [ {
+      update_clinics: [{
         form: 'CHILD',
         messages: [
           {
@@ -361,12 +361,12 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages })),
+        utils.request(getPostOpts('/api/sms', {messages})),
       ]))
-      .then(([ changes, messages ]) => {
+      .then(([changes, messages]) => {
         docs = changes.map(change => change.doc);
         ids = changes.map(change => change.id);
 
@@ -692,10 +692,10 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages: messages })),
+        utils.request(getPostOpts('/api/sms', {messages: messages})),
       ]))
       .then(([changes, messages]) => {
         chai.expect(messages.messages.length).to.equal(0);
@@ -717,7 +717,7 @@ describe('transitions', () => {
         chai.expect(rows.length).to.equal(0);
       })
       .then(() => utils.getDocs(['person4', 'person3']))
-      .then(([ person4, person3 ]) => {
+      .then(([person4, person3]) => {
         chai.expect(person4.date_of_death).to.equal(undefined);
         chai.expect(person3.muted).to.equal(undefined);
       });
@@ -762,17 +762,17 @@ describe('transitions', () => {
       }],
       forms: {
         IMM: {
-          meta: { label: { en: 'IMM' }, code: 'IMM'},
+          meta: {label: {en: 'IMM'}, code: 'IMM'},
           fields: {
             patient_id: {
-              labels: { short: { translation_key: 'patient_id' }},
+              labels: {short: {translation_key: 'patient_id'}},
               position: 1,
               type: 'string',
               length: [5, 13],
               required: true
             },
             count: {
-              labels: { short: { translation_key: 'count' }},
+              labels: {short: {translation_key: 'count'}},
               position: 1,
               type: 'string',
               length: [1],
@@ -808,10 +808,10 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages: messages })),
+        utils.request(getPostOpts('/api/sms', {messages: messages})),
       ]))
       .then(([changes, messages]) => {
         ids = changes.map(change => change.id);
@@ -821,7 +821,7 @@ describe('transitions', () => {
         sentinelUtils.getInfoDocs(ids),
         utils.getDocs(ids)
       ]))
-      .then(([ infos, docs ]) => {
+      .then(([infos, docs]) => {
         const immPatient2 = docs.filter(doc => doc.fields.patient_id === 'patient2');
         immPatient2.forEach(doc => {
           chai.expect(doc.contact).to.be.an('object');
@@ -857,17 +857,17 @@ describe('transitions', () => {
       },
       forms: {
         IMM: {
-          meta: { label: { en: 'IMM' }, code: 'IMM'},
+          meta: {label: {en: 'IMM'}, code: 'IMM'},
           fields: {
             patient_id: {
-              labels: { short: { translation_key: 'patient_id' }},
+              labels: {short: {translation_key: 'patient_id'}},
               position: 1,
               type: 'string',
               length: [5, 13],
               required: true
             },
             count: {
-              labels: { short: { translation_key: 'count' }},
+              labels: {short: {translation_key: 'count'}},
               position: 1,
               type: 'string',
               length: [1],
@@ -906,10 +906,10 @@ describe('transitions', () => {
     let docId;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages: messages })),
+        utils.request(getPostOpts('/api/sms', {messages: messages})),
       ]))
       .then(([changes]) => {
         docId = changes[0].id;
@@ -930,7 +930,7 @@ describe('transitions', () => {
 
   it('should creating a patient that is already dead', () => {
     const settings = {
-      transitions: { death_reporting: true, registration: true, update_clinics: true },
+      transitions: {death_reporting: true, registration: true, update_clinics: true},
       death_reporting: {
         mark_deceased_forms: ['DEAD'],
         date_field: 'fields.time_of_death'
@@ -947,17 +947,17 @@ describe('transitions', () => {
       }],
       forms: {
         DEAD: {
-          meta: { label: { en: 'Dead' }, code: 'DEAD'},
+          meta: {label: {en: 'Dead'}, code: 'DEAD'},
           fields: {
             time_of_death: {
-              labels: { short: { translation_key: 'time_of_death' }},
+              labels: {short: {translation_key: 'time_of_death'}},
               position: 0,
               type: 'string',
               length: [2, 10],
               required: true
             },
             patient_name: {
-              labels: { short: { translation_key: 'patient_name' }},
+              labels: {short: {translation_key: 'patient_name'}},
               position: 1,
               type: 'string',
               length: [2, 10],
@@ -977,10 +977,10 @@ describe('transitions', () => {
     let docId;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages: messages })),
+        utils.request(getPostOpts('/api/sms', {messages: messages})),
       ]))
       .then(([changes]) => {
         docId = changes[0].id;
@@ -1009,7 +1009,7 @@ describe('transitions', () => {
       .then(result => {
         chai.expect(result.rows.length).to.equal(1);
         chai.expect(result.rows[0].doc).to.deep.include({
-          parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+          parent: {_id: 'clinic1', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
           date_of_death: '123456789',
           name: 'Veronica',
         });
@@ -1029,7 +1029,7 @@ describe('transitions', () => {
       name: 'My Favorite Place',
       type: 'health_center',
       reported_date: new Date().getTime(),
-      parent: { _id: 'district_hospital' },
+      parent: {_id: 'district_hospital'},
     };
 
     const person = {
@@ -1037,20 +1037,20 @@ describe('transitions', () => {
       name: 'My Favorite Person',
       type: 'person',
       reported_date: new Date().getTime(),
-      parent: { _id: 'my_favorite_place', parent: { _id: 'district_hospital' } },
+      parent: {_id: 'my_favorite_place', parent: {_id: 'district_hospital'}},
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs([place, person]))
-      .then(() => sentinelUtils.waitForSentinel([ place._id, person._id ]))
-      .then(() => sentinelUtils.getInfoDocs([ place._id, person._id ]))
-      .then(([ placeInfo, personInfo ]) => {
+      .then(() => sentinelUtils.waitForSentinel([place._id, person._id]))
+      .then(() => sentinelUtils.getInfoDocs([place._id, person._id]))
+      .then(([placeInfo, personInfo]) => {
         expectTransitions(placeInfo, 'generate_shortcode_on_contacts');
         expectTransitions(personInfo, 'generate_shortcode_on_contacts');
       })
-      .then(() => utils.getDocs([ place._id, person._id ]))
-      .then(([ updatedPlace, updatedPerson ]) => {
+      .then(() => utils.getDocs([place._id, person._id]))
+      .then(([updatedPlace, updatedPerson]) => {
         chai.expect(updatedPlace.place_id).to.be.ok;
         chai.expect(updatedPerson.patient_id).to.be.ok;
       });
@@ -1058,7 +1058,7 @@ describe('transitions', () => {
 
   it('calling getDeprecatedTransitions endpoint does not break API transitions', () => {
     const settings = {
-      transitions: { death_reporting: true, update_clinics: true },
+      transitions: {death_reporting: true, update_clinics: true},
       death_reporting: {
         mark_deceased_forms: ['DR'],
         date_field: 'fields.time_of_death'
@@ -1072,7 +1072,7 @@ describe('transitions', () => {
           },
           fields: {
             patient_id: {
-              labels: { short: { translation_key: 'patient_id' } },
+              labels: {short: {translation_key: 'patient_id'}},
               position: 0,
               type: 'string',
               required: true
@@ -1088,7 +1088,7 @@ describe('transitions', () => {
       type: 'person',
       reported_date: new Date().getTime(),
       patient_id: 'a_person',
-      parent: { _id: 'district_hospital' },
+      parent: {_id: 'district_hospital'},
     };
 
     const person2 = {
@@ -1097,16 +1097,16 @@ describe('transitions', () => {
       type: 'person',
       reported_date: new Date().getTime(),
       patient_id: 'another_person',
-      parent: { _id: 'district_hospital' },
+      parent: {_id: 'district_hospital'},
     };
 
-    const recordsBody = (person) => ({ _meta: { form: 'DR', from: 'phone1' }, patient_id: person.patient_id });
+    const recordsBody = (person) => ({_meta: {form: 'DR', from: 'phone1'}, patient_id: person.patient_id});
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => utils.saveDocs([person1, person2]))
       .then(() => sentinelUtils.waitForSentinel())
-      .then(() => utils.request({ path: '/api/v2/records', method: 'POST', body: recordsBody(person1) }))
+      .then(() => utils.request({path: '/api/v2/records', method: 'POST', body: recordsBody(person1)}))
       .then(response => {
         chai.expect(response.success).to.equal(true);
         return sentinelUtils.getInfoDocs(response.id);
@@ -1114,8 +1114,8 @@ describe('transitions', () => {
       .then(([infodoc]) => {
         expectTransitions(infodoc, 'death_reporting', 'update_clinics');
       })
-      .then(() => utils.request({ path: '/api/v1/settings/deprecated-transitions' }))
-      .then(() => utils.request({ path: '/api/v2/records', method: 'POST', body: recordsBody(person2) }))
+      .then(() => utils.request({path: '/api/v1/settings/deprecated-transitions'}))
+      .then(() => utils.request({path: '/api/v2/records', method: 'POST', body: recordsBody(person2)}))
       .then(response => {
         chai.expect(response.success).to.equal(true);
         return sentinelUtils.getInfoDocs(response.id);

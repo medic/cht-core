@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { expect } = require('chai');
+const {expect} = require('chai');
 
 describe('update_sent_by', () => {
   after(() => utils.revertDb([], true));
@@ -9,7 +9,7 @@ describe('update_sent_by', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: { update_sent_by: false }
+      transitions: {update_sent_by: false}
     };
 
     const doc = {
@@ -20,7 +20,7 @@ describe('update_sent_by', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -31,7 +31,7 @@ describe('update_sent_by', () => {
 
   it('should skip transition when not filtered, when sent_by exists or when contact not found or no name', () => {
     const settings = {
-      transitions: { update_sent_by: true }
+      transitions: {update_sent_by: true}
     };
 
     const report1 = {
@@ -70,7 +70,7 @@ describe('update_sent_by', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDocs([report1, report2, report3, report4]))
       .then(() => sentinelUtils.waitForSentinel([report1._id, report2._id, report3._id, report4._id]))
@@ -85,7 +85,7 @@ describe('update_sent_by', () => {
 
   it('should add sent by', () => {
     const settings = {
-      transitions: { update_sent_by: true }
+      transitions: {update_sent_by: true}
     };
 
     const report = {
@@ -113,7 +113,7 @@ describe('update_sent_by', () => {
     ];
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDoc(report))
       .then(() => sentinelUtils.waitForSentinel(report._id))

@@ -86,21 +86,21 @@ describe('bulk-get handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_get',
-      auth: { username: 'offline', password },
+      auth: {username: 'offline', password},
       method: 'POST',
     };
 
     onlineRequestOptions = {
       path: '/_bulk_get',
-      auth: { username: 'online', password },
+      auth: {username: 'online', password},
       method: 'POST',
     };
   });
 
   it('does not filter online users', () => {
     const docs = [
-      { _id: 'ICanBeAnything'},
-      { _id: 'NEW_PLACE', parent: {}, type: 'district_hospital', name: 'NEW PLACE' }
+      {_id: 'ICanBeAnything'},
+      {_id: 'NEW_PLACE', parent: {}, type: 'district_hospital', name: 'NEW PLACE'}
     ];
 
     return utils
@@ -108,10 +108,10 @@ describe('bulk-get handler', () => {
       .then(results => {
         onlineRequestOptions.body = {
           docs: [
-            { id: 'ICanBeAnything', rev: results[0].rev },
-            { id: 'NEW_PLACE' },
-            { id: 'PARENT_PLACE' },
-            { id: 'org.couchdb.user:offline' }
+            {id: 'ICanBeAnything', rev: results[0].rev},
+            {id: 'NEW_PLACE'},
+            {id: 'PARENT_PLACE'},
+            {id: 'org.couchdb.user:offline'}
           ]
         };
 
@@ -122,12 +122,12 @@ describe('bulk-get handler', () => {
 
         chai.expect(result.results[0]).excludingEvery('_rev').to.deep.include({
           id: 'ICanBeAnything',
-          docs: [{ ok: docs[0] }]
+          docs: [{ok: docs[0]}]
         });
 
         chai.expect(result.results[1]).excludingEvery('_rev').to.deep.include({
           id: 'NEW_PLACE',
-          docs: [{ ok: docs[1] }]
+          docs: [{ok: docs[1]}]
         });
 
         chai.expect(result.results[2]).to.deep.nested.include({
@@ -144,10 +144,10 @@ describe('bulk-get handler', () => {
 
   it('filters offline users results', () => {
     const docs = [
-      { _id: 'allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'allowed_contact_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'denied_contact_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      {_id: 'allowed_contact_1', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 1'},
+      {_id: 'allowed_contact_2', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 2'},
+      {_id: 'denied_contact_1', type: 'clinic', parent: {_id: 'fixture:online'}, name: 'Denied Contact 1'},
+      {_id: 'denied_contact_2', type: 'clinic', parent: {_id: 'fixture:online'}, name: 'Denied Contact 2'},
     ];
 
     return utils
@@ -155,12 +155,12 @@ describe('bulk-get handler', () => {
       .then(() => {
         offlineRequestOptions.body = {
           docs: [
-            { id: 'allowed_contact_1' },
-            { id: 'allowed_contact_2', rev: docs[1].rev },
-            { id: 'allowed_contact_2', rev: 'somerev' },
-            { id: 'denied_contact_1' },
-            { id: 'denied_contact_2', rev: docs[2].rev },
-            { id: 'denied_contact_2', rev: 'somerev' },
+            {id: 'allowed_contact_1'},
+            {id: 'allowed_contact_2', rev: docs[1].rev},
+            {id: 'allowed_contact_2', rev: 'somerev'},
+            {id: 'denied_contact_1'},
+            {id: 'denied_contact_2', rev: docs[2].rev},
+            {id: 'denied_contact_2', rev: 'somerev'},
           ]
         };
 
@@ -170,11 +170,11 @@ describe('bulk-get handler', () => {
         chai.expect(result.results).to.deep.equal([
           {
             id: 'allowed_contact_1',
-            docs: [{ ok: docs[0] }]
+            docs: [{ok: docs[0]}]
           },
           {
             id: 'allowed_contact_2',
-            docs: [{ ok: docs[1] }]
+            docs: [{ok: docs[1]}]
           }
         ]);
       });
@@ -212,25 +212,25 @@ describe('bulk-get handler', () => {
     return utils
       .saveDocs(docs)
       .then(results => {
-        results.forEach(result => requestRevs.push({ id: result.id, rev: result.rev }));
-        offlineRequestOptions.body = { docs: requestRevs };
+        results.forEach(result => requestRevs.push({id: result.id, rev: result.rev}));
+        offlineRequestOptions.body = {docs: requestRevs};
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results).excludingEvery('_rev').to.deep.equal([
           {
             id: 'allowed_task',
-            docs: [{ ok: docs[0] }],
+            docs: [{ok: docs[0]}],
           },
           {
             id: 'allowed_target',
-            docs: [{ ok: docs[2] }],
+            docs: [{ok: docs[2]}],
           }
         ]);
 
         const supervisorRequestOptions = {
           path: '/_bulk_get',
-          auth: { username: 'supervisor', password },
+          auth: {username: 'supervisor', password},
           method: 'POST',
           body: offlineRequestOptions.body
         };
@@ -240,11 +240,11 @@ describe('bulk-get handler', () => {
         chai.expect(result.results).excludingEvery('_rev').to.deep.equal([
           {
             id: 'allowed_target',
-            docs: [{ ok: docs[2] }],
+            docs: [{ok: docs[2]}],
           },
           {
             id: 'denied_target',
-            docs: [{ ok: docs[3] }],
+            docs: [{ok: docs[3]}],
           }
         ]);
       });
@@ -252,10 +252,10 @@ describe('bulk-get handler', () => {
 
   it('filters offline users based on requested rev', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'd1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'd2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      {_id: 'a1', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 1'},
+      {_id: 'a2', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 2'},
+      {_id: 'd1', type: 'clinic', parent: {_id: 'fixture:online'}, name: 'Denied Contact 1'},
+      {_id: 'd2', type: 'clinic', parent: {_id: 'fixture:online'}, name: 'Denied Contact 2'},
     ];
 
     const revs = {};
@@ -264,13 +264,13 @@ describe('bulk-get handler', () => {
       .saveDocsRevs(docs)
       .then(results => {
         results.forEach((result) => {
-          revs[result.id] = [ result.rev ];
+          revs[result.id] = [result.rev];
         });
 
-        docs[1].parent = { _id: 'fixture:online' };
+        docs[1].parent = {_id: 'fixture:online'};
         docs[1].name = 'Previously allowed Contact 2';
 
-        docs[3].parent = { _id: 'fixture:offline' };
+        docs[3].parent = {_id: 'fixture:offline'};
         docs[3].name = 'Previously denied Contact 2';
 
         return utils.saveDocsRevs(docs);
@@ -280,14 +280,14 @@ describe('bulk-get handler', () => {
 
         offlineRequestOptions.body = {
           docs: [
-            { id: 'a1', rev: revs.a1[0] }, // allowed
-            { id: 'a1', rev: revs.a1[1] }, // allowed
-            { id: 'a2', rev: revs.a2[0] }, // allowed
-            { id: 'a2', rev: revs.a2[1] }, // denied
-            { id: 'd1', rev: revs.d1[0] }, // denied
-            { id: 'd1', rev: revs.d1[1] }, // denied
-            { id: 'd2', rev: revs.d2[0] }, // denied
-            { id: 'd2', rev: revs.d2[1] } // allowed
+            {id: 'a1', rev: revs.a1[0]}, // allowed
+            {id: 'a1', rev: revs.a1[1]}, // allowed
+            {id: 'a2', rev: revs.a2[0]}, // allowed
+            {id: 'a2', rev: revs.a2[1]}, // denied
+            {id: 'd1', rev: revs.d1[0]}, // denied
+            {id: 'd1', rev: revs.d1[1]}, // denied
+            {id: 'd2', rev: revs.d2[0]}, // denied
+            {id: 'd2', rev: revs.d2[1]} // allowed
           ]
         };
         offlineRequestOptions.path = '/_bulk_get?latest=true';
@@ -302,10 +302,11 @@ describe('bulk-get handler', () => {
               ok: {
                 _id: 'a1',
                 type: 'clinic',
-                parent: { _id: 'fixture:offline' },
+                parent: {_id: 'fixture:offline'},
                 name: 'Allowed Contact 1',
                 _rev: revs.a1[0]
-              }}],
+              }
+            }],
           },
           {
             id: 'a1',
@@ -313,10 +314,11 @@ describe('bulk-get handler', () => {
               ok: {
                 _id: 'a1',
                 type: 'clinic',
-                parent: { _id: 'fixture:offline' },
+                parent: {_id: 'fixture:offline'},
                 name: 'Allowed Contact 1',
                 _rev: revs.a1[1]
-              }}],
+              }
+            }],
           },
           {
             id: 'a2',
@@ -324,10 +326,11 @@ describe('bulk-get handler', () => {
               ok: {
                 _id: 'a2',
                 type: 'clinic',
-                parent: { _id: 'fixture:offline' },
+                parent: {_id: 'fixture:offline'},
                 name: 'Allowed Contact 2',
                 _rev: revs.a2[0]
-              }}],
+              }
+            }],
           },
           {
             id: 'd2',
@@ -335,10 +338,11 @@ describe('bulk-get handler', () => {
               ok: {
                 _id: 'd2',
                 type: 'clinic',
-                parent: { _id: 'fixture:offline' },
+                parent: {_id: 'fixture:offline'},
                 name: 'Previously denied Contact 2',
                 _rev: revs.d2[1]
-              }}],
+              }
+            }],
           },
         ]);
       });
@@ -346,29 +350,29 @@ describe('bulk-get handler', () => {
 
   it('uses correct request parameters', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' }
+      {_id: 'a1', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 1'},
+      {_id: 'a2', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 2'}
     ];
 
-    offlineRequestOptions.body = { docs: [{ id: 'a1' }, { id: 'a2' }] };
+    offlineRequestOptions.body = {docs: [{id: 'a1'}, {id: 'a2'}]};
 
     return utils
       .saveDocs(docs)
       .then(result => utils.requestOnTestDb({
         path: `/a1/att1?rev=${result[0].rev}`,
         method: 'PUT',
-        headers: { 'Content-Type': 'text/plain' },
+        headers: {'Content-Type': 'text/plain'},
         body: 'a1 attachment content',
       }))
       .then(() => utils.requestOnTestDb(offlineRequestOptions))
       .then(result => {
         chai.expect(result.results.length).to.equal(2);
 
-        chai.expect(result.results[0]).to.include({ id: 'a1' });
-        chai.expect(result.results[0].docs[0].ok).to.deep.nested.include({ '_attachments.att1.stub': true });
+        chai.expect(result.results[0]).to.include({id: 'a1'});
+        chai.expect(result.results[0].docs[0].ok).to.deep.nested.include({'_attachments.att1.stub': true});
         chai.expect(result.results[0].docs[0].ok._revisions).to.equal(undefined);
 
-        chai.expect(result.results[1]).to.include({ id: 'a2' });
+        chai.expect(result.results[1]).to.include({id: 'a2'});
         chai.expect(result.results[1].docs[0].ok._attachments).to.equal(undefined);
         chai.expect(result.results[1].docs[0].ok._revisions).to.equal(undefined);
 
@@ -378,11 +382,11 @@ describe('bulk-get handler', () => {
       .then(result => {
         chai.expect(result.results.length).to.equal(2);
 
-        chai.expect(result.results[0]).to.include({ id: 'a1' });
+        chai.expect(result.results[0]).to.include({id: 'a1'});
         chai.expect(result.results[0].docs[0].ok).to.have.deep.nested.property('_attachments.att1.data');
         chai.expect(result.results[0].docs[0].ok._revisions.ids.length).to.equal(5);
 
-        chai.expect(result.results[1]).to.include({ id: 'a2' });
+        chai.expect(result.results[1]).to.include({id: 'a2'});
         chai.expect(result.results[1].docs[0].ok._attachments).to.equal(undefined);
         chai.expect(result.results[1].docs[0].ok._revisions.ids.length).to.equal(4);
 
@@ -391,11 +395,11 @@ describe('bulk-get handler', () => {
       })
       .then(result => {
         chai.expect(result.results.length).to.equal(2);
-        chai.expect(result.results[0]).to.include({ id: 'a1' });
-        chai.expect(result.results[0].docs[0].ok).to.deep.nested.include({ '_attachments.att1.stub': true });
+        chai.expect(result.results[0]).to.include({id: 'a1'});
+        chai.expect(result.results[0].docs[0].ok).to.deep.nested.include({'_attachments.att1.stub': true});
         chai.expect(result.results[0].docs[0].ok._revisions).to.equal(undefined);
 
-        chai.expect(result.results[1]).to.include({ id: 'a2' });
+        chai.expect(result.results[1]).to.include({id: 'a2'});
         chai.expect(result.results[1].docs[0].ok._attachments).to.equal(undefined);
         chai.expect(result.results[1].docs[0].ok._revisions).to.equal(undefined);
       });
@@ -403,23 +407,23 @@ describe('bulk-get handler', () => {
 
   it('does not return bodies of couchDB delete stubs', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'a3', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' }
+      {_id: 'a1', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 1'},
+      {_id: 'a2', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 2'},
+      {_id: 'a3', type: 'clinic', parent: {_id: 'fixture:online'}, name: 'Denied Contact 2'}
     ];
 
     return utils
       .saveDocs(docs)
       .then(result => Promise.all(
-        docs.map((doc, key) => utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}` }))
+        docs.map((doc, key) => utils.requestOnTestDb({method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`}))
       ))
       .then(results => {
         results.forEach((result, key) => docs[key]._rev = result.rev);
         offlineRequestOptions.body = {
           docs: [
-            { id: 'a1', rev: results[0].rev },
-            { id: 'a2', rev: results[1].rev },
-            { id: 'a3', rev: results[2].rev }
+            {id: 'a1', rev: results[0].rev},
+            {id: 'a2', rev: results[1].rev},
+            {id: 'a3', rev: results[2].rev}
           ]
         };
         return utils.requestOnTestDb(offlineRequestOptions);
@@ -431,10 +435,10 @@ describe('bulk-get handler', () => {
 
   it('filters offline users results when db name is not medic', () => {
     const docs = [
-      { _id: 'allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'allowed_contact_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'denied_contact_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      {_id: 'allowed_contact_1', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 1'},
+      {_id: 'allowed_contact_2', type: 'clinic', parent: {_id: 'fixture:offline'}, name: 'Allowed Contact 2'},
+      {_id: 'denied_contact_1', type: 'clinic', parent: {_id: 'fixture:online'}, name: 'Denied Contact 1'},
+      {_id: 'denied_contact_2', type: 'clinic', parent: {_id: 'fixture:online'}, name: 'Denied Contact 2'},
     ];
 
     return utils
@@ -442,12 +446,12 @@ describe('bulk-get handler', () => {
       .then(() => {
         offlineRequestOptions.body = {
           docs: [
-            { id: 'allowed_contact_1' },
-            { id: 'allowed_contact_2', rev: docs[1].rev },
-            { id: 'allowed_contact_2', rev: 'somerev' },
-            { id: 'denied_contact_1' },
-            { id: 'denied_contact_2', rev: docs[2].rev },
-            { id: 'denied_contact_2', rev: 'somerev' },
+            {id: 'allowed_contact_1'},
+            {id: 'allowed_contact_2', rev: docs[1].rev},
+            {id: 'allowed_contact_2', rev: 'somerev'},
+            {id: 'denied_contact_1'},
+            {id: 'denied_contact_2', rev: docs[2].rev},
+            {id: 'denied_contact_2', rev: 'somerev'},
           ]
         };
 
@@ -457,46 +461,46 @@ describe('bulk-get handler', () => {
         chai.expect(result.results).to.deep.equal([
           {
             id: 'allowed_contact_1',
-            docs: [{ ok: docs[0] }],
+            docs: [{ok: docs[0]}],
           },
           {
             id: 'allowed_contact_2',
-            docs: [{ ok: docs[1] }],
+            docs: [{ok: docs[1]}],
           },
         ]);
       });
   });
 
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
-    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
-    offlineRequestOptions.body = { docs: [{ _id: 'denied_report' }] };
+    const doc = {_id: 'denied_report', contact: {_id: 'fixture:online'}, type: 'data_record', form: 'a'};
+    offlineRequestOptions.body = {docs: [{_id: 'denied_report'}]};
 
     return utils
       .saveDoc(doc)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get` }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({path: '/_bulk_get'}, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({path: '///_bulk_get//'}, offlineRequestOptions)),
+        utils.request(_.defaults({path: `//${constants.DB_NAME}//_bulk_get`}, offlineRequestOptions)),
         utils
-          .requestOnTestDb(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({path: '/_bulk_get/something'}, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({path: '///_bulk_get//something'}, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get/something` }, offlineRequestOptions))
+          .request(_.defaults({path: `//${constants.DB_NAME}//_bulk_get/something`}, offlineRequestOptions))
           .catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//medic//_bulk_get` }, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({path: '/_bulk_get'}, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({path: '///_bulk_get//'}, offlineRequestOptions)),
+        utils.request(_.defaults({path: `//medic//_bulk_get`}, offlineRequestOptions)),
         utils
-          .requestOnMedicDb(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
+          .requestOnMedicDb(_.defaults({path: '/_bulk_get/something'}, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//medic//_bulk_get/something` }, offlineRequestOptions))
+          .requestOnMedicDb(_.defaults({path: '///_bulk_get//something'}, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({path: `//medic//_bulk_get/something`}, offlineRequestOptions))
           .catch(err => err)
       ]))
       .then(results => {
@@ -515,35 +519,35 @@ describe('bulk-get handler', () => {
       {
         _id: 'existing_clinic',
         type: 'clinic',
-        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}},
       },
       {
         _id: 'report_about_existing_clinic',
         type: 'data_record',
         form: 'form',
-        fields: { place_id: 'existing_clinic' },
-        contact: { _id: 'nevermind' },
+        fields: {place_id: 'existing_clinic'},
+        contact: {_id: 'nevermind'},
       },
       {
         _id: 'existing_person',
         type: 'person',
-        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+        parent: {_id: 'existing_clinic', parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}}}
       },
       {
         _id: 'denied_report_about_existing_person',
         type: 'data_record',
         form: 'form',
-        fields: { patient_id: 'existing_person' },
-        contact: { _id: 'nevermind' },
+        fields: {patient_id: 'existing_person'},
+        contact: {_id: 'nevermind'},
       },
       {
         _id: 'allowed_report_about_existing_person',
         type: 'data_record',
         form: 'form',
-        fields: { patient_id: 'existing_person', needs_signoff: true },
+        fields: {patient_id: 'existing_person', needs_signoff: true},
         contact: {
           _id: 'existing_person',
-          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {_id: 'existing_clinic', parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}}},
         },
       },
       {
@@ -568,13 +572,13 @@ describe('bulk-get handler', () => {
       },
     ];
 
-    const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
+    const settings = {replication_depth: [{role: 'district_admin', depth: 1}]};
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
-        const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
-        offlineRequestOptions.body = { docs };
+        const docs = existentDocs.map(doc => ({id: doc._id, rev: doc._rev}));
+        offlineRequestOptions.body = {docs};
         return utils.requestOnMedicDb(offlineRequestOptions);
       })
       .then(result => {
@@ -589,7 +593,7 @@ describe('bulk-get handler', () => {
           .filter(doc => allowedIds.includes(doc._id))
           .map(doc => ({
             id: doc._id,
-            docs: [{ ok: doc }]
+            docs: [{ok: doc}]
           }));
         chai.expect(result.results).to.deep.equal(expected);
       });
@@ -600,35 +604,35 @@ describe('bulk-get handler', () => {
       {
         _id: 'existing_clinic',
         type: 'clinic',
-        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}},
       },
       {
         _id: 'report_about_existing_clinic',
         type: 'data_record',
         form: 'form',
-        fields: { place_id: 'existing_clinic' },
-        contact: { _id: 'nevermind' },
+        fields: {place_id: 'existing_clinic'},
+        contact: {_id: 'nevermind'},
       },
       {
         _id: 'existing_person',
         type: 'person',
-        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+        parent: {_id: 'existing_clinic', parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}}}
       },
       {
         _id: 'denied_report_about_existing_person',
         type: 'data_record',
         form: 'form',
-        fields: { patient_id: 'existing_person' },
-        contact: { _id: 'nevermind' },
+        fields: {patient_id: 'existing_person'},
+        contact: {_id: 'nevermind'},
       },
       {
         _id: 'allowed_report_about_existing_person',
         type: 'data_record',
         form: 'form',
-        fields: { patient_id: 'existing_person', needs_signoff: true },
+        fields: {patient_id: 'existing_person', needs_signoff: true},
         contact: {
           _id: 'existing_person',
-          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {_id: 'existing_clinic', parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}}},
         },
       },
       {
@@ -653,13 +657,13 @@ describe('bulk-get handler', () => {
       },
     ];
 
-    const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
+    const settings = {replication_depth: [{role: 'district_admin', depth: 1}]};
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
-        const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
-        offlineRequestOptions.body = { docs };
+        const docs = existentDocs.map(doc => ({id: doc._id, rev: doc._rev}));
+        offlineRequestOptions.body = {docs};
         return utils.requestOnMedicDb(offlineRequestOptions);
       })
       .then(result => {
@@ -674,7 +678,7 @@ describe('bulk-get handler', () => {
           .filter(doc => allowedIds.includes(doc._id))
           .map(doc => ({
             id: doc._id,
-            docs: [{ ok: doc }]
+            docs: [{ok: doc}]
           }));
         chai.expect(result.results).to.deep.equal(expected);
       });
@@ -685,45 +689,45 @@ describe('bulk-get handler', () => {
       {
         _id: 'existing_clinic',
         type: 'clinic',
-        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}},
       },
       {
         _id: 'report_about_existing_clinic',
         type: 'data_record',
         form: 'form',
-        fields: { place_id: 'existing_clinic' },
-        contact: { _id: 'nevermind' },
+        fields: {place_id: 'existing_clinic'},
+        contact: {_id: 'nevermind'},
       },
       {
         _id: 'existing_person',
         type: 'person',
-        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+        parent: {_id: 'existing_clinic', parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}}}
       },
       {
         _id: 'denied_report_about_existing_person',
         type: 'data_record',
         form: 'form',
-        fields: { patient_id: 'existing_person' },
-        contact: { _id: 'nevermind' },
+        fields: {patient_id: 'existing_person'},
+        contact: {_id: 'nevermind'},
       },
       {
         _id: 'allowed_report_about_existing_person1',
         type: 'data_record',
-        fields: { patient_id: 'existing_person' },
+        fields: {patient_id: 'existing_person'},
         form: 'form',
         contact: {
           _id: 'fixture:user:offline',
-          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+          parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}},
         },
       },
       {
         _id: 'allowed_report_about_existing_person2',
         type: 'data_record',
-        fields: { patient_id: 'existing_person', needs_signoff: true },
+        fields: {patient_id: 'existing_person', needs_signoff: true},
         form: 'form',
         contact: {
           _id: 'existing_person',
-          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {_id: 'existing_clinic', parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}}},
         },
       },
       {
@@ -738,13 +742,13 @@ describe('bulk-get handler', () => {
       },
     ];
 
-    const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
+    const settings = {replication_depth: [{role: 'district_admin', depth: 2, report_depth: 1}]};
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, {ignoreReload: true})
       .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
-        const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
-        offlineRequestOptions.body = { docs };
+        const docs = existentDocs.map(doc => ({id: doc._id, rev: doc._rev}));
+        offlineRequestOptions.body = {docs};
         return utils.requestOnMedicDb(offlineRequestOptions);
       })
       .then(result => {
@@ -761,7 +765,7 @@ describe('bulk-get handler', () => {
           .filter(doc => allowedIds.includes(doc._id))
           .map(doc => ({
             id: doc._id,
-            docs: [{ ok: doc }]
+            docs: [{ok: doc}]
           }));
         chai.expect(result.results).to.deep.equal(expected);
       });
@@ -773,94 +777,94 @@ describe('bulk-get handler', () => {
         _id: 'insensitive_report_1',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:offline'},
+        contact: {_id: 'fixture:offline'},
         patient_id: 'fixture:offline'
       },
       {
         _id: 'insensitive_report_2',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:offline'},
+        contact: {_id: 'fixture:offline'},
         patient_id: 'fixture:offline',
-        fields: { private: true },
+        fields: {private: true},
       },
       {
         _id: 'insensitive_report_3',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
+        contact: {_id: 'fixture:online'},
         patient_id: 'fixture:offline',
-        fields: { private: false },
+        fields: {private: false},
       },
       {
         _id: 'insensitive_report_4',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
-        fields: { private: false, patient_id: 'shortcode:user:offline', },
+        contact: {_id: 'fixture:online'},
+        fields: {private: false, patient_id: 'shortcode:user:offline', },
       },
       {
         _id: 'sensitive_report_1',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
+        contact: {_id: 'fixture:online'},
         patient_id: 'fixture:user:offline',
-        fields: { private: true },
+        fields: {private: true},
       },
       {
         _id: 'sensitive_report_2',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
+        contact: {_id: 'fixture:online'},
         patient_id: 'shortcode:user:offline',
-        fields: { private: true },
+        fields: {private: true},
       },
       {
         _id: 'sensitive_report_3',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
-        fields: { private: true, place_id: 'shortcode:offline', },
+        contact: {_id: 'fixture:online'},
+        fields: {private: true, place_id: 'shortcode:offline', },
       },
       {
         _id: 'sensitive_report_4',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
-        fields: { private: true, patient_id: 'shortcode:user:offline', },
+        contact: {_id: 'fixture:online'},
+        fields: {private: true, patient_id: 'shortcode:user:offline', },
       },
       {
         _id: 'sensitive_report_5',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
-        fields: { private: true, patient_uuid: 'fixture:user:offline', },
+        contact: {_id: 'fixture:online'},
+        fields: {private: true, patient_uuid: 'fixture:user:offline', },
       },
     ];
 
     return utils
       .saveDocsRevs(docs)
       .then(() => {
-        offlineRequestOptions.body = { docs: docs.map(doc => ({ id: doc._id, rev: doc._rev })) };
+        offlineRequestOptions.body = {docs: docs.map(doc => ({id: doc._id, rev: doc._rev}))};
       })
       .then(() => utils.requestOnMedicDb(offlineRequestOptions))
       .then(result => {
         chai.expect(result.results).to.deep.equal([
           {
             id: 'insensitive_report_1',
-            docs: [{ ok: docs[0] }],
+            docs: [{ok: docs[0]}],
           },
           {
             id: 'insensitive_report_2',
-            docs: [{ ok: docs[1] }],
+            docs: [{ok: docs[1]}],
           },
           {
             id: 'insensitive_report_3',
-            docs: [{ ok: docs[2] }],
+            docs: [{ok: docs[2]}],
           },
           {
             id: 'insensitive_report_4',
-            docs: [{ ok: docs[3] }],
+            docs: [{ok: docs[3]}],
           },
         ]);
       });

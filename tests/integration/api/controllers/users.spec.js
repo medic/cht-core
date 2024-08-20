@@ -812,7 +812,7 @@ describe('Users API', () => {
       it('should create and update a user correctly w/o token_login', () => {
         const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}};
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
           .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(response => {
@@ -1229,7 +1229,7 @@ describe('Users API', () => {
       it('should throw an error when phone is missing when creating a user with token_login', () => {
         const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}};
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
           .then(() => {
             user.token_login = true;
@@ -1247,7 +1247,7 @@ describe('Users API', () => {
       it('should throw an error when phone is missing when updating a user with token_login', () => {
         const settings = {token_login: {translation_key: 'token_login_sms', enabled: true}, app_url: 'https://host/'};
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
           .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => {
@@ -1286,7 +1286,7 @@ describe('Users API', () => {
 
         let tokenUrl;
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {token_login_sms: 'Instructions sms'}))
           .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(response => {
@@ -1358,7 +1358,7 @@ describe('Users API', () => {
         const settings = {token_login: {translation_key: 'sms_text', enabled: true}, app_url: utils.getOrigin()};
         let tokenUrl;
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {sms_text: 'Instructions sms'}))
           .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => {
@@ -1438,7 +1438,7 @@ describe('Users API', () => {
         user.phone = '+40755232323';
         let tokenLogin;
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
           .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => getUser(user))
@@ -1471,7 +1471,7 @@ describe('Users API', () => {
         let firstTokenLogin;
         let secondTokenLogin;
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
           .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => getUser(user))
@@ -1524,7 +1524,7 @@ describe('Users API', () => {
         user.phone = '+40755969696';
         let firstTokenLogin;
         return utils
-          .updateSettings(settings, true)
+          .updateSettings(settings, {ignoreReload: true})
           .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
           .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))
           .then(() => getUser(user))
@@ -1581,7 +1581,7 @@ describe('Users API', () => {
       let tokenLoginDocId;
 
       return utils
-        .updateSettings(settings, true)
+        .updateSettings(settings, {ignoreReload: true})
         .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}))
         .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: onlineUser}))
         .then(() => utils.request({path: '/api/v1/users', method: 'POST', body: user}))

@@ -118,13 +118,13 @@ describe('all_docs handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_all_docs',
-      auth: { username: 'offline', password },
+      auth: {username: 'offline', password},
       method: 'GET'
     };
 
     onlineRequestOptions = {
       path: '/_all_docs',
-      auth: { username: 'online', password },
+      auth: {username: 'online', password},
       method: 'GET'
     };
   });
@@ -145,19 +145,19 @@ describe('all_docs handler', () => {
   it('filters offline users results', () => {
     const supervisorRequestOptions = {
       path: '/_all_docs',
-      auth: { username: 'supervisor', password },
+      auth: {username: 'supervisor', password},
       method: 'GET'
     };
-    const lineage = { _id: 'PARENT_PLACE' };
+    const lineage = {_id: 'PARENT_PLACE'};
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline', parent: lineage }, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline', parent: lineage }, type: 'data_record', form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: lineage }, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online', parent: lineage }, type: 'data_record', form: 'a' },
-      { _id: 'allowed_task', user: 'org.couchdb.user:offline', type: 'task', owner: 'fixture:user:offline' },
-      { _id: 'denied_task', user: 'org.couchdb.user:online', type: 'task', owner: 'fixture:user:offline' },
-      { _id: 'allowed_target', user: 'org.couchdb.user:offline', type: 'target', owner: 'fixture:user:offline' },
-      { _id: 'denied_target', user: 'org.couchdb.user:online', type: 'target', owner: 'fixture:user:online' },
+      {_id: 'allowed_contact', parent: {_id: 'fixture:offline', parent: lineage}, type: 'clinic'},
+      {_id: 'allowed_report', contact: {_id: 'fixture:offline', parent: lineage}, type: 'data_record', form: 'a'},
+      {_id: 'denied_contact', parent: {_id: 'fixture:online', parent: lineage}, type: 'clinic'},
+      {_id: 'denied_report', contact: {_id: 'fixture:online', parent: lineage}, type: 'data_record', form: 'a'},
+      {_id: 'allowed_task', user: 'org.couchdb.user:offline', type: 'task', owner: 'fixture:user:offline'},
+      {_id: 'denied_task', user: 'org.couchdb.user:online', type: 'task', owner: 'fixture:user:offline'},
+      {_id: 'allowed_target', user: 'org.couchdb.user:offline', type: 'target', owner: 'fixture:user:offline'},
+      {_id: 'denied_target', user: 'org.couchdb.user:online', type: 'target', owner: 'fixture:user:online'},
     ];
 
     return utils
@@ -174,8 +174,8 @@ describe('all_docs handler', () => {
 
   it('filters offline users when requested with key param', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' }
+      {_id: 'allowed_contact', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: 'denied_contact', parent: {_id: 'fixture:online'}, type: 'clinic'}
     ];
 
     return utils
@@ -192,10 +192,10 @@ describe('all_docs handler', () => {
 
   it('filters offline users when requested with keys param', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+      {_id: 'allowed_contact', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: 'allowed_report', contact: {_id: 'fixture:offline'}, type: 'data_record', form: 'a'},
+      {_id: 'denied_contact', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: 'denied_report', contact: {_id: 'fixture:online'}, type: 'data_record', form: 'a'},
     ];
 
     const keys = [
@@ -205,15 +205,15 @@ describe('all_docs handler', () => {
 
     const request = {
       method: 'POST',
-      body: { keys },
-      headers: { 'Content-Type': 'application/json' }
+      body: {keys},
+      headers: {'Content-Type': 'application/json'}
     };
 
     return utils
       .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(request, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
+        utils.requestOnTestDb(_.defaults({path: '/_all_docs?keys=' + JSON.stringify(keys)}, offlineRequestOptions))
       ]))
       .then((results) => {
         expect(results[0].rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
@@ -223,26 +223,26 @@ describe('all_docs handler', () => {
 
   it('filters offline users when requested with start_key / end_key', () => {
     const docs = [
-      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '6', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '7', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '8', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '9', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '10', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      {_id: '1', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '2', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: '3', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '4', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '5', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: '6', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '7', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: '8', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '9', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: '10', parent: {_id: 'fixture:offline'}, type: 'clinic'},
     ];
 
     return utils
       .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: '/_all_docs?start_key="10"&end_key="8"' }, offlineRequestOptions
+          {path: '/_all_docs?start_key="10"&end_key="8"'}, offlineRequestOptions
         )),
         utils.requestOnTestDb(_.defaults(
-          { path: '/_all_docs?startkey="10"&endkey="8"&inclusive_end=false'}, offlineRequestOptions
+          {path: '/_all_docs?startkey="10"&endkey="8"&inclusive_end=false'}, offlineRequestOptions
         ))
       ]))
       .then(([inclusive, exclusive]) => {
@@ -253,11 +253,11 @@ describe('all_docs handler', () => {
 
   it('should filter offline users requests when requesting keys with include_docs', () => {
     const docs = [
-      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
+      {_id: '1', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '2', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: '3', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '4', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '5', parent: {_id: 'fixture:online'}, type: 'clinic'}
     ];
     const keys = docs.map(doc => doc._id);
 
@@ -265,10 +265,10 @@ describe('all_docs handler', () => {
       .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions
+          {path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true`}, offlineRequestOptions
         )),
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false` }, offlineRequestOptions
+          {path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false`}, offlineRequestOptions
         ))
       ]))
       .then(([includeDocs, excludeDocs]) => {
@@ -280,21 +280,21 @@ describe('all_docs handler', () => {
 
   it('should filter offline users requests with skip and limit', () => {
     const docs = [
-      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
+      {_id: '1', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '2', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: '3', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '4', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: '5', parent: {_id: 'fixture:online'}, type: 'clinic'}
     ];
 
     return utils
       .saveDocsRevs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions
+          {path: `/_all_docs?limit=2&skip=2&include_docs=false`}, offlineRequestOptions
         )),
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=1&skip=4&include_docs=true` }, offlineRequestOptions
+          {path: `/_all_docs?limit=1&skip=4&include_docs=true`}, offlineRequestOptions
         ))
       ]))
       .then(([excludeDocs, includeDocs]) => {
@@ -305,10 +305,10 @@ describe('all_docs handler', () => {
 
   it('returns correct info for restricted deleted documents', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+      {_id: 'allowed_contact', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: 'allowed_report', contact: {_id: 'fixture:offline'}, type: 'data_record', form: 'a'},
+      {_id: 'denied_contact', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: 'denied_report', contact: {_id: 'fixture:online'}, type: 'data_record', form: 'a'},
     ];
 
     const keys = docs.map(doc => doc._id);
@@ -322,7 +322,7 @@ describe('all_docs handler', () => {
         return utils.saveDocsRevs(docs);
       })
       .then(() => {
-        const opts = _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions);
+        const opts = _.defaults({path: '/_all_docs?keys=' + JSON.stringify(keys)}, offlineRequestOptions);
         return utils.requestOnTestDb(opts);
       })
       .then(result => {
@@ -336,73 +336,73 @@ describe('all_docs handler', () => {
         _id: 'insensitive_report_1',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:offline' },
+        contact: {_id: 'fixture:offline'},
         patient_id: 'fixture:offline'
       },
       {
         _id: 'insensitive_report_2',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:offline' },
+        contact: {_id: 'fixture:offline'},
         patient_id: 'fixture:offline',
-        fields: { private: true },
+        fields: {private: true},
       },
       {
         _id: 'insensitive_report_3',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online' },
+        contact: {_id: 'fixture:online'},
         patient_id: 'fixture:offline',
-        fields: { private: false },
+        fields: {private: false},
       },
       {
         _id: 'sensitive_report_1',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online' },
+        contact: {_id: 'fixture:online'},
         patient_id: 'fixture:offline',
-        fields: { private: true },
+        fields: {private: true},
       },
       {
         _id: 'sensitive_report_2',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online' },
+        contact: {_id: 'fixture:online'},
         patient_id: 'fixture:user:offline',
-        fields: { private: true },
+        fields: {private: true},
       },
       {
         _id: 'sensitive_report_3',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online' },
-        fields: { private: true, place_id: 'offline_hc_shortcode' },
+        contact: {_id: 'fixture:online'},
+        fields: {private: true, place_id: 'offline_hc_shortcode'},
       },
       {
         _id: 'sensitive_report_4',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online' },
-        fields: { private: true, place_id: 'fixture:offline' },
+        contact: {_id: 'fixture:online'},
+        fields: {private: true, place_id: 'fixture:offline'},
       },
       {
         _id: 'sensitive_report_5',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online' },
-        fields: { private: true, patient_id: 'offline_user_shortcode' },
+        contact: {_id: 'fixture:online'},
+        fields: {private: true, patient_id: 'offline_user_shortcode'},
       },
       {
         _id: 'sensitive_report_6',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online' },
-        fields: { private: true, patient_uuid: 'fixture:user:offline' },
+        contact: {_id: 'fixture:online'},
+        fields: {private: true, patient_uuid: 'fixture:user:offline'},
       },
     ];
 
     const keys = docs.map(doc => doc._id);
-    const opts = _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions);
+    const opts = _.defaults({path: '/_all_docs?keys=' + JSON.stringify(keys)}, offlineRequestOptions);
 
     return utils
       .saveDocsRevs(docs)
@@ -414,10 +414,10 @@ describe('all_docs handler', () => {
 
   it('filters offline users results when db name is not medic', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+      {_id: 'allowed_contact', parent: {_id: 'fixture:offline'}, type: 'clinic'},
+      {_id: 'allowed_report', contact: {_id: 'fixture:offline'}, type: 'data_record', form: 'a'},
+      {_id: 'denied_contact', parent: {_id: 'fixture:online'}, type: 'clinic'},
+      {_id: 'denied_report', contact: {_id: 'fixture:online'}, type: 'data_record', form: 'a'},
     ];
 
     return utils
@@ -429,38 +429,38 @@ describe('all_docs handler', () => {
   });
 
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
-    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+    const doc = {_id: 'denied_report', contact: {_id: 'fixture:online'}, type: 'data_record', form: 'a'};
 
     return utils
       .saveDoc(doc)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="denied_report"'}, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({path: '///_all_docs//?key="denied_report"'}, offlineRequestOptions)),
         utils.request(_.defaults(
-          { path: `//${constants.DB_NAME}//_all_docs?key="denied_report"` }, offlineRequestOptions
+          {path: `//${constants.DB_NAME}//_all_docs?key="denied_report"`}, offlineRequestOptions
         )),
         utils
-          .requestOnTestDb(_.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({path: '/_all_docs/something?key="denied_report"'}, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(_.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({path: '///_all_docs//something?key="denied_report"'}, offlineRequestOptions))
           .catch(err => err),
         utils
           .request(_.defaults(
-            { path: `//${constants.DB_NAME}//_all_docs/something?key="denied_report"` }, offlineRequestOptions
+            {path: `//${constants.DB_NAME}//_all_docs/something?key="denied_report"`}, offlineRequestOptions
           ))
           .catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//medic//_all_docs?key="denied_report"` }, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({path: '/_all_docs?key="denied_report"'}, offlineRequestOptions)),
+        utils.requestOnMedicDb(_.defaults({path: '///_all_docs//?key="denied_report"'}, offlineRequestOptions)),
+        utils.request(_.defaults({path: `//medic//_all_docs?key="denied_report"`}, offlineRequestOptions)),
         utils
-          .requestOnMedicDb(_.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnMedicDb(_.defaults({path: '/_all_docs/something?key="denied_report"'}, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(_.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnMedicDb(_.defaults({path: '///_all_docs//something?key="denied_report"'}, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//medic//_all_docs/something?key="denied_report"` }, offlineRequestOptions))
+          .request(_.defaults({path: `//medic//_all_docs/something?key="denied_report"`}, offlineRequestOptions))
           .catch(err => err)
       ]))
       .then(results => {
@@ -477,19 +477,19 @@ describe('all_docs handler', () => {
           // depth = 1
           _id: 'the_clinic',
           type: 'clinic',
-          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+          parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}},
         },
         {
           // depth = 2
           _id: 'the_person',
           type: 'person',
-          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+          parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}},
         },
         {
           // depth = 3
           _id: 'the_patient',
           type: 'person',
-          parent: { _id: 'the_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          parent: {_id: 'the_clinic', parent: {_id: 'fixture:offline', parent: {_id: 'PARENT_PLACE'}}},
         },
         {
           // depth = 1
@@ -499,7 +499,7 @@ describe('all_docs handler', () => {
           fields: {
             place_id: 'fixture:offline',
           },
-          contact: { _id: 'irrelevant' },
+          contact: {_id: 'irrelevant'},
         },
         {
           // depth = 2, own report
@@ -509,7 +509,7 @@ describe('all_docs handler', () => {
           fields: {
             patient_id: 'the_person',
           },
-          contact: { _id: 'fixture:user:supervisor' },
+          contact: {_id: 'fixture:user:supervisor'},
         },
         {
           // depth = 2, has needs_signoff
@@ -520,7 +520,7 @@ describe('all_docs handler', () => {
             patient_id: 'the_person',
             needs_signoff: true,
           },
-          contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
+          contact: {_id: 'fixture:user:offline', parent: {_id: 'fixture:offline'}},
         },
         {
           // depth = 2, no needs_signoff
@@ -530,7 +530,7 @@ describe('all_docs handler', () => {
           fields: {
             patient_id: 'the_person',
           },
-          contact: { _id: 'fixture:user:offline' },
+          contact: {_id: 'fixture:user:offline'},
         },
         {
           // depth = 3, has needs_signoff
@@ -541,7 +541,7 @@ describe('all_docs handler', () => {
             patient_id: 'the_patient',
             needs_signoff: true,
           },
-          contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
+          contact: {_id: 'fixture:user:offline', parent: {_id: 'fixture:offline'}},
         },
         {
           // depth = 3, no needs_signoff
@@ -551,7 +551,7 @@ describe('all_docs handler', () => {
           fields: {
             patient_id: 'the_patient',
           },
-          contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
+          contact: {_id: 'fixture:user:offline', parent: {_id: 'fixture:offline'}},
         },
         {
           // depth = 2
@@ -573,18 +573,18 @@ describe('all_docs handler', () => {
 
       const supervisorRequestOptions = {
         path: '/_all_docs',
-        auth: { username: 'supervisor', password },
+        auth: {username: 'supervisor', password},
         method: 'GET'
       };
 
       const keys = docs.map(doc => doc._id);
 
-      const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
+      const settings = {replication_depth: [{role: 'district_admin', depth: 2, report_depth: 1}]};
       return utils
-        .updateSettings(settings, true)
+        .updateSettings(settings, {ignoreReload: true})
         .then(() => utils.saveDocsRevs(docs))
         .then(() => Promise.all([
-          utils.requestOnMedicDb(Object.assign({ qs: { keys: keys  } }, supervisorRequestOptions)),
+          utils.requestOnMedicDb(Object.assign({qs: {keys: keys}}, supervisorRequestOptions)),
           utils.requestOnMedicDb(supervisorRequestOptions),
         ]))
         .then(([withKeys, withoutKeys]) => {

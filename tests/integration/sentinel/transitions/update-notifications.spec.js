@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { expect } = require('chai');
+const {expect} = require('chai');
 
 const contacts = [
   {
@@ -14,17 +14,17 @@ const contacts = [
     _id: 'health_center',
     name: 'Health Center',
     type: 'health_center',
-    parent: { _id: 'district_hospital' },
+    parent: {_id: 'district_hospital'},
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic',
     name: 'Clinic',
     type: 'clinic',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
     contact: {
       _id: 'person',
-      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
     },
     reported_date: new Date().getTime()
   },
@@ -33,7 +33,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: '99999',
-    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     phone: '+444999',
     reported_date: new Date().getTime()
   }
@@ -47,7 +47,7 @@ describe('update_notifications', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: { update_notifications: false },
+      transitions: {update_notifications: false},
       notifications: {
         on_form: 'on',
         off_form: 'off'
@@ -66,7 +66,7 @@ describe('update_notifications', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -77,12 +77,12 @@ describe('update_notifications', () => {
 
   it('should be skipped when no matching config', () => {
     const settings = {
-      transitions: { update_notifications: true },
+      transitions: {update_notifications: true},
       notifications: {
         on_form: 'on',
         off_form: 'off'
       },
-      forms: { not_off: { } }
+      forms: {not_off: {}}
     };
 
     const doc = {
@@ -93,11 +93,11 @@ describe('update_notifications', () => {
         patient_uuid: 'person'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -108,7 +108,7 @@ describe('update_notifications', () => {
 
   it('should add error when contact not found or validation fails', () => {
     const settings = {
-      transitions: { update_notifications: true },
+      transitions: {update_notifications: true},
       notifications: {
         on_form: 'on',
         off_form: 'off',
@@ -161,7 +161,7 @@ describe('update_notifications', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -198,7 +198,7 @@ describe('update_notifications', () => {
 
   it('should mute and unmute a person', () => {
     const settings = {
-      transitions: { update_notifications: true },
+      transitions: {update_notifications: true},
       notifications: {
         on_form: 'on',
         off_form: 'off',
@@ -268,7 +268,7 @@ describe('update_notifications', () => {
     let unmuteTime;
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(mute1))
       .then(() => sentinelUtils.waitForSentinel(mute1._id))
       .then(() => sentinelUtils.getInfoDocs([mute1._id, 'person', 'clinic']))

@@ -19,7 +19,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'health_center',
     place_id: 'the_health_center',
-    parent: { _id: 'district_hospital' },
+    parent: {_id: 'district_hospital'},
     reported_date: new Date().getTime()
   },
   {
@@ -28,9 +28,9 @@ const contacts = [
     type: 'contact',
     contact_type: 'clinic',
     place_id: 'the_clinic',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
     contact: {
-      _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      _id: 'person', parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
     },
     reported_date: new Date().getTime()
   },
@@ -40,7 +40,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
     phone: '+444999',
     reported_date: new Date().getTime()
   },
@@ -50,7 +50,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_supervisor',
-    parent: { _id: 'district_hospital' },
+    parent: {_id: 'district_hospital'},
     phone: '+00000000',
     reported_date: new Date().getTime()
   },
@@ -60,7 +60,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_middle_man',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
     phone: '+11111111',
     reported_date: new Date().getTime()
   }
@@ -85,7 +85,7 @@ describe('schedules alternative start_from', () => {
   it('schedules are created with start_from as string or as an array', () => {
     const startDate = moment().subtract(1, 'week');
     const settings = {
-      transitions: { registration: true },
+      transitions: {registration: true},
       registrations: [{
         form: 'FORM',
         events: [{
@@ -96,7 +96,7 @@ describe('schedules alternative start_from', () => {
         }],
         messages: [],
       }],
-      forms: { FORM: {} },
+      forms: {FORM: {}},
       schedules:
         [
           {
@@ -210,7 +210,7 @@ describe('schedules alternative start_from', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
       }
     };
 
@@ -226,7 +226,7 @@ describe('schedules alternative start_from', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'middle_man',
-        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}
       },
     };
 
@@ -247,13 +247,13 @@ describe('schedules alternative start_from', () => {
     const expectedDue5_1 = expectedDueDate(moment(), '9', 'days');
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs([patient, clinic]))
       .then(() => sentinelUtils.waitForSentinel([patient._id, clinic._id]))
       .then(() => sentinelUtils.getInfoDocs([patient._id, clinic._id]))
       .then(([infoWithPatient, infoWithClinic]) => {
-        chai.expect(infoWithPatient).to.deep.nested.include({ 'transitions.registration.ok': true });
-        chai.expect(infoWithClinic).to.deep.nested.include({ 'transitions.registration.ok': true });
+        chai.expect(infoWithPatient).to.deep.nested.include({'transitions.registration.ok': true});
+        chai.expect(infoWithClinic).to.deep.nested.include({'transitions.registration.ok': true});
       })
       .then(() => utils.getDocs([patient._id, clinic._id]))
       .then(([updWithPatient, updWithClinic]) => {
@@ -277,11 +277,11 @@ describe('schedules alternative start_from', () => {
         chai.expect(moment(sch3_2.due).format('YYYY-MM-DD')).to.equal(expectedDue3_2, 'schedule 2 of sch3');
         // schedules from sch4; Not expected this to be created
         chai.expect(moment(sch5_1.due).format('YYYY-MM-DD')).to.equal(expectedDue5_1, 'schedule 1 of sch5');
-        
+
         chai.expect(updWithClinic.scheduled_tasks).to.be.ok;
         chai.expect(updWithClinic.scheduled_tasks).to.have.lengthOf(4);
 
-        const [csch1_2, csch2_1, csch2_2, csch5_1 ] = updWithClinic.scheduled_tasks;
+        const [csch1_2, csch2_1, csch2_2, csch5_1] = updWithClinic.scheduled_tasks;
 
         // schedule 3 and 4 will not be created for clinic because fields don't exist.
 

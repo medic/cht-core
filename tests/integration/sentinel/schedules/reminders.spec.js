@@ -8,7 +8,7 @@ const contacts = [
     name: 'PARENT',
     type: 'contact',
     contact_type: 'tier1',
-    contact: { _id: 'contact1', parent: { _id: 'PARENT' } },
+    contact: {_id: 'contact1', parent: {_id: 'PARENT'}},
   },
   {
     _id: 'contact1',
@@ -16,15 +16,15 @@ const contacts = [
     contact_type: 'tier5',
     name: 'contact1',
     phone: 'phone1',
-    parent: { _id: 'PARENT' },
+    parent: {_id: 'PARENT'},
   },
   {
     _id: 'leaf1', // will have reminder
     name: 'leaf1',
     type: 'contact',
     contact_type: 'tier2',
-    parent: { _id: 'PARENT' },
-    contact: { _id: 'contact2', parent: { _id: 'leaf1', parent: { _id: 'PARENT' } } },
+    parent: {_id: 'PARENT'},
+    contact: {_id: 'contact2', parent: {_id: 'leaf1', parent: {_id: 'PARENT'}}},
   },
   {
     _id: 'contact2',
@@ -32,22 +32,22 @@ const contacts = [
     contact_type: 'tier5',
     name: 'contact2',
     phone: 'phone2',
-    parent: { _id: 'leaf1', parent: { _id: 'PARENT' } },
+    parent: {_id: 'leaf1', parent: {_id: 'PARENT'}},
   },
   {
     _id: 'leaf2', // no reminder because no contact
     name: 'leaf2',
     type: 'contact',
     contact_type: 'tier2',
-    parent: { _id: 'PARENT' },
+    parent: {_id: 'PARENT'},
   },
   {
     _id: 'notleaf1', // no reminder because not a leaf
     name: 'notleaf1',
     type: 'contact',
     contact_type: 'tier3',
-    parent: { _id: 'PARENT' },
-    contact: { _id: 'contact4', parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } } },
+    parent: {_id: 'PARENT'},
+    contact: {_id: 'contact4', parent: {_id: 'notleaf1', parent: {_id: 'PARENT'}}},
   },
   {
     _id: 'contact4',
@@ -55,15 +55,15 @@ const contacts = [
     contact_type: 'tier5',
     name: 'contact4',
     phone: 'phone4',
-    parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } },
+    parent: {_id: 'notleaf1', parent: {_id: 'PARENT'}},
   },
   {
     _id: 'notleaf2', // no reminder because not a leaf
     name: 'notleaf2',
     type: 'contact',
     contact_type: 'tier3',
-    parent: { _id: 'PARENT' },
-    contact: { _id: 'contact5', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } },
+    parent: {_id: 'PARENT'},
+    contact: {_id: 'contact5', parent: {_id: 'notleaf2', parent: {_id: 'PARENT'}}},
   },
   {
     _id: 'contact5',
@@ -71,15 +71,15 @@ const contacts = [
     contact_type: 'tier5',
     name: 'contact5',
     phone: 'phone5',
-    parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } },
+    parent: {_id: 'notleaf2', parent: {_id: 'PARENT'}},
   },
   {
     _id: 'leaf3', // has reminder
     name: 'leaf3',
     type: 'contact',
     contact_type: 'tier4',
-    parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } },
-    contact: { _id: 'contact6', parent: { _id: 'leaf3', parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } } } },
+    parent: {_id: 'notleaf1', parent: {_id: 'PARENT'}},
+    contact: {_id: 'contact6', parent: {_id: 'leaf3', parent: {_id: 'notleaf1', parent: {_id: 'PARENT'}}}},
   },
   {
     _id: 'contact6',
@@ -87,7 +87,7 @@ const contacts = [
     type: 'contact',
     name: 'contact6',
     phone: 'phone6',
-    parent: { _id: 'leaf3', parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } } },
+    parent: {_id: 'leaf3', parent: {_id: 'notleaf1', parent: {_id: 'PARENT'}}},
   },
   {
     _id: 'leaf4', // no reminder because muted
@@ -95,8 +95,8 @@ const contacts = [
     contact_type: 'tier4',
     type: 'contact',
     muted: 'sometime last week',
-    parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } },
-    contact: { _id: 'contact7', parent: { _id: 'leaf4', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } } },
+    parent: {_id: 'notleaf2', parent: {_id: 'PARENT'}},
+    contact: {_id: 'contact7', parent: {_id: 'leaf4', parent: {_id: 'notleaf2', parent: {_id: 'PARENT'}}}},
   },
   {
     _id: 'contact7',
@@ -104,22 +104,22 @@ const contacts = [
     type: 'contact',
     name: 'contact7',
     phone: 'phone7',
-    parent: { _id: 'leaf4', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } },
+    parent: {_id: 'leaf4', parent: {_id: 'notleaf2', parent: {_id: 'PARENT'}}},
   },
   {
     _id: 'person1',
     name: 'person1',
     contact_type: 'tier5',
     type: 'contact',
-    parent: { _id: 'leaf4', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } }
+    parent: {_id: 'leaf4', parent: {_id: 'notleaf2', parent: {_id: 'PARENT'}}}
   },
 ];
 const contactTypes = [
-  { id: 'tier1' },
-  { id: 'tier2', parents: ['tier1'] }, // leaf
-  { id: 'tier3', parents: ['tier1'] },
-  { id: 'tier4', parents: ['tier3'] }, // leaf
-  { id: 'tier5', parents: ['tier2', 'tier1', 'tier3', 'tier4'], person: true },
+  {id: 'tier1'},
+  {id: 'tier2', parents: ['tier1']}, // leaf
+  {id: 'tier3', parents: ['tier1']},
+  {id: 'tier4', parents: ['tier3']}, // leaf
+  {id: 'tier5', parents: ['tier2', 'tier1', 'tier3', 'tier4'], person: true},
 ];
 
 const start = moment().utc();
@@ -142,15 +142,15 @@ const remindersConfig = [
 ];
 const forms = {
   FORM1: {
-    meta: { code: 'FORM1' },
-    fields: { param: { position: 0, type: 'string' } }
+    meta: {code: 'FORM1'},
+    fields: {param: {position: 0, type: 'string'}}
   },
   FORM2: {
-    meta: { code: 'FORM2' },
-    fields: { param: { position: 0, type: 'string' } }
+    meta: {code: 'FORM2'},
+    fields: {param: {position: 0, type: 'string'}}
   },
 };
-const transitions = { update_clinics: true };
+const transitions = {update_clinics: true};
 
 const getReminderLogs = (expectedLogs) => {
   const opts = {
@@ -180,10 +180,10 @@ const getReminderDocs = () => {
 const leaf1 = contacts[2];
 const leaf3 = contacts[9];
 
-const assertReminder = ({ form, reminder, place, message }) => {
+const assertReminder = ({form, reminder, place, message}) => {
   chai.expect(reminder).to.deep.include({
     contact: place.contact,
-    place: { _id: place._id, parent: place.parent },
+    place: {_id: place._id, parent: place.parent},
     form: form,
     type: 'reminder'
   });
@@ -205,7 +205,10 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 describe('reminders', () => {
   before(() => {
     return utils
-      .updateSettings({ transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig }, 'sentinel')
+      .updateSettings(
+        {transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig},
+        {ignoreReload: 'sentinel'}
+      )
       .then(() => utils.saveDocs(contacts));
   });
 
@@ -218,7 +221,7 @@ describe('reminders', () => {
     let reminder2Date3;
     return restartSentinel()
       .then(() => getReminderLogs(2))
-      .then(({ rows: reminderLogs }) => {
+      .then(({rows: reminderLogs}) => {
         chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.be.true;
         chai.expect(reminderLogs[0].doc.reminder).to.deep.equal(remindersConfig[0]);
         chai.expect(reminderLogs[1].id.startsWith('reminderlog:FORM2:')).to.be.true;
@@ -271,13 +274,13 @@ describe('reminders', () => {
       .then(() => {
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(3, 'minute'));
         return utils.updateSettings(
-          { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
-          { ignoreReload: true }
+          {transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig},
+          {ignoreReload: true}
         );
       })
       .then(() => restartSentinel())
       .then(() => getReminderLogs(3))
-      .then(({ rows: reminderLogs }) => {
+      .then(({rows: reminderLogs}) => {
         // Only the 2nd reminder ran. Because reminders are executed in a series, we know that 1st reminder was skipped
         // once we get a log for the 2nd reminder. It's just a hack because we have no way of knowing that the
         // "scheduler" code has completed.
@@ -324,7 +327,7 @@ describe('reminders', () => {
         // all reminders are on 1st rev
         chai.expect(reminderDocs.every(doc => doc._rev.startsWith('1-'))).to.be.true;
       })
-      .then(() => utils.request({ path: '/api/sms', method: 'POST', headers: { 'Content-Type': 'application/json' } }))
+      .then(() => utils.request({path: '/api/sms', method: 'POST', headers: {'Content-Type': 'application/json'}}))
       .then(smsMessages => {
         // 6 reminders have 6 messages
         chai.expect(smsMessages.messages).to.have.lengthOf(6);
@@ -366,21 +369,21 @@ describe('reminders', () => {
         return utils.request({
           path: '/api/sms',
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: { messages: [message] }
+          headers: {'Content-Type': 'application/json'},
+          body: {messages: [message]}
         });
       })
       .then(() => utils.revertSettings(true))
       .then(() => {
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(1, 'minute'));
         return utils.updateSettings(
-          { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
-          { ignoreReload: true }
+          {transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig},
+          {ignoreReload: true}
         );
       })
       .then(() => restartSentinel())
       .then(() => getReminderLogs(4))
-      .then(({ rows: reminderLogs }) => {
+      .then(({rows: reminderLogs}) => {
         chai.expect(reminderLogs).to.have.lengthOf(4);
         reminderLogs.forEach(log => chai.expect(log.doc._rev.startsWith('1-')).to.be.true);
         chai.expect(reminderLogs.filter(log => log.id.startsWith('reminderlog:FORM2:'))).to.have.lengthOf(3);

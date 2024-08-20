@@ -30,8 +30,8 @@ describe('self_report', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: { self_report: false },
-      self_report: [{ form: 'the_form' }],
+      transitions: {self_report: false},
+      self_report: [{form: 'the_form'}],
     };
 
     const doc = {
@@ -42,7 +42,7 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -53,8 +53,8 @@ describe('self_report', () => {
 
   it('should be skipped when not configured form', () => {
     const settings = {
-      transitions: { self_report: true },
-      self_report: [{ form: 'the_form' }],
+      transitions: {self_report: true},
+      self_report: [{form: 'the_form'}],
     };
 
     const doc = {
@@ -66,7 +66,7 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -77,8 +77,8 @@ describe('self_report', () => {
 
   it('should be skipped when already has patient_id', () => {
     const settings = {
-      transitions: { self_report: true },
-      self_report: [{ form: 'the_form' }],
+      transitions: {self_report: true},
+      self_report: [{form: 'the_form'}],
     };
 
     const doc = {
@@ -92,7 +92,7 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -103,8 +103,8 @@ describe('self_report', () => {
 
   it('should add error when patient is not found', () => {
     const settings = {
-      transitions: { self_report: true },
-      self_report: [{ form: 'the_form' }],
+      transitions: {self_report: true},
+      self_report: [{form: 'the_form'}],
     };
 
     const doc = {
@@ -116,12 +116,12 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'self_report.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'self_report.ok': true});
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -146,13 +146,13 @@ describe('self_report', () => {
 
   it('should add configured error SMS when sender not found', () => {
     const settings = {
-      transitions: { self_report: true },
+      transitions: {self_report: true},
       self_report: [{
         form: 'the_form',
         messages: [{
           event_type: 'sender_not_found',
           recipient: 'reporting_unit',
-          message: [{ content: 'Not registered' }],
+          message: [{content: 'Not registered'}],
         }]
       }],
     };
@@ -165,12 +165,12 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'self_report.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'self_report.ok': true});
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -179,7 +179,7 @@ describe('self_report', () => {
           from: 'unknown',
           form: 'the_form',
         });
-        chai.expect(updated.errors).to.deep.equal([{ message: 'Not registered', code: 'sender_not_found' }]);
+        chai.expect(updated.errors).to.deep.equal([{message: 'Not registered', code: 'sender_not_found'}]);
         chai.expect(updated.tasks).to.have.lengthOf(1);
         chai.expect(updated.tasks[0].messages[0]).to.include({
           to: 'unknown',
@@ -190,8 +190,8 @@ describe('self_report', () => {
 
   it('should not overwrite existent patient _id', () => {
     const settings = {
-      transitions: { self_report: true },
-      self_report: [{ form: 'form1' }, { form: 'form2' }, { form: 'form3' }],
+      transitions: {self_report: true},
+      self_report: [{form: 'form1'}, {form: 'form2'}, {form: 'form3'}],
     };
 
     const doc = {
@@ -199,12 +199,12 @@ describe('self_report', () => {
       type: 'data_record',
       from: '555 333 444',
       form: 'form3',
-      fields: { patient_id: 'already has patient' },
+      fields: {patient_id: 'already has patient'},
       reported_date: new Date().getTime()
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -216,8 +216,8 @@ describe('self_report', () => {
 
   it('should set patient in the doc when found', () => {
     const settings = {
-      transitions: { self_report: true },
-      self_report: [{ form: 'the_form' }],
+      transitions: {self_report: true},
+      self_report: [{form: 'the_form'}],
     };
 
     const doc = {
@@ -232,12 +232,12 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'self_report.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'self_report.ok': true});
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -259,8 +259,8 @@ describe('self_report', () => {
 
   it('should set patient without patient_id in the doc', () => {
     const settings = {
-      transitions: { self_report: true },
-      self_report: [{ form: 'form1' }, { form: 'form2' }, { form: 'form3' }],
+      transitions: {self_report: true},
+      self_report: [{form: 'form1'}, {form: 'form2'}, {form: 'form3'}],
     };
 
     const doc = {
@@ -272,12 +272,12 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'self_report.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'self_report.ok': true});
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -297,8 +297,8 @@ describe('self_report', () => {
 
   it('should provide hydrated patient info for subsequent transitions', () => {
     const settings = {
-      transitions: { self_report: true, accept_patient_reports: true },
-      self_report: [{ form: 'form' }],
+      transitions: {self_report: true, accept_patient_reports: true},
+      self_report: [{form: 'form'}],
       patient_reports: [{
         form: 'form',
         messages: [{
@@ -310,7 +310,7 @@ describe('self_report', () => {
           }],
         }]
       }],
-      forms: { form: { public_form: true } },
+      forms: {form: {public_form: true}},
     };
 
     const doc = {
@@ -325,13 +325,13 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'self_report.ok': true });
-        chai.expect(info.transitions).to.deep.nested.include({ 'accept_patient_reports.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'self_report.ok': true});
+        chai.expect(info.transitions).to.deep.nested.include({'accept_patient_reports.ok': true});
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -357,24 +357,24 @@ describe('self_report', () => {
 
   it('should add message when patient not found and configured', () => {
     const settings = {
-      transitions: { self_report: true },
+      transitions: {self_report: true},
       self_report: [{
         form: 'form3',
         messages: [{
           event_type: 'report_accepted',
           recipient: 'reporting_unit',
-          message: [{ content: 'Registered {{from}} {{patient.name}}' }],
+          message: [{content: 'Registered {{from}} {{patient.name}}'}],
         }, {
           event_type: 'sender_not_found',
           recipient: 'reporting_unit',
-          message: [{ content: 'not found' }],
+          message: [{content: 'not found'}],
         }]
       }, {
         form: 'form2',
         messages: [{
           event_type: 'report_accepted',
           recipient: 'reporting_unit',
-          message: [{ content: 'Registered' }],
+          message: [{content: 'Registered'}],
         }]
       }],
     };
@@ -388,12 +388,12 @@ describe('self_report', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info.transitions).to.deep.nested.include({ 'self_report.ok': true });
+        chai.expect(info.transitions).to.deep.nested.include({'self_report.ok': true});
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {

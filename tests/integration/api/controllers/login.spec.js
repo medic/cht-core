@@ -24,7 +24,7 @@ const loginWithData = data => {
     noAuth: true,
     body: data,
     followRedirect: false,
-    headers: { 'X-Forwarded-For': randomIp() },
+    headers: {'X-Forwarded-For': randomIp()},
   };
   return utils.request(opts);
 };
@@ -38,13 +38,13 @@ const loginWithTokenLink = (token = '') => {
     noAuth: true,
     followRedirect: false,
     body: {},
-    headers: { 'X-Forwarded-For': randomIp() },
+    headers: {'X-Forwarded-For': randomIp()},
   };
   return utils.request(opts);
 };
 
 const expectLoginToWork = (response) => {
-  chai.expect(response).to.include({ statusCode: 302 });
+  chai.expect(response).to.include({statusCode: 302});
   chai.expect(response.headers['set-cookie']).to.be.an('array');
   chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
   chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
@@ -58,18 +58,18 @@ const expectLoginToFail = (response) => {
 
 const getUser = (user) => {
   const getUserId = n => `org.couchdb.user:${n}`;
-  const opts = { path: `/_users/${getUserId(user.username)}` };
+  const opts = {path: `/_users/${getUserId(user.username)}`};
   return utils.request(opts);
 };
 
 const setupTokenLoginSettings = (configureAppUrl = false) => {
-  const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
+  const settings = {token_login: {translation_key: 'login_sms', enabled: true}};
   if (configureAppUrl) {
     settings.app_url = utils.getOrigin();
   }
   return utils
-    .updateSettings(settings, true)
-    .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
+    .updateSettings(settings, {ignoreReload: true})
+    .then(() => utils.addTranslations('en', {login_sms: 'Instructions sms'}));
 };
 
 describe('login', () => {
@@ -97,12 +97,12 @@ describe('login', () => {
 
   describe('default login', () => {
     it('should fail with no data', () => {
-      return loginWithData({ user: '', password: '' })
+      return loginWithData({user: '', password: ''})
         .then(response => expectLoginToFail(response));
     });
 
     it('should fail with random credentials', () => {
-      return loginWithData({ user: 'random', password: 'random' })
+      return loginWithData({user: 'random', password: 'random'})
         .then(response => expectLoginToFail(response));
     });
 
@@ -114,7 +114,7 @@ describe('login', () => {
       };
       return utils
         .request(opts)
-        .then(() => loginWithData({ user: user.username, password: 'random' }))
+        .then(() => loginWithData({user: user.username, password: 'random'}))
         .then(response => expectLoginToFail(response));
     });
 
@@ -126,7 +126,7 @@ describe('login', () => {
       };
       return utils
         .request(opts)
-        .then(() => loginWithData({ user: user.username, password }))
+        .then(() => loginWithData({user: user.username, password}))
         .then(response => expectLoginToWork(response));
     });
   });
@@ -135,7 +135,7 @@ describe('login', () => {
     it('should fail with invalid url', () => {
       return setupTokenLoginSettings()
         .then(() => loginWithTokenLink())
-        .then(response => chai.expect(response).to.deep.include({ statusCode: 401 }));
+        .then(response => chai.expect(response).to.deep.include({statusCode: 401}));
     });
 
     it('should fail with invalid data', () => {
@@ -155,12 +155,12 @@ describe('login', () => {
       const optsEdit = {
         path: `/api/v1/users/${user.username}`,
         method: 'POST',
-        body: { token_login: true },
+        body: {token_login: true},
       };
       let firstToken;
       return setupTokenLoginSettings()
         .then(() => utils.request(opts))
-        .then(() => loginWithData({ user: user.username, password }))
+        .then(() => loginWithData({user: user.username, password}))
         .then(response => expectLoginToFail(response))
         .then(() => getUser(user))
         .then(user => firstToken = user.token_login.token)
@@ -185,7 +185,7 @@ describe('login', () => {
           // cheat and set the expiration date in the past
           user.token_login.expiration_date = 0;
           tokenLogin = user.token_login;
-          return utils.request({ method: 'PUT', path: `/_users/${user._id}`, body: user });
+          return utils.request({method: 'PUT', path: `/_users/${user._id}`, body: user});
         })
         .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToFail(response));
@@ -217,7 +217,7 @@ describe('login', () => {
         path: '/api/v1/users',
         method: 'POST',
         body: user,
-        headers: { 'Host': 'definitely-not-our-host.com' },
+        headers: {'Host': 'definitely-not-our-host.com'},
       };
       let tokenLogin;
       return setupTokenLoginSettings(true)

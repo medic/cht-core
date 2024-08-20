@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { expect } = require('chai');
+const {expect} = require('chai');
 
 describe('default_responses', () => {
   after(() => utils.revertDb([], true));
@@ -9,7 +9,7 @@ describe('default_responses', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: { default_responses: false }
+      transitions: {default_responses: false}
     };
 
     const doc = {
@@ -23,7 +23,7 @@ describe('default_responses', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -34,7 +34,7 @@ describe('default_responses', () => {
 
   it('should add default response when message is empty', () => {
     const settings = {
-      transitions: { default_responses: true },
+      transitions: {default_responses: true},
       default_responses: {
         start_date: '2018-01-01'
       }
@@ -68,7 +68,7 @@ describe('default_responses', () => {
 
   it('should add default response when form not found', () => {
     const settings = {
-      transitions: { default_responses: true },
+      transitions: {default_responses: true},
       default_responses: {
         start_date: '2018-01-01'
       },
@@ -103,7 +103,7 @@ describe('default_responses', () => {
 
   it('should add default response when form is found', () => {
     const settings = {
-      transitions: { default_responses: true },
+      transitions: {default_responses: true},
       default_responses: {
         start_date: '2018-01-01'
       },

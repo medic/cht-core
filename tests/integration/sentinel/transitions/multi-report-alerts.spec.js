@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { expect } = require('chai');
+const {expect} = require('chai');
 
 const contact = {
   _id: 'person',
@@ -17,7 +17,7 @@ describe('multi_report_alerts', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: { multi_report_alerts: false },
+      transitions: {multi_report_alerts: false},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return true }',
@@ -27,7 +27,7 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: 'FORM'
       }],
-      forms: { FORM: { } }
+      forms: {FORM: {}}
     };
 
     const doc = {
@@ -35,11 +35,11 @@ describe('multi_report_alerts', () => {
       type: 'data_record',
       form: 'FROM',
       reported_date: new Date().getTime(),
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -50,7 +50,7 @@ describe('multi_report_alerts', () => {
 
   it('should be skipped when no matching config', () => {
     const settings = {
-      transitions: { multi_report_alerts: true },
+      transitions: {multi_report_alerts: true},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return true }',
@@ -60,7 +60,7 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { NOT_FORM: { } }
+      forms: {NOT_FORM: {}}
     };
 
     const doc = {
@@ -68,11 +68,11 @@ describe('multi_report_alerts', () => {
       type: 'data_record',
       form: 'NOT_FORM',
       reported_date: new Date().getTime(),
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -83,7 +83,7 @@ describe('multi_report_alerts', () => {
 
   it('should add task when matched', () => {
     const settings = {
-      transitions: { multi_report_alerts: true },
+      transitions: {multi_report_alerts: true},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return true }',
@@ -93,7 +93,7 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { } }
+      forms: {FORM: {}}
     };
 
     const doc = {
@@ -102,11 +102,11 @@ describe('multi_report_alerts', () => {
       form: 'FORM',
       from: '0123456789',
       reported_date: new Date().getTime(),
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -124,7 +124,7 @@ describe('multi_report_alerts', () => {
 
   it('should not add task when threshold not reached', () => {
     const settings = {
-      transitions: { multi_report_alerts: true },
+      transitions: {multi_report_alerts: true},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return true }',
@@ -134,7 +134,7 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { } }
+      forms: {FORM: {}}
     };
 
     const contacts = [{
@@ -155,7 +155,7 @@ describe('multi_report_alerts', () => {
       form: 'FORM',
       from: '+251 11 551 1211',
       reported_date: new Date().getTime() - 100,
-      contact: { _id: 'contact1' }
+      contact: {_id: 'contact1'}
     };
 
     const doc2 = {
@@ -164,11 +164,11 @@ describe('multi_report_alerts', () => {
       form: 'FORM',
       from: '+256 41 9867538',
       reported_date: new Date().getTime() + 100,
-      contact: { _id: 'contact2' }
+      contact: {_id: 'contact2'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -202,7 +202,7 @@ describe('multi_report_alerts', () => {
 
   it('should not add task when conditions not met', () => {
     const settings = {
-      transitions: { multi_report_alerts: true },
+      transitions: {multi_report_alerts: true},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return r.magic; }',
@@ -212,7 +212,7 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { } }
+      forms: {FORM: {}}
     };
 
     const doc = {
@@ -222,7 +222,7 @@ describe('multi_report_alerts', () => {
       sent_by: '+256 41 9867538',
       home_phone: '+256 41 9867539',
       reported_date: new Date().getTime() - 100,
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     const doc2 = {
@@ -233,11 +233,11 @@ describe('multi_report_alerts', () => {
       home_phone: '+256 41 9867531',
       magic: true,
       reported_date: new Date().getTime() + 100,
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -270,7 +270,7 @@ describe('multi_report_alerts', () => {
 
   it('should not count reports that are outside of the time window', () => {
     const settings = {
-      transitions: { multi_report_alerts: true },
+      transitions: {multi_report_alerts: true},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return true }',
@@ -280,7 +280,7 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { } }
+      forms: {FORM: {}}
     };
 
     const doc = {
@@ -289,7 +289,7 @@ describe('multi_report_alerts', () => {
       form: 'FORM',
       from: 'phone',
       reported_date: new Date().getTime() - 25 * 60 * 60 * 1000,
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     const doc2 = {
@@ -298,11 +298,11 @@ describe('multi_report_alerts', () => {
       form: 'FORM',
       from: 'phone',
       reported_date: new Date().getTime() + 100,
-      contact: { _id: 'person' }
+      contact: {_id: 'person'}
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -327,7 +327,7 @@ describe('multi_report_alerts', () => {
 
   it('non public_forms from unknown senders should not be counted', () => {
     const settings = {
-      transitions: { multi_report_alerts: true, update_clinics: true },
+      transitions: {multi_report_alerts: true, update_clinics: true},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return true }',
@@ -337,8 +337,8 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { } },
-      update_clinics: [ {
+      forms: {FORM: {}},
+      update_clinics: [{
         form: 'FORM',
         messages: [
           {
@@ -354,13 +354,13 @@ describe('multi_report_alerts', () => {
       _id: 'chw',
       phone: '+251 11 551 1222',
       type: 'person',
-      parent: { _id: 'district' },
+      parent: {_id: 'district'},
       reported_date: new Date().getTime() - 10000
     }, {
       _id: 'chw2',
       phone: '+251 11 551 2133',
       type: 'person',
-      parent: { _id: 'district' },
+      parent: {_id: 'district'},
       reported_date: new Date().getTime() - 9000
     }];
 
@@ -397,7 +397,7 @@ describe('multi_report_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDoc(doc_unknown))
       .then(() => sentinelUtils.waitForSentinel(doc_unknown._id))
@@ -453,7 +453,7 @@ describe('multi_report_alerts', () => {
 
   it('non public_forms from unknown senders should not be counted even when update_clinics is not defined', () => {
     const settings = {
-      transitions: { multi_report_alerts: true, update_clinics: true },
+      transitions: {multi_report_alerts: true, update_clinics: true},
       multi_report_alerts: [{
         name: 'test',
         is_report_counted: 'function(r, l) { return true }',
@@ -463,20 +463,20 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM', 'FORM2']
       }],
-      forms: { FORM: { }, FORM2: {} }
+      forms: {FORM: {}, FORM2: {}}
     };
 
     const contacts = [{
       _id: 'chw',
       phone: '+251 11 551 1222',
       type: 'person',
-      parent: { _id: 'district' },
+      parent: {_id: 'district'},
       reported_date: new Date().getTime() - 10000
     }, {
       _id: 'chw2',
       phone: '+251 11 551 2133',
       type: 'person',
-      parent: { _id: 'district' },
+      parent: {_id: 'district'},
       reported_date: new Date().getTime() - 9000
     }];
 
@@ -521,7 +521,7 @@ describe('multi_report_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, {ignoreReload: 'sentinel'})
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDoc(doc_unknown))
       .then(() => sentinelUtils.waitForSentinel(doc_unknown._id))

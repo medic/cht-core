@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { expect } = require('chai');
+const {expect} = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const messagesUtils = require('@utils/messages');
@@ -8,8 +8,8 @@ const userFactory = require('@factories/cht/users/users');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { BASE_URL } = require('@constants');
-const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
+const {BASE_URL} = require('@constants');
+const {cookieLogin} = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const CONTACT_NAME = 'Bob_chw';
@@ -42,18 +42,18 @@ const submitAddChwForm = async ({
 const district = utils.deepFreeze(
   placeFactory
     .place()
-    .build({ type: 'district_hospital' })
+    .build({type: 'district_hospital'})
 );
 
 const settings = utils.deepFreeze({
-  transitions: { create_user_for_contacts: true },
-  token_login: { enabled: true },
+  transitions: {create_user_for_contacts: true},
+  token_login: {enabled: true},
   app_url: BASE_URL
 });
 
 const settingsNoTransitions = utils.deepFreeze({
-  transitions: { create_user_for_contacts: false },
-  token_login: { enabled: true },
+  transitions: {create_user_for_contacts: false},
+  token_login: {enabled: true},
   app_url: BASE_URL
 });
 
@@ -83,7 +83,7 @@ describe('Create user when adding contact', () => {
   const verifyUserCreation = async () => {
     const chwContactId = await contactsPage.getCurrentContactId();
     await sentinelUtils.waitForSentinel();
-    const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
+    const {transitions} = await sentinelUtils.getInfoDoc(chwContactId);
 
     // Transition successful
     expect(transitions.create_user_for_contacts.ok).to.be.true;
@@ -91,7 +91,7 @@ describe('Create user when adding contact', () => {
     expect(chwContact.user_for_contact).to.be.empty;
 
     // New user created
-    const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: chwContactId });
+    const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({contactId: chwContactId});
     expect(additionalUsers).to.be.empty;
     newUsers.push(newUserSettings.name);
     const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
@@ -107,7 +107,7 @@ describe('Create user when adding contact', () => {
   const verifyUserNotCreated = async (expectedTransitionInfo) => {
     await sentinelUtils.waitForSentinel();
     const chwContactId = await contactsPage.getCurrentContactId();
-    const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
+    const {transitions} = await sentinelUtils.getInfoDoc(chwContactId);
     if (expectedTransitionInfo) {
       expect(transitions.create_user_for_contacts).to.deep.include(expectedTransitionInfo);
     } else {
@@ -115,7 +115,7 @@ describe('Create user when adding contact', () => {
     }
     const chwContact = await utils.getDoc(chwContactId);
     expect(chwContact.user_for_contact.create).to.equal('true');
-    const userSettings = await utils.getUserSettings({ contactId: chwContactId });
+    const userSettings = await utils.getUserSettings({contactId: chwContactId});
     expect(userSettings).to.be.empty;
   };
 
@@ -124,7 +124,7 @@ describe('Create user when adding contact', () => {
   beforeEach(async () => await utils.saveDocs([district]));
 
   afterEach(async () => {
-    await utils.deleteUsers(newUsers.map(username => ({ username })));
+    await utils.deleteUsers(newUsers.map(username => ({username})));
     newUsers.length = 0;
     await utils.revertDb([/^form:/], true);
     await sentinelUtils.waitForSentinel();
@@ -136,13 +136,13 @@ describe('Create user when adding contact', () => {
     await utils.createUsers([offlineUser]);
     newUsers.push(offlineUser.username);
 
-    await utils.updateSettings(settings, 'sentinel');
+    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await browser.throttle('offline');
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
+    await contactsPage.addPerson({name: CONTACT_NAME, phone: '+40755696969'});
 
     await browser.throttle('online');
     await commonPage.sync();
@@ -151,17 +151,17 @@ describe('Create user when adding contact', () => {
   });
 
   it('creates a new user while online', async () => {
-    await utils.updateSettings(settings, 'sentinel');
+    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
+    await contactsPage.addPerson({name: CONTACT_NAME, phone: '+40755696969'});
 
     await verifyUserCreation();
   });
 
   it('Creates a new user when adding a person while adding a place', async () => {
-    await utils.updateSettings(settings, 'sentinel');
+    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
@@ -181,75 +181,75 @@ describe('Create user when adding contact', () => {
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
+    await contactsPage.addPerson({name: CONTACT_NAME, phone: '+40755696969'});
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
     await verifyUserNotCreated();
   });
 
   it('creates a new user when contact is added from app form', async () => {
-    await utils.updateSettings(settings, 'sentinel');
+    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
     await commonPage.openFastActionReport(addChwAppForm.internalId);
-    await submitAddChwForm({ name: CONTACT_NAME });
+    await submitAddChwForm({name: CONTACT_NAME});
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
     await verifyUserCreation();
   });
 
   it('Does not create a new user when the transition fails', async () => {
-    await utils.updateSettings(settings, 'sentinel');
+    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
     await commonPage.openFastActionReport(addChwAppForm.internalId);
     // Add contact with invalid phone number
-    await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
+    await submitAddChwForm({name: CONTACT_NAME, phone: '+40755'});
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
-    await verifyUserNotCreated({ ok: false });
+    await verifyUserNotCreated({ok: false});
   });
 
   it('Does not create a new user when editing contact', async () => {
-    await utils.updateSettings(settings, 'sentinel');
+    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await commonPage.openFastActionReport(addChwAppForm.internalId);
     // Add contact with invalid phone number
-    await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
+    await submitAddChwForm({name: CONTACT_NAME, phone: '+40755'});
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
-    await verifyUserNotCreated({ ok: false });
+    await verifyUserNotCreated({ok: false});
 
     // Edit contact to have valid phone number
-    await contactsPage.editPerson(CONTACT_NAME, { phone: '+40755696969', dob: '2000-01-01' });
+    await contactsPage.editPerson(CONTACT_NAME, {phone: '+40755696969', dob: '2000-01-01'});
 
     // User still not created
     const chwContactId = await contactsPage.getCurrentContactId();
     const finalChwContact = await utils.getDoc(chwContactId);
     expect(finalChwContact.phone).to.equal('+40755696969');
-    await verifyUserNotCreated({ ok: false });
+    await verifyUserNotCreated({ok: false});
   });
 
   it('creates a new user when Sentinel recovers from outage', async () => {
-    await utils.updateSettings(settings, 'sentinel');
+    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await utils.stopSentinel();
 
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' }, false);
-    await contactsPage.editPerson(CONTACT_NAME, { name: 'Edit 1' });
-    await contactsPage.editPerson('Edit 1', { name: 'Edit 2' });
+    await contactsPage.addPerson({name: CONTACT_NAME, phone: '+40755696969'}, false);
+    await contactsPage.editPerson(CONTACT_NAME, {name: 'Edit 1'});
+    await contactsPage.editPerson('Edit 1', {name: 'Edit 2'});
 
     // Verify user not created
     const chwContactId = await contactsPage.getCurrentContactId();
-    const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
+    const {transitions} = await sentinelUtils.getInfoDoc(chwContactId);
     expect(transitions).to.not.exist;
     const chwContact = await utils.getDoc(chwContactId);
     expect(chwContact.user_for_contact.create).to.equal('true');
-    const userSettings = await utils.getUserSettings({ contactId: chwContactId });
+    const userSettings = await utils.getUserSettings({contactId: chwContactId});
     expect(userSettings).to.be.empty;
 
     await utils.startSentinel();
