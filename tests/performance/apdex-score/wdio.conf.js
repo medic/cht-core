@@ -12,7 +12,7 @@ exports.config = {
   //
 
   services: [
-    ['appium', { command: 'appium', logPath: './logs/' }]
+    ['appium', { command: 'appium', logPath: './tests/logs/' }]
   ],
 
   // ==================
