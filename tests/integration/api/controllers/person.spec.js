@@ -112,7 +112,7 @@ describe('Person API', () => {
 
   describe('GET /api/v1/person', async () => {
     const getPage = Person.v1.getPage(dataContext);
-    const limit = 100;
+    const limit = 4;
     const cursor = null;
     const personType = 'person';
     const invalidContactType = 'invalidPerson';
@@ -130,31 +130,42 @@ describe('Person API', () => {
         ...onlineUserPlaceHierarchy
       }
     };
+    const expectedPeople = [
+      contact0,
+      contact1,
+      contact2,
+      patient,
+      e2eTestUser,
+      {
+        type: personType,
+        ...userNoPerms.contact,
+        ...onlineUserPlaceHierarchy
+      },
+      {
+        type: personType,
+        ...offlineUser.contact,
+        ...offlineUserPlaceHierarchy
+      }
+    ];
 
     it('returns a page of people for no limit and cursor passed', async () => {
-      const expectedPeople = [
-        contact0,
-        contact1,
-        contact2,
-        patient,
-        e2eTestUser,
-        {
-          type: personType,
-          ...userNoPerms.contact,
-          ...onlineUserPlaceHierarchy
-        },
-        {
-          type: personType,
-          ...offlineUser.contact,
-          ...offlineUserPlaceHierarchy
-        }
-      ];
       const responsePage = await getPage(Qualifier.byContactType(personType));
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
       expect(responsePeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
       expect(responseCursor).to.be.equal(null);
+    });
+
+    it('returns a page of people when limit and cursor is passed and cursor can be reused', async () => {
+      const firstPage = await getPage(Qualifier.byContactType(personType), cursor, limit);
+      const secondPage = await getPage(Qualifier.byContactType(personType), firstPage.cursor, limit);
+
+      const allPeople = [...firstPage.data, ...secondPage.data];
+
+      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
+      expect(firstPage.cursor).to.be.equal('4');
+      expect(secondPage.cursor).to.be.equal(null);
     });
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {
