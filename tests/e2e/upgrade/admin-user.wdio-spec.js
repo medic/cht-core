@@ -1,16 +1,15 @@
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
 
 describe('admin users', () => {
   it('should allow to update the admin password and login successfully', async () => {
-    const adminUser = {
-      username: 'admin2',
-      password: 'medic.123',
-      roles: [ 'admin' ],
+    const adminUser = userFactory.build({
+      roles: ['admin'],
       contact: { name: 'Philip' },
       place: { name: 'place', type: 'district_hospital' },
-    };
-    await utils.createUsers([ adminUser ]);
+    });
+    await utils.createUsers([adminUser]);
 
     const membership = await utils.request({ path: '/_membership' });
     const nodes = membership.all_nodes;
@@ -27,5 +26,7 @@ describe('admin users', () => {
       password: adminUser.password,
       adminApp: true
     });
+
+    await utils.deleteUsers([adminUser]);
   });
 });

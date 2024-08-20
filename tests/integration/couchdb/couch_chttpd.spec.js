@@ -4,7 +4,7 @@ const constants = require('@constants');
 const utils = require('@utils');
 const { expect } = require('chai');
 
-const runDockerCommand = (command, params, env=process.env) => {
+const runDockerCommand = (command, params, env = process.env) => {
   return new Promise((resolve, reject) => {
     const cmd = spawn(command, params, { cwd: path.join(__dirname, 'couch_httpd_script'), env });
     const output = [];
@@ -21,15 +21,15 @@ const startContainer = async (useAuthentication) => {
   if (useAuthentication) {
     env.COUCH_AUTH = `${constants.USERNAME}:${constants.PASSWORD}`;
   }
-  await runDockerCommand('docker-compose', ['up', '--build', '--force-recreate'], env);
+  await runDockerCommand('docker', ['compose', 'up', '--build', '--force-recreate'], env);
 };
 
 const stopContainer = async () => {
-  await runDockerCommand('docker-compose', ['down', '--remove-orphans']);
+  await runDockerCommand('docker', ['compose', 'down', '--remove-orphans']);
 };
 
 const getLogs = async () => {
-  const containerName = (await runDockerCommand('docker-compose', ['ps', '-q', '-a']))[0];
+  const containerName = (await runDockerCommand('docker', ['compose', 'ps', '-q', '-a']))[0];
   const logs = await runDockerCommand('docker', ['logs', containerName]);
   try {
     return logs?.filter(log => log).map(log => JSON.parse(log));

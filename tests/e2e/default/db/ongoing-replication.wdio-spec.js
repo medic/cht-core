@@ -1,5 +1,4 @@
 const _ = require('lodash');
-
 const utils = require('@utils');
 const chtDbUtils = require('@utils/cht-db');
 const sentinelUtils = require('@utils/sentinel');
@@ -9,19 +8,17 @@ const dataFactory = require('@factories/cht/generate');
 const path = require('path');
 const chtConfUtils = require('@utils/cht-conf');
 
-const userAllowedDocs = dataFactory.createHierarchy({ name: 'base', user: true, nbrClinics: 2 });
-const userDeniedDocs = dataFactory.createHierarchy({ name: 'other', nbrClinics: 2 });
-
-let additionalAllowed;
-let additionalDenied;
-
-const saveData = async (hierarchy) => {
-  await utils.saveDocs(hierarchy.clinics);
-  await utils.saveDocs(hierarchy.persons);
-  await utils.saveDocs(hierarchy.reports);
-};
-
 describe('ongoing replication', function() {
+  const userAllowedDocs = dataFactory.createHierarchy({ name: 'base', user: true, nbrClinics: 2 });
+  const userDeniedDocs = dataFactory.createHierarchy({ name: 'other', nbrClinics: 2 });
+
+  let additionalAllowed;
+  let additionalDenied;
+
+  const saveData = async (hierarchy) => {
+    await utils.saveDocs([...hierarchy.clinics, ...hierarchy.persons, ...hierarchy.reports]);
+  };
+
   this.timeout(4 * 60 * 1000); // Sometimes the tests take longer to complete than the original 2 minutes timeout.
 
   before(async () => {
@@ -36,6 +33,8 @@ describe('ongoing replication', function() {
     await utils.stopSentinel();
     await sentinelUtils.skipToSeq();
     await utils.startSentinel();
+    await utils.deleteUsers([userAllowedDocs.user]);
+    await utils.revertDb([/^form:/], true);
   });
 
   afterEach(async () => {
@@ -109,14 +108,14 @@ describe('ongoing replication', function() {
   });
 
   it('should download new forms and update forms', async () => {
-    const formId = 'form:dummy';
-    const waitForForms = await utils.formDocProcessing({ _id: formId });
+    const FORM_ID = 'form:dummy';
+    const waitForForms = await utils.formDocProcessing({ _id: FORM_ID });
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
     await waitForForms.promise();
 
     await commonPage.sync();
-    const [form] = await chtDbUtils.getDocs([formId]);
+    const [form] = await chtDbUtils.getDocs([FORM_ID]);
     expect(form._attachments).to.have.keys('xml', 'form.html', 'model.xml');
 
     form.updated = true;
@@ -124,7 +123,7 @@ describe('ongoing replication', function() {
 
     await commonPage.sync();
 
-    const [updatedForm] = await chtDbUtils.getDocs([formId]);
+    const [updatedForm] = await chtDbUtils.getDocs([FORM_ID]);
     expect(updatedForm.updated).to.equal(form.updated);
   });
 

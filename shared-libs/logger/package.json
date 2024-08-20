@@ -10,8 +10,5 @@
     "test": "mocha ./test"
   },
   "author": "",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "winston": "^3.13.0"
-  }
+  "license": "Apache-2.0"
 }

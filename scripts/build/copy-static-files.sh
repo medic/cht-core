@@ -4,7 +4,7 @@ set -e
 
 echo "copy-static-files: copying"
 
-cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js
+cp node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js
 cp -r api/src/public/* api/build/static/
 cp api/src/resources/logo/cht-logo-light.png api/build/static/webapp/img/
 cp -r webapp/src/audio webapp/src/fonts webapp/src/img api/build/static/webapp/

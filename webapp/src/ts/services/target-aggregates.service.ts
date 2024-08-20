@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as moment from 'moment';
 import { isString as _isString } from 'lodash-es';
+import { Person } from '@medic/cht-datasource';
 
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { DbService } from '@mm-services/db.service';
@@ -13,6 +14,8 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { Target, TargetValue } from '@mm-services/rules-engine.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 @Injectable({
   providedIn: 'root'
@@ -39,20 +42,39 @@ export class TargetAggregatesService {
    * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
    * ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
    * ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
+   *
+   * @param settings - The application settings containing uhcMonthStartDate
+   * @param reportingPeriod - Optional. ReportingPeriod enum value (CURRENT or PREVIOUS)
+   * @returns A string representing the interval tag in YYYY-MM format
+   *
+   * getPrevious fetches the interval tag for the current calendaristic month
+   * getCurrent fetches the interval tag for the previous calendaristic month
    */
-  private getCurrentIntervalTag(settings) {
+
+  private getIntervalTag(settings, reportingPeriod?: ReportingPeriod) {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
-    const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    const targetInterval = this.isPreviousPeriod(reportingPeriod)
+      ? this.calendarIntervalService.getPrevious(uhcMonthStartDate)
+      : this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
     return moment(targetInterval.end).format('Y-MM');
+  }
+
+  isPreviousPeriod(reportingPeriod) {
+    return reportingPeriod === ReportingPeriod.PREVIOUS;
+  }
+
+  isCurrentPeriod(reportingPeriod) {
+    return reportingPeriod === ReportingPeriod.CURRENT;
   }
 
   /**
    * Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
    */
-  private fetchLatestTargetDocs(settings) {
-    const tag = this.getCurrentIntervalTag(settings);
+  private fetchLatestTargetDocs(settings, reportingPeriod?: ReportingPeriod) {
+    const tag = this.getIntervalTag(settings, reportingPeriod);
+
     const opts = {
       start_key: `target~${tag}~`,
       end_key: `target~${tag}~\ufff0`,
@@ -72,7 +94,7 @@ export class TargetAggregatesService {
   }
 
   private fetchLatestTargetDoc(settings, contactUuid) {
-    const tag = this.getCurrentIntervalTag(settings);
+    const tag = this.getIntervalTag(settings);
     const opts = {
       start_key: `target~${tag}~${contactUuid}~`,
       end_key: `target~${tag}~${contactUuid}~\ufff0`,
@@ -229,27 +251,32 @@ export class TargetAggregatesService {
   }
 
   private async getUserFacilityIds(): Promise<string[] | undefined> {
-    const { facility_id }:any = await this.userSettingsService.get();
-    if (!facility_id?.length) {
+    const userFacilities = await this.userSettingsService.getUserFacilities();
+    if (!userFacilities?.length) {
       return;
     }
-    return Array.isArray(facility_id) ? facility_id : [ facility_id ];
+    return userFacilities.map(facility => facility._id);
   }
 
-  private async getHomePlace() {
+  private async getHomePlace(facilityId?) {
+    if (facilityId) {
+      const places = await this.getDataRecordsService.get([ facilityId ]);
+      return places?.[0];
+    }
+
     const facilityIds = await this.getUserFacilityIds();
     if (!facilityIds?.length) {
       return;
     }
     const places = await this.getDataRecordsService.get(facilityIds);
-    return places?.length ? places[0] : undefined;
+    return places?.[0];
   }
 
-  private getSupervisedContacts() {
+  private getSupervisedContacts(facilityId?) {
     const alphabeticalSort = (a, b) => String(a.name).localeCompare(String(b.name));
 
     return this
-      .getHomePlace()
+      .getHomePlace(facilityId)
       .then(homePlaceSummary => {
         if (!homePlaceSummary) {
           const message = 'Your user does not have an associated contact, or does not have access to the ' +
@@ -285,15 +312,27 @@ export class TargetAggregatesService {
     const facilityIds = await this.getUserFacilityIds();
 
     // When no facilities assigned, this returns true to display an error indicating to assign facilities to the user
-    // When more than one facility, this returns false to display an error about the module being disabled.
-    return !facilityIds || facilityIds.length <= 1;
+    return !facilityIds || facilityIds.length > 0;
   }
 
-  getAggregates() {
-    return this.ngZone.runOutsideAngular(() => this._getAggregates());
+  getReportingMonth(reportingPeriod) {
+    return this.settingsService
+      .get()
+      .then(settings => {
+        const tag = this.getIntervalTag(settings, reportingPeriod);
+        return moment(tag, 'YYYY-MM').format('MMMM');
+      })
+      .catch(error => {
+        console.error('Error getting reporting month:', error);
+        return this.translateService.instant('targets.last_month.subtitle');
+      });
   }
 
-  private _getAggregates() {
+  getAggregates(facilityId?, reportingPeriod?: ReportingPeriod) {
+    return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId, reportingPeriod));
+  }
+
+  private _getAggregates(facilityId?, reportingPeriod?: ReportingPeriod): Promise<AggregateTarget[]> {
     return this.settingsService
       .get()
       .then(settings => {
@@ -305,8 +344,8 @@ export class TargetAggregatesService {
 
         return Promise
           .all([
-            this.getSupervisedContacts(),
-            this.fetchLatestTargetDocs(settings)
+            this.getSupervisedContacts(facilityId),
+            this.fetchLatestTargetDocs(settings, reportingPeriod)
           ])
           .then(([ contacts, latestTargetDocs ]) => this.aggregateTargets(latestTargetDocs, contacts, targetsConfig));
       });
@@ -344,4 +383,33 @@ export class TargetAggregatesService {
       });
   }
 
+}
+
+export interface AggregateTarget extends Target {
+  aggregate: boolean;
+  hasGoal: boolean;
+  isPercent: boolean;
+  progressBar: boolean;
+  facility?: string;
+  reportingPeriod?: ReportingPeriod;
+  reportingMonth?: string;
+  filtersToDisplay?: (string | ReportingPeriod)[];
+  heading: string;
+  values: ContactTargetValue[];
+  aggregateValue: AggregateTargetValue;
+  dhis?: {
+    dataElement?: string;
+    categoryOptionCombo?: string;
+    attributeOptionCombo?: string;
+  };
+}
+
+export interface AggregateTargetValue extends TargetValue {
+  hasGoal: boolean;
+  summary: string;
+}
+
+export interface ContactTargetValue {
+  value: TargetValue;
+  contact: Person.v1.Person;
 }
