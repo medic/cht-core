@@ -214,12 +214,13 @@ mm-panel-header {
 
 #snackbar {
   position: fixed;
-  bottom: 0;
+  bottom: 170px;
   cursor: default;
   z-index: 10000;
   will-change: transform;
-  transform: translate3d(0, 50px, 0) rotateZ(0deg);
-  transition: 0.25s linear;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
   left: 0px;
   right: 0px;
   text-align: center;
@@ -260,7 +261,19 @@ mm-panel-header {
     }
   }
   &.active {
-    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .old-nav & {
+    bottom: 0;
+    will-change: transform;
+    transform: translate3d(0, 50px, 0) rotateZ(0deg);
+    transition: 0.25s linear;
+
+    &.active {
+      transform: translate3d(0, 0, 0);
+    }
   }
 }
 
