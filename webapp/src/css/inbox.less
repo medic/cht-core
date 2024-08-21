@@ -350,6 +350,7 @@ body {
     display: none;
     float: left;
     text-align: center;
+    padding-top: 3px;
     padding-right: 50px;
     a {
       display: inline-block;
@@ -395,36 +396,21 @@ body {
     width: 100%;
   }
 
-  .basic-filters,
-  .navigation {
-    padding-top: 3px;
-  }
-
-  .basic-filters {
-    position: absolute;
-    top: 2px;
-    left: 0;
-    right: 0;
-    display: flex;
-    .right-side-filter {
-      margin-left: auto;
-      .open-filter-label {
-        color: @filter-text-color;
-      }
-      .btn.open-filter {
-        background-color: transparent;
-        margin: 0;
-        &:focus,
-        &:active {
-          outline: none;
-          border: none;
-          box-shadow: none;
-        }
-        .fa {
-          font-size: @font-extra-large;
-          color: @filter-icon-color;
-          padding: 2px 2px 0 0;
-        }
+  .right-side-filter {
+    margin-left: auto;
+    .open-filter-label {
+      color: @filter-text-color;
+    }
+    .btn.open-filter {
+      background-color: transparent;
+      margin: 0;
+      outline: none;
+      border: none;
+      box-shadow: none;
+      .fa {
+        font-size: @font-extra-large;
+        color: @filter-icon-color;
+        padding: 2px 2px 0 0;
       }
     }
   }
@@ -485,6 +471,14 @@ body {
     font-weight: bold;
     margin: 0;
     display: none;
+  }
+}
+
+.analytics .filters {
+  display: flex;
+  width: 100vw;
+  .analytics-module {
+    margin-left: 8px;
   }
 }
 
@@ -1338,9 +1332,6 @@ mm-search-bar {
     .filter {
       margin: 0;
     }
-    .mm-button {
-      padding-left: 0;
-    }
     .mm-button-icon {
       padding: 5px 0 0 5px;
     }
@@ -1376,9 +1367,6 @@ mm-search-bar {
       width: 0;
       visibility: hidden;
     }
-    .basic-filters {
-      left: 2px;
-    }
     mm-freetext-filter {
       width: auto;
 
@@ -1398,6 +1386,19 @@ mm-search-bar {
       right: 0;
     }
   }
+
+  .analytics:not(.show-content) .filters {
+    padding-top: 2px;
+  }
+
+  .analytics.show-content .filters {
+    .navigation {
+      position: relative;
+      display: block;
+      width: 100vw;
+    }
+  }
+
   .header {
     .dropdown-menu {
       margin: 0;
@@ -1494,6 +1495,7 @@ mm-search-bar {
 
   .app-root.show-content {
     .header,
+    mm-analytics-filters,
     mm-multiselect-bar,
     mm-search-bar {
       display: none;
@@ -1590,21 +1592,6 @@ mm-search-bar {
           margin: 0 10px;
         }
       }
-    }
-  }
-
-  .basic-filters {
-    // Support for old design: Overrides Bootstrap element.style
-    .mobile-freetext-filter .dropdown-menu,
-    .mm-status-filter .dropdown-menu {
-      top: 0 !important;
-      left: -100px !important;
-    }
-
-    // Support for old design: Overrides Bootstrap element.style
-    .sort-dropdown .dropdown-menu {
-      top: 0 !important;
-      left: -230px !important;
     }
   }
 }
