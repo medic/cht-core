@@ -28,10 +28,6 @@
 body {
   overflow-y: hidden;
   .app-root {
-    .header .tabs .selected {
-      background-color: @tab-selected-color;
-    }
-
     &.messages .filters {
       background-color: @messages-color;
     }
@@ -555,7 +551,6 @@ body {
     position: absolute;
     width: 100%;
     max-width: @content-width;
-    z-index: 2;
   }
 
   .inbox {
@@ -1348,23 +1343,60 @@ mm-search-bar {
 }
 
 @media (max-width: @media-mobile) {
+  .fast-action-trigger:not(.embed-fast-action) {
+    position: fixed;
+    bottom: 100px;
+    right: 18px;
+    top: auto;
+  }
   .header {
     display: block;
-    background-color: @bottom-navbar-color;
     text-align: center;
+    width: 100vw;
+
+    .tabs {
+      display: flex;
+      flex-direction: row;
+      a {
+        flex: 1;
+      }
+    }
+    .logo {
+      display: none;
+    }
+  }
+  .header:not(.old-nav .header) {
+    background-color: @bottom-navbar-color;
     padding-top: 5px;
-    z-index: 9999;
+    z-index: 2;
     position: fixed;
     bottom: 0;
-    width: 100vw;
+
     .inner {
       height: @bottom-navbar-height;
     }
+
     .tabs {
+      .button-label {
+        top: 0;
+        font-size: 11px;
+      }
       a {
-        flex-grow: 1;
-        min-width: 60px;
-        max-width: 70px;
+        min-width: 0;
+        &:first-child {
+          padding-left: 16px;
+        }
+        &:last-child {
+          padding-right: 16px;
+        }
+        .mm-icon {
+          padding: 10px 0;
+        }
+        &.selected
+        .mm-icon {
+          border-radius: 40% / 55%;
+          background-color: @tab-selected-color;
+        }
       }
     }
   }
@@ -1373,45 +1405,39 @@ mm-search-bar {
       background-color: @top-header-color;
       z-index: 3;
       position: relative;
+
       .inner {
         height: 60px;
       }
+
       .dropdown-menu {
         margin: 30px 0 0 0;
         top: 8px;
         right: 5px;
       }
       .tabs {
-        display: flex;
-        flex-direction: row;
         a {
           min-width: 70px;
           max-width: 100px;
         }
       }
-      .logo {
-        display: none;
-      }
       .extras a {
         padding-top: 2px;
         margin-top: 2px;
-
         .fa-bars {
           font-size: @font-extra-extra-large;
         }
       }
     }
+
     .content {
       .page {
         top: 115px;
       }
     }
-  }
-  .fast-action-trigger:not(.embed-fast-action) {
-    position: fixed;
-    bottom: 17px;
-    right: 18px;
-    top: auto;
+    .fast-action-trigger:not(.embed-fast-action) {
+      bottom: 17px;
+    }
   }
 
   .more-options-menu-container {
@@ -1526,7 +1552,7 @@ mm-search-bar {
   }
   .content {
     .page {
-      top: 115px;
+      top:  @filters-bar-mobile-height;
     }
     .meta {
       padding-bottom: 0;
