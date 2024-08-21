@@ -249,9 +249,6 @@ describe('person', () => {
           yield person;
         }
       };
-      const emptyMockGenerator = function* () {
-        // empty
-      };
 
       let personGetPage: sinon.SinonStub;
       let getPagedGenerator: sinon.SinonStub;

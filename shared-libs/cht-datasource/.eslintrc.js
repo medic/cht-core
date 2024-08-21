@@ -1,3 +1,13 @@
+const JS_DOC_REQUIRED_CONTEXTS = [
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'VariableDeclaration',
+  'TSInterfaceDeclaration',
+  'TSTypeAliasDeclaration',
+  'TSEnumDeclaration',
+  'TSMethodSignature'
+];
+
 module.exports = {
   overrides: [
     {
@@ -19,11 +29,6 @@ module.exports = {
       settings: {
         jsdoc: {
           contexts: [
-            'VariableDeclaration',
-            'TSInterfaceDeclaration',
-            'TSTypeAliasDeclaration',
-            'TSEnumDeclaration',
-            'TSMethodSignature'
           ]
         }
       },
@@ -42,9 +47,22 @@ module.exports = {
             FunctionExpression: true,
             MethodDefinition: true,
           },
-          publicOnly: true,
+          contexts: JS_DOC_REQUIRED_CONTEXTS,
+          publicOnly: true
         }],
-        ['jsdoc/check-tag-names']: ['error', { definedTags: ['typeParam'] }],
+        ['jsdoc/require-param']: ['error', {
+          contexts: JS_DOC_REQUIRED_CONTEXTS,
+          exemptedBy: ['private', 'internal']
+        }],
+        ['jsdoc/require-returns']: ['error', {
+          contexts: JS_DOC_REQUIRED_CONTEXTS,
+          exemptedBy: ['private', 'internal']
+        }],
+        ['jsdoc/require-yields']: ['error', {
+          contexts: JS_DOC_REQUIRED_CONTEXTS,
+          exemptedBy: ['private', 'internal']
+        }],
+        ['jsdoc/check-tag-names']: ['error', { definedTags: ['typeParam']}],
       }
     }
   ]
