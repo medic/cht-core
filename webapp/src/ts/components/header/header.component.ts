@@ -29,6 +29,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   replicationStatus;
   currentTab;
   hasOldNav;
+  selectMode = false;
+  hideHeader;
   unreadCount = {};
   permittedTabs: HeaderTab[] = [];
 
@@ -62,16 +64,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getUnreadCount),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       replicationStatus,
       currentTab,
       showPrivacyPolicy,
-      unreadCount
+      unreadCount,
+      selectMode,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.unreadCount = unreadCount;
+      this.selectMode = selectMode;
+      this.displayHeader();
     });
     this.subscription.add(subscription);
   }
@@ -87,6 +93,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private async enableOldNav() {
     this.hasOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
+  }
+
+  private displayHeader() {
+    this.hideHeader = !this.hasOldNav && this.selectMode;
   }
 
   openFeedback() {
