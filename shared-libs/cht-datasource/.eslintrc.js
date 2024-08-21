@@ -52,15 +52,15 @@ module.exports = {
         }],
         ['jsdoc/require-param']: ['error', {
           contexts: JS_DOC_REQUIRED_CONTEXTS,
-          exemptedBy: ['private', 'internal']
+          exemptedBy: ['inheritdoc', 'private', 'internal']
         }],
         ['jsdoc/require-returns']: ['error', {
           contexts: JS_DOC_REQUIRED_CONTEXTS,
-          exemptedBy: ['private', 'internal']
+          exemptedBy: ['inheritdoc', 'private', 'internal']
         }],
         ['jsdoc/require-yields']: ['error', {
           contexts: JS_DOC_REQUIRED_CONTEXTS,
-          exemptedBy: ['private', 'internal']
+          exemptedBy: ['inheritdoc', 'private', 'internal']
         }],
         ['jsdoc/check-tag-names']: ['error', { definedTags: ['typeParam']}],
       }
