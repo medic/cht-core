@@ -214,13 +214,12 @@ mm-panel-header {
 
 #snackbar {
   position: fixed;
-  bottom: 170px;
+  bottom: 0;
   cursor: default;
   z-index: 10000;
   will-change: transform;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: translate3d(0, 100%, 0);
+  transition: 0.25s linear;
   left: 0px;
   right: 0px;
   text-align: center;
@@ -261,23 +260,25 @@ mm-panel-header {
     }
   }
   &.active {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .old-nav & {
-    bottom: 0;
-    will-change: transform;
-    transform: translate3d(0, 50px, 0) rotateZ(0deg);
-    transition: 0.25s linear;
-
-    &.active {
-      transform: translate3d(0, 0, 0);
-    }
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @media (max-width: @media-mobile) {
+  .app-root:not(.old-nav) #snackbar {
+    bottom: 170px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+
+    &.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .app-root.show-content:not(.old-nav) #snackbar {
+    bottom: 75px;
+  }
   .material {
     .card:not(.compact-card) {
       border-radius: 0;
