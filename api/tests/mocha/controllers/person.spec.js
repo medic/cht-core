@@ -163,15 +163,15 @@ describe('Person Controller', () => {
       const personTypeQualifier = { contactType: personType };
       const person = { name: 'John Doe' };
       const limit = 100;
-      const skip = 0;
+      const cursor = null;
       const people = Array.from({ length: 3 }, () => ({ ...person }));
 
       beforeEach(() => {
         req = {
           query: {
             personType,
+            cursor,
             limit,
-            skip
           }
         };
         personGetPageByType = sinon.stub();
@@ -195,7 +195,7 @@ describe('Person Controller', () => {
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(people)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
@@ -230,20 +230,19 @@ describe('Person Controller', () => {
       });
 
       it('returns 400 error when argument is invalid', async () => {
-        const errorMessage = `Invalid person type: [${invalidPersonType}]`;
-        const errorPayload = { status: 400, message: errorMessage };
+        const err = new InvalidArgumentError(`Invalid contact type: [${invalidPersonType}]`);
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        personGetPageByType.throws(new InvalidArgumentError(errorMessage));
+        personGetPageByType.throws(err);
 
         await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(errorPayload, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
 
       it('rethrows error in case of other errors', async () => {
@@ -257,7 +256,7 @@ describe('Person Controller', () => {
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
-        expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, limit, skip)).to.be.true;
+        expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
