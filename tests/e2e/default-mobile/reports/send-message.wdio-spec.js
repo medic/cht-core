@@ -12,15 +12,7 @@ describe('Report - Send message action', () => {
   const healthCenter = places.get('health_center');
   const clinic = places.get('clinic');
 
-  const onlineUserContact = personFactory.build({
-    name: 'OnlineUser',
-    phone: '+25475525749',
-    parent: { _id: healthCenter._id, parent: healthCenter.parent }
-  });
-
   const chwContact = personFactory.build({
-    _id: 'chw-contact-1',
-    name: 'CHW Contact',
     phone: '+25475525759',
     parent: { _id: clinic._id, parent: clinic.parent }
   });
@@ -28,13 +20,10 @@ describe('Report - Send message action', () => {
   const onlineUser = userFactory.build({ 
     place: healthCenter._id,
     roles: ['program_officer'],
-    contact: onlineUserContact
   });
 
   const person = personFactory.build({
-    _id: 'patient1',
     phone: '+25475525741',
-    name: 'patient1',
     parent: { _id: clinic._id, parent: clinic.parent }
   });
 
@@ -44,13 +33,10 @@ describe('Report - Send message action', () => {
   });
 
   before(async () => {
-    await utils.saveDocs([...places.values(), person, chwContact]);
-    await utils.saveDocs([report]);
+    await utils.saveDocs([...places.values(), person, chwContact, report]);
     await utils.createUsers([onlineUser]);
     await loginPage.login(onlineUser);
   });
-
-  after(async () => await utils.revertSettings(true));
 
   it('should display option to send message', async () => {
     await commonElements.goToReports();
