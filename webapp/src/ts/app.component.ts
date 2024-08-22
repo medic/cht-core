@@ -94,7 +94,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   unreadCount = {};
   hasOldNav = false;
   initialisationComplete = false;
-  trainingCardFormId = false;
+  trainingCardFormId = '';
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -446,7 +446,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
-      this.currentTab = currentTab;
+      this.currentTab = currentTab || '';
 
       this.selectMode = selectMode;
     });
@@ -462,7 +462,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ]) => {
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
-      this.trainingCardFormId = trainingCardFormId;
+      this.trainingCardFormId = trainingCardFormId || '';
       this.displayTrainingCards();
     });
   }

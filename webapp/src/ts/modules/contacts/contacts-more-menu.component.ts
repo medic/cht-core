@@ -24,7 +24,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
   private hasDeletePermission = false;
   private isOnlineOnly = false;
   private loadingContent = true;
-  private snapshotData: Data | undefined;
+  private snapshotData: Data | null = null;
   private userSettings;
 
   selectedContactDoc;

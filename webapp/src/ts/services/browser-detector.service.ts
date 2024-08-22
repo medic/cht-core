@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import * as Bowser from 'bowser';
 import { Store } from '@ngrx/store';
+
 import { Selectors } from '@mm-selectors/index';
+
 const OUTDATED_BROWSER_VERSION_MIN = '74';
 const OUTDATED_BROWSER_VERSION_MAX = '90';
-
 type VersionSuffix = `` | `-${string}`;
 export type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
 
@@ -13,7 +14,7 @@ export type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${Versio
 })
 export class BrowserDetectorService {
   private _parser?: Bowser.Parser.Parser;
-  private androidAppVersion: VersionNumber | undefined;
+  private androidAppVersion: VersionNumber | null = null;
 
   public constructor(private store: Store) {
     this.store.select(Selectors.getAndroidAppVersion).subscribe(androidAppVersion => {

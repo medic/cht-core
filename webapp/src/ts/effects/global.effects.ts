@@ -66,7 +66,7 @@ export class GlobalEffects {
       .toPromise();
   }
 
-  private navigate(nextUrl: string, cancelCallback: () => void) {
+  private navigate(nextUrl: string, cancelCallback: (() => void) | null) {
     try {
       if (nextUrl) {
         return this.router.navigateByUrl(nextUrl);

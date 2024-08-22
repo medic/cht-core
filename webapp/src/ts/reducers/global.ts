@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { Data } from '@angular/router';
 
 import { Actions } from '@mm-actions/global';
 import { SidebarMenu } from '@mm-components/sidebar-menu/sidebar-menu.component';
@@ -7,25 +8,25 @@ import { EnketoStatus } from '@mm-components/enketo/enketo.component';
 import { VersionNumber } from '@mm-services/browser-detector.service';
 
 export interface GlobalState {
-  androidAppVersion: VersionNumber | undefined;
+  androidAppVersion: VersionNumber | null;
   navigation: {
-    cancelCallback: null|(() => void);
-    preventNavigation: null|boolean;
-    cancelTranslationKey: null|string;
-    recordTelemetry: null|string;
+    cancelCallback: (() => void) | null;
+    preventNavigation: null | boolean;
+    cancelTranslationKey: null | string;
+    recordTelemetry: null | string;
   };
-  currentTab: null|string;
-  snapshotData: null|Record<string, any>;
+  currentTab: null | string;
+  snapshotData: Data | null;
   enketoStatus: EnketoStatus;
   facilities: Record<string, any>[];
   filters: Record<string, any>; // Selected criteria to filter data.
   sidebarFilter: {
     isOpen?: boolean;
-    filterCount?: number;
+    filterCount?: Record<string, number>;
     defaultFilters?: Record<string, any>;
   };
   sidebarMenu: SidebarMenu;
-  forms: null|Record<string, any>[];
+  forms: null | Record<string, any>[];
   lastChangedDoc: boolean;
   loadingContent: boolean;
   processingReportVerification: boolean;
@@ -34,16 +35,16 @@ export interface GlobalState {
   privacyPolicyAccepted: boolean;
   showContent: boolean;
   showPrivacyPolicy: boolean;
-  title: null|string;
+  title: null | string;
   unreadCount: Record<string, any>;
   snackbarContent: Snackbar;
   translationsLoaded: boolean;
-  userFacilityId: null|string[];
-  trainingCardFormId: null|string;
+  userFacilityId: null | string[];
+  trainingCardFormId: null | string;
 }
 
 const initialState: GlobalState = {
-  androidAppVersion: undefined,
+  androidAppVersion: null,
   navigation: {
     cancelCallback: null,
     preventNavigation: null,
