@@ -51,9 +51,10 @@ describe('Old Navigation', () => {
     await utils.deleteUsers([offlineUser]);
   });
 
-  it('should navigate to the Messages section and open a sent message.', async () => {
+  it('should navigate to the Messages section and open a sent message', async () => {
+    const message = 'Navigations test';
     await oldNavigationPage.goToMessages();
-    await messagesPage.sendMessage('Navigations test', person.name, person.phone );
+    await messagesPage.sendMessage(message, person.name, person.phone );
     await messagesPage.openMessage(person._id);
 
     const { name, phone } = await messagesPage.getMessageHeader();
@@ -62,7 +63,7 @@ describe('Old Navigation', () => {
 
     const messages = await messagesPage.getAmountOfMessagesByPhone();
     const { content, state } = await messagesPage.getMessageContent(messages);
-    expect(content).to.equal('Navigations test');
+    expect(content).to.equal(message);
     expect(state).to.equal('pending');
   });
 
@@ -75,7 +76,7 @@ describe('Old Navigation', () => {
     expect(await genericForm.getFormTitle()).to.equal('Pregnancy danger sign follow-up');
   });
 
-  it('should navigate to the Reports section and open a the first report listed', async () => {
+  it('should navigate to the Reports section and open the first report listed', async () => {
     await oldNavigationPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.firstReport());
     await waitForPageLoaded();
@@ -87,7 +88,7 @@ describe('Old Navigation', () => {
   it('should navigate to the People section and open the created Health Center', async () => {
     await oldNavigationPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);
-    expect((await contactPage.getContactInfoName())).to.equal(healthCenter.name);
+    expect(await contactPage.getContactInfoName()).to.equal(healthCenter.name);
   });
 
   it('should navigate to the Targets section, and open a target aggregate', async () => {
@@ -99,5 +100,4 @@ describe('Old Navigation', () => {
   it('should successfully sync', async () => {
     await oldNavigationPage.sync();
   });
-
 });
