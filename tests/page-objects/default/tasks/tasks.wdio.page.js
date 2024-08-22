@@ -1,3 +1,5 @@
+const commonPage = require('../common/common.wdio.page');
+
 const taskListSelector = '#tasks-list';
 const taskFormSelector = '#task-report';
 const tasksGroupSelector = '#tasks-group .item-content';
@@ -86,6 +88,12 @@ const openTaskById = async (id, taskType) => {
   await $(taskFormSelector).waitForDisplayed();
 };
 
+const getTaskHeaderOnMobile = async () => {
+  return {
+    name: await commonPage.mobileTopBarTitle().getText(),
+  };
+};
+
 module.exports = {
   tasksList,
   getTasks,
@@ -100,4 +108,5 @@ module.exports = {
   getTasksInGroup,
   noSelectedTask,
   openTaskById,
+  getTaskHeaderOnMobile
 };

@@ -45,6 +45,12 @@ const getMessageHeader = async () => {
   };
 };
 
+const getMessageHeaderOnMobile = async () => {
+  return {
+    name: await commonPage.mobileTopBarTitle().getText(),
+  };
+};
+
 const navigateFromConversationToContact = async () => {
   await $(`${MESSAGE_HEADER} a.name`).waitForClickable();
   await $(`${MESSAGE_HEADER} a.name`).click();
@@ -71,6 +77,15 @@ const searchSelect = async (recipient, option) => {
 
 const sendMessage = async (message, recipient, entryText) => {
   await commonPage.clickFastActionFlat({ waitForList: false });
+  await (await sendMessageModal()).waitForDisplayed();
+  await searchSelect(recipient, entryText);
+  await (await messageText()).setValue(message);
+  await modalPage.submit();
+  await modalPage.checkModalHasClosed();
+};
+
+const sendMessageOnMobile = async (message, recipient, entryText) => {
+  await commonPage.clickFastActionFAB({ waitForList: false });
   await (await sendMessageModal()).waitForDisplayed();
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
@@ -138,6 +153,7 @@ module.exports = {
   getMessageHeader,
   getMessageContent,
   sendMessage,
+  sendMessageOnMobile,
   sendReplyNewRecipient,
   sendMessageToContact,
   exportMessages,
@@ -148,4 +164,5 @@ module.exports = {
   getAmountOfMessagesByPhone,
   navigateFromConversationToContact,
   getMessagesModalDetails,
+  getMessageHeaderOnMobile
 };
