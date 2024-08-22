@@ -10,15 +10,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
-const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
-
-
-const compileTargets = async (targetsFileName = 'targets-config.js') => {
-  await chtConfUtils.initializeConfigDir();
-  const targetFilePath = path.join(__dirname, `config/${targetsFileName}`);
-
-  return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
-};
+const {TARGET_MET_COLOR, TARGET_UNMET_COLOR} = analyticsPage;
 
 describe('Targets', () => {
   const places = placeFactory.generateHierarchy();
@@ -28,15 +20,22 @@ describe('Targets', () => {
   const contact = personFactory.build({
     name: 'CHW',
     phone: '+50683333333',
-    parent: { _id: healthCenter._id, parent: healthCenter.parent }
+    parent: {_id: healthCenter._id, parent: healthCenter.parent}
   });
   const owl = personFactory.build({
     name: 'Owl',
     phone: '+50683444444',
-    parent: { _id: clinic._id, parent: clinic.parent }
+    parent: {_id: clinic._id, parent: clinic.parent}
   });
 
-  const chw = userFactory.build({ place: healthCenter._id, roles: ['chw'], contact });
+  const chw = userFactory.build({place: healthCenter._id, contact: contact});
+
+  const compileTargets = async (targetsFileName = 'targets-config.js') => {
+    await chtConfUtils.initializeConfigDir();
+    const targetFilePath = path.join(__dirname, `config/${targetsFileName}`);
+
+    return chtConfUtils.compileNoolsConfig({targets: targetFilePath});
+  };
 
   before(async () => {
     await utils.saveDocs([...places.values(), owl]);
@@ -57,20 +56,20 @@ describe('Targets', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'New pregnancies', goal: '20', count: '0', countNumberColor: TARGET_UNMET_COLOR },
-      { title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR },
+      {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
+      {title: 'New pregnancies', goal: '20', count: '0', countNumberColor: TARGET_UNMET_COLOR},
+      {title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR},
+      {title: 'Active pregnancies', count: '0', countNumberColor: TARGET_MET_COLOR},
+      {title: 'Active pregnancies with 1+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR},
+      {title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)'},
+      {title: 'Active pregnancies with 4+ routine facility visits', count: '0', countNumberColor: TARGET_MET_COLOR},
+      {title: 'Active pregnancies with 8+ routine contacts', count: '0', countNumberColor: TARGET_MET_COLOR},
     ]);
   });
 
   it('should display correct message when no target found', async () => {
     const settings = await compileTargets();
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
+    await utils.updateSettings(settings, {ignoreReload: 'api', sync: true, refresh: true});
 
     await analyticsPage.goToTargets();
 
@@ -83,9 +82,9 @@ describe('Targets', () => {
 
   it('should display correct message when targets are disabled', async () => {
     const tasks = {
-      targets: { enabled: false }
+      targets: {enabled: false}
     };
-    await utils.updateSettings({ tasks }, { ignoreReload: 'api', sync: true, refresh: true });
+    await utils.updateSettings({tasks}, {ignoreReload: 'api', sync: true, refresh: true});
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
@@ -99,10 +98,10 @@ describe('Targets', () => {
 
   it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
+    await utils.updateSettings(settings, {ignoreReload: 'api', sync: true, refresh: true});
     await analyticsPage.goToTargets();
 
-    const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
+    const {errorMessage, url, username, errorStack} = await commonPage.getErrorLog();
 
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');
