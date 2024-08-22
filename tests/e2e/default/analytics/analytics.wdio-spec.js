@@ -38,8 +38,8 @@ describe('Targets', () => {
   };
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), owl ]);
-    await utils.createUsers([ chw ]);
+    await utils.saveDocs([...places.values(), owl]);
+    await utils.createUsers([chw]);
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login(chw);
@@ -112,7 +112,7 @@ describe('Targets', () => {
 
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();
     expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[ 0 ].info.message).to.include('Cannot read properties of undefined (reading \'muted\')');
+    expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'muted\')');
     await chtDbUtils.clearFeedbackDocs();
   });
 });
