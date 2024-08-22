@@ -1,6 +1,7 @@
 import { createSelector } from '@ngrx/store';
+import { GlobalState } from '@mm-reducers/global';
 
-const getGlobalState = (state) => state.global || {};
+const getGlobalState = (state): GlobalState => state.global || {};
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
@@ -11,6 +12,7 @@ const getTasksState = state => state.tasks || {};
 
 export const Selectors = {
   // global
+  getSidebarMenu: createSelector(getGlobalState, globalState => globalState.sidebarMenu),
   getProcessingReportVerification: createSelector(getGlobalState, (globalState) => {
     return globalState.processingReportVerification;
   }),

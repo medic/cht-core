@@ -1,8 +1,48 @@
 import { createReducer, on } from '@ngrx/store';
 
 import { Actions } from '@mm-actions/global';
+import { SidebarMenu } from '@mm-components/sidebar-menu/sidebar-menu.component';
+import { Snackbar } from '@mm-components/snackbar/snackbar.component';
+import { EnketoStatus } from '@mm-components/enketo/enketo.component';
 
-const initialState = {
+export interface GlobalState {
+  androidAppVersion: null|string;
+  navigation: {
+    cancelCallback: null|(() => void);
+    preventNavigation: null|boolean;
+    cancelTranslationKey: null|string;
+    recordTelemetry: null|string;
+  };
+  currentTab: null|string;
+  snapshotData: null|Record<string, any>;
+  enketoStatus: EnketoStatus;
+  facilities: Record<string, any>[];
+  filters: Record<string, any>; // Selected criteria to filter data.
+  sidebarFilter: {
+    isOpen?: boolean;
+    filterCount?: number;
+    defaultFilters?: Record<string, any>;
+  };
+  sidebarMenu: SidebarMenu;
+  forms: null|Record<string, any>[];
+  lastChangedDoc: boolean;
+  loadingContent: boolean;
+  processingReportVerification: boolean;
+  replicationStatus: Record<string, any>;
+  selectMode: boolean;
+  privacyPolicyAccepted: boolean;
+  showContent: boolean;
+  showPrivacyPolicy: boolean;
+  title: null|string;
+  unreadCount: Record<string, any>;
+  snackbarContent: Snackbar;
+  translationsLoaded: boolean;
+  userFacilityId: null|string[];
+  trainingCardFormId: null|string;
+}
+
+const initialState: GlobalState = {
+  androidAppVersion: null,
   navigation: {
     cancelCallback: null,
     preventNavigation: null,
@@ -20,6 +60,7 @@ const initialState = {
   facilities: [],
   filters: {}, // Selected criteria to filter data.
   sidebarFilter: {}, // Component state.
+  sidebarMenu: { isOpen: false },
   forms: null,
   lastChangedDoc: false,
   loadingContent: false,
@@ -31,7 +72,6 @@ const initialState = {
   showPrivacyPolicy: false,
   title: null,
   unreadCount: {},
-  version: null,
   snackbarContent: null as any,
   translationsLoaded: false,
   userFacilityId: null,
@@ -162,6 +202,9 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
     return { ...state, trainingCardFormId };
+  }),
+  on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
+    return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
   }),
 );
 

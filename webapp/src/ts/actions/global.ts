@@ -34,6 +34,9 @@ export const Actions = {
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityId: createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
   setTrainingCardFormId: createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
+  setSidebarMenu: createSingleValueAction('SET_SIDEBAR_MENU', 'sidebarMenu'),
+  closeSidebarMenu: createAction('CLOSE_SIDEBAR_MENU'),
+  openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
 };
 
 export class GlobalActions {
@@ -208,4 +211,17 @@ export class GlobalActions {
   setTrainingCardFormId(trainingCard) {
     return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
+
+  setSidebarMenu(sidebarMenu) {
+    return this.store.dispatch(Actions.setSidebarMenu(sidebarMenu));
+  }
+
+  openSidebarMenu() {
+    return this.store.dispatch(Actions.openSidebarMenu());
+  }
+
+  closeSidebarMenu() {
+    return this.store.dispatch(Actions.closeSidebarMenu());
+  }
+
 }

@@ -10,9 +10,16 @@ export class EnketoComponent {
   // string: (optional) data to include in the data-editing attribute
   @Input() editing;
   // object: object with 'saving', and 'error' properties to update form status
-  @Input() status;
+  @Input() status!: EnketoStatus;
   // function: to be called when cancelling out of the form
   @Output() onCancel: EventEmitter<any> = new EventEmitter();
   // function: to be called when submitting the form
   @Output() onSubmit: EventEmitter<any> = new EventEmitter();
+}
+
+export interface EnketoStatus {
+  form: boolean;
+  edited: boolean;
+  saving: boolean;
+  error: null|string;
 }

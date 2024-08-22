@@ -13,7 +13,7 @@ import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/naviga
 
 @Injectable()
 export class GlobalEffects {
-  private globalActions;
+  private globalActions: GlobalActions;
 
   constructor(
     private actions$: Actions,
@@ -108,4 +108,20 @@ export class GlobalEffects {
       }),
     );
   }, { dispatch: false });
+
+  openSidebarMenu$ = createEffect(
+    ():any => this.actions$.pipe(
+      ofType(GlobalActionsList.openSidebarMenu),
+      tap(() => this.globalActions.setSidebarFilter({ idOpen: true })),
+    ),
+    { dispatch: false }
+  );
+
+  closeSidebarMenu$ = createEffect(
+    ():any => this.actions$.pipe(
+      ofType(GlobalActionsList.openSidebarMenu),
+      tap(() => this.globalActions.setSidebarFilter({ idOpen: false })),
+    ),
+    { dispatch: false }
+  );
 }
