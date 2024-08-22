@@ -114,222 +114,235 @@ body {
 }
 
 .header {
-  background-color: @top-header-color;
-  text-align: center;
-  padding-top: 5px;
-  z-index: 3;
-  position: relative;
-  .button-text-inverse;
+  display: none;
+}
 
-  .inner {
-    height: 60px;
-  }
-
-  a {
+.old-nav {
+  .header {
+    display: block;
+    background-color: @top-header-color;
+    text-align: center;
+    padding-top: 5px;
+    z-index: 3;
+    position: relative;
     .button-text-inverse;
-    outline: 0;
-    padding-top: 3px;
-  }
 
-  .mm-icon {
-    margin: 0 auto;
-    font-size: 1.5rem;
-  }
-
-  .logo {
-    float: left;
-    opacity: 0.9;
-    padding: 2px 10px;
-    img {
-      height: 50px;
+    .inner {
+      height: 60px;
     }
-  }
-
-  .extras,
-  .tabs {
-    &,
-    a {
-      height: 100%;
-    }
-    a {
-      display: inline-block;
-    }
-  }
-
-  .extras {
-    float: right;
-    padding-right: 5px;
 
     a {
-      width: @header-bar-extras;
-      margin-top: 10px;
-      border-radius: @radius-size @radius-size 0 0;
+      .button-text-inverse;
+      outline: 0;
+      padding-top: 3px;
+    }
 
-      .mm-icon {
-        width: inherit;
+    .mm-icon {
+      margin: 0 auto;
+      font-size: 1.5rem;
+    }
+
+    .logo {
+      float: left;
+      opacity: 0.9;
+      padding: 2px 10px;
+      img {
+        height: 50px;
       }
     }
 
-    .dropdown-menu a {
-      border-radius: 0;
-    }
-
-    .open > a {
-      background-color: #ffffff;
-
-      .mm-icon {
-        color: @top-header-color;
-      }
-    }
-  }
-
-  .dropdown ul a {
-    width: 100%;
-    height: auto;
-  }
-
-  .dropdown.options.open.show {
-    display: inline !important; // Overriding BS' "display" that uses !important;
-  }
-
-  .options .dropdown-menu {
-    width: @header-dropdown-width;
-    top: 0 !important; // Overriding element.style
-    left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
-    margin-top: 30px;
-    font-size: 0;
-    a {
-      text-shadow: none;
-      padding: 10px 20px;
-      color: #262626;
-      margin-top: 0;
-      white-space: normal;
-      font-size: 1rem;
-    }
-    .disabled a {
-      color: #999999;
-    }
-    .divider {
-      margin: 0;
-    }
-    .sync-status {
-      margin-top: 10px;
-      margin-bottom: 10px;
+    .extras,
+    .tabs {
+      &,
       a {
-        padding-top: 0;
-        padding-bottom: 0;
-        color: @label-color;
-        &:hover {
-          background-color: transparent;
-          cursor: default;
-        }
+        height: 100%;
       }
-      .success {
-        color: @ok-color;
-      }
-      .required {
-        color: @error-color;
+      a {
+        display: inline-block;
       }
     }
-  }
 
-  .tabs {
-    overflow: hidden;
-    white-space: nowrap;
-
-    .button-label {
-      top: -5px;
-      position: relative;
-    }
-
-    a {
-      border-radius: @radius-size @radius-size 0 0;
-      cursor: pointer;
-      min-width: 80px;
-      padding-left: 5px;
+    .extras {
+      float: right;
       padding-right: 5px;
 
-      .mm-icon {
-        display: block;
-        padding: 5px 0;
+      a {
+        width: @header-bar-extras;
+        margin-top: 10px;
+        border-radius: @radius-size @radius-size 0 0;
 
-        svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
-          &, &:before {
-            display: block;
-            margin: auto;
-            height: 24px;
-            max-width: 24px;
-            overflow: hidden;
-          }
+        .mm-icon {
+          width: inherit;
         }
       }
 
-      &.selected {
-        .button-label,
-        .mm-icon:hover,
-        .resource-icon {
-          .button-text;
+      .dropdown-menu a {
+        border-radius: 0;
+      }
+
+      .open > a {
+        background-color: #ffffff;
+
+        .mm-icon {
+          color: @top-header-color;
         }
       }
+    }
 
-      @media (hover: hover) { // Prevents sticky hover state in mobile devices.
-        &:hover:not(.selected) {
-          &.messages-tab {
-            &,
-            .mm-icon-inverse,
-            .mm-icon-inverse:hover,
-            .resource-icon svg * {
-              color: @messages-color;
-              fill: @messages-color;
-            }
+    .dropdown ul a {
+      width: 100%;
+      height: auto;
+    }
+
+    .dropdown.options.open.show {
+      display: inline !important; // Overriding BS' "display" that uses !important;
+    }
+
+    .options .dropdown-menu {
+      width: @header-dropdown-width;
+      top: 0 !important; // Overriding element.style
+      left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
+      margin-top: 30px;
+      font-size: 0;
+      a {
+        text-shadow: none;
+        padding: 10px 20px;
+        color: #262626;
+        margin-top: 0;
+        white-space: normal;
+        font-size: 1rem;
+      }
+      .disabled a {
+        color: #999999;
+      }
+      .divider {
+        margin: 0;
+      }
+      .sync-status {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        a {
+          padding-top: 0;
+          padding-bottom: 0;
+          color: @label-color;
+          &:hover {
+            background-color: transparent;
+            cursor: default;
           }
+        }
+        .success {
+          color: @ok-color;
+        }
+        .required {
+          color: @error-color;
+        }
+      }
+    }
 
-          &.tasks-tab {
-            &,
-            .mm-icon-inverse,
-            .mm-icon-inverse:hover,
-            .resource-icon svg * {
-              color: @tasks-color;
-              fill: @tasks-color;
-            }
-          }
+    .tabs {
+      overflow: hidden;
+      white-space: nowrap;
 
-          &.reports-tab {
-            &,
-            .mm-icon-inverse,
-            .mm-icon-inverse:hover,
-            .resource-icon svg * {
-              color: @reports-color;
-              fill: @reports-color;
-            }
-          }
+      .button-label {
+        top: -5px;
+        position: relative;
+      }
 
-          &.analytics-tab {
-            &,
-            .mm-icon-inverse,
-            .mm-icon-inverse:hover,
-            .resource-icon svg * {
-              color: @analytics-color;
-              fill: @analytics-color;
-            }
-          }
+      a {
+        border-radius: @radius-size @radius-size 0 0;
+        cursor: pointer;
+        min-width: 80px;
+        padding-left: 5px;
+        padding-right: 5px;
 
-          &.contacts-tab {
-            &,
-            .mm-icon-inverse,
-            .mm-icon-inverse:hover,
-            .resource-icon svg * {
-              color: @contacts-color;
-              fill: @contacts-color;
+        .mm-icon {
+          display: block;
+          padding: 5px 0;
+
+          svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+            &, &:before {
+              display: block;
+              margin: auto;
+              height: 24px;
+              max-width: 24px;
+              overflow: hidden;
             }
           }
         }
-      }
 
-      &:hover,
-      &:focus {
-        text-decoration: none;
+        &.selected {
+          .button-label,
+          .mm-icon:hover,
+          .resource-icon {
+            .button-text;
+          }
+        }
+
+        @media (hover: hover) { // Prevents sticky hover state in mobile devices.
+          &:hover:not(.selected) {
+            &.messages-tab {
+              &,
+              .mm-icon-inverse,
+              .mm-icon-inverse:hover,
+              .resource-icon svg * {
+                color: @messages-color;
+                fill: @messages-color;
+              }
+            }
+
+            &.tasks-tab {
+              &,
+              .mm-icon-inverse,
+              .mm-icon-inverse:hover,
+              .resource-icon svg * {
+                color: @tasks-color;
+                fill: @tasks-color;
+              }
+            }
+
+            &.reports-tab {
+              &,
+              .mm-icon-inverse,
+              .mm-icon-inverse:hover,
+              .resource-icon svg * {
+                color: @reports-color;
+                fill: @reports-color;
+              }
+            }
+
+            &.analytics-tab {
+              &,
+              .mm-icon-inverse,
+              .mm-icon-inverse:hover,
+              .resource-icon svg * {
+                color: @analytics-color;
+                fill: @analytics-color;
+              }
+            }
+
+            &.contacts-tab {
+              &,
+              .mm-icon-inverse,
+              .mm-icon-inverse:hover,
+              .resource-icon svg * {
+                color: @contacts-color;
+                fill: @contacts-color;
+              }
+            }
+          }
+        }
+
+        &:hover,
+        &:focus {
+          text-decoration: none;
+        }
       }
+    }
+  }
+
+  .content {
+    .page {
+      top: 123px;
     }
   }
 }
@@ -342,7 +355,7 @@ body {
 }
 
 .filters {
-  height: 58px;
+  height: @filters-bar-desktop-height;
   white-space: nowrap;
   padding: 5px 0;
 
@@ -493,7 +506,7 @@ body {
 
 .content {
   .page {
-    top: 123px;
+    top: @filters-bar-desktop-height;
     bottom: 0;
     position: absolute;
     width: 100%;
@@ -1291,6 +1304,14 @@ mm-search-bar {
 }
 
 @media (max-width: @media-mobile) {
+  .old-nav {
+    .content {
+      .page {
+        top: 115px;
+      }
+    }
+  }
+
   .fast-action-trigger:not(.embed-fast-action) {
     position: fixed;
     bottom: 17px;
@@ -1324,7 +1345,7 @@ mm-search-bar {
     padding-left: 0;
   }
   .filters {
-    height: 50px;
+    height: @filters-bar-mobile-height;
     padding: 0;
     .navigation {
       display: inline-block;
@@ -1627,7 +1648,7 @@ mm-search-bar {
     }
   }
   .content .page {
-    top: 115px;
+    top: @filters-bar-mobile-height;
   }
   .mobile-only {
     display: initial;
