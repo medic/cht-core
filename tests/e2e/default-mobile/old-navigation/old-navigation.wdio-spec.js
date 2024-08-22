@@ -4,14 +4,14 @@ const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const oldNavigationPage = require('@page-objects/default/old-navigation/old-navigation.wdio.page');
-const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
-const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
-const { waitForPageLoaded } = require('@page-objects/default/common/common.wdio.page');
+// const oldNavigationPage = require('@page-objects/default/old-navigation/old-navigation.wdio.page');
+// const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
+// const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
+// const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+// const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+// const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+// const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
+// const { waitForPageLoaded } = require('@page-objects/default/common/common.wdio.page');
 
 describe('Old Navigation', () => {
   const places = placeFactory.generateHierarchy();
@@ -52,6 +52,7 @@ describe('Old Navigation', () => {
   });
 
   it('should navigate to the Messages section and open a sent message', async () => {
+    await browser.pause(100);
     /* const message = 'Navigations test';
     await oldNavigationPage.goToMessages();
     await messagesPage.sendMessage(message, person.name, person.phone );
@@ -68,6 +69,7 @@ describe('Old Navigation', () => {
   });
 
   it('should navigate to the Task section and open the first task listed', async () => {
+    await browser.pause(100);
     /* await oldNavigationPage.goToTasks();
     await taskPage.openTaskById(
       pregnancyReport._id,
@@ -77,6 +79,7 @@ describe('Old Navigation', () => {
   });
 
   it('should navigate to the Reports section and open the first report listed', async () => {
+    await browser.pause(100);
     /* await oldNavigationPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.firstReport());
     await waitForPageLoaded();
@@ -86,18 +89,21 @@ describe('Old Navigation', () => {
   });
 
   it('should navigate to the People section and open the created Health Center', async () => {
+    await browser.pause(100);
     /* await oldNavigationPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);
     expect(await contactPage.getContactInfoName()).to.equal(healthCenter.name); */
   });
 
   it('should navigate to the Targets section, and open a target aggregate', async () => {
+    await browser.pause(100);
     /* await oldNavigationPage.goToAnalytics();
     await targetAggregatesPage.goToTargetAggregates(true);
     await targetAggregatesPage.openTargetDetails(targetsConfig[0]); */
   });
 
   it('should successfully sync', async () => {
+    await browser.pause(100);
     // await oldNavigationPage.sync();
   });
 });
