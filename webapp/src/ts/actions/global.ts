@@ -1,6 +1,7 @@
 import { createAction, Store } from '@ngrx/store';
 
 import { createSingleValueAction, createMultiValueAction } from '@mm-actions/actionUtils';
+import { SidebarMenu } from '@mm-components/sidebar-menu/sidebar-menu.component';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
@@ -212,7 +213,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
 
-  setSidebarMenu(sidebarMenu) {
+  setSidebarMenu(sidebarMenu: SidebarMenu) {
     return this.store.dispatch(Actions.setSidebarMenu(sidebarMenu));
   }
 

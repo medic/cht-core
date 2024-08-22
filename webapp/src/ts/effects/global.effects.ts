@@ -112,15 +112,15 @@ export class GlobalEffects {
   openSidebarMenu$ = createEffect(
     ():any => this.actions$.pipe(
       ofType(GlobalActionsList.openSidebarMenu),
-      tap(() => this.globalActions.setSidebarFilter({ idOpen: true })),
+      tap(() => this.globalActions.setSidebarMenu({ isOpen: true })),
     ),
     { dispatch: false }
   );
 
   closeSidebarMenu$ = createEffect(
     ():any => this.actions$.pipe(
-      ofType(GlobalActionsList.openSidebarMenu),
-      tap(() => this.globalActions.setSidebarFilter({ idOpen: false })),
+      ofType(GlobalActionsList.closeSidebarMenu),
+      tap(() => this.globalActions.setSidebarMenu({ isOpen: false })),
     ),
     { dispatch: false }
   );

@@ -24,9 +24,9 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
       .select(Selectors.getSidebarMenu)
       .subscribe(sidebarMenu => {
         if (sidebarMenu?.isOpen) {
-          return this.sidebar.open();
+          return this.sidebar?.open();
         }
-        return this.sidebar.close();
+        return this.sidebar?.close();
       });
     this.subscriptions.add(subscribe);
   }
