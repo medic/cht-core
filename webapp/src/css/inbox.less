@@ -1359,6 +1359,8 @@ mm-search-bar {
       flex-direction: row;
       a {
         flex: 1;
+        min-width: 70px;
+        max-width: 100px;
       }
     }
     .logo {
@@ -1386,18 +1388,12 @@ mm-search-bar {
       }
       a {
         min-width: 0;
-        &:first-child {
-          padding-left: 16px;
-        }
-        &:last-child {
-          padding-right: 16px;
-        }
         .mm-icon {
           padding: 10px 0;
         }
         &.selected
         .mm-icon {
-          border-radius: 40% / 55%;
+          border-radius: 999px;
           background-color: @tab-selected-color;
         }
       }
@@ -1417,12 +1413,6 @@ mm-search-bar {
         margin: 30px 0 0 0;
         top: 8px;
         right: 5px;
-      }
-      .tabs {
-        a {
-          min-width: 70px;
-          max-width: 100px;
-        }
       }
       .extras a {
         padding-top: 2px;
