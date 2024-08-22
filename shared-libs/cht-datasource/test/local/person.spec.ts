@@ -302,6 +302,26 @@ describe('local person', () => {
         expect(isPerson.notCalled).to.be.true;
       });
 
+      [
+        {},
+        '',
+        '-1',
+        undefined,
+        false
+      ].forEach((invalidSkip ) => {
+        it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
+          await expect(Person.v1.getPage(localContext)(invalidPersonTypeQualifier, invalidSkip as string, limit))
+            .to.be.rejectedWith(`Invalid contact type [${invalidPersonTypeQualifier.contactType}]`);
+
+          expect(settingsGetAll.calledOnce).to.be.true;
+          expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
+          expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
+            .to.be.true;
+          expect(queryDocsByKeyInner.notCalled).to.be.true;
+          expect(isPerson.notCalled).to.be.true;
+        });
+      });
+
       it('returns empty array if people does not exist', async () => {
         queryDocsByKeyInner.resolves([]);
         const expectedResult = {

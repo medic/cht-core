@@ -48,10 +48,42 @@ describe('Person API', () => {
   }));
   const allDocItems = [contact0, contact1, contact2, place0, place1, place2, patient];
   const dataContext = getRemoteDataContext(utils.getOrigin());
+  const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
-    'type': 'person',
+    'type': personType,
   };
+  const onlineUserPlaceHierarchy = {
+    parent: {
+      _id: place1._id,
+      parent: {
+        _id: place2._id,
+      }
+    }
+  };
+  const offlineUserPlaceHierarchy = {
+    parent: {
+      _id: place0._id,
+      ...onlineUserPlaceHierarchy
+    }
+  };
+  const expectedPeople = [
+    contact0,
+    contact1,
+    contact2,
+    patient,
+    e2eTestUser,
+    {
+      type: personType,
+      ...userNoPerms.contact,
+      ...onlineUserPlaceHierarchy
+    },
+    {
+      type: personType,
+      ...offlineUser.contact,
+      ...offlineUserPlaceHierarchy
+    }
+  ];
 
   before(async () => {
     await utils.saveDocs(allDocItems);
@@ -114,39 +146,7 @@ describe('Person API', () => {
     const getPage = Person.v1.getPage(dataContext);
     const limit = 4;
     const cursor = null;
-    const personType = 'person';
     const invalidContactType = 'invalidPerson';
-    const onlineUserPlaceHierarchy = {
-      parent: {
-        _id: place1._id,
-        parent: {
-          _id: place2._id,
-        }
-      }
-    };
-    const offlineUserPlaceHierarchy = {
-      parent: {
-        _id: place0._id,
-        ...onlineUserPlaceHierarchy
-      }
-    };
-    const expectedPeople = [
-      contact0,
-      contact1,
-      contact2,
-      patient,
-      e2eTestUser,
-      {
-        type: personType,
-        ...userNoPerms.contact,
-        ...onlineUserPlaceHierarchy
-      },
-      {
-        type: personType,
-        ...offlineUser.contact,
-        ...offlineUserPlaceHierarchy
-      }
-    ];
 
     it('returns a page of people for no limit and cursor passed', async () => {
       const responsePage = await getPage(Qualifier.byContactType(personType));
@@ -164,6 +164,8 @@ describe('Person API', () => {
       const allPeople = [...firstPage.data, ...secondPage.data];
 
       expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
+      expect(firstPage.data.length).to.be.equal(4);
+      expect(secondPage.data.length).to.be.equal(3);
       expect(firstPage.cursor).to.be.equal('4');
       expect(secondPage.cursor).to.be.equal(null);
     });
@@ -225,6 +227,22 @@ describe('Person API', () => {
         .to.be.rejectedWith(
           `400 - {"code":400,"error":"Invalid cursor token: [${-1}]"}`
         );
+    });
+  });
+
+  describe('Person.v1.getAll', async () => {
+    const personType = 'person';
+
+    it('fetches all data by iterating through generator', async () => {
+      const docs = [];
+
+      const generator = Person.v1.getAll(dataContext)(Qualifier.byContactType(personType));
+
+      for await (const doc of generator) {
+        docs.push(doc);
+      }
+
+      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
     });
   });
 });
