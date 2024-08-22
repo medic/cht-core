@@ -4,9 +4,10 @@ import { Actions } from '@mm-actions/global';
 import { SidebarMenu } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { Snackbar } from '@mm-components/snackbar/snackbar.component';
 import { EnketoStatus } from '@mm-components/enketo/enketo.component';
+import { VersionNumber } from '@mm-services/browser-detector.service';
 
 export interface GlobalState {
-  androidAppVersion: null|string;
+  androidAppVersion: VersionNumber | undefined;
   navigation: {
     cancelCallback: null|(() => void);
     preventNavigation: null|boolean;
@@ -42,7 +43,7 @@ export interface GlobalState {
 }
 
 const initialState: GlobalState = {
-  androidAppVersion: null,
+  androidAppVersion: undefined,
   navigation: {
     cancelCallback: null,
     preventNavigation: null,

@@ -6,7 +6,7 @@ const OUTDATED_BROWSER_VERSION_MIN = '74';
 const OUTDATED_BROWSER_VERSION_MAX = '90';
 
 type VersionSuffix = `` | `-${string}`;
-type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
+export type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
 
 @Injectable({
   providedIn: 'root'
