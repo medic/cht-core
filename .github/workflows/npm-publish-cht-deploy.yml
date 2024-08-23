@@ -3,7 +3,9 @@ name: Publish cht-deploy to npm
 on:
   push:
     branches:
-      - master
+      - '**'
+    paths:
+      - 'scripts/deploy/**'
 
 jobs:
   publish:
@@ -14,7 +16,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0
+
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
@@ -26,9 +30,8 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Publish to npm
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          access: public
-          package: ./scripts/deploy/package.json
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release --config ./scripts/deploy/.releaserc.json
