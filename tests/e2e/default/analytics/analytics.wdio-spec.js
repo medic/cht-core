@@ -32,7 +32,7 @@ describe('Targets', () => {
 
   const compileTargets = async (targetsFileName = 'targets-config.js') => {
     await chtConfUtils.initializeConfigDir();
-    const targetFilePath = path.join(__dirname, `config/${ targetsFileName }`);
+    const targetFilePath = path.join(__dirname, `config/${targetsFileName}`);
 
     return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
   };

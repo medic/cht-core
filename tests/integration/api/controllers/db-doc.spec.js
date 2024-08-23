@@ -481,7 +481,10 @@ describe('db-doc handler', () => {
 
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
-        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }]}, { ignoreReload: true })
+        .updateSettings(
+          {replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }]},
+          { ignoreReload: true }
+        )
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(
           reportScenarios.map(scenario => utils

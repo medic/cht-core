@@ -398,7 +398,10 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not replace user when transition is disabled', async () => {
-      await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), { ignoreReload: 'sentinel' });
+      await utils.updateSettings(
+        getSettings({ transitions: { create_user_for_contacts: false } }),
+        { ignoreReload: 'sentinel' }
+      );
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
@@ -721,7 +724,10 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not create user when transition is disabled', async () => {
-      await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), { ignoreReload: 'sentinel' });
+      await utils.updateSettings(
+        getSettings({ transitions: { create_user_for_contacts: false } }),
+        { ignoreReload: 'sentinel' }
+      );
 
       const originalContact = {
         roles: ['chw', 'other-role'],
