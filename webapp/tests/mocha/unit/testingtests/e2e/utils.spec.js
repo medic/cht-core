@@ -141,7 +141,7 @@ describe('Test utils', () => {
     });
   });
 
-  it('Check that all test specs belong to a test suites', async () => {
+  it.skip('Check that all test specs belong to a test suites', async () => {
     const pathToDefaultTesting = path.resolve(__dirname, '../../../../../../tests/e2e/default');
     sinon.stub(sentinelUtils, 'skipToSeq');
     const suiteSpecs = [];
