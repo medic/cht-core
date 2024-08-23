@@ -2,7 +2,7 @@
   "branches": [
     "master",
     {
-      "name": "*",
+      "name": "cht-deploy-publish",
       "prerelease": true
     }
   ],
