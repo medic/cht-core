@@ -14,7 +14,7 @@
   "overrides": [
     {
       "files": [
-        "src/js/bootstrapper/*.js"
+        "src/js/**/*.js"
       ],
       "rules": {
         "no-console": "off"
