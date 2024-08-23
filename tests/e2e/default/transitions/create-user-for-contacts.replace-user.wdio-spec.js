@@ -153,7 +153,7 @@ const assertUserPasswordChanged = async (user) => {
   await utils.request({
     path: `/api/v1/users/${user.username}`,
     method: 'POST',
-    body: {password: DISABLED_USER_PASSWORD}
+    body: { password: DISABLED_USER_PASSWORD }
   });
 
   // Can login with new password

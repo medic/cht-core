@@ -735,7 +735,7 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
     .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
   const toDeleteMedic = medicDocs.rows
-    .map(row => row.value && !row.value.deleted && ({_id: row.id, _rev: row.value.rev, _deleted: true}))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
   const results = await Promise.all([

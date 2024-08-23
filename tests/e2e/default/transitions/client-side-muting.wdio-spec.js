@@ -35,8 +35,8 @@ describe('Muting', () => {
       name: 'Offline'
     } });
 
-  const offlineUser = userFactory.build({
-    username: 'offline_user',
+  const offlineUser = userFactory.build({ 
+    username: 'offline_user', 
     place: healthCenter._id,
     roles: [ 'chw' ],
     contact: {
@@ -44,20 +44,20 @@ describe('Muting', () => {
       name: 'Offline'
     }});
 
-  const patient1 = personFactory.build({
-    name: 'patient one',
-    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } }},
+  const patient1 = personFactory.build({ 
+    name: 'patient one', 
+    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } }}, 
     patient_id: 'patient_1'
   });
 
-  const patient2 = personFactory.build({
-    name: 'patient two',
+  const patient2 = personFactory.build({ 
+    name: 'patient two', 
     parent: { _id: clinic2._id, parent: { _id: healthCenter._id, parent: { _id: district._id } } },
     patient_id: 'patient_2',
   });
 
-  const patient3 = personFactory.build({
-    name: 'patient three',
+  const patient3 = personFactory.build({ 
+    name: 'patient three', 
     parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } } },
     patient_id: 'patient_3',
   });
@@ -111,7 +111,7 @@ describe('Muting', () => {
     }
   };
 
-  const submitMutingForm = async (contact, form, sync = false) => {
+  const submitMutingForm = async (contact, form, sync = false) =>  {
     await commonPage.refresh();
     await commonPage.goToPeople(contact._id, false);
     await commonPage.openFastActionReport(form);
