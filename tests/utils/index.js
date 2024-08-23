@@ -526,6 +526,31 @@ const waitForSettingsUpdateLogs = (type) => {
  *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
  * @return {Promise}        completion promise
  */
+/**
+ * Update settings and refresh if required.
+ *
+ * This function updates application settings based on the provided updates object and options.
+ * It handles optional settings for ignoring reloads, synchronizing, refreshing the page,
+ * and reverting settings to their previous state.
+ *
+ * @param {Object} updates - Object containing all updates you wish to make.
+ *                           The keys should correspond to the settings that need to be updated,
+ *                           and the values should be the new values for those settings.
+ * @param {Object} [options={}] - Options to control the behavior of the update.
+ * @param {boolean} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload. if `truthy`, will tail
+ *                                                 service logs and resolve when new settings are loaded. By default, watches
+ *                                                 api logs, if value equals 'sentinel', will watch sentinel logs instead.
+ * @param {boolean} [options.sync=false] - If `true`, the function will perform a synchronization
+ *                                         after updating the settings. Defaults to `false`.
+ * @param {boolean} [options.refresh=false] - If `true`, the function will refresh the browser after
+ *                                            updating the settings. Defaults to `false`.
+ * @param {boolean} [options.revert=false] - If `true`, the function will revert the settings to their
+ *                                           previous state before applying the new updates. Defaults to `false`.
+ *
+ * @return {Promise} - A promise that resolves when the settings update process is complete.
+ *                     The promise may resolve after waiting for logs, reloading, synchronizing, or refreshing,
+ *                     depending on the options provided.
+ */
 const updateSettings = async (updates, options = {}) => {
   const {ignoreReload = false, sync = false, refresh = false, revert = false} = options;
   if (revert) {
@@ -535,6 +560,7 @@ const updateSettings = async (updates, options = {}) => {
   await updateCustomSettings(updates);
   if (!ignoreReload) {
     await commonElements.closeReloadModal(true);
+    return;
   } else if (watcher) {
     await watcher.promise;
   }
