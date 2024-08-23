@@ -22,6 +22,7 @@ const validateNodeVersion = function() {
       console.error(`Invalid Node.js version. Required: ${requiredNodeVersion}. Current: ${process.version}`);
       process.exit(1);
     }
+
   } catch (err) {
     console.error('Error reading package.json:', err.message);
     process.exit(1);
