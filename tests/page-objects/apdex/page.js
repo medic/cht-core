@@ -1,19 +1,19 @@
 const { browser, driver } = require('@wdio/globals');
 const { execSync } = require('child_process');
+const APP_ID = 'org.medicmobile.webapp.mobile';
 
 module.exports = class Page {
 
-  async waitForDisplayedAndRetry(selector, retryTotal = 20, retryCount = 0) {
+  async waitForDisplayedAndRetry(selector, retry = 20) {
     const TIME_OUT = 1000 * 60 * 20;
     try {
-      return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
-    } catch (error) {
-      if (retryCount >= retryTotal) {
-        console.error(`Element did not display after retrying ${retryTotal}.`, error);
-        return false;
+        return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
+      } catch (error) {
+        if (retry < 0) {
+          return false;
+        }     
+        await this.waitForDisplayedAndRetry(selector, --retry);
       }
-      return await this.waitForDisplayedAndRetry(selector, retryTotal, retryCount + 1);
-    }
   }
 
   async clickElement(selector) {
@@ -81,8 +81,7 @@ module.exports = class Page {
       return;
     }
 
-    let shown = await driver.isKeyboardShown();
-    if (!shown) {
+    if (!await driver.isKeyboardShown()) {
       await browser.pause(WAIT_ANIMATION);
     }
 
@@ -120,11 +119,12 @@ module.exports = class Page {
     }
   }
 
-  async loadAndAssertPage(page, commonElements) {
+  async loadAndAssertPage(page, settingsProvider) {
     if (!page) {
       return;
     }
 
+    const commonElements = settingsProvider.getCommonElements();
     if (page.relaunchApp) {
       await this.relaunchApp(commonElements);
     }
@@ -161,13 +161,14 @@ module.exports = class Page {
     this.scrollToElement(formPage);
   }
 
-  async fillUpForm(form, commonElements){
+  async fillUpForm(form, settingsProvider){
     if (!form) {
       return;
     }
 
+    const commonElements = settingsProvider.getCommonElements();
     const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
-    const FAB_LIST_TITLE = commonElements?.fabListTitle || '//android.widget.TextView[@text="New"]';
+    const FAB_LIST_TITLE = commonElements?.fabListTitle || getLinkSelector('New');
     const SUBMIT_BUTTON_LABEL = commonElements?.formSubmit || 'Submit';
     const NEXT_PAGE_BUTTON_LABEL = commonElements?.formNext || 'Next >';
 
@@ -194,18 +195,19 @@ module.exports = class Page {
   }
 
   async relaunchApp(commonElements) {
-    const UI_ELEMENT = commonElements?.relaunchAppAssert || '//android.widget.TextView[@text="People"]';
-    await driver.execute('mobile: terminateApp', {appId: 'org.medicmobile.webapp.mobile'});
-    await driver.execute('mobile: activateApp', {appId: 'org.medicmobile.webapp.mobile'});
+    const UI_ELEMENT = commonElements?.relaunchAppAssert || getLinkSelector('People');
+    await driver.execute('mobile: terminateApp', {appId: APP_ID});
+    await driver.execute('mobile: activateApp', {appId: APP_ID});
     await this.waitForDisplayedAndRetry(UI_ELEMENT);
   }
 
-  async search (page, commonElements) {
+  async search (page, settingsProvider) {
     if (!page || !page.search) {
       return;
     }
 
-    const SEARCH_ICON = commonElements?.searchIcon || '//android.widget.TextView[@text=""]';
+    const commonElements = settingsProvider.getCommonElements();
+    const SEARCH_ICON = commonElements?.searchIcon || getLinkSelector('');
     const SEARCH_INPUT = '//android.widget.EditText';
 
     await this.navigate(page.navigation);
@@ -238,6 +240,21 @@ module.exports = class Page {
         }
       })
       .catch(error => console.error('Error: ', error));
+  }
+
+  async loadPage(settingsProvider, pageName) {
+    const page = settingsProvider.getPage(pageName);
+    await this.loadAndAssertPage(page, settingsProvider);
+  }
+
+  async loadForm(settingsProvider, formName) {
+    const form = settingsProvider.getForm(formName);
+    await this.fillUpForm(form, settingsProvider);
+  }
+
+  async searchPage(settingsProvider, pageName) {
+    const page = settingsProvider.getPage(pageName);
+    await this.search(page, settingsProvider);
   }
 
 };

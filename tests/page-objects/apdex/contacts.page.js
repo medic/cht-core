@@ -1,48 +1,39 @@
 const Page = require('@page-objects/apdex/page');
 const CONTACT_LIST = 'contactList';
+const CHW_AREA = 'chwArea';
+const HOUSEHOLD = 'household';
+const PATIENT = 'patient';
+const PATIENT_REPORT = 'patientReport';
+const PATIENT_CONTACT = 'patientContact';
 
 class ContactsPage extends Page {
 
   async loadContactList(settingsProvider) {
-    const page = settingsProvider.getPage(CONTACT_LIST);
-    const commonElements = settingsProvider.getCommonElements();
-    await super.loadAndAssertPage(page, commonElements);
+    await super.loadPage(settingsProvider, CONTACT_LIST);
   }
 
   async loadChwArea(settingsProvider) {
-    const page = settingsProvider.getPage('chwArea');
-    const commonElements = settingsProvider.getCommonElements();
-    await super.loadAndAssertPage(page, commonElements);
+    await super.loadPage(settingsProvider, CHW_AREA);
   }
 
   async loadHousehold(settingsProvider) {
-    const page = settingsProvider.getPage('household');
-    const commonElements = settingsProvider.getCommonElements();
-    await super.loadAndAssertPage(page, commonElements);
+    await super.loadPage(settingsProvider, HOUSEHOLD);
   }
 
   async loadPatient(settingsProvider) {
-    const page = settingsProvider.getPage('patient');
-    const commonElements = settingsProvider.getCommonElements();
-    await super.loadAndAssertPage(page, commonElements);
-  }
-
-  async submitPatientReport(settingsProvider) {
-    const form = settingsProvider.getForm('patientReport');
-    const commonElements = settingsProvider.getCommonElements();
-    await super.fillUpForm(form, commonElements);
-  }
-
-  async createPatient(settingsProvider) {
-    const form = settingsProvider.getForm('patientContact');
-    const commonElements = settingsProvider.getCommonElements();
-    await super.fillUpForm(form, commonElements);
+    await super.loadPage(settingsProvider, PATIENT);
   }
 
   async searchContact(settingsProvider) {
-    const page = settingsProvider.getPage(CONTACT_LIST);
-    const commonElements = settingsProvider.getCommonElements();
-    await super.search(page, commonElements);
+    await super.searchPage(settingsProvider, CONTACT_LIST);
+  }
+
+  async submitPatientReport(settingsProvider) {
+    await super.loadForm(settingsProvider, PATIENT_REPORT);
+  }
+
+  async createPatient(settingsProvider) {
+    await super.loadForm(settingsProvider, PATIENT_CONTACT);
   }
 
 }

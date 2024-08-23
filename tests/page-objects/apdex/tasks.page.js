@@ -1,17 +1,15 @@
 const Page = require('@page-objects/apdex/page');
+const TASK_LIST = 'taskList';
+const PATIENT_TASK = 'patientTask';
 
 class TasksPage extends Page {
 
   async loadTaskList(settingsProvider) {
-    const page = settingsProvider.getPage('taskList');
-    const commonElements = settingsProvider.getCommonElements();
-    await super.loadAndAssertPage(page, commonElements);
+    await super.loadPage(settingsProvider, TASK_LIST);
   }
 
   async submitTask(settingsProvider) {
-    const form = settingsProvider.getForm('patientTask');
-    const commonElements = settingsProvider.getCommonElements();
-    await super.fillUpForm(form, commonElements);
+    await super.loadForm(settingsProvider, PATIENT_TASK);
   }
 
 }
