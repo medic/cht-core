@@ -3,6 +3,7 @@ const chai = require('chai');
 const environment = require('@medic/environment');
 const serverUtils = require('../../src/server-utils');
 const cookie = require('../../src/services/cookie');
+const {InvalidArgumentError} = require('@medic/cht-datasource');
 
 let req;
 let res;
@@ -58,6 +59,18 @@ describe('Server utils', () => {
       chai.expect(serverUtils.notLoggedIn.args[0]).to.deep.equal([req, res, undefined]);
       chai.expect(serverUtils.serverError.callCount).to.equal(0);
       chai.expect(res.end.callCount).to.equal(0);
+    });
+
+    it('function handles InvalidArgument error as bad request(400) error', () => {
+      const err = new InvalidArgumentError('Bad Request');
+
+      serverUtils.error(err, req, res);
+
+      chai.expect(res.writeHead.callCount).to.eq(1);
+      chai.expect(res.writeHead.args[0][0]).to.eq(400);
+      chai.expect(res.writeHead.args[0][1]['Content-Type']).to.equal('text/plain');
+      chai.expect(res.end.callCount).to.equal(1);
+      chai.expect(res.end.args[0][0]).to.equal('Bad Request');
     });
 
     it('function handles 503 errors - #3821', () => {
@@ -124,7 +137,6 @@ describe('Server utils', () => {
       chai.expect(res.end.callCount).to.equal(1);
       chai.expect(res.end.args[0][0]).to.equal('foo');
     });
-
   });
 
   describe('notLoggedIn', () => {
