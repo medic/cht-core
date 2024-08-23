@@ -6,7 +6,7 @@ const rpn = require('request-promise-native');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const {execSync, spawn} = require('child_process');
+const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 // by default, mustache escapes slashes, which messes with paths and urls.
 mustache.escape = (text) => text;
@@ -32,7 +32,7 @@ const isDocker = () => infrastructure === 'docker';
 const isK3D = () => !isDocker();
 const K3D_DATA_PATH = '/data';
 
-const auth = {username: constants.USERNAME, password: constants.PASSWORD};
+const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
 const ONE_YEAR_IN_S = 31536000;
 const PROJECT_NAME = 'cht-e2e';
@@ -52,10 +52,10 @@ const originalTranslations = {};
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
-const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, {auth});
-const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, {auth});
-const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, {auth});
-const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, {auth});
+const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
+const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
+const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
@@ -143,7 +143,7 @@ const getSession = async () => {
     method: 'POST',
     uri: `${constants.BASE_URL}/_session`,
     json: true,
-    body: {name: auth.username, password: auth.password},
+    body: { name: auth.username, password: auth.password },
     auth,
     resolveWithFullResponse: true,
   };
@@ -170,8 +170,8 @@ const randomIp = () => {
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = async (options, {debug} = {}) => { //NOSONAR
-  options = typeof options === 'string' ? {path: options} : _.clone(options);
+const request = async (options, { debug } = {}) => { //NOSONAR
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
     await getSession();
     options.jar = cookieJar;
@@ -236,7 +236,7 @@ const requestOnTestMetaDb = (options, debug) => {
 
 const requestOnMedicDb = (options, debug) => {
   if (typeof options === 'string') {
-    options = {path: options};
+    options = { path: options };
   }
   options.path = `/medic${options.path || ''}`;
   return request(options, debug);
@@ -281,7 +281,7 @@ const saveDocs = async (docs) => {
   const results = await requestOnTestDb({
     path: '/_bulk_docs',
     method: 'POST',
-    body: {docs}
+    body: { docs }
   });
   if (results.find(r => !r.ok)) {
     waitForForms.cancel();
@@ -294,7 +294,7 @@ const saveDocs = async (docs) => {
 
 const saveDocsRevs = async (docs) => {
   const results = await saveDocs(docs);
-  results.forEach(({rev}, idx) => docs[idx]._rev = rev);
+  results.forEach(({ rev }, idx) => docs[idx]._rev = rev);
   return results;
 };
 
@@ -310,7 +310,7 @@ const saveMetaDocs = (user, docs) => {
   const options = {
     userName: user,
     method: 'POST',
-    body: {docs: docs},
+    body: { docs: docs },
     path: '/_bulk_docs',
   };
   return requestOnTestMetaDb(options)
@@ -339,7 +339,7 @@ const getDocs = (ids, fullResponse = false) => {
   return requestOnTestDb({
     path: `/_all_docs?include_docs=true`,
     method: 'POST',
-    body: {keys: ids || []},
+    body: { keys: ids || [] },
   })
     .then(response => {
       return fullResponse ? response : response.rows.map(row => row.doc);
@@ -350,7 +350,7 @@ const getMetaDocs = (user, ids, fullResponse = false) => {
   const options = {
     userName: user,
     method: 'POST',
-    body: {keys: ids || []},
+    body: { keys: ids || [] },
     path: '/_all_docs?include_docs=true',
   };
   return requestOnTestMetaDb(options)
@@ -372,7 +372,7 @@ const deleteDocs = ids => {
       return requestOnTestDb({
         path: '/_bulk_docs',
         method: 'POST',
-        body: {docs},
+        body: { docs },
       });
     }
   });
@@ -427,10 +427,10 @@ const deleteAllDocs = (except) => { //NOSONAR
       path: '/_all_docs?include_docs=true',
       method: 'GET',
     })
-    .then(({rows}) => {
+    .then(({ rows }) => {
       return rows
-        .filter(({doc}) => doc && !ignoreFns.find(fn => fn(doc)))
-        .map(({doc}) => {
+        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
+        .map(({ doc }) => {
           return {
             _id: doc._id,
             _rev: doc._rev,
@@ -449,7 +449,7 @@ const deleteAllDocs = (except) => { //NOSONAR
           .requestOnTestDb({
             path: '/_bulk_docs',
             method: 'POST',
-            body: {docs: toDelete},
+            body: { docs: toDelete },
           })
           .then(response => {
             if (DEBUG) {
@@ -457,11 +457,11 @@ const deleteAllDocs = (except) => { //NOSONAR
             }
           }),
         module.exports.sentinelDb
-          .allDocs({keys: infoIds})
+          .allDocs({ keys: infoIds })
           .then(results => {
             const deletes = results.rows
               .filter(row => row.value) // Not already deleted
-              .map(({id, value}) => ({
+              .map(({ id, value }) => ({
                 _id: id,
                 _rev: value.rev,
                 _deleted: true
@@ -521,12 +521,11 @@ const waitForSettingsUpdateLogs = (type) => {
  *
  * @param {Object}         updates  Object containing all updates you wish to
  *                                  make
- * @param  {Boolean|String} ignoreReload if false, will wait for reload modal and reload. if truthy, will tail
+ * @param  {Object} options | ignore reload: if false, will wait for reload modal and reload. if truthy, will tail
  *                                       service logs and resolve when new settings are loaded. By default, watches
  *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
  * @return {Promise}        completion promise
  */
-
 const updateSettings = async (updates, options = {}) => {
   const {ignoreReload = false, sync = false, refresh = false, revert = false} = options;
   if (revert) {
@@ -610,12 +609,12 @@ const revertTranslations = async () => {
   await requestOnTestDb({
     path: '/_bulk_docs',
     method: 'POST',
-    body: {docs},
+    body: { docs },
   });
 };
 
 const deleteLocalDocs = async () => {
-  const localDocs = await requestOnTestDb({path: '/_local_docs?include_docs=true'});
+  const localDocs = await requestOnTestDb({ path: '/_local_docs?include_docs=true' });
 
   const docsToDelete = localDocs.rows
     .filter(row => row?.doc?.replicator === 'pouchdb')
@@ -638,7 +637,7 @@ const setUserContactDoc = (attempt = 0) => {
   return db
     .get(docId)
     .catch(() => ({}))
-    .then(existing => Object.assign(defaultDoc, {_rev: existing?._rev}))
+    .then(existing => Object.assign(defaultDoc, { _rev: existing?._rev }))
     .then(newDoc => db.put(newDoc))
     .catch(err => {
       if (attempt > 3) {
@@ -649,10 +648,10 @@ const setUserContactDoc = (attempt = 0) => {
 };
 
 const deleteMetaDbs = async () => {
-  const allDbs = await request({path: '/_all_dbs'});
+  const allDbs = await request({ path: '/_all_dbs' });
   const metaDbs = allDbs.filter(db => db.endsWith('-meta') && !db.endsWith('-users-meta'));
   for (const metaDb of metaDbs) {
-    await request({method: 'DELETE', path: `/${metaDb}`});
+    await request({ method: 'DELETE', path: `/${metaDb}` });
   }
 };
 
@@ -725,23 +724,23 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
   }
 
   const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
-  const userDocs = await request({path: '/_users/_all_docs', method: 'POST', body: {keys: usernames}});
+  const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({
     path: `/${constants.DB_NAME}/_all_docs`,
     method: 'POST',
-    body: {keys: usernames}
+    body: { keys: usernames }
   });
 
   const toDelete = userDocs.rows
-    .map(row => row.value && !row.value.deleted && ({_id: row.id, _rev: row.value.rev, _deleted: true}))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
   const toDeleteMedic = medicDocs.rows
     .map(row => row.value && !row.value.deleted && ({_id: row.id, _rev: row.value.rev, _deleted: true}))
     .filter(stub => stub);
 
   const results = await Promise.all([
-    request({path: '/_users/_bulk_docs', method: 'POST', body: {docs: toDelete}}),
-    request({path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: {docs: toDeleteMedic}}),
+    request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
+    request({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
   const errors = results.flat().filter(result => !result.ok);
   if (errors.length) {
@@ -751,10 +750,10 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
 
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + constants.USERNAME;
-  const users = await request({path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"`});
+  const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
   return users.rows
     .filter(user => user.id !== adminUserId)
-    .map((user) => ({...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '')}));
+    .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
 /**
@@ -764,8 +763,8 @@ const getCreatedUsers = async () => {
  * @return {Promise}
  * */
 const createUsers = async (users, meta = false) => {
-  const createUserOpts = {path: '/api/v1/users', method: 'POST'};
-  const createUserV3Opts = {path: '/api/v3/users', method: 'POST'};
+  const createUserOpts = { path: '/api/v1/users', method: 'POST' };
+  const createUserV3Opts = { path: '/api/v3/users', method: 'POST' };
 
   for (const user of users) {
     const options = {
@@ -782,12 +781,12 @@ const createUsers = async (users, meta = false) => {
   }
 
   for (const user of users) {
-    await request({path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT'});
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT' });
   }
 };
 
 const getAllUserSettings = () => db
-  .query('medic-client/doc_by_type', {include_docs: true, key: ['user-settings']})
+  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
   .then(response => response.rows.map(row => row.doc));
 
 /**
@@ -795,7 +794,7 @@ const getAllUserSettings = () => db
  * @param {{ name, contactId }} opts - object containing the query parameters
  * @return {Promise}
  * */
-const getUserSettings = ({contactId, name}) => {
+const getUserSettings = ({ contactId, name }) => {
   return getAllUserSettings()
     .then(docs => docs.filter(doc => {
       const nameMatches = !name || doc.name === name;
@@ -815,7 +814,7 @@ const apiRetry = () => {
 const listenForApi = async () => {
   console.log('Checking API');
   try {
-    await request({path: '/api/info'});
+    await request({ path: '/api/info' });
     console.log('API is up');
   } catch (err) {
     console.log('API check failed, trying again in 1 second');
@@ -830,7 +829,7 @@ const dockerComposeCmd = (params) => {
   params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker', params, {env});
+    const cmd = spawn('docker', params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -961,16 +960,16 @@ const delayPromise = (promiseFn, interval) => {
 
 const setTransitionSeqToNow = () => {
   return Promise.all([
-    sentinelDb.get('_local/transitions-seq').catch(() => ({_id: '_local/transitions-seq'})),
+    sentinelDb.get('_local/transitions-seq').catch(() => ({ _id: '_local/transitions-seq' })),
     db.info()
-  ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
+  ]).then(([sentinelMetadata, { update_seq: updateSeq }]) => {
     sentinelMetadata.value = updateSeq;
     return sentinelDb.put(sentinelMetadata);
   });
 };
 
 const waitForDocRev = (ids) => {
-  ids = ids.map(id => typeof id === 'string' ? {id: id, rev: 1} : id);
+  ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id);
 
   const validRow = row => {
     if (!row.id || !row.value || !row.value.rev) {
@@ -988,7 +987,7 @@ const waitForDocRev = (ids) => {
 
   const opts = {
     path: '/_all_docs',
-    body: {keys: ids.map(id => id.id)},
+    body: { keys: ids.map(id => id.id) },
     method: 'POST'
   };
 
@@ -1044,7 +1043,7 @@ const addTranslations = (languageCode, translations = {}) => {
 const enableLanguage = (languageCode) => enableLanguages([languageCode]);
 
 const enableLanguages = async (languageCodes) => {
-  const {languages} = await getSettings();
+  const { languages } = await getSettings();
   for (const languageCode of languageCodes) {
     const language = languages.find(language => language.locale === languageCode);
     if (language) {
@@ -1056,7 +1055,7 @@ const enableLanguages = async (languageCodes) => {
       });
     }
   }
-  await updateSettings({languages}, {ignoreReload: true});
+  await updateSettings({ languages }, { ignoreReload: true });
 };
 
 const getSettings = () => getDoc('settings').then(settings => settings.settings);
@@ -1120,7 +1119,7 @@ const setupSettings = () => {
 const createLogDir = async () => {
   const logDirPath = path.join(__dirname, '../logs');
   if (fs.existsSync(logDirPath)) {
-    await fs.promises.rm(logDirPath, {recursive: true});
+    await fs.promises.rm(logDirPath, { recursive: true });
   }
   await fs.promises.mkdir(logDirPath);
 };
@@ -1140,7 +1139,7 @@ const startServices = async () => {
 const runCommand = (command, silent) => {
   const [cmd, ...params] = command.split(' ');
   return new Promise((resolve, reject) => {
-    const proc = spawn(cmd, params, {env});
+    const proc = spawn(cmd, params, { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1247,7 +1246,7 @@ const prepServices = async (defaultSettings) => {
 
 const getLogs = (container) => {
   const logFile = path.resolve(__dirname, '../logs', `${container.replace('pod/', '')}.log`);
-  const logWriteStream = fs.createWriteStream(logFile, {flags: 'w'});
+  const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
   const command = isDocker() ? 'docker' : 'kubectl';
 
   const params = `logs ${container} ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
@@ -1258,8 +1257,8 @@ const getLogs = (container) => {
       console.error('Error while collecting container logs', err);
       reject(err);
     });
-    cmd.stdout.pipe(logWriteStream, {end: false});
-    cmd.stderr.pipe(logWriteStream, {end: false});
+    cmd.stdout.pipe(logWriteStream, { end: false });
+    cmd.stderr.pipe(logWriteStream, { end: false });
 
     cmd.on('close', () => {
       resolve();
@@ -1323,7 +1322,7 @@ const waitForLogs = (container, tail, ...regex) => {
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
   const params = `logs ${container} -f ${tail} ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
-  const proc = spawn(cmd, params, {stdio: ['ignore', 'pipe', 'pipe']});
+  const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
@@ -1396,7 +1395,7 @@ const collectLogs = (container, ...regex) => {
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterward.
   const params = `logs ${container} -f --tail=1 ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
-  const proc = spawn(cmd, params, {stdio: ['ignore', 'pipe', 'pipe']});
+  const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
@@ -1475,7 +1474,7 @@ const getUpdatedPermissions = async (roles, addPermissions, removePermissions) =
 
 const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
   const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
-  await updateSettings({permissions}, {ignoreReload: ignoreReload});
+  await updateSettings({permissions}, { ignoreReload: ignoreReload });
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
