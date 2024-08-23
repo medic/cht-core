@@ -299,8 +299,11 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
-const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+const waitForAngularLoaded = async (/*timeout = 40000*/) => {
+  // Comment this because we don't have the hamburguer menu yet,
+  // until tha is changed we are going to add an explicit wait here instead
+  // await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+  await browser.pause(2000);
 };
 
 const waitForPageLoaded = async () => {
