@@ -8,10 +8,14 @@ describe('remote person', () => {
   const remoteContext = {} as RemoteDataContext;
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
+  let getResourcesInner: SinonStub;
+  let getResourcesOuter: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
+    getResourcesInner = sinon.stub();
+    getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
   });
 
   afterEach(() => sinon.restore());
@@ -62,6 +66,40 @@ describe('remote person', () => {
         expect(result).to.be.null;
         expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
         expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
+      });
+    });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const cursor = '1';
+      const personType = 'person';
+      const personTypeQualifier = {contactType: personType};
+      const queryParam = {
+        limit: limit.toString(),
+        personType,
+        cursor,
+      };
+
+      it('returns people', async () => {
+        const doc = [{ type: 'person' }, {type: 'person'}];
+        const expectedResponse = { data: doc, cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+
+      it('returns empty array if docs are not found', async () => {
+        getResourcesInner.resolves([]);
+
+        const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, cursor, limit);
+
+        expect(result).to.deep.equal([]);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
     });
   });
