@@ -7,6 +7,7 @@ chai.use(require('chai-exclude'));
 exports.config = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
+      './**/old-navigation.wdio-spec.js',
       './**/browser-compatibility.wdio-spec.js',
       './**/delete.wdio-spec.js',
       './**/navigation.wdio-spec.js',
