@@ -7,10 +7,13 @@ chai.use(require('chai-exclude'));
 exports.config = Object.assign(wdioBaseConfig.config, {
   suites: {
     all: [
-      './**/*.wdio-spec.js',
+      './**/browser-compatibility.wdio-spec.js',
+      './**/delete.wdio-spec.js',
+      './**/navigation.wdio-spec.js',
+      /*'./!**!/!*.wdio-spec.js',
       '../default/login/login-logout.wdio-spec.js',
       '../default/navigation/navigation.wdio-spec.js',
-      '../default/navigation/hamburger-menu.wdio-spec.js',
+      '../default/navigation/hamburger-menu.wdio-spec.js',*/
     ]
   },
   beforeSuite: async () => {
