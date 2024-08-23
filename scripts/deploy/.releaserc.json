@@ -1,4 +1,11 @@
 {
+  "branches": [
+    "master",
+    {
+      "name": "*",
+      "prerelease": "${name}"
+    }
+  ],
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",

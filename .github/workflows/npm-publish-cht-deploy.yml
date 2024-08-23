@@ -2,8 +2,6 @@ name: Publish cht-deploy to npm
 
 on:
   push:
-    branches:
-      - '**'
     paths:
       - 'scripts/deploy/**'
 
@@ -35,4 +33,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release --branches=${{ github.ref_name }} --config ./scripts/deploy/.releaserc.json
+        run: npx semantic-release --config ./scripts/deploy/.releaserc.json
