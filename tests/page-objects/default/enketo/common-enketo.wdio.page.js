@@ -1,5 +1,6 @@
 const fs = require('fs');
 const utils = require('@utils');
+const { formTitle } = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const currentSection =  () => $('section[class*="current"]');
 
@@ -114,6 +115,22 @@ const getTextareaValue = async (question) => {
   return await getValue('textarea', question);
 };
 
+const isRequiredMessageDisplayed = async (question) => {
+  await formTitle().click();
+  const requiredMsg = (await getCurrentPageSection())
+    .$(`label*=${question}`)
+    .$('.or-required-msg.active');
+  return await requiredMsg.isDisplayed();
+};
+
+const isConstraintMessageDisplayed = async (question) => {
+  await formTitle().click();
+  const requiredMsg = (await getCurrentPageSection())
+    .$(`label*=${question}`)
+    .$('.or-constraint-msg.active');
+  return await requiredMsg.isDisplayed();
+};
+
 const addRepeatSection = async () => {
   const repeatButton  = await addRepeatSectionButton();
   await repeatButton.click();
@@ -152,6 +169,8 @@ module.exports = {
   uploadForm,
   getInputValue,
   getTextareaValue,
+  isRequiredMessageDisplayed,
+  isConstraintMessageDisplayed,
   addRepeatSection,
   drawShapeOnCanvas,
   isRadioButtonSelected,
