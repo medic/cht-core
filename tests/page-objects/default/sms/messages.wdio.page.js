@@ -45,12 +45,6 @@ const getMessageHeader = async () => {
   };
 };
 
-const getMessageHeaderOnMobile = async () => {
-  return {
-    name: await commonPage.mobileTopBarTitle().getText(),
-  };
-};
-
 const navigateFromConversationToContact = async () => {
   await $(`${MESSAGE_HEADER} a.name`).waitForClickable();
   await $(`${MESSAGE_HEADER} a.name`).click();
@@ -164,5 +158,4 @@ module.exports = {
   getAmountOfMessagesByPhone,
   navigateFromConversationToContact,
   getMessagesModalDetails,
-  getMessageHeaderOnMobile
 };

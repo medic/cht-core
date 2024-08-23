@@ -172,6 +172,12 @@ const isElementByIdPresent = async (elementId) => {
   return await (await $(`#${elementId}`)).isExisting();
 };
 
+const getHeaderTitleOnMobile = async () => {
+  return {
+    name: await mobileTopBarTitle().getText(),
+  };
+};
+
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await (await hamburgerMenu()).waitForClickable();
@@ -533,5 +539,5 @@ module.exports = {
   getFastActionItemsLabels,
   getActionBarLabels,
   getErrorLog,
-  mobileTopBarTitle
+  getHeaderTitleOnMobile,
 };
