@@ -1,11 +1,12 @@
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Person from './person';
-import { LocalDataContext } from './local/libs/data-context';
-import { isUuidQualifier, UuidQualifier } from './qualifier';
+import { LocalDataContext} from './local/libs/data-context';
+import {ContactTypeQualifier, isUuidQualifier, UuidQualifier} from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
+import {assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page} from './libs/core';
 
 /** */
 export namespace v1 {
@@ -60,4 +61,55 @@ export namespace v1 {
    * @throws Error if the provided context or qualifier is invalid
    */
   export const getWithLineage = getPlace(Local.Place.v1.getWithLineage, Remote.Place.v1.getWithLineage);
+
+  /**
+   * TODO: add jsdoc
+   * @param context
+   */
+  export const getPage = (
+    context: DataContext
+  ): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Place.v1.getPage, Remote.Place.v1.getPage);
+
+    /**
+     * TODO: Add jsdoc
+     * @param placeType
+     * @param cursor
+     * @param limit
+     */
+    const curriedFn = async (
+      placeType: ContactTypeQualifier,
+      cursor: Nullable<string> = null,
+      limit = 100
+    ): Promise<Page<Place>> => {
+      assertTypeQualifier(placeType);
+      assertCursor(cursor);
+      assertLimit(limit);
+
+      return fn(placeType, cursor, limit);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * TODO: Add JSDoc
+   * @param context
+   */
+  export const getAll = (
+    context: DataContext
+  ): typeof curriedGen => {
+    assertDataContext(context);
+    const getPage = context.bind(v1.getPage);
+
+    /**
+     * Add JSDoc
+     * @param placeType
+     */
+    const curriedGen = (placeType: ContactTypeQualifier) => {
+      assertTypeQualifier(placeType);
+      return getPagedGenerator(getPage, placeType);
+    };
+    return curriedGen;
+  };
 }

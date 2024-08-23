@@ -304,14 +304,12 @@ describe('local person', () => {
 
       [
         {},
-        '',
         '-1',
         undefined,
-        false
       ].forEach((invalidSkip ) => {
         it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
-          await expect(Person.v1.getPage(localContext)(invalidPersonTypeQualifier, invalidSkip as string, limit))
-            .to.be.rejectedWith(`Invalid contact type [${invalidPersonTypeQualifier.contactType}]`);
+          await expect(Person.v1.getPage(localContext)(personTypeQualifier, invalidSkip as string, limit))
+            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;

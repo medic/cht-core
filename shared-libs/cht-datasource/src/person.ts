@@ -1,4 +1,4 @@
-import { ContactTypeQualifier, isContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Contact, NormalizedParent } from './libs/contact';
 import * as Remote from './remote';
@@ -7,7 +7,7 @@ import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { InvalidArgumentError } from './libs/error';
-import { getPagedGenerator, Nullable, Page } from './libs/core';
+import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
 
 /** */
 export namespace v1 {
@@ -31,26 +31,6 @@ export namespace v1 {
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
       throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
-    }
-  };
-
-  const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
-    qualifier: unknown
-  ) => {
-    if (!isContactTypeQualifier(qualifier)) {
-      throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
-    }
-  };
-
-  const assertLimit: (limit: unknown) => asserts limit is number = (limit: unknown) => {
-    if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
-      throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}]`);
-    }
-  };
-
-  const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
-    if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
-      throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}]`);
     }
   };
 

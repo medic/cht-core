@@ -1,6 +1,6 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { deepCopy, isNonEmptyArray, Nullable, Page } from '../libs/core';
+import { deepCopy, fetchAndFilter, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
@@ -82,41 +82,13 @@ export namespace v1 {
         throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}]`);
       }
 
-      const fetchAndFilter = async (
-        currentLimit: number,
-        currentSkip: number,
-        currentPersonDocs: Person.v1.Person[] = [],
-      ): Promise<Page<Person.v1.Person>> => {
-        const docs = await getDocsByPage([personType.contactType], currentLimit, currentSkip);
-        const noMoreResults = docs.length < currentLimit;
-        const newPersonDocs = docs.filter((doc): doc is Person.v1.Person => isPerson(settings, doc, doc?._id));
-        const overFetchCount = currentPersonDocs.length + newPersonDocs.length - limit || 0;
-        const totalPeople = [...currentPersonDocs, ...newPersonDocs].slice(0, limit);
-
-        if (noMoreResults) {
-          return { data: totalPeople, cursor: null };
-        }
-
-        if (totalPeople.length === limit) {
-          const nextSkip = currentSkip + currentLimit - overFetchCount;
-
-          return { data: totalPeople, cursor: nextSkip.toString() };
-        }
-
-        // Re-fetch twice as many docs as we need to limit number of recursions
-        const missingCount = currentLimit - newPersonDocs.length;
-        logger.debug(`Found [${missingCount.toString()}] invalid persons. Re-fetching additional records.`);
-        const nextLimit = missingCount * 2;
-        const nextSkip = currentSkip + currentLimit;
-
-        return fetchAndFilter(
-          nextLimit,
-          nextSkip,
-          totalPeople,
-        );
-      };
-
-      return fetchAndFilter(limit, skip);
+      return await fetchAndFilter(
+        getDocsByPage,
+        isPerson,
+        settings,
+        personType.contactType,
+        limit
+      )(limit, skip) as Page<Person.v1.Person>;
     };
   };
 }

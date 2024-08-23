@@ -9,19 +9,35 @@ const getPlace = ({ with_lineage }) => ctx.bind(
     : Place.v1.get
 );
 
+const getPageByType = () => ctx.bind(Place.v1.getPage);
+
+const checkUserPermissions = async (req) => {
+  const userCtx = await auth.getUserCtx(req);
+  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
+    return Promise.reject({ code: 403, message: 'Insufficient privileges' });
+  }
+};
+
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      const userCtx = await auth.getUserCtx(req);
-      if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
-        return Promise.reject({ code: 403, message: 'Insufficient privileges' });
-      }
+      await checkUserPermissions(req);
       const { uuid } = req.params;
       const place = await getPlace(req.query)(Qualifier.byUuid(uuid));
       if (!place) {
         return serverUtils.error({ status: 404, message: 'Place not found' }, req, res);
       }
       return res.json(place);
+    }),
+    getAll: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req);
+
+      const placeType = Qualifier.byContactType(req.query.placeType);
+      const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
+
+      const docs = await getPageByType()( placeType, req.query.cursor, limit );
+
+      return res.json(docs);
     })
   }
 };

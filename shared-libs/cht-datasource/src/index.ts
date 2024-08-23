@@ -70,6 +70,20 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws Error if no UUID is provided
          */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Place.v1.getWithLineage)(Qualifier.byUuid(uuid)),
+
+        /**
+         * TODO: Add jsdoc
+         * @param personType
+         * @param cursor
+         * @param limit
+         */
+        getPageByType: (
+          personType: string,
+          cursor: Nullable<string> = null,
+          limit = 100
+        ) => ctx.bind(Person.v1.getPage)(
+          Qualifier.byContactType(personType), cursor, limit
+        ),
       },
       person: {
         /**

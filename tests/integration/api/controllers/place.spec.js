@@ -96,4 +96,23 @@ describe('Place API', () => {
       });
     });
   });
+
+  describe('Place.v1.getAll', async () => {
+    const placeType = 'clinic';
+
+    // TODO: this test is a bit non-covering of the actual generator functionality
+    // as only one place could be generated with the same type from the placeFactory
+    // figure out a way to generate more places with the same type
+    it('fetches all data by iterating through generator', async () => {
+      const docs = [];
+
+      const generator = Place.v1.getAll(dataContext)(Qualifier.byContactType(placeType));
+
+      for await (const doc of generator) {
+        docs.push(doc);
+      }
+
+      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equal([place0]);
+    });
+  });
 });

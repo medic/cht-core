@@ -1,4 +1,9 @@
 import { DataContext } from './data-context';
+import { Doc } from './doc';
+import { SettingsService } from '../local/libs/data-context';
+import logger from '@medic/logger';
+import { ContactTypeQualifier, isContactTypeQualifier } from '../qualifier';
+import { InvalidArgumentError } from './error';
 
 /**
  * A value that could be `null`.
@@ -143,4 +148,71 @@ export const getPagedGenerator = async function* <S, T>(
   } while (cursor);
 
   return null;
+};
+
+/** @internal */
+export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
+  qualifier: unknown
+) => {
+  if (!isContactTypeQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertLimit: (limit: unknown) => asserts limit is number = (limit: unknown) => {
+  if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
+    throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}]`);
+  }
+};
+
+/** @internal */
+export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
+  if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
+    throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}]`);
+  }
+};
+
+/** @internal */
+export const fetchAndFilter = (
+  getFunction: (key: unknown, limit: number, skip: number) => Promise<Nullable<Doc>[]>,
+  filterFunction: (settings: SettingsService, doc: Nullable<Doc>, uuid: string | undefined) => unknown,
+  settings: SettingsService,
+  contactType: string,
+  limit: number,
+): typeof recursionInner => {
+  const recursionInner = async (
+    currentLimit: number,
+    currentSkip: number,
+    currentDocs: Nullable<Doc>[] = [],
+  ): Promise<Page<unknown>> => {
+    const docs = await getFunction([contactType], currentLimit, currentSkip);
+    const noMoreResults = docs.length < currentLimit;
+    const newDocs = docs.filter((doc) => filterFunction(settings, doc, doc?._id));
+    const overFetchCount = currentDocs.length + newDocs.length - limit || 0;
+    const totalDocs = [...currentDocs, ...newDocs].slice(0, limit);
+
+    if (noMoreResults) {
+      return {data: totalDocs, cursor: null};
+    }
+
+    if (totalDocs.length === limit) {
+      const nextSkip = currentSkip + currentLimit - overFetchCount;
+
+      return {data: totalDocs, cursor: nextSkip.toString()};
+    }
+
+    // Re-fetch twice as many docs as we need to limit number of recursions
+    const missingCount = currentLimit - newDocs.length;
+    logger.debug(`Found [${missingCount.toString()}] invalid docs. Re-fetching additional records.`);
+    const nextLimit = missingCount * 2;
+    const nextSkip = currentSkip + currentLimit;
+
+    return recursionInner(
+      nextLimit,
+      nextSkip,
+      totalDocs,
+    );
+  };
+  return recursionInner;
 };
