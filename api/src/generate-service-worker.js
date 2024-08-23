@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
-const environment = require('./environment');
+const resources = require('./resources.js');
 const db = require('./db');
 const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
@@ -11,8 +11,8 @@ const extensionLibs = require('./services/extension-libs');
 
 const SWMETA_DOC_ID = 'service-worker-meta';
 
-const staticDirectoryPath = environment.staticPath;
-const webappDirectoryPath = environment.webappPath;
+const staticDirectoryPath = resources.staticPath;
+const webappDirectoryPath = resources.webappPath;
 const scriptOutputPath = path.join(webappDirectoryPath, 'service-worker.js');
 
 const fsExists = (path) => new Promise((resolve) => {
@@ -80,6 +80,7 @@ const writeServiceWorkerFile = async () => {
 
       // webapp
       'webapp/manifest.json',
+      'webapp/deploy-info.json',
       'webapp/audio/*',
       'webapp/img/*',
       'webapp/*.js',

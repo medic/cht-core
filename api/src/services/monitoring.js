@@ -2,7 +2,7 @@ const request = require('@medic/couch-request');
 const moment = require('moment');
 
 const db = require('../db');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 const logger = require('@medic/logger');
 const deployInfoService = require('./deploy-info');
 

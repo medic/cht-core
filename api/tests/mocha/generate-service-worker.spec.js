@@ -5,7 +5,7 @@ const workbox = require('workbox-build');
 const rewire = require('rewire');
 
 const db = require('../../src/db');
-const env = require('../../src/environment');
+const resources = require('../../src/resources');
 const logger = require('@medic/logger');
 const loginController = require('../../src/controllers/login');
 const extensionLibsService = require('../../src/services/extension-libs');
@@ -17,8 +17,8 @@ describe('generate service worker', () => {
   let workboxGenerate;
 
   beforeEach(() => {
-    sinon.stub(env, 'staticPath').value('/absolute/path/to/build/static/');
-    sinon.stub(env, 'webappPath').value('/absolute/path/to/build/static/webapp/');
+    sinon.stub(resources, 'staticPath').value('/absolute/path/to/build/static/');
+    sinon.stub(resources, 'webappPath').value('/absolute/path/to/build/static/webapp/');
     sinon.stub(loginController, 'renderLogin');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'put');
@@ -67,6 +67,7 @@ describe('generate service worker', () => {
       globPatterns: [
         '!webapp/service-worker.js',
         'webapp/manifest.json',
+        'webapp/deploy-info.json',
         'webapp/audio/*',
         'webapp/img/*',
         'webapp/*.js',

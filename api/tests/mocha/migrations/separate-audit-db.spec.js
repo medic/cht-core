@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const db = require('../../../src/db');
-const environment = require('../../../src/environment');
+const environment = require('@medic/environment');
 const migration = require('../../../src/migrations/separate-audit-db.js');
 const ERR_404 = { status: 404 };
 

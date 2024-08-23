@@ -1,10 +1,15 @@
 const db = require('../db');
-const environment = require('../environment');
+const environment = require('@medic/environment');
 const ddocs = require('./setup/ddocs');
 const logger = require('@medic/logger');
 const semver = require('semver');
+const fs = require('fs');
+const path = require('path');
+const resources = require('../resources');
 
 let deployInfoCache;
+const webappPath = resources.webappPath;
+const DEPLOY_INFO_OUTPUT_PATH = path.join(webappPath, 'deploy-info.json');
 
 const getVersion = (ddoc) => {
   return semver.valid(ddoc.build_info?.version) || semver.valid(ddoc.deploy_info?.build) || ddoc.version;
@@ -26,6 +31,12 @@ const getDeployInfo = async () => {
   }
 };
 
+const store = async () => {
+  const deployInfo = await getDeployInfo();
+  return await fs.promises.writeFile(DEPLOY_INFO_OUTPUT_PATH, JSON.stringify(deployInfo));
+};
+
 module.exports = {
   get: getDeployInfo,
+  store,
 };

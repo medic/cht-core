@@ -7,7 +7,7 @@ const request = require('@medic/couch-request');
 let db;
 let unitTestEnv;
 
-const env = require('../../src/environment');
+const env = require('@medic/environment');
 
 describe('db', () => {
   beforeEach(() => {

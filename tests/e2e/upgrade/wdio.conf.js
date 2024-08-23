@@ -9,15 +9,17 @@ const chai = require('chai');
 const { spawn } = require('child_process');
 chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
+const semver = require('semver');
 
 const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
 
 const {
-  MARKET_URL_READ='https://staging.dev.medicmobile.org',
-  STAGING_SERVER='_couch/builds_4',
+  MARKET_URL_READ = 'https://staging.dev.medicmobile.org',
+  STAGING_SERVER = '_couch/builds_4',
   HAPROXY_PORT,
-  BASE_VERSION='latest'
+  BASE_VERSION = 'latest',
+  TAG,
 } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
@@ -33,22 +35,33 @@ const getUpgradeServiceDockerCompose = async () => {
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
+const getReleasesQuery = () => {
+  const startKey = ['release', 'medic', 'medic'];
+  if (TAG) {
+    const version = semver.parse(TAG);
+    startKey.push(version.major, version.minor, version.patch);
+  } else {
+    startKey.push({});
+  }
+  return {
+    start_key: JSON.stringify(startKey),
+    descending: true,
+    limit: TAG ? 2 : 1,
+  };
+};
+
 const getRelease = async () => {
   if (BASE_VERSION !== 'latest') {
     return `medic:medic:${BASE_VERSION}`;
   }
 
   const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
-  const query = {
-    startKey: ['release', 'medic', 'medic', {}],
-    descending: true,
-    limit: 1,
-  };
-  const releases = await rpn.get({ url: url, qs: query, json: true });
+  const releases = await rpn.get({ url: url, qs: getReleasesQuery(), json: true });
   if (!releases.rows.length) {
     return MAIN_BRANCH;
   }
-  return releases.rows[0].id;
+
+  return releases.rows.at(-1).id;
 };
 
 const getMainCHTDockerCompose = async () => {
@@ -79,8 +92,8 @@ const dockerComposeCmd = (...params) => {
   params.unshift('-p', 'upgrade');
 
   return new Promise((resolve, reject) => {
-    console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params]);
-    const cmd = spawn('docker-compose', ['-f', UPGRADE_SERVICE_DC, ...params], { env });
+    console.log(...['docker compose', '-f', UPGRADE_SERVICE_DC, ...params]);
+    const cmd = spawn('docker', ['compose', '-f', UPGRADE_SERVICE_DC, ...params], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -128,8 +141,8 @@ const servicesStartTimeout = () => {
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs:
-  // order is important, because we want to upgrade from an older version to current version. validate the upgrade
-  // and then upgrade to master
+    // order is important, because we want to upgrade from an older version to current version. validate the upgrade
+    // and then upgrade to master
     [
       'upgrade.wdio-spec.js',
       'admin-user.wdio-spec.js',

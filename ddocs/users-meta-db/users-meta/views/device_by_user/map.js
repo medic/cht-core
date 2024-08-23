@@ -9,7 +9,8 @@ function(doc) {
     doc.metadata.day
   ) {
     var pad = function (number) {
-      return number.toString().padStart(2, '0');
+      var string = number.toString();
+      return string.length === 2 ? string : '0' + string;
     };
 
     emit([doc.metadata.user, doc.metadata.deviceId], {

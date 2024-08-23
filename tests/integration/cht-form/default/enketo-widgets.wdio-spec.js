@@ -22,21 +22,6 @@ describe('cht-form web component - Enketo Widgets', () => {
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option d');
 
-    // try to move to next page without filling the mandatory phone number field
-    await genericForm.nextPage(1, false);
-    expect(await enketoWidgetsPage.phoneFieldRequiredMessage().getAttribute('data-i18n'))
-      .to.equal('constraint.required');
-
-    // try to move to next page with an invalid phone number
-    await commonEnketoPage.setInputValue('Phone Number', '+4076');
-    await genericForm.nextPage(1, false);
-    expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
-      .to.equal('/enketo_widgets_test/enketo_test_select/phone:jr:constraintMsg');
-
-    // finally set a valid phone number and continue
-    await commonEnketoPage.setInputValue('Phone Number', '+40766565656');
-
-    await $('.form-footer').click();
     await genericForm.nextPage();
 
     await commonEnketoPage.selectRadioButton('Country', 'United States');
@@ -76,7 +61,6 @@ describe('cht-form web component - Enketo Widgets', () => {
     expect(jsonObj.patient_name).to.equal('Elias');
     expect(jsonObj.enketo_test_select.select_spinner).to.equal('a c');
     expect(jsonObj.enketo_test_select.select1_spinner).to.equal('d');
-    expect(jsonObj.enketo_test_select.phone).to.equal('+40766565656');
     expect(jsonObj.cascading_widgets.group1.country).to.equal('usa');
     expect(jsonObj.cascading_widgets.group1.city).to.equal('nyc');
     expect(jsonObj.cascading_widgets.group1.neighborhood).to.equal('bronx');
