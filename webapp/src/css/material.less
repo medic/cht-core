@@ -267,10 +267,7 @@ mm-panel-header {
 
 @media (max-width: @media-mobile) {
   .app-root:not(.old-nav) #snackbar {
-    bottom: 158px;
-  }
-  .app-root.show-content:not(.old-nav) #snackbar {
-    bottom: 0;
+    bottom: calc(@bottom-navbar-height + @fab-height + 24px);
   }
   .material {
     .card:not(.compact-card) {

@@ -102,6 +102,9 @@
 @filters-bar-desktop-height: 58px;
 @filters-bar-mobile-height: 50px;
 @bottom-navbar-height: 80px;
+@top-navbar-height: 60px;
+@fab-height: 56px;
+@top-without-filter: 75px;
 
 /* fonts */
 @font-family-main: Noto, sans-serif;
@@ -137,26 +140,14 @@
 @targets-column-gap: 24px;
 
 /* functions */
-.button-text() {
-  color: @button-text-color;
+.button-text(@color: @button-text-color) {
+  color: @color;
   text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 2px;
   svg {
     filter: drop-shadow(1px 1px 2px rgba(255, 255, 255, 0.5));
     circle,
     path {
       fill: @button-text-color;
-    }
-  }
-}
-
-.new-nav-button-text() {
-  color: @white;
-  text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 2px;
-  svg {
-    filter: drop-shadow(1px 1px 2px rgba(255, 255, 255, 0.5));
-    circle,
-    path {
-      fill: @white;
     }
   }
 }
@@ -181,26 +172,14 @@
   }
 }
 
-.button-text-inverse() {
-  color: @button-text-inverse-color;
+.button-text-inverse(@color: @button-text-inverse-color) {
+  color: @color;
   text-shadow: rgba(0, 0, 0, 0.5) 1px 1px 2px;
   svg {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
     circle,
     path {
       fill: @button-text-inverse-color;
-    }
-  }
-}
-
-.new-nav-button-text-inverse() {
-  color: #A7A9AC;
-  text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 2px;
-  svg {
-    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
-    circle,
-    path {
-      fill: #A7A9AC;
     }
   }
 }
