@@ -537,9 +537,10 @@ const waitForSettingsUpdateLogs = (type) => {
  *                           The keys should correspond to the settings that need to be updated,
  *                           and the values should be the new values for those settings.
  * @param {Object} [options={}] - Options to control the behavior of the update.
- * @param {boolean} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload. if `truthy`, will tail
- *                                                 service logs and resolve when new settings are loaded. By default, watches
- *                                                 api logs, if value equals 'sentinel', will watch sentinel logs instead.
+ * @param {boolean} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload. if `truthy`,
+ *                                                 will tail service logs and resolve when new settings are loaded.
+ *                                                 By default, watches api logs, if value equals 'sentinel', will
+ *                                                 watch sentinel logs instead.
  * @param {boolean} [options.sync=false] - If `true`, the function will perform a synchronization
  *                                         after updating the settings. Defaults to `false`.
  * @param {boolean} [options.refresh=false] - If `true`, the function will refresh the browser after
