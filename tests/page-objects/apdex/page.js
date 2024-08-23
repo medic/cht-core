@@ -7,13 +7,13 @@ module.exports = class Page {
   async waitForDisplayedAndRetry(selector, retry = 20) {
     const TIME_OUT = 1000 * 60 * 20;
     try {
-        return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
-      } catch (error) {
-        if (retry < 0) {
-          return false;
-        }     
-        await this.waitForDisplayedAndRetry(selector, --retry);
-      }
+      return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
+    } catch (error) {
+      if (retry < 0) {
+        return false;
+      }     
+      await this.waitForDisplayedAndRetry(selector, --retry);
+    }
   }
 
   async clickElement(selector) {
@@ -90,8 +90,7 @@ module.exports = class Page {
     }
 
     await driver.hideKeyboard();
-    shown = await driver.isKeyboardShown();
-    if (shown) {
+    if (await driver.isKeyboardShown()) {
       await browser.pause(WAIT_ANIMATION);
     }
   }
@@ -168,7 +167,7 @@ module.exports = class Page {
 
     const commonElements = settingsProvider.getCommonElements();
     const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
-    const FAB_LIST_TITLE = commonElements?.fabListTitle || getLinkSelector('New');
+    const FAB_LIST_TITLE = commonElements?.fabListTitle || this.getLinkSelector('New');
     const SUBMIT_BUTTON_LABEL = commonElements?.formSubmit || 'Submit';
     const NEXT_PAGE_BUTTON_LABEL = commonElements?.formNext || 'Next >';
 
@@ -195,7 +194,7 @@ module.exports = class Page {
   }
 
   async relaunchApp(commonElements) {
-    const UI_ELEMENT = commonElements?.relaunchAppAssert || getLinkSelector('People');
+    const UI_ELEMENT = commonElements?.relaunchAppAssert || this.getLinkSelector('People');
     await driver.execute('mobile: terminateApp', {appId: APP_ID});
     await driver.execute('mobile: activateApp', {appId: APP_ID});
     await this.waitForDisplayedAndRetry(UI_ELEMENT);
@@ -207,7 +206,7 @@ module.exports = class Page {
     }
 
     const commonElements = settingsProvider.getCommonElements();
-    const SEARCH_ICON = commonElements?.searchIcon || getLinkSelector('');
+    const SEARCH_ICON = commonElements?.searchIcon || this.getLinkSelector('');
     const SEARCH_INPUT = '//android.widget.EditText';
 
     await this.navigate(page.navigation);
