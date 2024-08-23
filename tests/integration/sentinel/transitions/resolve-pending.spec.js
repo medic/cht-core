@@ -1,14 +1,14 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 describe('resolve_pending', () => {
   after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
-    const settings = {transitions: {resolve_pending: false}};
+    const settings = { transitions: { resolve_pending: false } };
 
     const doc = {
       _id: uuid(),
@@ -19,7 +19,7 @@ describe('resolve_pending', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -29,7 +29,7 @@ describe('resolve_pending', () => {
   });
 
   it('should be skipped when no pending tasks', () => {
-    const settings = {transitions: {resolve_pending: false}};
+    const settings = { transitions: { resolve_pending: false } };
 
     const doc = {
       _id: uuid(),
@@ -37,7 +37,7 @@ describe('resolve_pending', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -47,7 +47,7 @@ describe('resolve_pending', () => {
   });
 
   it('should add task when matched', () => {
-    const settings = {transitions: {resolve_pending: true}};
+    const settings = { transitions: { resolve_pending: true } };
 
     const doc = {
       _id: uuid(),
@@ -61,7 +61,7 @@ describe('resolve_pending', () => {
             state: 'pending',
             timestamp: new Date().getTime()
           }],
-          messages: [{to: 'a', message: 'b'}]
+          messages: [{ to: 'a', message: 'b' }]
         },
         {
           name: 'task2',
@@ -71,7 +71,7 @@ describe('resolve_pending', () => {
             state: 'pending',
             timestamp: new Date().getTime()
           }],
-          messages: [{to: 'a', message: 'b'}]
+          messages: [{ to: 'a', message: 'b' }]
         }
       ],
       scheduled_tasks: [
@@ -83,7 +83,7 @@ describe('resolve_pending', () => {
             state: 'pending',
             timestamp: new Date().getTime()
           }],
-          messages: [{to: 'a', message: 'b'}]
+          messages: [{ to: 'a', message: 'b' }]
         },
         {
           name: 'task4',
@@ -93,13 +93,13 @@ describe('resolve_pending', () => {
             state: 'pending',
             timestamp: new Date().getTime()
           }],
-          messages: [{to: 'a', message: 'b'}]
+          messages: [{ to: 'a', message: 'b' }]
         },
       ]
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))

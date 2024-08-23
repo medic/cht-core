@@ -15,24 +15,24 @@ const contacts = [
     _id: 'health_center',
     name: 'Health Center',
     type: 'health_center',
-    parent: {_id: 'district_hospital'},
+    parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic',
     name: 'Clinic',
     type: 'clinic',
-    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent: {_id: 'clinic1', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw',
     type: 'person',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
     reported_date: new Date().getTime()
@@ -42,7 +42,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   }
 ];
@@ -80,12 +80,12 @@ describe('Sentinel queue drain', () => {
 
     for (let i = 0; i < NBR_DOCS; i++) {
       const id = uuid();
-      docs.push(Object.assign({_id: id}, report));
+      docs.push(Object.assign({ _id: id }, report));
       ids.push(id);
     }
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => utils.getDocs(ids))
@@ -110,14 +110,14 @@ describe('Sentinel queue drain', () => {
     await utils.startHaproxy();
     await utils.listenForApi();
 
-    const settings = {transitions: {update_clinics: true}};
-    await utils.updateSettings(settings, {ignoreReload: 'api'});
+    const settings = { transitions: { update_clinics: true } };
+    await utils.updateSettings(settings, { ignoreReload: 'api' });
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
       from: 'phone1',
-      fields: {patient_id: 'patient'},
+      fields: { patient_id: 'patient' },
       reported_date: new Date().getTime(),
     };
     await utils.saveDoc(doc);

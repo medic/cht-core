@@ -13,7 +13,7 @@ describe('Settings API', () => {
 
   describe('old api', () => {
 
-    const update = (updates, replace = false) => {
+    const update = (updates, replace=false) => {
       let uri = path.join(
         '/',
         constants.DB_NAME,
@@ -111,7 +111,7 @@ describe('Settings API', () => {
 
   describe('new api', () => {
 
-    const update = (updates, replace = false, overwrite = false) => {
+    const update = (updates, replace= false, overwrite = false) => {
       const qs = {};
       if (replace) {
         qs.replace = 1;

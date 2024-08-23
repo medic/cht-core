@@ -21,7 +21,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'health_center',
     place_id: 'the_health_center',
-    parent: {_id: 'district_hospital'},
+    parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
@@ -30,9 +30,9 @@ const contacts = [
     type: 'contact',
     contact_type: 'clinic',
     place_id: 'the_clinic',
-    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
-      _id: 'person', parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -42,7 +42,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'patient',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   },
@@ -52,7 +52,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_supervisor',
-    parent: {_id: 'district_hospital'},
+    parent: { _id: 'district_hospital' },
     phone: '+00000000',
     reported_date: new Date().getTime()
   },
@@ -62,7 +62,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_middle_man',
-    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: '+11111111',
     reported_date: new Date().getTime()
   }
@@ -87,8 +87,8 @@ const nursingHomeType = {
 
 const getContactsByReference = shortcodes => {
   const keys = shortcodes.map(shortcode => ['shortcode', shortcode]);
-  const qs = {keys: JSON.stringify(keys), include_docs: true};
-  return utils.requestOnTestDb({path: '/_design/medic-client/_view/contacts_by_reference', qs});
+  const qs = { keys: JSON.stringify(keys), include_docs: true };
+  return utils.requestOnTestDb({ path: '/_design/medic-client/_view/contacts_by_reference', qs });
 };
 
 const getIds = docs => docs.map(doc => doc._id);
@@ -112,7 +112,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
     const docs = [
@@ -121,13 +121,13 @@ describe('registration', () => {
     const docIds = getIds(docs);
     let newPatientId;
     return utils
-      .updateSettings(testForm.forms.NP, {ignoreReload: 'sentinel'})
+      .updateSettings(testForm.forms.NP, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(docIds))
@@ -148,7 +148,7 @@ describe('registration', () => {
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
           phone: patientPhone,
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
           type: 'person',
           created_by: 'person',
@@ -159,7 +159,7 @@ describe('registration', () => {
 
   it('should not create patient from report doc when provided invalid phone', () => {
     const patientPhone = '+97796666';
-    const patient_id = uuid();
+    const patient_id =uuid();
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: patient_id,
@@ -173,7 +173,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -183,13 +183,13 @@ describe('registration', () => {
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(testForm.forms.NP, {ignoreReload: 'sentinel'})
+      .updateSettings(testForm.forms.NP, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.not.include({'transitions.registration.ok': false});
+          chai.expect(info).to.deep.nested.not.include({ 'transitions.registration.ok': false });
         });
       }).then(() => utils.getDocs(docIds))
       .then(updated => {
@@ -217,7 +217,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -227,20 +227,20 @@ describe('registration', () => {
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(testForm.forms.NP, {ignoreReload: 'sentinel'})
+      .updateSettings(testForm.forms.NP, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.not.include({'transitions.registration.ok': false});
+          chai.expect(info).to.deep.nested.not.include({ 'transitions.registration.ok': false });
         });
       });
   });
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: {registration: false},
+      transitions: { registration: false },
       registrations: [{
         form: 'FORM',
         events: [],
@@ -253,7 +253,7 @@ describe('registration', () => {
           }],
         }]
       }],
-      forms: {FORM: {}}
+      forms: { FORM: {} }
     };
 
     const doc = {
@@ -263,12 +263,12 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -279,7 +279,7 @@ describe('registration', () => {
 
   it('should be skipped if no config', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM',
         events: [],
@@ -292,7 +292,7 @@ describe('registration', () => {
           }],
         }]
       }],
-      forms: {FORM: {}}
+      forms: { FORM: {} }
     };
 
     const doc = {
@@ -302,12 +302,12 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -322,7 +322,7 @@ describe('registration', () => {
 
   it('should error if invalid or if patient or place not found', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM',
         events: [],
@@ -351,7 +351,7 @@ describe('registration', () => {
           }]
         }
       }],
-      forms: {FORM: {}}
+      forms: { FORM: {} }
     };
 
     const noSubjects = { // doesn't patient_id or place_id fields
@@ -365,7 +365,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -381,7 +381,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -397,7 +397,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -405,13 +405,13 @@ describe('registration', () => {
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(docIds))
@@ -453,7 +453,7 @@ describe('registration', () => {
 
   it('should fail if subject is not of correct type', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM-A',
         events: [],
@@ -472,7 +472,7 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: {'FORM-A': {}}
+      forms: { 'FORM-A': {} }
     };
 
     const placeInsteadOfPatient = { // has a patient_id field containing shortcode corresponding to a place
@@ -486,7 +486,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -501,7 +501,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -517,7 +517,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -533,7 +533,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -549,7 +549,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -563,14 +563,14 @@ describe('registration', () => {
     const allIds = getIds(allDocs);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(allDocs))
       .then(() => sentinelUtils.waitForSentinel(allIds))
       .then(() => sentinelUtils.getInfoDocs(allIds))
       .then(infos => {
         infos.forEach((info, idx) => {
           const errorMsg = `failed for doc${idx + 1}`;
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true}, errorMsg);
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true }, errorMsg);
         });
       })
       .then(() => utils.getDocs(allIds))
@@ -579,7 +579,7 @@ describe('registration', () => {
           const errorMsg = `failed for doc${idx + 1}`;
           chai.expect(doc.tasks).to.have.lengthOf(1, errorMsg);
           chai.expect(doc.tasks[0].messages[0]).to.include(
-            {message: 'Subject not found or invalid', to: '+444999'},
+            { message: 'Subject not found or invalid', to: '+444999' },
             errorMsg
           );
 
@@ -591,7 +591,7 @@ describe('registration', () => {
 
   it('should create a patient with a random patient_id or prefilled value', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM-A',
         events: [{
@@ -613,7 +613,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {patient_id_field: 'our_patient_id', patient_name_field: 'our_patient_name'},
+          params: { patient_id_field: 'our_patient_id', patient_name_field: 'our_patient_name' },
           bool_expr: ''
         }],
         messages: [{
@@ -626,7 +626,7 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: {'FORM-A': {}, 'FORM-B': {}}
+      forms: { 'FORM-A': {}, 'FORM-B': {} }
     };
 
     const justPatientName = { // has just the `patient_name` field, and should create this person
@@ -640,7 +640,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -656,7 +656,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -672,7 +672,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -688,7 +688,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -702,13 +702,13 @@ describe('registration', () => {
     let newPatientId;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(docIds))
@@ -749,7 +749,7 @@ describe('registration', () => {
 
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
           type: 'person',
           created_by: 'person',
@@ -758,7 +758,7 @@ describe('registration', () => {
 
         chai.expect(patients.rows[1].doc).to.deep.include({
           patient_id: 'venus',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Venus',
           type: 'person',
           created_by: 'person',
@@ -769,13 +769,13 @@ describe('registration', () => {
 
   it('should not create people with invalid / missing parent', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM-A',
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {parent_id: 'parent'},
+          params: { parent_id: 'parent' },
           bool_expr: ''
         }],
         messages: [],
@@ -784,7 +784,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {parent_id: 'parent_id'},
+          params: { parent_id: 'parent_id' },
           bool_expr: ''
         }],
         messages: [],
@@ -793,7 +793,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {parent_id: 'parent_id', contact_type: 'chw'},
+          params: { parent_id: 'parent_id', contact_type: 'chw' },
           bool_expr: ''
         }],
         messages: [{
@@ -824,7 +824,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {parent_id: 'parent_id', contact_type: 'nurse'},
+          params: { parent_id: 'parent_id', contact_type: 'nurse' },
           bool_expr: ''
         }],
         messages: [{
@@ -851,7 +851,7 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: {'FORM-A': {}, 'FORM-B': {}, 'FORM-CHW': {}, 'FORM-NURSE': {}},
+      forms: { 'FORM-A': {}, 'FORM-B': {}, 'FORM-CHW': {}, 'FORM-NURSE': {} },
       contact_types: [...defaultSettings.contact_types, chwContactType, nurseContactType]
     };
 
@@ -864,7 +864,7 @@ describe('registration', () => {
         patient_name: 'Solaris',
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const chwNonExistingParent = {
@@ -877,7 +877,7 @@ describe('registration', () => {
         parent_id: 'not_a_valid_parent',
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const invalidParent1 = {
@@ -890,7 +890,7 @@ describe('registration', () => {
         parent_id: 'the_clinic', // can't create a CHW under a clinic
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const invalidParent2 = {
@@ -903,7 +903,7 @@ describe('registration', () => {
         parent_id: 'the_district_hospital', // can't create a CHW under a district_hospital
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const invalidParent3 = {
@@ -916,20 +916,20 @@ describe('registration', () => {
         parent_id: 'the_health_center', // can't create a Nurse under a health_center
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const docs = [chwNoParent, chwNonExistingParent, invalidParent1, invalidParent2, invalidParent3];
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(docIds))
@@ -999,13 +999,13 @@ describe('registration', () => {
 
   it('should create people with selected parent', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM-PERSON',
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {parent_id: 'parent'},
+          params: { parent_id: 'parent' },
           bool_expr: ''
         }],
         messages: [{
@@ -1022,7 +1022,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {parent_id: 'parent_id', contact_type: 'chw'},
+          params: { parent_id: 'parent_id', contact_type: 'chw' },
           bool_expr: ''
         }],
         messages: [{
@@ -1039,7 +1039,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_patient',
-          params: {parent_id: 'the_parent', contact_type: 'nurse', patient_name_field: 'nurse_name'},
+          params: { parent_id: 'the_parent', contact_type: 'nurse', patient_name_field: 'nurse_name' },
           bool_expr: ''
         }],
         messages: [{
@@ -1052,7 +1052,7 @@ describe('registration', () => {
           }]
         }],
       }],
-      forms: {'FORM-PERSON': {}, 'FORM-CHW': {}, 'FORM-NURSE': {}},
+      forms: { 'FORM-PERSON': {}, 'FORM-CHW': {}, 'FORM-NURSE': {} },
       contact_types: [...defaultSettings.contact_types, chwContactType, nurseContactType]
     };
 
@@ -1066,7 +1066,7 @@ describe('registration', () => {
         parent: 'the_clinic'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const createChw = {
@@ -1079,7 +1079,7 @@ describe('registration', () => {
         parent_id: 'the_health_center'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const createNurse = {
@@ -1094,7 +1094,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1103,13 +1103,13 @@ describe('registration', () => {
     let updatedDocs;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(ids))
@@ -1144,7 +1144,7 @@ describe('registration', () => {
         chai.expect(patients.rows[0].doc).to.deep.include({
           name: 'Solaris',
           type: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           created_by: 'supervisor',
           source_id: createPerson._id,
           patient_id: updatedDocs[0].patient_id,
@@ -1154,7 +1154,7 @@ describe('registration', () => {
           name: 'Lunaris',
           type: 'contact',
           contact_type: 'chw',
-          parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
           created_by: 'supervisor',
           source_id: createChw._id,
           patient_id: updatedDocs[1].patient_id,
@@ -1164,7 +1164,7 @@ describe('registration', () => {
           name: 'Apollo',
           type: 'contact',
           contact_type: 'nurse',
-          parent: {_id: 'district_hospital'},
+          parent: { _id: 'district_hospital' },
           created_by: 'person',
           source_id: createNurse._id,
           patient_id: updatedDocs[2].patient_id,
@@ -1174,7 +1174,7 @@ describe('registration', () => {
 
   it('should add expected date', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM',
         events: [{
@@ -1185,7 +1185,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: {FORM: {}}
+      forms: { FORM: {} }
     };
 
     const withWeeksSinceLMP = {
@@ -1200,7 +1200,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1216,7 +1216,7 @@ describe('registration', () => {
       reported_date: moment().subtract(2, 'weeks').valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1232,7 +1232,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1240,13 +1240,13 @@ describe('registration', () => {
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(docIds))
@@ -1273,7 +1273,7 @@ describe('registration', () => {
 
   it('should add birth date', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM',
         events: [{
@@ -1284,7 +1284,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: {FORM: {}}
+      forms: { FORM: {} }
     };
 
     const withMonthsSinceBirth = {
@@ -1299,7 +1299,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1315,7 +1315,7 @@ describe('registration', () => {
       reported_date: moment().subtract(2, 'weeks').valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1331,7 +1331,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1339,13 +1339,13 @@ describe('registration', () => {
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(docIds))
@@ -1361,7 +1361,7 @@ describe('registration', () => {
 
   it('should not create places with missing contact_type', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM-PLACE',
         events: [{
@@ -1371,7 +1371,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: {'FORM-PLACE': {}},
+      forms: { 'FORM-PLACE': {} },
     };
 
     const createPlace = {
@@ -1383,11 +1383,11 @@ describe('registration', () => {
         place_name: 'Solaris',
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(createPlace))
       // Sentinel won't process these, so we can't wait for a metadata update, but let's give it 5 seconds just in case
       .then(() => utils.delayPromise(5000))
@@ -1404,13 +1404,13 @@ describe('registration', () => {
 
   it('should not create place with invalid / missing parent', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM-CLINIC_NO_PARENT',
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: {contact_type: 'clinic'},
+          params: { contact_type: 'clinic' },
           bool_expr: ''
         }],
         messages: [{
@@ -1427,7 +1427,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: {contact_type: 'clinic', parent_id: 'parent'},
+          params: { contact_type: 'clinic', parent_id: 'parent' },
           bool_expr: ''
         }],
         messages: [{
@@ -1458,7 +1458,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: {contact_type: 'health_center', parent_id: 'parent_id'},
+          params: { contact_type: 'health_center', parent_id: 'parent_id' },
           bool_expr: ''
         }],
         messages: [{
@@ -1485,7 +1485,7 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: {'FORM-CLINIC_NO_PARENT': {}, 'FORM-CLINIC': {}, 'FORM-HEALTH_CENTER': {}},
+      forms: { 'FORM-CLINIC_NO_PARENT': {}, 'FORM-CLINIC': {}, 'FORM-HEALTH_CENTER': {} },
     };
 
     const clinicNoParentUnderClinic = {
@@ -1499,7 +1499,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1512,7 +1512,7 @@ describe('registration', () => {
         place_name: 'Lunaris',
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const clinicUnderClinic = {
@@ -1525,7 +1525,7 @@ describe('registration', () => {
         parent: 'the_clinic'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'middle_man', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const clinicUnderDistrict = {
@@ -1538,7 +1538,7 @@ describe('registration', () => {
         parent: 'the_district_hospital'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'middle_man', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const clinicNoParent = {
@@ -1550,7 +1550,7 @@ describe('registration', () => {
         place_name: 'Lunaris',
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'middle_man', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const clinicNoExistingParent = {
@@ -1563,7 +1563,7 @@ describe('registration', () => {
         parent: 'some_parent_that_doesnt_exist'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'middle_man', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const healthCenterUnderClinic = {
@@ -1576,7 +1576,7 @@ describe('registration', () => {
         parent_id: 'the_clinic'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'middle_man', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const reports = [
@@ -1592,13 +1592,13 @@ describe('registration', () => {
     const ids = reports.map(r => r._id);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(reports))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(ids))
@@ -1694,13 +1694,13 @@ describe('registration', () => {
 
   it('should create places with correct type, name and parent', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM-CLINIC_NO_PARENT',
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: {contact_type: 'clinic', place_name_field: 'the_place_name'},
+          params: { contact_type: 'clinic', place_name_field: 'the_place_name' },
           bool_expr: ''
         }],
         messages: [{
@@ -1725,7 +1725,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: {contact_type: 'nursing_home', parent_id: 'parent'},
+          params: { contact_type: 'nursing_home', parent_id: 'parent' },
           bool_expr: ''
         }],
         messages: [{
@@ -1764,7 +1764,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: {contact_type: 'health_center', parent_id: 'parent_id'},
+          params: { contact_type: 'health_center', parent_id: 'parent_id' },
           bool_expr: ''
         }],
         messages: [{
@@ -1791,7 +1791,7 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: {'FORM-CLINIC_NO_PARENT': {}, 'FORM-NURSING_HOME': {}, 'FORM-HEALTH_CENTER': {}},
+      forms: { 'FORM-CLINIC_NO_PARENT': {}, 'FORM-NURSING_HOME': {}, 'FORM-HEALTH_CENTER': {} },
       contact_types: [
         ...defaultSettings.contact_types,
         nursingHomeType,
@@ -1807,7 +1807,7 @@ describe('registration', () => {
         the_place_name: 'Toyota',
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'middle_man', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const nursingHome = {
@@ -1820,7 +1820,7 @@ describe('registration', () => {
         parent: 'the_health_center'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const healthCenter = {
@@ -1833,7 +1833,7 @@ describe('registration', () => {
         parent_id: 'the_district_hospital'
       },
       reported_date: moment().valueOf(),
-      contact: {_id: 'supervisor', parent: {_id: 'district_hospital'}}
+      contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
     const docs = [clinicNoParent, nursingHome, healthCenter];
@@ -1841,13 +1841,13 @@ describe('registration', () => {
     let updatedDocs;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(ids))
@@ -1889,7 +1889,7 @@ describe('registration', () => {
           place_id: updatedDocs[0].place_id,
           source_id: updatedDocs[0]._id,
           created_by: updatedDocs[0].contact._id,
-          parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         });
         chai.expect(places.rows[1].doc).to.deep.include({
           name: 'Ford',
@@ -1898,7 +1898,7 @@ describe('registration', () => {
           place_id: updatedDocs[1].place_id,
           source_id: updatedDocs[1]._id,
           created_by: updatedDocs[1].contact._id,
-          parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         });
         chai.expect(places.rows[2].doc).to.deep.include({
           name: 'Mazda',
@@ -1906,7 +1906,7 @@ describe('registration', () => {
           place_id: updatedDocs[2].place_id,
           source_id: updatedDocs[2]._id,
           created_by: updatedDocs[2].contact._id,
-          parent: {_id: 'district_hospital'}
+          parent: { _id: 'district_hospital' }
         });
 
         places.rows.forEach(row => {
@@ -1923,14 +1923,14 @@ describe('registration', () => {
     // we have to set the forms as "public" to avoid checking the "contact" in the filter
 
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [
         {
           form: 'FORM-CLINIC',
           events: [{
             name: 'on_create',
             trigger: 'add_place',
-            params: {contact_type: 'clinic', place_name_field: 'the_place_name'},
+            params: { contact_type: 'clinic', place_name_field: 'the_place_name' },
             bool_expr: ''
           }],
           messages: [{
@@ -1956,7 +1956,7 @@ describe('registration', () => {
           events: [{
             name: 'on_create',
             trigger: 'add_patient',
-            params: {contact_type: 'person', patient_name_field: 'the_patient_name'},
+            params: { contact_type: 'person', patient_name_field: 'the_patient_name' },
             bool_expr: ''
           }],
           messages: [{
@@ -1978,7 +1978,7 @@ describe('registration', () => {
           }],
         },
       ],
-      forms: {'FORM-CLINIC': {public_form: true}, 'FORM-PERSON': {public_form: true}},
+      forms: { 'FORM-CLINIC': { public_form: true }, 'FORM-PERSON': { public_form: true } },
     };
 
     const createClinic = {
@@ -2008,13 +2008,13 @@ describe('registration', () => {
     let updatedDocs;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
         infos.forEach(info => {
-          chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
       .then(() => utils.getDocs(ids))
@@ -2050,7 +2050,7 @@ describe('registration', () => {
           place_id: updatedDocs[0].place_id,
           source_id: updatedDocs[0]._id,
           created_by: updatedDocs[0].contact._id,
-          parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         });
         chai.expect(contacts.rows[0].doc.contact).to.equal(undefined);
 
@@ -2061,14 +2061,14 @@ describe('registration', () => {
           patient_id: updatedDocs[1].patient_id,
           source_id: updatedDocs[1]._id,
           created_by: updatedDocs[1].contact._id,
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         });
       });
   });
 
   it('should assign and clear schedules', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM',
         events: [{
@@ -2084,7 +2084,7 @@ describe('registration', () => {
         }],
         messages: [],
       }],
-      forms: {FORM: {}},
+      forms: { FORM: {} },
       schedules: [{
         name: 'sch1',
         start_from: 'some_date_field',
@@ -2150,11 +2150,11 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
-    const withPatient2 = Object.assign({}, withPatient1, {_id: uuid()});
+    const withPatient2 = Object.assign({}, withPatient1, { _id: uuid() });
 
     const withClinic1 = {
       _id: uuid(),
@@ -2168,11 +2168,11 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'middle_man',
-        parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       },
     };
 
-    const withClinic2 = Object.assign({}, withClinic1, {_id: uuid()});
+    const withClinic2 = Object.assign({}, withClinic1, { _id: uuid() });
 
     const withClinicAndPatient1 = {
       _id: uuid(),
@@ -2187,11 +2187,11 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'middle_man',
-        parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       },
     };
 
-    const withClinicAndPatient2 = Object.assign({}, withClinicAndPatient1, {_id: uuid()});
+    const withClinicAndPatient2 = Object.assign({}, withClinicAndPatient1, { _id: uuid() });
 
     const expectedMessage2 = (state) => ({
       type: 'sch1',
@@ -2213,13 +2213,13 @@ describe('registration', () => {
     });
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([withPatient1, withClinic1]))
       .then(() => sentinelUtils.waitForSentinel([withPatient1._id, withClinic1._id]))
       .then(() => sentinelUtils.getInfoDocs([withPatient1._id, withClinic1._id]))
       .then(([infoWithPatient, infoWithClinic]) => {
-        chai.expect(infoWithPatient).to.deep.nested.include({'transitions.registration.ok': true});
-        chai.expect(infoWithClinic).to.deep.nested.include({'transitions.registration.ok': true});
+        chai.expect(infoWithPatient).to.deep.nested.include({ 'transitions.registration.ok': true });
+        chai.expect(infoWithClinic).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
       .then(() => utils.getDocs([withPatient1._id, withClinic1._id]))
       .then(([updWithPatient1, updWithClinic1]) => {
@@ -2241,8 +2241,8 @@ describe('registration', () => {
       .then(() => sentinelUtils.waitForSentinel([withPatient2._id, withClinic2._id]))
       .then(() => sentinelUtils.getInfoDocs([withPatient2._id, withClinic2._id]))
       .then(([infoWithPatient, infoWithClinic]) => {
-        chai.expect(infoWithPatient).to.deep.nested.include({'transitions.registration.ok': true});
-        chai.expect(infoWithClinic).to.deep.nested.include({'transitions.registration.ok': true});
+        chai.expect(infoWithPatient).to.deep.nested.include({ 'transitions.registration.ok': true });
+        chai.expect(infoWithClinic).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
       .then(() => utils.getDocs([withPatient1._id, withPatient2._id, withClinic1._id, withClinic2._id]))
       .then(([updWithPatient1, updWithPatient2, updWithClinic1, updWithClinic2]) => {
@@ -2278,7 +2278,7 @@ describe('registration', () => {
       .then(() => sentinelUtils.waitForSentinel(withClinicAndPatient1._id))
       .then(() => sentinelUtils.getInfoDoc(withClinicAndPatient1._id))
       .then((infodoc) => {
-        chai.expect(infodoc).to.deep.nested.include({'transitions.registration.ok': true});
+        chai.expect(infodoc).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
       .then(() => utils.getDocs([withPatient2._id, withClinic2._id, withClinicAndPatient1._id]))
       .then(([updWithPatient2, updWithClinic2, withClinicAndPatient]) => {
@@ -2307,7 +2307,7 @@ describe('registration', () => {
       .then(() => sentinelUtils.waitForSentinel(withClinicAndPatient2._id))
       .then(() => sentinelUtils.getInfoDoc(withClinicAndPatient2._id))
       .then((infodoc) => {
-        chai.expect(infodoc).to.deep.nested.include({'transitions.registration.ok': true});
+        chai.expect(infodoc).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
       .then(() => utils.getDocs([
         withClinicAndPatient2._id, // first, so we can use spread for the rest
@@ -2335,7 +2335,7 @@ describe('registration', () => {
 
   it('should add messages', () => {
     const settings = {
-      transitions: {registration: true},
+      transitions: { registration: true },
       registrations: [{
         form: 'FORM',
         events: [],
@@ -2369,7 +2369,7 @@ describe('registration', () => {
           }],
         }],
       }],
-      forms: {FORM: {}},
+      forms: { FORM: {} },
     };
 
     const doc = {
@@ -2385,17 +2385,17 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+        chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {

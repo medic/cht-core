@@ -1,4 +1,4 @@
-const {expect} = require('chai');
+const { expect } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
@@ -9,7 +9,7 @@ describe('generate_shortcode_on_contacts', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: {generate_shortcode_on_contacts: false}
+      transitions: { generate_shortcode_on_contacts: false }
     };
 
     const doc = {
@@ -19,7 +19,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -35,7 +35,7 @@ describe('generate_shortcode_on_contacts', () => {
 
   it('should be skipped when not a configured contact', () => {
     const settings = {
-      transitions: {generate_shortcode_on_contacts: true}
+      transitions: { generate_shortcode_on_contacts: true }
     };
 
     const contact = {
@@ -48,16 +48,16 @@ describe('generate_shortcode_on_contacts', () => {
     const report = {
       _id: uuid(),
       type: 'data_record',
-      fields: {some: 'thing'},
+      fields: { some: 'thing' },
       reported_date: new Date().getTime(),
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([contact, report]))
       .then(() => sentinelUtils.waitForSentinel([contact._id, report._id]))
       .then(() => sentinelUtils.getInfoDocs([contact._id, report._id]))
-      .then(([contactInfo, reportInfo]) => {
+      .then(([ contactInfo, reportInfo ]) => {
         expect(Object.keys(contactInfo.transitions)).to.be.empty;
         expect(Object.keys(reportInfo.transitions)).to.be.empty;
       })
@@ -73,7 +73,7 @@ describe('generate_shortcode_on_contacts', () => {
 
   it('should add place_id', () => {
     const settings = {
-      transitions: {generate_shortcode_on_contacts: true},
+      transitions: { generate_shortcode_on_contacts: true },
     };
 
     const doc = {
@@ -83,12 +83,12 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info).to.deep.nested.include({'transitions.generate_shortcode_on_contacts.ok': true});
+        expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {
@@ -99,7 +99,7 @@ describe('generate_shortcode_on_contacts', () => {
 
   it('should be skipped when patient_id is filled', () => {
     const settings = {
-      transitions: {generate_shortcode_on_contacts: true},
+      transitions: { generate_shortcode_on_contacts: true },
     };
 
     const doc = {
@@ -110,7 +110,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -125,7 +125,7 @@ describe('generate_shortcode_on_contacts', () => {
 
   it('should be skipped when place_id is filled', () => {
     const settings = {
-      transitions: {generate_shortcode_on_contacts: true},
+      transitions: { generate_shortcode_on_contacts: true },
     };
 
     const doc = {
@@ -136,7 +136,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -151,7 +151,7 @@ describe('generate_shortcode_on_contacts', () => {
 
   it('should add patient_id', () => {
     const settings = {
-      transitions: {generate_shortcode_on_contacts: true},
+      transitions: { generate_shortcode_on_contacts: true },
     };
 
     const doc = {
@@ -161,7 +161,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -176,7 +176,7 @@ describe('generate_shortcode_on_contacts', () => {
 
   it('should add place_id', () => {
     const settings = {
-      transitions: {generate_shortcode_on_contacts: true},
+      transitions: { generate_shortcode_on_contacts: true },
     };
 
     const doc = {
@@ -186,12 +186,12 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info).to.deep.nested.include({'transitions.generate_shortcode_on_contacts.ok': true});
+        expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {

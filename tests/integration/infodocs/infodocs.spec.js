@@ -1,4 +1,4 @@
-const {assert} = require('chai');
+const { assert } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
@@ -28,7 +28,7 @@ describe('infodocs', () => {
     const path = method === 'PUT' ? `/${doc._id}` : '/';
     let infoDoc;
 
-    const result = await utils.requestOnTestDb({path, method, body: doc});
+    const result = await utils.requestOnTestDb({ path, method, body: doc });
     assert.isTrue(result.ok);
     doc._rev = result.rev;
     doc.more = 'data';
@@ -44,7 +44,7 @@ describe('infodocs', () => {
     assert.isOk(infoDoc.initial_replication_date);
     assert.isOk(infoDoc.latest_replication_date);
 
-    const update = await utils.requestOnTestDb({path, method, body: doc});
+    const update = await utils.requestOnTestDb({ path, method, body: doc });
     assert.isTrue(update.ok);
 
     const [updatedInfodoc] = await delayedInfoDocsOf(doc._id);
@@ -55,7 +55,7 @@ describe('infodocs', () => {
     infoDoc = updatedInfodoc;
 
     try {
-      await utils.requestOnTestDb({path, method, body: doc});
+      await utils.requestOnTestDb({ path, method, body: doc });
       assert.fail('request should fail with conflict');
     } catch (err) {
       assert.equal(err.statusCode, 409);
@@ -68,7 +68,7 @@ describe('infodocs', () => {
     doc._deleted = true;
     doc._rev = update.rev;
 
-    await utils.requestOnTestDb({path, method, body: doc});
+    await utils.requestOnTestDb({ path, method, body: doc });
 
     await utils.stopSentinel();
     await utils.startSentinel(true);
@@ -162,7 +162,7 @@ describe('infodocs', () => {
 
       assert.isOk(infodoc.initial_replication_date, 'expected an initial_replication_date');
       assert.isOk(infodoc.latest_replication_date, 'expected a latest_replication_date');
-      assert.deepEqual(infodoc.transitions, {some: 'transition info'});
+      assert.deepEqual(infodoc.transitions, { some: 'transition info' });
     });
 
     it('finds and migrates data from the medic infodoc', async () => {
@@ -206,7 +206,7 @@ describe('infodocs', () => {
       }
       assert.equal(infodoc.initial_replication_date, 1000);
       assert.isOk(infodoc.latest_replication_date !== 2000); // updated
-      assert.deepEqual(infodoc.transitions, {some: 'transition info'});
+      assert.deepEqual(infodoc.transitions, { some: 'transition info' });
       assert.equal(infodoc.some, 'legacy data');
     });
   });
@@ -214,12 +214,12 @@ describe('infodocs', () => {
   describe('transitions infos', () => {
     it('should set correct transition date', async () => {
       const settings = {
-        transitions: {generate_shortcode_on_contacts: true}
+        transitions: { generate_shortcode_on_contacts: true }
       };
-      await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+      await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
 
-      const doc = {_id: uuid(), type: 'person'};
-      const {rev} = await utils.saveDoc(doc);
+      const doc = { _id: uuid(), type: 'person' };
+      const { rev } = await utils.saveDoc(doc);
 
       const sentinelDate = await utils.getSentinelDate();
       const [infoDoc] = await delayedInfoDocsOf(doc._id);

@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 describe('update_clinics', () => {
   after(() => utils.revertDb([], true));
@@ -25,7 +25,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -40,7 +40,7 @@ describe('update_clinics', () => {
   });
 
   it('should be skipped when not matching or has contact', () => {
-    const settings = {transitions: {update_clinics: true}};
+    const settings = { transitions: { update_clinics: true } };
 
     const contact = {
       _id: 'contact',
@@ -58,13 +58,13 @@ describe('update_clinics', () => {
     const doc2 = {
       _id: uuid(),
       type: 'data_record',
-      contact: {_id: 'some_other_contact'},
+      contact: { _id: 'some_other_contact' },
       from: '12345',
       reported_date: new Date().getTime(),
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDoc(doc1))
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
@@ -84,14 +84,14 @@ describe('update_clinics', () => {
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.contact).to.deep.equal({_id: 'some_other_contact'});
+        expect(updated.contact).to.deep.equal({ _id: 'some_other_contact' });
       });
   });
 
   it('should skip when contact not found', () => {
     const settings = {
-      transitions: {update_clinics: true},
-      forms: {'A': {public_form: true}}
+      transitions: { update_clinics: true },
+      forms: { 'A': { public_form: true } }
     };
 
     const doc1 = {
@@ -111,7 +111,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -128,9 +128,9 @@ describe('update_clinics', () => {
 
   it('should add facility_not_found', () => {
     const settings = {
-      transitions: {update_clinics: true},
-      forms: {'A': {public_form: false}},
-      update_clinics: [{
+      transitions: { update_clinics: true },
+      forms: { 'A': { public_form: false } },
+      update_clinics: [ {
         form: 'A',
         messages: [
           {
@@ -168,7 +168,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2, doc3]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
@@ -220,7 +220,7 @@ describe('update_clinics', () => {
         _id: 'clinic',
         type: 'clinic',
         rc_code: 'sms_clinic',
-        contact: {_id: 'person'},
+        contact: { _id: 'person' },
         reported_date: new Date().getTime(),
       },
       {
@@ -259,11 +259,11 @@ describe('update_clinics', () => {
       reported_date: new Date().getTime()
     };
 
-    const docs = [refidClinic, refidPerson, phonePerson, refidPersonContactType];
+    const docs = [ refidClinic, refidPerson, phonePerson, refidPersonContactType ];
     const docIds = docs.map(doc => doc._id);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
@@ -275,10 +275,10 @@ describe('update_clinics', () => {
       })
       .then(() => utils.getDocs(docIds))
       .then(updated => {
-        expect(updated[0].contact).to.deep.equal({_id: 'person'});
-        expect(updated[1].contact).to.deep.equal({_id: 'person'});
-        expect(updated[2].contact).to.deep.equal({_id: 'person2'});
-        expect(updated[3].contact).to.deep.equal({_id: 'person_with_contact_type'});
+        expect(updated[0].contact).to.deep.equal({ _id: 'person' });
+        expect(updated[1].contact).to.deep.equal({ _id: 'person' });
+        expect(updated[2].contact).to.deep.equal({ _id: 'person2' });
+        expect(updated[3].contact).to.deep.equal({ _id: 'person_with_contact_type' });
       });
   });
 });

@@ -1,4 +1,4 @@
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
@@ -23,7 +23,7 @@ mockApp.post(WORKING_ENDPOINT, (req, res) => {
 
 mockApp.post(BROKEN_ENDPOINT, (req, res) => {
   brokenEndpointRequests.push(req.body);
-  res.status(500).json({error: 500, some: 'error response'}).end();
+  res.status(500).json({ error: 500, some: 'error response' }).end();
 });
 
 const startMockApp = () => {
@@ -70,7 +70,7 @@ const wipeTasks = () => getTasks()
       headers: {
         'Content-Type': 'application/json'
       },
-      body: {docs: tasks}
+      body: { docs: tasks }
     });
   });
 
@@ -106,7 +106,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -157,7 +157,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -210,7 +210,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -261,7 +261,7 @@ describe('mark_for_outbound', () => {
 
       // First round
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -326,7 +326,7 @@ describe('mark_for_outbound', () => {
 
       // First round
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -396,7 +396,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -431,7 +431,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -454,7 +454,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -477,7 +477,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -508,7 +508,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -559,7 +559,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Mapping error.+_idddddddddddddddd/))
         .then((result) => collect = result)
@@ -593,7 +593,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push/, /Response body.+error response/))
         .then((result) => collect = result)
@@ -628,7 +628,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, {ignoreReload: 'sentinel'})
+        .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push.+ECONNREFUSED/))
         .then((result) => collect = result)

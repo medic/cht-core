@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 
 const contacts = [
@@ -16,7 +16,7 @@ const contacts = [
     name: 'Health Center',
     type: 'health_center',
     place_id: 'the_health_center',
-    parent: {_id: 'district_hospital'},
+    parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
@@ -24,10 +24,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     place_id: 'the_clinic',
-    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
-      parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -36,7 +36,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+phone',
     reported_date: new Date().getTime()
   },
@@ -45,7 +45,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient2',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+phone2',
     reported_date: new Date().getTime()
   }
@@ -60,9 +60,9 @@ describe('accept_patient_reports', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: {accept_patient_reports: false},
-      patient_reports: [{form: 'FORM'}],
-      forms: {FORM: {}}
+      transitions: { accept_patient_reports: false },
+      patient_reports: [{ form: 'FORM' }],
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -73,12 +73,12 @@ describe('accept_patient_reports', () => {
       from: '+phone',
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -89,9 +89,9 @@ describe('accept_patient_reports', () => {
 
   it('should be skipped when no matching config', () => {
     const settings = {
-      transitions: {accept_patient_reports: false},
-      patient_reports: [{form: 'FORM'}],
-      forms: {NOT_FORM: {}}
+      transitions: { accept_patient_reports: false },
+      patient_reports: [{ form: 'FORM' }],
+      forms: { NOT_FORM: { } }
     };
 
     const doc = {
@@ -102,12 +102,12 @@ describe('accept_patient_reports', () => {
       from: '+phone',
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -118,7 +118,7 @@ describe('accept_patient_reports', () => {
 
   it('should add errors when patient not found or place not found or validation does not pass', () => {
     const settings = {
-      transitions: {accept_patient_reports: true},
+      transitions: { accept_patient_reports: true },
       patient_reports: [
         {
           form: 'FORM',
@@ -167,7 +167,7 @@ describe('accept_patient_reports', () => {
           }],
         }
       ],
-      forms: {FORM: {}, FORMPLACE: {}},
+      forms: { FORM: { }, FORMPLACE: { } },
     };
 
     const withUnknownPatient = {
@@ -181,7 +181,7 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -196,7 +196,7 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -211,7 +211,7 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -226,7 +226,7 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -234,7 +234,7 @@ describe('accept_patient_reports', () => {
     const ids = getIds(docs);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
@@ -281,7 +281,7 @@ describe('accept_patient_reports', () => {
 
   it('should add relevant messages', () => {
     const settings = {
-      transitions: {accept_patient_reports: true},
+      transitions: { accept_patient_reports: true },
       patient_reports: [
         {
           form: 'FORM',
@@ -322,7 +322,7 @@ describe('accept_patient_reports', () => {
           ]
         }
       ],
-      forms: {FORM: {}}
+      forms: { FORM: { } }
     };
 
     const doc1 = {
@@ -336,7 +336,7 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -352,12 +352,12 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person2',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -401,10 +401,10 @@ describe('accept_patient_reports', () => {
 
   it('should add registration to doc', () => {
     const settings = {
-      transitions: {accept_patient_reports: true},
-      patient_reports: [{form: 'FORM', messages: []}],
-      registrations: [{form: 'xml_form'}, {form: 'sms_form_1'}, {form: 'sms_form_2'}],
-      forms: {sms_form_1: {}, sms_form_2: {}, FORM: {}}
+      transitions: { accept_patient_reports: true },
+      patient_reports: [{ form: 'FORM', messages: [] }],
+      registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+      forms: { sms_form_1: { }, sms_form_2: { }, FORM: { } }
     };
 
     const reports = [
@@ -419,7 +419,7 @@ describe('accept_patient_reports', () => {
         reported_date: new Date().getTime(),
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // not a registration
@@ -460,7 +460,7 @@ describe('accept_patient_reports', () => {
         reported_date: new Date().getTime() + 3000,
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration
@@ -470,7 +470,7 @@ describe('accept_patient_reports', () => {
         fields: {
           patient_id: 'patient'
         },
-        contact: {_id: 'person'},
+        contact: { _id: 'person' },
         reported_date: new Date().getTime(),
       },
       { // valid registration for other patient
@@ -480,7 +480,7 @@ describe('accept_patient_reports', () => {
         fields: {
           patient_id: 'patient2'
         },
-        contact: {_id: 'person2'},
+        contact: { _id: 'person2' },
         reported_date: new Date().getTime() + 1000,
       }
     ];
@@ -496,12 +496,12 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -517,10 +517,10 @@ describe('accept_patient_reports', () => {
 
   it('should add registration to doc for a place', () => {
     const settings = {
-      transitions: {accept_patient_reports: true},
-      patient_reports: [{form: 'FORM', messages: []}],
-      registrations: [{form: 'xml_form'}, {form: 'sms_form_1'}, {form: 'sms_form_2'}],
-      forms: {sms_form_1: {}, sms_form_2: {}, FORM: {}}
+      transitions: { accept_patient_reports: true },
+      patient_reports: [{ form: 'FORM', messages: [] }],
+      registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+      forms: { sms_form_1: { }, sms_form_2: { }, FORM: { } }
     };
 
     const reports = [
@@ -535,7 +535,7 @@ describe('accept_patient_reports', () => {
         reported_date: new Date().getTime(),
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // not a registration
@@ -576,7 +576,7 @@ describe('accept_patient_reports', () => {
         reported_date: new Date().getTime() + 3000,
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration
@@ -586,7 +586,7 @@ describe('accept_patient_reports', () => {
         fields: {
           place_id: 'the_clinic',
         },
-        contact: {_id: 'person'},
+        contact: { _id: 'person' },
         reported_date: new Date().getTime(),
       },
       { // valid registration for other place
@@ -596,7 +596,7 @@ describe('accept_patient_reports', () => {
         fields: {
           place_id: 'the_health_center'
         },
-        contact: {_id: 'person2'},
+        contact: { _id: 'person2' },
         reported_date: new Date().getTime() + 1000,
       }
     ];
@@ -612,12 +612,12 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -633,10 +633,10 @@ describe('accept_patient_reports', () => {
 
   it('should add registration to doc for a doc with place and patient', () => {
     const settings = {
-      transitions: {accept_patient_reports: true},
-      patient_reports: [{form: 'FORM', messages: []}],
-      registrations: [{form: 'xml_form'}, {form: 'sms_form_1'}, {form: 'sms_form_2'}],
-      forms: {sms_form_1: {}, sms_form_2: {}, FORM: {}}
+      transitions: { accept_patient_reports: true },
+      patient_reports: [{ form: 'FORM', messages: [] }],
+      registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+      forms: { sms_form_1: { }, sms_form_2: { }, FORM: { } }
     };
 
     const reports = [
@@ -660,7 +660,7 @@ describe('accept_patient_reports', () => {
         reported_date: new Date().getTime() + 3000,
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration for place and patient
@@ -671,7 +671,7 @@ describe('accept_patient_reports', () => {
           place_id: 'the_clinic',
           patient_id: 'patient',
         },
-        contact: {_id: 'person'},
+        contact: { _id: 'person' },
         reported_date: new Date().getTime(),
       },
       { // valid registration for other place
@@ -681,7 +681,7 @@ describe('accept_patient_reports', () => {
         fields: {
           place_id: 'the_health_center'
         },
-        contact: {_id: 'person2'},
+        contact: { _id: 'person2' },
         reported_date: new Date().getTime() + 1000,
       },
     ];
@@ -694,7 +694,7 @@ describe('accept_patient_reports', () => {
         place_id: 'the_clinic',
         patient_id: 'patient',
       },
-      contact: {_id: 'person'},
+      contact: { _id: 'person' },
       reported_date: new Date().getTime() + 5000,
     };
 
@@ -710,7 +710,7 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -726,13 +726,13 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(doc1))
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
@@ -759,7 +759,7 @@ describe('accept_patient_reports', () => {
 
   it('should silence registrations', () => {
     const settings = {
-      transitions: {accept_patient_reports: true},
+      transitions: { accept_patient_reports: true },
       patient_reports: [
         {
           form: 'NO_SILENCE',
@@ -786,8 +786,8 @@ describe('accept_patient_reports', () => {
           silence_type: 'type0,type1,type2'
         }
       ],
-      registrations: [{form: 'form_1'}, {form: 'form_2'}],
-      forms: {form_1: {}, form_2: {}, SILENCE1: {}}
+      registrations: [{ form: 'form_1' }, { form: 'form_2' }],
+      forms: { form_1: { }, form_2: { }, SILENCE1: { } }
     };
 
     const oneDay = 24 * 60 * 60 * 1000;
@@ -796,120 +796,120 @@ describe('accept_patient_reports', () => {
       {
         _id: uuid(),
         form: 'form_1',
-        fields: {patient_id: 'patient'},
+        fields: { patient_id: 'patient' },
         type: 'data_record',
         reported_date: new Date().getTime(),
         scheduled_tasks: [
-          {id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay},
-          {id: 2, type: 'type1', state: 'pending', due: new Date().getTime() - 2 * oneDay},
-          {id: 3, type: 'type2', state: 'scheduled', due: new Date().getTime() + 3 * oneDay},
-          {id: 4, type: 'type2', state: 'sent', due: new Date().getTime() - 10 * oneDay},
-          {id: 5, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay},
+          { id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
+          { id: 2, type: 'type1', state: 'pending', due: new Date().getTime() - 2 * oneDay },
+          { id: 3, type: 'type2', state: 'scheduled', due: new Date().getTime() + 3 * oneDay },
+          { id: 4, type: 'type2', state: 'sent', due: new Date().getTime() - 10 * oneDay },
+          { id: 5, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
         _id: uuid(),
         form: 'form_2',
-        fields: {patient_id: 'patient'},
+        fields: { patient_id: 'patient' },
         type: 'data_record',
         reported_date: new Date().getTime(),
         scheduled_tasks: [
-          {id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay},
-          {id: 2, type: 'type1', group: 'a', state: 'pending', due: new Date().getTime() - 10 * oneDay},
-          {id: 3, type: 'type1', group: 'a', state: 'scheduled', due: new Date().getTime() + 10 * oneDay},
-          {id: 4, type: 'type2', group: 'a', state: 'scheduled', due: new Date().getTime() + 2 * oneDay},
-          {id: 5, type: 'type2', group: 'a', state: 'pending', due: new Date().getTime() + 5 * oneDay},
-          {id: 6, type: 'type2', group: 'a', state: 'delivered', due: new Date().getTime() - 5 * oneDay},
+          { id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay },
+          { id: 2, type: 'type1', group: 'a', state: 'pending', due: new Date().getTime() - 10 * oneDay },
+          { id: 3, type: 'type1', group: 'a', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
+          { id: 4, type: 'type2', group: 'a', state: 'scheduled', due: new Date().getTime() + 2 * oneDay },
+          { id: 5, type: 'type2', group: 'a', state: 'pending', due: new Date().getTime() + 5 * oneDay },
+          { id: 6, type: 'type2', group: 'a', state: 'delivered', due: new Date().getTime() - 5 * oneDay },
 
-          {id: 1, type: 'type1', group: 'b', state: 'pending', due: new Date().getTime() + 10 * oneDay},
-          {id: 2, type: 'type2', group: 'b', state: 'scheduled', due: new Date().getTime() - 20 * oneDay},
-          {id: 3, type: 'type2', group: 'b', state: 'muted', due: new Date().getTime() + 2 * oneDay},
-          {id: 4, type: 'type2', group: 'b', state: 'sent', due: new Date().getTime() - 20 * oneDay},
-          {id: 5, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 1 * oneDay},
+          { id: 1, type: 'type1', group: 'b', state: 'pending', due: new Date().getTime() + 10 * oneDay },
+          { id: 2, type: 'type2', group: 'b', state: 'scheduled', due: new Date().getTime() - 20 * oneDay },
+          { id: 3, type: 'type2', group: 'b', state: 'muted', due: new Date().getTime() + 2 * oneDay },
+          { id: 4, type: 'type2', group: 'b', state: 'sent', due: new Date().getTime() - 20 * oneDay },
+          { id: 5, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
         _id: uuid(),
         form: 'form_1',
-        fields: {patient_id: 'patient2'},
+        fields: { patient_id: 'patient2' },
         type: 'data_record',
         reported_date: new Date().getTime(),
         scheduled_tasks: [
-          {id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay},
-          {id: 2, type: 'type1', state: 'pending', due: new Date().getTime() - 2 * oneDay},
-          {id: 3, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay},
-          {id: 4, type: 'type3', state: 'pending', due: new Date().getTime() + 10 * oneDay},
-          {id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay},
+          { id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
+          { id: 2, type: 'type1', state: 'pending', due: new Date().getTime() - 2 * oneDay },
+          { id: 3, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay },
+          { id: 4, type: 'type3', state: 'pending', due: new Date().getTime() + 10 * oneDay },
+          { id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
         _id: uuid(),
         form: 'form_2',
-        fields: {patient_id: 'patient2'},
+        fields: { patient_id: 'patient2' },
         type: 'data_record',
         reported_date: new Date().getTime(),
         scheduled_tasks: [
-          {id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay},
-          {id: 2, type: 'type3', group: 'a', state: 'pending', due: new Date().getTime() - 10 * oneDay},
-          {id: 3, type: 'type3', group: 'a', state: 'scheduled', due: new Date().getTime() + 10 * oneDay},
+          { id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay },
+          { id: 2, type: 'type3', group: 'a', state: 'pending', due: new Date().getTime() - 10 * oneDay },
+          { id: 3, type: 'type3', group: 'a', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
 
-          {id: 1, type: 'type1', group: 'b', state: 'pending', due: new Date().getTime() + 10 * oneDay},
-          {id: 2, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 2 * oneDay},
-          {id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay},
+          { id: 1, type: 'type1', group: 'b', state: 'pending', due: new Date().getTime() + 10 * oneDay },
+          { id: 2, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 2 * oneDay },
+          { id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
         _id: uuid(),
         form: 'form_1',
-        fields: {place_id: 'the_clinic'},
+        fields: { place_id: 'the_clinic' },
         type: 'data_record',
         reported_date: new Date().getTime(),
         scheduled_tasks: [
-          {id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay},
-          {id: 2, type: 'type1', state: 'pending', due: new Date().getTime() - 2 * oneDay},
-          {id: 3, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay},
-          {id: 4, type: 'type3', state: 'pending', due: new Date().getTime() + 10 * oneDay},
-          {id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay},
+          { id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
+          { id: 2, type: 'type1', state: 'pending', due: new Date().getTime() - 2 * oneDay },
+          { id: 3, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay },
+          { id: 4, type: 'type3', state: 'pending', due: new Date().getTime() + 10 * oneDay },
+          { id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
         _id: uuid(),
         form: 'form_2',
-        fields: {place_id: 'the_clinic'},
+        fields: { place_id: 'the_clinic' },
         type: 'data_record',
         reported_date: new Date().getTime(),
         scheduled_tasks: [
-          {id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay},
-          {id: 2, type: 'type3', group: 'a', state: 'pending', due: new Date().getTime() - 10 * oneDay},
-          {id: 3, type: 'type3', group: 'a', state: 'scheduled', due: new Date().getTime() + 10 * oneDay},
+          { id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay },
+          { id: 2, type: 'type3', group: 'a', state: 'pending', due: new Date().getTime() - 10 * oneDay },
+          { id: 3, type: 'type3', group: 'a', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
 
-          {id: 1, type: 'type1', group: 'b', state: 'pending', due: new Date().getTime() + 10 * oneDay},
-          {id: 2, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 2 * oneDay},
-          {id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay},
+          { id: 1, type: 'type1', group: 'b', state: 'pending', due: new Date().getTime() + 10 * oneDay },
+          { id: 2, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 2 * oneDay },
+          { id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
           _id: 'person',
-          parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       }
     ];
@@ -937,7 +937,7 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -981,7 +981,7 @@ describe('accept_patient_reports', () => {
     const registrationIds = getIds(registrations);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(registrations))
       .then(() => utils.saveDoc(noSilence))
       .then(() => sentinelUtils.waitForSentinel(noSilence._id))

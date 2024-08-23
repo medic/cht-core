@@ -322,7 +322,7 @@ const users = [
   },
 ];
 
-const purgeFn = function (userCtx, contact, reports, messages) {
+const purgeFn = function(userCtx, contact, reports, messages) {
   const ids = [];
 
   if (userCtx.roles.includes('purge_reverse')) {
@@ -336,7 +336,7 @@ const purgeFn = function (userCtx, contact, reports, messages) {
   return ids;
 };
 
-const reversePurgeFn = function (userCtx, contact, reports, messages) {
+const reversePurgeFn = function(userCtx, contact, reports, messages) {
   const ids = [];
 
   if (userCtx.roles.includes('purge_regular')) {

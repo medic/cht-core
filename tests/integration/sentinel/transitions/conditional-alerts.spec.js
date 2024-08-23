@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 const contacts = [
   {
@@ -14,17 +14,17 @@ const contacts = [
     _id: 'health_center',
     name: 'Health Center',
     type: 'health_center',
-    parent: {_id: 'district_hospital'},
+    parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic',
     name: 'Clinic',
     type: 'clinic',
-    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
-      parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -32,7 +32,7 @@ const contacts = [
     _id: 'person',
     name: 'Person',
     type: 'person',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   }
@@ -45,7 +45,7 @@ describe('conditional_alerts', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: {conditional_alerts: false},
+      transitions: { conditional_alerts: false },
       alerts: [
         {
           form: 'FORM',
@@ -54,7 +54,7 @@ describe('conditional_alerts', () => {
           recipient: 'reporting_unit'
         }
       ],
-      forms: {FORM: {}}
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -65,12 +65,12 @@ describe('conditional_alerts', () => {
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -81,14 +81,14 @@ describe('conditional_alerts', () => {
 
   it('should be skipped when no matching config', () => {
     const settings = {
-      transitions: {conditional_alerts: true},
+      transitions: { conditional_alerts: true },
       alerts: [{
         form: 'FORM',
         condition: true,
         message: 'This is an alert',
         recipient: 'reporting_unit'
       }],
-      forms: {O: {}}
+      forms: { O: { } }
     };
 
     const doc = {
@@ -99,12 +99,12 @@ describe('conditional_alerts', () => {
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -115,14 +115,14 @@ describe('conditional_alerts', () => {
 
   it('should be skipped when conditions are not met', () => {
     const settings = {
-      transitions: {conditional_alerts: true},
+      transitions: { conditional_alerts: true },
       alerts: [{
         form: 'FORM',
         condition: 'FORM(0).somefield > 100',
         message: 'This is an alert',
         recipient: 'reporting_unit'
       }],
-      forms: {FORM: {}}
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -135,14 +135,14 @@ describe('conditional_alerts', () => {
         _id: 'person',
         parent: {
           _id: 'clinic',
-          parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         }
       },
       somefield: 99
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -153,14 +153,14 @@ describe('conditional_alerts', () => {
 
   it('should add a task when conditions are met', () => {
     const settings = {
-      transitions: {conditional_alerts: true},
+      transitions: { conditional_alerts: true },
       alerts: [{
         form: 'FORM',
         condition: 'FORM(0).somefield > 100',
         message: 'This is an alert',
         recipient: 'reporting_unit'
       }],
-      forms: {FORM: {}}
+      forms: { FORM: { } }
     };
 
     const doc = {
@@ -171,13 +171,13 @@ describe('conditional_alerts', () => {
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
       somefield: 120
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -195,11 +195,11 @@ describe('conditional_alerts', () => {
 
   it('should add a task when condition is met and depends on multiple forms', () => {
     const settings = {
-      transitions: {conditional_alerts: true},
+      transitions: { conditional_alerts: true },
       alerts: [{
         form: 'FORM',
         condition: 'FORM(1) && FORM(0).temp > FORM(1).temp && ' +
-          '1000 < FORM(0).reported_date - FORM(1).reported_date < 10000',
+                   '1000 < FORM(0).reported_date - FORM(1).reported_date < 10000',
         message: 'Fever increased since the last measurement',
         recipient: 'reporting_unit'
       }, {
@@ -208,7 +208,7 @@ describe('conditional_alerts', () => {
         message: 'Patient has a fever',
         recipient: 'reporting_unit'
       }],
-      forms: {FORM: {}}
+      forms: { FORM: { } }
     };
 
     const form1 = {
@@ -219,7 +219,7 @@ describe('conditional_alerts', () => {
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
       temp: 38
     };
@@ -232,13 +232,13 @@ describe('conditional_alerts', () => {
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
       temp: 39
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(form1))
       .then(() => sentinelUtils.waitForSentinel(form1._id))
       .then(() => sentinelUtils.getInfoDoc(form1._id))

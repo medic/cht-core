@@ -15,7 +15,7 @@ const contacts = [
     _id: 'health_center',
     name: 'Health Center',
     type: 'health_center',
-    parent: {_id: 'district_hospital'},
+    parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
@@ -23,10 +23,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     place_id: 'the_clinic',
-    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
-      parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -35,7 +35,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: '99999',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   }
@@ -47,10 +47,10 @@ const extraContacts = [
     name: 'Clinic',
     type: 'clinic',
     place_id: 'the_other_clinic',
-    parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person2',
-      parent: {_id: 'clinic2', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -58,7 +58,7 @@ const extraContacts = [
     _id: 'person2',
     name: 'Person',
     type: 'person',
-    parent: {_id: 'clinic2', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444777',
     reported_date: new Date().getTime()
   },
@@ -67,7 +67,7 @@ const extraContacts = [
     name: 'Person',
     type: 'person',
     patient_id: '888888',
-    parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444888',
     reported_date: new Date().getTime()
   }
@@ -107,12 +107,12 @@ describe('muting', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: {muting: false},
+      transitions: { muting: false },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
       },
-      forms: {mute: {}}
+      forms: { mute: { } }
     };
 
     const doc = {
@@ -125,12 +125,12 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -141,12 +141,12 @@ describe('muting', () => {
 
   it('should be skipped when no matching config', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
       },
-      forms: {NOT_MUTE: {}}
+      forms: { NOT_MUTE: { } }
     };
 
     const doc = {
@@ -159,12 +159,12 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -175,7 +175,7 @@ describe('muting', () => {
 
   it('should add error when contact not found, should add error when invalid', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute'],
@@ -201,7 +201,7 @@ describe('muting', () => {
           join_responses: false
         }
       },
-      forms: {mute: {}}
+      forms: { mute: { } }
     };
 
     const doc1 = {
@@ -215,7 +215,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -231,12 +231,12 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -275,7 +275,7 @@ describe('muting', () => {
 
   it('should mute and unmute a person', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute'],
@@ -309,7 +309,7 @@ describe('muting', () => {
           }],
         }]
       },
-      forms: {mute: {}, unmute: {}}
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute1 = {
@@ -322,7 +322,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -336,7 +336,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -350,7 +350,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -364,7 +364,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -372,7 +372,7 @@ describe('muting', () => {
     let unmuteTime;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDoc(mute1))
       .then(() => sentinelUtils.waitForSentinel(mute1._id))
@@ -476,12 +476,12 @@ describe('muting', () => {
 
   it('should mute and unmute a clinic', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
       },
-      forms: {mute: {}, unmute: {}}
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute = {
@@ -494,7 +494,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -508,14 +508,14 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     let muteTime;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
@@ -593,12 +593,12 @@ describe('muting', () => {
 
   it('should not update cascading contacts unless necessary', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
       },
-      forms: {mute: {}, unmute: {}}
+      forms: { mute: { }, unmute: { } }
     };
 
     const muteClinic = {
@@ -611,7 +611,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -625,7 +625,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -633,12 +633,12 @@ describe('muting', () => {
     let clinicMuteTime;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDoc(mutePerson))
       .then(() => sentinelUtils.waitForSentinel(mutePerson._id))
       .then(() => sentinelUtils.getInfoDocs([mutePerson._id, 'clinic', 'person', 'person3']))
-      .then(([mutePersonInfo, clinicInfo, personInfo, person3Info]) => {
+      .then(([ mutePersonInfo, clinicInfo, personInfo, person3Info ]) => {
         chai.expect(mutePersonInfo.transitions).to.be.ok;
         chai.expect(mutePersonInfo.transitions.muting).to.be.ok;
 
@@ -653,7 +653,7 @@ describe('muting', () => {
         chai.expect(person3Info.muting_history).to.be.undefined;
       })
       .then(() => utils.getDocs(['clinic', 'person', 'person3']))
-      .then(([updatedClinic, updatedPerson, updatedPerson3]) => {
+      .then(([ updatedClinic, updatedPerson, updatedPerson3 ]) => {
         chai.expect(updatedClinic.muted).to.be.undefined;
         chai.expect(updatedPerson.muted).to.equal(personMuteTime);
         chai.expect(updatedPerson3.muted).to.be.undefined;
@@ -661,7 +661,7 @@ describe('muting', () => {
       .then(() => utils.saveDoc(muteClinic))
       .then(() => sentinelUtils.waitForSentinel(muteClinic._id))
       .then(() => sentinelUtils.getInfoDocs([muteClinic._id, 'clinic', 'person', 'person3']))
-      .then(([muteClinicInfo, clinicInfo, personInfo, person3Info]) => {
+      .then(([ muteClinicInfo, clinicInfo, personInfo, person3Info ]) => {
         chai.expect(muteClinicInfo.transitions).to.be.ok;
         chai.expect(muteClinicInfo.transitions.muting).to.be.ok;
 
@@ -688,7 +688,7 @@ describe('muting', () => {
         });
       })
       .then(() => utils.getDocs(['clinic', 'person', 'person3']))
-      .then(([updatedClinic, updatedPerson, updatedPerson3]) => {
+      .then(([ updatedClinic, updatedPerson, updatedPerson3 ]) => {
         chai.expect(updatedClinic.muted).to.equal(clinicMuteTime);
         chai.expect(updatedPerson.muted).to.equal(personMuteTime); // not changed
         chai.expect(updatedPerson3.muted).to.equal(clinicMuteTime);
@@ -697,12 +697,12 @@ describe('muting', () => {
 
   it('should mute person, mute health_center & unmute person correctly', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
       },
-      forms: {mute: {}, unmute: {}}
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute = {
@@ -715,7 +715,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -729,7 +729,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -743,7 +743,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -751,7 +751,7 @@ describe('muting', () => {
     let muteHCTime;
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
       .then(() => sentinelUtils.getInfoDocs([mute._id, 'person', 'clinic', 'health_center']))
@@ -856,12 +856,12 @@ describe('muting', () => {
 
   it('should auto mute new contacts with muted parents', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
       },
-      forms: {mute: {}, unmute: {}}
+      forms: { mute: { }, unmute: { } }
     };
 
     const mute = {
@@ -874,7 +874,7 @@ describe('muting', () => {
       reported_date: new Date().getTime(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -882,7 +882,7 @@ describe('muting', () => {
       _id: 'person3',
       name: 'Person',
       type: 'person',
-      parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
       phone: '+444999'
     };
 
@@ -891,12 +891,12 @@ describe('muting', () => {
       name: 'Person',
       type: 'person',
       contact_type: 'not a person',
-      parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
       phone: '+444999'
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
       .then(() => utils.saveDocs([person, personWithContactType]))
@@ -925,13 +925,13 @@ describe('muting', () => {
 
   it('should mute and unmute schedules', () => {
     const settings = {
-      transitions: {muting: true},
+      transitions: { muting: true },
       muting: {
         mute_forms: ['mute'],
         unmute_forms: ['unmute']
       },
-      registrations: [{form: 'xml_form'}, {form: 'sms_form_1'}, {form: 'sms_form_2'}],
-      forms: {sms_form_1: {}, sms_form_2: {}}
+      registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+      forms: { sms_form_1: { }, sms_form_2: { } }
     };
 
     const reports = [
@@ -944,9 +944,9 @@ describe('muting', () => {
           patient_id: 'person'
         },
         scheduled_tasks: [
-          {group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', },
-          {group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic'},
-          {group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // not a registration
@@ -957,9 +957,9 @@ describe('muting', () => {
           patient_id: 'person'
         },
         scheduled_tasks: [
-          {group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic'},
-          {group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
-          {group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // not a registration
@@ -970,9 +970,9 @@ describe('muting', () => {
           patient_id: 'person'
         },
         scheduled_tasks: [
-          {group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic'},
-          {group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
-          {group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // valid registration
@@ -984,15 +984,11 @@ describe('muting', () => {
           patient_id: 'person'
         },
         scheduled_tasks: [
-          {
-            group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() + notToday
-          },
-          {
-            group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() - notToday
-          },
-          {group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // valid registration
@@ -1002,17 +998,13 @@ describe('muting', () => {
         fields: {
           patient_id: 'person'
         },
-        contact: {_id: 'person'},
+        contact: { _id: 'person' },
         scheduled_tasks: [
-          {
-            group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() - notToday
-          },
-          {group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
-          {
-            group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() + notToday
-          },
+          { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
         ]
       },
       { // valid registration
@@ -1022,17 +1014,13 @@ describe('muting', () => {
         fields: {
           place_id: 'clinic'
         },
-        contact: {_id: 'person'},
+        contact: { _id: 'person' },
         scheduled_tasks: [
-          {group: 1, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
-          {
-            group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() + notToday
-          },
-          {
-            group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() - notToday
-          },
+          { group: 1, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
         ]
       },
       { // valid registration from other "branch"
@@ -1042,17 +1030,13 @@ describe('muting', () => {
         fields: {
           patient_id: 'person2'
         },
-        contact: {_id: 'person2'},
+        contact: { _id: 'person2' },
         scheduled_tasks: [
-          {
-            group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() + notToday
-          },
-          {
-            group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() - notToday
-          },
-          {group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // not a registration for place
@@ -1064,9 +1048,9 @@ describe('muting', () => {
           place_id: 'the_clinic',
         },
         scheduled_tasks: [
-          {group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', },
-          {group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic'},
-          {group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // not a registration for place
@@ -1077,9 +1061,9 @@ describe('muting', () => {
           place_id: 'the_clinic',
         },
         scheduled_tasks: [
-          {group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic'},
-          {group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
-          {group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic' },
         ],
       },
       { // not a registration for place
@@ -1090,9 +1074,9 @@ describe('muting', () => {
           place_id: 'the_clinic',
         },
         scheduled_tasks: [
-          {group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic'},
-          {group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
-          {group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // valid registration for place
@@ -1104,15 +1088,11 @@ describe('muting', () => {
           place_id: 'the_clinic',
         },
         scheduled_tasks: [
-          {
-            group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() + notToday
-          },
-          {
-            group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() - notToday
-          },
-          {group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
       { // valid registration for place
@@ -1122,17 +1102,13 @@ describe('muting', () => {
         fields: {
           place_id: 'the_clinic',
         },
-        contact: {_id: 'person'},
+        contact: { _id: 'person' },
         scheduled_tasks: [
-          {group: 1, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
-          {
-            group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() + notToday
-          },
-          {
-            group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() - notToday
-          },
+          { group: 1, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
+          { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
         ]
       },
       { // valid registration from other "branch"
@@ -1142,17 +1118,13 @@ describe('muting', () => {
         fields: {
           place_id: 'the_other_clinic',
         },
-        contact: {_id: 'person2'},
+        contact: { _id: 'person2' },
         scheduled_tasks: [
-          {
-            group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() + notToday
-          },
-          {
-            group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
-            due: new Date().getTime() - notToday
-          },
-          {group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic'},
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
+          { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
     ];
@@ -1192,7 +1164,7 @@ describe('muting', () => {
     const getReportById = (id) => reports.find(report => report._id === id);
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(mute))
@@ -1239,24 +1211,24 @@ describe('muting', () => {
         patient_id: 'the_person',
         muting_history: {
           last_update: 'client_side',
-          server_side: {muted: false},
+          server_side: { muted: false },
           client_side: [
-            {muted: true, report_id: 'report1', date: 1},
-            {muted: false, report_id: 'report2', date: 2},
-            {muted: true, report_id: 'report3', date: 12345},
+            { muted: true, report_id: 'report1', date: 1 },
+            { muted: false, report_id: 'report2', date: 2 },
+            { muted: true, report_id: 'report3', date: 12345 },
           ],
         },
         reported_date: 1,
       };
 
       const settings = {
-        transitions: {muting: true},
+        transitions: { muting: true },
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute']
         },
-        registrations: [{form: 'xml_form'}, {form: 'sms_form_1'}, {form: 'sms_form_2'}],
-        forms: {sms_form_1: {}, sms_form_2: {}}
+        registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+        forms: { sms_form_1: { }, sms_form_2: { } }
       };
 
       const inTheFuture = new Date().getTime() + notToday;
@@ -1272,8 +1244,8 @@ describe('muting', () => {
             patient_id: contact.patient_id,
           },
           scheduled_tasks: [
-            {group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture},
-            {group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture},
+            { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
           ]
         },
         {
@@ -1285,8 +1257,8 @@ describe('muting', () => {
             patient_uuid: contact._id,
           },
           scheduled_tasks: [
-            {group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture},
-            {group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture},
+            { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
           ]
         },
       ];
@@ -1294,7 +1266,7 @@ describe('muting', () => {
       const reportIds = reports.map(r => r._id);
 
       return utils
-        .updateSettings(settings, {ignoreReload: 'sentinel'})
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(reports))
         .then(() => utils.saveDoc(contact))
         .then(() => sentinelUtils.waitForSentinel(contact._id))
@@ -1309,7 +1281,7 @@ describe('muting', () => {
 
           chai.expect(infodoc.transitions.muting.ok).to.be.true;
           chai.expect(infodoc.muting_history).to.deep.equal([
-            {muted: true, date: updatedContact.muted, report_id: 'report3'},
+            { muted: true, date: updatedContact.muted, report_id: 'report3' },
           ]);
         })
         .then(() => utils.getDocs(reportIds))
@@ -1327,24 +1299,24 @@ describe('muting', () => {
         patient_id: 'the_person',
         muting_history: {
           last_update: 'client_side',
-          server_side: {muted: true},
+          server_side: { muted: true },
           client_side: [
-            {muted: false, report_id: 'report1', date: 1},
-            {muted: true, report_id: 'report2', date: 2},
-            {muted: false, report_id: 'report3', date: 12345},
+            { muted: false, report_id: 'report1', date: 1 },
+            { muted: true, report_id: 'report2', date: 2 },
+            { muted: false, report_id: 'report3', date: 12345 },
           ],
         },
         reported_date: 1,
       };
 
       const settings = {
-        transitions: {muting: true},
+        transitions: { muting: true },
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute']
         },
-        registrations: [{form: 'xml_form'}, {form: 'sms_form_1'}, {form: 'sms_form_2'}],
-        forms: {sms_form_1: {}, sms_form_2: {}}
+        registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+        forms: { sms_form_1: { }, sms_form_2: { } }
       };
 
       const inTheFuture = new Date().getTime() + notToday;
@@ -1360,8 +1332,8 @@ describe('muting', () => {
             patient_id: contact.patient_id,
           },
           scheduled_tasks: [
-            {group: 1, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inTheFuture},
-            {group: 2, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inThePast},
+            { group: 1, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inThePast },
           ]
         },
         {
@@ -1373,8 +1345,8 @@ describe('muting', () => {
             patient_uuid: contact._id,
           },
           scheduled_tasks: [
-            {group: 1, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inTheFuture},
-            {group: 2, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inThePast},
+            { group: 1, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inThePast },
           ]
         },
       ];
@@ -1382,7 +1354,7 @@ describe('muting', () => {
       const reportIds = reports.map(r => r._id);
 
       return utils
-        .updateSettings(settings, {ignoreReload: 'sentinel'})
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(reports))
         .then(() => utils.saveDoc(contact))
         .then(() => sentinelUtils.waitForSentinel(contact._id))
@@ -1418,7 +1390,7 @@ describe('muting', () => {
        */
 
       const settings = {
-        transitions: {muting: true},
+        transitions: { muting: true },
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute']
@@ -1430,17 +1402,17 @@ describe('muting', () => {
         name: 'new_clinic',
         type: 'clinic',
         place_id: 'the_new_clinic',
-        parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
         contact: {
           _id: 'new_person',
-          parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         },
         reported_date: new Date().getTime(),
         muting_history: {
-          server_side: {muted: false},
+          server_side: { muted: false },
           client_side: [
-            {report_id: 'mutes_clinic', muted: true, date: 1000},
-            {report_id: 'unmutes_new_person', muted: false, date: 2000},
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
           last_update: 'client_side',
         },
@@ -1451,15 +1423,15 @@ describe('muting', () => {
         type: 'person',
         name: 'new_person',
         patient_id: 'the_new_person',
-        parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
           client_side: [
-            {report_id: 'mutes_person', muted: true, date: 500},
-            {report_id: 'mutes_clinic', muted: true, date: 1000},
-            {report_id: 'unmutes_new_person', muted: false, date: 2000},
-            {report_id: 'mutes_person_again', muted: true, date: 3000}
+            { report_id: 'mutes_person', muted: true, date: 500 },
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+            { report_id: 'mutes_person_again', muted: true, date: 3000 }
           ],
           last_update: 'client_side',
         }
@@ -1470,12 +1442,12 @@ describe('muting', () => {
         type: 'person',
         name: 'newnew_person',
         patient_id: 'the_newnew_person',
-        parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muting_history: {
           client_side: [
-            {report_id: 'mutes_clinic', muted: true, date: 1000},
-            {report_id: 'unmutes_new_person', muted: false, date: 2000},
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
           last_update: 'client_side',
         }
@@ -1540,16 +1512,16 @@ describe('muting', () => {
       const docs = _.shuffle([clinic, person, newPerson, ...reports]);
 
       return utils
-        .updateSettings(settings, {ignoreReload: 'sentinel'})
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(docs))
         .then(() => sentinelUtils.waitForSentinel(reportIds))
         .then(() => Promise.all([
           utils.getDocs([clinic._id, person._id, newPerson._id]),
           sentinelUtils.getInfoDocs([clinic._id, person._id, newPerson._id])
         ]))
-        .then(([updatedContacts, infoDocs]) => {
-          const [updatedClinic, updatedPerson, updatedNewPerson] = updatedContacts;
-          const [clinicInfo, personInfo, newPersonInfo] = infoDocs;
+        .then(([ updatedContacts, infoDocs ]) => {
+          const [ updatedClinic, updatedPerson, updatedNewPerson ] = updatedContacts;
+          const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           chai.expect(updatedClinic.muted).to.be.undefined;
@@ -1583,7 +1555,7 @@ describe('muting', () => {
         .then(updatedReport => utils.saveDoc(updatedReport))
         .then(() => sentinelUtils.waitForSentinel('mutes_clinic'))
         .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
-        .then(([updatedClinic, updatedPerson, updatedNewPerson]) => {
+        .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
           // nothing changed
           chai.expect(updatedClinic.muted).to.be.undefined;
           chai.expect(updatedPerson.muted).to.be.ok;
@@ -1607,7 +1579,7 @@ describe('muting', () => {
        */
 
       const settings = {
-        transitions: {muting: true},
+        transitions: { muting: true },
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute'],
@@ -1648,17 +1620,17 @@ describe('muting', () => {
         name: 'new_clinic',
         type: 'clinic',
         place_id: 'the_new_clinic',
-        parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
         contact: {
           _id: 'new_person',
-          parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         },
         reported_date: new Date().getTime(),
         muting_history: {
-          server_side: {muted: false},
+          server_side: { muted: false },
           client_side: [
-            {report_id: 'mutes_clinic_replay', muted: true, date: 1000},
-            {report_id: 'unmutes_new_person_replay', muted: false, date: 2000},
+            { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
           ],
           last_update: 'client_side',
         },
@@ -1669,15 +1641,15 @@ describe('muting', () => {
         type: 'person',
         name: 'new_person',
         patient_id: 'the_new_person',
-        parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
           client_side: [
-            {report_id: 'mutes_person_replay', muted: true, date: 500},
-            {report_id: 'mutes_clinic_replay', muted: true, date: 1000},
-            {report_id: 'unmutes_new_person_replay', muted: false, date: 2000},
-            {report_id: 'mutes_person_again_replay', muted: true, date: 3000}
+            { report_id: 'mutes_person_replay', muted: true, date: 500 },
+            { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
+            { report_id: 'mutes_person_again_replay', muted: true, date: 3000 }
           ],
           last_update: 'client_side',
         }
@@ -1688,12 +1660,12 @@ describe('muting', () => {
         type: 'person',
         name: 'newnew_person',
         patient_id: 'the_newnew_person',
-        parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muting_history: {
           client_side: [
-            {report_id: 'mutes_clinic_replay', muted: true, date: 1000},
-            {report_id: 'unmutes_new_person_replay', muted: false, date: 2000},
+            { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
           ],
           last_update: 'client_side',
         }
@@ -1759,7 +1731,7 @@ describe('muting', () => {
       const docs = _.shuffle([clinic, person, newPerson, ...reports]);
 
       return utils
-        .updateSettings(settings, {ignoreReload: 'sentinel'})
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(docs))
         .then(() => sentinelUtils.waitForSentinel(reportIds))
         .then(() => Promise.all([
@@ -1767,9 +1739,9 @@ describe('muting', () => {
           sentinelUtils.getInfoDocs([clinic._id, person._id, newPerson._id]),
           utils.getDocs(reportIds),
         ]))
-        .then(([updatedContacts, infoDocs, updatedReports]) => {
-          const [updatedClinic, updatedPerson, updatedNewPerson] = updatedContacts;
-          const [clinicInfo, personInfo, newPersonInfo] = infoDocs;
+        .then(([ updatedContacts, infoDocs, updatedReports ]) => {
+          const [ updatedClinic, updatedPerson, updatedNewPerson ] = updatedContacts;
+          const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           chai.expect(updatedClinic.muted).to.be.undefined;
@@ -1809,7 +1781,7 @@ describe('muting', () => {
         .then(() => utils.saveDoc(mutesClinic))
         .then(() => sentinelUtils.waitForSentinel(mutesClinic._id))
         .then(() => utils.getDocs([clinic._id, person._id, newPerson._id, ...reportIds]))
-        .then(([updatedClinic, updatedPerson, updatedNewPerson, ...updatedReports]) => {
+        .then(([ updatedClinic, updatedPerson, updatedNewPerson, ...updatedReports ]) => {
           // nothing changed
           chai.expect(updatedClinic.muted).to.be.undefined;
           chai.expect(updatedPerson.muted).to.be.ok;
@@ -1831,7 +1803,7 @@ describe('muting', () => {
         .then(() => utils.getDoc(mutesClinic._id))
         .then(report => utils.saveDoc(report))
         .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
-        .then(([updatedClinic, updatedPerson, updatedNewPerson]) => {
+        .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
           // nothing changed
           chai.expect(updatedClinic.muted).to.be.undefined;
           chai.expect(updatedPerson.muted).to.be.ok;
@@ -1850,7 +1822,7 @@ describe('muting', () => {
       // nevertheless ...
 
       const settings = {
-        transitions: {muting: true},
+        transitions: { muting: true },
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute']
@@ -1862,18 +1834,18 @@ describe('muting', () => {
         name: 'new_clinic',
         type: 'clinic',
         place_id: 'the_new_clinic',
-        parent: {_id: 'health_center', parent: {_id: 'district_hospital'}},
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
         contact: {
           _id: 'new_person',
-          parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+          parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         },
         reported_date: new Date().getTime(),
         muting_history: {
-          server_side: {muted: false},
+          server_side: { muted: false },
           client_side: [
-            {report_id: 'mutes_clinic', muted: true, date: 1000},
-            {report_id: 'unmutes_person', muted: false, date: 2000},
-            {report_id: 'mutes_clinic', muted: true, date: 4000},
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic', muted: true, date: 4000 },
           ],
           last_update: 'client_side',
         },
@@ -1884,14 +1856,14 @@ describe('muting', () => {
         type: 'person',
         name: 'new_person',
         patient_id: 'the_new_person',
-        parent: {_id: 'new_clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}},
+        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
           client_side: [
-            {report_id: 'mutes_clinic', muted: true, date: 1000},
-            {report_id: 'unmutes_person', muted: false, date: 2000},
-            {report_id: 'mutes_clinic', muted: true, date: 4000},
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic', muted: true, date: 4000 },
           ],
           last_update: 'client_side',
         }
@@ -1913,7 +1885,7 @@ describe('muting', () => {
         },
       ];
 
-      const mutesClinic = {
+      const mutesClinic =  {
         _id: 'mutes_clinic',
         type: 'data_record',
         content_type: 'xml',
@@ -1931,11 +1903,11 @@ describe('muting', () => {
       const docs = _.shuffle([clinic, person, ...reports]);
 
       return utils
-        .updateSettings(settings, {ignoreReload: 'sentinel'})
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(docs))
         .then(() => sentinelUtils.waitForSentinel(reportIds))
         .then(() => utils.getDocs([clinic._id, person._id]))
-        .then(([updatedClinic, updatedPerson]) => {
+        .then(([ updatedClinic, updatedPerson ]) => {
           // nothing changed
           chai.expect(updatedClinic.muted).to.be.undefined;
           chai.expect(updatedPerson.muted).to.be.undefined;
@@ -1943,7 +1915,7 @@ describe('muting', () => {
         .then(() => utils.saveDoc(mutesClinic))
         .then(() => sentinelUtils.waitForSentinel())
         .then(() => utils.getDocs([clinic._id, person._id]))
-        .then(([updatedClinic, updatedPerson]) => {
+        .then(([ updatedClinic, updatedPerson ]) => {
           // nothing changed
           chai.expect(updatedClinic.muted).to.be.ok;
           chai.expect(updatedPerson.muted).to.be.ok;

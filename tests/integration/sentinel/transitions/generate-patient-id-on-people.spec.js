@@ -2,7 +2,7 @@ const chai = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 describe('generate_patient_id_on_people', () => {
   after(() => utils.revertDb([], true));
@@ -10,7 +10,7 @@ describe('generate_patient_id_on_people', () => {
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
-      transitions: {generate_patient_id_on_people: false}
+      transitions: { generate_patient_id_on_people: false }
     };
 
     const doc = {
@@ -20,7 +20,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -36,7 +36,7 @@ describe('generate_patient_id_on_people', () => {
 
   it('should add place_id', () => {
     const settings = {
-      transitions: {generate_patient_id_on_people: true},
+      transitions: { generate_patient_id_on_people: true },
     };
 
     const doc = {
@@ -46,12 +46,12 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info).to.deep.nested.include({'transitions.generate_patient_id_on_people.ok': true});
+        chai.expect(info).to.deep.nested.include({ 'transitions.generate_patient_id_on_people.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {
@@ -62,7 +62,7 @@ describe('generate_patient_id_on_people', () => {
 
   it('should be skipped when patient_id is filled', () => {
     const settings = {
-      transitions: {generate_patient_id_on_people: true},
+      transitions: { generate_patient_id_on_people: true },
     };
 
     const doc = {
@@ -73,7 +73,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -88,7 +88,7 @@ describe('generate_patient_id_on_people', () => {
 
   it('should add patient_id', () => {
     const settings = {
-      transitions: {generate_patient_id_on_people: true},
+      transitions: { generate_patient_id_on_people: true },
     };
 
     const doc = {
@@ -98,7 +98,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -113,7 +113,7 @@ describe('generate_patient_id_on_people', () => {
 
   it('should add place_id', () => {
     const settings = {
-      transitions: {generate_patient_id_on_people: true},
+      transitions: { generate_patient_id_on_people: true },
     };
 
     const doc = {
@@ -123,12 +123,12 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, {ignoreReload: 'sentinel'})
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info).to.deep.nested.include({'transitions.generate_patient_id_on_people.ok': true});
+        chai.expect(info).to.deep.nested.include({ 'transitions.generate_patient_id_on_people.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {

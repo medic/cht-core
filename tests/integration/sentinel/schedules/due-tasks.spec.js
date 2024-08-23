@@ -211,7 +211,7 @@ const reports = [
         due: threeDaysAgo, // task with text
         message: [{
           content: 'THREE. Reported by {{contact.name}}. Patient {{patient_name}}({{patient_id}}). ' +
-            'Value {{fields.value}}',
+                   'Value {{fields.value}}',
           locale: 'test'
         }],
         recipient: 'health_center',
@@ -384,7 +384,7 @@ describe('Due Tasks', () => {
       { id: 'report7', rev: 2 }
     ]);
 
-    const [report1, report2, report3, report4, report5, report6, report7] = await utils.getDocs(ids);
+    const [ report1, report2, report3, report4, report5, report6, report7 ] = await utils.getDocs(ids);
     chai.expect(report1._id).to.equal('report1');
     chai.expect(report1.scheduled_tasks).to.equal(undefined);
 
