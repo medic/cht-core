@@ -103,6 +103,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.appending = false;
     this.error = false;
 
+    if (this.route.snapshot.queryParams.query) {
+      throw new Error(`jkuester - ${this.route.snapshot.queryParams.query}`);
+    }
+
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
     this.setActionBarData();
   }
