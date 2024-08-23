@@ -11,7 +11,7 @@ describe('Unauthorized form', () => {
   const updateUnauthorizedFormSettings = async (customPlaceType, permissions = {}) => {
     const settings = await utils.getSettings();
     const newSettings = {
-      contact_types: [...settings.contact_types, customPlaceType],
+      contact_types: [ ...settings.contact_types, customPlaceType ],
       permissions: { ...settings.permissions, ...permissions },
     };
     await utils.updateSettings(newSettings, { ignoreReload: true, sync: true });
@@ -22,15 +22,15 @@ describe('Unauthorized form', () => {
 
   const PLACE_XML_PATH = `${__dirname}/forms/unauthorized-place.xml`;
   const customPlaceType = customTypeFactory.customType().build({}, { name: 'unauthorized-contact-form' });
-  const customPlace = customTypeFactory.formsForTypes([{ id: customPlaceType.id }], PLACE_XML_PATH)[0];
+  const customPlace = customTypeFactory.formsForTypes([ { id: customPlaceType.id } ], PLACE_XML_PATH)[0];
 
   const places = placeFactory.generateHierarchy();
-  const offlineUser = userFactory.build({ place: places.get('district_hospital')._id, roles: ['chw'] });
+  const offlineUser = userFactory.build({ place: places.get('district_hospital')._id, roles: [ 'chw' ] });
 
   before(async () => {
     customPlace.context = { permission: 'can_create_clinic' };
-    await utils.saveDocs([...places.values(), customPlace]);
-    await utils.createUsers([offlineUser]);
+    await utils.saveDocs([ ...places.values(), customPlace ]);
+    await utils.createUsers([ offlineUser ]);
     await loginPage.login(offlineUser);
   });
 

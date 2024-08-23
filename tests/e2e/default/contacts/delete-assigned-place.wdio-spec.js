@@ -26,7 +26,7 @@ describe('User Test Cases -> Creating Users ->', () => {
     roles: [offlineUserRole],
   });
 
-  const docs = [...places.values(), person, districtHospital2];
+  const docs = [ ...places.values(), person, districtHospital2 ];
 
   before(async () => {
     const settings = await utils.getSettings();

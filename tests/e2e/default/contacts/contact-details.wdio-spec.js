@@ -17,9 +17,9 @@ describe('Contact details page.', () => {
     const DOCS_DISPLAY_LIMIT = 50;
     const ROLE = 'notchw';
 
-    const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
-    const user = userFactory.build({ username: 'offlineuser', roles: [ROLE] });
-    const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
+    const parent = placeFactory.place().build({_id: 'dist1', type: 'district_hospital'});
+    const user = userFactory.build({username: 'offlineuser', roles: [ROLE]});
+    const patient = personFactory.build({parent: {_id: user.place._id, parent: {_id: parent._id}}});
 
     const waitForContactLoaded = async (expectTasks) => {
       await commonElements.waitForPageLoaded();
@@ -37,13 +37,13 @@ describe('Contact details page.', () => {
     };
 
     const newReports = Array
-      .from({ length: 40 })
+      .from({length: 40})
       .map(() => reportFactory.report().build(
-        { form: 'pregnancy_danger_sign' },
+        {form: 'pregnancy_danger_sign'},
         {
           patient,
           submitter: user.contact,
-          fields: { t_danger_signs_referral_follow_up: 'yes' },
+          fields: {t_danger_signs_referral_follow_up: 'yes'},
         }
       ));
 
@@ -51,13 +51,13 @@ describe('Contact details page.', () => {
     oldReportDate.setMonth(new Date().setMonth() - 4);
 
     const oldReports = Array
-      .from({ length: 20 })
+      .from({length: 20})
       .map(() => reportFactory.report().build(
-        { form: 'pregnancy', reported_date: oldReportDate },
+        {form: 'pregnancy', reported_date: oldReportDate},
         {
           patient,
           submitter: user.contact,
-          fields: { t_danger_signs_referral_follow_up: 'yes' },
+          fields: {t_danger_signs_referral_follow_up: 'yes'},
         }
       ));
 
@@ -71,7 +71,7 @@ describe('Contact details page.', () => {
 
     const updatePermissions = async (roleValue, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();
-      settings.roles[roleValue] = { offline: true };
+      settings.roles[roleValue] = {offline: true};
       addPermissions.map(permission => settings.permissions[permission].push(roleValue));
       removePermissions.forEach(permission => {
         settings.permissions[permission] = settings.permissions[permission].filter(r => r !== roleValue);

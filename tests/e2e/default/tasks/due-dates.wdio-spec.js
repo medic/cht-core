@@ -53,7 +53,7 @@ const updateDueDatesSettings = async (updates = {}) => {
 describe('Task list due dates', () => {
   before(async () => {
     await utils.saveDocs(contacts);
-    await utils.createUsers([chw]);
+    await utils.createUsers([ chw ]);
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login({ username: chw.username, password: chw.password });

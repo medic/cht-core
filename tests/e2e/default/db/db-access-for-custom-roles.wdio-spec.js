@@ -50,14 +50,14 @@ describe('Database access for new roles', () => {
   });
 
   it('should be able to sync documents up', async () => {
-    const report = genericReportFactory.report().build({ form: 'something', contact: { _id: contact._id } });
+    const report = genericReportFactory.report().build( { form: 'something', contact: { _id: contact._id } });
     await browserDbUtils.createDoc(report);
     await commonPage.sync();
     await utils.getDoc(report._id);
   });
 
   it('should be able to sync documents down', async () => {
-    const report = genericReportFactory.report().build({ form: 'something', contact: { _id: contact._id } });
+    const report = genericReportFactory.report().build( { form: 'something', contact: { _id: contact._id } });
     await utils.saveDoc(report);
     await commonPage.sync();
     await browserDbUtils.getDoc(report._id);

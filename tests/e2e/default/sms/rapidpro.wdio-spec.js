@@ -173,7 +173,7 @@ describe('RapidPro SMS Gateway', () => {
       await loginPage.cookieLogin();
       await commonPage.goToMessages();
 
-      const { heading, summary } = await messagesPage.getMessageInListDetails(rawPhone);
+      const { heading, summary} = await messagesPage.getMessageInListDetails(rawPhone);
       expect(heading).to.equal(rawPhone);
       expect(summary).to.equal(smsContent);
 
@@ -391,7 +391,7 @@ describe('RapidPro SMS Gateway', () => {
 
       const requestedBroadcastIds = [];
       const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
-      messagesEndpointRequests.forEach(([query, headers]) => {
+      messagesEndpointRequests.forEach(([ query, headers ]) => {
         expect(query.broadcast).to.exist;
         expect(expectedBroadcastIds.includes(query.broadcast)).to.be.true;
         requestedBroadcastIds.push(query.broadcast);
@@ -471,7 +471,7 @@ describe('RapidPro SMS Gateway', () => {
       await setOutgoingKey();
       await utils.saveDoc(doc);
 
-      await browser.waitUntil(() => messagesEndpointRequests.length === 6, 7 * 1000);
+      await browser.waitUntil(() => messagesEndpointRequests.length === 6, 7 * 1000 );
       await browser.pause(1200); // wait for one extra iteration
 
       expect(messagesEndpointRequests.length).to.equal(6); // no additional requests
@@ -490,7 +490,7 @@ describe('RapidPro SMS Gateway', () => {
         'delivered',
       ]);
 
-      messagesEndpointRequests.forEach(([query]) => {
+      messagesEndpointRequests.forEach(([ query ]) => {
         expect(query.broadcast).to.equal('gateway_ref');
       });
     });
@@ -520,7 +520,7 @@ describe('RapidPro SMS Gateway', () => {
       await utils.saveDocs(docs);
 
       const iterations = docsCount / 25; // batch size is 25
-      await browser.waitUntil(() => messagesEndpointRequests.length === docsCount, (iterations + 2) * 1000);
+      await browser.waitUntil(() => messagesEndpointRequests.length === docsCount, (iterations + 2) * 1000 );
 
       const queriedBroadcasts = messagesEndpointRequests.map(request => request[0].broadcast).sort();
       const expectedBroadcasts = docs.map(doc => doc.tasks[0].gateway_ref).sort();

@@ -44,7 +44,7 @@ const docTags = [
 const genTarget = (target, contact, targetValuesByContact) => {
   const targetValues = targetValuesByContact[contact.name];
   const value = targetValues[target.id]?.value;
-  if (value) {
+  if (value ) {
     return { id: target.id, value };
   }
 
@@ -55,13 +55,13 @@ const genTarget = (target, contact, targetValuesByContact) => {
 };
 
 const generateContactsAndTargets = (parent, contactName, targetValuesByContact) => {
-  const place = placeFactory.place().build({ type: 'health_center', parent: { _id: parent._id } });
+  const place = placeFactory.place().build({type: 'health_center', parent: {_id: parent._id}});
 
   const contact = personFactory.build({
     name: contactName,
-    parent: { _id: place._id, parent: place.parent }
+    parent: {_id: place._id, parent: place.parent}
   });
-  place.contact = { _id: contact._id, parent: contact.parent };
+  place.contact = {_id: contact._id, parent: contact.parent};
 
   const targets = docTags.map(tag => ({
     _id: `target~${tag}~${contact._id}~irrelevant`,

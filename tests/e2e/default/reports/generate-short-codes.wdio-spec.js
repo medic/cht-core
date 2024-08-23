@@ -29,7 +29,7 @@ describe('generating short codes', () => {
   };
 
   const registrations = [{
-    form: 'CASEID', events: [{ name: 'on_create', trigger: 'add_case' }]
+    form: 'CASEID', events: [ { name: 'on_create', trigger: 'add_case' } ]
   }];
 
   const transitions = {

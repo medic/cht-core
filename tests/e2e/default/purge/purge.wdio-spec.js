@@ -9,7 +9,7 @@ const sentinelUtils = require('@utils/sentinel');
 
 /* global window */
 
-describe('purge', function () {
+describe('purge', function() {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
 
@@ -32,7 +32,7 @@ describe('purge', function () {
     return reports.map(r => r._id);
   };
 
-  const generateReports = (reportsLength, formName) => Array
+  const generateReports = (reportsLength, formName) =>  Array
     .from({ length: reportsLength })
     .map(() => genericReportFactory.report().build({ form: formName }, { patient, submitter: contact }));
 

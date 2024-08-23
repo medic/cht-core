@@ -19,7 +19,7 @@ describe('Reports Subject', () => {
   const person = personFactory.build({
     phone: '+50689999999',
     patient_id: '123456',
-    parent: { _id: clinic._id, parent: clinic.parent }
+    parent: {_id: clinic._id, parent: clinic.parent}
   });
 
   const waitElementTextEquals = async (elementGetter, expectedText) => {
@@ -341,7 +341,7 @@ describe('Reports Subject', () => {
     });
   });
 
-  it('changes to a loaded or list report should be reflected in the UI ', async () => {
+  it('changes to a loaded or list report should be reflected in the UI ', async  () => {
     const reportTest = {
       _id: 'REF_REF_V3',
       form: 'RR',
@@ -366,13 +366,13 @@ describe('Reports Subject', () => {
       phone: '+50689888888',
       patient_id: '654321',
       name: 'Cleo',
-      parent: { _id: healthCenter._id, parent: healthCenter.parent }
+      parent: {_id: healthCenter._id, parent: healthCenter.parent}
     });
     const newPerson = personFactory.build({
       phone: '+50689777777',
       patient_id: '098765',
       name: 'Filippo',
-      parent: { _id: healthCenter._id, parent: healthCenter.parent }
+      parent: {_id: healthCenter._id, parent: healthCenter.parent}
     });
 
     const newUser = userFactory.build({ username: 'new-user', place: healthCenter._id, contact: userContact });
@@ -382,7 +382,7 @@ describe('Reports Subject', () => {
 
     // change both patient and submitter
     const reportDoc = await utils.getDoc(reportTest._id);
-    reportDoc.contact = { _id: newUser.contact._id, parent: newUser.contact.parent };
+    reportDoc.contact = {_id: newUser.contact._id, parent: newUser.contact.parent};
     reportDoc.fields.patient_id = newPerson.patient_id;
     await utils.saveDoc(reportDoc);
 
@@ -424,6 +424,6 @@ describe('Reports Subject', () => {
     await sentinelUtils.waitForSentinel([report._id]);
 
     await verifyListReportContent({ formName: 'SURVEY', subject: user.contact.name });
-    await verifyOpenReportContent({ formName: 'SURVEY', senderName: `${user.contact.name}` });
+    await verifyOpenReportContent({ formName: 'SURVEY', senderName: `${user.contact.name}`});
   });
 });

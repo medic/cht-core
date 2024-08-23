@@ -17,39 +17,36 @@ describe('Muting', () => {
   const healthCenter = places.get('health_center');
 
   const contact1 = personFactory.build({
-    name: 'contact1', parent: { _id: healthCenter._id, parent: district._id }
-  });
+    name: 'contact1', parent: { _id: healthCenter._id, parent: district._id } });
   const clinic1 = Object.assign({},
     places.get('clinic'),
-    { name: 'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id } });
+    { name: 'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id }});
 
   const clinic2 = Object.assign({},
     places.get('clinic'),
-    { name: 'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id } });
+    { name: 'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id }});
 
   const onlineUser = userFactory.build({
     username: 'online',
     place: healthCenter._id,
-    roles: ['program_officer'],
+    roles: [ 'program_officer' ],
     contact: {
       _id: 'fixture:user:online',
       name: 'Offline'
-    }
-  });
+    } });
 
   const offlineUser = userFactory.build({
     username: 'offline_user',
     place: healthCenter._id,
-    roles: ['chw'],
+    roles: [ 'chw' ],
     contact: {
       _id: 'fixture:user:offline',
       name: 'Offline'
-    }
-  });
+    }});
 
   const patient1 = personFactory.build({
     name: 'patient one',
-    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } } },
+    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } }},
     patient_id: 'patient_1'
   });
 
@@ -180,9 +177,9 @@ describe('Muting', () => {
     await formsUtils.uploadForms();
   });
 
-  after(async () => await utils.startSentinel());
+  after( async () => await utils.startSentinel());
 
-  describe('for an online user', () => {
+  describe('for an online user',  () => {
     before(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([onlineUser]);
@@ -197,7 +194,7 @@ describe('Muting', () => {
     });
 
     it('should not process client-side when muting as an online user', async () => {
-      await loginPage.login({ username: onlineUser.username, password: onlineUser.password });
+      await loginPage.login({username: onlineUser.username, password: onlineUser.password});
       await utils.stopSentinel();
       await utils.updateSettings(settings);
 
@@ -222,12 +219,12 @@ describe('Muting', () => {
       try {
         await commonPage.sync();
       } catch (err) {
+        // sometimes sync happens by itself, on timeout
         console.error('Error when trying to sync', err);
         await commonPage.closeReloadModal(true);
         await commonPage.sync();
       }
     };
-
 
     const unmuteContacts = () => {
       const ids = contacts.map(c => c._id);
@@ -258,7 +255,7 @@ describe('Muting', () => {
       await utils.createUsers([offlineUser]);
 
       await browser.url('/');
-      await loginPage.login({ username: offlineUser.username, password: offlineUser.password });
+      await loginPage.login({username: offlineUser.username, password: offlineUser.password});
     });
 
     after(async () => {
@@ -273,7 +270,7 @@ describe('Muting', () => {
       await setBrowserOnline();
     });
 
-    it('should not process muting client-side if not enabled', async () => {
+    it( 'should not process muting client-side if not enabled', async () => {
       const settingsWithDisabled = _.cloneDeep(settings);
       settingsWithDisabled.transitions.muting = { client_side: false };
 
@@ -294,7 +291,7 @@ describe('Muting', () => {
     });
 
     // for simplicity, offline means sentinel is stopped
-    it('should mute and unmute a person while "offline", with processing in between', async () => {
+    it( 'should mute and unmute a person while "offline", with processing in between', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 
@@ -384,7 +381,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute and unmute a person while "offline", without processing in between', async () => {
+    it( 'should mute and unmute a person while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 
@@ -450,7 +447,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute and unmute a clinic while "offline", with processing in between', async () => {
+    it( 'should mute and unmute a clinic while "offline", with processing in between', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 
@@ -596,7 +593,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute and unmute a clinic while "offline", without processing in between', async () => {
+    it( 'should mute and unmute a clinic while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 
@@ -677,7 +674,7 @@ describe('Muting', () => {
       expect(updatedClinic1.muted).to.be.undefined;
       expect(updatedClinic1.muting_history).to.deep.equal({
         last_update: 'server_side',
-        server_side: { muted: false, date: updatedClinic1.muting_history.server_side.date /* can't guess this date */ },
+        server_side: { muted: false, date: updatedClinic1.muting_history.server_side.date /* can't guess this date */},
         client_side: [
           { muted: true, date: clientMutingDate, report_id: mutingReport._id },
           { muted: false, date: clinic1UnmutingDate, report_id: unmutingReport._id },
@@ -697,7 +694,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute a clinic and unmute a patient while "offline", without processing in between', async () => {
+    it( 'should mute a clinic and unmute a patient while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 
@@ -807,7 +804,7 @@ describe('Muting', () => {
       expect(updatedClinic1.muted).to.be.undefined;
       expect(updatedClinic1.muting_history).to.deep.equal({
         last_update: 'server_side',
-        server_side: { muted: false, date: updatedClinic1.muting_history.server_side.date /* can't guess this date */ },
+        server_side: { muted: false, date: updatedClinic1.muting_history.server_side.date /* can't guess this date */},
         client_side: [
           { muted: true, date: clientMutingDate, report_id: mutingReport._id },
           { muted: false, date: clinic1unmutingDate, report_id: unmutingReport._id },
@@ -827,7 +824,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should handle offline multiple muting/unmuting events gracefully', async () => {
+    it( 'should handle offline multiple muting/unmuting events gracefully', async () => {
       // this test has value after it ran for at least 100 times
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
@@ -871,7 +868,7 @@ describe('Muting', () => {
       expect(updatedClinic.muting_history.client_side.length).to.equal(4);
     });
 
-    it('should save validation errors on docs', async () => {
+    it( 'should save validation errors on docs', async () => {
       await utils.addTranslations('en', {
         'muting.validation.message':
           '{{contact.name}}, field incorrect {{patient_name}} ({{patient_id}}) {{meta.instanceID}}',
@@ -916,7 +913,7 @@ describe('Muting', () => {
       expect(serverReport.tasks[0].messages[0].message).to.equal(serverReport.errors[0].message);
     });
 
-    it('should work with composite forms', async () => {
+    it( 'should work with composite forms', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 
