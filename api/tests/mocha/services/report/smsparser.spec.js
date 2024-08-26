@@ -1693,4 +1693,12 @@ describe('sms parser', () => {
     const result = smsparser.parseField(bsDayField, input, 'day');
     chai.expect(result).to.equal(expected);
   });
+
+  it('should correctly parse and standardize BS Year from Devanagari digits and strip invisible characters', () => {
+    const bsYearField = { type: 'bsYear' };
+    const input = '२\u200B०८०'; // 2080 in Devanagari with a zero-width space
+    const expected = '2080';
+    const result = smsparser.parseField(bsYearField, input, 'year');
+    chai.expect(result).to.equal(expected);
+  });
 });
