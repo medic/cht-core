@@ -1,4 +1,4 @@
-<mat-sidenav-container>
+<mat-sidenav-container [hasBackdrop]="true" (backdropClick)="close()">
   <mat-sidenav #sidebar mode="over" [fixedInViewport]="true">
     <mm-panel-header headerTitle="sidebar-menu.title" (onClose)="close()"/>
 

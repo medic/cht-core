@@ -1307,7 +1307,12 @@ mm-sidebar-menu .mat-sidenav-container {
 
   .mat-sidenav {
     width: 470px;
+    min-height: 100vh;
+    overflow: hidden;
     padding: 20px;
+    mat-sidenav-content {
+      overflow-y: auto;
+    }
     a {
       display: block;
     }
@@ -1326,6 +1331,12 @@ mm-sidebar-menu .mat-sidenav-container {
       .page {
         top: 115px;
       }
+    }
+  }
+
+  mm-sidebar-menu .mat-sidenav-container {
+    .mat-sidenav {
+      width: 85vw;
     }
   }
 
