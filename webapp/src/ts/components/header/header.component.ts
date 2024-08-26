@@ -60,7 +60,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       replicationStatus,
       currentTab,
       showPrivacyPolicy,
-      unreadCount,
+      unreadCount
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;

@@ -13,7 +13,6 @@ import { NavigationService } from '@mm-services/navigation.service';
 })
 export class ErrorComponent implements OnInit, OnDestroy {
   private windowRef;
-
   private readonly TIMEOUT_DURATION = 5 * 1000;
   private readonly ERRORS = {
     403: {
