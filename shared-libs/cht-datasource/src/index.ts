@@ -27,6 +27,7 @@
  * const myPerson = await datasource.v1.person.getByUuid(myUuid);
  */
 import { hasAnyPermission, hasPermissions } from './auth';
+import { Nullable } from './libs/core';
 import { assertDataContext, DataContext } from './libs/data-context';
 import * as Person from './person';
 import * as Place from './place';
@@ -36,6 +37,7 @@ export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
+export { InvalidArgumentError } from './libs/error';
 export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
@@ -85,6 +87,34 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws Error if no UUID is provided
          */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Person.v1.getWithLineage)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns an array of people for the provided page specifications.
+         * @param personType the type of people to return
+         * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+         * @param limit the maximum number of people to return. Default is 100.
+         * @returns a page of people for the provided specifications
+         * @throws Error if no type is provided or if the type is not for a person
+         * @throws Error if the provided limit is `<= 0`
+         * @throws Error if the provided cursor is not a valid page token or `null`
+         * @see {@link getByType} which provides the same data, but without having to manually account for paging
+         */
+        getPageByType: (
+          personType: string,
+          cursor: Nullable<string> = null,
+          limit = 100
+        ) => ctx.bind(Person.v1.getPage)(
+          Qualifier.byContactType(personType), cursor, limit
+        ),
+
+        /**
+         * Returns a generator for fetching all people with the given type.
+         * @param personType the type of people to return
+         * @returns a generator for fetching all people with the given type
+         * @throws Error if no type is provided or if the type is not for a person
+         */
+        getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
       }
     }
   };
