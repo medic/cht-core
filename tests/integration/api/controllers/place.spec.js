@@ -100,8 +100,6 @@ describe('Place API', () => {
 
   describe('GET /api/v1/place', async () => {
     const getPage = Place.v1.getPage(dataContext);
-    const limit = 4;
-    const cursor = null;
     const invalidContactType = 'invalidPlace';
 
     it('returns a page of places for no limit and cursor passed', async () => {
