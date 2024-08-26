@@ -175,10 +175,9 @@ export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<strin
 
 /** @internal */
 export const fetchAndFilter = (
-  getFunction: (key: unknown, limit: number, skip: number) => Promise<Nullable<Doc>[]>,
+  getFunction: (limit: number, skip: number) => Promise<Nullable<Doc>[]>,
   filterFunction: (settings: SettingsService, doc: Nullable<Doc>, uuid: string | undefined) => unknown,
   settings: SettingsService,
-  contactType: string,
   limit: number,
 ): typeof recursionInner => {
   const recursionInner = async (
@@ -186,7 +185,7 @@ export const fetchAndFilter = (
     currentSkip: number,
     currentDocs: Nullable<Doc>[] = [],
   ): Promise<Page<unknown>> => {
-    const docs = await getFunction([contactType], currentLimit, currentSkip);
+    const docs = await getFunction(currentLimit, currentSkip);
     const noMoreResults = docs.length < currentLimit;
     const newDocs = docs.filter((doc) => filterFunction(settings, doc, doc?._id));
     const overFetchCount = currentDocs.length + newDocs.length - limit || 0;

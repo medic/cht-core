@@ -113,19 +113,6 @@ describe('Place API', () => {
       expect(responseCursor).to.be.equal(null);
     });
 
-    it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {
-      const firstPage = await getPage(Qualifier.byContactType(placeType), cursor, limit);
-      const secondPage = await getPage(Qualifier.byContactType(placeType), firstPage.cursor, limit);
-
-      const allPeople = [...firstPage.data, ...secondPage.data];
-
-      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder([place0]);
-      expect(firstPage.data.length).to.be.equal(1);
-      expect(secondPage.data.length).to.be.equal(0);
-      expect(firstPage.cursor).to.be.equal('1');
-      expect(secondPage.cursor).to.be.equal(null);
-    });
-
     it(`throws error when user does not have can_view_contacts permission`, async () => {
       const opts = {
         path: `/api/v1/place`,

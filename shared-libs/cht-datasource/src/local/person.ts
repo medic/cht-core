@@ -82,11 +82,14 @@ export namespace v1 {
         throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
       }
 
+      const getDocsByPageWithPersonType = (
+        personType: ContactTypeQualifier
+      ) => (limit: number, skip: number) => getDocsByPage([personType.contactType], limit, skip);
+
       return await fetchAndFilter(
-        getDocsByPage,
+        getDocsByPageWithPersonType(personType),
         isPerson,
         settings,
-        personType.contactType,
         limit
       )(limit, skip) as Page<Person.v1.Person>;
     };
