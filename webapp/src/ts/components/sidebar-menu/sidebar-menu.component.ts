@@ -10,7 +10,6 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
-import { fa } from '@faker-js/faker';
 
 @Component({
   selector: 'mm-sidebar-menu',
