@@ -4,8 +4,8 @@
 
     <mat-sidenav-content>
 
-      <div class="module-nav">
-        <a *ngFor="let module of mainModules"
+      <div class="nav-section">
+        <a *ngFor="let module of moduleOptions"
           tabindex="-1"
           [routerLink]="module.routerLink"
           [mmAuth]="module.hasPermissions">
@@ -14,12 +14,61 @@
         </a>
 
         <a tabindex="-1"
-           [attr.href]="adminAppPath"
-           mmAuth
-           [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]"
-           [mmAuthOnline]="true">
+          [attr.href]="adminAppPath"
+          mmAuth
+          [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]"
+          [mmAuthOnline]="true">
           <mat-icon fontIcon="fa-cog"></mat-icon>
           <span>{{ 'admin.app.name' | translate }}</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <a *ngIf="!replicationStatus?.disabled"
+          tabindex="-1"
+          [ngClass]="{ 'disabled': replicationStatus?.current?.disableSyncButton }"
+          (click)="replicate()">
+          <mat-icon fontIcon="fa-refresh"></mat-icon>
+          <span>{{ 'sync.now' | translate }}</span>
+        </a>
+      </div>
+
+      <div class="nav-section" *ngIf="!replicationStatus?.disabled">
+        <div *ngIf="replicationStatus.current" [class]="replicationStatus.current?.className">
+          <mat-icon [fontIcon]="replicationStatus.current?.icon"></mat-icon>
+          <span>{{ replicationStatus.current.key | translate }}</span>
+        </div>
+        <div *ngIf="replicationStatus.lastSuccessTo" class="last-sync">
+          <span>{{ 'sync.last_success' | translate }}</span>
+          <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <ng-container *ngFor="let option of secondaryOptions">
+          <a tabindex="-1"
+             *ngIf="option.hasPermissions"
+             [routerLink]="option.routerLink"
+             [mmAuth]="option.hasPermissions"
+             (click)="option.click && option.click()">
+            <mat-icon [fontIcon]="option.icon"></mat-icon>
+            <span>{{ option.translationKey | translate }}</span>
+          </a>
+
+          <a tabindex="-1"
+             *ngIf="!option.hasPermissions"
+             [routerLink]="option.routerLink"
+             (click)="option.click && option.click()">
+            <mat-icon [fontIcon]="option.icon"></mat-icon>
+            <span>{{ option.translationKey | translate }}</span>
+          </a>
+        </ng-container>
+      </div>
+
+      <div class="nav-section">
+        <a *ngIf="canLogOut" tabindex="-1" (click)="logout()">
+          <mat-icon fontIcon="fa-power-off"></mat-icon>
+          <span>{{ 'Log Out' | translate }}</span>
         </a>
       </div>
 

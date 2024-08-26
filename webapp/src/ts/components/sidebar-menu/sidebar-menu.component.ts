@@ -1,33 +1,44 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, Input } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { LocationService } from '@mm-services/location.service';
+import { DBSyncService } from '@mm-services/db-sync.service';
+import { ModalService } from '@mm-services/modal.service';
+import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
+import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 
 @Component({
   selector: 'mm-sidebar-menu',
   templateUrl: './sidebar-menu.component.html',
 })
 export class SidebarMenuComponent implements OnInit, OnDestroy {
+  @Input() canLogOut;
   @ViewChild('sidebar') sidebar!: MatSidenav;
   private subscriptions: Subscription = new Subscription();
   private globalActions: GlobalActions;
-  mainModules: MenuOptions[] = [];
+  replicationStatus;
+  showPrivacyPolicy = false;
+  moduleOptions: MenuOptions[] = [];
+  secondaryOptions: MenuOptions[] = [];
   adminAppPath: string = '';
 
   constructor(
     private store: Store,
     private locationService: LocationService,
+    private dbSyncService: DBSyncService,
+    private modalService: ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
   ngOnInit() {
     this.adminAppPath = this.locationService.adminPath;
-    this.setMainModules();
+    this.setModuleOptions();
+    this.setSecondaryOptions();
     this.subscribeToStore();
   }
 
@@ -39,20 +50,43 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     return this.globalActions.closeSidebarMenu();
   }
 
+  replicate() {
+    if (this.replicationStatus?.current?.disableSyncButton) {
+      return;
+    }
+    return this.dbSyncService.sync(true);
+  }
+
+  logout() {
+    this.modalService.show(LogoutConfirmComponent);
+  }
+
   private subscribeToStore() {
-    const subscribe = this.store
-      .select(Selectors.getSidebarMenu)
-      .subscribe(sidebarMenu => {
-        if (sidebarMenu?.isOpen) {
-          return this.sidebar?.open();
-        }
-        return this.sidebar?.close();
-      });
+    const subscribe = combineLatest(
+      this.store.select(Selectors.getReplicationStatus),
+      this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getSidebarMenu),
+    ).subscribe(([ replicationStatus, showPrivacyPolicy, sidebarMenu ]) => {
+      this.replicationStatus = replicationStatus;
+      this.showPrivacyPolicy = showPrivacyPolicy;
+      this.toggleSidebarMenu(sidebarMenu);
+    });
     this.subscriptions.add(subscribe);
   }
 
-  private setMainModules() {
-    this.mainModules = [
+  private openFeedback() {
+    this.modalService.show(FeedbackComponent);
+  }
+
+  private toggleSidebarMenu(sidebarMenu: SidebarMenu) {
+    if (sidebarMenu?.isOpen) {
+      return this.sidebar?.open();
+    }
+    return this.sidebar?.close();
+  }
+
+  private setModuleOptions() {
+    this.moduleOptions = [
       {
         routerLink: 'messages',
         icon: 'fa-envelope',
@@ -85,6 +119,32 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
       },
     ];
   }
+
+  private setSecondaryOptions() {
+    this.secondaryOptions = [
+      {
+        routerLink: 'about',
+        icon: 'fa-question',
+        translationKey: 'about',
+      },
+      {
+        routerLink: 'user',
+        icon: 'fa-user',
+        translationKey: 'edit.user.settings',
+        hasPermissions: 'can_edit_profile'
+      },
+      { // showPrivacyPolicy
+        routerLink: 'privacy-policy',
+        icon: 'fa-lock',
+        translationKey: 'privacy.policy',
+      },
+      {
+        icon: 'fa-bug',
+        translationKey: 'Report Bug',
+        click: () => this.openFeedback()
+      },
+    ];
+  }
 }
 
 export interface SidebarMenu {
@@ -94,6 +154,7 @@ export interface SidebarMenu {
 export type MenuOptions = {
   icon: string;
   translationKey: string;
-  routerLink: string | undefined;
-  hasPermissions: string | undefined;
+  routerLink?: string | undefined;
+  hasPermissions?: string | undefined;
+  click?: () => void;
 };
