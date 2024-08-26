@@ -81,6 +81,7 @@ export class ErrorComponent implements OnInit, OnDestroy {
   }
 
   private hideHeader() {
+    // reusing selectMode action used in Reports to hide header
     this.globalActions.setSelectMode(true);
   }
 
