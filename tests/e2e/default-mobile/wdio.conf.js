@@ -11,6 +11,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       './**/browser-compatibility.wdio-spec.js',
       './**/delete.wdio-spec.js',
       './**/navigation.wdio-spec.js',
+      '../default/reports/delete.wdio-spec.js',
       /*'./!**!/!*.wdio-spec.js',
       '../default/login/login-logout.wdio-spec.js',
       '../default/navigation/navigation.wdio-spec.js',
