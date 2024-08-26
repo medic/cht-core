@@ -56,7 +56,7 @@
           </a>
 
           <a tabindex="-1"
-             *ngIf="!option.hasPermissions"
+             *ngIf="!option.hasPermissions && option.canDisplay"
              [routerLink]="option.routerLink"
              (click)="option.click && option.click()">
             <mat-icon [fontIcon]="option.icon"></mat-icon>

@@ -10,18 +10,18 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
+import { fa } from '@faker-js/faker';
 
 @Component({
   selector: 'mm-sidebar-menu',
   templateUrl: './sidebar-menu.component.html',
 })
 export class SidebarMenuComponent implements OnInit, OnDestroy {
-  @Input() canLogOut;
+  @Input() canLogOut: boolean = false;
   @ViewChild('sidebar') sidebar!: MatSidenav;
   private subscriptions: Subscription = new Subscription();
   private globalActions: GlobalActions;
   replicationStatus;
-  showPrivacyPolicy = false;
   moduleOptions: MenuOptions[] = [];
   secondaryOptions: MenuOptions[] = [];
   adminAppPath: string = '';
@@ -62,16 +62,21 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const subscribe = combineLatest(
+    const subscribeStore = combineLatest(
       this.store.select(Selectors.getReplicationStatus),
-      this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSidebarMenu),
-    ).subscribe(([ replicationStatus, showPrivacyPolicy, sidebarMenu ]) => {
+    ).subscribe(([ replicationStatus, sidebarMenu ]) => {
       this.replicationStatus = replicationStatus;
-      this.showPrivacyPolicy = showPrivacyPolicy;
       this.toggleSidebarMenu(sidebarMenu);
     });
-    this.subscriptions.add(subscribe);
+    this.subscriptions.add(subscribeStore);
+
+    const subscribePrivacyPolicy = this.store
+      .select(Selectors.getShowPrivacyPolicy)
+      .subscribe(showPrivacyPolicy => {
+        this.setSecondaryOptions(showPrivacyPolicy);
+      });
+    this.subscriptions.add(subscribePrivacyPolicy);
   }
 
   private openFeedback() {
@@ -120,12 +125,13 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     ];
   }
 
-  private setSecondaryOptions() {
+  private setSecondaryOptions(showPrivacyPolicy = false) {
     this.secondaryOptions = [
       {
         routerLink: 'about',
         icon: 'fa-question',
         translationKey: 'about',
+        canDisplay: true,
       },
       {
         routerLink: 'user',
@@ -133,14 +139,16 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
         translationKey: 'edit.user.settings',
         hasPermissions: 'can_edit_profile'
       },
-      { // showPrivacyPolicy
+      {
         routerLink: 'privacy-policy',
         icon: 'fa-lock',
         translationKey: 'privacy.policy',
+        canDisplay: showPrivacyPolicy,
       },
       {
         icon: 'fa-bug',
         translationKey: 'Report Bug',
+        canDisplay: true,
         click: () => this.openFeedback()
       },
     ];
@@ -156,5 +164,6 @@ export type MenuOptions = {
   translationKey: string;
   routerLink?: string | undefined;
   hasPermissions?: string | undefined;
+  canDisplay?: boolean;
   click?: () => void;
 };
