@@ -5,10 +5,8 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
-import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
-import { SessionService } from '@mm-services/session.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
@@ -28,9 +26,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   showPrivacyPolicy = false;
   replicationStatus;
   currentTab;
-  hasOldNav;
-  selectMode = false;
-  hideHeader;
   unreadCount = {};
   permittedTabs: HeaderTab[] = [];
 
@@ -40,16 +35,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private store: Store,
     private settingsService: SettingsService,
     private headerTabsService: HeaderTabsService,
-    private authService: AuthService,
     private modalService: ModalService,
-    private sessionService: SessionService,
     private dbSyncService: DBSyncService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
   ngOnInit(): void {
-    this.enableOldNav();
     this.subscribeToStore();
     this.getHeaderTabs();
   }
@@ -64,20 +56,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getUnreadCount),
-      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       replicationStatus,
       currentTab,
       showPrivacyPolicy,
-      unreadCount,
-      selectMode,
+      unreadCount
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.unreadCount = unreadCount;
-      this.selectMode = selectMode;
-      this.displayHeader();
     });
     this.subscription.add(subscription);
   }
@@ -89,14 +77,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });
-  }
-
-  private async enableOldNav() {
-    this.hasOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
-  }
-
-  private displayHeader() {
-    this.hideHeader = !this.hasOldNav && this.selectMode;
   }
 
   openFeedback() {
