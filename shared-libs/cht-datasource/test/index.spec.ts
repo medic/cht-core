@@ -53,7 +53,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys(['getByUuid', 'getByUuidWithLineage', 'getPageByType']);
+        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
       });
 
       it('getByUuid', async () => {
@@ -84,6 +84,44 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
         expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getPageByType', async () => {
+        const expectedPlaces: Page<Place.v1.Place> = {data: [], cursor: null};
+        const placeGetPage = sinon.stub().resolves(expectedPlaces);
+        dataContextBind.returns(placeGetPage);
+        const placeType = 'place';
+        const limit = 2;
+        const cursor = '1';
+        const placeTypeQualifier = { contactType: placeType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(placeTypeQualifier);
+
+        const returnedPlaces = await place.getPageByType(placeType, cursor, limit);
+
+        expect(returnedPlaces).to.equal(expectedPlaces);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
+        expect(placeGetPage.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(placeType)).to.be.true;
+      });
+
+      it('getByType', () => {
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+
+        const placeGetAll = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(placeGetAll);
+        const placeType = 'place';
+        const placeTypeQualifier = { contactType: placeType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(placeTypeQualifier);
+
+        const res =  place.getByType(placeType);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getAll)).to.be.true;
+        expect(placeGetAll.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(placeType)).to.be.true;
       });
     });
 

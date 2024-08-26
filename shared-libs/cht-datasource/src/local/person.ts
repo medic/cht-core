@@ -73,13 +73,13 @@ export namespace v1 {
       const personTypesIds = personTypes.map((item) => item.id);
 
       if (!personTypesIds.includes(personType.contactType)) {
-        throw new InvalidArgumentError(`Invalid contact type [${personType.contactType}]`);
+        throw new InvalidArgumentError(`Invalid contact type [${personType.contactType}].`);
       }
 
       // Adding a number skip variable here so as not to confuse ourselves
       const skip = Number(cursor);
       if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
-        throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}]`);
+        throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
       }
 
       return await fetchAndFilter(

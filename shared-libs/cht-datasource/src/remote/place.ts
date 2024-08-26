@@ -7,7 +7,7 @@ import { getResource, getResources, RemoteDataContext } from './libs/data-contex
 export namespace v1 {
   const getPlace = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/place');
 
-  const getPlaces = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/places');
+  const getPlaces = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/place');
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (

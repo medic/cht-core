@@ -22,6 +22,7 @@ describe('Place API', () => {
       }
     },
   });
+  const placeType = 'clinic';
 
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
@@ -97,9 +98,95 @@ describe('Place API', () => {
     });
   });
 
-  describe('Place.v1.getAll', async () => {
-    const placeType = 'clinic';
+  describe('GET /api/v1/place', async () => {
+    const getPage = Place.v1.getPage(dataContext);
+    const limit = 4;
+    const cursor = null;
+    const invalidContactType = 'invalidPlace';
 
+    it('returns a page of places for no limit and cursor passed', async () => {
+      const responsePage = await getPage(Qualifier.byContactType(placeType));
+      const responsePlaces = responsePage.data;
+      const responseCursor = responsePage.cursor;
+
+      expect(responsePlaces).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder([place0]);
+      expect(responseCursor).to.be.equal(null);
+    });
+
+    it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {
+      const firstPage = await getPage(Qualifier.byContactType(placeType), cursor, limit);
+      const secondPage = await getPage(Qualifier.byContactType(placeType), firstPage.cursor, limit);
+
+      const allPeople = [...firstPage.data, ...secondPage.data];
+
+      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder([place0]);
+      expect(firstPage.data.length).to.be.equal(1);
+      expect(secondPage.data.length).to.be.equal(0);
+      expect(firstPage.cursor).to.be.equal('1');
+      expect(secondPage.cursor).to.be.equal(null);
+    });
+
+    it(`throws error when user does not have can_view_contacts permission`, async () => {
+      const opts = {
+        path: `/api/v1/place`,
+        auth: { username: userNoPerms.username, password: userNoPerms.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it(`throws error when user is not an online user`, async () => {
+      const opts = {
+        path: `/api/v1/place`,
+        auth: { username: offlineUser.username, password: offlineUser.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it('throws 400 error when placeType is invalid', async () => {
+      const queryParams = {
+        'placeType': invalidContactType
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `/api/v1/place?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
+    });
+
+    it('throws 400 error when limit is invalid', async () => {
+      const queryParams = {
+        placeType,
+        limit: -1
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `/api/v1/place?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+    });
+
+    it('throws 400 error when cursor is invalid', async () => {
+      const queryParams = {
+        placeType,
+        cursor: '-1'
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `/api/v1/place?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(
+          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+        );
+    });
+  });
+
+  describe('Place.v1.getAll', async () => {
     // TODO: this test is a bit non-covering of the actual generator functionality
     // as only one place could be generated with the same type from the placeFactory
     // figure out a way to generate more places with the same type

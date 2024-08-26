@@ -291,7 +291,7 @@ describe('local person', () => {
 
       it('throws an error if person identifier is invalid/does not exist', async () => {
         await expect(Person.v1.getPage(localContext)(invalidPersonTypeQualifier, cursor, limit)).to.be.rejectedWith(
-          `Invalid contact type [${invalidPersonTypeQualifier.contactType}]`
+          `Invalid contact type [${invalidPersonTypeQualifier.contactType}].`
         );
 
         expect(settingsGetAll.calledOnce).to.be.true;

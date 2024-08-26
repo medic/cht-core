@@ -467,7 +467,7 @@ app.postJson('/api/v1/places/:id', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
-app.get('/api/v1/places', place.v1.getAll);
+app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
 
 app.postJson('/api/v1/people', function(req, res) {

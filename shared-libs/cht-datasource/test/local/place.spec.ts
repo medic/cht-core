@@ -222,5 +222,147 @@ describe('local place', () => {
         expect(deepCopy.notCalled).to.be.true;
       });
     });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const cursor = null;
+      const notNullCursor = '5';
+      const placeIdentifier = 'place';
+      const placeTypeQualifier = {contactType: placeIdentifier} as const;
+      const invalidPlaceTypeQualifier = { contactType: 'invalid' } as const;
+      const placeType = [{person: true, id: placeIdentifier}] as Record<string, unknown>[];
+      let getPlaceTypes: SinonStub;
+      let queryDocsByKeyInner: SinonStub;
+      let queryDocsByKeyOuter: SinonStub;
+
+      beforeEach(() => {
+        queryDocsByKeyInner = sinon.stub();
+        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
+        getPlaceTypes = sinon.stub(contactTypeUtils, 'getPlaceTypes').returns(placeType);
+        settingsGetAll.returns(settings);
+        isPlace.returns(true);
+      });
+
+      it('returns a page of places', async () => {
+        const doc = { type: 'place' };
+        const docs = [doc, doc, doc];
+        queryDocsByKeyInner.resolves(docs);
+        const expectedResult = {
+          cursor: '3',
+          data: docs
+        };
+
+        const res = await Place.v1.getPage(localContext)(placeTypeQualifier, cursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.callCount).to.equal(4);
+        expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([placeIdentifier], limit, Number(cursor))).to.be.true;
+        expect(isPlace.callCount).to.equal(3);
+        isPlace.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+      });
+
+      it('returns a page of places when cursor is not null', async () => {
+        const doc = { type: 'place' };
+        const docs = [doc, doc, doc];
+        queryDocsByKeyInner.resolves(docs);
+        const expectedResult = {
+          cursor: '8',
+          data: docs
+        };
+
+        const res = await Place.v1.getPage(localContext)(placeTypeQualifier, notNullCursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.callCount).to.equal(4);
+        expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([placeIdentifier], limit, Number(notNullCursor))).to.be.true;
+        expect(isPlace.callCount).to.equal(3);
+        isPlace.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+      });
+
+      it('throws an error if person identifier is invalid/does not exist', async () => {
+        await expect(Place.v1.getPage(localContext)(invalidPlaceTypeQualifier, cursor, limit)).to.be.rejectedWith(
+          `Invalid contact type [${invalidPlaceTypeQualifier.contactType}].`
+        );
+
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
+          .to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(isPlace.notCalled).to.be.true;
+      });
+
+      [
+        {},
+        '-1',
+        undefined,
+      ].forEach((invalidSkip ) => {
+        it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
+          await expect(Place.v1.getPage(localContext)(placeTypeQualifier, invalidSkip as string, limit))
+            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
+
+          expect(settingsGetAll.calledOnce).to.be.true;
+          expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
+          expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
+            .to.be.true;
+          expect(queryDocsByKeyInner.notCalled).to.be.true;
+          expect(isPlace.notCalled).to.be.true;
+        });
+      });
+
+      it('returns empty array if places does not exist', async () => {
+        queryDocsByKeyInner.resolves([]);
+        const expectedResult = {
+          data: [],
+          cursor
+        };
+
+        const res = await Place.v1.getPage(localContext)(placeTypeQualifier, cursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([placeIdentifier], limit, Number(cursor))).to.be.true;
+        expect(isPlace.notCalled).to.be.true;
+      });
+
+      it('returns page of places by refetching the database if the previous lot consisted on non-places', async () => {
+        const doc = { type: 'place' };
+        const docs = [doc, doc, doc];
+        queryDocsByKeyInner.resolves(docs);
+        isPlace.onFirstCall().returns(false);
+        isPlace.onSecondCall().returns(false);
+        isPlace.returns(true);
+        const expectedResult = {
+          data: docs,
+          cursor
+        };
+
+        const res = await Place.v1.getPage(localContext)(placeTypeQualifier, cursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.callCount).to.equal(7);
+        expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+        ).to.be.true;
+        expect(queryDocsByKeyInner.callCount).to.be.equal(2);
+        expect(queryDocsByKeyInner.firstCall.args).to.deep.equal([[placeIdentifier], limit, Number(cursor)]);
+        expect(queryDocsByKeyInner.secondCall.args).to.deep.equal([[placeIdentifier], 4, 3]);
+        expect(isPlace.callCount).to.equal(6);
+        isPlace.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+      });
+    });
   });
 });

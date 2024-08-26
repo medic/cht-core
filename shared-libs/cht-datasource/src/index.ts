@@ -72,18 +72,32 @@ export const getDatasource = (ctx: DataContext) => {
         getByUuidWithLineage: (uuid: string) => ctx.bind(Place.v1.getWithLineage)(Qualifier.byUuid(uuid)),
 
         /**
-         * TODO: Add jsdoc
-         * @param personType
-         * @param cursor
-         * @param limit
+         * Returns an array of places for the provided page specifications.
+         * @param placeType the type of place to return
+         * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+         * @param limit the maximum number of place to return. Default is 100.
+         * @returns a page of place for the provided specifications
+         * @throws Error if no type is provided or if the type is not for a place
+         * @throws Error if the provided limit is `<= 0`
+         * @throws Error if the provided cursor is not a valid page token or `null`
+         * @see {@link getByType} which provides the same data, but without having to manually account for paging
          */
         getPageByType: (
-          personType: string,
+          placeType: string,
           cursor: Nullable<string> = null,
           limit = 100
-        ) => ctx.bind(Person.v1.getPage)(
-          Qualifier.byContactType(personType), cursor, limit
+        ) => ctx.bind(Place.v1.getPage)(
+          Qualifier.byContactType(placeType), cursor, limit
         ),
+
+        /**
+         * Returns a generator for fetching all people with the given type.
+         * @param placeType the type of place to return
+         * @returns a generator for fetching all places with the given type
+         * @throws Error if no type if provided or if the type is not for a person
+         */
+        getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType))
       },
       person: {
         /**
