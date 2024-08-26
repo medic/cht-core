@@ -1288,41 +1288,50 @@ mm-search-bar {
       }
     }
   }
-  .header:not(.old-nav .header) {
-    display: block;
-    width: 100vw;
-    background-color: @bottom-navbar-color;
-    position: fixed;
-    bottom: 0;
+  .app-root:not(.old-nav) {
+    .header {
+      display: block;
+      width: 100vw;
+      background-color: @bottom-navbar-color;
+      position: fixed;
+      bottom: 0;
 
-    .inner {
-      height: @bottom-navbar-height;
-    }
-
-    .logo {
-      display: none;
-    }
-
-    .tabs {
-      .button-label {
-        top: 0;
-        font-size: 11px;
-        padding-top: 5px;
+      .inner {
+        height: @bottom-navbar-height;
       }
-      a {
-        min-width: 0;
-        .mm-icon {
-          padding: 8px 0;
+
+      .logo {
+        display: none;
+      }
+
+      .extras {
+        display: none;
+      }
+
+      .tabs {
+        .button-label {
+          top: 0;
+          font-size: 11px;
+          padding-top: 5px;
         }
-        &.selected
-        .mm-icon {
-          border-radius: 999px;
-          background-color: @tab-selected-color;
+        a {
+          min-width: 0;
+          .mm-icon {
+            padding: 8px 0;
+          }
+          &.selected
+          .mm-icon {
+            border-radius: 999px;
+            background-color: @tab-selected-color;
+          }
         }
       }
     }
-    &.hide-header {
-      display: none;
+    &.select-mode,
+    &.error {
+      mm-header {
+        display: none;
+      }
     }
   }
 

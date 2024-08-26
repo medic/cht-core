@@ -5,7 +5,6 @@ import { Store } from '@ngrx/store';
 import { Subscription, timer } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
-import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { NavigationService } from '@mm-services/navigation.service';
 
@@ -14,7 +13,7 @@ import { NavigationService } from '@mm-services/navigation.service';
 })
 export class ErrorComponent implements OnInit, OnDestroy {
   private windowRef;
-  private globalActions: GlobalActions;
+
   private readonly TIMEOUT_DURATION = 5 * 1000;
   private readonly ERRORS = {
     403: {
@@ -47,13 +46,11 @@ export class ErrorComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.windowRef = this.document.defaultView;
-    this.globalActions = new GlobalActions(store);
   }
 
   ngOnInit(): void {
     this.error = this.ERRORS[this.route.snapshot.params.code] || this.ERRORS['404'];
     this.translationsLoaded = this.translateService.instant('error.403.description') !== 'error.403.description';
-    this.hideHeader();
 
     const subscription = this.store
       .select(Selectors.getTranslationsLoaded)
@@ -72,17 +69,11 @@ export class ErrorComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    this.globalActions.setSelectMode(false);
   }
 
   private startTimeout(): void {
     const timeoutTimer = timer(this.TIMEOUT_DURATION).subscribe(() => this.timeoutElapsed = true);
     this.subscriptions.add(timeoutTimer);
-  }
-
-  private hideHeader() {
-    // reusing selectMode action used in Reports to hide header
-    this.globalActions.setSelectMode(true);
   }
 
   async exit() {

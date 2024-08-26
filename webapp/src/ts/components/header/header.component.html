@@ -1,4 +1,4 @@
-<div class="row header" [class.hide-header]="hideHeader">
+<div class="row header">
   <div class="inner">
     <a routerLink="home">
       <div class="logo">
@@ -6,7 +6,7 @@
       </div>
     </a>
 
-    <div class="extras" *ngIf="hasOldNav">
+    <div class="extras">
 
       <span class="dropdown options" dropdown>
         <a href dropdownToggle (click)="false" id="header-dropdown-link" aria-controls="header-dropdown">
