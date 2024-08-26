@@ -113,10 +113,10 @@ export namespace v1 {
     const getPage = context.bind(v1.getPage);
 
     /**
-     * Returns a generator for fetching all people with the given type
-     * @param placeType the type of people to return
-     * @returns a generator for fetching all people with the given type
-     * @throws Error if no type is provided or if the type is not for a person
+     * Returns a generator for fetching all places with the given type
+     * @param placeType the type of places to return
+     * @returns a generator for fetching all places with the given type
+     * @throws Error if no type is provided or if the type is not for a place
      */
     const curriedGen = (placeType: ContactTypeQualifier) => {
       assertTypeQualifier(placeType);

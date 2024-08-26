@@ -92,10 +92,10 @@ export const getDatasource = (ctx: DataContext) => {
         ),
 
         /**
-         * Returns a generator for fetching all people with the given type.
+         * Returns a generator for fetching all places with the given type.
          * @param placeType the type of place to return
          * @returns a generator for fetching all places with the given type
-         * @throws Error if no type if provided or if the type is not for a person
+         * @throws Error if no type if provided or if the type is not for a place
          */
         getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType))
       },
