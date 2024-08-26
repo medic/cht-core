@@ -3,29 +3,26 @@
     <mm-panel-header headerTitle="sidebar-menu.title" (onClose)="close()"/>
 
     <mat-sidenav-content>
-      <ul>
-        <li>
-          <a> hola1</a>
-        </li>
-        <li>
-          <a> hola2</a>
-        </li>
-        <li>
-          <a> hola3</a>
-        </li>
-        <li>
-          <a> hola4</a>
-        </li>
-        <li>
-          <a> hola1</a>
-        </li>
-        <li>
-          <a> hola2</a>
-        </li>
-        <li>
-          <a> hola3</a>
-        </li>
-      </ul>
+
+      <div class="module-nav">
+        <a *ngFor="let module of mainModules"
+          tabindex="-1"
+          [routerLink]="module.routerLink"
+          [mmAuth]="module.hasPermissions">
+          <mat-icon [fontIcon]="module.icon"></mat-icon>
+          <span>{{ module.translationKey | translate }}</span>
+        </a>
+
+        <a tabindex="-1"
+           [attr.href]="adminAppPath"
+           mmAuth
+           [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]"
+           [mmAuthOnline]="true">
+          <mat-icon fontIcon="fa-cog"></mat-icon>
+          <span>{{ 'admin.app.name' | translate }}</span>
+        </a>
+      </div>
+
     </mat-sidenav-content>
 
   </mat-sidenav>
