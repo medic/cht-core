@@ -1,5 +1,5 @@
 import { cloneDeep as _cloneDeep, find as _find } from 'lodash-es';
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -65,6 +65,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   userParentPlace;
   fastActionList?: FastAction[];
   userLineageLevel;
+  fastActionButtonType;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -88,6 +89,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private xmlFormsService:XmlFormsService,
     private performanceService: PerformanceService,
     private extractLineageService: ExtractLineageService,
+    private changeDetectorRef: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -100,6 +102,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscribeToXmlFormsService();
     this.watchReportList();
     this.reportsActions.setSelectedReports([]);
+    this.getFastActionButtonType();
+    this.subscribeToResponsiveChanges();
     this.appending = false;
     this.error = false;
 
@@ -188,6 +192,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
     this.subscription.add(subscription);
+  }
+
+  private subscribeToResponsiveChanges() {
+    const responsiveSubscription = this.responsiveService.viewportChanged$.subscribe(() => {
+      this.getFastActionButtonType();
+      this.changeDetectorRef.detectChanges();
+    });
+    this.subscription.add(responsiveSubscription);
   }
 
   private subscribeToXmlFormsService() {
@@ -528,6 +540,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getFastActionButtonType() {
-    return this.fastActionButtonService.getButtonTypeForContentList();
+    this.fastActionButtonType = this.fastActionButtonService.getButtonTypeForContentList();
   }
 }

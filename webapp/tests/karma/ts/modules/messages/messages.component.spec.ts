@@ -122,7 +122,7 @@ describe('Messages Component', () => {
 
     expect(spyUpdateConversations.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(3);
+    expect(spySubscriptionsAdd.callCount).to.equal(4);
     expect(performanceService.track.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.calledOnce).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'message_list:load', recordApdex: true });
