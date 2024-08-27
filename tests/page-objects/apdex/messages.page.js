@@ -3,8 +3,8 @@ const MESSAGE_LIST = 'messageList';
 
 class MessagesPage extends Page {
 
-  async loadMessageList(settingsProvider) {
-    await super.loadPage(settingsProvider, MESSAGE_LIST);
+  async loadMessageList() {
+    await super.loadPage(MESSAGE_LIST);
   }
 
 }

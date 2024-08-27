@@ -23,55 +23,55 @@ describe('Apdex Performance Workflows', () => {
 
   for (let i = 0; i < repetitions; i++) {
     (skip.loadContactList ? xit : it)('should load contact list', async () => {
-      await contactsPage.loadContactList(settingsProvider);
+      await contactsPage.loadContactList();
     });
 
     (skip.loadChwArea ? xit : it)('should load CHW area', async () => {
-      await contactsPage.loadChwArea(settingsProvider);
+      await contactsPage.loadChwArea();
     });
 
     (skip.loadHousehold ? xit : it)('should load household', async () => {
-      await contactsPage.loadHousehold(settingsProvider);
+      await contactsPage.loadHousehold();
     });
 
     (skip.createPatient ? xit : it)('should create patient', async () => {
-      await contactsPage.createPatient(settingsProvider);
+      await contactsPage.createPatient();
     });
 
     (skip.loadPatient ? xit : it)('should load patient', async () => {
-      await contactsPage.loadPatient(settingsProvider);
+      await contactsPage.loadPatient();
     });
 
     (skip.submitPatientReport ? xit : it)('should submit patient report', async () => {
-      await contactsPage.submitPatientReport(settingsProvider);
+      await contactsPage.submitPatientReport();
     });
 
     (skip.searchContact ? xit : it)('should search contact', async () => {
-      await contactsPage.searchContact(settingsProvider);
+      await contactsPage.searchContact();
     });
 
     (skip.loadReportList ? xit : it)('should load report list and view a report', async () => {
-      await reportsPage.loadReportList(settingsProvider);
+      await reportsPage.loadReportList();
     });
 
     (skip.searchReport ? xit : it)('should search report', async () => {
-      await reportsPage.searchReport(settingsProvider);
+      await reportsPage.searchReport();
     });
 
     (skip.loadTaskList ? xit : it)('should load task list', async () => {
-      await tasksPage.loadTaskList(settingsProvider);
+      await tasksPage.loadTaskList();
     });
 
     (skip.submitTask ? xit : it)('should complete a task', async () => {
-      await tasksPage.submitTask(settingsProvider);
+      await tasksPage.submitTask();
     });
 
     (skip.loadTargets ? xit : it)('should load targets', async () => {
-      await targetsPage.loadTargets(settingsProvider);
+      await targetsPage.loadTargets();
     });
 
     (skip.loadMessageList ? xit : it)('should load message list and view a message', async () => {
-      await messagesPage.loadMessageList(settingsProvider);
+      await messagesPage.loadMessageList();
     });
 
   }

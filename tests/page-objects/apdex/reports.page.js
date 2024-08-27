@@ -3,12 +3,12 @@ const REPORT_LIST = 'reportList';
 
 class ReportsPage extends Page {
 
-  async loadReportList(settingsProvider) {
-    await super.loadPage(settingsProvider, REPORT_LIST);
+  async loadReportList() {
+    await super.loadPage(REPORT_LIST);
   }
 
-  async searchReport(settingsProvider) {
-    await super.searchPage(settingsProvider, REPORT_LIST);
+  async searchReport() {
+    await super.searchPage(REPORT_LIST);
   }
 
 }

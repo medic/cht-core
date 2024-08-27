@@ -1,6 +1,8 @@
 const { browser, driver } = require('@wdio/globals');
 const { execSync } = require('child_process');
+const loadSettings = require('../../performance/apdex-score/settings-provider');
 const APP_ID = 'org.medicmobile.webapp.mobile';
+const settingsProvider = loadSettings();
 
 module.exports = class Page {
 
@@ -118,7 +120,7 @@ module.exports = class Page {
     }
   }
 
-  async loadAndAssertPage(page, settingsProvider) {
+  async loadAndAssertPage(page) {
     if (!page) {
       return;
     }
@@ -160,7 +162,7 @@ module.exports = class Page {
     this.scrollToElement(formPage);
   }
 
-  async fillUpForm(form, settingsProvider){
+  async fillUpForm(form){
     if (!form) {
       return;
     }
@@ -200,7 +202,7 @@ module.exports = class Page {
     await this.waitForDisplayedAndRetry(UI_ELEMENT);
   }
 
-  async search (page, settingsProvider) {
+  async search (page) {
     if (!page || !page.search) {
       return;
     }
@@ -241,17 +243,17 @@ module.exports = class Page {
       .catch(error => console.error('Error: ', error));
   }
 
-  async loadPage(settingsProvider, pageName) {
+  async loadPage(pageName) {
     const page = settingsProvider.getPage(pageName);
     await this.loadAndAssertPage(page, settingsProvider);
   }
 
-  async loadForm(settingsProvider, formName) {
+  async loadForm(formName) {
     const form = settingsProvider.getForm(formName);
     await this.fillUpForm(form, settingsProvider);
   }
 
-  async searchPage(settingsProvider, pageName) {
+  async searchPage(pageName) {
     const page = settingsProvider.getPage(pageName);
     await this.search(page, settingsProvider);
   }

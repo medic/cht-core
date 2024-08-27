@@ -8,32 +8,32 @@ const PATIENT_CONTACT = 'patientContact';
 
 class ContactsPage extends Page {
 
-  async loadContactList(settingsProvider) {
-    await super.loadPage(settingsProvider, CONTACT_LIST);
+  async loadContactList() {
+    await super.loadPage(CONTACT_LIST);
   }
 
-  async loadChwArea(settingsProvider) {
-    await super.loadPage(settingsProvider, CHW_AREA);
+  async loadChwArea() {
+    await super.loadPage(CHW_AREA);
   }
 
-  async loadHousehold(settingsProvider) {
-    await super.loadPage(settingsProvider, HOUSEHOLD);
+  async loadHousehold() {
+    await super.loadPage(HOUSEHOLD);
   }
 
-  async loadPatient(settingsProvider) {
-    await super.loadPage(settingsProvider, PATIENT);
+  async loadPatient() {
+    await super.loadPage(PATIENT);
   }
 
-  async searchContact(settingsProvider) {
-    await super.searchPage(settingsProvider, CONTACT_LIST);
+  async searchContact() {
+    await super.searchPage(CONTACT_LIST);
   }
 
-  async submitPatientReport(settingsProvider) {
-    await super.loadForm(settingsProvider, PATIENT_REPORT);
+  async submitPatientReport() {
+    await super.loadForm(PATIENT_REPORT);
   }
 
-  async createPatient(settingsProvider) {
-    await super.loadForm(settingsProvider, PATIENT_CONTACT);
+  async createPatient() {
+    await super.loadForm(PATIENT_CONTACT);
   }
 
 }

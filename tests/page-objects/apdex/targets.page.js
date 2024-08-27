@@ -3,8 +3,8 @@ const TARGETS = 'targets';
 
 class TargetsPage extends Page {
 
-  async loadTargets(settingsProvider) {
-    await super.loadPage(settingsProvider, TARGETS);
+  async loadTargets() {
+    await super.loadPage(TARGETS);
   }
 
 }
