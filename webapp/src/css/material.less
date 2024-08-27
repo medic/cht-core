@@ -217,7 +217,7 @@ mm-panel-header {
   bottom: 0;
   cursor: default;
   z-index: 10000;
-  opacity: 0;
+  visibility: hidden;
   transform: translateY(20px);
   transition: opacity 0.25s ease, transform 0.25s ease;
   left: 0px;
@@ -260,14 +260,15 @@ mm-panel-header {
     }
   }
   &.active {
-    opacity: 1;
-    transform: translateY(0);
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
+    transition: transform 0.25s linear;
   }
 }
 
 @media (max-width: @media-mobile) {
   .app-root:not(.old-nav) #snackbar {
-    bottom: calc(@bottom-navbar-height + @fab-height + 24px);
+    bottom: calc(@bottom-navbar-height + @fab-offset-height);
   }
   .material {
     .card:not(.compact-card) {
