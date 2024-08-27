@@ -1316,12 +1316,72 @@ mm-sidebar-menu .mat-sidenav-container {
   .mat-sidenav {
     width: 470px;
     min-height: 100vh;
+
     mat-sidenav-content {
       overflow-y: auto;
-      padding: 20px;
     }
+
     a {
       display: block;
+    }
+  }
+
+  mm-panel-header {
+    background: #333;
+    height: 80px;
+
+    .panel-header {
+      justify-content: flex-end;
+      align-items: center;
+      flex-direction: row-reverse;
+    }
+
+    .panel-header-title {
+      font-size: 30px;
+    }
+
+    .panel-header-title,
+    .panel-header-close mat-icon:before {
+      color: #fff;
+    }
+  }
+
+  .nav-section {
+    width: 100%;
+
+    &:not(:first-child) {
+      border-top: 1px solid #D3D3D3;
+    }
+  }
+
+  .nav-item {
+    padding: 10px 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    line-height: 20px;
+
+    &:first-child {
+      padding-top: 20px;
+    }
+
+    &:last-child {
+      padding-bottom: 20px;
+    }
+
+    .sync-summary {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .last-sync {
+      font-size: 14px;
+      color: #777;
+    }
+
+    mat-icon {
+      vertical-align: middle;
+      margin-right: 15px;
     }
   }
 }
