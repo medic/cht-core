@@ -170,7 +170,7 @@ describe('ongoing replication', function() {
 
   it('should download settings updates', async () => {
     await commonPage.sync();
-    await utils.updateSettings({ test: true }, 'api');
+    await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
     await commonPage.sync(true);
     const [settings] = await chtDbUtils.getDocs(['settings']);
     expect(settings.settings.test).to.equal(true);

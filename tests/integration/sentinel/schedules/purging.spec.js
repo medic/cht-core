@@ -421,7 +421,7 @@ describe('Server side purge', () => {
 
   it('should purge correct docs', async () => {
     const seq = await sentinelUtils.getCurrentSeq();
-    await utils.updateSettings({ purge: purgeSettings }, true);
+    await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
     await restartSentinel();
     await sentinelUtils.waitForPurgeCompletion(seq);
 
@@ -472,7 +472,7 @@ describe('Server side purge', () => {
   });
 
   it('should clear purged cache when settings are updated', async () => {
-    await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
+    await utils.updateSettings({ district_admins_access_unallocated_messages: true }, { ignoreReload: true });
 
     const responseDocsUser1 = await requestDocs('user1');
     const responseDocsUser2 = await requestDocs('user2');
@@ -502,7 +502,7 @@ describe('Server side purge', () => {
       .then(result => {
         seq = result;
         purgeSettings.fn = reversePurgeFn.toString();
-        return utils.updateSettings({ purge: purgeSettings }, true);
+        return utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
@@ -541,7 +541,7 @@ describe('Server side purge', () => {
   it('should clear purged cache when users are updated', async () => {
     const seq = await sentinelUtils.getCurrentSeq();
     purgeSettings.fn = purgeFn.toString();
-    await utils.updateSettings({ purge: purgeSettings }, true);
+    await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
     await restartSentinel();
     await sentinelUtils.waitForPurgeCompletion(seq);
 

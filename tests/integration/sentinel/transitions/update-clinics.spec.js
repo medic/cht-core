@@ -25,7 +25,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -64,7 +64,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDoc(doc1))
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
@@ -111,7 +111,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -168,7 +168,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2, doc3]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
@@ -263,7 +263,7 @@ describe('update_clinics', () => {
     const docIds = docs.map(doc => doc._id);
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))

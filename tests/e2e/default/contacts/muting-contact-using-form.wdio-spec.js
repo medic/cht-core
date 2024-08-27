@@ -36,7 +36,7 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
 
   before(async () => {
     await utils.saveDocs([...places.values(), person, mutePerson]);
-    await utils.updateSettings(settings_mute, true);
+    await utils.updateSettings(settings_mute, { ignoreReload: true });
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
