@@ -114,7 +114,7 @@ body {
 
   .mm-icon {
     margin: 0 auto;
-    font-size: 1.5rem;
+    font-size: @font-extra-large;
   }
 
   .logo {
@@ -156,7 +156,7 @@ body {
     }
 
     .open > a {
-      background-color: #ffffff;
+      background-color: @white;
 
       .mm-icon {
         color: @top-header-color;
@@ -182,13 +182,13 @@ body {
     a {
       text-shadow: none;
       padding: 10px 20px;
-      color: #262626;
+      color: @gray-ultra-darker;
       margin-top: 0;
       white-space: normal;
-      font-size: 1rem;
+      font-size: @font-medium;
     }
     .disabled a {
-      color: #999999;
+      color: @gray-disabled;
     }
     .divider {
       margin: 0;
@@ -221,6 +221,8 @@ body {
     .button-label {
       top: -5px;
       position: relative;
+      white-space: normal;
+      word-wrap: break-word;
     }
 
     a {
@@ -238,8 +240,8 @@ body {
           &, &:before {
             display: block;
             margin: auto;
-            height: 24px;
-            max-width: 24px;
+            height: 20px;
+            max-width: 20px;
             overflow: hidden;
           }
         }
@@ -1219,7 +1221,7 @@ mm-search-bar {
 @media (max-width: @media-mobile) {
   .fast-action-trigger:not(.embed-fast-action) {
     position: fixed;
-    bottom: calc(@bottom-navbar-height + 20px);
+    bottom: calc(@bottom-navbar-height + @fab-bottom-padding);
     right: 18px;
     top: auto;
   }
@@ -1227,6 +1229,7 @@ mm-search-bar {
     .tabs {
       display: flex;
       flex-direction: row;
+      padding: 0 15px;
       a {
         flex: 1;
         min-width: 70px;
@@ -1246,10 +1249,7 @@ mm-search-bar {
         height: @bottom-navbar-height;
       }
 
-      .logo {
-        display: none;
-      }
-
+      .logo,
       .extras {
         display: none;
       }
@@ -1257,7 +1257,7 @@ mm-search-bar {
       .tabs {
         .button-label {
           top: 0;
-          font-size: 11px;
+          font-size: @font-extra-smaller;
           padding-top: 5px;
         }
         a {

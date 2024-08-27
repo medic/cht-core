@@ -1,58 +1,52 @@
-body {
-  .app-root {
-    &.old-nav {
-      &.messages {
-        .header .tabs .selected {
-          background-color: @messages-color;
-        }
-      }
-      &.tasks {
-        .header .tabs .selected {
-          background-color: @tasks-color;
-        }
-      }
-      &.reports {
-        .header .tabs .selected {
-          background-color: @reports-color;
-        }
-      }
-      &.analytics {
-        .header .tabs .selected {
-          background-color: @analytics-color;
-        }
-      }
-      &.contacts {
-        .header .tabs .selected {
-          background-color: @contacts-color;
-        }
-      }
-      &.user {
-        .header .tabs .selected {
-          background-color: @admin-color;
-        }
-      }
-      &.error,
-      &.testing {
-        .header .tabs .selected {
-          background-color: @error-color;
-        }
-      }
-
-      &.about,
-      &.testing,
-      &.privacy-policy {
-        .header .tabs .selected {
-          background-color: @messages-color;
-        }
-        .page {
-          top: @top-without-filter;
-        }
-      }
+body .app-root.old-nav {
+  &.messages {
+    .header .tabs .selected {
+      background-color: @messages-color;
     }
   }
-}
+  &.tasks {
+    .header .tabs .selected {
+      background-color: @tasks-color;
+    }
+  }
+  &.reports {
+    .header .tabs .selected {
+      background-color: @reports-color;
+    }
+  }
+  &.analytics {
+    .header .tabs .selected {
+      background-color: @analytics-color;
+    }
+  }
+  &.contacts {
+    .header .tabs .selected {
+      background-color: @contacts-color;
+    }
+  }
+  &.user {
+    .header .tabs .selected {
+      background-color: @admin-color;
+    }
+  }
+  &.error,
+  &.testing {
+    .header .tabs .selected {
+      background-color: @error-color;
+    }
+  }
 
-.old-nav {
+  &.about,
+  &.testing,
+  &.privacy-policy {
+    .header .tabs .selected {
+      background-color: @messages-color;
+    }
+    .page {
+      top: @top-without-filter;
+    }
+  }
+
   .header {
     display: block;
     .tabs {
@@ -74,6 +68,21 @@ body {
   .content {
     .page {
       top: 123px;
+    }
+  }
+
+  .mm-icon {
+    &, &:focus {
+      .button-text;
+    }
+    &:hover, &.active {
+      .button-text-hover;
+    }
+  }
+
+  .mm-icon-inverse {
+    &, &:focus {
+      .button-text-inverse;
     }
   }
 }
