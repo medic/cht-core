@@ -118,4 +118,8 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
       this.telemetryService.record('sidebar_filter:analytics:target_aggregates:open');
     }
   }
+
+  openMenu() {
+    this.globalActions.openSidebarMenu();
+  }
 }

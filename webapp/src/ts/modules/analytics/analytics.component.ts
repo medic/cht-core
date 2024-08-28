@@ -32,9 +32,5 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
       .subscribe(analyticsModules => this.analyticsModules = analyticsModules);
     this.subscriptions.add(subscription);
   }
-
-  openMenu() {
-    this.globalActions.openSidebarMenu();
-  }
 }
 
