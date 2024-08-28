@@ -20,7 +20,7 @@
     "chai-exclude": "^1.0.8",
     "chai-like": "^1.1.1",
     "chai-things": "^0.2.0",
-    "cht-conf": "^3.16.2",
+    "cht-conf": "^4.1.1",
     "cht-conf-test-harness": "^2.4.2",
     "eslint-plugin-json": "^2.0.1",
     "mocha": "^5.2.0",
