@@ -112,7 +112,7 @@ describe('Outbound', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       // pushes will fail if destination server is not up, so tasks will get created
       .then(() => waitForPushes(3))

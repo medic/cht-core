@@ -34,7 +34,7 @@ describe('User Test Cases -> Creating Users ->', () => {
       ...settings.permissions,
       can_have_multiple_places: [offlineUserRole],
     };
-    await utils.updateSettings({ permissions }, true);
+    await utils.updateSettings({ permissions }, { ignoreReload: true });
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();
   });

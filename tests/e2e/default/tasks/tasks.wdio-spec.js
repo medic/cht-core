@@ -8,11 +8,6 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtDbUtils = require('@utils/cht-db');
 
-const updateSettings = async (settings) => {
-  await utils.updateSettings(settings, 'api');
-  await commonPage.sync(true);
-};
-
 const compileTasks = async (tasksFileName) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, `config/${tasksFileName}`);
@@ -62,7 +57,7 @@ describe('Tasks', () => {
 
   it('Should show error message for bad config', async () => {
     const settings = await compileTasks('tasks-error-config.js');
-    await updateSettings(settings);
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     await commonPage.goToTasks();
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

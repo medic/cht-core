@@ -185,7 +185,7 @@ describe('Tasks group landing page', () => {
 
     const tasksFilePath = path.join(__dirname, 'config/tasks-group-config.js');
     const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-    await utils.updateSettings({ tasks }, 'api');
+    await utils.updateSettings({ tasks }, { ignoreReload: 'api' });
   });
 
   describe('for chw', () => {

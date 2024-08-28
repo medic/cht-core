@@ -59,7 +59,7 @@ describe('Reports Subject', () => {
   };
 
   before(async () => {
-    await utils.updateSettings(appSettings.WITH_SMS_FORMS, true);
+    await utils.updateSettings(appSettings.WITH_SMS_FORMS, { ignoreReload: true });
     await utils.saveDocs([...places.values(), person]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
@@ -341,7 +341,7 @@ describe('Reports Subject', () => {
     });
   });
 
-  it('changes to a loaded or list report should be reflected in the UI ',  async () => {
+  it('changes to a loaded or list report should be reflected in the UI ', async  () => {
     const reportTest = {
       _id: 'REF_REF_V3',
       form: 'RR',

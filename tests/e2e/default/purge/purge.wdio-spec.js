@@ -53,12 +53,9 @@ describe('purge', function() {
       .catch(callback);
   });
 
-  const updateSettings = async (purgeFn, revert) => {
-    if (revert) {
-      await utils.revertSettings(true);
-    }
+  const updatePurgeSettings = async (purgeFn, revert) => {
     const settings = { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds', run_every_days: -1 } };
-    await utils.updateSettings(settings, true);
+    await utils.updateSettings(settings, { revert: revert, ignoreReload: true });
   };
 
   const runPurging = async () => {
@@ -79,7 +76,7 @@ describe('purge', function() {
   });
 
   it('purging runs on sync', async () => {
-    await updateSettings(filterPurgeReports); // settings should be at the beginning of the changes feed
+    await updatePurgeSettings(filterPurgeReports); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([...places.values(), contact, patient]);
     await utils.createUsers([user]);
@@ -96,7 +93,7 @@ describe('purge', function() {
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
     expect(allReports.map(r => r.form)).to.not.have.members(['purge']);
 
-    await updateSettings(filterHomeVisitReports, true);
+    await updatePurgeSettings(filterHomeVisitReports, true);
     await runPurging();
 
     await commonElements.sync(true);
@@ -109,7 +106,7 @@ describe('purge', function() {
   });
 
   it('purging runs when using chtScriptApi', async () => {
-    await updateSettings(filterByCht); // settings should be at the beginning of the changes feed
+    await updatePurgeSettings(filterByCht); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([...places.values(), contact, patient]);
     await utils.createUsers([user]);
