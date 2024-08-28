@@ -9,23 +9,13 @@ const reportFactory = require('@factories/cht/reports/generic-report');
 describe('Reports tab messages', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const health_center = places.get('health_center');
-  const district_hospital = places.get('district_hospital');
-  const contact = {
-    _id: 'fixture:user:user1',
-    name: 'OfflineUser',
-    phone: '+12068881234',
-    place: health_center._id,
-    type: 'person',
-    parent: {
-      _id: health_center._id,
-      parent: health_center.parent
-    },
-  };
+  const healthCenter = places.get('health_center');
+
+  const contact = personFactory.build({ phone: '+12068881234', parent: healthCenter });
 
   const patient = personFactory.build({
     _id: 'patient_uuid',
-    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}},
+    parent: clinic,
     name: 'the_patient',
     patient_id: 'the_patient_id'
   });
@@ -72,8 +62,8 @@ describe('Reports tab messages', () => {
     await commonElements.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
 
-    const sheduledTask = await reportsPage.getTaskDetails(1, 1);
-    expect(sheduledTask.message).to.contain('Thank you OfflineUser for registering the_patient. ' +
+    const scheduledTask = await reportsPage.getTaskDetails(1, 1);
+    expect(scheduledTask.message).to.contain('Thank you Mary Smith for registering the_patient. ' +
       'Their ID is the_patient_id. They have been enrolled into the child health schedule.');
   });
 
