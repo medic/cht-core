@@ -21,11 +21,6 @@ describe('Contact details page.', () => {
     const user = userFactory.build({username: 'offlineuser', roles: [ROLE]});
     const patient = personFactory.build({parent: {_id: user.place._id, parent: {_id: parent._id}}});
 
-    const updateSettings = async (settings) => {
-      await utils.revertSettings(true);
-      await utils.updateSettings(settings, true);
-    };
-
     const waitForContactLoaded = async (expectTasks) => {
       await commonElements.waitForPageLoaded();
       await contactPage.waitForContactLoaded();
@@ -81,7 +76,11 @@ describe('Contact details page.', () => {
       removePermissions.forEach(permission => {
         settings.permissions[permission] = settings.permissions[permission].filter(r => r !== roleValue);
       });
-      await updateSettings({roles: settings.roles, permissions: settings.permissions});
+      await utils.updateSettings(
+        { roles: settings.roles, permissions: settings.permissions },
+        { revert: true, ignoreReload: true }
+      );
+
     };
 
     before(async () => {

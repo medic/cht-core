@@ -130,7 +130,7 @@ describe('muting', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -164,7 +164,7 @@ describe('muting', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -236,7 +236,7 @@ describe('muting', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -372,7 +372,7 @@ describe('muting', () => {
     let unmuteTime;
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDoc(mute1))
       .then(() => sentinelUtils.waitForSentinel(mute1._id))
@@ -515,7 +515,7 @@ describe('muting', () => {
     let muteTime;
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
@@ -633,7 +633,7 @@ describe('muting', () => {
     let clinicMuteTime;
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDoc(mutePerson))
       .then(() => sentinelUtils.waitForSentinel(mutePerson._id))
@@ -751,7 +751,7 @@ describe('muting', () => {
     let muteHCTime;
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
       .then(() => sentinelUtils.getInfoDocs([mute._id, 'person', 'clinic', 'health_center']))
@@ -896,7 +896,7 @@ describe('muting', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
       .then(() => utils.saveDocs([person, personWithContactType]))
@@ -1164,7 +1164,7 @@ describe('muting', () => {
     const getReportById = (id) => reports.find(report => report._id === id);
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(mute))
@@ -1266,7 +1266,7 @@ describe('muting', () => {
       const reportIds = reports.map(r => r._id);
 
       return utils
-        .updateSettings(settings, 'sentinel')
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(reports))
         .then(() => utils.saveDoc(contact))
         .then(() => sentinelUtils.waitForSentinel(contact._id))
@@ -1354,7 +1354,7 @@ describe('muting', () => {
       const reportIds = reports.map(r => r._id);
 
       return utils
-        .updateSettings(settings, 'sentinel')
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(reports))
         .then(() => utils.saveDoc(contact))
         .then(() => sentinelUtils.waitForSentinel(contact._id))
@@ -1512,7 +1512,7 @@ describe('muting', () => {
       const docs = _.shuffle([clinic, person, newPerson, ...reports]);
 
       return utils
-        .updateSettings(settings, 'sentinel')
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(docs))
         .then(() => sentinelUtils.waitForSentinel(reportIds))
         .then(() => Promise.all([
@@ -1731,7 +1731,7 @@ describe('muting', () => {
       const docs = _.shuffle([clinic, person, newPerson, ...reports]);
 
       return utils
-        .updateSettings(settings, 'sentinel')
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(docs))
         .then(() => sentinelUtils.waitForSentinel(reportIds))
         .then(() => Promise.all([
@@ -1903,7 +1903,7 @@ describe('muting', () => {
       const docs = _.shuffle([clinic, person, ...reports]);
 
       return utils
-        .updateSettings(settings, 'sentinel')
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDocs(docs))
         .then(() => sentinelUtils.waitForSentinel(reportIds))
         .then(() => utils.getDocs([clinic._id, person._id]))

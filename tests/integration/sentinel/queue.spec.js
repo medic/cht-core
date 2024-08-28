@@ -85,7 +85,7 @@ describe('Sentinel queue drain', () => {
     }
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => utils.getDocs(ids))
@@ -111,7 +111,7 @@ describe('Sentinel queue drain', () => {
     await utils.listenForApi();
 
     const settings = { transitions: { update_clinics: true } };
-    await utils.updateSettings(settings, 'api');
+    await utils.updateSettings(settings, { ignoreReload: 'api' });
 
     const doc = {
       _id: uuid(),

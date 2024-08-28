@@ -31,7 +31,7 @@ describe('Database access for new roles', () => {
         roles.push(NEW_ROLE);
       }
     });
-    await utils.updateSettings(settings, true);
+    await utils.updateSettings(settings, { ignoreReload: true });
   };
 
   before(async () => {

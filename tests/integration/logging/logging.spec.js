@@ -16,7 +16,7 @@ describe('logging', () => {
     const collectSentinelLogs = await utils.collectApiLogs(/.*/);
     await utils.delayPromise(1000); // log debug message for checking messages
     await utils.request('/dbinfo');
-    await utils.updateSettings({ test: true }, 'sentinel');
+    await utils.updateSettings({ test: true }, { ignoreReload: 'sentinel' });
     const apiLogs = (await collectApiLogs()).filter(log => log.length);
     const sentinelLogs = (await collectSentinelLogs()).filter(log => log.length);
 
