@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild, Input } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
