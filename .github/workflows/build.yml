@@ -207,10 +207,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: |
-          cd scripts
-          npm ci
-          cd ..
+      - run: npm ci
       - run: npm run lint-translations
 
   tests:
@@ -419,11 +416,10 @@ jobs:
     - name: Publish
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       run: |
-        cd scripts/ci
         npm ci
+        cd scripts/ci
         node ./publish.js
         node ./tag-docker-images.js
-
 
   publish-generated-docs:
     needs: [publish]
