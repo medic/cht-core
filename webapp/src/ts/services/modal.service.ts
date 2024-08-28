@@ -1,18 +1,25 @@
 import { Injectable } from '@angular/core';
 import { ComponentType } from '@angular/cdk/overlay';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { GlobalActions } from '@mm-actions/global';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ModalService {
 
+  private globalActions: GlobalActions;
+
   constructor(
     private matDialog: MatDialog,
+    private store: Store,
     private responsiveService: ResponsiveService,
-  ) { }
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   show(component: ComponentType<any>, config?:Record<string, any>): MatDialogRef<any> {
     const oldModalRef = this.matDialog.openDialogs.find(modal => {
@@ -25,6 +32,7 @@ export class ModalService {
     }
 
     const isMobile = this.responsiveService.isMobile();
+    this.globalActions.closeSidebarMenu();
 
     return this.matDialog.open(component, {
       autoFocus: false,

@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild, Input } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
+import { NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -10,6 +11,7 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'mm-sidebar-menu',
@@ -30,6 +32,7 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     private locationService: LocationService,
     private dbSyncService: DBSyncService,
     private modalService: ModalService,
+    private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -39,6 +42,7 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     this.setModuleOptions();
     this.setSecondaryOptions();
     this.subscribeToStore();
+    this.subscribeToRouter();
   }
 
   ngOnDestroy() {
@@ -58,6 +62,13 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
 
   logout() {
     this.modalService.show(LogoutConfirmComponent);
+  }
+
+  private subscribeToRouter() {
+    const routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationStart))
+      .subscribe(() => this.close());
+    this.subscriptions.add(routerSubscription);
   }
 
   private subscribeToStore() {
