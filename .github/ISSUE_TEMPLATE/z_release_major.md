@@ -11,7 +11,7 @@ assignees: ''
 
 - [ ] Create a GH Milestone for the release. We use [semver](http://semver.org) so if there are breaking changes increment the major, otherwise if there are new features increment the minor, otherwise increment the service pack. Breaking changes in our case relate to updated software requirements (egs: CouchDB, node, minimum browser versions), broken backwards compatibility in an api, or a major visual update that requires user retraining.
 - [ ] Add all the issues to be worked on to the Milestone. Ideally each minor release will have one or two features, a handful of improvements, and plenty of bug fixes.
-- [ ] Identify any features and improvements in the release that need end-user documentation (beyond eng team documentation improvements) and create corresponding issues in the cht-docs repo
+- [ ] Identify any features and improvements in the release that need end-user documentation (beyond eng team documentation improvements) and create corresponding issues in the cht-docs repo.
 - [ ] Assign an engineer as Release Engineer for this release.
 
 # Development - Release Engineer
@@ -27,12 +27,12 @@ Once the PR has been merged into `master`, and the `master` branch has the new v
 
 - [ ] Create a new release branch from `master` named `<major>.<minor>.x` in `cht-core`. Post a message to #development Slack channel using this template:
 ```
-@core_devs I've just created the `<major>.<minor>.x` release branch. Please be aware that any further changes intended for this release will have to be merged to `master` then backported. Thanks!
+@channel I've just created the `<major>.<minor>.x` release branch. Please be aware that any further changes intended for this release will have to be merged to `master` then backported. Thanks!
 ```
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by creating a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`) and then push the created tag.
-- [ ] Once the CI completes successfully notify the team by writing a message in the #product-team Slack channel:
+- [ ] Once the CI completes successfully notify the team by writing a message in the #development Slack channel:
 ```
-@product_team, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
+@channel, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
 Please let me know if there’s any final update we need to make. 
 If all is good, then in 24h, I will start the release. Thanks!
 ```
