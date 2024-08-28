@@ -198,4 +198,8 @@ export class TasksComponent implements OnInit, OnDestroy {
       ?.map(lineage => lineage?.name);
     return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
   }
+
+  openMenu() {
+    this.globalActions.openSidebarMenu();
+  }
 }
