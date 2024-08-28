@@ -204,7 +204,7 @@ describe('Create user for contacts', () => {
   describe('user replace', () => {
     describe('for an offline user', () => {
       it('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
-        await utils.updateSettings(SETTINGS, 'sentinel');
+        await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
@@ -287,7 +287,7 @@ describe('Create user for contacts', () => {
       });
 
       it('creates a new user when the replace_user form is submitted while online', async () => {
-        await utils.updateSettings(SETTINGS, 'sentinel');
+        await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
@@ -336,7 +336,7 @@ describe('Create user for contacts', () => {
 
       // eslint-disable-next-line max-len
       it('does not assign new person as primary contact of parent place if original person was not primary', async () => {
-        await utils.updateSettings(SETTINGS, 'sentinel');
+        await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         const district = await utils.getDoc(DISTRICT._id);
         district.contact = { _id: 'not-the-original-contact' };
         await utils.saveDoc(district);
@@ -387,7 +387,7 @@ describe('Create user for contacts', () => {
       });
 
       it('creates new user from latest replace_user form data if multiple are submitted before syncing', async () => {
-        await utils.updateSettings(SETTINGS, 'sentinel');
+        await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
@@ -484,7 +484,7 @@ describe('Create user for contacts', () => {
 
       // eslint-disable-next-line max-len
       it('creates new user when replace_user form is submitted for contact associated with multiple users', async () => {
-        await utils.updateSettings(SETTINGS, 'sentinel');
+        await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
 
         const otherUser = {
@@ -551,7 +551,7 @@ describe('Create user for contacts', () => {
 
       // eslint-disable-next-line max-len
       it('creates new user for the first version of a contact to sync and conflicting replacements ignored', async () => {
-        await utils.updateSettings(SETTINGS, 'sentinel');
+        await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
@@ -671,7 +671,7 @@ describe('Create user for contacts', () => {
 
       it('does not create a new user or re-parent reports when the transition is disabled', async () => {
         const settings = { ...SETTINGS, transitions: { create_user_for_contacts: false } };
-        await utils.updateSettings(settings, 'sentinel');
+        await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
@@ -705,7 +705,7 @@ describe('Create user for contacts', () => {
       });
 
       it('does not create any new user nor does it reparent new reports when the transition fails', async () => {
-        await utils.updateSettings(SETTINGS, 'sentinel');
+        await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
@@ -784,7 +784,7 @@ describe('Create user for contacts', () => {
     });
 
     it('does not create a new user when the replace_user form is submitted for online user', async () => {
-      await utils.updateSettings(SETTINGS, 'sentinel');
+      await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
       await loginAsOnlineUser();
       const originalContactId = ONLINE_USER.contact._id;
       await commonPage.goToPeople(originalContactId);

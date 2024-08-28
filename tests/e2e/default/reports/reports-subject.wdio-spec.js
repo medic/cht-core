@@ -82,7 +82,7 @@ describe('Reports Subject', () => {
   };
 
   before(async () => {
-    await utils.updateSettings(appSettings.WITH_SMS_FORMS, true);
+    await utils.updateSettings(appSettings.WITH_SMS_FORMS, { ignoreReload: true });
     await utils.saveDocs([...places.values(), person]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();

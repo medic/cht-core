@@ -8,13 +8,14 @@ const targetAggregatesConfig = require('../config/target-aggregates');
 
 const generateRandomNumber = (max) => Math.floor(Math.random() * max);
 
-const updateSettings = async (targetsConfig, user, contactSummary) => {
+const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummary) => {
   const settings = await utils.getSettings();
-  const tasks = settings.tasks;
-  tasks.targets.items = targetsConfig;
-  const permissions = settings.permissions;
-  permissions.can_aggregate_targets = user.roles;
-  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
+  settings.tasks.targets.items = targetsConfig;
+  settings.permissions.can_aggregate_targets = user.roles;
+  await utils.updateSettings(
+    { tasks: settings.tasks, permissions: settings.permissions, contact_summary: contactSummary },
+    { ignoreReload: true }
+  );
   await commonPage.closeReloadModal();
   await commonPage.goToBase();
 };
@@ -181,7 +182,7 @@ const getDocsByPlace = (contactDocs, placeId) => {
 };
 
 module.exports = {
-  updateSettings,
+  updateAggregateTargetsSettings,
   generateTargetValuesByContact,
   docTags,
   generateContactsAndTargets,

@@ -32,7 +32,7 @@ const T_TABLE = {
 // TODO ensure everything in here is still needed
 const digitReplacer = c => T_TABLE[c];
 const standardiseDigits = original => {
-  return original && original.toString().replace(/[०-९]/g, digitReplacer);
+  return original && stripInvisibleCharacters(original.toString().replace(/[०-९]/g, digitReplacer));
 };
 
 const isMuvukuFormat = (exports.isMuvukuFormat = msg => {

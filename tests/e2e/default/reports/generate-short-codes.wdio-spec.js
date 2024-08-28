@@ -25,7 +25,8 @@ describe('Generating short codes', () => {
 
   before(async () => {
     await utils.saveDocs([...places.values(), contact]);
-    await utils.updateSettings({forms, registrations, transitions}, true);
+    await utils.updateSettings({ forms, registrations, transitions }, { ignoreReload: true });
+
     await loginPage.cookieLogin();
   });
 
