@@ -29,7 +29,7 @@
         <a *ngIf="!replicationStatus?.disabled"
           class="nav-item"
           tabindex="-1"
-          [ngClass]="{ 'disabled': replicationStatus?.current?.disableSyncButton }"
+          [class.disabled]="replicationStatus?.current?.disableSyncButton"
           (click)="replicate()">
           <mat-icon fontIcon="fa-refresh"></mat-icon>
           <span>{{ 'sync.now' | translate }}</span>

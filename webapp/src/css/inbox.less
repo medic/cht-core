@@ -1375,6 +1375,11 @@ mm-sidebar-menu .mat-sidenav-container {
       color: @failed-state-color;
     }
 
+    &.disabled mat-icon:before,
+    &.disabled > span {
+      color: @muted-state-color;
+    }
+
     .sync-summary {
       display: inline-block;
       vertical-align: middle;
