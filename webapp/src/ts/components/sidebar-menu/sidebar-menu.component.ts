@@ -72,20 +72,19 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const subscribeStore = combineLatest(
-      this.store.select(Selectors.getReplicationStatus),
-      this.store.select(Selectors.getSidebarMenu),
-    ).subscribe(([ replicationStatus, sidebarMenu ]) => {
-      this.replicationStatus = replicationStatus;
-      this.toggleSidebarMenu(sidebarMenu);
-    });
-    this.subscriptions.add(subscribeStore);
+    const subscribeReplicationStatus = this.store
+      .select(Selectors.getReplicationStatus)
+      .subscribe(replicationStatus => this.replicationStatus = replicationStatus);
+    this.subscriptions.add(subscribeReplicationStatus);
+
+    const subscribeSidebarMenu = this.store
+      .select(Selectors.getSidebarMenu)
+      .subscribe(sidebarMenu => this.toggleSidebarMenu(sidebarMenu));
+    this.subscriptions.add(subscribeSidebarMenu);
 
     const subscribePrivacyPolicy = this.store
       .select(Selectors.getShowPrivacyPolicy)
-      .subscribe(showPrivacyPolicy => {
-        this.setSecondaryOptions(showPrivacyPolicy);
-      });
+      .subscribe(showPrivacyPolicy => this.setSecondaryOptions(showPrivacyPolicy));
     this.subscriptions.add(subscribePrivacyPolicy);
   }
 
