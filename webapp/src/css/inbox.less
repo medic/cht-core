@@ -1355,19 +1355,11 @@ mm-sidebar-menu .mat-sidenav-container {
   }
 
   .nav-item {
-    padding: 10px 20px;
+    padding: 0px 20px 20px 20px;
     color: #333;
     text-decoration: none;
     font-size: 16px;
     line-height: 20px;
-
-    &:first-child {
-      padding-top: 20px;
-    }
-
-    &:last-child {
-      padding-bottom: 20px;
-    }
 
     .sync-summary {
       display: inline-block;
@@ -1383,6 +1375,10 @@ mm-sidebar-menu .mat-sidenav-container {
       vertical-align: middle;
       margin-right: 15px;
     }
+  }
+
+  .nav-item:not(:not(.hidden) ~ .nav-item) { // The first element without .hidden class, compatible with Chrome +90
+    padding-top: 20px;
   }
 }
 
