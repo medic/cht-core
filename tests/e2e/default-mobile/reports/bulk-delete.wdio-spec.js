@@ -6,6 +6,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const personFactory = require('@factories/cht/contacts/person');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Bulk delete reports', () => {
   const places = placeFactory.generateHierarchy();
@@ -46,6 +47,11 @@ describe('Bulk delete reports', () => {
     await loginPage.login(offlineUser);
   });
 
+  beforeEach(async () => {
+    await commonPage.goToBase();
+    await commonPage.waitForPageLoaded();
+  });
+
   it('should select, deselect and delete only selected reports', async () => {
     await commonElements.goToReports();
 
@@ -76,6 +82,8 @@ describe('Bulk delete reports', () => {
   });
 
   it('should open a selected report and a no selected report', async () => {
+    await commonElements.goToReports();
+
     const selectOne = await reportsPage.selectReports([ savedUuids[0] ]);
     expect(selectOne.countLabel).to.equal('1');
     expect(selectOne.selectedCount).to.equal(1);
