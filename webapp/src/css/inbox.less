@@ -1241,7 +1241,7 @@ mm-search-bar {
     top: 60px;
     right: 5px;
     .fast-action-fab-button .mat-icon.fa:before {
-      color: @mat-invert-icon-color;
+      color: @mat-inverse-icon-color;
     }
   }
 }
@@ -1334,15 +1334,18 @@ mm-sidebar-menu .mat-sidenav-container {
       justify-content: flex-end;
       align-items: center;
       flex-direction: row-reverse;
+      padding: 0 10px;
     }
 
     .panel-header-title {
       font-size: 30px;
+      line-height: 30px;
+      margin-left: 15px;
+      color: @text-inverse-color;
     }
 
-    .panel-header-title,
-    .panel-header-close mat-icon:before {
-      color: #fff;
+    .panel-header-close mat-icon {
+      color: @mat-inverse-icon-color;
     }
   }
 
@@ -1361,6 +1364,16 @@ mm-sidebar-menu .mat-sidenav-container {
     font-size: 16px;
     line-height: 20px;
     outline: none;
+
+    &.success mat-icon:before,
+    &.success .sync-summary > span:first-child {
+      color: @success-state-color;
+    }
+
+    &.required mat-icon:before,
+    &.required .sync-summary > span:first-child {
+      color: @failed-state-color;
+    }
 
     .sync-summary {
       display: inline-block;
