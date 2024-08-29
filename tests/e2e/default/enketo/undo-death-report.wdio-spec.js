@@ -49,7 +49,7 @@ describe('Submit an undo death report', () => {
 
     // Verify that the report was created successfully
     await commonPage.goToReports();
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const firstReport = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectorsfirstReport());
     expect(firstReport.heading).to.equal(person.name);
     expect(firstReport.form).to.equal('Undo death report');
 

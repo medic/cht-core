@@ -1,5 +1,4 @@
 const moment = require('moment');
-
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -47,16 +46,16 @@ describe('Delete Reports', () => {
 
   it('Should delete report', async () => {
     await commonElements.goToReports();
-    await (await reportsPage.firstReport()).waitForDisplayed();
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
 
-    expect(await (await reportsPage.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
 
     await reportsPage.openReport(savedReportIds[1]);
     await reportsPage.deleteReport();
     await commonElements.goToReports();
 
-    expect(await (await reportsPage.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
   });
 });

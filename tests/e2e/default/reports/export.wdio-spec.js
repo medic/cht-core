@@ -39,7 +39,7 @@ describe('Export Reports', () => {
   });
 
   it('should download export file', async () => {
-    await (await reportsPage.firstReport()).waitForDisplayed();
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
     await reportsPage.exportReports();
 
     const files = await fileDownloadUtils.waitForDownload(`reports-${today.format('YYYYMMDD')}`);

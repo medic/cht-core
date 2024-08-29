@@ -56,11 +56,11 @@ describe('Reports tab messages', () => {
 
   it('should generate SMS report correctly when lacking patient_id', async () => {
     await commonElements.goToReports();
-    const firstReport = await reportsPage.firstReport();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
 
     await reportsPage.openSelectedReport(firstReport);
     await commonElements.waitForPageLoaded();
-    expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.rightPanelSelectors.reportTasks()).isDisplayed()).to.be.true;
 
     const scheduledTask = await reportsPage.getTaskDetails(1, 1);
     expect(scheduledTask.message).to.contain('Thank you Mary Smith for registering the_patient. ' +

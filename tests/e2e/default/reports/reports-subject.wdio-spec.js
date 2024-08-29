@@ -6,7 +6,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
-const appSettings = require('./test-app_settings');
+const appSettings = require('./config/test-app_settings');
 
 describe('Reports Subject', () => {
   const places = placeFactory.generateHierarchy();
@@ -33,7 +33,7 @@ describe('Reports Subject', () => {
   }) => {
     await commonPage.goToPeople();
     await commonPage.goToReports();
-    const firstReport = await reportsPage.firstReport();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
 
@@ -241,8 +241,8 @@ describe('Reports Subject', () => {
     await utils.saveDoc(reportDoc);
 
     // wait until this is reflected in the UI, without refreshing!
-    await waitElementTextEquals(reportsPage.patientName(), newPerson.name);
-    await waitElementTextEquals(reportsPage.senderPhone(), newUser.contact.phone);
+    await waitElementTextEquals(reportsPage.rightPanelSelectors.patientName(), newPerson.name);
+    await waitElementTextEquals(reportsPage.rightPanelSelectors.senderPhone(), newUser.contact.phone);
 
     await verifyListReportContent({
       formName: 'REF_REF',

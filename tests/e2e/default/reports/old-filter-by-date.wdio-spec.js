@@ -55,16 +55,16 @@ describe('Report Filter', () => {
     await commonElements.goToReports();
   });
 
-  it('should filter by date', async () => {
-    await (await reportsTab.firstReport()).waitForDisplayed();
+  it('should filter by date using the old filter and search', async () => {
+    await (await reportsTab.leftPanelSelectors.firstReport()).waitForDisplayed();
 
     await reportsTab.filterByDate(moment('05/16/2016', 'MM/DD/YYYY'), moment('05/17/2016', 'MM/DD/YYYY'));
     await commonElements.waitForPageLoaded();
-    const allReports = await reportsTab.allReports();
+    const allReports = await reportsTab.leftPanelSelectors.allReports();
 
     expect(allReports.length).to.equal(2);
-    expect((await reportsTab.reportsByUUID(savedReports[1])).length).to.equal(1);
-    expect((await reportsTab.reportsByUUID(savedReports[3])).length).to.equal(1);
+    expect(await (await reportsTab.leftPanelSelectors.reportByUUID(savedReports[1])).isDisplayed()).to.be.true;
+    expect(await (await reportsTab.leftPanelSelectors.reportByUUID(savedReports[3])).isDisplayed()).to.be.true;
   });
 });
 

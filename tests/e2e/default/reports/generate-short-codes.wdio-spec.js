@@ -43,14 +43,14 @@ describe('Generating short codes', () => {
     });
     await sentinelUtils.waitForSentinel();
     await commonElements.goToReports();
-    await (await reportsPage.firstReport()).click();
+    await (await reportsPage.leftPanelSelectors.firstReport()).click();
 
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.senderName).to.contain(contact.name);
     expect(openReportInfo.senderPhone).to.contain(contact.phone);
     expect(openReportInfo.lineage).to.contain(clinic.name);
-    expect(await (await reportsPage.selectedCaseIdLabel()).getText()).to.contain('Case ID');
-    expect(await (await reportsPage.selectedCaseId()).getText()).to.match(/^\d{5}$/);
+    expect(await (await reportsPage.rightPanelSelectors.selectedCaseIdLabel()).getText()).to.contain('Case ID');
+    expect(await (await reportsPage.rightPanelSelectors.selectedCaseId()).getText()).to.match(/^\d{5}$/);
   });
 });
 
