@@ -30,7 +30,7 @@ export namespace v1 {
   ): Promise<Page<Person.v1.Person>> => {
     const queryParams = {
       'limit': limit.toString(),
-      'personType': personType.contactType,
+      'type': personType.contactType,
       ...(cursor ? { cursor } : {})
     };
     return getPeople(remoteContext)(queryParams);

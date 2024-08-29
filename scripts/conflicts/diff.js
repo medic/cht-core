@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const //_ = require('underscore'),
-  parseArgs = require('minimist');
+const parseArgs = require('minimist');
 const jsondiff = require('json-diff');
 
 const PouchDB = require('pouchdb-core');
