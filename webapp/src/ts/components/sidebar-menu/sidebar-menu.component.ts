@@ -3,6 +3,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -11,7 +12,6 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
-import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'mm-sidebar-menu',
@@ -23,8 +23,8 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
   private globalActions: GlobalActions;
   replicationStatus;
-  moduleOptions: MenuOptions[] = [];
-  secondaryOptions: MenuOptions[] = [];
+  moduleOptions: MenuOption[] = [];
+  secondaryOptions: MenuOption[] = [];
   adminAppPath: string = '';
 
   constructor(
@@ -161,11 +161,11 @@ export interface SidebarMenu {
   isOpen: boolean;
 }
 
-export type MenuOptions = {
+interface MenuOption {
   icon: string;
   translationKey: string;
   routerLink?: string | undefined;
   hasPermissions?: string | undefined;
   canDisplay?: boolean;
   click?: () => void;
-};
+}
