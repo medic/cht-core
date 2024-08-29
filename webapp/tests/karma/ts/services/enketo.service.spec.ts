@@ -9,7 +9,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 
@@ -1222,5 +1222,12 @@ describe('EnketoFormContext', () => {
   it('requiresContact should return false when type is contact', () => {
     const ctxReport = new EnketoFormContext('a', 'contact', {}, {});
     expect(ctxReport.requiresContact()).to.eq(false);
+  });
+
+  it('should set user context', () => {
+    const ctxReport = new EnketoFormContext('a', 'contact', {}, {});
+    ctxReport.setUserContext('contact_id', 'facility_id');
+    expect(ctxReport.userContactId).to.equal('contact_id');
+    expect(ctxReport.userFacilityId).to.equal('facility_id');
   });
 });

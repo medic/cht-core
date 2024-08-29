@@ -25,6 +25,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -55,7 +56,8 @@ export class FormService {
     private translateService: TranslateService,
     private ngZone: NgZone,
     private chtDatasourceService: CHTDatasourceService,
-    private enketoService: EnketoService
+    private enketoService: EnketoService,
+    private targetAggregatesService: TargetAggregatesService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -131,7 +133,11 @@ export class FormService {
     return this.searchService.search('reports', { subjectIds: subjectIds }, { include_docs: true });
   }
 
-  private getContactSummary(doc, instanceData) {
+  private getTargetDocs(contact, userFacilityId, userContactId) {
+    return this.targetAggregatesService.getTargetDocs(contact, userFacilityId, userContactId);
+  }
+
+  private getContactSummary(doc, instanceData, userFacilityId, userContactId) {
     const contact = instanceData?.contact;
     if (!doc.hasContactSummary || !contact) {
       return Promise.resolve();
@@ -140,8 +146,9 @@ export class FormService {
       .all([
         this.getContactReports(contact),
         this.getLineage(contact),
+        this.getTargetDocs(contact, userFacilityId, userContactId),
       ])
-      .then(([reports, lineage]) => this.contactSummaryService.get(contact, reports, lineage));
+      .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
   }
 
   private canAccessForm(formContext: EnketoFormContext) {
@@ -157,7 +164,7 @@ export class FormService {
   }
 
   private async renderForm(formContext: EnketoFormContext) {
-    const { formDoc, instanceData } = formContext;
+    const { formDoc, instanceData, userContactId, userFacilityId } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());
@@ -165,7 +172,7 @@ export class FormService {
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
-      formContext.contactSummary = await this.getContactSummary(doc, instanceData);
+      formContext.contactSummary = await this.getContactSummary(doc, instanceData, userFacilityId, userContactId);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };

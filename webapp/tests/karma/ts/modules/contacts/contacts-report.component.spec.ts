@@ -1,5 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -67,6 +67,8 @@ describe('contacts report component', () => {
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
+      { selector: Selectors.getUserContactId, value: 'contact' },
+      { selector: Selectors.getUserFacilityId, value: ['facility'] },
     ];
 
     return TestBed
@@ -171,7 +173,9 @@ describe('contacts report component', () => {
             _id: 'test_id',
             contact_type: 'test_type'
           }
-        }
+        },
+        userContactId: 'contact',
+        userFacilityId: ['facility'],
       });
     }));
 

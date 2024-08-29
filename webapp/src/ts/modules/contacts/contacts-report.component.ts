@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,6 +37,9 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   errorTranslationKey;
   contentError;
   cancelCallback;
+  userFacilityId;
+  userContactId;
+
 
   constructor(
     private store: Store,
@@ -135,6 +138,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         const formContext = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
         formContext.editedListener = this.markFormEdited.bind(this);
         formContext.valuechangeListener = this.resetFormError.bind(this);
+        formContext.setUserContext(this.userContactId, this.userFacilityId);
 
         return this.formService.render(formContext);
       })
@@ -163,12 +167,24 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getEnketoEditedStatus),
       this.store.select(Selectors.getCancelCallback),
-    ).subscribe(([ enketoStatus, enketoSaving, enketoError, enketoEdited, cancelCallback]) => {
+      this.store.select(Selectors.getUserFacilityId),
+      this.store.select(Selectors.getUserContactId),
+    ).subscribe(([
+      enketoStatus,
+      enketoSaving,
+      enketoError,
+      enketoEdited,
+      cancelCallback,
+      userFacilityId,
+      userContactId
+    ]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
       this.enketoEdited = enketoEdited;
       this.cancelCallback = cancelCallback;
+      this.userFacilityId = userFacilityId;
+      this.userContactId = userContactId;
     });
     this.subscription.add(reduxSubscription);
   }

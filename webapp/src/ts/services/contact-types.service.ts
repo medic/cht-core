@@ -98,6 +98,16 @@ export class ContactTypesService {
     return contactTypesUtils.isPersonType(type);
   }
 
+  async isPerson(contact) {
+    let type;
+    if (typeof contact.type === 'object') {
+      type = contact.type;
+    } else {
+      type = await this.get(this.getTypeId(contact));
+    }
+    return this.isPersonType(type);
+  }
+
   getLeafPlaceTypes() {
     return this.settingsService
       .get()

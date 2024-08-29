@@ -69,6 +69,8 @@ describe('Reports Add Component', () => {
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
+      { selector: Selectors.getUserContactId, value: 'contact' },
+      { selector: Selectors.getUserFacilityId, value: ['facility'] },
     ];
 
     return TestBed
@@ -226,6 +228,10 @@ describe('Reports Add Component', () => {
         expect(setEnketoEditedStatusStub.args[0]).to.deep.equal([false]);
         expect(formService.render.calledOnce).to.be.true;
         expect(formService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
+        expect(formService.render.args[0][0]).to.deep.include({
+          userContactId: 'contact',
+          userFacilityId: ['facility']
+        });
         expect(component.form).to.equal(renderedForm);
 
         const markFormEdited = formService.render.args[0][0].editedListener;

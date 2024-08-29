@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
 
@@ -29,11 +30,11 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
-import { cloneDeep } from 'lodash-es';
+import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -90,6 +91,7 @@ describe('Form service', () => {
   let consoleWarnMock;
   let feedbackService;
   let extractLineageService;
+  let targetAggregatesService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -156,6 +158,7 @@ describe('Form service', () => {
     consoleWarnMock = sinon.stub(console, 'warn');
     feedbackService = { submit: sinon.stub() };
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
+    targetAggregatesService = { getTargetDocs: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -185,6 +188,7 @@ describe('Form service', () => {
         { provide: TrainingCardsService, useValue: trainingCardsService },
         { provide: FeedbackService, useValue: feedbackService },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: TargetAggregatesService, useValue: targetAggregatesService },
       ],
     });
 
@@ -368,8 +372,10 @@ describe('Form service', () => {
       };
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
+      targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
       const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      formContext.setUserContext('contact', ['facility']);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
@@ -382,12 +388,17 @@ describe('Form service', () => {
         expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
+        expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);
+        expect(targetAggregatesService.getTargetDocs.args[0]).to.deep.equal([
+          { _id: 'fffff', patient_id: '44509' }, ['facility'], 'contact'
+        ]);
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][0]._id).to.equal('fffff');
         expect(ContactSummary.args[0][1].length).to.equal(1);
         expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
         expect(ContactSummary.args[0][2].length).to.equal(1);
         expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
+        expect(ContactSummary.args[0][3]).to.deep.equal([{ _id: 't1' }, { _id: 't2' }]);
       });
     });
 

@@ -121,6 +121,9 @@ export class CHTDatasourceService {
         },
         getExtensionLib: (id) => {
           return this.extensionLibs[id];
+        },
+        context: {
+          targetDocs: []
         }
       }
     };

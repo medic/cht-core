@@ -1,6 +1,6 @@
 import { provideMockActions } from '@ngrx/effects/testing';
 import { fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -19,6 +19,7 @@ import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -32,13 +33,15 @@ describe('Contacts effects', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let routeSnapshotService;
+  let contactTypesService;
 
   beforeEach(async() => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
       { selector: Selectors.getSelectedContact, value: null },
       { selector: Selectors.getForms, value: [] },
-      { selector: Selectors.getUserFacilityId, value: 'facility_id' },
+      { selector: Selectors.getUserFacilityId, value: ['facility_id'] },
+      { selector: Selectors.getUserContactId, value: 'contact_id' },
     ];
     routeSnapshotService = { get: sinon.stub().returns({ data: { name: 'contacts.detail' }}) };
     contactViewModelGeneratorService = {
@@ -50,8 +53,13 @@ describe('Contacts effects', () => {
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     translateService = { instant: sinon.stub().returnsArg(0) };
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
-    targetAggregateService = { getCurrentTargetDoc: sinon.stub().resolves() };
+    targetAggregateService = { getTargetDocs: sinon.stub().resolves() };
     tasksForContactService = { get: sinon.stub().resolves([]) };
+    contactTypesService = {
+      isPersonType: sinon.stub().resolves(true),
+      getTypeId: sinon.stub().returns('person'),
+    };
+    // todo add test where contact is not a person
 
     TestBed.configureTestingModule({
       imports: [
@@ -67,6 +75,7 @@ describe('Contacts effects', () => {
         { provide: TasksForContactService, useValue: tasksForContactService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
+        { provide: ContactTypesService, useValue: contactTypesService },
         { provide: SettingsService, useValue: {} },
       ]
     });
@@ -175,25 +184,25 @@ describe('Contacts effects', () => {
       expect(performanceService.track.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:contact_data',
+        name: 'contact_detail:person:load:contact_data',
       });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_descendants',
+        name: 'contact_detail:person:load:load_descendants',
       });
       expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_reports',
+        name: 'contact_detail:person:load:load_reports',
       });
       expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_targets',
+        name: 'contact_detail:person:load:load_targets',
       });
       expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_contact_summary',
+        name: 'contact_detail:person:load:load_contact_summary',
       });
       expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({
-        name: 'contact_detail:contact:load:load_tasks',
+        name: 'contact_detail:person:load:load_tasks',
       });
       expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({
-        name: 'contact_detail:contact:load',
+        name: 'contact_detail:person:load',
         recordApdex: true,
       });
     });
@@ -269,12 +278,13 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
       expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(0);
-      expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(0);
+      expect(targetAggregateService.getTargetDocs.callCount).to.equal(0);
       expect(contactSummaryService.get.callCount).to.equal(0);
     }));
 
     describe('loading children', () => {
       it('should load children', async () => {
+        contactTypesService.getTypeId.callsFake(contact => contact.contact_type || contact.type);
         contactViewModelGeneratorService.getContact.resolves({
           _id: 'contact',
           doc: { _id: 'contact', type: 'contact', contact_type: 'hospital' },
@@ -384,8 +394,9 @@ describe('Contacts effects', () => {
         // Stops loading data for initial contact after children
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('contact2');
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
-        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('contact2');
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(1);
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(1);
+        expect(targetAggregateService.getTargetDocs.args[0][0]._id).to.equal('contact2');
         expect(contactSummaryService.get.callCount).to.equal(1);
         expect(contactSummaryService.get.args[0][0]._id).to.equal('contact2');
         expect(tasksForContactService.get.callCount).to.equal(1);
@@ -408,7 +419,7 @@ describe('Contacts effects', () => {
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(0);
-        expect(tasksForContactService.get.callCount).to.equal(0);
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(0);
         expect(contactSummaryService.get.callCount).to.equal(0);
         expect(setSnackbarContent.callCount).to.equal(0);
         expect(unsetSelected.callCount).to.equal(1);
@@ -482,8 +493,8 @@ describe('Contacts effects', () => {
         expect(contactViewModelGeneratorService.loadChildren.args[0][0]._id).to.equal('place');
         expect(contactViewModelGeneratorService.loadChildren.args[1][0]._id).to.equal('person');
         // Stops loading data for initial contact after reports
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
-        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('person');
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(1);
+        expect(targetAggregateService.getTargetDocs.args[0][0]._id).to.equal('person');
         expect(contactSummaryService.get.callCount).to.equal(1);
         expect(contactSummaryService.get.args[0][0]._id).to.equal('person');
         expect(tasksForContactService.get.callCount).to.equal(1);
@@ -507,7 +518,7 @@ describe('Contacts effects', () => {
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(0);
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(0);
         expect(tasksForContactService.get.callCount).to.equal(0);
         expect(setSnackbarContent.callCount).to.equal(0);
         expect(unsetSelected.callCount).to.equal(1);
@@ -519,21 +530,21 @@ describe('Contacts effects', () => {
         contactViewModelGeneratorService.getContact.resolves({ _id: 'person', doc: { _id: 'person' } });
         contactViewModelGeneratorService.loadChildren.resolves([]);
         contactViewModelGeneratorService.loadReports.resolves([{ _id: 'report' }]);
-        targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
+        targetAggregateService.getTargetDocs.resolves([{ _id: 'targetDoc' }]);
 
         actions$ = of(ContactActionList.selectContact({ id: 'person' }));
         await effects.selectContact.toPromise();
 
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
-        expect(targetAggregateService.getCurrentTargetDoc.args[0]).to.deep.equal([{
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(1);
+        expect(targetAggregateService.getTargetDocs.args[0]).to.deep.equal([{
           _id: 'person',
           doc: { _id: 'person' },
           children: [],
           reports: [{ _id: 'report' }],
-        }]);
+        }, ['facility_id'], 'contact_id']);
         const receiveSelectedContactTargetDoc:any = ContactsActions.prototype.receiveSelectedContactTargetDoc;
         expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
-        expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([{ _id: 'targetDoc' }]);
+        expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([[{ _id: 'targetDoc' }]]);
       });
 
       it('should not receive target doc if the selected contact changes', async () => {
@@ -541,13 +552,13 @@ describe('Contacts effects', () => {
         contactViewModelGeneratorService.getContact.onSecondCall().resolves({_id: 'person', doc: {_id: 'person'}});
         contactViewModelGeneratorService.loadChildren.resolves([]);
         contactViewModelGeneratorService.loadReports.resolves([]);
-        targetAggregateService.getCurrentTargetDoc.onFirstCall().callsFake(async () => {
+        targetAggregateService.getTargetDocs.onFirstCall().callsFake(async () => {
           // Change the selected contact before returning the first target doc
           actions$ = of(ContactActionList.selectContact({id: 'person'}));
           await effects.selectContact.toPromise();
           return {_id: 'targetDoc0'};
         });
-        targetAggregateService.getCurrentTargetDoc.onSecondCall().resolves({_id: 'targetDoc1'});
+        targetAggregateService.getTargetDocs.onSecondCall().resolves({_id: 'targetDoc1'});
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
         const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
         const receiveSelectedContactTargetDoc: any = ContactsActions.prototype.receiveSelectedContactTargetDoc;
@@ -556,9 +567,9 @@ describe('Contacts effects', () => {
         actions$ = of(ContactActionList.selectContact({id: 'place'}));
         await effects.selectContact.toPromise();
 
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(2);
-        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('place');
-        expect(targetAggregateService.getCurrentTargetDoc.args[1][0]._id).to.equal('person');
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(2);
+        expect(targetAggregateService.getTargetDocs.args[0][0]._id).to.equal('place');
+        expect(targetAggregateService.getTargetDocs.args[1][0]._id).to.equal('person');
         expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
         // Only the second target doc is actually received since the selectedContact changed before the
         // first target doc was returned
@@ -588,14 +599,14 @@ describe('Contacts effects', () => {
         sinon.stub(console, 'error');
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
         const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-        targetAggregateService.getCurrentTargetDoc.rejects({ code: 400 });
+        targetAggregateService.getTargetDocs.rejects({ code: 400 });
 
         actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
         await effects.selectContact.toPromise();
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(1);
         expect(contactSummaryService.get.callCount).to.equal(0);
         expect(tasksForContactService.get.callCount).to.equal(0);
         expect(setSnackbarContent.callCount).to.equal(0);
@@ -612,7 +623,7 @@ describe('Contacts effects', () => {
         });
         contactViewModelGeneratorService.loadChildren.resolves([]);
         contactViewModelGeneratorService.loadReports.resolves([{ _id: 'the_report' }]);
-        targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
+        targetAggregateService.getTargetDocs.resolves([{ _id: 'targetDoc' }]);
         contactSummaryService.get.resolves({ cards: [{ id: 'card' }], fields: [{ id: 'field' }] });
 
         actions$ = of(ContactActionList.selectContact({ id: 'person' }));
@@ -623,7 +634,7 @@ describe('Contacts effects', () => {
           { _id: 'person', parent: { _id: 'parent' } },
           [{ _id: 'the_report' }],
           [{ _id: 'parent' }, { _id: 'grandparent' }],
-          { _id: 'targetDoc' },
+          [{ _id: 'targetDoc' }],
         ]);
         const updateSelectedContactSummary:any = ContactsActions.prototype.updateSelectedContactSummary;
         expect(updateSelectedContactSummary.callCount).to.equal(1);
@@ -641,7 +652,7 @@ describe('Contacts effects', () => {
         });
         contactViewModelGeneratorService.loadChildren.resolves([]);
         contactViewModelGeneratorService.loadReports.resolves([]);
-        targetAggregateService.getCurrentTargetDoc.resolves({_id: 'targetDoc'});
+        targetAggregateService.getTargetDocs.resolves([{_id: 'targetDoc'}]);
 
         contactSummaryService.get.onFirstCall().callsFake(async () => {
           // Change the selected contact before returning the first contact summary result.
@@ -674,9 +685,9 @@ describe('Contacts effects', () => {
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(2);
         expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('place');
         expect(contactViewModelGeneratorService.loadReports.args[1][0]._id).to.equal('person');
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(2);
-        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('place');
-        expect(targetAggregateService.getCurrentTargetDoc.args[1][0]._id).to.equal('person');
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(2);
+        expect(targetAggregateService.getTargetDocs.args[0][0]._id).to.equal('place');
+        expect(targetAggregateService.getTargetDocs.args[1][0]._id).to.equal('person');
         // Stops loading data for initial contact after summary
         expect(tasksForContactService.get.callCount).to.equal(1);
         expect(tasksForContactService.get.args[0][0]._id).to.equal('person');
@@ -699,7 +710,7 @@ describe('Contacts effects', () => {
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(1);
         expect(contactSummaryService.get.callCount).to.equal(1);
         expect(tasksForContactService.get.callCount).to.equal(0);
         expect(setSnackbarContent.callCount).to.equal(0);
@@ -715,7 +726,7 @@ describe('Contacts effects', () => {
         });
         contactViewModelGeneratorService.loadChildren.resolves([{ type: 'a' }]);
         contactViewModelGeneratorService.loadReports.resolves([{ _id: 'the_report' }]);
-        targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
+        targetAggregateService.getTargetDocs.resolves([{ _id: 'targetDoc' }]);
         contactSummaryService.get.resolves({ cards: [{ id: 'card' }], fields: [{ id: 'field' }] });
         tasksForContactService.get.resolves([{ _id: 'task1' }]);
 
@@ -729,7 +740,7 @@ describe('Contacts effects', () => {
           children: [{ type: 'a' }],
           reports: [{ _id: 'the_report' }],
           summary: { cards: [{ id: 'card' }], fields: [{ id: 'field' }] },
-          targetDoc: { _id: 'targetDoc' },
+          targetDoc: [{ _id: 'targetDoc' }],
         }]);
         const updateSelectedContactsTasks:any = ContactsActions.prototype.updateSelectedContactsTasks;
         expect(updateSelectedContactsTasks.callCount).to.equal(1);
@@ -744,7 +755,7 @@ describe('Contacts effects', () => {
         });
         contactViewModelGeneratorService.loadChildren.resolves([{type: 'a'}]);
         contactViewModelGeneratorService.loadReports.resolves([{_id: 'the_report'}]);
-        targetAggregateService.getCurrentTargetDoc.resolves({_id: 'targetDoc'});
+        targetAggregateService.getTargetDocs.resolves([{_id: 'targetDoc'}]);
         contactSummaryService.get.resolves({cards: [{id: 'card'}], fields: [{id: 'field'}]});
 
         tasksForContactService.get.onFirstCall().callsFake(async () => {
@@ -777,9 +788,9 @@ describe('Contacts effects', () => {
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(2);
         expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('place');
         expect(contactViewModelGeneratorService.loadReports.args[1][0]._id).to.equal('person');
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(2);
-        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('place');
-        expect(targetAggregateService.getCurrentTargetDoc.args[1][0]._id).to.equal('person');
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(2);
+        expect(targetAggregateService.getTargetDocs.args[0][0]._id).to.equal('place');
+        expect(targetAggregateService.getTargetDocs.args[1][0]._id).to.equal('person');
         expect(contactSummaryService.get.callCount).to.equal(2);
         expect(contactSummaryService.get.args[0][0]._id).to.equal('place');
         expect(contactSummaryService.get.args[1][0]._id).to.equal('person');
@@ -802,7 +813,7 @@ describe('Contacts effects', () => {
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(1);
         expect(contactSummaryService.get.callCount).to.equal(1);
         expect(tasksForContactService.get.callCount).to.equal(1);
         expect(setSnackbarContent.callCount).to.equal(0);
