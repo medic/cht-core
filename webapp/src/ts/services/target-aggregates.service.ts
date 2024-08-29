@@ -53,6 +53,18 @@ export class TargetAggregatesService {
     };
   }
 
+  /**
+   * Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
+   * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
+   * ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
+   * ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
+   *
+   * @param settings - The application settings containing uhcMonthStartDate
+   * @param reportingPeriod - Optional. ReportingPeriod enum value (CURRENT or PREVIOUS)
+   * @param monthsAgo - Optional. Number of reporting periods ago.
+   * @returns A string representing the interval tag in YYYY-MM format
+   */
+
   private getTargetIntervalTag(settings, reportingPeriod?:ReportingPeriod, monthsAgo = 1) {
     const { uhcMonthStartDate, targetInterval: currentInterval } = this.getCurrentInterval(settings);
     if (!reportingPeriod || reportingPeriod === ReportingPeriod.CURRENT) {
@@ -359,6 +371,10 @@ export class TargetAggregatesService {
     return this.ngZone.runOutsideAngular(() => this._getTargetDocs(contact, userFacilityId, userContactId));
   }
 
+  private isUserFacility (userFacilityId, contactUuid) {
+    return  (Array.isArray(userFacilityId) && userFacilityId.includes(contactUuid)) || userFacilityId === contactUuid;
+  }
+
   private async _getTargetDocs(
     contact,
     userFacilityId:string[]|string|undefined,
@@ -369,9 +385,7 @@ export class TargetAggregatesService {
       return [];
     }
 
-    const isUserFacility =
-      (Array.isArray(userFacilityId) && userFacilityId.includes(contactUuid)) ||
-      userFacilityId === contactUuid;
+    const isUserFacility = this.isUserFacility(userFacilityId, contactUuid);
     const shouldLoadTargetDocs = isUserFacility || await this.contactTypesService.isPerson(contact);
     if (!shouldLoadTargetDocs) {
       return [];
