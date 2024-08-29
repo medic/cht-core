@@ -76,7 +76,7 @@ describe('remote person', () => {
       const personTypeQualifier = {contactType: personType};
       const queryParam = {
         limit: limit.toString(),
-        personType,
+        type: personType,
         cursor,
       };
 
