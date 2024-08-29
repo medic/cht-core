@@ -287,7 +287,7 @@ describe('local place', () => {
         isPlace.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
       });
 
-      it('throws an error if person identifier is invalid/does not exist', async () => {
+      it('throws an error if place type is invalid/does not exist', async () => {
         await expect(Place.v1.getPage(localContext)(invalidPlaceTypeQualifier, cursor, limit)).to.be.rejectedWith(
           `Invalid contact type [${invalidPlaceTypeQualifier.contactType}].`
         );
