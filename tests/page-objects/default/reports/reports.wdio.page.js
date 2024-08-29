@@ -282,8 +282,8 @@ const setSidebarFilterToDate = () => {
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
 
 const getAllReportsText = async () => {
-  await ((await leftPanelSelectors.allReports())[0]).waitForDisplayed();
-  return commonElements.getTextForElements(leftPanelSelectors.reportRowsText());
+  await (await leftPanelSelectors.allReports()[0]).waitForDisplayed();
+  return commonElements.getTextForElements(leftPanelSelectors.reportRowsText);
 };
 
 const getCurrentReportId = async () => {

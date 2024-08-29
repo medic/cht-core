@@ -1,7 +1,7 @@
 const utils = require('@utils');
 
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const reportsPage = require('@page-objects/default-mobile/reports/reports.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const searchPage = require('@page-objects/default-mobile/search/search.wdio.page');
 
@@ -33,20 +33,20 @@ describe('Search Reports', () => {
     const [ hospitalSMS, healthCenterSMS, hospitalReport, healthCenterReport ] = reportDocs;
     await commonPage.goToReports();
     // Asserting first load reports
-    expect((await reportsPage.reportsPageDefault.reportsListDetails()).length).to.equal(reportDocs.length);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
 
     await searchPage.performSearch('+64275555556');
     await commonPage.waitForLoaders();
-    expect((await reportsPage.reportsPageDefault.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(hospitalSMS.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(healthCenterSMS.id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(hospitalSMS.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(healthCenterSMS.id)).isDisplayed()).to.be.true;
 
     await searchPage.searchPageDefault.clearSearch();
-    expect((await reportsPage.reportsPageDefault.reportsListDetails()).length).to.equal(reportDocs.length);
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(hospitalSMS.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(healthCenterSMS.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(hospitalReport.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(healthCenterReport.id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
+    expect(await (await reportsPage.reportByUUID(hospitalSMS.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(healthCenterSMS.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(hospitalReport.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(healthCenterReport.id)).isDisplayed()).to.be.true;
   });
 
   it('should navigate back to list view and return results when searching by case_id', async () => {
@@ -54,13 +54,13 @@ describe('Search Reports', () => {
     const healthCenterReport = reportDocs[3];
     await commonPage.goToReports();
     // Asserting first load reports
-    expect((await reportsPage.reportsPageDefault.reportsListDetails()).length).to.equal(reportDocs.length);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
 
-    await reportsPage.reportsPageDefault.openReport(hospitalReport.id);
-    await reportsPage.reportsPageDefault.clickOnCaseId();
+    await reportsPage.openReport(hospitalReport.id);
+    await reportsPage.clickOnCaseId();
     await commonPage.waitForLoaders();
-    expect((await reportsPage.reportsPageDefault.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(hospitalReport.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(healthCenterReport.id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(hospitalReport.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(healthCenterReport.id)).isDisplayed()).to.be.true;
   });
 });
