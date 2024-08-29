@@ -282,7 +282,7 @@ describe('place', () => {
         expect(isContactTypeQualifier.notCalled).to.be.true;
       });
 
-      it('should throw an error for invalid personType', () => {
+      it('should throw an error for invalid placeType', () => {
         isContactTypeQualifier.returns(false);
 
         expect(() => Place.v1.getAll(dataContext)(placeTypeQualifier))
