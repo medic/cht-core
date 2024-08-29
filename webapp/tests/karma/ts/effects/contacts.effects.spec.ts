@@ -55,11 +55,7 @@ describe('Contacts effects', () => {
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getTargetDocs: sinon.stub().resolves() };
     tasksForContactService = { get: sinon.stub().resolves([]) };
-    contactTypesService = {
-      isPersonType: sinon.stub().resolves(true),
-      getTypeId: sinon.stub().returns('person'),
-    };
-    // todo add test where contact is not a person
+    contactTypesService = { getTypeId: sinon.stub().returns('person') };
 
     TestBed.configureTestingModule({
       imports: [
@@ -525,8 +521,8 @@ describe('Contacts effects', () => {
       });
     });
 
-    describe('loading targetDoc', () => {
-      it('should load targetDoc after loading reports', async () => {
+    describe('loading targetDocs', () => {
+      it('should load targetDocs after loading reports', async () => {
         contactViewModelGeneratorService.getContact.resolves({ _id: 'person', doc: { _id: 'person' } });
         contactViewModelGeneratorService.loadChildren.resolves([]);
         contactViewModelGeneratorService.loadReports.resolves([{ _id: 'report' }]);
@@ -547,7 +543,7 @@ describe('Contacts effects', () => {
         expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([[{ _id: 'targetDoc' }]]);
       });
 
-      it('should not receive target doc if the selected contact changes', async () => {
+      it('should not receive target docs if the selected contact changes', async () => {
         contactViewModelGeneratorService.getContact.onFirstCall().resolves({_id: 'place', doc: {_id: 'place'}});
         contactViewModelGeneratorService.getContact.onSecondCall().resolves({_id: 'person', doc: {_id: 'person'}});
         contactViewModelGeneratorService.loadChildren.resolves([]);
@@ -595,7 +591,7 @@ describe('Contacts effects', () => {
         expect(setSelectedContact.args[1][0]._id).to.equal('person');
       });
 
-      it('should handle errors when loading the target doc', async () => {
+      it('should handle errors when loading the target docs', async () => {
         sinon.stub(console, 'error');
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
         const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');

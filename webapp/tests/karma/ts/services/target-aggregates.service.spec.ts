@@ -1543,9 +1543,7 @@ describe('TargetAggregatesService', () => {
       }]);
     });
 
-
-
-    it('should not load target docs for contacts that are not people', async () => {
+    it('should not load target docs for contacts that are not persons', async () => {
       const config = { tasks: { targets: { items: [
         { id: 'target1', aggregate: true, type: 'count' },
       ] } } };
