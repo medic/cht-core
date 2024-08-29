@@ -446,6 +446,7 @@ const verifyReport = async () => {
 module.exports = {
   leftPanelSelectors,
   rightPanelSelectors,
+  deleteDialogSelectors,
   getCurrentReportId,
   getLastSubmittedReportId,
   getUnreadCount,
