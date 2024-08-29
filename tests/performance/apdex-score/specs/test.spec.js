@@ -8,7 +8,6 @@ const tasksPage = require('@page-objects/apdex/tasks.page');
 const messagesPage = require('@page-objects/apdex/messages.page');
 const reportsPage = require('@page-objects/apdex/reports.page');
 
-NOSONAR_BEGIN
 describe('Apdex Performance Workflows', () => {
   const settingsProvider = loadSettings();
   const repetitions = settingsProvider.getIterations();
@@ -20,6 +19,10 @@ describe('Apdex Performance Workflows', () => {
       await loginPage.login('offline', 'chw', settingsProvider);
       await loadPage.turnOnAirplaneMode(settingsProvider);
     }
+  });
+
+  xit('skip empty test', () => {
+
   });
 
   for (let i = 0; i < repetitions; i++) {
@@ -78,4 +81,3 @@ describe('Apdex Performance Workflows', () => {
   }
 
 });
-NOSONAR_END
