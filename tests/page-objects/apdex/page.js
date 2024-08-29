@@ -2,7 +2,6 @@ const { browser, driver } = require('@wdio/globals');
 const { execSync } = require('child_process');
 const loadSettings = require('../../performance/apdex-score/settings-provider');
 const APP_ID = 'org.medicmobile.webapp.mobile';
-const settingsProvider = loadSettings();
 
 module.exports = class Page {
 
@@ -12,6 +11,7 @@ module.exports = class Page {
       return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
     } catch (error) {
       if (retry < 0) {
+        console.error('Error: ', error);
         return false;
       }     
       await this.waitForDisplayedAndRetry(selector, --retry);
@@ -22,6 +22,10 @@ module.exports = class Page {
     if (await this.waitForDisplayedAndRetry(selector)) {
       await (await $(selector)).click();
     }
+  }
+
+  getSettingsProvider() {
+    return loadSettings();
   }
 
   getButtonSelector(label) {
@@ -125,7 +129,7 @@ module.exports = class Page {
       return;
     }
 
-    const commonElements = settingsProvider.getCommonElements();
+    const commonElements = this.getSettingsProvider().getCommonElements();
     if (page.relaunchApp) {
       await this.relaunchApp(commonElements);
     }
@@ -167,7 +171,7 @@ module.exports = class Page {
       return;
     }
 
-    const commonElements = settingsProvider.getCommonElements();
+    const commonElements = this.getSettingsProvider().getCommonElements();
     const FAB_SELECTOR = commonElements?.fab || '//android.widget.Button[not(@text="Actions menu")]';
     const FAB_LIST_TITLE = commonElements?.fabListTitle || this.getLinkSelector('New');
     const SUBMIT_BUTTON_LABEL = commonElements?.formSubmit || 'Submit';
@@ -207,7 +211,7 @@ module.exports = class Page {
       return;
     }
 
-    const commonElements = settingsProvider.getCommonElements();
+    const commonElements = this.getSettingsProvider().getCommonElements();
     const SEARCH_ICON = commonElements?.searchIcon || this.getLinkSelector('');
     const SEARCH_INPUT = '//android.widget.EditText';
 
@@ -244,18 +248,18 @@ module.exports = class Page {
   }
 
   async loadPage(pageName) {
-    const page = settingsProvider.getPage(pageName);
-    await this.loadAndAssertPage(page, settingsProvider);
+    const page = this.getSettingsProvider().getPage(pageName);
+    await this.loadAndAssertPage(page);
   }
 
   async loadForm(formName) {
-    const form = settingsProvider.getForm(formName);
-    await this.fillUpForm(form, settingsProvider);
+    const form = this.getSettingsProvider().getForm(formName);
+    await this.fillUpForm(form);
   }
 
   async searchPage(pageName) {
-    const page = settingsProvider.getPage(pageName);
-    await this.search(page, settingsProvider);
+    const page = this.getSettingsProvider().getPage(pageName);
+    await this.search(page);
   }
 
 };

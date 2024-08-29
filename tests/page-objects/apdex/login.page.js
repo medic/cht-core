@@ -10,16 +10,16 @@ class LoginPage extends Page {
     return $('//*[@text="Password"]//parent::android.view.View/android.view.View/android.widget.EditText');
   }
 
-  async login(userType, userRole, settingsProvider) {
+  async login(userType, userRole) {
     await this.inputUsername.waitForDisplayed();
 
-    const user = settingsProvider.getUser(userType, userRole);
+    const user = super.getSettingsProvider().getUser(userType, userRole);
     await this.inputUsername.setValue(user.username);
     await this.inputPassword.setValue(user.password);
 
     await super.clickButton('Login');
 
-    if (settingsProvider.hasPrivacyPolicy()) {
+    if (super.getSettingsProvider().hasPrivacyPolicy()) {
       await super.clickButton('Accept');
     }
   }

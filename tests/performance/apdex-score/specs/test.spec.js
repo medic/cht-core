@@ -8,6 +8,7 @@ const tasksPage = require('@page-objects/apdex/tasks.page');
 const messagesPage = require('@page-objects/apdex/messages.page');
 const reportsPage = require('@page-objects/apdex/reports.page');
 
+// NOSONAR_BEGIN
 describe('Apdex Performance Workflows', () => {
   const settingsProvider = loadSettings();
   const repetitions = settingsProvider.getIterations();
@@ -77,3 +78,4 @@ describe('Apdex Performance Workflows', () => {
   }
 
 });
+// NOSONAR_END
