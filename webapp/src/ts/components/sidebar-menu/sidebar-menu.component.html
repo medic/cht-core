@@ -6,7 +6,6 @@
 
       <div class="nav-section">
         <a *ngFor="let module of moduleOptions"
-          tabindex="-1"
           class="nav-item"
           [routerLink]="module.routerLink"
           [mmAuth]="module.hasPermissions">
@@ -14,8 +13,7 @@
           <span>{{ module.translationKey | translate }}</span>
         </a>
 
-        <a tabindex="-1"
-          class="nav-item"
+        <a class="nav-item"
           [attr.href]="adminAppPath"
           mmAuth
           [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]"
@@ -28,7 +26,6 @@
       <div class="nav-section">
         <a *ngIf="!replicationStatus?.disabled"
           class="nav-item"
-          tabindex="-1"
           [class.disabled]="replicationStatus?.current?.disableSyncButton"
           (click)="replicate()">
           <mat-icon fontIcon="fa-refresh"></mat-icon>
@@ -52,8 +49,7 @@
 
       <div class="nav-section">
         <ng-container *ngFor="let option of secondaryOptions">
-          <a tabindex="-1"
-            class="nav-item"
+          <a class="nav-item"
             *ngIf="option.hasPermissions"
             [routerLink]="option.routerLink"
             [mmAuth]="option.hasPermissions"
@@ -62,8 +58,7 @@
             <span>{{ option.translationKey | translate }}</span>
           </a>
 
-          <a tabindex="-1"
-            class="nav-item"
+          <a class="nav-item"
             *ngIf="!option.hasPermissions && option.canDisplay"
             [routerLink]="option.routerLink"
             (click)="option.click && option.click()">
@@ -74,7 +69,7 @@
       </div>
 
       <div class="nav-section">
-        <a *ngIf="canLogOut" tabindex="-1" class="nav-item" (click)="logout()">
+        <a *ngIf="canLogOut" class="nav-item" (click)="logout()">
           <mat-icon fontIcon="fa-power-off"></mat-icon>
           <span>{{ 'Log Out' | translate }}</span>
         </a>

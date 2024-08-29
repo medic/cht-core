@@ -79,7 +79,7 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
 
     const subscribeSidebarMenu = this.store
       .select(Selectors.getSidebarMenu)
-      .subscribe(sidebarMenu => this.toggleSidebarMenu(sidebarMenu));
+      .subscribe(sidebarMenu => this.sidebar?.toggle(sidebarMenu?.isOpen));
     this.subscriptions.add(subscribeSidebarMenu);
 
     const subscribePrivacyPolicy = this.store
@@ -90,13 +90,6 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
 
   private openFeedback() {
     this.modalService.show(FeedbackComponent);
-  }
-
-  private toggleSidebarMenu(sidebarMenu: SidebarMenu) {
-    if (sidebarMenu?.isOpen) {
-      return this.sidebar?.open();
-    }
-    return this.sidebar?.close();
   }
 
   private setModuleOptions() {
