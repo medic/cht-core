@@ -157,10 +157,6 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
   }
 }
 
-export interface SidebarMenu {
-  isOpen: boolean;
-}
-
 interface MenuOption {
   icon: string;
   translationKey: string;

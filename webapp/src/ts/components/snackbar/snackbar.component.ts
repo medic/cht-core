@@ -100,11 +100,3 @@ export class SnackbarComponent implements OnInit {
     this.globalActions.setSnackbarContent();
   }
 }
-
-export interface Snackbar {
-  message?: string;
-  action?: {
-    label: string;
-    onClick?: () => void;
-  };
-}
