@@ -21,7 +21,7 @@ describe('Apdex Performance Workflows', () => {
     }
   });
 
-  // This is to prevent the ci build for SonarCloud Code Analysis from failing as it requires to see at least 1 test added
+  // This is to prevent SonarCloud Code Analysis CI build from failing as it requires to see at least 1 test added
   xit('skip empty test', () => {
   });
 
