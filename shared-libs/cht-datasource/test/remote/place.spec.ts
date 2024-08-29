@@ -76,7 +76,7 @@ describe('remote place', () => {
       const personTypeQualifier = { contactType: placeType };
       const queryParam = {
         limit: limit.toString(),
-        placeType,
+        type: placeType,
         cursor,
       };
 

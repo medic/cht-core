@@ -58,7 +58,7 @@ describe('local place', () => {
       });
 
       it('returns null if the identified doc does not have a place type', async () => {
-        const doc = { type: 'not-place' };
+        const doc = { type: 'not-place', '_id': 'id' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
         isPlace.returns(false);
@@ -69,7 +69,7 @@ describe('local place', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid place.`)).to.be.true;
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -234,57 +234,67 @@ describe('local place', () => {
       let getPlaceTypes: SinonStub;
       let queryDocsByKeyInner: SinonStub;
       let queryDocsByKeyOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
 
       beforeEach(() => {
         queryDocsByKeyInner = sinon.stub();
         queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
         getPlaceTypes = sinon.stub(contactTypeUtils, 'getPlaceTypes').returns(placeType);
         settingsGetAll.returns(settings);
-        isPlace.returns(true);
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
       });
 
       it('returns a page of places', async () => {
         const doc = { type: 'place' };
         const docs = [doc, doc, doc];
-        queryDocsByKeyInner.resolves(docs);
         const expectedResult = {
           cursor: '3',
           data: docs
         };
+        fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Place.v1.getPage(localContext)(placeTypeQualifier, cursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
-        expect(settingsGetAll.callCount).to.equal(4);
+        expect(settingsGetAll.callCount).to.equal(1);
         expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([placeIdentifier], limit, Number(cursor))).to.be.true;
-        expect(isPlace.callCount).to.equal(3);
-        isPlace.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        expect(isPlace.notCalled).to.be.true;
       });
 
       it('returns a page of places when cursor is not null', async () => {
         const doc = { type: 'place' };
         const docs = [doc, doc, doc];
-        queryDocsByKeyInner.resolves(docs);
         const expectedResult = {
           cursor: '8',
           data: docs
         };
+        fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Place.v1.getPage(localContext)(placeTypeQualifier, notNullCursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
-        expect(settingsGetAll.callCount).to.equal(4);
+        expect(settingsGetAll.callCount).to.equal(1);
         expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([placeIdentifier], limit, Number(notNullCursor))).to.be.true;
-        expect(isPlace.callCount).to.equal(3);
-        isPlace.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        expect(isPlace.notCalled).to.be.true;
       });
 
       it('throws an error if place type is invalid/does not exist', async () => {
@@ -297,6 +307,8 @@ describe('local place', () => {
         expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
           .to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(fetchAndFilterInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.notCalled).to.be.true;
         expect(isPlace.notCalled).to.be.true;
       });
 
@@ -314,16 +326,18 @@ describe('local place', () => {
           expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
             .to.be.true;
           expect(queryDocsByKeyInner.notCalled).to.be.true;
+          expect(fetchAndFilterInner.notCalled).to.be.true;
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
           expect(isPlace.notCalled).to.be.true;
         });
       });
 
       it('returns empty array if places does not exist', async () => {
-        queryDocsByKeyInner.resolves([]);
         const expectedResult = {
           data: [],
           cursor
         };
+        fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Place.v1.getPage(localContext)(placeTypeQualifier, cursor, limit);
 
@@ -333,35 +347,12 @@ describe('local place', () => {
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([placeIdentifier], limit, Number(cursor))).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         expect(isPlace.notCalled).to.be.true;
-      });
-
-      it('returns page of places by refetching the database if the previous lot consisted on non-places', async () => {
-        const doc = { type: 'place' };
-        const docs = [doc, doc, doc];
-        queryDocsByKeyInner.resolves(docs);
-        isPlace.onFirstCall().returns(false);
-        isPlace.onSecondCall().returns(false);
-        isPlace.returns(true);
-        const expectedResult = {
-          data: docs,
-          cursor
-        };
-
-        const res = await Place.v1.getPage(localContext)(placeTypeQualifier, cursor, limit);
-
-        expect(res).to.deep.equal(expectedResult);
-        expect(settingsGetAll.callCount).to.equal(7);
-        expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
-        expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
-        ).to.be.true;
-        expect(queryDocsByKeyInner.callCount).to.be.equal(2);
-        expect(queryDocsByKeyInner.firstCall.args).to.deep.equal([[placeIdentifier], limit, Number(cursor)]);
-        expect(queryDocsByKeyInner.secondCall.args).to.deep.equal([[placeIdentifier], 4, 3]);
-        expect(isPlace.callCount).to.equal(6);
-        isPlace.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
       });
     });
   });

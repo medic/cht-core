@@ -169,7 +169,7 @@ describe('Place Controller', () => {
       beforeEach(() => {
         req = {
           query: {
-            placeType,
+            type: placeType,
             cursor,
             limit,
           }
@@ -193,7 +193,7 @@ describe('Place Controller', () => {
         await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.placeType)).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(places)).to.be.true;
@@ -238,7 +238,7 @@ describe('Place Controller', () => {
         await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.placeType)).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -254,7 +254,7 @@ describe('Place Controller', () => {
         await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.placeType)).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;

@@ -1,9 +1,9 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { deepCopy, fetchAndFilter, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
+import { deepCopy, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import { getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
+import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey} from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import { Contact } from '../libs/contact';
 import logger from '@medic/logger';
@@ -12,14 +12,16 @@ import { InvalidArgumentError } from '../libs/error';
 
 /** @internal */
 export namespace v1 {
-  const isPlace = (settings: SettingsService, doc: Nullable<Doc>, uuid = ''): doc is Place.v1.Place => {
+  const isPlace = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Place.v1.Place => {
     if (!doc) {
-      logger.warn(`No place found for identifier [${uuid}].`);
+      if (uuid) {
+        logger.warn(`No place found for identifier [${uuid}].`);
+      }
       return false;
     }
     const hasPlaceType = contactTypeUtils.isPlace(settings.getAll(), doc);
     if (!hasPlaceType) {
-      logger.warn(`Document [${uuid}] is not a valid place.`);
+      logger.warn(`Document [${doc._id}] is not a valid place.`);
       return false;
     }
     return true;
@@ -30,7 +32,7 @@ export namespace v1 {
     const getMedicDocById = getDocById(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Place.v1.Place>> => {
       const doc = await getMedicDocById(identifier.uuid);
-      const validPlace = isPlace(settings, doc, identifier.uuid);
+      const validPlace = isPlace(settings)(doc, identifier.uuid);
       return validPlace ? doc : null;
     };
   };
@@ -41,7 +43,7 @@ export namespace v1 {
     const getMedicDocsById = getDocsByIds(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Place.v1.PlaceWithLineage>> => {
       const [place, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
-      if (!isPlace(settings, place, identifier.uuid)) {
+      if (!isPlace(settings)(place, identifier.uuid)) {
         return null;
       }
       // Intentionally not further validating lineage. For passivity, lineage problems should not block retrieval.
@@ -82,13 +84,13 @@ export namespace v1 {
       }
 
       const getDocsByPageWithPlaceType = (
-        placeType: ContactTypeQualifier
-      ) => (limit: number, skip: number) => getDocsByPage([placeType.contactType], limit, skip);
+        limit: number,
+        skip: number
+      ) => getDocsByPage([placeType.contactType], limit, skip);
 
       return await fetchAndFilter(
-        getDocsByPageWithPlaceType(placeType),
-        isPlace,
-        settings,
+        getDocsByPageWithPlaceType,
+        isPlace(settings),
         limit
       )(limit, skip) as Page<Place.v1.Place>;
     };

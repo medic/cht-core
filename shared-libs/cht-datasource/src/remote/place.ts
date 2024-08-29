@@ -30,7 +30,7 @@ export namespace v1 {
   ): Promise<Page<Place.v1.Place>> => {
     const queryParams = {
       'limit': limit.toString(),
-      'placeType': placeType.contactType,
+      'type': placeType.contactType,
       ...(cursor ? { cursor } : {})
     };
     return getPlaces(remoteContext)(queryParams);

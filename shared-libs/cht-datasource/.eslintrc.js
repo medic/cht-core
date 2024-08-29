@@ -63,6 +63,7 @@ module.exports = {
           exemptedBy: ['inheritdoc', 'private', 'internal']
         }],
         ['jsdoc/check-tag-names']: ['error', { definedTags: ['typeParam']}],
+        ['jsdoc/empty-tags']: 0
       }
     }
   ]

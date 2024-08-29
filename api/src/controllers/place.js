@@ -32,7 +32,7 @@ module.exports = {
     getAll: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      const placeType = Qualifier.byContactType(req.query.placeType);
+      const placeType = Qualifier.byContactType(req.query.type);
       const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
 
       const docs = await getPageByType()( placeType, req.query.cursor, limit );

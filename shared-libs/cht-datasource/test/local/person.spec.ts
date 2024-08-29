@@ -58,7 +58,7 @@ describe('local person', () => {
       });
 
       it('returns null if the identified doc does not have a person type', async () => {
-        const doc = { type: 'not-person' };
+        const doc = { type: 'not-person', _id: '_id' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
         isPerson.returns(false);
@@ -69,7 +69,7 @@ describe('local person', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, doc)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid person.`)).to.be.true;
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -236,57 +236,67 @@ describe('local person', () => {
       let getPersonTypes: SinonStub;
       let queryDocsByKeyInner: SinonStub;
       let queryDocsByKeyOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
 
       beforeEach(() => {
         queryDocsByKeyInner = sinon.stub();
         queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
         getPersonTypes = sinon.stub(contactTypeUtils, 'getPersonTypes').returns(personType);
         settingsGetAll.returns(settings);
-        isPerson.returns(true);
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
       });
 
       it('returns a page of people', async () => {
         const doc = { type: 'person'};
         const docs = [doc, doc, doc];
-        queryDocsByKeyInner.resolves(docs);
         const expectedResult = {
           cursor: '3',
           data: docs
         };
+        fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Person.v1.getPage(localContext)(personTypeQualifier, cursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
-        expect(settingsGetAll.callCount).to.equal(4);
+        expect(settingsGetAll.callCount).to.equal(1);
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, Number(cursor))).to.be.true;
-        expect(isPerson.callCount).to.equal(3);
-        isPerson.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        expect(isPerson.notCalled).to.be.true;
       });
 
       it('returns a page of people when cursor is not null', async () => {
         const doc = { type: 'person'};
         const docs = [doc, doc, doc];
-        queryDocsByKeyInner.resolves(docs);
         const expectedResult = {
           cursor: '8',
           data: docs
         };
+        fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Person.v1.getPage(localContext)(personTypeQualifier, notNullCursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
-        expect(settingsGetAll.callCount).to.equal(4);
+        expect(settingsGetAll.callCount).to.equal(1);
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, Number(notNullCursor))).to.be.true;
-        expect(isPerson.callCount).to.equal(3);
-        isPerson.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        expect(isPerson.notCalled).to.be.true;
       });
 
       it('throws an error if person identifier is invalid/does not exist', async () => {
@@ -299,7 +309,8 @@ describe('local person', () => {
         expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
           .to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(isPerson.notCalled).to.be.true;
+        expect(fetchAndFilterInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.notCalled).to.be.true;
       });
 
       [
@@ -316,16 +327,18 @@ describe('local person', () => {
           expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
             .to.be.true;
           expect(queryDocsByKeyInner.notCalled).to.be.true;
+          expect(fetchAndFilterInner.notCalled).to.be.true;
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
           expect(isPerson.notCalled).to.be.true;
         });
       });
 
       it('returns empty array if people does not exist', async () => {
-        queryDocsByKeyInner.resolves([]);
         const expectedResult = {
           data: [],
           cursor
         };
+        fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Person.v1.getPage(localContext)(personTypeQualifier, cursor, limit);
 
@@ -335,35 +348,12 @@ describe('local person', () => {
         expect(
           queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
         ).to.be.true;
-        expect(queryDocsByKeyInner.calledOnceWithExactly([personIdentifier], limit, Number(cursor))).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         expect(isPerson.notCalled).to.be.true;
-      });
-
-      it('returns page of people by refetching the database if the previous lot consisted on non-persons', async () => {
-        const doc = { type: 'person'};
-        const docs = [doc, doc, doc];
-        queryDocsByKeyInner.resolves(docs);
-        isPerson.onFirstCall().returns(false);
-        isPerson.onSecondCall().returns(false);
-        isPerson.returns(true);
-        const expectedResult = {
-          data: docs,
-          cursor
-        };
-
-        const res = await Person.v1.getPage(localContext)(personTypeQualifier, cursor, limit);
-
-        expect(res).to.deep.equal(expectedResult);
-        expect(settingsGetAll.callCount).to.equal(7);
-        expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
-        expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
-        ).to.be.true;
-        expect(queryDocsByKeyInner.callCount).to.be.equal(2);
-        expect(queryDocsByKeyInner.firstCall.args).to.deep.equal([[personIdentifier], limit, Number(cursor)]);
-        expect(queryDocsByKeyInner.secondCall.args).to.deep.equal([[personIdentifier], 4, 3]);
-        expect(isPerson.callCount).to.equal(6);
-        isPerson.args.forEach((arg) => expect(arg).to.deep.equal([settings, doc]));
       });
     });
   });

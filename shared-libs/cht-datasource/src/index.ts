@@ -78,9 +78,9 @@ export const getDatasource = (ctx: DataContext) => {
          * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
          * @param limit the maximum number of place to return. Default is 100.
          * @returns a page of places for the provided specifications
-         * @throws Error if no type is provided or if the type is not for a place
-         * @throws Error if the provided limit is `<= 0`
-         * @throws Error if the provided cursor is not a valid page token or `null`
+         * @throws InvalidArgumentError if no type is provided or if the type is not for a place
+         * @throws InvalidArgumentError if the provided limit is `<= 0`
+         * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
          * @see {@link getByType} which provides the same data, but without having to manually account for paging
          */
         getPageByType: (
@@ -95,7 +95,7 @@ export const getDatasource = (ctx: DataContext) => {
          * Returns a generator for fetching all places with the given type.
          * @param placeType the type of place to return
          * @returns a generator for fetching all places with the given type
-         * @throws Error if no type if provided or if the type is not for a place
+         * @throws InvalidArgumentError if no type if provided or if the type is not for a place
          */
         getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType))
       },
@@ -123,9 +123,9 @@ export const getDatasource = (ctx: DataContext) => {
          * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
          * @param limit the maximum number of people to return. Default is 100.
          * @returns a page of people for the provided specifications
-         * @throws Error if no type is provided or if the type is not for a person
-         * @throws Error if the provided limit is `<= 0`
-         * @throws Error if the provided cursor is not a valid page token or `null`
+         * @throws InvalidArgumentError if no type is provided or if the type is not for a person
+         * @throws InvalidArgumentError if the provided limit is `<= 0`
+         * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
          * @see {@link getByType} which provides the same data, but without having to manually account for paging
          */
         getPageByType: (
@@ -140,7 +140,7 @@ export const getDatasource = (ctx: DataContext) => {
          * Returns a generator for fetching all people with the given type.
          * @param personType the type of people to return
          * @returns a generator for fetching all people with the given type
-         * @throws Error if no type is provided or if the type is not for a person
+         * @throws InvalidArgumentError if no type is provided or if the type is not for a person
          */
         getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
       }

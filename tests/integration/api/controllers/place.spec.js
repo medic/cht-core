@@ -129,7 +129,7 @@ describe('Place API', () => {
 
     it('throws 400 error when placeType is invalid', async () => {
       const queryParams = {
-        'placeType': invalidContactType
+        'type': invalidContactType
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
@@ -142,7 +142,7 @@ describe('Place API', () => {
 
     it('throws 400 error when limit is invalid', async () => {
       const queryParams = {
-        placeType,
+        type: placeType,
         limit: -1
       };
       const queryString = new URLSearchParams(queryParams).toString();
@@ -156,7 +156,7 @@ describe('Place API', () => {
 
     it('throws 400 error when cursor is invalid', async () => {
       const queryParams = {
-        placeType,
+        type: placeType,
         cursor: '-1'
       };
       const queryString = new URLSearchParams(queryParams).toString();

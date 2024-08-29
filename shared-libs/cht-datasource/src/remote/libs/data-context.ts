@@ -1,6 +1,7 @@
 import logger from '@medic/logger';
 import { DataContext } from '../../libs/data-context';
 import { AbstractDataContext, isString, Nullable } from '../../libs/core';
+import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
 export class RemoteDataContext extends AbstractDataContext {
@@ -48,6 +49,8 @@ export const getResource = (context: RemoteDataContext, path: string) => async <
     if (!response.ok) {
       if (response.status === 404) {
         return null;
+      } else if (response.status === 400) {
+        throw new InvalidArgumentError(response.statusText);
       }
       throw new Error(response.statusText);
     }
@@ -66,7 +69,9 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
   const params = new URLSearchParams(queryParams).toString();
   try {
     const response = await fetch(`${context.url}/${path}?${params}`);
-    if (!response.ok) {
+    if (response.status === 400) {
+      throw new InvalidArgumentError(response.statusText);
+    } else if (!response.ok) {
       throw new Error(response.statusText);
     }
 
