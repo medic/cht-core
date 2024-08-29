@@ -102,7 +102,7 @@ export class SnackbarComponent implements OnInit {
 }
 
 export interface Snackbar {
-  message: string;
+  message?: string;
   action?: {
     label: string;
     onClick?: () => void;

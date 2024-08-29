@@ -27,7 +27,7 @@ export interface GlobalState {
   };
   sidebarMenu: SidebarMenu;
   forms: null | Record<string, any>[];
-  lastChangedDoc: boolean;
+  lastChangedDoc: boolean | Record<string, any>;
   loadingContent: boolean;
   processingReportVerification: boolean;
   replicationStatus: Record<string, any>;
@@ -117,9 +117,6 @@ const _globalReducer = createReducer(
   on(Actions.clearFilters, (state, { payload: { skip } }) => {
     const newValue = skip && state.filters[skip] ? { [skip]: state.filters[skip] } : {};
     return { ...state, filters: newValue };
-  }),
-  on(Actions.setFilters, (state, { payload: { filters } }) => {
-    return { ...state, filters };
   }),
   on(Actions.setFilter, (state, { payload: { filter } }) => {
     return {

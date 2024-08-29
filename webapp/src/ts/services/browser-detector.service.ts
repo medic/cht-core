@@ -50,7 +50,7 @@ export class BrowserDetectorService {
   }
 
   public isUsingChtAndroid() {
-    return typeof this.androidAppVersion !== 'undefined';
+    return typeof this.androidAppVersion !== 'undefined' && this.androidAppVersion !== null;
   }
 
   public isUsingChtAndroidV1() {

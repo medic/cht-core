@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -55,6 +56,7 @@ describe('TasksComponent', () => {
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
+        MatIconModule,
       ],
       providers: [
         provideMockStore(),

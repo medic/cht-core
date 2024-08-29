@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { of, Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -57,7 +58,8 @@ describe('Analytics Filter Component', () => {
     await TestBed
       .configureTestingModule({
         imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } })
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatIconModule,
         ],
         declarations: [
           AnalyticsFilterComponent,

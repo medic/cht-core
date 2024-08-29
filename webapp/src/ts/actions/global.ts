@@ -1,7 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
 
 import { createSingleValueAction, createMultiValueAction } from '@mm-actions/actionUtils';
-import { SidebarMenu } from '@mm-components/sidebar-menu/sidebar-menu.component';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
@@ -14,7 +13,6 @@ export const Actions = {
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
   clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
-  setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
   clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
@@ -86,10 +84,6 @@ export class GlobalActions {
 
   setFilter(filter) {
     return this.store.dispatch(Actions.setFilter(filter));
-  }
-
-  setFilters(filters) {
-    return this.store.dispatch(Actions.setFilters(filters));
   }
 
   setSidebarFilter(sidebarFilter) {
@@ -213,7 +207,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
 
-  setSidebarMenu(sidebarMenu: SidebarMenu) {
+  setSidebarMenu(sidebarMenu) {
     return this.store.dispatch(Actions.setSidebarMenu(sidebarMenu));
   }
 
