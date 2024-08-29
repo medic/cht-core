@@ -77,7 +77,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
          * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
          * @param limit the maximum number of place to return. Default is 100.
-         * @returns a page of place for the provided specifications
+         * @returns a page of places for the provided specifications
          * @throws Error if no type is provided or if the type is not for a place
          * @throws Error if the provided limit is `<= 0`
          * @throws Error if the provided cursor is not a valid page token or `null`
