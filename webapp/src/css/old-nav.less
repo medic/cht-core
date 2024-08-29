@@ -1,4 +1,4 @@
-body .app-root.old-nav {
+.app-root.old-nav {
   &.messages {
     .header .tabs .selected {
       background-color: @messages-color;
@@ -49,10 +49,23 @@ body .app-root.old-nav {
 
   .header {
     display: block;
+    padding-top: 5px;
+
+    .mm-icon {
+      margin: 0 auto;
+      font-size: 1.5rem;
+    }
+
     .tabs {
       a {
         .mm-icon {
           display: block;
+          svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+            &, &:before {
+              height: 24px;
+              max-width: 24px;
+            }
+          }
         }
         &.selected {
           .button-label,
@@ -88,10 +101,14 @@ body .app-root.old-nav {
 }
 
 @media (max-width: @media-mobile) {
-  .old-nav {
+  .app-root.old-nav {
     .header {
       background-color: @top-header-color;
       position: relative;
+
+      .tabs {
+        padding: 0;
+      }
 
       .inner {
         height: @top-navbar-height;
