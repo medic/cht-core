@@ -102,7 +102,7 @@ const expectTasks = (doc, expectations) => {
 
 const processReportsAndSettings = async (reports, settings) => {
   const ids = reports.map(report => report._id);
-  await utils.updateSettings(settings, 'sentinel');
+  await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
   await utils.saveDocs(reports);
   await sentinelUtils.waitForSentinel(ids);
   return utils.getDocs(ids);

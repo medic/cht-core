@@ -23,7 +23,7 @@ describe('default_responses', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -51,7 +51,7 @@ describe('default_responses', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -86,7 +86,7 @@ describe('default_responses', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -121,7 +121,7 @@ describe('default_responses', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
