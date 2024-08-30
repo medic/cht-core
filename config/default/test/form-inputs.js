@@ -398,7 +398,7 @@ module.exports = {
     oneChildHealthyFacility: [
       ['alive_well'],
       Array(5).fill('no'),
-      ['1', '1', '2000-04-22', 'health_facility'],
+      ['1', '1', '2000-04-22', 'health_facility', 'vaginal'],
       ['alive_well', 'Baby-1', 'female', 'yes', '2500', 'yes', '45', 'bcg_and_birth_polio', 'yes', 'yes'].concat(Array(9).fill('no')),
       [],
       ['within_24_hrs'],
@@ -425,7 +425,7 @@ module.exports = {
     twoChildrenHealthy: [
       ['alive_well'],
       Array(5).fill('no'),
-      ['2', '2', '2000-04-22', 'health_facility'],
+      ['2', '2', '2000-04-22', 'health_facility', 'vaginal'],
       ['alive_well', 'Baby-1', 'female', 'yes', '2500', 'yes', '45', 'bcg_and_birth_polio', 'yes', 'yes'].concat(Array(9).fill('no')).concat(
         ['alive_well', 'Baby-2', 'female', 'yes', '2500', 'yes', '45', 'bcg_and_birth_polio', 'yes', 'yes'].concat(Array(9).fill('no'))
       ),
@@ -436,7 +436,7 @@ module.exports = {
     oneChildHealthyOneDeceasedOneStillbirth: [
       ['alive_well'],
       Array(5).fill('no'),
-      ['3', '1', '2000-04-22', 'health_facility'],
+      ['3', '1', '2000-04-22', 'health_facility', 'vaginal'],
       ['2000-04-22', 'health_facility', 'yes', '', '2000-04-23', 'home', 'no', ''],
       ['alive_well', 'Baby-1', 'female', 'yes', '2500', 'yes', '45', 'bcg_and_birth_polio', 'yes', 'yes'].concat(Array(9).fill('no')),
       [],
@@ -446,7 +446,7 @@ module.exports = {
     babyDeceased: (deliveryDate, motherOutcome) => [
       [motherOutcome],
       Array(5).fill('no'),
-      [1, 0, deliveryDate, 'health_facility'],
+      [1, 0, deliveryDate, 'health_facility', 'vaginal'],
       [deliveryDate, 'health_facility', 'yes', 'Baby Death Notes'],
       ['none', ''],
       [],
@@ -454,7 +454,7 @@ module.exports = {
     motherDeceased: deliveryDate => [
       ['deceased'],
       [deliveryDate, 'health_facility', 'yes', 'Additional Notes'],
-      [1, 1, deliveryDate, 'health_facility'],
+      [1, 1, deliveryDate, 'health_facility', 'vaginal'],
       ['alive_well', 'Baby Name', 'female', 'yes', 2000, 'yes', 50, 'bcg_and_birth_polio', ...Array(11).fill('no')],
       [],
       ['none', ''],
@@ -463,14 +463,14 @@ module.exports = {
     babyDeceased_motherDeceased: (deliveryDate) => [
       ['deceased'],
       [deliveryDate, 'health_facility', 'yes', 'Mother Death Notes'],
-      [1, 0, deliveryDate, 'health_facility'],
+      [1, 0, deliveryDate, 'health_facility', 'vaginal'],
       [deliveryDate, 'health_facility', 'yes', 'Baby Death Notes'],
       [],
     ],
     pncVisits: (deliveryDate, pncVisitsAttended, pncVisitsAdditional) => [
       ['alive_well'],
       Array(5).fill('no'),
-      [1, 1, deliveryDate, 'health_facility'],
+      [1, 1, deliveryDate, 'health_facility', 'vaginal'],
       ['alive_well', 'Baby Name', 'female', 'yes', 2000, 'yes', 50, 'bcg_and_birth_polio', 'yes', 'yes', ...Array(9).fill('no')],
       [],
       [pncVisitsAttended, pncVisitsAdditional],
