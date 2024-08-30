@@ -20,7 +20,7 @@ describe('Pregnancy related targets test', () => {
     await harness.clear();
     //await harness.setNow(now);
     //await harness.flush(1);
-    return await harness.loadForm('pregnancy');
+    // return await harness.loadForm('pregnancy');
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
