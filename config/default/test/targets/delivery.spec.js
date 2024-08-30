@@ -21,6 +21,7 @@ describe('Delivery in facility target tests', () => {
 
   it('Delivery in facility should be counted', async () => {
     await harness.setNow('2000-04-30');//10 weeks after LMP date
+    //let clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
     let facilityDeliveries = await harness.getTargets({ type: 'facility-deliveries' });
     expect(facilityDeliveries[0]).to.nested.not.include({ 'value.pass': 1 });
     expect(facilityDeliveries[0]).to.nested.not.include({ 'value.total': 1 });
@@ -37,6 +38,7 @@ describe('Delivery in facility target tests', () => {
 
   it('Delivery in home should not be counted as delivery in facility', async () => {
     await harness.setNow('2000-04-30');//10 weeks after LMP date
+    //let clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
 
     const delivery = await harness.fillForm('delivery', ...deliveryReportScenarios.oneChildHealthyHome);
     expect(delivery.errors).to.be.empty;

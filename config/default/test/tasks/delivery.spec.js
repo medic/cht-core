@@ -19,7 +19,6 @@ describe('Delivery tasks tests', () => {
     return await harness.stop();
   });
   beforeEach(async () => {
-    clock = sinon.useFakeTimers();
     await harness.clear();
     //await harness.setNow(now);
     //await harness.flush(1);
@@ -27,7 +26,7 @@ describe('Delivery tasks tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    clock.restore();
+    if (clock) {clock.restore();}
   });
 
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
@@ -54,7 +53,7 @@ describe('Delivery tasks tests', () => {
     for (const day of getTaskTestDays(70, MAX_DAYS_FOR_DELIVERY, deliveryTask, 7)) {
       await harness.setNow('1999-08-01');//LMP date
       await harness.flush(day);
-      clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
+      clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
 
       if (deliveryTaskDays.includes(day)) {
@@ -75,7 +74,7 @@ describe('Delivery tasks tests', () => {
     for (const day of getTaskTestDays(0, MAX_DAYS_FOR_DELIVERY, deliveryTask, 7)) {
       await harness.setNow('1999-08-01');//10 weeks after LMP date
       await harness.flush(day);
-      clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
+      clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
 
       if (deliveryTaskDays.includes(day) && cleared === false) {
@@ -103,7 +102,7 @@ describe('Delivery tasks tests', () => {
     for (const day of getTaskTestDays(70, MAX_DAYS_FOR_DELIVERY, deliveryTask, 7)) {
       await harness.setNow('1999-08-01');//10 weeks after LMP date
       await harness.flush(day);
-      clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
+      clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
       if (deliveryTaskDays.includes(day) && resolved === false) {
         expect(taskForDelivery.length).to.eq(1);//there is also a home-visit task
