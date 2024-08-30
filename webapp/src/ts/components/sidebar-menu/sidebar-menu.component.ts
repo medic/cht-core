@@ -20,8 +20,8 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 export class SidebarMenuComponent implements OnInit, OnDestroy {
   @Input() canLogOut: boolean = false;
   @ViewChild('sidebar') sidebar!: MatSidenav;
-  private subscriptions: Subscription = new Subscription();
   private globalActions: GlobalActions;
+  subscriptions: Subscription = new Subscription();
   replicationStatus;
   moduleOptions: MenuOption[] = [];
   secondaryOptions: MenuOption[] = [];
