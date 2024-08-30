@@ -102,7 +102,7 @@
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-things": "^0.2.0",
     "cht-conf": "^3.21.1",
-    "cht-conf-test-harness": "^4.0.1",
+    "cht-conf-test-harness": "^2.4.3",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",
     "csv": "^6.3.3",
