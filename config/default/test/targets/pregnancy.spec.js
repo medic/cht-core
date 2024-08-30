@@ -83,8 +83,8 @@ describe('Pregnancy related targets test', () => {
 
     expect(followupFormResult.errors).to.be.empty;
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
-      //await harness.setNow('1999-08-01')
-      //await harness.flush(day);
+      await harness.setNow('1999-08-01');
+      await harness.flush(day);
       clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-1+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -115,8 +115,8 @@ describe('Pregnancy related targets test', () => {
 
     expect(followupFormResult.errors).to.be.empty;
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
-      //await harness.setNow('1999-08-01')
-      //await harness.flush(day);
+      await harness.setNow('1999-08-01');
+      await harness.flush(day);
       clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -136,8 +136,8 @@ describe('Pregnancy related targets test', () => {
     expect(pregnancy.errors).to.be.empty;
 
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
-      //await harness.setNow('1999-08-01')
-      //await harness.flush(day);
+      await harness.setNow('1999-08-01');
+      await harness.flush(day);
       clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       const activePregnancies = await harness.getTargets({ type: 'active-pregnancies-1+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -162,8 +162,8 @@ describe('Pregnancy related targets test', () => {
     expect(pregnancy.errors).to.be.empty;
 
     for (const day of range(84, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 12 weeks after LMP date
-      //await harness.setNow('1999-08-01')
-      //await harness.flush(day);
+      await harness.setNow('1999-08-01');
+      await harness.flush(day);
       clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -208,8 +208,8 @@ describe('Pregnancy related targets test', () => {
       }
     }
     for (const day of range(20 * 7, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 20 weeks after LMP date
-      //await harness.setNow('1999-08-01')
-      //await harness.flush(day);
+      await harness.setNow('1999-08-01');
+      await harness.flush(day);
       clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
       expect(activePregnancies).to.have.property('length', 1);
@@ -256,8 +256,8 @@ describe('Pregnancy related targets test', () => {
       }
     }
     for (const day of range(28 * 7, MAX_DAYS_IN_PREGNANCY, 7)) { //starting from 28 weeks after LMP date
-      //await harness.setNow('1999-08-01')
-      //await harness.flush(day);
+      await harness.setNow('1999-08-01');
+      await harness.flush(day);
       clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       activePregnancies = await harness.getTargets({ type: 'active-pregnancies-8+-contacts' });
       expect(activePregnancies).to.have.property('length', 1);
