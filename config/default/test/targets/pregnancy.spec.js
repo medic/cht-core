@@ -6,7 +6,7 @@ const TestRunner = require('cht-conf-test-harness');
 const { MAX_DAYS_IN_PREGNANCY, range } = require('../test-helpers');
 const { pregnancyRegistrationScenarios, /* pregnancyHomeVisitScenarios */ } = require('../form-inputs');
 const harness = new TestRunner();
-let clock;
+// let clock;
 
 describe('Pregnancy related targets test', () => {
   before(async () => {
@@ -16,7 +16,7 @@ describe('Pregnancy related targets test', () => {
     return await harness.stop();
   });
   beforeEach(async () => {
-    clock = sinon.useFakeTimers();
+    // clock = sinon.useFakeTimers();
     await harness.clear();
     //await harness.setNow(now);
     //await harness.flush(1);
@@ -24,7 +24,7 @@ describe('Pregnancy related targets test', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    clock.restore();
+    // clock.restore();
   });
 
   it('active pregnancy target should show through pregnancy period', async () => {
@@ -34,7 +34,7 @@ describe('Pregnancy related targets test', () => {
     for (const day of range(70, MAX_DAYS_IN_PREGNANCY, 7)) {//check every 7 days
       await harness.setNow('1999-08-01');
       await harness.flush(day);
-      clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
+      // clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       const activePregnancies = await harness.getTargets({ type: 'active-pregnancies' });
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
