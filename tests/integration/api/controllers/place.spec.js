@@ -131,7 +131,7 @@ describe('Place API', () => {
       const responseCursor = responsePage.cursor;
 
       expect(responsePlaces).excludingEvery(['_rev', 'reported_date'])
-        .to.deep.equalInAnyOrder([place0, clinic1,, clinic2]);
+        .to.deep.equalInAnyOrder(expectedPlaces);
       expect(responseCursor).to.be.equal(null);
     });
 
