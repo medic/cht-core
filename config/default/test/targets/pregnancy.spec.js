@@ -32,8 +32,8 @@ describe('Pregnancy related targets test', () => {
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
     expect(pregnancy.errors).to.be.empty;
     for (const day of range(70, MAX_DAYS_IN_PREGNANCY, 7)) {//check every 7 days
-      //await harness.setNow('1999-08-01')
-      //await harness.flush(day);
+      await harness.setNow('1999-08-01')
+      await harness.flush(day);
       clock.setSystemTime(moment('1999-08-01').add(day, 'days').toDate());
       const activePregnancies = await harness.getTargets({ type: 'active-pregnancies' });
       expect(activePregnancies).to.have.property('length', 1);
