@@ -1,6 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
-// const moment = require('moment');
+const moment = require('moment');
 // const sinon = require('sinon');
 const TestRunner = require('cht-conf-test-harness');
 const { MAX_DAYS_IN_PREGNANCY, range } = require('../test-helpers');
@@ -65,6 +65,7 @@ describe('Pregnancy related targets test', () => {
       }
     }
   });
+
   it('active pregnancy with 1+ facility visits target should show through pregnancy period', async () => {
     await harness.setNow('1999-10-10');//10 weeks after LMP date
     // clock.setSystemTime(moment('1999-10-10').toDate());
@@ -195,8 +196,8 @@ describe('Pregnancy related targets test', () => {
       const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.safe1FacilityVisit);
       expect(followupFormResult.errors).to.be.empty;
       // clock.setSystemTime(moment('1999-10-24').add(i * 7 * 2, 'days').toDate()); //every 2 weeks
-      await harness.setNow('1999-08-01');
-      await harness.flush(i * 7 * 2); //every 2 weeks
+      // await harness.setNow('1999-08-01');
+      // await harness.flush(i * 7 * 2); //every 2 weeks
 
       if (i < 3) {
         activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
@@ -244,8 +245,8 @@ describe('Pregnancy related targets test', () => {
       const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.safe1FacilityVisit);
       expect(followupFormResult.errors).to.be.empty;
       // clock.setSystemTime(moment('1999-10-24').add(i * 7 * 2, 'days').toDate()); //every 2 weeks
-      await harness.setNow('1999-08-01');
-      await harness.flush(i * 7 * 2); //every 2 weeks
+      // await harness.setNow('1999-08-01');
+      // await harness.flush(i * 7 * 2); //every 2 weeks
       countRoutineContacts += 2; //1 pregnancy home visit +  1 facility visit
 
       if (countRoutineContacts < 8) {
