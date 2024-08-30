@@ -45,6 +45,7 @@ import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -83,6 +84,7 @@ describe('AppComponent', () => {
   let chtDatasourceService;
   let analyticsModulesService;
   let trainingCardsService;
+  let updateServiceWorkerService;
   // End Services
 
   let globalActions;
@@ -117,7 +119,11 @@ describe('AppComponent', () => {
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = {
+      show: sinon.stub().returns({
+        afterClosed: sinon.stub().returns(of())
+      })
+    };
     browserDetectorService = { isUsingOutdatedBrowser: sinon.stub().returns(false) };
     chtDatasourceService = { isInitialized: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
@@ -165,6 +171,7 @@ describe('AppComponent', () => {
     };
     telemetryService = { record: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
+    updateServiceWorkerService = { update: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -192,7 +199,7 @@ describe('AppComponent', () => {
           { provide: AuthService, useValue: authService },
           { provide: ResourceIconsService, useValue: resourceIconsService },
           { provide: ChangesService, useValue: changesService },
-          { provide: UpdateServiceWorkerService, useValue: {} },
+          { provide: UpdateServiceWorkerService, useValue: updateServiceWorkerService },
           { provide: LocationService, useValue: locationService },
           { provide: ModalService, useValue: modalService },
           { provide: BrowserDetectorService, useValue: browserDetectorService},
@@ -260,6 +267,19 @@ describe('AppComponent', () => {
     expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
     expect(component.isSidebarFilterOpen).to.be.false;
+    expect(updateServiceWorkerService.update.callCount).to.equal(1);
+  });
+
+  it('should show reload popup when service worker is updated', async () => {
+    await getComponent();
+    await component.setupPromise;
+
+    expect(updateServiceWorkerService.update.callCount).to.equal(1);
+    const callback = updateServiceWorkerService.update.args[0][0];
+    callback();
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
+
   });
 
   it('should display browser compatibility modal if using outdated chrome browser', async () => {

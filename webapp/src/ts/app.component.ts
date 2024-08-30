@@ -355,6 +355,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private watchDDocChanges() {
+    this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
+
     this.changesService.subscribe({
       key: 'ddoc',
       filter: (change) => {
