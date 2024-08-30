@@ -16,6 +16,7 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -24,6 +25,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private messagesActions: MessagesActions;
   private destroyed = false;
+  readonly buttonType = ButtonType;
 
   subscriptions: Subscription = new Subscription();
   fastActionList?: FastAction[];
@@ -142,10 +144,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.fastActionList = await this.fastActionButtonService.getMessageActions({
       callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent),
     });
-  }
-
-  getFastActionButtonType() {
-    return this.fastActionButtonService.getButtonTypeForContentList();
   }
 
   private openSendMessageModal(modalService:ModalService, event) {
