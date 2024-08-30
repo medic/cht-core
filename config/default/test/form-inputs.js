@@ -425,7 +425,7 @@ module.exports = {
     twoChildrenHealthy: [
       ['alive_well'],
       Array(5).fill('no'),
-      ['2', '2', '2000-04-22', 'health_facility', 'vaginal'],
+      ['2', '2', '2000-04-22', 'health_facility'],
       ['alive_well', 'Baby-1', 'female', 'yes', '2500', 'yes', '45', 'bcg_and_birth_polio', 'yes', 'yes'].concat(Array(9).fill('no')).concat(
         ['alive_well', 'Baby-2', 'female', 'yes', '2500', 'yes', '45', 'bcg_and_birth_polio', 'yes', 'yes'].concat(Array(9).fill('no'))
       ),
