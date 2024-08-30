@@ -109,7 +109,7 @@ export class GlobalEffects {
     );
   }, { dispatch: false });
 
-  openSidebarMenu$ = createEffect(
+  openSidebarMenu = createEffect(
     ():any => this.actions$.pipe(
       ofType(GlobalActionsList.openSidebarMenu),
       tap(() => this.globalActions.setSidebarMenu({ isOpen: true })),
@@ -117,7 +117,7 @@ export class GlobalEffects {
     { dispatch: false }
   );
 
-  closeSidebarMenu$ = createEffect(
+  closeSidebarMenu = createEffect(
     ():any => this.actions$.pipe(
       ofType(GlobalActionsList.closeSidebarMenu),
       tap(() => this.globalActions.setSidebarMenu({ isOpen: false })),

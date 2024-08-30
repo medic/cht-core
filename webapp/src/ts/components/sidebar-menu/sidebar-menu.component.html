@@ -41,6 +41,7 @@
 
             <div *ngIf="replicationStatus.lastSuccessTo" class="last-sync">
               <span>{{ 'sync.last_success' | translate }}</span>
+              <!-- The tabindex=0 prevents showing the tooltip when menu opens in mobile devices -->
               <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate" tabindex="0"></span>
             </div>
           </div>
