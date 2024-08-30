@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -33,7 +33,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
   error = false;
   trackPerformance;
   userLineageLevel;
-  fastActionButtonType;
 
   constructor(
     private router: Router,
@@ -46,7 +45,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private responsiveService: ResponsiveService,
     private performanceService: PerformanceService,
     private extractLineageService: ExtractLineageService,
-    private changeDetectorRef: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -58,8 +56,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
-    this.getFastActionButtonType();
-    this.subscribeToResponsiveChanges();
   }
 
   ngOnDestroy(): void {
@@ -96,14 +92,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
       });
     });
     this.subscriptions.add(conversations$);
-  }
-
-  private subscribeToResponsiveChanges() {
-    const responsiveSubscription = this.responsiveService.viewportChanged$.subscribe(() => {
-      this.getFastActionButtonType();
-      this.changeDetectorRef.detectChanges();
-    });
-    this.subscriptions.add(responsiveSubscription);
   }
 
   private displayFirstConversation(conversations: Record<string, any>[] = []) {
@@ -157,7 +145,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   getFastActionButtonType() {
-    this.fastActionButtonType = this.fastActionButtonService.getButtonTypeForContentList();
+    return this.fastActionButtonService.getButtonTypeForContentList();
   }
 
   private openSendMessageModal(modalService:ModalService, event) {

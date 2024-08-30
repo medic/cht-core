@@ -6,7 +6,6 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
-import { Subject } from 'rxjs';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -63,7 +62,6 @@ describe('Reports Component', () => {
   let store;
   let route;
   let router;
-  let viewportSubject;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -107,11 +105,7 @@ describe('Reports Component', () => {
       isOnlineOnly: sinon.stub().returns(false)
     };
     datePipe = { transform: sinon.stub() };
-    viewportSubject = new Subject();
-    responsiveService = {
-      isMobile: sinon.stub(),
-      viewportChanged$: viewportSubject.asObservable()
-    };
+    responsiveService = { isMobile: sinon.stub() };
     modalService = { show: sinon.stub() };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
@@ -219,7 +213,7 @@ describe('Reports Component', () => {
     expect(setDefaultFacilityFilterSpy.notCalled).to.be.true;
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
-    expect(spySubscriptionsAdd.callCount).to.equal(5);
+    expect(spySubscriptionsAdd.callCount).to.equal(4);
   });
 
   it('should handle error when UserContactService throws', async () => {
