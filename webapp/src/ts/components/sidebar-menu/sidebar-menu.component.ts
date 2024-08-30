@@ -160,8 +160,8 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
 interface MenuOption {
   icon: string;
   translationKey: string;
-  routerLink?: string | undefined;
-  hasPermissions?: string | undefined;
+  routerLink?: string;
+  hasPermissions?: string;
   canDisplay?: boolean;
   click?: () => void;
 }
