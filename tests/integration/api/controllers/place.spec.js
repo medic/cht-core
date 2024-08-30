@@ -23,6 +23,26 @@ describe('Place API', () => {
     },
   });
   const placeType = 'clinic';
+  const clinic1 = utils.deepFreeze(placeFactory.place().build({
+    parent: {
+      _id: place1._id,
+      parent: {
+        _id: place2._id
+      }
+    },
+    type: placeType,
+    contact: {}
+  }));
+  const clinic2 = utils.deepFreeze(placeFactory.place().build({
+    parent: {
+      _id: place1._id,
+      parent: {
+        _id: place2._id
+      }
+    },
+    type: placeType,
+    contact: {}
+  }));
 
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
@@ -43,9 +63,10 @@ describe('Place API', () => {
     roles: ['chw']
   }));
   const dataContext = getRemoteDataContext(utils.getOrigin());
+  const expectedPlaces = [place0, clinic1, clinic2];
 
   before(async () => {
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -100,6 +121,8 @@ describe('Place API', () => {
 
   describe('GET /api/v1/place', async () => {
     const getPage = Place.v1.getPage(dataContext);
+    const limit = 2;
+    const cursor = null;
     const invalidContactType = 'invalidPlace';
 
     it('returns a page of places for no limit and cursor passed', async () => {
@@ -107,8 +130,22 @@ describe('Place API', () => {
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePlaces).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder([place0]);
+      expect(responsePlaces).excludingEvery(['_rev', 'reported_date'])
+        .to.deep.equalInAnyOrder([place0, clinic1,, clinic2]);
       expect(responseCursor).to.be.equal(null);
+    });
+
+    it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {
+      const firstPage = await getPage(Qualifier.byContactType(placeType), cursor, limit);
+      const secondPage = await getPage(Qualifier.byContactType(placeType), firstPage.cursor, limit);
+
+      const allPeople = [...firstPage.data, ...secondPage.data];
+
+      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
+      expect(firstPage.data.length).to.be.equal(2);
+      expect(secondPage.data.length).to.be.equal(1);
+      expect(firstPage.cursor).to.be.equal('2');
+      expect(secondPage.cursor).to.be.equal(null);
     });
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {
@@ -172,9 +209,6 @@ describe('Place API', () => {
   });
 
   describe('Place.v1.getAll', async () => {
-    // TODO: this test is a bit non-covering of the actual generator functionality
-    // as only one place could be generated with the same type from the placeFactory
-    // figure out a way to generate more places with the same type
     it('fetches all data by iterating through generator', async () => {
       const docs = [];
 
@@ -184,7 +218,7 @@ describe('Place API', () => {
         docs.push(doc);
       }
 
-      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equal([place0]);
+      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
     });
   });
 });

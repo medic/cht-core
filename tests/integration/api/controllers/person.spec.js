@@ -231,8 +231,6 @@ describe('Person API', () => {
   });
 
   describe('Person.v1.getAll', async () => {
-    const personType = 'person';
-
     it('fetches all data by iterating through generator', async () => {
       const docs = [];
 

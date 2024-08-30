@@ -55,12 +55,12 @@ export const queryDocsByKey = (
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip });
 
 /**
- * @internal
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
  * and the filterFunction to validate the returned documents are all of type T.
  * The length of the page's data array is guaranteed to equal limit unless there is no more data to retrieve
  * from the database. This function will try to minimize the number of getFunction calls required to find
  * the necessary data by over-fetching during followup calls if some retrieved docs are rejected by the filterFunction.
+ * @internal
  */
 export const fetchAndFilter = <T extends Doc>(
   getFunction: (limit: number, skip: number) => Promise<Nullable<T>[]>,
