@@ -24,7 +24,7 @@ describe('Pregnancy form tests', () => {
     expect(result.report.fields).to.deep.include({
       patient_name: 'Patient Name',
       t_danger_signs_referral_follow_up: 'yes',
-      t_danger_signs_referral_follow_up_date: '2000-01-04',
+      t_danger_signs_referral_follow_up_date: '2000-01-04T00:00:00.000-00:00',
       t_pregnancy_follow_up: 'yes',
       t_pregnancy_follow_up_date: '2000-01-20',
       edd_8601: '2000-08-07',
