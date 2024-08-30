@@ -63,7 +63,7 @@
     "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
     "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "publish-for-testing": "./scripts/build/build-service-images.sh && mkdir -p images && node scripts/build/cli publishServiceImages && node ./scripts/build/ddoc-compile.js staging && node ./scripts/build/push-ddoc-to-staging.js",
-    "test-config-default": "cd config/default && npm ci && npm run test",
+    "test-config-default": "cd config/default && npm run test",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js"
   },
   "devDependencies": {
@@ -98,8 +98,11 @@
     "chai": "^4.3.8",
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.1.0",
+    "chai-like": "^1.1.1",
     "chai-shallow-deep-equal": "^1.4.6",
+    "chai-things": "^0.2.0",
     "cht-conf": "^3.21.1",
+    "cht-conf-test-harness": "^4.0.1",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",
     "csv": "^6.3.3",
