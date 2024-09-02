@@ -98,6 +98,10 @@
       .button-text-inverse;
     }
   }
+
+  .loading-status {
+    margin: 10px;
+  }
 }
 
 @media (max-width: @media-mobile) {
@@ -137,8 +141,13 @@
         top: 115px;
       }
     }
+
     .fast-action-trigger:not(.embed-fast-action) {
       bottom: 17px;
+    }
+
+    .targets .target:last-child {
+      margin-bottom: 10px;
     }
   }
 }
@@ -164,6 +173,10 @@
       .inner {
         height: @top-navbar-height;
       }
+    }
+
+    .targets .target:last-child {
+      margin-bottom: 10px;
     }
   }
 }
