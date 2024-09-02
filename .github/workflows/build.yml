@@ -12,7 +12,7 @@ env:
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
   ECR_PUBLIC_REPO: 'public.ecr.aws/medic'
-  COUCHDB_LOG_LEVEL: 'debug'
+  COUCHDB_LOG_LEVEL: 'debug'  
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
@@ -20,73 +20,73 @@ env:
 
 jobs:
 
-  # build:
-  #   name: Compile the app
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  build:
+    name: Compile the app
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
-  #   steps:
-  #   - name: Install bats
-  #     run: |
-  #       sudo apt-get update
-  #       sudo apt-get install -y bats
+    steps:
+    - name: Install bats
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bats
 
-  #   - name: Login to Docker Hub
-  #     uses: docker/login-action@v3
-  #     with:
-  #       username: ${{ env.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ env.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Configure AWS credentials
-  #     uses: aws-actions/configure-aws-credentials@v4
-  #     with:
-  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #       aws-region: eu-west-2
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Login to Amazon ECR
-  #     id: login-ecr
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: aws-actions/amazon-ecr-login@v2
-  #     with:
-  #       mask-password: 'true'
+    - name: Login to Amazon ECR
+      id: login-ecr
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        mask-password: 'true'
 
-  #   - uses: actions/checkout@v4
-  #   - name: Use Node.js ${{ env.NODE_VERSION }}
-  #     uses: actions/setup-node@v4
-  #     with:
-  #       node-version: ${{ env.NODE_VERSION }}
-  #   - name: Couch Start
-  #     run: ./scripts/ci/couch-start
-  #   - name: Create logs directory
-  #     run: mkdir tests/logs
-  #   - run: npm ci
-  #   - name: Compile
-  #     run: npm run ci-compile
-  #   - name: Setup QEMU
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: docker/setup-qemu-action@v3
-  #   - name: Setup Buildx
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: docker/setup-buildx-action@v3
-  #   - name: Publish for testing
-  #     run: npm run publish-for-testing
-  #   - name: Upload docker images as artifacts
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: cht-images
-  #       path: images/
-  #     if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-  #   - name: Search-Replace PR Body
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR && github.event_name == 'pull_request' }}
-  #     uses: ./.github/actions/update-staging-url-placeholders
-  #     with:
-  #       token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - name: Couch Start
+      run: ./scripts/ci/couch-start
+    - name: Create logs directory
+      run: mkdir tests/logs
+    - run: npm ci
+    - name: Compile
+      run: npm run ci-compile
+    - name: Setup QEMU
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: docker/setup-qemu-action@v3
+    - name: Setup Buildx
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: docker/setup-buildx-action@v3
+    - name: Publish for testing
+      run: npm run publish-for-testing
+    - name: Upload docker images as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: cht-images
+        path: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Search-Replace PR Body
+      if: ${{ env.INTERNAL_CONTRIBUTOR && github.event_name == 'pull_request' }}
+      uses: ./.github/actions/update-staging-url-placeholders
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
   config-tests:
-    # needs: build
+    needs: build
     name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -107,393 +107,393 @@ jobs:
     - name: Run Tests
       run: npm run ${{ matrix.cmd }}
 
-  # test-cht-form:
-  #   needs: build
-  #   runs-on: ubuntu-22.04
+  test-cht-form:
+    needs: build
+    runs-on: ubuntu-22.04
 
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - run: sudo apt-get install -y xsltproc
-  #     - run: npm ci
-  #     - name: Build cht-form Web Component
-  #       run: npm run build-cht-form
-  #     - name: Run Tests
-  #       run: npm run integration-cht-form
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: sudo apt-get install -y xsltproc
+      - run: npm ci
+      - name: Build cht-form Web Component
+        run: npm run build-cht-form
+      - name: Run Tests
+        run: npm run integration-cht-form
 
-  # tests-k3d:
-  #   needs: build
-  #   name: ${{ matrix.cmd }}
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  tests-k3d:
+    needs: build
+    name: ${{ matrix.cmd }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       cmd: ['ci-integration-all-k3d', 'ci-integration-sentinel-k3d']
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['ci-integration-all-k3d', 'ci-integration-sentinel-k3d']
 
-  #   steps:
-  #     - name: Login to Docker Hub
-  #       uses: docker/login-action@v3
-  #       with:
-  #         username: ${{ env.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #         aws-region: eu-west-2
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #     - name: Login to Amazon ECR
-  #       id: login-ecr
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       uses: aws-actions/amazon-ecr-login@v2
-  #       with:
-  #         mask-password: 'true'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
 
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/checkout@v4
 
-  #     - name: Download docker images artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: cht-images
-  #         path: images/
-  #       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-  #     - name: Load docker images
-  #       run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
-  #       working-directory: images/
-  #       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      - name: Download docker images artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cht-images
+          path: images/
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      - name: Load docker images
+        run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+        working-directory: images/
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-  #     - run: mkdir tests/logs
-  #     - run: python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-  #     - run: npm install -g cht-conf
-  #     - run: npm ci
+      - run: mkdir tests/logs
+      - run: python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+      - run: npm install -g cht-conf
+      - run: npm ci
 
-  #     - uses: nolar/setup-k3d-k3s@v1
-  #     - uses: azure/setup-helm@v4.1.0
-  #     - uses: azure/setup-kubectl@v4
-  #     - name: Run tests
-  #       run: npm run ${{ matrix.cmd }}
-  #     - name: Archive Results
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ${{ matrix.cmd }}
-  #         path: |
-  #           allure-results
-  #           allure-report
-  #           tests/logs
-  #           tests/results/
-  #       if: ${{ failure() }}
+      - uses: nolar/setup-k3d-k3s@v1
+      - uses: azure/setup-helm@v4.1.0
+      - uses: azure/setup-kubectl@v4
+      - name: Run tests
+        run: npm run ${{ matrix.cmd }}
+      - name: Archive Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.cmd }}
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}
 
-  # translations:
-  #   needs: build
-  #   name: Lint translations
-  #   runs-on: ubuntu-22.04
-  #   strategy:
-  #     fail-fast: false
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - run: npm ci
-  #     - run: npm run lint-translations
+  translations:
+    needs: build
+    name: Lint translations
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - run: npm run lint-translations
 
-  # tests:
-  #   needs: build
-  #   name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  tests:
+    needs: build
+    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
     
-  #   env:
-  #     CHROME_VERSION: ${{ matrix.chrome-version }}
-  #     JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
+    env:
+      CHROME_VERSION: ${{ matrix.chrome-version }}
+      JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
-  #       chrome-version: ['90', 'latest']
-  #       suite: [all]
-  #       include:
-  #         - cmd: ci-webdriver-default
-  #           suite: core
-  #           chrome-version: 90
-  #         - cmd: ci-webdriver-default
-  #           suite: core
-  #           chrome-version: latest
-  #         - cmd: ci-webdriver-default
-  #           suite: data
-  #         - cmd: ci-webdriver-default
-  #           suite: enketo
-  #           chrome-version: 90
-  #         - cmd: ci-webdriver-default
-  #           suite: enketo
-  #           chrome-version: latest
-  #         - cmd: ci-webdriver-default
-  #           suite: lowLevel
-  #         - cmd: ci-webdriver-default
-  #           suite: workflows
-  #       exclude: # temporary until all suites run on Chrome 90
-  #         - cmd: ci-integration-all
-  #           chrome-version: 90
-  #         - cmd: ci-integration-sentinel
-  #           chrome-version: 90
-  #         - cmd: ci-webdriver-default-mobile
-  #           chrome-version: 90
-  #   steps:
-  #   - name: Login to Docker Hub
-  #     uses: docker/login-action@v3
-  #     with:
-  #       username: ${{ env.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
+        chrome-version: ['90', 'latest']
+        suite: [all]
+        include:
+          - cmd: ci-webdriver-default
+            suite: core
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            suite: core
+            chrome-version: latest
+          - cmd: ci-webdriver-default
+            suite: data
+          - cmd: ci-webdriver-default
+            suite: enketo
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            suite: enketo
+            chrome-version: latest
+          - cmd: ci-webdriver-default
+            suite: lowLevel
+          - cmd: ci-webdriver-default
+            suite: workflows
+        exclude: # temporary until all suites run on Chrome 90
+          - cmd: ci-integration-all
+            chrome-version: 90
+          - cmd: ci-integration-sentinel
+            chrome-version: 90
+          - cmd: ci-webdriver-default-mobile
+            chrome-version: 90
+    steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ env.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Configure AWS credentials
-  #     uses: aws-actions/configure-aws-credentials@v4
-  #     with:
-  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #       aws-region: eu-west-2
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Login to Amazon ECR
-  #     id: login-ecr
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: aws-actions/amazon-ecr-login@v2
-  #     with:
-  #       mask-password: 'true'
+    - name: Login to Amazon ECR
+      id: login-ecr
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        mask-password: 'true'
 
-  #   - name: Use Node.js ${{ env.NODE_VERSION }}
-  #     uses: actions/setup-node@v4
-  #     with:
-  #       node-version: ${{ env.NODE_VERSION }}
-  #   - uses: actions/checkout@v4
-  #   - name: Download docker images artifacts
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: cht-images
-  #       path: images/
-  #     if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-  #   - name: Load docker images
-  #     run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
-  #     working-directory: images/
-  #     if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - uses: actions/checkout@v4
+    - name: Download docker images artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: cht-images
+        path: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Load docker images
+      run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+      working-directory: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-  #   - name: Create logs directory
-  #     run: mkdir tests/logs
-  #   - name: Install pyxform
-  #     run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-  #   - name: Install cht-conf
-  #     run:  npm install -g cht-conf
-  #   - run: npm ci
-  #   - name: Fetch allure history
-  #     uses: actions/checkout@v4
-  #     with:
-  #       repository: 'medic/build-history-data'
-  #       path: 'build-history-data'
-  #       persist-credentials: false
-  #   - name: Copy allure history
-  #     run: |
-  #       mkdir -p allure-results/history
-  #       cp -r build-history-data/cht-core/allure/${{ env.JOB_NAME }}/allure-report/history allure-results | true
-  #   - name: Install Chrome 90
-  #     if: ${{matrix.chrome-version=='90'}}
-  #     run: |
-  #       wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
-  #       sudo dpkg -i "google-chrome-stable_current_amd64.deb"
-  #       npm install chromedriver@^90.0.1
-  #   - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
-  #     run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
+    - name: Create logs directory
+      run: mkdir tests/logs
+    - name: Install pyxform
+      run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+    - name: Install cht-conf
+      run:  npm install -g cht-conf
+    - run: npm ci
+    - name: Fetch allure history
+      uses: actions/checkout@v4
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data'
+        persist-credentials: false
+    - name: Copy allure history
+      run: |
+        mkdir -p allure-results/history
+        cp -r build-history-data/cht-core/allure/${{ env.JOB_NAME }}/allure-report/history allure-results | true
+    - name: Install Chrome 90
+      if: ${{matrix.chrome-version=='90'}}
+      run: |
+        wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i "google-chrome-stable_current_amd64.deb"
+        npm install chromedriver@^90.0.1
+    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
+      run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
-  #   - name: Fetch allure history
-  #     if: always()
-  #     uses: actions/checkout@v4
-  #     with:
-  #       repository: 'medic/build-history-data'
-  #       path: 'build-history-data-new'
-  #       persist-credentials: false
-  #   - name: Copy new allure history
-  #     if: always()
-  #     run: |
-  #       mkdir -p build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/history
-  #       cp -r allure-report/history build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/allure-report | true
-  #   - name: Upload allure report history
-  #     if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-  #     continue-on-error: true # don't fail the build if git push fails
-  #     uses: actions-js/push@master
-  #     with:
-  #       github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-  #       directory: 'build-history-data-new'
-  #       repository: 'medic/build-history-data'
-  #       force: true
-  #   - name: Fetch report repo
-  #     if: always()
-  #     uses: actions/checkout@v4
-  #     with:
-  #       repository: 'medic/build-history'
-  #       path: 'build-history'
-  #       persist-credentials: false
-  #   - name: Copy new report
-  #     if: always()
-  #     run: |
-  #       mkdir -p build-history/cht-core/allure/${{ env.JOB_NAME }}
-  #       cp -r allure-report build-history/cht-core/allure/${{ env.JOB_NAME }} | true
-  #   - name: Upload allure report
-  #     if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-  #     continue-on-error: true # don't fail the build if git push fails
-  #     uses: actions-js/push@master
-  #     with:
-  #       github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-  #       directory: 'build-history'
-  #       repository: 'medic/build-history'
-  #       force: true
-  #   - name: Archive Results
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: ${{ env.JOB_NAME }}
-  #       path: |
-  #         allure-results
-  #         allure-report
-  #         tests/logs
-  #         tests/results/
-  #     if: ${{ failure() }}
+    - name: Fetch allure history
+      if: always()
+      uses: actions/checkout@v4
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data-new'
+        persist-credentials: false
+    - name: Copy new allure history
+      if: always()
+      run: |
+        mkdir -p build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/allure-report | true
+    - name: Upload allure report history
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+      continue-on-error: true # don't fail the build if git push fails
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history-data-new'
+        repository: 'medic/build-history-data'
+        force: true
+    - name: Fetch report repo
+      if: always()
+      uses: actions/checkout@v4
+      with:
+        repository: 'medic/build-history'
+        path: 'build-history'
+        persist-credentials: false
+    - name: Copy new report
+      if: always()
+      run: |
+        mkdir -p build-history/cht-core/allure/${{ env.JOB_NAME }}
+        cp -r allure-report build-history/cht-core/allure/${{ env.JOB_NAME }} | true
+    - name: Upload allure report
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+      continue-on-error: true # don't fail the build if git push fails
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history'
+        repository: 'medic/build-history'
+        force: true
+    - name: Archive Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.JOB_NAME }}
+        path: |
+          allure-results
+          allure-report
+          tests/logs
+          tests/results/
+      if: ${{ failure() }}
 
-  # publish:
-  #   needs: [tests, config-tests, test-cht-form, translations]
-  #   name: Publish branch build
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  publish:
+    needs: [tests, config-tests, test-cht-form, translations]
+    name: Publish branch build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
     
-  #   if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
 
-  #   steps:
-  #   - name: Install regctl
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: regclient/actions/regctl-installer@main
+    steps:
+    - name: Install regctl
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: regclient/actions/regctl-installer@main
 
-  #   - name: Configure AWS credentials
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: aws-actions/configure-aws-credentials@v4
-  #     with:
-  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #       aws-region: eu-west-2
-  #   - name: Login to Amazon ECR
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     id: login-ecr
-  #     uses: aws-actions/amazon-ecr-login@v2
-  #     with:
-  #       mask-password: 'true'
+    - name: Configure AWS credentials
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+    - name: Login to Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        mask-password: 'true'
 
-  #   - name: Configure AWS credentials Public
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: aws-actions/configure-aws-credentials@v4
-  #     with:
-  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #       aws-region: us-east-1
-  #   - name: Login to Public Amazon ECR
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     id: login-ecr-public
-  #     uses: aws-actions/amazon-ecr-login@v2
-  #     with:
-  #       registry-type: public
-  #       mask-password: 'true'
+    - name: Configure AWS credentials Public
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Public Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registry-type: public
+        mask-password: 'true'
 
-  #   - uses: actions/checkout@v4
-  #   - name: Publish
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     run: |
-  #       npm ci
-  #       cd scripts/ci
-  #       node ./publish.js
-  #       node ./tag-docker-images.js
+    - uses: actions/checkout@v4
+    - name: Publish
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      run: |
+        npm ci
+        cd scripts/ci
+        node ./publish.js
+        node ./tag-docker-images.js
 
-  # publish-generated-docs:
-  #   needs: [publish]
-  #   name: Publish generated docs
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 5
-  #   if: ${{ github.event_name != 'pull_request' }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - run: npm ci
-  #     - name: Generate TypeDoc
-  #       run: npm run --prefix shared-libs/cht-datasource gen-docs
-  #     - name: Main Branch Only - Deploy to GH pages
-  #       uses: peaceiris/actions-gh-pages@v4
-  #       if: github.ref == 'refs/heads/master'
-  #       with:
-  #         personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
-  #         external_repository: medic/cht-datasource
-  #         publish_dir: ./shared-libs/cht-datasource/docs
-  #         user_name: medic-ci
-  #         user_email: medic-ci@github
-  #         publish_branch: main
+  publish-generated-docs:
+    needs: [publish]
+    name: Publish generated docs
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - name: Generate TypeDoc
+        run: npm run --prefix shared-libs/cht-datasource gen-docs
+      - name: Main Branch Only - Deploy to GH pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/master'
+        with:
+          personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
+          external_repository: medic/cht-datasource
+          publish_dir: ./shared-libs/cht-datasource/docs
+          user_name: medic-ci
+          user_email: medic-ci@github
+          publish_branch: main
 
-  # upgrade:
-  #   needs: [publish]
-  #   name: Upgrade from ${{ matrix.version }}
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  upgrade:
+    needs: [publish]
+    name: Upgrade from ${{ matrix.version }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
-  #   if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       version: [ '4.2.4', 'latest' ]
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '4.2.4', 'latest' ]
 
-  #   steps:
-  #     - name: Configure AWS credentials Public
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #         aws-region: us-east-1
-  #     - name: Login to Public Amazon ECR
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       id: login-ecr-public
-  #       uses: aws-actions/amazon-ecr-login@v2
-  #       with:
-  #         registry-type: public
-  #         mask-password: 'true'
-  #     - uses: actions/checkout@v4
-  #     - name: Set ENV
-  #       run: |
-  #         echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
-  #         echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
-  #     - run: npm ci
-  #     - name: Create logs directory
-  #       run: mkdir tests/logs
-  #     - name: Upgrade
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       run: npm run upgrade-wdio
-  #     - name: Archive Results
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: upgrade-${{ matrix.version }}
-  #         path: |
-  #           allure-results
-  #           allure-report
-  #           tests/logs
-  #           tests/results/
-  #       if: ${{ failure() }}
+    steps:
+      - name: Configure AWS credentials Public
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to Public Amazon ECR
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+          mask-password: 'true'
+      - uses: actions/checkout@v4
+      - name: Set ENV
+        run: |
+          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+          echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
+      - run: npm ci
+      - name: Create logs directory
+        run: mkdir tests/logs
+      - name: Upgrade
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        run: npm run upgrade-wdio
+      - name: Archive Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: upgrade-${{ matrix.version }}
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}
