@@ -1,4 +1,6 @@
 import { DataContext } from './data-context';
+import { ContactTypeQualifier, isContactTypeQualifier } from '../qualifier';
+import { InvalidArgumentError } from './error';
 
 /**
  * A value that could be `null`.
@@ -143,4 +145,27 @@ export const getPagedGenerator = async function* <S, T>(
   } while (cursor);
 
   return null;
+};
+
+/** @internal */
+export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
+  qualifier: unknown
+) => {
+  if (!isContactTypeQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertLimit: (limit: unknown) => asserts limit is number = (limit: unknown) => {
+  if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
+    throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}].`);
+  }
+};
+
+/** @internal */
+export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
+  if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
+    throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
+  }
 };

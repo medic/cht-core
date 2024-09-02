@@ -196,7 +196,7 @@ describe('Person API', () => {
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]"}`);
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
     });
 
     it('throws 400 error when limit is invalid', async () => {
@@ -210,7 +210,7 @@ describe('Person API', () => {
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]"}`);
+        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
     });
 
     it('throws 400 error when cursor is invalid', async () => {
@@ -225,14 +225,12 @@ describe('Person API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]"}`
+          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
         );
     });
   });
 
   describe('Person.v1.getAll', async () => {
-    const personType = 'person';
-
     it('fetches all data by iterating through generator', async () => {
       const docs = [];
 
