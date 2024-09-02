@@ -36,15 +36,15 @@ export class TargetAggregatesService {
     private ngZone:NgZone,
   ) { }
 
-  private readonly NBR_MONTHS = 3;
-  private readonly INTERVAL_TAG_FORMAT = 'Y-MM';
+  private readonly MAX_TARGET_MONTHS = 3;
+  private readonly INTERVAL_TAG_FORMAT = 'YYYY-MM';
 
   private getIntervalTag(targetInterval) {
     return moment(targetInterval.end).format(this.INTERVAL_TAG_FORMAT);
   }
 
-  private getCurrentInterval(settings) {
-    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+  private getCurrentInterval(appSettings) {
+    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(appSettings);
     const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
     return {
@@ -59,14 +59,14 @@ export class TargetAggregatesService {
    * ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
    * ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
    *
-   * @param settings - The application settings containing uhcMonthStartDate
+   * @param appSettings - The application settings containing uhcMonthStartDate
    * @param reportingPeriod - Optional. ReportingPeriod enum value (CURRENT or PREVIOUS)
    * @param monthsAgo - Optional. Number of reporting periods ago.
    * @returns A string representing the interval tag in YYYY-MM format
    */
 
-  private getTargetIntervalTag(settings, reportingPeriod?:ReportingPeriod, monthsAgo = 1) {
-    const { uhcMonthStartDate, targetInterval: currentInterval } = this.getCurrentInterval(settings);
+  private getTargetIntervalTag(appSettings, reportingPeriod?:ReportingPeriod, monthsAgo = 1) {
+    const { uhcMonthStartDate, targetInterval: currentInterval } = this.getCurrentInterval(appSettings);
     if (!reportingPeriod || reportingPeriod === ReportingPeriod.CURRENT) {
       return this.getIntervalTag(currentInterval);
     }
@@ -80,8 +80,8 @@ export class TargetAggregatesService {
    * Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
    * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
    */
-  private async fetchLatestTargetDocs(settings, reportingPeriod?: ReportingPeriod) {
-    const tag = this.getTargetIntervalTag(settings, reportingPeriod);
+  private async fetchLatestTargetDocs(appSettings, reportingPeriod?: ReportingPeriod) {
+    const tag = this.getTargetIntervalTag(appSettings, reportingPeriod);
 
     const opts = {
       start_key: `target~${tag}~`,
@@ -104,10 +104,10 @@ export class TargetAggregatesService {
     return results.rows.map(row => row.doc);
   }
 
-  private async fetchTargetDocs(settings, contactUuid) {
+  private async fetchTargetDocs(appSettings, contactUuid) {
     const allTargetDocs = [];
-    for (let monthsOld = 0; monthsOld < this.NBR_MONTHS; monthsOld++) {
-      const intervalTag = this.getTargetIntervalTag(settings, ReportingPeriod.PREVIOUS, monthsOld);
+    for (let monthsOld = 0; monthsOld < this.MAX_TARGET_MONTHS; monthsOld++) {
+      const intervalTag = this.getTargetIntervalTag(appSettings, ReportingPeriod.PREVIOUS, monthsOld);
       const intervalTargetDocs = await this.fetchTargetDocsForInterval(contactUuid, intervalTag);
       allTargetDocs.push(...intervalTargetDocs);
     }
@@ -295,10 +295,8 @@ export class TargetAggregatesService {
 
         const homePlaceType = this.contactTypesService.getTypeId(homePlaceSummary);
         return this.contactTypesService
-          .getChildren(homePlaceType)
+          .getPersonChildTypes(homePlaceType)
           .then(childTypes => {
-            childTypes = childTypes.filter(type => !this.contactTypesService.isPersonType(type));
-
             if (!childTypes.length) {
               return [];
             }
@@ -367,17 +365,13 @@ export class TargetAggregatesService {
     return aggregates.find(aggregate => aggregate.id === targetId);
   }
 
-  getTargetDocs(contact, userFacilityId:string[]|string|undefined, userContactId:string|undefined):Promise<any[]> {
-    return this.ngZone.runOutsideAngular(() => this._getTargetDocs(contact, userFacilityId, userContactId));
-  }
-
-  private isUserFacility (userFacilityId, contactUuid) {
-    return  (Array.isArray(userFacilityId) && userFacilityId.includes(contactUuid)) || userFacilityId === contactUuid;
+  getTargetDocs(contact, userFacilityIds:string[]|undefined, userContactId:string|undefined):Promise<any[]> {
+    return this.ngZone.runOutsideAngular(() => this._getTargetDocs(contact, userFacilityIds, userContactId));
   }
 
   private async _getTargetDocs(
     contact,
-    userFacilityId:string[]|string|undefined,
+    userFacilityIds:string[]|undefined,
     userContactId:string|undefined
   ):Promise<any[]> {
     const contactUuid = contact?._id;
@@ -385,7 +379,7 @@ export class TargetAggregatesService {
       return [];
     }
 
-    const isUserFacility = this.isUserFacility(userFacilityId, contactUuid);
+    const isUserFacility = userFacilityIds?.includes(contactUuid);
     const shouldLoadTargetDocs = isUserFacility || await this.contactTypesService.isPerson(contact);
     if (!shouldLoadTargetDocs) {
       return [];

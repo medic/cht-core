@@ -157,7 +157,7 @@ describe('AppComponent', () => {
       setPrivacyPolicyAccepted: sinon.stub(GlobalActions.prototype, 'setPrivacyPolicyAccepted'),
       setShowPrivacyPolicy: sinon.stub(GlobalActions.prototype, 'setShowPrivacyPolicy'),
       setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
-      setUserFacilityId: sinon.stub(GlobalActions.prototype, 'setUserFacilityId'),
+      setUserFacilityIds: sinon.stub(GlobalActions.prototype, 'setUserFacilityIds'),
       setUserContactId: sinon.stub(GlobalActions.prototype, 'setUserContactId'),
     };
     analyticsActions = {
@@ -267,7 +267,7 @@ describe('AppComponent', () => {
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
     expect(component.isSidebarFilterOpen).to.be.false;
     expect(userSettingsService.get.calledOnce).to.equal(true);
-    expect(globalActions.setUserFacilityId.calledOnceWith(['facility'])).to.equal(true);
+    expect(globalActions.setUserFacilityIds.calledOnceWith(['facility'])).to.equal(true);
     expect(globalActions.setUserContactId.calledOnceWith('contact')).to.equal(true);
   });
 

@@ -24,6 +24,7 @@ export class ContactsEffects {
   private selectedContact;
   private contactIdToLoad;
   private userFacilityIds;
+  private userContactId;
 
   constructor(
     private actions$: Actions,
@@ -43,11 +44,13 @@ export class ContactsEffects {
     combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getContactIdToLoad),
-      this.store.select(Selectors.getUserFacilityId),
-    ).subscribe(([ selectedContact, contactIdToLoad, userFacilityId ]) => {
+      this.store.select(Selectors.getUserFacilityIds),
+      this.store.select(Selectors.getUserContactId),
+    ).subscribe(([ selectedContact, contactIdToLoad, userFacilityIds, userContactId ]) => {
       this.selectedContact = selectedContact;
       this.contactIdToLoad = contactIdToLoad;
-      this.userFacilityIds = userFacilityId;
+      this.userFacilityIds = userFacilityIds;
+      this.userContactId = userContactId;
     });
   }
 
@@ -55,11 +58,9 @@ export class ContactsEffects {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
       withLatestFrom(
-        this.store.select(Selectors.getUserFacilityId),
-        this.store.select(Selectors.getUserContactId),
         this.store.select(Selectors.getForms),
       ),
-      exhaustMap(([{ payload: { id, silent } }, userFacilityId, userContactId, forms]) => {
+      exhaustMap(([{ payload: { id, silent } }, forms]) => {
         if (!id) {
           return of(this.contactsActions.clearSelection());
         }
@@ -87,7 +88,7 @@ export class ContactsEffects {
           .then(() => this.setTitle())
           .then(() => this.loadDescendants(id, trackName))
           .then(() => this.loadReports(id, forms, trackName))
-          .then(() => this.loadTargetDoc(id, userFacilityId, userContactId, trackName))
+          .then(() => this.loadTargetDoc(id, trackName))
           .then(() => this.loadContactSummary(id, trackName))
           .then(() => this.loadTasks(id, trackName))
           .catch(err => {
@@ -180,13 +181,13 @@ export class ContactsEffects {
       });
   }
 
-  private async loadTargetDoc(contactId, userFacilityId, userContactId, trackName) {
+  private async loadTargetDoc(contactId, trackName) {
     const trackPerformance = this.performanceService.track();
 
     const targetDocs = await this.targetAggregateService.getTargetDocs(
       this.selectedContact,
-      userFacilityId,
-      userContactId
+      this.userFacilityIds,
+      this.userContactId
     );
     await this.verifySelectedContactNotChanged(contactId);
     this.contactsActions.receiveSelectedContactTargetDoc(targetDocs);

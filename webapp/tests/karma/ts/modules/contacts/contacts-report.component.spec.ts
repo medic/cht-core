@@ -68,7 +68,7 @@ describe('contacts report component', () => {
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
       { selector: Selectors.getUserContactId, value: 'contact' },
-      { selector: Selectors.getUserFacilityId, value: ['facility'] },
+      { selector: Selectors.getUserFacilityIds, value: ['facility'] },
     ];
 
     return TestBed
@@ -175,7 +175,7 @@ describe('contacts report component', () => {
           }
         },
         userContactId: 'contact',
-        userFacilityId: ['facility'],
+        userFacilityIds: ['facility'],
       });
     }));
 

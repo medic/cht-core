@@ -407,12 +407,15 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ trainingCardFormId: 'training:another_new_change' });
   });
 
-  it('should set userFacilityId in state', () => {
-    state = globalReducer(state, Actions.setUserFacilityId('facility_id'));
-    expect(state).to.deep.equal({ userFacilityId: 'facility_id' });
+  it('should set userFacilityIds in state', () => {
+    state = globalReducer(state, Actions.setUserFacilityIds('facility_id'));
+    expect(state).to.deep.equal({ userFacilityIds: ['facility_id'] });
 
-    state = globalReducer(state, Actions.setUserFacilityId('other'));
-    expect(state).to.deep.equal({ userFacilityId: 'other' });
+    state = globalReducer(state, Actions.setUserFacilityIds('other'));
+    expect(state).to.deep.equal({ userFacilityIds: ['other'] });
+
+    state = globalReducer(state, Actions.setUserFacilityIds(['others']));
+    expect(state).to.deep.equal({ userFacilityIds: ['others'] });
   });
 
   it('should set userContactId in state', () => {

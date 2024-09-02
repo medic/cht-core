@@ -90,13 +90,13 @@ describe('CHTScriptApiService service', () => {
         'hasAnyPermission',
         'getExtensionLib',
         'person',
-        'context'
+        'analytics'
       ]);
       expect(result.v1.hasPermissions).to.be.a('function');
       expect(result.v1.hasAnyPermission).to.be.a('function');
       expect(result.v1.getExtensionLib).to.be.a('function');
       expect(result.v1.person).to.be.a('object');
-      expect(result.v1.context).to.deep.equal({ targetDocs: [] });
+      expect(result.v1.analytics).to.be.a('object');
     });
 
     it('should initialize extension libs', async () => {

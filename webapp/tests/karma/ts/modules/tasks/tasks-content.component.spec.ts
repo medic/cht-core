@@ -55,7 +55,7 @@ describe('TasksContentComponent', () => {
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
       { selector: Selectors.getUserContactId, value: 'contact' },
-      { selector: Selectors.getUserFacilityId, value: ['facility'] },
+      { selector: Selectors.getUserFacilityIds, value: ['facility'] },
     ];
 
     TestBed.configureTestingModule({
@@ -150,7 +150,7 @@ describe('TasksContentComponent', () => {
       formDoc: form,
       instanceData: 'nothing',
       userContactId: 'contact',
-      userFacilityId: ['facility'],
+      userFacilityIds: ['facility'],
     });
 
     expect(get.callCount).to.eq(0);

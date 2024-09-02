@@ -70,7 +70,7 @@ describe('Reports Add Component', () => {
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
       { selector: Selectors.getUserContactId, value: 'contact' },
-      { selector: Selectors.getUserFacilityId, value: ['facility'] },
+      { selector: Selectors.getUserFacilityIds, value: ['facility'] },
     ];
 
     return TestBed
@@ -230,7 +230,7 @@ describe('Reports Add Component', () => {
         expect(formService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
         expect(formService.render.args[0][0]).to.deep.include({
           userContactId: 'contact',
-          userFacilityId: ['facility']
+          userFacilityIds: ['facility']
         });
         expect(component.form).to.equal(renderedForm);
 

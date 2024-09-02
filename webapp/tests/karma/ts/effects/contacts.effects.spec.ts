@@ -40,7 +40,7 @@ describe('Contacts effects', () => {
     const mockedSelectors = [
       { selector: Selectors.getSelectedContact, value: null },
       { selector: Selectors.getForms, value: [] },
-      { selector: Selectors.getUserFacilityId, value: ['facility_id'] },
+      { selector: Selectors.getUserFacilityIds, value: ['facility_id'] },
       { selector: Selectors.getUserContactId, value: 'contact_id' },
     ];
     routeSnapshotService = { get: sinon.stub().returns({ data: { name: 'contacts.detail' }}) };
@@ -310,7 +310,7 @@ describe('Contacts effects', () => {
       });
 
       it('should not load child places for user with one facility', async () => {
-        store.overrideSelector(Selectors.getUserFacilityId, ['facility']);
+        store.overrideSelector(Selectors.getUserFacilityIds, ['facility']);
         store.refreshState();
 
         contactViewModelGeneratorService.getContact.resolves({ _id: 'facility', doc: { _id: 'facility' } });
@@ -334,7 +334,7 @@ describe('Contacts effects', () => {
       });
 
       it('should load child places for multi-facility user', async () => {
-        store.overrideSelector(Selectors.getUserFacilityId, ['facility-1', 'facility-2' ]);
+        store.overrideSelector(Selectors.getUserFacilityIds, ['facility-1', 'facility-2' ]);
         store.refreshState();
 
         contactViewModelGeneratorService.getContact.resolves({ _id: 'facility-1', doc: { _id: 'facility-1' } });

@@ -133,8 +133,8 @@ export class FormService {
     return this.searchService.search('reports', { subjectIds: subjectIds }, { include_docs: true });
   }
 
-  private getTargetDocs(contact, userFacilityId, userContactId) {
-    return this.targetAggregatesService.getTargetDocs(contact, userFacilityId, userContactId);
+  private getTargetDocs(contact, userFacilityIds, userContactId) {
+    return this.targetAggregatesService.getTargetDocs(contact, userFacilityIds, userContactId);
   }
 
   private getContactSummary(doc, instanceData, userFacilityId, userContactId) {
@@ -164,7 +164,7 @@ export class FormService {
   }
 
   private async renderForm(formContext: EnketoFormContext) {
-    const { formDoc, instanceData, userContactId, userFacilityId } = formContext;
+    const { formDoc, instanceData, userContactId, userFacilityIds } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());
@@ -172,7 +172,7 @@ export class FormService {
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
-      formContext.contactSummary = await this.getContactSummary(doc, instanceData, userFacilityId, userContactId);
+      formContext.contactSummary = await this.getContactSummary(doc, instanceData, userFacilityIds, userContactId);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };

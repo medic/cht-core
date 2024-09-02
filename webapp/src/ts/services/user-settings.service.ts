@@ -112,7 +112,7 @@ export class UserSettingsService {
 
 }
 
-interface UserSettings {
+export interface UserSettings {
   _id: string;
   contact_id: string;
   facility_id: string[];

@@ -39,8 +39,7 @@ describe('TargetAggregatesService', () => {
     settingsService = {get: sinon.stub()};
     contactTypesService = {
       getTypeId: sinon.stub(),
-      getChildren: sinon.stub(),
-      isPersonType: sinon.stub(),
+      getPersonChildTypes: sinon.stub(),
       isPerson: sinon.stub(),
     };
     getDataRecordsService = {get: sinon.stub()};
@@ -221,7 +220,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }, { id: 'type2' }, { id: 'type3' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }, { id: 'type2' }, { id: 'type3' }]);
       searchService.search.resolves([]);
       dbService.allDocs.resolves({ rows: [] });
 
@@ -236,8 +235,8 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[1]).to.deep.equal([[]]);
       expect(contactTypesService.getTypeId.callCount).to.equal(1);
       expect(contactTypesService.getTypeId.args[0]).to.deep.equal([{ _id: 'home' }]);
-      expect(contactTypesService.getChildren.callCount).to.equal(1);
-      expect(contactTypesService.getChildren.args[0]).to.deep.equal(['home_type']);
+      expect(contactTypesService.getPersonChildTypes.callCount).to.equal(1);
+      expect(contactTypesService.getPersonChildTypes.args[0]).to.deep.equal(['home_type']);
       expect(searchService.search.callCount).to.equal(1);
       expect(searchService.search.args[0]).to.deep.equal([
         'contacts',
@@ -258,7 +257,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }, { id: 'type2' }, { id: 'type3' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }, { id: 'type2' }, { id: 'type3' }]);
       dbService.allDocs.resolves({ rows: [] });
 
       searchService.search.onCall(0).resolves(Array.from({ length: 100 }).map(() => ({ _id: 'place' })));
@@ -300,7 +299,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }, { id: 'type2' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }, { id: 'type2' }]);
 
       const places = Array.from({ length: 224 }).map((a, i) => ({ lineage: ['home'], contact: `contact${i}` }));
       const contacts = places.map(place => ({ _id: place.contact, name: randomString() }));
@@ -368,7 +367,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
 
       const randomBoolean = () => Math.random() < 0.5;
       const genPlace = (idx) => ({
@@ -440,8 +439,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }, { id: 'person' }, { id: 'person2' }, { id: 'type2' }]);
-      contactTypesService.isPersonType.callsFake(type => type.id.startsWith('person'));
+      contactTypesService.getPersonChildTypes.resolves([ { id: 'type1' }, { id: 'type2' } ]);
       searchService.search.resolves([]);
       dbService.allDocs.resolves({ rows: [] });
 
@@ -450,13 +448,6 @@ describe('TargetAggregatesService', () => {
       expect(result.length).to.equal(1);
       expect(result[0].id).to.equal('target');
       expect(result[0].values.length).to.equal(0);
-      expect(contactTypesService.isPersonType.callCount).to.equal(4);
-      expect(contactTypesService.isPersonType.args).to.deep.equal([
-        [{ id: 'type1' }],
-        [{ id: 'person' }],
-        [{ id: 'person2' }],
-        [{ id: 'type2' }],
-      ]);
       expect(searchService.search.callCount).to.equal(1);
       expect(searchService.search.args[0]).to.deep.equal([
         'contacts',
@@ -475,9 +466,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'home', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'person' }, { id: 'person2' }]);
-      contactTypesService.isPersonType.callsFake(type => type.id.startsWith('person'));
-
+      contactTypesService.getPersonChildTypes.resolves([]);
       dbService.allDocs.resolves({ rows: [] });
 
       const result = await service.getAggregates();
@@ -485,11 +474,6 @@ describe('TargetAggregatesService', () => {
       expect(result.length).to.equal(1);
       expect(result[0].id).to.equal('target');
       expect(result[0].values.length).to.equal(0);
-      expect(contactTypesService.isPersonType.callCount).to.equal(2);
-      expect(contactTypesService.isPersonType.args).to.deep.equal([
-        [{ id: 'person' }],
-        [{ id: 'person2' }],
-      ]);
       expect(searchService.search.callCount).to.equal(0);
       expect(getDataRecordsService.get.callCount).to.equal(1);
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[ 'home' ]]);
@@ -504,7 +488,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
       contactTypesService.getTypeId.returns('district');
-      contactTypesService.getChildren.resolves([{ id: 'health_center' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'health_center' }]);
       searchService.search.resolves([]);
 
       dbService.allDocs.resolves({ rows: [] });
@@ -542,7 +526,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
 
       dbService.allDocs.resolves({ rows: [] });
@@ -580,7 +564,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([facilityId]).resolves([{ _id: facilityId, name: 'Test Facility' }]);
       contactTypesService.getTypeId.returns('district');
-      contactTypesService.getChildren.resolves([{ id: 'health_center' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'health_center' }]);
       searchService.search.resolves([]);
 
       dbService.allDocs.resolves({ rows: [] });
@@ -627,7 +611,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
       translateFromService.get.callsFake(e => e);
       dbService.allDocs.resolves({ rows: [] });
@@ -744,7 +728,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
@@ -882,7 +866,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
@@ -941,7 +925,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
@@ -1023,7 +1007,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
@@ -1099,7 +1083,7 @@ describe('TargetAggregatesService', () => {
       userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
@@ -1149,7 +1133,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
 
       dbService.allDocs.resolves({ rows: [] });
@@ -1177,7 +1161,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
 
       dbService.allDocs.resolves({ rows: [] });
@@ -1209,7 +1193,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
       contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getChildren.resolves([{ id: 'type1' }]);
+      contactTypesService.getPersonChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
       translateService.instant = sinon.stub().returns('Last month');
       settingsService.get.rejects({ some: 'err' });
@@ -1428,7 +1412,7 @@ describe('TargetAggregatesService', () => {
       dbService.allDocs.onCall(1).resolves({rows: [{ id: targetDoc2._id, doc: targetDoc2 }]});
       dbService.allDocs.onCall(2).resolves({rows: [{ id: targetDoc3._id, doc: targetDoc3 }]});
 
-      const result = await service.getTargetDocs({ _id: 'facility' }, 'facility', 'usercontact');
+      const result = await service.getTargetDocs({ _id: 'facility' }, ['facility'], 'usercontact');
 
       expect(result).to.deep.equal([targetDoc, targetDoc2, targetDoc3]);
       expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(3);

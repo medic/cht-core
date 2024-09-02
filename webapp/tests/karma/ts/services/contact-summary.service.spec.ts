@@ -29,7 +29,7 @@ describe('ContactSummary service', () => {
       v1: {
         hasPermissions: sinon.stub(),
         hasAnyPermission: sinon.stub(),
-        context: { targetDocs: undefined },
+        analytics: { getTargetDocs: sinon.stub() },
       }
     };
     chtDatasourceService = {
@@ -163,7 +163,7 @@ describe('ContactSummary service', () => {
       cards: [
         { fields: reports[0].type },       
         { fields: targetDoc.date_updated },
-        { fields: cht.v1.context.targetDocs[1].date_updated },
+        { fields: cht.v1.analytics.getTargetDocs()[1].date_updated },
       ],
     }
     `;

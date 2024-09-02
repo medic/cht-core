@@ -49,7 +49,7 @@ import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.co
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
+import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -311,9 +311,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async initUser() {
-    const userSettings:any = await this.userSettingsService.get();
+    const userSettings:UserSettings = await this.userSettingsService.get();
     this.globalActions.setUserContactId(userSettings.contact_id);
-    this.globalActions.setUserFacilityId(userSettings.facility_id);
+    this.globalActions.setUserFacilityIds(userSettings.facility_id);
   }
 
   ngAfterViewInit() {

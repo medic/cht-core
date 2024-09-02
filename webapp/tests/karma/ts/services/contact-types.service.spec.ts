@@ -218,17 +218,29 @@ describe('ContactTypes service', () => {
     });
   });
 
-  describe('isPersonType', () => {
-    it('should return true when provided a person type', () => {
-      expect(service.isPersonType({ id: 'person' })).to.equal(true);
-      expect(service.isPersonType({ id: 'other', person: true })).to.equal(true);
-    });
+  describe('getPersonChildTypes', () => {
+    it('should return the child types that are persons', async () => {
+      const types = [
+        { id: 'region' },
+        { id: 'district', parents: [] },
+        { id: 'suburb',   parents: [ 'region' ] },
+        { id: 'family',   parents: [ 'suburb' ] },
+        { id: 'chp',      parents: [ 'region', 'suburb' ], person: true },
+        { id: 'patient',  parents: [ 'family' ], person: true },
+        { id: 'child',  parents: [ 'family' ], person: true },
+      ];
+      Settings.resolves({ contact_types: types });
 
-    it('should return falsy when not provided a person type', () => {
-      expect(service.isPersonType()).to.equal(undefined);
-      expect(service.isPersonType({})).to.equal(false);
-      expect(service.isPersonType({ id: 'not_a_person' })).to.equal(false);
-      expect(service.isPersonType({ id: 'other', person: false })).to.equal(false);
+      expect(await service.getPersonChildTypes('family')).to.deep.equal([
+        { id: 'patient', parents: [ 'family' ], person: true },
+        { id: 'child', parents: [ 'family' ], person: true },
+      ]);
+
+      expect(await service.getPersonChildTypes('region')).to.deep.equal([
+        { id: 'chp', parents: [ 'region', 'suburb' ], person: true },
+      ]);
+
+      expect(await service.getPersonChildTypes('district')).to.deep.equal([]);
     });
   });
 

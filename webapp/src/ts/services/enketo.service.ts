@@ -633,7 +633,7 @@ export class EnketoFormContext {
   userContact?: Nullable<Person.v1.Person>;
   contactSummary?: Record<string, any>;
   userContactId?: string;
-  userFacilityId?: string;
+  userFacilityIds?: string[];
 
   constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
     this.selector = selector;
@@ -658,8 +658,8 @@ export class EnketoFormContext {
     return this.type !== 'contact';
   }
   
-  setUserContext(userContactId, userFacilityId) {
+  setUserContext(userContactId, userFacilityIds) {
     this.userContactId = userContactId;
-    this.userFacilityId = userFacilityId;
+    this.userFacilityIds = userFacilityIds;
   }
 }

@@ -37,7 +37,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   errorTranslationKey;
   contentError;
   cancelCallback;
-  userFacilityId;
+  userFacilityIds;
   userContactId;
 
 
@@ -138,7 +138,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         const formContext = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
         formContext.editedListener = this.markFormEdited.bind(this);
         formContext.valuechangeListener = this.resetFormError.bind(this);
-        formContext.setUserContext(this.userContactId, this.userFacilityId);
+        formContext.setUserContext(this.userContactId, this.userFacilityIds);
 
         return this.formService.render(formContext);
       })
@@ -167,7 +167,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getEnketoEditedStatus),
       this.store.select(Selectors.getCancelCallback),
-      this.store.select(Selectors.getUserFacilityId),
+      this.store.select(Selectors.getUserFacilityIds),
       this.store.select(Selectors.getUserContactId),
     ).subscribe(([
       enketoStatus,
@@ -175,7 +175,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       enketoError,
       enketoEdited,
       cancelCallback,
-      userFacilityId,
+      userFacilityIds,
       userContactId
     ]) => {
       this.enketoStatus = enketoStatus;
@@ -183,7 +183,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       this.enketoError = enketoError;
       this.enketoEdited = enketoEdited;
       this.cancelCallback = cancelCallback;
-      this.userFacilityId = userFacilityId;
+      this.userFacilityIds = userFacilityIds;
       this.userContactId = userContactId;
     });
     this.subscription.add(reduxSubscription);
