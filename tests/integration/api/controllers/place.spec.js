@@ -22,6 +22,27 @@ describe('Place API', () => {
       }
     },
   });
+  const placeType = 'clinic';
+  const clinic1 = utils.deepFreeze(placeFactory.place().build({
+    parent: {
+      _id: place1._id,
+      parent: {
+        _id: place2._id
+      }
+    },
+    type: placeType,
+    contact: {}
+  }));
+  const clinic2 = utils.deepFreeze(placeFactory.place().build({
+    parent: {
+      _id: place1._id,
+      parent: {
+        _id: place2._id
+      }
+    },
+    type: placeType,
+    contact: {}
+  }));
 
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
@@ -42,9 +63,10 @@ describe('Place API', () => {
     roles: ['chw']
   }));
   const dataContext = getRemoteDataContext(utils.getOrigin());
+  const expectedPlaces = [place0, clinic1, clinic2];
 
   before(async () => {
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -94,6 +116,109 @@ describe('Place API', () => {
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
+    });
+  });
+
+  describe('GET /api/v1/place', async () => {
+    const getPage = Place.v1.getPage(dataContext);
+    const limit = 2;
+    const cursor = null;
+    const invalidContactType = 'invalidPlace';
+
+    it('returns a page of places for no limit and cursor passed', async () => {
+      const responsePage = await getPage(Qualifier.byContactType(placeType));
+      const responsePlaces = responsePage.data;
+      const responseCursor = responsePage.cursor;
+
+      expect(responsePlaces).excludingEvery(['_rev', 'reported_date'])
+        .to.deep.equalInAnyOrder(expectedPlaces);
+      expect(responseCursor).to.be.equal(null);
+    });
+
+    it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {
+      const firstPage = await getPage(Qualifier.byContactType(placeType), cursor, limit);
+      const secondPage = await getPage(Qualifier.byContactType(placeType), firstPage.cursor, limit);
+
+      const allPeople = [...firstPage.data, ...secondPage.data];
+
+      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
+      expect(firstPage.data.length).to.be.equal(2);
+      expect(secondPage.data.length).to.be.equal(1);
+      expect(firstPage.cursor).to.be.equal('2');
+      expect(secondPage.cursor).to.be.equal(null);
+    });
+
+    it(`throws error when user does not have can_view_contacts permission`, async () => {
+      const opts = {
+        path: `/api/v1/place`,
+        auth: { username: userNoPerms.username, password: userNoPerms.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it(`throws error when user is not an online user`, async () => {
+      const opts = {
+        path: `/api/v1/place`,
+        auth: { username: offlineUser.username, password: offlineUser.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it('throws 400 error when placeType is invalid', async () => {
+      const queryParams = {
+        'type': invalidContactType
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `/api/v1/place?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
+    });
+
+    it('throws 400 error when limit is invalid', async () => {
+      const queryParams = {
+        type: placeType,
+        limit: -1
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `/api/v1/place?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+    });
+
+    it('throws 400 error when cursor is invalid', async () => {
+      const queryParams = {
+        type: placeType,
+        cursor: '-1'
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `/api/v1/place?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(
+          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+        );
+    });
+  });
+
+  describe('Place.v1.getAll', async () => {
+    it('fetches all data by iterating through generator', async () => {
+      const docs = [];
+
+      const generator = Place.v1.getAll(dataContext)(Qualifier.byContactType(placeType));
+
+      for await (const doc of generator) {
+        docs.push(doc);
+      }
+
+      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
     });
   });
 });

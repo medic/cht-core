@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { Place, Qualifier } = require('@medic/cht-datasource');
+const { Place, Qualifier, InvalidArgumentError} = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const controller = require('../../../src/controllers/place');
 const dataContext = require('../../../src/services/data-context');
@@ -152,6 +152,113 @@ describe('Place Controller', () => {
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+      });
+    });
+
+    describe('getAll', () => {
+      let placeGetPageByType;
+      let qualifierByContactType;
+      const placeType = 'place';
+      const invalidPlaceType = 'invalidPlace';
+      const placeTypeQualifier = { contactType: placeType };
+      const place = { name: 'Clinic' };
+      const limit = 100;
+      const cursor = null;
+      const places = Array.from({ length: 3 }, () => ({ ...place }));
+
+      beforeEach(() => {
+        req = {
+          query: {
+            type: placeType,
+            cursor,
+            limit,
+          }
+        };
+        placeGetPageByType = sinon.stub();
+        qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
+        dataContextBind.withArgs(Place.v1.getPage).returns(placeGetPageByType);
+        qualifierByContactType.returns(placeTypeQualifier);
+      });
+
+      afterEach(() => {
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
+
+      it('returns a page of places with correct query params', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        placeGetPageByType.resolves(places);
+
+        await controller.v1.getAll(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
+        expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(places)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns error if user does not have can_view_contacts permission', async () => {
+        const error = { code: 403, message: 'Insufficient privileges' };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(false);
+
+        await controller.v1.getAll(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(dataContextBind.notCalled).to.be.true;
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(placeGetPageByType.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+      });
+
+      it('returns error if not an online user', async () => {
+        const error = { code: 403, message: 'Insufficient privileges' };
+        isOnlineOnly.returns(false);
+
+        await controller.v1.getAll(req, res);
+
+        expect(hasAllPermissions.notCalled).to.be.true;
+        expect(dataContextBind.notCalled).to.be.true;
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(placeGetPageByType.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+      });
+
+      it('returns 400 error when placeType is invalid', async () => {
+        const err = new InvalidArgumentError(`Invalid contact type: [${invalidPlaceType}].`);
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        placeGetPageByType.throws(err);
+
+        await controller.v1.getAll(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
+        expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+
+      it('rethrows error in case of other errors', async () => {
+        const err = new Error('error');
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        placeGetPageByType.throws(err);
+
+        await controller.v1.getAll(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
+        expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
     });
   });

@@ -1,7 +1,7 @@
 import * as Doc from '../../../src/libs/doc';
 import sinon, { SinonStub } from 'sinon';
 import logger from '@medic/logger';
-import { getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange } from '../../../src/local/libs/doc';
+import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange} from '../../../src/local/libs/doc';
 import { expect } from 'chai';
 
 describe('local doc lib', () => {
@@ -281,6 +281,95 @@ describe('local doc lib', () => {
         skip
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0]]);
+    });
+  });
+
+  describe('fetchAndFilter', () => {
+    let getFunction: sinon.SinonStub;
+    let filterFunction: sinon.SinonStub;
+
+    beforeEach(() => {
+      getFunction = sinon.stub();
+      filterFunction = sinon.stub();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should return correct data when all docs are valid', async () => {
+      const docs = [{ _id: '1' }, { _id: '2' }, { _id: '3' }];
+      getFunction.resolves(docs);
+      filterFunction.returns(true);
+
+      const fetchAndFilterFunc = fetchAndFilter(getFunction, filterFunction, 3);
+      const result = await fetchAndFilterFunc(3, 0);
+
+      expect(result.data).to.deep.equal(docs);
+      expect(result.cursor).to.equal('3');
+      expect(getFunction.calledOnceWith(3, 0)).to.be.true;
+      expect(filterFunction.callCount).to.equal(3);
+    });
+
+    it('should filter out invalid docs and fetch more if needed', async () => {
+      const docs1 = [{ _id: '1' }, { _id: '2' }, { _id: '3' }];
+      const docs2 = [{ _id: '4' }, { _id: '5' }];
+      getFunction.onFirstCall().resolves(docs1);
+      getFunction.onSecondCall().resolves(docs2);
+      filterFunction.callsFake((doc: Doc.Doc) => doc._id !== '2');
+
+      const fetchAndFilterFunc = fetchAndFilter(getFunction, filterFunction, 3);
+      const result = await fetchAndFilterFunc(3, 0);
+
+      expect(result.data).to.deep.equal([{ _id: '1' }, { _id: '3' }, { _id: '4' }]);
+      expect(result.cursor).to.equal('4');
+      expect(getFunction.firstCall.calledWith(3, 0)).to.be.true;
+      expect(getFunction.secondCall.calledWith(2, 3)).to.be.true;
+      expect(filterFunction.callCount).to.equal(5);
+    });
+
+    it('should return null cursor when no more results', async () => {
+      const docs = [{ _id: '1' }, { _id: '2' }];
+      getFunction.resolves(docs);
+      filterFunction.returns(true);
+
+      const fetchAndFilterFunc = fetchAndFilter(getFunction, filterFunction, 3);
+      const result = await fetchAndFilterFunc(3, 0);
+
+      expect(result.data).to.deep.equal(docs);
+      expect(result.cursor).to.be.null;
+      expect(getFunction.calledOnceWith(3, 0)).to.be.true;
+      expect(filterFunction.callCount).to.equal(2);
+    });
+
+    it('should handle empty result set', async () => {
+      getFunction.resolves([]);
+      filterFunction.returns(true);
+
+      const fetchAndFilterFunc = fetchAndFilter(getFunction, filterFunction, 3);
+      const result = await fetchAndFilterFunc(3, 0);
+
+      expect(result.data).to.deep.equal([]);
+      expect(result.cursor).to.be.null;
+      expect(getFunction.calledOnceWith(3, 0)).to.be.true;
+      expect(filterFunction.callCount).to.equal(0);
+    });
+
+    it('should handle all docs being filtered out', async () => {
+      const docs1 = [{ _id: '1' }, { _id: '2' }, { _id: '3' }];
+      const docs2 = [{ _id: '4' }, { _id: '5' }, { _id: '6' }];
+      getFunction.onFirstCall().resolves(docs1);
+      getFunction.onSecondCall().resolves(docs2);
+      filterFunction.returns(false);
+
+      const fetchAndFilterFunc = fetchAndFilter(getFunction, filterFunction, 3);
+      const result = await fetchAndFilterFunc(3, 0);
+
+      expect(result.data).to.deep.equal([]);
+      expect(result.cursor).to.be.null;
+      expect(getFunction.firstCall.calledWith(3, 0)).to.be.true;
+      expect(getFunction.secondCall.calledWith(6, 3)).to.be.true;
+      expect(filterFunction.callCount).to.equal(6);
     });
   });
 });

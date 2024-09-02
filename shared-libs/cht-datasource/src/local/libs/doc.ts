@@ -1,5 +1,5 @@
 import logger from '@medic/logger';
-import { Nullable } from '../../libs/core';
+import { Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 
 /** @internal */
@@ -53,3 +53,52 @@ export const queryDocsByKey = (
   limit: number,
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip });
+
+/**
+ * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
+ * and the filterFunction to validate the returned documents are all of type T.
+ * The length of the page's data array is guaranteed to equal limit unless there is no more data to retrieve
+ * from the database. This function will try to minimize the number of getFunction calls required to find
+ * the necessary data by over-fetching during followup calls if some retrieved docs are rejected by the filterFunction.
+ * @internal
+ */
+export const fetchAndFilter = <T extends Doc>(
+  getFunction: (limit: number, skip: number) => Promise<Nullable<T>[]>,
+  filterFunction: (doc: Nullable<T>, uuid?: string) => boolean,
+  limit: number,
+): typeof recursionInner => {
+  const recursionInner = async (
+    currentLimit: number,
+    currentSkip: number,
+    currentDocs: T[] = [],
+  ): Promise<Page<T>> => {
+    const docs = await getFunction(currentLimit, currentSkip);
+    const noMoreResults = docs.length < currentLimit;
+    const newDocs = docs.filter((doc): doc is T => filterFunction(doc));
+    const overFetchCount = currentDocs.length + newDocs.length - limit || 0;
+    const totalDocs = [...currentDocs, ...newDocs].slice(0, limit);
+
+    if (noMoreResults) {
+      return {data: totalDocs, cursor: null};
+    }
+
+    if (totalDocs.length === limit) {
+      const nextSkip = currentSkip + currentLimit - overFetchCount;
+
+      return {data: totalDocs, cursor: nextSkip.toString()};
+    }
+
+    // Re-fetch twice as many docs as we need to limit number of recursions
+    const missingCount = currentLimit - newDocs.length;
+    logger.debug(`Found [${missingCount.toString()}] invalid docs. Re-fetching additional records.`);
+    const nextLimit = missingCount * 2;
+    const nextSkip = currentSkip + currentLimit;
+
+    return recursionInner(
+      nextLimit,
+      nextSkip,
+      totalDocs,
+    );
+  };
+  return recursionInner;
+};

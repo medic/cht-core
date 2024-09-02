@@ -1,6 +1,6 @@
 const { checkTranslations, TranslationException } = require('@medic/translation-checker');
 
-const SUPPORTED_LANGUAGES = [ 'en', 'es', 'fr', /*'ne',*/ 'sw' ]; // add ne once all missing translations added
+const SUPPORTED_LANGUAGES = [ 'en', 'es', 'fr', 'ne', 'sw' ];
 const TRANSLATION_DIR = `${__dirname}/../../api/resources/translations`;
 const TRANSLATION_OPTIONS = {
   checkPlaceholders: true,

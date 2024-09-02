@@ -229,7 +229,7 @@ describe('Person Controller', () => {
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
       });
 
-      it('returns 400 error when argument is invalid', async () => {
+      it('returns 400 error when personType is invalid', async () => {
         const err = new InvalidArgumentError(`Invalid contact type: [${invalidPersonType}]`);
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
