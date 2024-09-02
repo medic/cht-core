@@ -8,7 +8,6 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 
-// import { GlobalActions } from '@mm-actions/global';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { LocationService } from '@mm-services/location.service';
 import { DBSyncService } from '@mm-services/db-sync.service';
