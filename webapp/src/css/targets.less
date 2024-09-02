@@ -186,8 +186,6 @@
         color: @targets-above-goal;
       }
     }
-
-
   }
 }
 
@@ -243,7 +241,13 @@
       margin: 10px 12px 0 12px;
     }
     .target:last-child {
-      margin-bottom: 10px;
+      margin-bottom: calc(@bottom-navbar-height + 15px);
+    }
+  }
+
+  #target-aggregates-list {
+    &.inbox-items {
+      padding-bottom: calc(@bottom-navbar-height + 5px);
     }
   }
 }
@@ -257,7 +261,7 @@
       margin: 10px 12px 0 12px;
     }
     .target:last-child {
-      margin-bottom: 10px;
+      margin-bottom: calc(@bottom-navbar-height + 15px);
     }
   }
 }

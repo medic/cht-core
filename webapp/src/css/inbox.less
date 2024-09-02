@@ -221,7 +221,7 @@ body {
     .button-label {
       top: -5px;
       position: relative;
-      white-space: normal;
+      overflow: hidden;
       word-wrap: break-word;
     }
 
@@ -627,7 +627,7 @@ body {
 }
 
 .loading-status {
-  margin: 10px;
+  margin: 10px 10px @bottom-navbar-height;
   text-align: center;
   font-size: @font-small;
   color: @label-color;
@@ -1231,7 +1231,7 @@ mm-search-bar {
       flex-direction: row;
       padding: 0 15px;
       a {
-        flex: 1;
+        flex-grow: 1;
         min-width: 70px;
         max-width: 100px;
       }

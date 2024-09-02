@@ -1,4 +1,4 @@
-body .app-root.old-nav {
+.app-root.old-nav {
   &.messages {
     .header .tabs .selected {
       background-color: @messages-color;
@@ -49,10 +49,23 @@ body .app-root.old-nav {
 
   .header {
     display: block;
+    padding-top: 5px;
+
+    .mm-icon {
+      margin: 0 auto;
+      font-size: 1.5rem;
+    }
+
     .tabs {
       a {
         .mm-icon {
           display: block;
+          svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+            &, &:before {
+              height: 24px;
+              max-width: 24px;
+            }
+          }
         }
         &.selected {
           .button-label,
@@ -85,13 +98,21 @@ body .app-root.old-nav {
       .button-text-inverse;
     }
   }
+
+  .loading-status {
+    margin: 10px;
+  }
 }
 
 @media (max-width: @media-mobile) {
-  .old-nav {
+  .app-root.old-nav {
     .header {
       background-color: @top-header-color;
       position: relative;
+
+      .tabs {
+        padding: 0;
+      }
 
       .inner {
         height: @top-navbar-height;
@@ -120,8 +141,19 @@ body .app-root.old-nav {
         top: 115px;
       }
     }
+
     .fast-action-trigger:not(.embed-fast-action) {
       bottom: 17px;
+    }
+
+    .targets .target:last-child {
+      margin-bottom: 10px;
+    }
+  }
+
+  #target-aggregates-list {
+    &.inbox-items {
+      padding-bottom: 0;
     }
   }
 }
@@ -147,6 +179,10 @@ body .app-root.old-nav {
       .inner {
         height: @top-navbar-height;
       }
+    }
+
+    .targets .target:last-child {
+      margin-bottom: 10px;
     }
   }
 }
