@@ -12,7 +12,7 @@ env:
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
   ECR_PUBLIC_REPO: 'public.ecr.aws/medic'
-  COUCHDB_LOG_LEVEL: 'debug'  
+  COUCHDB_LOG_LEVEL: 'debug'
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
