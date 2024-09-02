@@ -78,7 +78,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -107,7 +107,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -234,7 +234,7 @@ describe('accept_patient_reports', () => {
     const ids = getIds(docs);
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
@@ -357,7 +357,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -501,7 +501,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -617,7 +617,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -732,7 +732,7 @@ describe('accept_patient_reports', () => {
 
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(doc1))
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
@@ -981,7 +981,7 @@ describe('accept_patient_reports', () => {
     const registrationIds = getIds(registrations);
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs(registrations))
       .then(() => utils.saveDoc(noSilence))
       .then(() => sentinelUtils.waitForSentinel(noSilence._id))

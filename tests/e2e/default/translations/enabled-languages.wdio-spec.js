@@ -26,7 +26,7 @@ describe('Enabling/disabling languages', () => {
   });
 
   it('should disable a language and enable another', async () => {
-    await utils.updateSettings(settings, true);
+    await utils.updateSettings(settings, { ignoreReload: true });
     await browser.reloadSession();
     await browser.url('/');
 

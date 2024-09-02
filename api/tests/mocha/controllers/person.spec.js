@@ -169,7 +169,7 @@ describe('Person Controller', () => {
       beforeEach(() => {
         req = {
           query: {
-            personType,
+            type: personType,
             cursor,
             limit,
           }
@@ -193,7 +193,7 @@ describe('Person Controller', () => {
         await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(people)).to.be.true;
@@ -238,7 +238,7 @@ describe('Person Controller', () => {
         await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -254,7 +254,7 @@ describe('Person Controller', () => {
         await controller.v1.getAll(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.personType)).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;

@@ -107,7 +107,7 @@ describe('Tasks tab breadcrumbs', () => {
 
     const tasksFilePath = path.join(__dirname, 'config/tasks-breadcrumbs-config.js');
     const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-    await utils.updateSettings({ tasks }, 'api');
+    await utils.updateSettings({ tasks }, { ignoreReload: 'api' });
   });
 
   describe('for chw', () => {

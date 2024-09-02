@@ -188,7 +188,7 @@ describe('Person API', () => {
 
     it('throws 400 error when personType is invalid', async () => {
       const queryParams = {
-        'personType': invalidContactType
+        type: invalidContactType
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
@@ -201,7 +201,7 @@ describe('Person API', () => {
 
     it('throws 400 error when limit is invalid', async () => {
       const queryParams = {
-        personType,
+        type: personType,
         limit: -1
       };
       const queryString = new URLSearchParams(queryParams).toString();
@@ -215,7 +215,7 @@ describe('Person API', () => {
 
     it('throws 400 error when cursor is invalid', async () => {
       const queryParams = {
-        personType,
+        type: personType,
         cursor: '-1'
       };
       const queryString = new URLSearchParams(queryParams).toString();
