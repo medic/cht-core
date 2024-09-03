@@ -124,7 +124,6 @@ describe('Outbound', () => {
       // deleted
       .then(() => waitForPushes(1))
       .then(() => {
-        chai.expect(JSON.stringify(inboxes.working)).to.equal('BROKEN');
         chai.expect(inboxes.working).to.have.lengthOf(5);
         chai.expect(inboxes.broken).to.have.lengthOf(1);
 
