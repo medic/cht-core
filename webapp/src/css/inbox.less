@@ -20,6 +20,7 @@
 @import 'about';
 @import 'error-log';
 @import 'tooltip';
+@import 'old-nav';
 
 .container-fluid {
   overflow: hidden;
@@ -27,64 +28,43 @@
 
 body {
   overflow-y: hidden;
-  .app-root.messages {
-    .header .tabs .selected,
-    .filters {
+  .app-root {
+    &.messages .filters {
       background-color: @messages-color;
     }
-  }
-  .app-root.tasks {
-    .header .tabs .selected,
-    .filters {
+    &.tasks .filters {
       background-color: @tasks-color;
     }
-  }
-  .app-root.reports {
-    .header .tabs .selected,
-    .filters {
+    &.reports .filters {
       background-color: @reports-color;
     }
-  }
-  .app-root.analytics {
-    .header .tabs .selected,
-    .filters {
+    &.analytics .filters {
       background-color: @analytics-color;
     }
-  }
-  .app-root.contacts {
-    .header .tabs .selected,
-    .filters {
+    &.contacts .filters {
       background-color: @contacts-color;
     }
-  }
-  .app-root.user {
-    .header .tabs .selected,
-    .filters {
+    &.user .filters {
       background-color: @admin-color;
     }
-  }
-  .app-root.about,
-  .app-root.testing,
-  .app-root.privacy-policy {
-    .header .tabs .selected,
-    .filters {
-      background-color: @help-color;
-    }
-    .filters {
-      height: 0;
-    }
-    .page {
-      top: 75px;
-    }
-    .partners > h3 {
-      margin-top: 100px;
-    }
-  }
-  .app-root.error,
-  .app-root.testing {
-    .header .tabs .selected,
-    .filters {
+    &.error .filters,
+    &testing .filters {
       background-color: @error-color;
+    }
+
+    &.about,
+    &.testing,
+    &.privacy-policy {
+      .filters {
+        background-color: @help-color;
+        height: 0;
+      }
+      .page {
+        top: 25px;
+      }
+      .partners > h3 {
+        margin-top: 100px;
+      }
     }
   }
 }
@@ -115,234 +95,170 @@ body {
 
 .header {
   display: none;
-}
+  background-color: @top-header-color;
+  text-align: center;
+  padding-top: 5px;
+  z-index: 3;
+  position: relative;
+  .button-text-inverse;
 
-.old-nav {
-  .header {
-    display: block;
-    background-color: @top-header-color;
-    text-align: center;
-    padding-top: 5px;
-    z-index: 3;
-    position: relative;
+  .inner {
+    height: @top-navbar-height;
+  }
+
+  a {
     .button-text-inverse;
+    outline: 0;
+    padding-top: 3px;
+  }
 
-    .inner {
-      height: 60px;
+  .mm-icon {
+    margin: 0 auto;
+    font-size: @font-extra-large;
+  }
+
+  .logo {
+    float: left;
+    opacity: 0.9;
+    padding: 2px 10px;
+    img {
+      height: 50px;
     }
+  }
+
+  .extras,
+  .tabs {
+    &,
+    a {
+      height: 100%;
+    }
+    a {
+      display: inline-block;
+    }
+  }
+
+  .extras {
+    float: right;
+    padding-right: 5px;
 
     a {
-      .button-text-inverse;
-      outline: 0;
-      padding-top: 3px;
-    }
+      width: @header-bar-extras;
+      margin-top: 10px;
+      border-radius: @radius-size @radius-size 0 0;
 
-    .mm-icon {
-      margin: 0 auto;
-      font-size: 1.5rem;
-    }
-
-    .logo {
-      float: left;
-      opacity: 0.9;
-      padding: 2px 10px;
-      img {
-        height: 50px;
+      .mm-icon {
+        width: inherit;
       }
     }
 
-    .extras,
-    .tabs {
-      &,
-      a {
-        height: 100%;
-      }
-      a {
-        display: inline-block;
-      }
+    .dropdown-menu a {
+      border-radius: 0;
     }
 
-    .extras {
-      float: right;
-      padding-right: 5px;
+    .open > a {
+      background-color: @white;
 
-      a {
-        width: @header-bar-extras;
-        margin-top: 10px;
-        border-radius: @radius-size @radius-size 0 0;
-
-        .mm-icon {
-          width: inherit;
-        }
-      }
-
-      .dropdown-menu a {
-        border-radius: 0;
-      }
-
-      .open > a {
-        background-color: #ffffff;
-
-        .mm-icon {
-          color: @top-header-color;
-        }
-      }
-    }
-
-    .dropdown ul a {
-      width: 100%;
-      height: auto;
-    }
-
-    .dropdown.options.open.show {
-      display: inline !important; // Overriding BS' "display" that uses !important;
-    }
-
-    .options .dropdown-menu {
-      width: @header-dropdown-width;
-      top: 0 !important; // Overriding element.style
-      left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
-      margin-top: 30px;
-      font-size: 0;
-      a {
-        text-shadow: none;
-        padding: 10px 20px;
-        color: #262626;
-        margin-top: 0;
-        white-space: normal;
-        font-size: 1rem;
-      }
-      .disabled a {
-        color: #999999;
-      }
-      .divider {
-        margin: 0;
-      }
-      .sync-status {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        a {
-          padding-top: 0;
-          padding-bottom: 0;
-          color: @label-color;
-          &:hover {
-            background-color: transparent;
-            cursor: default;
-          }
-        }
-        .success {
-          color: @ok-color;
-        }
-        .required {
-          color: @error-color;
-        }
-      }
-    }
-
-    .tabs {
-      overflow: hidden;
-      white-space: nowrap;
-
-      .button-label {
-        top: -5px;
-        position: relative;
-      }
-
-      a {
-        border-radius: @radius-size @radius-size 0 0;
-        cursor: pointer;
-        min-width: 80px;
-        padding-left: 5px;
-        padding-right: 5px;
-
-        .mm-icon {
-          display: block;
-          padding: 5px 0;
-
-          svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
-            &, &:before {
-              display: block;
-              margin: auto;
-              height: 24px;
-              max-width: 24px;
-              overflow: hidden;
-            }
-          }
-        }
-
-        &.selected {
-          .button-label,
-          .mm-icon:hover,
-          .resource-icon {
-            .button-text;
-          }
-        }
-
-        @media (hover: hover) { // Prevents sticky hover state in mobile devices.
-          &:hover:not(.selected) {
-            &.messages-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @messages-color;
-                fill: @messages-color;
-              }
-            }
-
-            &.tasks-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @tasks-color;
-                fill: @tasks-color;
-              }
-            }
-
-            &.reports-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @reports-color;
-                fill: @reports-color;
-              }
-            }
-
-            &.analytics-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @analytics-color;
-                fill: @analytics-color;
-              }
-            }
-
-            &.contacts-tab {
-              &,
-              .mm-icon-inverse,
-              .mm-icon-inverse:hover,
-              .resource-icon svg * {
-                color: @contacts-color;
-                fill: @contacts-color;
-              }
-            }
-          }
-        }
-
-        &:hover,
-        &:focus {
-          text-decoration: none;
-        }
+      .mm-icon {
+        color: @top-header-color;
       }
     }
   }
 
-  .content {
-    .page {
-      top: 123px;
+  .dropdown ul a {
+    width: 100%;
+    height: auto;
+  }
+
+  .dropdown.options.open.show {
+    display: inline !important; // Overriding BS' "display" that uses !important;
+  }
+
+  .options .dropdown-menu {
+    width: @header-dropdown-width;
+    top: 0 !important; // Overriding element.style
+    left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
+    margin-top: 30px;
+    font-size: 0;
+    a {
+      text-shadow: none;
+      padding: 10px 20px;
+      color: @gray-ultra-darker;
+      margin-top: 0;
+      white-space: normal;
+      font-size: @font-medium;
+    }
+    .disabled a {
+      color: @gray-disabled;
+    }
+    .divider {
+      margin: 0;
+    }
+    .sync-status {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      a {
+        padding-top: 0;
+        padding-bottom: 0;
+        color: @label-color;
+        &:hover {
+          background-color: transparent;
+          cursor: default;
+        }
+      }
+      .success {
+        color: @ok-color;
+      }
+      .required {
+        color: @error-color;
+      }
+    }
+  }
+
+  .tabs {
+    overflow: hidden;
+    white-space: nowrap;
+
+    .button-label {
+      top: -5px;
+      position: relative;
+      overflow: hidden;
+      word-wrap: break-word;
+    }
+
+    a {
+      border-radius: @radius-size @radius-size 0 0;
+      cursor: pointer;
+      min-width: 80px;
+      padding-left: 5px;
+      padding-right: 5px;
+
+      .mm-icon {
+        display: block;
+        padding: 5px 0;
+
+        svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+          &, &:before {
+            display: block;
+            margin: auto;
+            height: 20px;
+            max-width: 20px;
+            overflow: hidden;
+          }
+        }
+      }
+
+      &.selected {
+        .button-label,
+        .mm-icon:hover,
+        .resource-icon {
+          .button-text(@white);
+        }
+      }
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+      }
     }
   }
 }
@@ -511,7 +427,6 @@ body {
     position: absolute;
     width: 100%;
     max-width: @content-width;
-    z-index: 2;
   }
 
   .inbox {
@@ -712,7 +627,7 @@ body {
 }
 
 .loading-status {
-  margin: 10px;
+  margin: 10px 10px @bottom-navbar-height;
   text-align: center;
   font-size: @font-small;
   color: @label-color;
@@ -1414,12 +1329,11 @@ mm-sidebar-menu .mat-sidenav-container {
 }
 
 @media (max-width: @media-mobile) {
-  .old-nav {
-    .content {
-      .page {
-        top: 115px;
-      }
-    }
+  .fast-action-trigger:not(.embed-fast-action) {
+    position: fixed;
+    bottom: calc(@bottom-navbar-height + @fab-bottom-padding);
+    right: 18px;
+    top: auto;
   }
 
   mm-sidebar-menu .mat-sidenav-container {
@@ -1428,11 +1342,61 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  .fast-action-trigger:not(.embed-fast-action) {
-    position: fixed;
-    bottom: 17px;
-    right: 18px;
-    top: auto;
+  .header {
+    .tabs {
+      display: flex;
+      flex-direction: row;
+      padding: 0 15px;
+      justify-content: center;
+      a {
+        flex-grow: 1;
+        min-width: 70px;
+        max-width: 100px;
+      }
+    }
+  }
+  .app-root:not(.old-nav) {
+    .header {
+      display: block;
+      width: 100vw;
+      background-color: @bottom-navbar-color;
+      position: fixed;
+      bottom: 0;
+
+      .inner {
+        height: @bottom-navbar-height;
+      }
+
+      .logo,
+      .extras {
+        display: none;
+      }
+
+      .tabs {
+        .button-label {
+          top: 0;
+          font-size: @font-extra-smaller;
+          padding-top: 5px;
+        }
+        a {
+          min-width: 0;
+          .mm-icon {
+            padding: 8px 0;
+          }
+          &.selected
+          .mm-icon {
+            border-radius: 999px;
+            background-color: @tab-selected-color;
+          }
+        }
+      }
+    }
+    &.select-mode,
+    &.error {
+      mm-header {
+        display: none;
+      }
+    }
   }
 
   .more-options-menu-container {
@@ -1536,34 +1500,6 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  .header {
-    .dropdown-menu {
-      margin: 0;
-      top: 8px;
-      right: 5px;
-    }
-    .tabs {
-      display: flex;
-      flex-direction: row;
-      a {
-        flex-grow: 1;
-        min-width: 70px;
-        max-width: 100px;
-      }
-    }
-    .logo {
-      display: none;
-    }
-    .extras a {
-      padding-top: 2px;
-      margin-top: 2px;
-
-      .fa-bars {
-        font-size: @font-extra-extra-large;
-      }
-    }
-  }
-
   .left-pane,
   .right-pane {
     width: 100%;
@@ -1575,7 +1511,7 @@ mm-sidebar-menu .mat-sidenav-container {
   }
   .content {
     .page {
-      top: 115px;
+      top: calc(@filters-bar-mobile-height + 2px);
     }
     .meta {
       padding-bottom: 0;
@@ -1648,6 +1584,9 @@ mm-sidebar-menu .mat-sidenav-container {
     }
     .right-pane {
       left: 0;
+    }
+    .fast-action-trigger:not(.embed-fast-action) {
+      bottom: 17px;
     }
   }
 
@@ -1743,28 +1682,8 @@ mm-sidebar-menu .mat-sidenav-container {
   .right-side-filter {
     padding-right: 6px;
   }
-  .header {
-    .tabs {
-      padding-left: 2px;
-      a {
-        min-width: 40px;
-        .button-label {
-          font-size: @font-extra-extra-small;
-        }
-      }
-
-      // Use bigger font when there are 4 or less tabs.
-      .elements-label(a, button-label, 4, @font-extra-small);
-    }
-    .mm-badge-overlay {
-      right: 10%;
-    }
-    .inner {
-      height: 60px;
-    }
-  }
   .content .page {
-    top: @filters-bar-mobile-height;
+    top: calc(@filters-bar-mobile-height + 2px);
   }
   .mobile-only {
     display: initial;
