@@ -1230,6 +1230,7 @@ mm-search-bar {
       display: flex;
       flex-direction: row;
       padding: 0 15px;
+      justify-content: center;
       a {
         flex-grow: 1;
         min-width: 70px;
@@ -1393,7 +1394,7 @@ mm-search-bar {
   }
   .content {
     .page {
-      top:  @filters-bar-mobile-height;
+      top: calc(@filters-bar-mobile-height + 2px);
     }
     .meta {
       padding-bottom: 0;
@@ -1565,7 +1566,7 @@ mm-search-bar {
     padding-right: 6px;
   }
   .content .page {
-    top: @filters-bar-mobile-height;
+    top: calc(@filters-bar-mobile-height + 2px);
   }
   .mobile-only {
     display: initial;
