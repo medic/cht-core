@@ -33,7 +33,7 @@
         </a>
       </div>
 
-      <div class="nav-section" *ngIf="!replicationStatus?.disabled">
+      <div class="nav-section" *ngIf="!replicationStatus?.disabled && (replicationStatus?.lastSuccessTo || replicationStatus?.current)">
         <div class="nav-item" [class]="replicationStatus?.current?.className">
           <mat-icon [fontIcon]="replicationStatus?.current?.icon" *ngIf="replicationStatus?.current"></mat-icon>
           <div class="sync-summary">
