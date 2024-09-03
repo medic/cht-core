@@ -9,7 +9,7 @@
   text-align: center;
   position: relative;
   &, &:focus {
-    .button-text;
+    .button-text(@white);
   }
   &:hover, &.active {
     .button-text-hover;
@@ -18,7 +18,7 @@
 
 .mm-icon-inverse {
   &, &:focus {
-    .button-text-inverse;
+    .button-text-inverse(@gray-medium);
   }
 }
 
@@ -28,15 +28,6 @@
     cursor: default;
     pointer-events: none;
     .button-text-disabled;
-  }
-}
-
-.mm-icon-caption {
-  font-size: @font-small;
-  font-weight: bold;
-  p {
-    margin-top: 5px;
-    margin-bottom: 5px;
   }
 }
 

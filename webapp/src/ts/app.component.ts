@@ -44,11 +44,10 @@ import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
-import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -92,9 +91,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   canLogOut;
   replicationStatus;
   androidAppVersion;
-  reportForms;
   unreadCount = {};
-  useOldActionBar = false;
+  hasOldNav = false;
   initialisationComplete = false;
   trainingCardFormId = false;
 
@@ -308,7 +306,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.enableOldActionBar();
+    this.enableOldNav();
     this.subscribeToSideFilterStore();
   }
 
@@ -481,19 +479,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async subscribeToSideFilterStore() {
-    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
-
-    if (isDisabled) {
-      return;
-    }
-
     this.store
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
   }
 
-  private async enableOldActionBar() {
-    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
+  private async enableOldNav() {
+    this.hasOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
   }
 
   private initForms() {
@@ -535,25 +527,6 @@ export class AppComponent implements OnInit, AfterViewInit {
             });
             const forms = xFormSummaries.concat(jsonFormSummaries);
             this.globalActions.setForms(forms);
-          }
-        );
-
-        // ToDo: remove when deprecating Action Bar Component. This subscribe gets the forms for the Add Report action.
-        this.xmlFormsService.subscribe(
-          'AddReportMenu',
-          { reportForms: true },
-          (err, xForms) => {
-            if (err) {
-              return console.error('Error fetching form definitions', err);
-            }
-            this.reportForms = xForms
-              .map((xForm) => ({
-                id: xForm._id,
-                code: xForm.internalId,
-                icon: xForm.icon,
-                title: translateTitle(xForm.translation_key, xForm.title),
-              }))
-              .sort((a, b) => a.title - b.title);
           }
         );
 

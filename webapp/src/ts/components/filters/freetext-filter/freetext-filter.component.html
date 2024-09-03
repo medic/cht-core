@@ -1,4 +1,4 @@
-<span class="input-group freetext-filter" [class.disabled]="disabled" [class.mobile-dropdown]="mobileDropdown">
+<span class="input-group freetext-filter" [class.disabled]="disabled">
   <input
     #freetextInput
     id="freetext"
@@ -13,25 +13,4 @@
       <span class="fa fa-search"></span>
     </button>
   </span>
-</span>
-
-<span class="dropdown mobile-freetext-filter" [class.disabled]="disabled" *ngIf="mobileDropdown" dropdown [insideClick]="true">
-  <span id="mobile-search" class="mm-button" data-toggle="dropdown" dropdownToggle>
-    <span class="mm-button-icon">
-      <span class="fa fa-search"></span>
-    </span>
-    <span class="mm-button-dropdown">
-      <span class="fa fa-chevron-down"></span>
-    </span>
-  </span>
-  <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search" *dropdownMenu>
-    <span class="input-group">
-      <input id="mobile-freetext" class="form-control" [disabled]="disabled" type="text" [(ngModel)]="inputText" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
-      <span class="input-group-btn small-font">
-        <button id="mobile-search-go" class="btn btn-default" type="button" (click)="applyFilter()">
-          <span class="fa fa-search"></span>
-        </button>
-      </span>
-    </span>
-  </div>
 </span>

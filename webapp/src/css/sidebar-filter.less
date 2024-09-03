@@ -8,11 +8,6 @@
 }
 
 .sidebar-filter-active {
-  .inbox.page,
-  mm-actionbar .inner {
-    max-width: calc(100vw - @content-margin) !important;
-  }
-
   .sidebar-filter-wrapper {
     position: static;
     right: 0;
@@ -371,20 +366,9 @@
   }
 }
 
-@media (min-width: @content-width) {
-  .sidebar-filter-active {
-    mm-actionbar .inner {
-      margin-left: @content-margin !important;
-    }
-  }
-}
-
 @media (max-width: @media-mobile) {
-  .sidebar-filter-active {
-    .header,
-    .action-container {
-      z-index: 2;
-    }
+  .sidebar-filter-active .header {
+    z-index: 2;
   }
 
   .sidebar-filter {

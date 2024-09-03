@@ -1,0 +1,188 @@
+.app-root.old-nav {
+  &.messages {
+    .header .tabs .selected {
+      background-color: @messages-color;
+    }
+  }
+  &.tasks {
+    .header .tabs .selected {
+      background-color: @tasks-color;
+    }
+  }
+  &.reports {
+    .header .tabs .selected {
+      background-color: @reports-color;
+    }
+  }
+  &.analytics {
+    .header .tabs .selected {
+      background-color: @analytics-color;
+    }
+  }
+  &.contacts {
+    .header .tabs .selected {
+      background-color: @contacts-color;
+    }
+  }
+  &.user {
+    .header .tabs .selected {
+      background-color: @admin-color;
+    }
+  }
+  &.error,
+  &.testing {
+    .header .tabs .selected {
+      background-color: @error-color;
+    }
+  }
+
+  &.about,
+  &.testing,
+  &.privacy-policy {
+    .header .tabs .selected {
+      background-color: @messages-color;
+    }
+    .page {
+      top: @top-without-filter;
+    }
+  }
+
+  .header {
+    display: block;
+    padding-top: 5px;
+
+    .mm-icon {
+      margin: 0 auto;
+      font-size: 1.5rem;
+    }
+
+    .tabs {
+      a {
+        .mm-icon {
+          display: block;
+          svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+            &, &:before {
+              height: 24px;
+              max-width: 24px;
+            }
+          }
+        }
+        &.selected {
+          .button-label,
+          .mm-icon:hover,
+          .resource-icon {
+            .button-text;
+          }
+        }
+      }
+    }
+  }
+
+  .content {
+    .page {
+      top: 123px;
+    }
+  }
+
+  .mm-icon {
+    &, &:focus {
+      .button-text;
+    }
+    &:hover, &.active {
+      .button-text-hover;
+    }
+  }
+
+  .mm-icon-inverse {
+    &, &:focus {
+      .button-text-inverse;
+    }
+  }
+
+  .loading-status {
+    margin: 10px;
+  }
+}
+
+@media (max-width: @media-mobile) {
+  .app-root.old-nav {
+    .header {
+      background-color: @top-header-color;
+      position: relative;
+
+      .tabs {
+        padding: 0;
+      }
+
+      .inner {
+        height: @top-navbar-height;
+      }
+
+      .logo {
+        display: none;
+      }
+
+      .dropdown-menu {
+        margin: 30px 0 0 0;
+        top: 8px;
+        right: 5px;
+      }
+      .extras a {
+        padding-top: 2px;
+        margin-top: 2px;
+        .fa-bars {
+          font-size: @font-extra-extra-large;
+        }
+      }
+    }
+
+    .content {
+      .page {
+        top: 115px;
+      }
+    }
+
+    .fast-action-trigger:not(.embed-fast-action) {
+      bottom: 17px;
+    }
+
+    .targets .target:last-child {
+      margin-bottom: 10px;
+    }
+  }
+
+  #target-aggregates-list {
+    &.inbox-items {
+      padding-bottom: 0;
+    }
+  }
+}
+
+@media (max-width: @media-small-mobile) {
+  .old-nav {
+    .header {
+      .tabs {
+        padding-left: 2px;
+        a {
+          min-width: 40px;
+          .button-label {
+            font-size: @font-extra-extra-small;
+          }
+        }
+
+        // Use bigger font when there are 4 or less tabs.
+        .elements-label(a, button-label, 4, @font-extra-small);
+      }
+      .mm-badge-overlay {
+        right: 10%;
+      }
+      .inner {
+        height: @top-navbar-height;
+      }
+    }
+
+    .targets .target:last-child {
+      margin-bottom: 10px;
+    }
+  }
+}

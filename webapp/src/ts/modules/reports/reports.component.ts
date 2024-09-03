@@ -16,7 +16,6 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { AuthService } from '@mm-services/auth.service';
-import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
@@ -59,7 +58,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   selectModeAvailable = false;
   showContent?: boolean;
   enketoEdited?: boolean;
-  useSidebarFilter = true;
   isSidebarFilterOpen = false;
   isExporting = false;
   userParentPlace;
@@ -104,7 +102,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.error = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-    this.setActionBarData();
   }
 
   async ngAfterViewInit() {
@@ -122,14 +119,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsActions.setSelectedReports([]);
     this.globalActions.setSelectMode(false);
     this.globalActions.unsetSelected();
-    this.globalActions.setLeftActionBar({});
   }
 
   private async checkPermissions() {
     this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
     const isAdmin = this.sessionService.isAdmin();
-    const isDisabled = !isAdmin && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
-    this.useSidebarFilter = !isDisabled;
     this.canDefaultFilter = !isAdmin && this.isOnlineOnly && await this.authService.has(CAN_DEFAULT_FACILITY_FILTER);
   }
 
@@ -180,10 +174,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private subscribeSidebarFilter() {
-    if (!this.useSidebarFilter) {
-      return;
-    }
-
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
@@ -219,7 +209,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         if (change.deleted) {
           this.reportsActions.removeReportFromList({ _id: change.id });
           this.hasReports = this.reportsList.length;
-          this.setActionBarData();
         } else {
           this.query({ silent: true, limit: this.reportsList.length });
         }
@@ -301,7 +290,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.errorSyntax = false;
 
         this.initScroll();
-        this.setActionBarData();
       })
       .catch(err => {
         this.error = true;
@@ -377,19 +365,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   listTrackBy(index, report) {
     return report._id + report._rev + report.read + report.selected;
-  }
-
-  private setActionBarData() {
-    if (this.destroyed) {
-      // don't update the actionbar if the component has already been destroyed
-      // this callback can be queued up and persist even after component destruction
-      return;
-    }
-
-    this.globalActions.setLeftActionBar({
-      exportFn: () => this.exportReports(),
-      hasResults: this.hasReports,
-    });
   }
 
   exportReports() {

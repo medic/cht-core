@@ -20,14 +20,11 @@ import { AuthService } from '@mm-services/auth.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
-import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
-import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
@@ -56,7 +53,6 @@ describe('Contacts component', () => {
   let fastActionButtonService;
   let performanceService;
   let stopPerformanceTrackStub;
-  let globalActions;
   let district;
 
   beforeEach(waitForAsync(() => {
@@ -120,11 +116,6 @@ describe('Contacts component', () => {
       { selector: Selectors.getSelectedContact, value: selectedContact },
     ];
 
-    globalActions = {
-      setLeftActionBar: sinon.spy(GlobalActions.prototype, 'setLeftActionBar'),
-      updateLeftActionBar: sinon.spy(GlobalActions.prototype, 'updateLeftActionBar')
-    };
-
     return TestBed
       .configureTestingModule({
         imports: [
@@ -134,11 +125,9 @@ describe('Contacts component', () => {
         ],
         declarations: [
           ContactsComponent,
-          ContactsFiltersComponent,
           ContactsMoreMenuComponent,
           FreetextFilterComponent,
           NavigationComponent,
-          ResetFiltersComponent,
           SortFilterComponent,
           FastActionButtonComponent,
           SearchBarComponent
@@ -198,93 +187,6 @@ describe('Contacts component', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
-  });
-
-  describe('Action bar', () => {
-    it('should initialise action bar', fakeAsync(() => {
-      flush();
-
-      expect(globalActions.setLeftActionBar.callCount).to.equal(1);
-      expect(globalActions.setLeftActionBar.args[0][0].childPlaces.length).to.equal(0);
-      expect(globalActions.setLeftActionBar.args[0][0].hasResults).to.equal(false);
-      expect(globalActions.setLeftActionBar.args[0][0].userFacilityId).to.equal('district-id');
-      expect(globalActions.setLeftActionBar.args[0][0].exportFn).to.be.a('function');
-
-      expect(fastActionButtonService.getContactLeftSideActions.calledOnce).to.be.true;
-      expect(fastActionButtonService.getContactLeftSideActions.args[0][0].parentFacilityId).to.equal('district-id');
-      expect(fastActionButtonService.getContactLeftSideActions.args[0][0].childContactTypes.length).to.equal(0);
-    }));
-
-    it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
-      sinon.resetHistory();
-      contactTypesService.getChildren.resolves([
-        {
-          id: 'type1',
-          create_form: 'form:contact:create:type1',
-        },
-        {
-          id: 'type2',
-          create_form: 'form:contact:create:type2',
-        },
-        {
-          id: 'type3',
-          create_form: 'form:contact:create:type3',
-        },
-      ]);
-      const forms = [
-        { _id: 'form:contact:create:type3' },
-        { _id: 'form:contact:create:type2' },
-      ];
-
-      component.ngOnInit();
-      flush();
-
-      expect(xmlFormsService.subscribe.callCount).to.equal(1);
-      expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactForms');
-      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
-
-      xmlFormsService.subscribe.args[0][2](null, forms);
-
-      expect(globalActions.updateLeftActionBar.callCount).to.equal(1);
-      expect(globalActions.updateLeftActionBar.args[0][0].childPlaces).to.have.deep.members([
-        {
-          id: 'type2',
-          create_form: 'form:contact:create:type2',
-        },
-        {
-          id: 'type3',
-          create_form: 'form:contact:create:type3',
-        },
-      ]);
-
-      expect(fastActionButtonService.getContactLeftSideActions.calledTwice).to.be.true;
-      expect(fastActionButtonService.getContactLeftSideActions.args[1][0].childContactTypes).to.have.deep.members([
-        {
-          id: 'type2',
-          create_form: 'form:contact:create:type2',
-        },
-        {
-          id: 'type3',
-          create_form: 'form:contact:create:type3',
-        },
-      ]);
-
-      // Checking that childPlaces didn't changed after operations, because used in search feature.
-      expect(component.childPlaces).to.have.deep.members([
-        {
-          id: 'type1',
-          create_form: 'form:contact:create:type1',
-        },
-        {
-          id: 'type2',
-          create_form: 'form:contact:create:type2',
-        },
-        {
-          id: 'type3',
-          create_form: 'form:contact:create:type3',
-        },
-      ]);
-    }));
   });
 
   describe('Search', () => {
