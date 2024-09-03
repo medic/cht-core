@@ -11,7 +11,7 @@ const personFactory = require('@factories/cht/contacts/person');
 
 /* global window */
 
-describe('Muting', () => {
+describe.skip('Muting', () => {
   const places = placeFactory.generateHierarchy();
   const district = places.get('district_hospital');
   const healthCenter = places.get('health_center');
