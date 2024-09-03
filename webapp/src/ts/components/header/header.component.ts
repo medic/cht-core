@@ -5,7 +5,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
-import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
@@ -36,7 +35,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private store: Store,
     private settingsService: SettingsService,
     private headerTabsService: HeaderTabsService,
-    private authService: AuthService,
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
   ) {
