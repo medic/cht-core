@@ -80,9 +80,9 @@ export class ContactTypesService {
       .then(config => contactTypesUtils.getPersonTypes(config));
   }
 
-  async getPersonChildTypes(type) {
+  async getPlaceChildTypes(type) {
     const childTypes = await this.getChildren(type);
-    return childTypes.filter(type => contactTypesUtils.isPersonType(type));
+    return childTypes.filter(type => !contactTypesUtils.isPersonType(type));
   }
 
   /**

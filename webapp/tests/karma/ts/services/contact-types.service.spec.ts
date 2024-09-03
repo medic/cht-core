@@ -218,8 +218,8 @@ describe('ContactTypes service', () => {
     });
   });
 
-  describe('getPersonChildTypes', () => {
-    it('should return the child types that are persons', async () => {
+  describe('getPlaceChildTypes', () => {
+    it('should return the child types that are not persons', async () => {
       const types = [
         { id: 'region' },
         { id: 'district', parents: [] },
@@ -227,20 +227,18 @@ describe('ContactTypes service', () => {
         { id: 'family',   parents: [ 'suburb' ] },
         { id: 'chp',      parents: [ 'region', 'suburb' ], person: true },
         { id: 'patient',  parents: [ 'family' ], person: true },
-        { id: 'child',  parents: [ 'family' ], person: true },
       ];
       Settings.resolves({ contact_types: types });
 
-      expect(await service.getPersonChildTypes('family')).to.deep.equal([
-        { id: 'patient', parents: [ 'family' ], person: true },
-        { id: 'child', parents: [ 'family' ], person: true },
+      expect(await service.getPlaceChildTypes('region')).to.deep.equal([
+        { id: 'suburb', parents: [ 'region' ] },
       ]);
 
-      expect(await service.getPersonChildTypes('region')).to.deep.equal([
-        { id: 'chp', parents: [ 'region', 'suburb' ], person: true },
+      expect(await service.getPlaceChildTypes('suburb')).to.deep.equal([
+        { id: 'family', parents: [ 'suburb' ] },
       ]);
 
-      expect(await service.getPersonChildTypes('district')).to.deep.equal([]);
+      expect(await service.getPlaceChildTypes('family')).to.deep.equal([]);
     });
   });
 

@@ -7,11 +7,12 @@ if (contact.type === 'person') {
   fields = [{ label: 'test.pid', value: contact.patient_id, width: 3 }];
 }
 // eslint-disable-next-line no-undef
-if (cht.v1.context.targetDocs[0]) {
+const targetDocs = cht.v1.analytics.getTargetDocs();
+if (targetDocs) {
   // eslint-disable-next-line no-undef
   const targetIdx = contact.type === 'person' ? 0 : 1;
   // eslint-disable-next-line no-undef
-  const targetDoc = cht.v1.context.targetDocs[targetIdx];
+  const targetDoc = targetDocs[targetIdx];
   const card = {
     label: 'Activity this month',
     fields: [],

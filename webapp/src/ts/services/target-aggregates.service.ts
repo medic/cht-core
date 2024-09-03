@@ -295,7 +295,7 @@ export class TargetAggregatesService {
 
         const homePlaceType = this.contactTypesService.getTypeId(homePlaceSummary);
         return this.contactTypesService
-          .getPersonChildTypes(homePlaceType)
+          .getPlaceChildTypes(homePlaceType)
           .then(childTypes => {
             if (!childTypes.length) {
               return [];
