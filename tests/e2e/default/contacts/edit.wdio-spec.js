@@ -63,6 +63,7 @@ describe('Edit ', () => {
   it('should sync and update the offline user\'s home place', async () => {
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
+    await browser.debug();
     await commonPage.goToPeople();
     await commonPage.logout();
 
