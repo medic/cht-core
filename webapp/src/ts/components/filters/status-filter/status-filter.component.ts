@@ -1,27 +1,41 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
-import { Filter } from '@mm-components/filters/filter';
+import {
+  MultiDropdownFilterComponent,
+  MultiDropdownFilter,
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { InlineFilter } from '@mm-components/filters/inline-filter';
 
 @Component({
   selector: 'mm-status-filter',
   templateUrl: './status-filter.component.html'
 })
-export class StatusFilterComponent {
-  @Input() disabled;
-  @Input() fieldId;
-  @Output() search: EventEmitter<any> = new EventEmitter();
-  private globalActions: GlobalActions;
-  filter: Filter;
+export class StatusFilterComponent implements AbstractFilter {
+  private globalActions;
+  inlineFilter: InlineFilter;
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
   };
 
-  constructor(private store: Store) {
+  allStatuses = [...this.statuses.valid, ...this.statuses.verified];
+
+  @Input() disabled;
+  @Input() inline;
+  @Input() fieldId;
+  @Output() search: EventEmitter<any> = new EventEmitter();
+
+  // initialize variable to avoid change detection errors
+  @ViewChild(MultiDropdownFilterComponent) dropdownFilter = new MultiDropdownFilter();
+
+  constructor(
+    private store: Store,
+  ) {
     this.globalActions = new GlobalActions(store);
-    this.filter = new Filter(this.applyFilter.bind(this));
+    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   private getValidStatus(statuses) {
@@ -60,15 +74,24 @@ export class StatusFilterComponent {
     this.search.emit();
   }
 
+  getFilterLabel() {
+    return 'Any status';
+  }
+
   clear() {
     if (this.disabled) {
       return;
     }
 
-    this.filter.clear();
+    if (this.inline) {
+      this.inlineFilter.clear();
+      return;
+    }
+
+    this.dropdownFilter?.clear(false);
   }
 
   countSelected() {
-    return this.filter?.countSelected();
+    return this.inline && this.inlineFilter?.countSelected();
   }
 }

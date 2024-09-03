@@ -40,10 +40,6 @@ const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
-// Mobile
-const MOBILE_FILTER_TOP_BAR = '.filters';
-const mobileTopBarTitle = () => $(`${MOBILE_FILTER_TOP_BAR} .ellipsis-title`);
-
 //Hamburguer menu
 //User settings
 const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
@@ -170,12 +166,6 @@ const isTargetAggregatesMenuItemPresent = async () => {
 
 const isElementByIdPresent = async (elementId) => {
   return await (await $(`#${elementId}`)).isExisting();
-};
-
-const getHeaderTitleOnMobile = async () => {
-  return {
-    name: await mobileTopBarTitle().getText(),
-  };
 };
 
 const openHamburgerMenu = async () => {
@@ -538,6 +528,5 @@ module.exports = {
   goToUrl,
   getFastActionItemsLabels,
   getActionBarLabels,
-  getErrorLog,
-  getHeaderTitleOnMobile,
+  getErrorLog
 };

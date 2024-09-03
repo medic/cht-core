@@ -1,0 +1,269 @@
+<div class="container-fluid action-container">
+  <div class="row">
+    <div class="inner">
+
+      <!-- LEFT PANE -->
+      <div
+        class="general-actions left-pane"
+        *ngIf="currentTab === 'reports' && !selectMode"
+        [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
+        <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!reportForms?.length">
+          <a
+            mmAuth="can_edit"
+            class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
+            dropdownToggle dropdata-toggle="dropdown"
+            [ngClass]="{'mm-icon-disabled': !reportForms?.length}"
+          >
+            <span class="fa fa-plus"></span>
+            <p>{{'Submit Report' | translate}}</p>
+          </a>
+          <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
+            <li *ngFor="let form of reportForms; trackBy: trackById">
+              <a [routerLink]="['/reports', 'add', form.code]">
+                <span [innerHTML]="form.icon | resourceIcon"></span>
+                <span class="content">{{ form.title }}</span>
+              </a>
+            </li>
+          </ul>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption"
+             mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
+             *ngIf="actionBar?.left?.exportFn"
+             (click)="actionBar?.left?.exportFn($event)"
+             [ngClass]="{'mm-icon-disabled':  !actionBar?.left?.hasResults}"
+          >
+            <span class="fa fa-arrow-down"></span>
+            <p>{{'Export' | translate}}</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
+        <div test-id='create_places' class="actions dropup" mmAuth [mmAuthAny]="[ 'can_export_all', 'can_export_contacts', 'can_create_places', 'can_create_people' ]">
+          <a
+            *ngIf="actionBar?.left?.childPlaces?.length > 1"
+            mmAuth="can_edit" [mmAuthAny]="['can_create_places', 'can_create_people']"
+            class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle create-place"
+            data-toggle="dropdown"
+          >
+            <span class="fa fa-plus"></span>
+            <p>{{'Add place' | translate}}</p>
+          </a>
+
+          <ul
+            *ngIf="actionBar?.left?.childPlaces?.length > 1"
+            mmAuth="can_edit" [mmAuthAny]="['can_create_places', 'can_create_people']"
+            class="dropdown-menu mm-dropdown-menu with-icon"
+          >
+            <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
+              <a [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', child.id] : ['/', 'contacts', 'add', child.id]"
+                 [queryParams]="{ from: 'list' }"
+              >
+                <span [innerHTML]="child.icon | resourceIcon"></span>
+                <span class="content">{{ child.create_key | translate }}</span>
+              </a>
+            </li>
+          </ul>
+
+          <a
+            *ngIf="actionBar?.left?.childPlaces?.length === 1"
+            mmAuth="can_edit" [mmAuthAny]="['can_create_places', 'can_create_people']"
+            class="mm-icon mm-icon-inverse mm-icon-caption create-place"
+            [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
+            [queryParams]="{ from: 'list' }"
+          >
+            <span class="fa-stack">
+              <i [innerHTML]="actionBar.left.childPlaces[0].icon | resourceIcon"></i>
+              <i class="fa fa-plus fa-stack-1x"></i>
+            </span>
+            <p>{{ actionBar.left.childPlaces[0].create_key | translate}}</p>
+          </a>
+
+          <a *ngIf="actionBar?.left?.exportFn"
+             mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_contacts']"
+             class="mm-icon mm-icon-inverse mm-icon-caption"
+             (click)="actionBar?.left?.exportFn()"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
+          >
+            <span class="fa fa-arrow-down"></span>
+            <p>{{'Export' | translate}}</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'messages'">
+        <div class="actions dropup">
+          <a
+            class="mm-icon mm-icon-inverse mm-icon-caption send-message"
+            mmAuth="can_edit"
+            *ngIf="actionBar?.left?.openSendMessageModal"
+            (click)="actionBar?.left?.openSendMessageModal($event)"
+          >
+            <span class="fa fa-plus"></span>
+            <p>{{'Send Message' | translate}}</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption"
+             *ngIf="actionBar?.left?.exportFn"
+             mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
+             (click)="actionBar?.left?.exportFn()"
+             [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}"
+          >
+            <span class="fa fa-arrow-down"></span>
+            <p>{{'Export' | translate}}</p>
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT PANE -->
+
+      <div
+        class="detail-actions right-pane"
+        *ngIf="currentTab === 'reports'"
+        [ngClass]="{ 'col-sm-6': sidebarFilter?.isOpen, 'col-sm-8': !sidebarFilter?.isOpen }">
+        <div *ngIf="!selectMode">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportDoc && !loadingContent && snapshotData?.name === 'reports.detail'">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+              <span class="fa fa-envelope"></span>
+              <p>{{'Send Message' | translate}}</p>
+            </a>
+            <a mmAuth="can_edit" class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" *ngIf="actionBar?.right?.openSendMessageModal" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+              <span class="fa fa-envelope"></span>
+              <p>{{'Send Message' | translate}}</p>
+            </a>
+            <div class="dropdown-menu sub-actions" *ngIf="actionBar?.right?.verifyingReport && loadingSubActionBar">
+              <div class="loader"></div>
+            </div>
+            <div test-id="report-review-menu" class="dropdown-menu sub-actions" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
+              <a class="mm-icon mm-icon-caption verify-error" [ngClass]="{ active: actionBar?.right?.verified === false }" (click)="verifyReport(false)">
+                <report-verify-invalid-icon class="verify-icon"></report-verify-invalid-icon>
+                <span>{{'reports.verify.invalid' | translate}}</span>
+              </a>
+              <a class="mm-icon mm-icon-caption verify-valid" [ngClass]="{ active: actionBar?.right?.verified }" (click)="verifyReport(true)">
+                <report-verify-valid-icon class="verify-icon"></report-verify-valid-icon>
+                <span>{{'reports.verify.valid' | translate}}</span>
+              </a>
+            </div>
+            <a test-id="report-review-button" class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
+              <span class="fa fa-check"></span>
+              <p>{{'reports.verify' | translate}}</p>
+            </a>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_edit,can_update_reports" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
+              <span class="fa fa-pencil"></span>
+              <p>{{'Edit' | translate}}</p>
+            </a>
+            <a mmAuth="can_edit" class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type !== 'xml'" (click)="launchEditFacilityDialog()">
+              <span class="fa fa-pencil"></span>
+              <p>{{'Update Facility' | translate}}</p>
+            </a>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportDoc)" mmAuth="can_edit,can_delete_reports">
+              <span class="fa fa-trash-o"></span>
+              <p>{{'Delete' | translate}}</p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'contacts'">
+        <div class="actions dropup" *ngIf="showActionBar && selectedContactDoc && !loadingContent && snapshotData?.name === 'contacts.detail'">
+          <span mmAuth="can_edit">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
+              <span class="fa-stack">
+                <i class="fa fa-list-alt"></i>
+                <i class="fa fa-plus fa-stack-1x"></i>
+              </span>
+              <p>{{'action.report.add' | translate}}</p>
+            </a>
+            <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
+              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackById" [attr.id]="form.id">
+                <a (click)="actionBar.right.openContactMutedModal(form)">
+                  <span [innerHTML]="form.icon | resourceIcon"></span>
+                  <span class="content">{{ form.title }}</span>
+                </a>
+              </li>
+            </ul>
+          </span>
+
+          <span test-id="rhs_add_contact" *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ 'can_edit,' + group.permission }}">
+            <ng-container *ngIf="group.types?.length > 1">
+              <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown">
+                <span class="fa-stack">
+                  <i class="fa {{ group.menu_icon }}"></i>
+                  <i class="fa fa-plus fa-stack-1x"></i>
+                </span>
+                <p attr.test-key="{{group.menu_key}}">{{ group.menu_key | translate}}</p>
+              </a>
+              <ul class="dropdown-menu mm-dropdown-menu with-icon">
+                <li *ngFor="let type of group.types; trackBy: trackById">
+                  <a [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', type.id]">
+                    <span [innerHTML]="type.icon | resourceIcon"></span>
+                    <span class="content">{{ type.create_key | translate}}</span>
+                  </a>
+                </li>
+              </ul>
+            </ng-container>
+
+            <a *ngIf="group.types?.length === 1"
+               class="mm-icon mm-icon-inverse mm-icon-caption"
+               [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', group.types[0]?.id]"
+            >
+              <span class="fa-stack">
+                <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
+                <i class="fa fa-plus fa-stack-1x"></i>
+              </span>
+              <p attr.test-key="{{group.types[0]?.create_key}}">{{ group.types[0]?.create_key | translate}}</p>
+            </a>
+          </span>
+
+          <a
+            *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_view_call_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+            [attr.href]="'tel:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+          >
+            <span class="fa fa-phone"></span>
+            <p>{{'call' | translate}}</p>
+          </a>
+          <a
+            *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_view_message_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+            [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+          >
+            <span class="fa fa-envelope"></span>
+            <p>{{'Send Message' | translate}}</p>
+          </a>
+          <a
+            *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_edit,can_view_message_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+            (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
+          >
+            <span class="fa fa-envelope"></span>
+            <p>{{'Send Message' | translate}}</p>
+          </a>
+
+          <a mmAuth="can_edit"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            [routerLink]="['/', 'contacts', selectedContactDoc._id, 'edit']"
+            [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
+          >
+            <span class="fa fa-pencil"></span>
+            <p>{{'Edit' | translate}}</p>
+          </a>
+
+          <a mmAuth="can_edit,can_delete_contacts"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            (click)="deleteDoc(selectedContactDoc)"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
+          >
+            <span class="fa fa-trash-o"></span>
+            <p>{{'Delete' | translate}}</p>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

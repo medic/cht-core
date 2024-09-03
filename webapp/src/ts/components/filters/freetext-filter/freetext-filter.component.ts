@@ -4,22 +4,26 @@ import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-freetext-filter',
   templateUrl: './freetext-filter.component.html'
 })
-export class FreetextFilterComponent implements OnDestroy, OnInit {
+export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   private globalActions;
 
   subscription: Subscription = new Subscription();
   inputText;
 
   @Input() disabled;
+  @Input() mobileDropdown;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild('freetextInput') inputElement;
 
-  constructor(private store: Store) {
+  constructor(
+    private store: Store,
+  ) {
     this.globalActions = new GlobalActions(store);
   }
 

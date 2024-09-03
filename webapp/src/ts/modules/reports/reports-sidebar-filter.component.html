@@ -27,7 +27,8 @@
               class="filter"
               fieldId="formFilter"
               (search)="applyFilters()"
-              [disabled]="disabled">
+              [disabled]="disabled"
+              [inline]="true">
             </mm-form-type-filter>
           </mat-panel-description>
         </mat-expansion-panel>
@@ -49,7 +50,8 @@
               class="filter"
               fieldId="placeFilter"
               (search)="applyFilters()"
-              [disabled]="disabled">
+              [disabled]="disabled"
+              [inline]="true">
             </mm-facility-filter>
           </mat-panel-description>
         </mat-expansion-panel>
@@ -108,7 +110,8 @@
               class="filter"
               fieldId="statusFilter"
               (search)="applyFilters()"
-              [disabled]="disabled">
+              [disabled]="disabled"
+              [inline]="true">
             </mm-status-filter>
           </mat-panel-description>
         </mat-expansion-panel>

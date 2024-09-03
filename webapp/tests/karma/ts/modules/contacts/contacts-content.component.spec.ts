@@ -14,6 +14,7 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ModalService } from '@mm-services/modal.service';
 import { GlobalActions } from '@mm-actions/global';
 import { SettingsService } from '@mm-services/settings.service';
@@ -39,6 +40,7 @@ describe('Contacts content component', () => {
   let contactChangeFilterService;
   let selectedContact;
   let xmlFormsService;
+  let translateFromService;
   let modalService;
   let globalActions;
   let settingsService;
@@ -62,6 +64,7 @@ describe('Contacts content component', () => {
     settings = {};
     settingsService = { get: sinon.stub().resolves(settings) };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub() };
     sessionService = {
       isAdmin: sinon.stub().returns(false),
@@ -81,6 +84,8 @@ describe('Contacts content component', () => {
       includes: sinon.stub()
     };
     globalActions = {
+      setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
+      updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar'),
       unsetSelected: sinon.spy(GlobalActions.prototype, 'unsetSelected'),
     };
     mutingTransition = { isUnmuteForm: sinon.stub() };
@@ -133,6 +138,7 @@ describe('Contacts content component', () => {
           { provide: SessionService, useValue: sessionService },
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: TranslateFromService, useValue: translateFromService },
           { provide: ModalService, useValue: modalService },
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ContactMutedService, useValue: contactMutedService },
@@ -170,6 +176,8 @@ describe('Contacts content component', () => {
 
     expect(unsubscribeSpy.calledOnce).to.be.true;
     expect(clearSelectionStub.calledOnce).to.be.true;
+    expect(globalActions.setRightActionBar.calledOnce).to.be.true;
+    expect(globalActions.setRightActionBar.args[0][0]).to.deep.equal({});
   });
 
   describe('load the user home place on mobile', () => {
@@ -353,4 +361,490 @@ describe('Contacts content component', () => {
       expect(!!component.summaryErrorStack).to.be.false;
     });
   });
+
+  describe('Action bar', () => {
+    it('should initialise action bar', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].openContactMutedModal).to.be.a('function');
+      expect(globalActions.setRightActionBar.args[0][0].openSendMessageModal).to.be.a('function');
+      expect(globalActions.setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
+      expect(globalActions.setRightActionBar.args[0][0].sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledOnce).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].xmlReportForms).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].childContactTypes).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
+    }));
+
+    it('should not initialise action bar when there is not selected contact', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContactDoc, undefined);
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(globalActions.setRightActionBar.notCalled).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+      expect(xmlFormsService.subscribe.notCalled).to.be.true;
+      expect(userSettingsService.get.notCalled).to.be.true;
+      expect(settingsService.get.notCalled).to.be.true;
+      expect(contactTypesService.getChildren.notCalled).to.be.true;
+    }));
+
+    it('should enable edit and delete in the right action bar when user is online only', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isOnlineOnly.returns(true);
+      store.overrideSelector(Selectors.getSelectedContact, {
+        type: { person: true },
+        doc: { phone: '11', muted: true },
+        summary: { context: 'test' },
+        children: [
+          { _id: '1', contacts: [], type: {} },
+          { _id: '2', type: {} }
+        ]
+      });
+      store.overrideSelector(Selectors.getSelectedContactDoc, { phone: '11', muted: true });
+      store.overrideSelector(Selectors.getSelectedContactChildren, [
+        { contacts: [], type: { id: 'type1', person: true } },
+        { contact: [], type: { id: 'type2', person: false } },
+      ]);
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(true);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+    }));
+
+    it('should disable edit when user is not online only and facility is home place ', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isOnlineOnly.returns(false);
+      userSettingsService.get.resolves({ facility_id: 'district-123' });
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
+      expect(!!component.summaryErrorStack).to.be.false;
+    }));
+
+    it('should enable edit when user is not online only and facility is not home place ', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isOnlineOnly.returns(false);
+
+      component.userSettings = { facility_id: 'district-9' };
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+      expect(!!component.summaryErrorStack).to.be.false;
+    }));
+
+    it('should enable delete when selected contact has no children', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContactChildren, [
+        { contacts: [], type: { id: 'type1', person: true } },
+        { contact: [], type: { id: 'type2', person: false } },
+      ]);
+      component.userSettings = { facility_id: 'other-district' };
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(true);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+      expect(!!component.summaryErrorStack).to.be.false;
+    }));
+
+    it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      contactTypesService.getChildren.resolves([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      const forms = [
+        { _id: 'form:contact:create:type3' },
+        { _id: 'form:contact:create:type2' },
+      ];
+
+      component.ngOnInit();
+      flush();
+
+      expect(!!component.summaryErrorStack).to.be.false;
+      expect(xmlFormsService.subscribe.callCount).to.equal(2);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactChildrenForms');
+      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
+
+      xmlFormsService.subscribe.args[0][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        childTypes: [
+          {
+            menu_icon: 'fa-building',
+            menu_key: 'Add place',
+            permission: 'can_create_places',
+            types: [
+              {
+                create_form: 'form:contact:create:type2',
+                id: 'type2'
+              },
+              {
+                create_form: 'form:contact:create:type3',
+                id: 'type3'
+              }
+            ]
+          }
+        ]
+      });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledTwice).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].xmlReportForms).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].childContactTypes).to.have.deep.members([
+        { create_form: 'form:contact:create:type2', id: 'type2', permission: 'can_create_places' },
+        { create_form: 'form:contact:create:type3', id: 'type3', permission: 'can_create_places' },
+      ]);
+    }));
+
+    it('should set relevant report forms based on the selected contact when muted', fakeAsync(() => {
+      sinon.resetHistory();
+      const forms = [
+        { _id: 'form:test_report_type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:test_report_type2', title: 'Type 2', internalId: 2, icon: 'b' },
+      ];
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+      contactMutedService.getMuted.returns(true);
+      mutingTransition.isUnmuteForm
+        .withArgs(2).returns(true)
+        .withArgs(3).returns(false);
+
+      component.ngOnInit();
+      flush();
+
+      expect(!!component.summaryErrorStack).to.be.false;
+      expect(xmlFormsService.subscribe.callCount).to.equal(2);
+      expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
+      expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
+        reportForms: true,
+        contactSummary: 'test',
+        doc: { _id: 'district-123', phone: '123', muted: true }
+      });
+
+      xmlFormsService.subscribe.args[1][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        relevantForms: [
+          {
+            id: 'form:test_report_type2',
+            code: 2,
+            icon: 'b',
+            showUnmuteModal: false,
+            title: 'Type 2',
+            titleKey: undefined,
+          },
+          {
+            id: 'form:test_report_type3',
+            code: 3,
+            icon: 'a',
+            showUnmuteModal: true,
+            title: 'Type 3',
+            titleKey: undefined,
+          }
+        ]
+      });
+      expect(mutingTransition.isUnmuteForm.callCount).to.equal(2);
+      expect(mutingTransition.isUnmuteForm.args).to.have.deep.members([
+        [2, settings],
+        [3, settings],
+      ]);
+
+      expect(fastActionButtonService.getContactRightSideActions.calledTwice).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].childContactTypes).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].xmlReportForms).to.have.deep.members([
+        {
+          id: 'form:test_report_type2',
+          code: 2,
+          icon: 'b',
+          showUnmuteModal: false,
+          title: 'Type 2',
+          titleKey: undefined,
+        },
+        {
+          id: 'form:test_report_type3',
+          code: 3,
+          icon: 'a',
+          showUnmuteModal: true,
+          title: 'Type 3',
+          titleKey: undefined,
+        }
+      ]);
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
+    }));
+
+    it('should set relevant report forms based on the selected contact when not muted', fakeAsync(() => {
+      sinon.resetHistory();
+      const forms = [
+        { _id: 'form:test_report_type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:test_report_type2', title: 'Type 2', internalId: 2, icon: 'b' },
+      ];
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123' },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+      contactMutedService.getMuted.returns(false);
+      mutingTransition.isUnmuteForm
+        .withArgs(2).returns(true)
+        .withArgs(3).returns(false);
+
+      component.ngOnInit();
+      flush();
+
+      expect(!!component.summaryErrorStack).to.be.false;
+      expect(xmlFormsService.subscribe.callCount).to.equal(2);
+      expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
+      expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
+        reportForms: true,
+        contactSummary: 'test',
+        doc: { _id: 'district-123', phone: '123' }
+      });
+
+      xmlFormsService.subscribe.args[1][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        relevantForms: [
+          {
+            id: 'form:test_report_type2',
+            code: 2,
+            icon: 'b',
+            showUnmuteModal: false,
+            title: 'Type 2',
+            titleKey: undefined,
+          },
+          {
+            id: 'form:test_report_type3',
+            code: 3,
+            icon: 'a',
+            showUnmuteModal: false,
+            title: 'Type 3',
+            titleKey: undefined,
+          }
+        ]
+      });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledTwice).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].childContactTypes).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].xmlReportForms).to.have.deep.members([
+        {
+          id: 'form:test_report_type2',
+          code: 2,
+          icon: 'b',
+          showUnmuteModal: false,
+          title: 'Type 2',
+          titleKey: undefined,
+        },
+        {
+          id: 'form:test_report_type3',
+          code: 3,
+          icon: 'a',
+          showUnmuteModal: false,
+          title: 'Type 3',
+          titleKey: undefined,
+        }
+      ]);
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+      });
+    }));
+
+    it('should update action bar forms list when contact summary changes', fakeAsync(() => {
+      flush();
+
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContactSummary, {});
+      store.refreshState();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(0);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+      expect(xmlFormsService.subscribe.callCount).to.equal(1);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactReportForms');
+
+      const forms = [
+        { _id: 'form:test_report_type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:test_report_type2', title: 'Type 2', internalId: 2, icon: 'b' },
+      ];
+
+      xmlFormsService.subscribe.args[0][2](null, forms);
+
+      expect(!!component.summaryErrorStack).to.be.false;
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        relevantForms: [
+          {
+            id: 'form:test_report_type2',
+            code: 2,
+            icon: 'b',
+            showUnmuteModal: undefined,
+            title: 'Type 2',
+            titleKey: undefined,
+          },
+          {
+            id: 'form:test_report_type3',
+            code: 3,
+            icon: 'a',
+            showUnmuteModal: undefined,
+            title: 'Type 3',
+            titleKey: undefined,
+          }
+        ]
+      });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledOnce).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].xmlReportForms).to.have.deep.members([
+        {
+          id: 'form:test_report_type2',
+          code: 2,
+          icon: 'b',
+          showUnmuteModal: undefined,
+          title: 'Type 2',
+          titleKey: undefined,
+        },
+        {
+          id: 'form:test_report_type3',
+          code: 3,
+          icon: 'a',
+          showUnmuteModal: undefined,
+          title: 'Type 3',
+          titleKey: undefined,
+        }
+      ]);
+    }));
+
+    it('should not set relevant report forms when summary is not loaded yet', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: undefined,
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
+      flush();
+
+      expect(!!component.summaryErrorStack).to.be.false;
+      expect(xmlFormsService.subscribe.callCount).to.equal(1);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactChildrenForms');
+    }));
+  });
+
 });

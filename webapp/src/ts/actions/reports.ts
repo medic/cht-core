@@ -19,9 +19,12 @@ export const Actions = {
   launchEditFacilityDialog: createAction('LAUNCH_EDIT_FACILITY_DIALOG'),
   setSelectedReportDocProperty: createMultiValueAction('SET_SELECTED_REPORT_DOC_PROPERTY'),
   setSelectedReportFormattedProperty: createMultiValueAction('SET_SELECTED_REPORT_FORMATTED_PROPERTY'),
+
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
   resetReportsList: createAction('RESET_REPORTS_LIST'),
+
+  setRightActionBar: createAction('SET_RIGHT_ACTION_BAR_REPORTS'),
   setTitle: createSingleValueAction('SET_REPORTS_TITLE', 'selected'),
 };
 
@@ -74,6 +77,10 @@ export class ReportsActions {
     return this.store.dispatch(Actions.setVerifyingReport(verifyingReport));
   }
 
+  setRightActionBar() {
+    return this.store.dispatch(Actions.setRightActionBar());
+  }
+
   setTitle(selected) {
     return this.store.dispatch(Actions.setTitle(selected));
   }
@@ -93,6 +100,11 @@ export class ReportsActions {
 
   launchEditFacilityDialog() {
     this.store.dispatch(Actions.launchEditFacilityDialog());
+  }
+
+  toggleVerifyingReport() {
+    this.store.dispatch(Actions.toggleVerifyingReport());
+    this.setRightActionBar();
   }
 
   verifyReport(verified) {

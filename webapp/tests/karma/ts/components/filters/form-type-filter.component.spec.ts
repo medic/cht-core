@@ -4,10 +4,14 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 
@@ -25,12 +29,14 @@ describe('Form Type Filter Component', () => {
       .configureTestingModule({
         imports: [
           BrowserAnimationsModule,
+          BsDropdownModule.forRoot(),
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           FormsModule,
         ],
         declarations: [
           FormTypeFilterComponent,
+          MultiDropdownFilterComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -85,25 +91,36 @@ describe('Form Type Filter Component', () => {
     expect(setFilter.args[0]).to.deep.equal([{ forms: { selected: forms } }]);
   });
 
-  it('should clear the filter', () => {
-    const filterClearSpy = sinon.spy(component.filter, 'clear');
-    component.filter.selected.add('form-1');
-    component.filter.selected.add('form-2');
+  it('should clear dropdown filter', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
 
     component.clear();
 
-    expect(filterClearSpy.calledOnce).to.be.true;
-    expect(component.filter.selected.size).to.equal(0);
+    expect(dropdownFilterClearSpy.callCount).to.equal(1);
+    expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
   });
 
-  it('should count selected items in the filter', () => {
-    const filterCountSelectedSpy = sinon.spy(component.filter, 'countSelected');
-    component.filter.selected.add('form-1');
-    component.filter.selected.add('form-2');
+  it('should clear inline filter', () => {
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.inlineFilter.selected.add('form-1');
+    component.inlineFilter.selected.add('form-2');
+    component.inline = true;
+
+    component.clear();
+
+    expect(inlineFilterClearSpy.calledOnce).to.be.true;
+    expect(component.inlineFilter.selected.size).to.equal(0);
+  });
+
+  it('should count selected items in inline filter', () => {
+    const inlineFilterCountSelectedSpy = sinon.spy(component.inlineFilter, 'countSelected');
+    component.inlineFilter.selected.add('form-1');
+    component.inlineFilter.selected.add('form-2');
+    component.inline = true;
 
     const result = component.countSelected();
 
-    expect(filterCountSelectedSpy.calledOnce).to.be.true;
+    expect(inlineFilterCountSelectedSpy.calledOnce).to.be.true;
     expect(result).to.equal(2);
   });
 
@@ -181,11 +198,15 @@ describe('Form Type Filter Component', () => {
   }));
 
   it('should do nothing if component is disabled', () => {
-    const filterClearSpy = sinon.spy(component.filter, 'clear');
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
     component.disabled = true;
 
     component.clear();
+    component.inline = true;
+    component.clear();
 
-    expect(filterClearSpy.notCalled).to.be.true;
+    expect(dropdownFilterClearSpy.notCalled).to.be.true;
+    expect(inlineFilterClearSpy.notCalled).to.be.true;
   });
 });

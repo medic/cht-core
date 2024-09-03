@@ -10,14 +10,16 @@ interface LocaleWithWeekSpec extends moment.Locale {
 }
 
 import { GlobalActions } from '@mm-actions/global';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { ResponsiveService } from '@mm-services/responsive.service';
 import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html'
 })
-export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
-  private globalActions: GlobalActions;
+export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, AfterViewInit {
+  private globalActions;
   private subscription: Subscription = new Subscription();
   inputLabel;
   error?: string;
@@ -27,6 +29,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   @Input() disabled;
+  @Input() isRange;
   @Input() isStartDate;
   @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
@@ -34,6 +37,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private store: Store,
+    private responsiveService: ResponsiveService,
     private datePipe: DatePipe,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -53,8 +57,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     const datepicker:any = $(`#${this.fieldId}`).daterangepicker(
       {
-        singleDatePicker: true,
-        startDate: moment(),
+        singleDatePicker: !this.isRange,
+        startDate: this.isRange ? moment().subtract(1, 'months') : moment(),
         endDate: moment(),
         maxDate: moment(),
         opens: 'center',
@@ -86,6 +90,9 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
     });
 
     datepicker.on('hide.daterangepicker', (element, picker) => {
+      if (this.isRange) {
+        return;
+      }
       let date = this.isStartDate ? this.dateRange.from : this.dateRange.to;
       if (!date) {
         date = moment();
@@ -97,6 +104,21 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
         picker.setEndDate(date);
       }
     });
+
+    datepicker.on('mm.dateSelected.daterangepicker', (e, picker) => {
+      if (this.responsiveService.isMobile() && this.isRange) {
+        // mobile version - only show one calendar at a time
+        if (picker.container.is('.show-from')) {
+          picker.container.removeClass('show-from').addClass('show-to');
+        } else {
+          picker.container.removeClass('show-to').addClass('show-from');
+        }
+      }
+    });
+
+    if (this.isRange) {
+      $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
+    }
   }
 
   private setError(error) {
@@ -115,17 +137,27 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
     return true;
   }
 
-  applyFilter(dateRange) {
+  applyFilter(dateRange, skipSearch?) {
     if (!this.validateDateRange(dateRange)) {
       return;
     }
 
     this.globalActions.setFilter({ date: dateRange });
 
+    if (skipSearch) {
+      // ToDo: Backward compatibility with the "reports-filters" component, remove this "skipSearch"
+      //  once we delete that component. The new "mm-reports-sidebar-filter" doesn't need it.
+      return;
+    }
+
     this.search.emit();
   }
 
   private createDateRange(from, to) {
+    if (this.isRange) {
+      return { from, to };
+    }
+
     if (this.isStartDate) {
       return { ...this.dateRange, from };
     }
@@ -141,12 +173,12 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
       rect.right <= (window.innerWidth || document.documentElement.clientWidth);
   }
 
-  clear() {
+  clear(skipSearch?) {
     if (this.disabled) {
       return;
     }
 
-    this.applyFilter(undefined);
+    this.applyFilter(undefined, skipSearch);
   }
 
   countSelected() {
@@ -156,17 +188,22 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   setLabel(dateRange) {
     this.inputLabel = '';
+    const divider = ' - ';
     const format = 'd MMM';
     const dates = {
       from: dateRange.from ? this.datePipe.transform(dateRange.from, format) : undefined,
       to: dateRange.to ? this.datePipe.transform(dateRange.to, format) : undefined,
     };
 
-    if (dates.from && this.isStartDate) {
+    if (dates.from && (this.isRange || this.isStartDate)) {
       this.inputLabel += dates.from;
     }
 
-    if (dates.to && !this.isStartDate) {
+    if (this.isRange && dates.to) {
+      this.inputLabel += divider;
+    }
+
+    if (dates.to && (this.isRange || !this.isStartDate)) {
       this.inputLabel += dates.to;
     }
   }

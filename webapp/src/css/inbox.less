@@ -20,7 +20,6 @@
 @import 'about';
 @import 'error-log';
 @import 'tooltip';
-@import 'old-nav';
 
 .container-fluid {
   overflow: hidden;
@@ -28,43 +27,64 @@
 
 body {
   overflow-y: hidden;
-  .app-root {
-    &.messages .filters {
+  .app-root.messages {
+    .header .tabs .selected,
+    .filters {
       background-color: @messages-color;
     }
-    &.tasks .filters {
+  }
+  .app-root.tasks {
+    .header .tabs .selected,
+    .filters {
       background-color: @tasks-color;
     }
-    &.reports .filters {
+  }
+  .app-root.reports {
+    .header .tabs .selected,
+    .filters {
       background-color: @reports-color;
     }
-    &.analytics .filters {
+  }
+  .app-root.analytics {
+    .header .tabs .selected,
+    .filters {
       background-color: @analytics-color;
     }
-    &.contacts .filters {
+  }
+  .app-root.contacts {
+    .header .tabs .selected,
+    .filters {
       background-color: @contacts-color;
     }
-    &.user .filters {
+  }
+  .app-root.user {
+    .header .tabs .selected,
+    .filters {
       background-color: @admin-color;
     }
-    &.error .filters,
-    &testing .filters {
-      background-color: @error-color;
+  }
+  .app-root.about,
+  .app-root.testing,
+  .app-root.privacy-policy {
+    .header .tabs .selected,
+    .filters {
+      background-color: @help-color;
     }
-
-    &.about,
-    &.testing,
-    &.privacy-policy {
-      .filters {
-        background-color: @help-color;
-        height: 0;
-      }
-      .page {
-        top: 25px;
-      }
-      .partners > h3 {
-        margin-top: 100px;
-      }
+    .filters {
+      height: 0;
+    }
+    .page {
+      top: 75px;
+    }
+    .partners > h3 {
+      margin-top: 100px;
+    }
+  }
+  .app-root.error,
+  .app-root.testing {
+    .header .tabs .selected,
+    .filters {
+      background-color: @error-color;
     }
   }
 }
@@ -94,7 +114,6 @@ body {
 }
 
 .header {
-  display: none;
   background-color: @top-header-color;
   text-align: center;
   padding-top: 5px;
@@ -103,7 +122,7 @@ body {
   .button-text-inverse;
 
   .inner {
-    height: @top-navbar-height;
+    height: 60px;
   }
 
   a {
@@ -114,7 +133,7 @@ body {
 
   .mm-icon {
     margin: 0 auto;
-    font-size: @font-extra-large;
+    font-size: 1.5rem;
   }
 
   .logo {
@@ -156,7 +175,7 @@ body {
     }
 
     .open > a {
-      background-color: @white;
+      background-color: #ffffff;
 
       .mm-icon {
         color: @top-header-color;
@@ -182,13 +201,13 @@ body {
     a {
       text-shadow: none;
       padding: 10px 20px;
-      color: @gray-ultra-darker;
+      color: #262626;
       margin-top: 0;
       white-space: normal;
-      font-size: @font-medium;
+      font-size: 1rem;
     }
     .disabled a {
-      color: @gray-disabled;
+      color: #999999;
     }
     .divider {
       margin: 0;
@@ -221,8 +240,6 @@ body {
     .button-label {
       top: -5px;
       position: relative;
-      overflow: hidden;
-      word-wrap: break-word;
     }
 
     a {
@@ -240,8 +257,8 @@ body {
           &, &:before {
             display: block;
             margin: auto;
-            height: 20px;
-            max-width: 20px;
+            height: 24px;
+            max-width: 24px;
             overflow: hidden;
           }
         }
@@ -251,7 +268,61 @@ body {
         .button-label,
         .mm-icon:hover,
         .resource-icon {
-          .button-text(@white);
+          .button-text;
+        }
+      }
+
+      @media (hover: hover) { // Prevents sticky hover state in mobile devices.
+        &:hover:not(.selected) {
+          &.messages-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @messages-color;
+              fill: @messages-color;
+            }
+          }
+
+          &.tasks-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @tasks-color;
+              fill: @tasks-color;
+            }
+          }
+
+          &.reports-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @reports-color;
+              fill: @reports-color;
+            }
+          }
+
+          &.analytics-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @analytics-color;
+              fill: @analytics-color;
+            }
+          }
+
+          &.contacts-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @contacts-color;
+              fill: @contacts-color;
+            }
+          }
         }
       }
 
@@ -271,7 +342,7 @@ body {
 }
 
 .filters {
-  height: @filters-bar-desktop-height;
+  height: 58px;
   white-space: nowrap;
   padding: 5px 0;
 
@@ -279,7 +350,6 @@ body {
     display: none;
     float: left;
     text-align: center;
-    padding-top: 3px;
     padding-right: 50px;
     a {
       display: inline-block;
@@ -325,21 +395,36 @@ body {
     width: 100%;
   }
 
-  .right-side-filter {
-    margin-left: auto;
-    .open-filter-label {
-      color: @filter-text-color;
-    }
-    .btn.open-filter {
-      background-color: transparent;
-      margin: 0;
-      outline: none;
-      border: none;
-      box-shadow: none;
-      .fa {
-        font-size: @font-extra-large;
-        color: @filter-icon-color;
-        padding: 2px 2px 0 0;
+  .basic-filters,
+  .navigation {
+    padding-top: 3px;
+  }
+
+  .basic-filters {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    right: 0;
+    display: flex;
+    .right-side-filter {
+      margin-left: auto;
+      .open-filter-label {
+        color: @filter-text-color;
+      }
+      .btn.open-filter {
+        background-color: transparent;
+        margin: 0;
+        &:focus,
+        &:active {
+          outline: none;
+          border: none;
+          box-shadow: none;
+        }
+        .fa {
+          font-size: @font-extra-large;
+          color: @filter-icon-color;
+          padding: 2px 2px 0 0;
+        }
       }
     }
   }
@@ -375,6 +460,7 @@ body {
     }
   }
 
+  .reset-filter,
   .sort-results {
     line-height: 40px;
     > a {
@@ -403,14 +489,6 @@ body {
   }
 }
 
-.analytics .filters {
-  display: flex;
-  width: 100vw;
-  .analytics-module {
-    margin-left: 8px;
-  }
-}
-
 .container-fluid {
   background-color: @background-color;
   position: absolute;
@@ -422,11 +500,12 @@ body {
 
 .content {
   .page {
-    top: @filters-bar-desktop-height;
+    top: 123px;
     bottom: 0;
     position: absolute;
     width: 100%;
     max-width: @content-width;
+    z-index: 2;
   }
 
   .inbox {
@@ -627,7 +706,7 @@ body {
 }
 
 .loading-status {
-  margin: 10px 10px @bottom-navbar-height;
+  margin: 10px;
   text-align: center;
   font-size: @font-small;
   color: @label-color;
@@ -855,7 +934,6 @@ a.fa:hover {
 }
 
 .inbox-items .selection-count {
-  display: none;
   padding: 5px 10px;
   margin: 0;
   background-color: @label-color;
@@ -864,9 +942,154 @@ a.fa:hover {
   font-weight: bold;
 }
 
+.inbox-items .selection-count,
+.general-actions .delete-all {
+  display: none;
+}
+
 .tasks .warning {
   overflow: initial;
   color: @high-risk-color;
+}
+
+.action-container {
+  overflow: visible;
+  position: fixed;
+  bottom: 0;
+  top: inherit;
+  z-index: 10;
+  background: transparent;
+  pointer-events: none;
+
+  .actions {
+    max-width: 500px;
+    background-color: rgba(0, 0, 0, 0.65);
+    border-color: rgba(0, 0, 0, 0.8);
+    border-width: 1px;
+    border-style: solid;
+    text-align: center;
+    margin: 0 auto 10px;
+    pointer-events: auto;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
+    display: flex !important; // Support for old design: Overrides Bootstrap element.style
+    flex-direction: row;
+    justify-content: center;
+    min-height: 78px;
+
+    .dropdown-menu {
+      overflow-y: auto;
+      max-height: 350px;
+      width: 100%;
+    }
+
+.left-pane .action-container .dropdown-menu {
+  top: -3px !important; // Support for old design: Overrides Bootstrap element.style
+}
+
+> * {
+      margin: 10px 0 0;
+      flex-grow: 1;
+      max-width: 120px;
+      outline: 0;
+      border-bottom: 5px solid transparent;
+
+      > .mm-icon {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+    }
+    .mm-icon {
+      .fa {
+        font-size: 30px;
+      }
+      &:hover {
+        text-decoration: none;
+      }
+      svg {
+        width: @icon-small;
+        height: @icon-small;
+      }
+    }
+
+    .fa-stack {
+      width: 30px;
+      height: 30px;
+      line-height: inherit;
+      .fa-plus {
+        left: 8px;
+        top: -4px;
+        text-shadow: 0 0 2px rgba(255, 255, 255, 1);
+        font-size: 20px;
+        color: #000000;
+      }
+    }
+
+    .sub-actions {
+      background-color: #ffffff;
+      height: 56px;
+      padding: 0;
+      margin: 0 0 1px 0;
+      border-radius: 0;
+      border: none;
+      display: flex;
+      max-width: none;
+      overflow-y: hidden;
+      box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
+
+      .mm-icon-caption {
+        border: none;
+        line-height: 1;
+        color: @label-color;
+        max-width: none;
+        padding: 6px 0 0;
+        .verify-icon {
+          display: block;
+          margin: 0 auto 3px auto;
+          svg {
+            width: 24px;
+            height: 24px;
+            path {
+              fill: @inactive-color;
+            }
+          }
+        }
+      }
+
+      .verify-error.active {
+        color: @report-review-error-color;
+        svg path {
+          fill: @report-review-error-color;
+        }
+      }
+
+      .verify-valid.active {
+        color: @report-review-verified-color;
+        svg path {
+          fill: @report-review-verified-color;
+        }
+      }
+    }
+  }
+}
+
+.messages .action-container .actions > :hover {
+  border-bottom-color: @messages-color;
+}
+
+.reports .action-container .actions > * {
+  &:hover,
+  &.active {
+    border-bottom-color: @reports-color;
+  }
+}
+
+.contacts .action-container .actions > :hover {
+  border-bottom-color: @contacts-color;
+}
+
+.action-container .actions >.mm-icon-disabled:hover {
+  border-bottom-color: transparent;
 }
 
 .reporting,
@@ -886,6 +1109,11 @@ a.fa:hover {
 
 .clear-both {
   clear: both;
+}
+
+.filter-daterangepicker {
+  padding: 0;
+  margin: 0;
 }
 
 .daterangepicker.dropdown-menu {
@@ -1223,65 +1451,9 @@ mm-search-bar {
 @media (max-width: @media-mobile) {
   .fast-action-trigger:not(.embed-fast-action) {
     position: fixed;
-    bottom: calc(@bottom-navbar-height + @fab-bottom-padding);
+    bottom: 17px;
     right: 18px;
     top: auto;
-  }
-  .header {
-    .tabs {
-      display: flex;
-      flex-direction: row;
-      padding: 0 15px;
-      justify-content: center;
-      a {
-        flex-grow: 1;
-        min-width: 70px;
-        max-width: 100px;
-      }
-    }
-  }
-  .app-root:not(.old-nav) {
-    .header {
-      display: block;
-      width: 100vw;
-      background-color: @bottom-navbar-color;
-      position: fixed;
-      bottom: 0;
-
-      .inner {
-        height: @bottom-navbar-height;
-      }
-
-      .logo,
-      .extras {
-        display: none;
-      }
-
-      .tabs {
-        .button-label {
-          top: 0;
-          font-size: @font-extra-smaller;
-          padding-top: 5px;
-        }
-        a {
-          min-width: 0;
-          .mm-icon {
-            padding: 8px 0;
-          }
-          &.selected
-          .mm-icon {
-            border-radius: 999px;
-            background-color: @tab-selected-color;
-          }
-        }
-      }
-    }
-    &.select-mode,
-    &.error {
-      mm-header {
-        display: none;
-      }
-    }
   }
 
   .more-options-menu-container {
@@ -1303,20 +1475,24 @@ mm-search-bar {
       height: 60px;
     }
   }
-  .inbox-items .selection-count {
+  .inbox-items .selection-count,
+  .general-actions .delete-all {
     display: block;
   }
   .contacts h4 {
     padding-left: 0;
   }
   .filters {
-    height: @filters-bar-mobile-height;
+    height: 50px;
     padding: 0;
     .navigation {
       display: inline-block;
     }
     .filter {
       margin: 0;
+    }
+    .mm-button {
+      padding-left: 0;
     }
     .mm-button-icon {
       padding: 5px 0 0 5px;
@@ -1353,11 +1529,17 @@ mm-search-bar {
       width: 0;
       visibility: hidden;
     }
+    .basic-filters {
+      left: 2px;
+    }
     mm-freetext-filter {
       width: auto;
 
       .freetext-filter {
         width: 95%;
+        &.mobile-dropdown {
+          display: none;
+        }
       }
 
       .mobile-freetext-filter {
@@ -1366,22 +1548,46 @@ mm-search-bar {
           padding: 10px;
         }
       }
+
+      &.legacy {
+        // ToDo: Remove when upgrading contact's search design
+        display: inline-block;
+        width: auto;
+      }
+    }
+    .reset-filter {
+      padding-left: 10px;
     }
     .sort-dropdown {
       position: absolute;
       right: 0;
     }
   }
+  .header {
+    .dropdown-menu {
+      margin: 0;
+      top: 8px;
+      right: 5px;
+    }
+    .tabs {
+      display: flex;
+      flex-direction: row;
+      a {
+        flex-grow: 1;
+        min-width: 70px;
+        max-width: 100px;
+      }
+    }
+    .logo {
+      display: none;
+    }
+    .extras a {
+      padding-top: 2px;
+      margin-top: 2px;
 
-  .analytics:not(.show-content) .filters {
-    padding-top: 2px;
-  }
-
-  .analytics.show-content .filters {
-    .navigation {
-      position: relative;
-      display: block;
-      width: 100vw;
+      .fa-bars {
+        font-size: @font-extra-extra-large;
+      }
     }
   }
 
@@ -1396,7 +1602,7 @@ mm-search-bar {
   }
   .content {
     .page {
-      top: calc(@filters-bar-mobile-height + 2px);
+      top: 115px;
     }
     .meta {
       padding-bottom: 0;
@@ -1431,6 +1637,22 @@ mm-search-bar {
   .item-content .reply .note {
     display: inline;
   }
+  .action-container {
+    .inner > div {
+      padding: 0;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      .actions {
+        box-shadow: none;
+        border-width: 1px 0 0 0;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        max-width: 100%;
+      }
+    }
+  }
 
   .left-pane {
     left: 0;
@@ -1453,7 +1675,6 @@ mm-search-bar {
 
   .app-root.show-content {
     .header,
-    mm-analytics-filters,
     mm-multiselect-bar,
     mm-search-bar {
       display: none;
@@ -1470,11 +1691,20 @@ mm-search-bar {
     .right-pane {
       left: 0;
     }
-    .fast-action-trigger:not(.embed-fast-action) {
-      bottom: 17px;
-    }
   }
 
+  .filter-daterangepicker {
+    width: 255px;
+    height: 320px;
+    .calendar {
+      transition: left 500ms ease 0s;
+      position: absolute;
+      float: none;
+    }
+    .range_inputs {
+      display: none;
+    }
+  }
   .show-from {
     .left {
       left: 0;
@@ -1555,6 +1785,21 @@ mm-search-bar {
       }
     }
   }
+
+  .basic-filters {
+    // Support for old design: Overrides Bootstrap element.style
+    .mobile-freetext-filter .dropdown-menu,
+    .mm-status-filter .dropdown-menu {
+      top: 0 !important;
+      left: -100px !important;
+    }
+
+    // Support for old design: Overrides Bootstrap element.style
+    .sort-dropdown .dropdown-menu {
+      top: 0 !important;
+      left: -230px !important;
+    }
+  }
 }
 
 @media (max-width: @media-small-mobile) {
@@ -1567,8 +1812,37 @@ mm-search-bar {
   .right-side-filter {
     padding-right: 6px;
   }
+  .header {
+    .tabs {
+      padding-left: 2px;
+      a {
+        min-width: 40px;
+        .button-label {
+          font-size: @font-extra-extra-small;
+        }
+      }
+
+      // Use bigger font when there are 4 or less tabs.
+      .elements-label(a, button-label, 4, @font-extra-small);
+    }
+    .mm-badge-overlay {
+      right: 10%;
+    }
+    .inner {
+      height: 60px;
+    }
+  }
+  .action-container .actions {
+    min-height: 50px;
+    p {
+      font-size: @font-extra-extra-small;
+    }
+    .mm-icon {
+      min-height: 50px;
+    }
+  }
   .content .page {
-    top: calc(@filters-bar-mobile-height + 2px);
+    top: 115px;
   }
   .mobile-only {
     display: initial;

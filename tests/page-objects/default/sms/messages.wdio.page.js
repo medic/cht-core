@@ -78,15 +78,6 @@ const sendMessage = async (message, recipient, entryText) => {
   await modalPage.checkModalHasClosed();
 };
 
-const sendMessageOnMobile = async (message, recipient, entryText) => {
-  await commonPage.clickFastActionFAB({ waitForList: false });
-  await (await sendMessageModal()).waitForDisplayed();
-  await searchSelect(recipient, entryText);
-  await (await messageText()).setValue(message);
-  await modalPage.submit();
-  await modalPage.checkModalHasClosed();
-};
-
 const sendReplyNewRecipient = async (recipient, entryText) => {
   await searchSelect(recipient, entryText);
   await modalPage.submit();
@@ -147,7 +138,6 @@ module.exports = {
   getMessageHeader,
   getMessageContent,
   sendMessage,
-  sendMessageOnMobile,
   sendReplyNewRecipient,
   sendMessageToContact,
   exportMessages,

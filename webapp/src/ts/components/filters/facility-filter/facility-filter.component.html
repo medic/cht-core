@@ -1,9 +1,29 @@
 <div class="mm-form-type-filter" [id]="fieldId">
-  <ul class="filter-options">
+  <multi-dropdown-filter
+    *ngIf="!inline"
+    [items]="flattenedFacilities"
+    [itemLabel]="itemLabel.bind(this)"
+    (applyFilter)="applyFilter($event)"
+    labelNoFilter="All facilities"
+    labelFilter="Number of facilities"
+    [disabled]="disabled"
+    (onOpen)="loadFacilities()"
+  >
+    <span class="fa fa-hospital-o"></span>
+    <ul id="facility-dropdown-list" class="filter-options">
+      <ng-container
+        *ngFor="let facility of displayedFacilities; trackBy: trackByFn"
+        [ngTemplateOutlet]="facilityTemplate"
+        [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0, filter: dropdownFilter }">
+      </ng-container>
+    </ul>
+  </multi-dropdown-filter>
+
+  <ul class="filter-options" *ngIf="inline">
     <ng-container
       *ngFor="let facility of displayedFacilities; trackBy: trackByFn"
       [ngTemplateOutlet]="facilityTemplate"
-      [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }">
+      [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0, filter: inlineFilter }">
     </ng-container>
   </ul>
 </div>
@@ -13,42 +33,40 @@
   let-facility="facility"
   let-facilityDepth="facilityDepth"
   let-parent="parent"
-  let-selectedParent="selectedParent">
-
+  let-selectedParent="selectedParent"
+  let-filter="filter">
   <li
-    class="accordion-facility-list"
     role="presentation"
     [class.selected]="filter?.selected.has(facility.doc._id)"
     [class.disabled]="selectedParent || disabled"
+    [class.accordion-facility-list]="inline"
     [class.accordion-facility-list-expand]="facility.toggle"
     [class.accordion-facility-caret]="facility?.children?.length">
-
     <span
       class="fa accordion-facility-check"
       [ngClass]="filter?.selected.has(facility.doc._id) ? 'fa-check-square' : 'fa-square-o'"
-      (click)="select(selectedParent, facility, true)">
+      (click)="select(selectedParent, facility, filter, true)">
     </span>
     <a
       class="accordion-facility-title"
       role="menuitem"
       tabindex="-1"
       [attr.data-value]="facility?.doc?._id"
-      (click)="select(selectedParent, facility)">
+      (click)="select(selectedParent, facility, filter)">
       {{ facility.label | async }}
     </a>
     <span
       class="fa accordion-facility-chevron"
       [class.fa-caret-up] = facility.toggle
       [class.fa-caret-down] = !facility.toggle
-      (click)="select(selectedParent, facility)">
+      (click)="select(selectedParent, facility, filter)">
     </span>
     <ul class="mm-dropdown-submenu" *ngIf="facility?.children?.length">
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
         [ngTemplateOutlet]="facilityTemplate"
-        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: filter?.selected.has(facility.doc._id), facilityDepth: facilityDepth + 1 }">
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: filter?.selected.has(facility.doc._id), facilityDepth: facilityDepth + 1, filter: filter }">
       </ng-container>
     </ul>
-
   </li>
 </ng-template>

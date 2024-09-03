@@ -276,7 +276,8 @@
     "can_upgrade": [
       "program_officer"
     ],
-    "can_view_old_navigation": []
+    "can_view_old_filter_and_search": [],
+    "can_view_old_action_bar": []
   },
   "uhc": {
     "contacts_default_sort": "",

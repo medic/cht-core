@@ -7,8 +7,6 @@
 @mat-font-color: @gray-ultra-dark;
 
 @top-header-color: @gray-ultra-dark;
-@bottom-navbar-color: @medium-black;
-@tab-selected-color: @grey-darker;
 @background-color: @gray-ultra-light;
 @target-card-background-color: @gray-ultra-lighter;
 @target-card-border-color: @gray-light;
@@ -92,22 +90,14 @@
 @radius-size: 10px;
 @radius-size-medium: 8px;
 @radius-size-small: 4px;
-@content-width: 100vw;
+@content-width: 1170px;
+@content-margin: calc((100vw - @content-width) / 2);
 @admin-content-width: 1440px;
 @media-tablet: 985px;
 @media-mobile: 767px;
 @media-small-mobile: 400px;
 @header-dropdown-width: 250px;
 @header-bar-extras: 40px;
-@filters-bar-desktop-height: 58px;
-@filters-bar-mobile-height: 50px;
-@bottom-navbar-height: 75px;
-@top-navbar-height: 60px;
-@fab-height: 56px;
-@top-without-filter: 75px;
-@fab-bottom-padding: 20px;
-@snackbar-fab-gap: 8px;
-@fab-offset-height: @fab-height + @fab-bottom-padding + @snackbar-fab-gap;
 
 /* fonts */
 @font-family-main: Noto, sans-serif;
@@ -119,7 +109,6 @@
 @font-medium: 1rem;
 @font-small: 0.875rem;
 @font-extra-small: 0.8125rem;
-@font-extra-smaller: 0.6875rem;
 @font-extra-extra-small: 0.625rem;
 
 @icon-small: 30px;
@@ -144,8 +133,8 @@
 @targets-column-gap: 24px;
 
 /* functions */
-.button-text(@color: @button-text-color) {
-  color: @color;
+.button-text() {
+  color: @button-text-color;
   text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 2px;
   svg {
     filter: drop-shadow(1px 1px 2px rgba(255, 255, 255, 0.5));
@@ -176,8 +165,8 @@
   }
 }
 
-.button-text-inverse(@color: @button-text-inverse-color) {
-  color: @color;
+.button-text-inverse() {
+  color: @button-text-inverse-color;
   text-shadow: rgba(0, 0, 0, 0.5) 1px 1px 2px;
   svg {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));

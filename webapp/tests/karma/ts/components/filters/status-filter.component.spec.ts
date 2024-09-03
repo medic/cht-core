@@ -2,11 +2,15 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { provideMockStore } from '@ngrx/store/testing';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Status Filter Component', () => {
@@ -17,12 +21,14 @@ describe('Status Filter Component', () => {
     return TestBed
       .configureTestingModule({
         imports: [
+          BsDropdownModule.forRoot(),
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           BrowserAnimationsModule
         ],
         declarations: [
           StatusFilterComponent,
+          MultiDropdownFilterComponent,
         ],
         providers: [
           provideMockStore(),
@@ -44,25 +50,43 @@ describe('Status Filter Component', () => {
     expect(component).to.exist;
   });
 
-  it('should clear the filter', () => {
-    const filterClearSpy = sinon.spy(component.filter, 'clear');
-    component.filter.selected.add('valid');
-    component.filter.selected.add('unverified');
+  it('allStatuses should list all statuses', () => {
+    expect(component.allStatuses).to.have.members([
+      'valid', 'invalid',
+      'unverified', 'errors', 'correct',
+    ]);
+  });
+
+  it('should clear dropdown filter', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
 
     component.clear();
 
-    expect(filterClearSpy.calledOnce).to.be.true;
-    expect(component.filter.selected.size).to.equal(0);
+    expect(dropdownFilterClearSpy.callCount).to.equal(1);
+    expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
   });
 
-  it('should count selected items in the filter', () => {
-    const filterCountSelectedSpy = sinon.spy(component.filter, 'countSelected');
-    component.filter.selected.add('valid');
-    component.filter.selected.add('unverified');
+  it('should clear inline filter', () => {
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.inlineFilter.selected.add('valid');
+    component.inlineFilter.selected.add('unverified');
+    component.inline = true;
+
+    component.clear();
+
+    expect(inlineFilterClearSpy.calledOnce).to.be.true;
+    expect(component.inlineFilter.selected.size).to.equal(0);
+  });
+
+  it('should count selected items in inline filter', () => {
+    const inlineFilterCountSelectedSpy = sinon.spy(component.inlineFilter, 'countSelected');
+    component.inlineFilter.selected.add('valid');
+    component.inlineFilter.selected.add('unverified');
+    component.inline = true;
 
     const result = component.countSelected();
 
-    expect(filterCountSelectedSpy.calledOnce).to.be.true;
+    expect(inlineFilterCountSelectedSpy.calledOnce).to.be.true;
     expect(result).to.equal(2);
   });
 
@@ -132,11 +156,15 @@ describe('Status Filter Component', () => {
   });
 
   it('should do nothing if component is disabled', () => {
-    const filterClearSpy = sinon.spy(component.filter, 'clear');
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
     component.disabled = true;
 
     component.clear();
+    component.inline = true;
+    component.clear();
 
-    expect(filterClearSpy.notCalled).to.be.true;
+    expect(dropdownFilterClearSpy.notCalled).to.be.true;
+    expect(inlineFilterClearSpy.notCalled).to.be.true;
   });
 });

@@ -8,6 +8,9 @@ import { filter } from 'rxjs/operators';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, IconType } from '@mm-services/fast-action-button.service';
+import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
+import { SessionService } from '@mm-services/session.service';
+import { AuthService } from '@mm-services/auth.service';
 import { Selectors } from '@mm-selectors/index';
 
 @Component({
@@ -25,6 +28,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   private bottomSheetRef: MatBottomSheetRef<any> | undefined;
 
   selectMode = false;
+  useOldActionBar = false;
   iconTypeResource = IconType.RESOURCE;
   iconTypeFontAwesome = IconType.FONT_AWESOME;
   buttonTypeFlat = ButtonType.FLAT;
@@ -32,12 +36,15 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private router: Router,
+    private authService: AuthService,
+    private sessionService: SessionService,
     private responsiveService: ResponsiveService,
     private matBottomSheet: MatBottomSheet,
     private matDialog: MatDialog,
   ) { }
 
   ngOnInit() {
+    this.checkPermissions();
     this.subscribeToStore();
     this.subscribeToRouter();
   }
@@ -58,6 +65,10 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
       .select(Selectors.getSelectMode)
       .subscribe(selectMode => this.selectMode = selectMode);
     this.subscriptions.add(selectModeSubscription);
+  }
+
+  private async checkPermissions() {
+    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   /**

@@ -63,6 +63,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
     this.globalActions.unsetSelected();
     this.messagesActions.setConversations([]);
+    this.globalActions.setLeftActionBar({});
   }
 
   private subscribeToStore() {
@@ -116,6 +117,21 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
   }
 
+  private updateActionBar() {
+    if (this.destroyed) {
+      // don't update the actionbar if the component has already been destroyed
+      // this callback can be queued up and persist even after component destruction
+      return;
+    }
+
+    const leftActionBar = {
+      exportFn: () => this.exportMessages(),
+      hasResults: this.conversations && this.conversations.length > 0,
+      openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
+    };
+    this.globalActions.setLeftActionBar(leftActionBar);
+  }
+
   private async updateFastActions() {
     if (this.destroyed) {
       // Don't update the fast actions, if the component has already been destroyed
@@ -151,6 +167,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     this.messagesActions.setConversations(conversations);
     this.updateFastActions();
+    this.updateActionBar();
     this.recordPerformance();
   }
 

@@ -3,6 +3,10 @@ import { createReducer, on } from '@ngrx/store';
 import { Actions } from '@mm-actions/global';
 
 const initialState = {
+  actionBar: {
+    left: {},
+    right: {}
+  },
   navigation: {
     cancelCallback: null,
     preventNavigation: null,
@@ -23,10 +27,11 @@ const initialState = {
   forms: null,
   lastChangedDoc: false,
   loadingContent: false,
-  processingReportVerification: false,
+  loadingSubActionBar: false,
   replicationStatus: {},
   selectMode: false,
   privacyPolicyAccepted: false,
+  showActionBar: false,
   showContent: false,
   showPrivacyPolicy: false,
   title: null,
@@ -69,6 +74,9 @@ const _globalReducer = createReducer(
   on(Actions.setLoadingContent, (state, { payload: { loadingContent } }) => {
     return { ...state, loadingContent };
   }),
+  on(Actions.setShowActionBar, (state, { payload: { showActionBar } }) => {
+    return { ...state, showActionBar };
+  }),
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
@@ -102,6 +110,45 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setSelectMode, (state, { payload: { selectMode } }) => {
     return { ...state, selectMode };
+  }),
+  on(Actions.setLeftActionBar, (state, { payload: { left } }) => {
+    return {
+      ...state,
+      actionBar: { ...state.actionBar, left }
+    };
+  }),
+  on(Actions.updateLeftActionBar, (state, { payload: { left } }) => {
+    return {
+      ...state,
+      actionBar: {
+        ...state.actionBar,
+        left: { ...state.actionBar?.left, ...left },
+      },
+    };
+  }),
+  on(Actions.setRightActionBar, (state, { payload: { right } }) => {
+    return {
+      ...state,
+      actionBar: { ...state.actionBar, right }
+    };
+  }),
+  on(Actions.setRightActionBarVerified, (state, { payload: { verified } }) => {
+    return {
+      ...state,
+      actionBar: {
+        ...state.actionBar,
+        right: { ...state.actionBar?.right, verified },
+      },
+    };
+  }),
+  on(Actions.updateRightActionBar, (state, { payload: { right } }) => {
+    return {
+      ...state,
+      actionBar: {
+        ...state.actionBar,
+        right: { ...state.actionBar?.right, ...right },
+      },
+    };
   }),
   on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
     return {
@@ -147,8 +194,8 @@ const _globalReducer = createReducer(
       },
     };
   }),
-  on(Actions.setProcessingReportVerification, (state, { payload: { loading } }) => {
-    return { ...state, processingReportVerification: loading };
+  on(Actions.setLoadingSubActionBar, (state, { payload: { loading } }) => {
+    return { ...state, loadingSubActionBar: loading };
   }),
   on(Actions.setUnreadCount, (state, { payload: { unreadCount } }) => {
     return { ...state, unreadCount: unreadCount };

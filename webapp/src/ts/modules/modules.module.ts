@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,6 +21,7 @@ import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ReportsContentComponent } from '@mm-modules/reports/reports-content.component';
 import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
+import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
 import { ComponentsModule } from '@mm-components/components.module';
@@ -27,6 +29,7 @@ import { MessagesComponent } from '@mm-modules/messages/messages.component';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
 import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.component';
+import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { ContactsDeceasedComponent } from '@mm-modules/contacts/contacts-deceased.component';
 import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
@@ -59,9 +62,11 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     ReportsContentComponent,
     MessagesComponent,
     ContactsComponent,
+    ReportsFiltersComponent,
     ReportsSidebarFilterComponent,
     ReportsMoreMenuComponent,
     ContactsContentComponent,
+    ContactsFiltersComponent,
     ContactsDeceasedComponent,
     ContactsReportComponent,
     ContactsEditComponent,
@@ -85,6 +90,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     PipesModule,
     RouterModule,
     ComponentsModule,
+    BsDropdownModule,
     FormsModule,
     DirectivesModule,
     MatIconModule,

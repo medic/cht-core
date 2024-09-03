@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
@@ -21,13 +21,14 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   templateUrl: './contacts.component.html'
 })
-export class ContactsComponent implements OnInit, OnDestroy {
+export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly PAGE_SIZE = 25;
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
@@ -55,6 +56,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   sortDirection = this.defaultSortDirection;
   isAllowedToSort = true;
   additionalListItem = false;
+  useSearchNewDesign = true;
   enketoEdited?: boolean;
   selectedContact;
 
@@ -170,6 +172,11 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.subscription.add(changesSubscription);
   }
 
+  async ngAfterViewInit() {
+    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    this.useSearchNewDesign = !isDisabled;
+  }
+
   ngOnDestroy() {
     this.destroyed = true;
     this.subscription.unsubscribe();
@@ -178,6 +185,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.contactsActions.clearSelection();
     this.globalActions.clearFilters();
     this.globalActions.unsetSelected();
+    this.globalActions.setLeftActionBar({});
   }
 
   private subscribeToStore() {
@@ -446,6 +454,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
         this.error = false;
         this.initScroll();
         this.updateFastActions();
+        this.setLeftActionBar();
       })
       .catch(err => {
         this.error = true;
@@ -480,6 +489,21 @@ export class ContactsComponent implements OnInit, OnDestroy {
     return this.usersHomePlaces?.[0]?._id;
   }
 
+  private setLeftActionBar() {
+    if (this.destroyed) {
+      // don't update the actionbar if the component has already been destroyed
+      // this callback can be queued up and persist even after component destruction
+      return;
+    }
+
+    this.globalActions.setLeftActionBar({
+      exportFn: () => this.exportContacts(),
+      hasResults: this.hasContacts,
+      userFacilityId: this.getUserHomePlaceId(),
+      childPlaces: this.allowedChildPlaces,
+    });
+  }
+
   private async updateFastActions() {
     if (this.destroyed) {
       // Don't update the fast actions, if the component has already been destroyed
@@ -512,6 +536,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
         }
 
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
+        this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
         this.updateFastActions();
       }
     );

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
 import * as moment from 'moment';
+import { groupBy as _groupBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -11,6 +12,7 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
@@ -19,6 +21,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
+import { TranslateService } from '@mm-services/translate.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
@@ -47,6 +50,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private settings;
   private childTypesBySelectedContact: Record<string, any>[] = [];
   private filters;
+  canDeleteContact = false; // this disables the "Delete" button until children load
   fastActionList?: FastAction[];
   relevantReportForms;
   childContactTypes;
@@ -60,6 +64,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private router: Router,
     private changesService: ChangesService,
     private contactChangeFilterService: ContactChangeFilterService,
+    private translateService: TranslateService,
+    private translateFromService: TranslateFromService,
     private xmlFormsService: XmlFormsService,
     private modalService: ModalService,
     private contactTypesService: ContactTypesService,
@@ -93,6 +99,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
     this.contactsActions.clearSelection();
+    this.globalActions.setRightActionBar({});
   }
 
   private getUserFacility() {
@@ -141,6 +148,20 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(reduxSubscription);
 
+    const childrenSubscription = this.store
+      .select(Selectors.getSelectedContactChildren)
+      .subscribe((selectedContactChildren) => {
+        const canDelete = !!selectedContactChildren?.every(group => !group.contacts?.length);
+
+        if (this.canDeleteContact === canDelete) {
+          return;
+        }
+
+        this.canDeleteContact = canDelete;
+        this.globalActions.updateRightActionBar({ canDelete: this.canDeleteContact });
+      });
+    this.subscriptions.add(childrenSubscription);
+
     const contactDocSubscription = this.store
       .select(Selectors.getSelectedContactDoc)
       .subscribe(async (contactDoc) => {
@@ -149,7 +170,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         }
         await this.setChildTypesBySelectedContact();
         await this.setSettings();
-        await this.updateFastActions();
+        await Promise.all([this.setRightActionBar(), this.updateFastActions()]);
         this.subscribeToAllContactXmlForms();
         this.subscribeToSelectedContactXmlForms();
       });
@@ -246,6 +267,19 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       .slice(0, this.DISPLAY_LIMIT);
   }
 
+  private async setRightActionBar() {
+    await this.setUserSettings();
+
+    this.globalActions.setRightActionBar({
+      relevantForms: [], // This disables the "New Action" button until forms load
+      sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
+      canDelete: this.canDeleteContact,
+      canEdit: this.isOnlineOnly || !this.userSettings?.facility_id?.includes(this.selectedContact?.doc?._id),
+      openContactMutedModal: (form) => this.openContactMutedModal(form),
+      openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo),
+    });
+  }
+
   private async updateFastActions() {
     this.fastActionList = await this.fastActionButtonService.getContactRightSideActions({
       xmlReportForms: this.relevantReportForms,
@@ -322,6 +356,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
         this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
         this.updateFastActions();
+        this.globalActions.updateRightActionBar({
+          childTypes: this.getModelsFromChildTypes(allowedChildTypes)
+        });
       }
     );
     this.subscriptions.add(this.subscriptionAllContactForms);
@@ -353,20 +390,31 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.relevantReportForms = forms.map(xForm => {
-          const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
-          const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
-          return {
-            id: xForm._id,
-            code: xForm.internalId,
-            title: xForm.title,
-            titleKey: xForm.translation_key,
-            icon: xForm.icon,
-            showUnmuteModal: isMuted && !isUnmuteForm,
-          };
-        });
+        this.relevantReportForms = forms
+          .map(xForm => {
+            const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
+            const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
+            return {
+              id: xForm._id,
+              code: xForm.internalId,
+              title: xForm.title,
+              titleKey: xForm.translation_key,
+              icon: xForm.icon,
+              showUnmuteModal: isMuted && !isUnmuteForm,
+            };
+          });
 
         this.updateFastActions();
+
+        const oldActionsBarForms = this.relevantReportForms
+          .map(form => {
+            const title = form.titleKey ?
+              this.translateService.instant(form.titleKey) : this.translateFromService.get(form.title);
+            return { ...form, title };
+          })
+          .sort((a, b) => a.title?.localeCompare(b.title));
+
+        this.globalActions.updateRightActionBar({ relevantForms: oldActionsBarForms });
       }
     );
     this.subscriptions.add(this.subscriptionSelectedContactForms);
@@ -380,6 +428,36 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     return childTypes
       .filter(contactType => forms?.find(form => form._id === contactType.create_form))
       .sort((a, b) => a.id?.localeCompare(b.id));
+  }
+
+  private getModelsFromChildTypes(childTypes) {
+    const grouped = _groupBy(childTypes, type => type.person ? 'persons' : 'places');
+    const models: {
+      menu_key: string;
+      menu_icon: string;
+      permission: string;
+      types: any[];
+    }[] = [];
+
+    if (grouped.places) {
+      models.push({
+        menu_key: 'Add place',
+        menu_icon: 'fa-building',
+        permission: 'can_create_places',
+        types: grouped.places
+      });
+    }
+
+    if (grouped.persons) {
+      models.push({
+        menu_key: 'Add person',
+        menu_icon: 'fa-user',
+        permission: 'can_create_people',
+        types: grouped.persons
+      });
+    }
+
+    return models;
   }
 
   private openContactMutedModal(form) {
