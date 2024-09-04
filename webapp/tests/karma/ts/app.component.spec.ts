@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router, ActivationEnd } from '@angular/router';
+import { ActivationEnd, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -45,6 +45,8 @@ import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { FormService } from '@mm-services/form.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -83,6 +85,8 @@ describe('AppComponent', () => {
   let chtDatasourceService;
   let analyticsModulesService;
   let trainingCardsService;
+  let userSettingsService;
+  let formService;
   // End Services
 
   let globalActions;
@@ -155,6 +159,8 @@ describe('AppComponent', () => {
       setPrivacyPolicyAccepted: sinon.stub(GlobalActions.prototype, 'setPrivacyPolicyAccepted'),
       setShowPrivacyPolicy: sinon.stub(GlobalActions.prototype, 'setShowPrivacyPolicy'),
       setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
+      setUserFacilityIds: sinon.stub(GlobalActions.prototype, 'setUserFacilityIds'),
+      setUserContactId: sinon.stub(GlobalActions.prototype, 'setUserContactId'),
     };
     analyticsActions = {
       setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
@@ -165,6 +171,8 @@ describe('AppComponent', () => {
     };
     telemetryService = { record: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
+    userSettingsService = { get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }) };
+    formService = { setUserContext: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -216,6 +224,8 @@ describe('AppComponent', () => {
           { provide: CHTDatasourceService, useValue: chtDatasourceService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: FormService, useValue: formService },
           { provide: Router, useValue: router  },
         ]
       })
@@ -260,6 +270,9 @@ describe('AppComponent', () => {
     expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
     expect(component.isSidebarFilterOpen).to.be.false;
+    expect(userSettingsService.get.calledOnce).to.equal(true);
+    expect(globalActions.setUserFacilityIds.calledOnceWith(['facility'])).to.equal(true);
+    expect(globalActions.setUserContactId.calledOnceWith('contact')).to.equal(true);
   });
 
   it('should display browser compatibility modal if using outdated chrome browser', async () => {

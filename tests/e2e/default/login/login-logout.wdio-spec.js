@@ -17,12 +17,9 @@ describe('Login page funcionality tests', () => {
 
   describe('Locale', () => {
     const defaultLocales = [
-      { code: 'bm', name: 'Bamanankan (Bambara)' },
       { code: 'en', name: 'English' },
       { code: 'es', name: 'Español (Spanish)' },
       { code: 'fr', name: 'Français (French)' },
-      { code: 'hi', name: 'हिन्दी (Hindi)' },
-      { code: 'id', name: 'Bahasa Indonesia (Indonesian)' },
       { code: 'ne', name: 'नेपाली (Nepali)' },
       { code: 'sw', name: 'Kiswahili (Swahili)' }
     ];

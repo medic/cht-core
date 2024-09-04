@@ -121,7 +121,10 @@ export class CHTDatasourceService {
         },
         getExtensionLib: (id) => {
           return this.extensionLibs[id];
-        }
+        },
+        analytics: {
+          getTargetDocs: () => ([]),
+        },
       }
     };
   }
