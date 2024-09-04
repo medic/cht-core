@@ -214,4 +214,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
   exportMessages() {
     this.exportService.export('messages', {}, { humanReadable: true });
   }
+
+  openMenu() {
+    this.globalActions.openSidebarMenu();
+  }
 }

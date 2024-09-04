@@ -13,7 +13,6 @@ export const Actions = {
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
   clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
-  setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
   clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
@@ -34,6 +33,9 @@ export const Actions = {
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityId: createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
   setTrainingCardFormId: createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
+  setSidebarMenu: createSingleValueAction('SET_SIDEBAR_MENU', 'sidebarMenu'),
+  closeSidebarMenu: createAction('CLOSE_SIDEBAR_MENU'),
+  openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
 };
 
 export class GlobalActions {
@@ -82,10 +84,6 @@ export class GlobalActions {
 
   setFilter(filter) {
     return this.store.dispatch(Actions.setFilter(filter));
-  }
-
-  setFilters(filters) {
-    return this.store.dispatch(Actions.setFilters(filters));
   }
 
   setSidebarFilter(sidebarFilter) {
@@ -208,4 +206,17 @@ export class GlobalActions {
   setTrainingCardFormId(trainingCard) {
     return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
+
+  setSidebarMenu(sidebarMenu) {
+    return this.store.dispatch(Actions.setSidebarMenu(sidebarMenu));
+  }
+
+  openSidebarMenu() {
+    return this.store.dispatch(Actions.openSidebarMenu());
+  }
+
+  closeSidebarMenu() {
+    return this.store.dispatch(Actions.closeSidebarMenu());
+  }
+
 }

@@ -1,4 +1,5 @@
 import { ActivationEnd, ActivationStart, Router } from '@angular/router';
+import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
 import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
@@ -94,7 +95,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   unreadCount = {};
   hasOldNav = false;
   initialisationComplete = false;
-  trainingCardFormId = false;
+  trainingCardFormId = '';
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -110,6 +111,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private locationService:LocationService,
     private modalService:ModalService,
     private router:Router,
+    private domSanitizer: DomSanitizer,
     private feedbackService:FeedbackService,
     private formatDateService:FormatDateService,
     private xmlFormsService:XmlFormsService,
@@ -137,15 +139,10 @@ export class AppComponent implements OnInit, AfterViewInit {
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
-
-    this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
-    this.matIconRegistry.setDefaultFontSetClass('fa');
+    this.registerMaterialIcons();
     moment.locale(['en']);
-
     this.formatDateService.init();
-
     this.adminUrl = this.locationService.adminPath;
-
     setBootstrapTheme('bs4');
   }
 
@@ -157,6 +154,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       .catch(err => {
         console.error('Error loading language', err);
       });
+  }
+
+  private registerMaterialIcons() {
+    this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
+    this.matIconRegistry.setDefaultFontSetClass('fa');
+    const iconUrl = this.domSanitizer.bypassSecurityTrustResourceUrl('./img/icon-close.svg');
+    this.matIconRegistry.addSvgIcon('icon-close', iconUrl);
   }
 
   private setupRouter() {
@@ -446,7 +450,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
-      this.currentTab = currentTab;
+      this.currentTab = currentTab || '';
 
       this.selectMode = selectMode;
     });
@@ -462,7 +466,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ]) => {
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
-      this.trainingCardFormId = trainingCardFormId;
+      this.trainingCardFormId = trainingCardFormId || '';
       this.displayTrainingCards();
     });
   }

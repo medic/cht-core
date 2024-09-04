@@ -1,6 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router, ActivationEnd } from '@angular/router';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -45,6 +46,7 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
+import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -176,12 +178,14 @@ describe('AppComponent', () => {
         declarations: [
           AppComponent,
           SnackbarComponent,
+          SidebarMenuComponent,
         ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
         ],
         providers: [
+          provideAnimations(),
           provideMockStore({ selectors: mockedSelectors }),
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: TranslateService, useValue: translateService },
@@ -217,6 +221,12 @@ describe('AppComponent', () => {
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: Router, useValue: router  },
         ]
+      })
+      .overrideComponent(SidebarMenuComponent, {
+        set: {
+          selector: 'mm-sidebar-menu',
+          template: '<div>Sidebar Menu Mock</div>',
+        },
       })
       .compileComponents();
     store = TestBed.inject(MockStore);
