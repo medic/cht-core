@@ -24,6 +24,7 @@ export class ContactsEffects {
   private selectedContact;
   private contactIdToLoad;
   private userFacilityIds;
+  private userContactId;
 
   constructor(
     private actions$: Actions,
@@ -43,11 +44,13 @@ export class ContactsEffects {
     combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getContactIdToLoad),
-      this.store.select(Selectors.getUserFacilityId),
-    ).subscribe(([ selectedContact, contactIdToLoad, userFacilityId ]) => {
+      this.store.select(Selectors.getUserFacilityIds),
+      this.store.select(Selectors.getUserContactId),
+    ).subscribe(([ selectedContact, contactIdToLoad, userFacilityIds, userContactId ]) => {
       this.selectedContact = selectedContact;
       this.contactIdToLoad = contactIdToLoad;
-      this.userFacilityIds = userFacilityId;
+      this.userFacilityIds = userFacilityIds;
+      this.userContactId = userContactId;
     });
   }
 
@@ -176,18 +179,18 @@ export class ContactsEffects {
       });
   }
 
-  private loadTargetDoc(contactId, trackName) {
+  private async loadTargetDoc(contactId, trackName) {
     const trackPerformance = this.performanceService.track();
-    return this.targetAggregateService
-      .getCurrentTargetDoc(this.selectedContact)
-      .then(targetDoc => {
-        return this
-          .verifySelectedContactNotChanged(contactId)
-          .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc));
-      })
-      .finally(() => {
-        trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
-      });
+
+    const targetDocs = await this.targetAggregateService.getTargetDocs(
+      this.selectedContact,
+      this.userFacilityIds,
+      this.userContactId
+    );
+    await this.verifySelectedContactNotChanged(contactId);
+    this.contactsActions.receiveSelectedContactTargetDoc(targetDocs);
+
+    trackPerformance?.stop({ name: [ ...trackName, 'load_targets' ].join(':') });
   }
 
   private loadTasks(contactId, trackName) {
