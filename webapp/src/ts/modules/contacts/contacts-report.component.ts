@@ -37,9 +37,6 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   errorTranslationKey;
   contentError;
   cancelCallback;
-  userFacilityIds;
-  userContactId;
-
 
   constructor(
     private store: Store,
@@ -138,7 +135,6 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         const formContext = new EnketoFormContext('#contact-report', 'report', formDoc, { source: 'contact', contact });
         formContext.editedListener = this.markFormEdited.bind(this);
         formContext.valuechangeListener = this.resetFormError.bind(this);
-        formContext.setUserContext(this.userContactId, this.userFacilityIds);
 
         return this.formService.render(formContext);
       })
@@ -175,16 +171,12 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       enketoError,
       enketoEdited,
       cancelCallback,
-      userFacilityIds,
-      userContactId
     ]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
       this.enketoEdited = enketoEdited;
       this.cancelCallback = cancelCallback;
-      this.userFacilityIds = userFacilityIds;
-      this.userContactId = userContactId;
     });
     this.subscription.add(reduxSubscription);
   }

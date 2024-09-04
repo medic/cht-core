@@ -54,8 +54,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   errorTranslationKey;
   cancelCallback;
   selectMode;
-  userFacilityIds;
-  userContactId;
 
   private geoHandle:any;
   private globalActions: GlobalActions;
@@ -75,8 +73,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getCancelCallback),
       this.store.select(Selectors.getSelectMode),
-      this.store.select(Selectors.getUserFacilityIds),
-      this.store.select(Selectors.getUserContactId),
     ).subscribe(([
       loadingContent,
       selectedReport,
@@ -85,8 +81,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       enketoError,
       cancelCallback,
       selectMode,
-      userFacilityIds,
-      userContactId,
     ]) => {
       this.selectedReport = selectedReport;
       this.loadingContent = loadingContent;
@@ -96,8 +90,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.enketoError = enketoError;
       this.cancelCallback = cancelCallback;
       this.selectMode = selectMode;
-      this.userFacilityIds = userFacilityIds;
-      this.userContactId = userContactId;
     });
     this.subscription.add(reduxSubscription);
   }
@@ -241,7 +233,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     formContext.editing = !!reportContent;
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
-    formContext.setUserContext(this.userContactId, this.userFacilityIds);
 
     try {
       const form = await this.formService.render(formContext);

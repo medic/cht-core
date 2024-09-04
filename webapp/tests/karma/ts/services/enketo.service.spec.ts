@@ -1223,11 +1223,4 @@ describe('EnketoFormContext', () => {
     const ctxReport = new EnketoFormContext('a', 'contact', {}, {});
     expect(ctxReport.requiresContact()).to.eq(false);
   });
-
-  it('should set user context', () => {
-    const ctxReport = new EnketoFormContext('a', 'contact', {}, {});
-    ctxReport.setUserContext('contact_id', 'facility_id');
-    expect(ctxReport.userContactId).to.equal('contact_id');
-    expect(ctxReport.userFacilityIds).to.equal('facility_id');
-  });
 });

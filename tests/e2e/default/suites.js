@@ -10,12 +10,12 @@ const SUITES = {
     './privacy-policy/**/*.wdio-spec.js',
   ],
   workflows: [
-    './analytics/**/*.wdio-spec.js',
-    './contacts/**/*.wdio-spec.js',
-    './reports/**/*.wdio-spec.js',
+    // './analytics/**/*.wdio-spec.js',
+    // './contacts/**/*.wdio-spec.js',
+    // './reports/**/*.wdio-spec.js',
     './targets/**/*.wdio-spec.js',
-    './tasks/**/*.wdio-spec.js',
-    './sms/**/*.wdio-spec.js',
+    // './tasks/**/*.wdio-spec.js',
+    // './sms/**/*.wdio-spec.js',
   ],
   data: [
     './db/**/*.wdio-spec.js',

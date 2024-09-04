@@ -632,8 +632,6 @@ export class EnketoFormContext {
   isFormInModal?: boolean;
   userContact?: Nullable<Person.v1.Person>;
   contactSummary?: Record<string, any>;
-  userContactId?: string;
-  userFacilityIds?: string[];
 
   constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
     this.selector = selector;
@@ -656,10 +654,5 @@ export class EnketoFormContext {
   requiresContact() {
     // Users can access contact forms even when they don't have a contact associated.
     return this.type !== 'contact';
-  }
-  
-  setUserContext(userContactId, userFacilityIds) {
-    this.userContactId = userContactId;
-    this.userFacilityIds = userFacilityIds;
   }
 }

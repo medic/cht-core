@@ -375,7 +375,7 @@ describe('Form service', () => {
       targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
       const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
-      formContext.setUserContext('contact', ['facility']);
+      service.setUserContext(['facility'], 'contact');
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);

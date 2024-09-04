@@ -67,8 +67,6 @@ describe('contacts report component', () => {
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
-      { selector: Selectors.getUserContactId, value: 'contact' },
-      { selector: Selectors.getUserFacilityIds, value: ['facility'] },
     ];
 
     return TestBed
@@ -173,9 +171,7 @@ describe('contacts report component', () => {
             _id: 'test_id',
             contact_type: 'test_type'
           }
-        },
-        userContactId: 'contact',
-        userFacilityIds: ['facility'],
+        }
       });
     }));
 

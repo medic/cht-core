@@ -68,6 +68,8 @@ export class FormService {
   private servicesActions: ServicesActions;
 
   private inited;
+  private userContactId;
+  private userFacilityIds;
 
   private init() {
     if (this.inited) {
@@ -133,11 +135,11 @@ export class FormService {
     return this.searchService.search('reports', { subjectIds: subjectIds }, { include_docs: true });
   }
 
-  private getTargetDocs(contact, userFacilityIds, userContactId) {
-    return this.targetAggregatesService.getTargetDocs(contact, userFacilityIds, userContactId);
+  private getTargetDocs(contact) {
+    return this.targetAggregatesService.getTargetDocs(contact, this.userFacilityIds, this.userContactId);
   }
 
-  private getContactSummary(doc, instanceData, userFacilityId, userContactId) {
+  private getContactSummary(doc, instanceData) {
     const contact = instanceData?.contact;
     if (!doc.hasContactSummary || !contact) {
       return Promise.resolve();
@@ -146,7 +148,7 @@ export class FormService {
       .all([
         this.getContactReports(contact),
         this.getLineage(contact),
-        this.getTargetDocs(contact, userFacilityId, userContactId),
+        this.getTargetDocs(contact),
       ])
       .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
   }
@@ -164,7 +166,7 @@ export class FormService {
   }
 
   private async renderForm(formContext: EnketoFormContext) {
-    const { formDoc, instanceData, userContactId, userFacilityIds } = formContext;
+    const { formDoc, instanceData } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());
@@ -172,7 +174,7 @@ export class FormService {
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
-      formContext.contactSummary = await this.getContactSummary(doc, instanceData, userFacilityIds, userContactId);
+      formContext.contactSummary = await this.getContactSummary(doc, instanceData);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
@@ -185,6 +187,11 @@ export class FormService {
       const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
       throw new Error(errorMessage + error.message);
     }
+  }
+
+  setUserContext(userFacilityIds, userContactId) {
+    this.userFacilityIds = userFacilityIds;
+    this.userContactId = userContactId;
   }
 
   render(formContext: EnketoFormContext) {
