@@ -107,7 +107,7 @@ body {
   }
 
   a {
-    .button-text-inverse;
+    .button-text-inverse(@gray-medium);
     outline: 0;
     padding-top: 3px;
   }
@@ -248,10 +248,12 @@ body {
       }
 
       &.selected {
+        text-shadow: none;
         .button-label,
         .mm-icon:hover,
         .resource-icon {
           .button-text(@white);
+          text-shadow: none;
         }
       }
 
@@ -1391,7 +1393,7 @@ mm-sidebar-menu .mat-sidenav-container {
           padding-top: 5px;
         }
         a {
-          min-width: 0;
+          min-width: 65px;
           .mm-icon {
             padding: 8px 0;
           }
@@ -1598,7 +1600,7 @@ mm-sidebar-menu .mat-sidenav-container {
       left: 0;
     }
     .fast-action-trigger:not(.embed-fast-action) {
-      bottom: 17px;
+      bottom: @fab-bottom-padding;
     }
   }
 
