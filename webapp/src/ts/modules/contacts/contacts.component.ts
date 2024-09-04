@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
@@ -230,7 +230,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     const facilityIds = this
       .getUserFacilityId(userSettings)
       .filter(id => !!id);
-    this.globalActions.setUserFacilityId(facilityIds);
 
     let homePlaces = await this.getDataRecordsService.get(facilityIds);
     homePlaces = homePlaces?.filter(place => !!place);

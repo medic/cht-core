@@ -1,6 +1,7 @@
 const fs = require('fs');
 const uuid = require('uuid').v4;
 const utils = require('@utils');
+const moment = require('moment');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
@@ -262,7 +263,7 @@ describe('Target aggregates', () => {
         // assert that the activity card exists and has the right fields.
         expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
 
-        await helperFunctions.validateCardFields(['yesterday Clarissa', '40', '50%']);
+        await helperFunctions.validateCardFields(['yesterday Clarissa', moment().format('YYYY-MM'), '40', '50%']);
 
         await browser.back();
 
@@ -278,12 +279,70 @@ describe('Target aggregates', () => {
         expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
         // assert that the activity card exists and has the right fields.
         expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
-        await helperFunctions.validateCardFields(['yesterday Prometheus', '18', '15%']);
+        await helperFunctions.validateCardFields(['yesterday Prometheus', moment().format('YYYY-MM'), '18', '15%']);
 
         await browser.back();
         const secondTargetItem =
           await (await targetAggregatesPage.getTargetItem(expectedTargets[1], CURRENT_PERIOD, districtHospital1.name));
         await helperFunctions.assertTitle(secondTargetItem.title, expectedTargets[1].title);
+      });
+
+      it('should display targets of current user on home place', async () => {
+        const targetsConfig = [
+          { id: 'a_target', type: 'count', title: { en: 'what a target!' }, aggregate: true },
+          { id: 'b_target', type: 'percent', title: { en: 'the most target' }, aggregate: true },
+        ];
+        const contactSummaryScript = fs
+          .readFileSync(`${__dirname}/config/contact-summary-target-aggregates.js`, 'utf8');
+
+        const clarissa = contactDocs.find(doc => doc.name === NAMES_DH1[0]);
+        const prometheus = contactDocs.find(doc => doc.name === NAMES_DH1[1]);
+        const targets = {
+          'Clarissa': [
+            { id: 'a_target', value: { total: 50, pass: 40 } },
+            { id: 'b_target', value: { total: 20, pass: 10 } }
+          ],
+          'Prometheus': [
+            { id: 'a_target', value: { total: 20, pass: 18 } },
+            { id: 'b_target', value: { total: 40, pass: 6 } }
+          ],
+          [onlineUser.contact.name]: [
+            { id: 'a_target', value: { total: 1, pass: 1 } },
+            { id: 'b_target', value: { total: 1, pass: 1 } }
+          ],
+        };
+
+        const targetsForContact = (contact) => {
+          return helperFunctions.docTags.map(tag => ({
+            _id: `target~${tag}~${contact._id}~irrelevant`,
+            reporting_period: tag,
+            targets: targets[contact.name],
+            owner: contact._id,
+            user: 'irrelevant',
+            date_updated: `yesterday ${contact.name}`,
+          }));
+        };
+        const targetDocs = [
+          ...targetsForContact(clarissa),
+          ...targetsForContact(prometheus),
+          ...targetsForContact(onlineUser.contact),
+        ];
+
+        await utils.saveDocs(targetDocs);
+        await helperFunctions.updateAggregateTargetsSettings(targetsConfig, onlineUser, contactSummaryScript);
+
+        await commonPage.goToPeople(onlineUser.place._id);
+        // wait until contact-summary is loaded
+        expect(await contactsPage.getContactInfoName()).to.equal(districtHospital1.name);
+        // assert that the activity card exists and has the right fields.
+        expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
+
+        await helperFunctions.validateCardFields([
+          `yesterday ${onlineUser.contact.name}`,
+          moment().subtract(1, 'month').format('YYYY-MM'),
+          '1',
+          '100%'
+        ]);
       });
     });
 

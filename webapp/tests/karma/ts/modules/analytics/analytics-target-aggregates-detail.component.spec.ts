@@ -2,7 +2,7 @@ import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angul
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Subject } from 'rxjs';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -218,10 +218,9 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       subtitle_translation_key: 'targets.this_month.subtitle',
       reportingPeriod: ReportingPeriod.CURRENT
     };
-    targetAggregatesService.isCurrentPeriod.resolves(true);
     translateService.instant = sinon.stub().returns('This month');
 
-    const result = (component as any).getReportingPeriodText(component.selected.reportingPeriod);
+    const result = (component as any).getReportingPeriodText(component.selected);
     expect(result).to.equal('This month');
   });
 
@@ -232,11 +231,9 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       reportingPeriod: ReportingPeriod.PREVIOUS,
       reportingMonth: 'April'
     };
-    targetAggregatesService.isPreviousPeriod.resolves(true);
     translateService.instant = sinon.stub().returns('This month');
 
-
-    const result = (component as any).getReportingPeriodText(component.selected.reportingPeriod);
+    const result = (component as any).getReportingPeriodText(component.selected);
     expect(result).to.equal('April');
   });
 });

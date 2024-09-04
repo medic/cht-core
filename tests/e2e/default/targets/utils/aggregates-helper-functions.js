@@ -37,6 +37,12 @@ const generateTargetValuesByContact = (contactNames) => {
 const docTags = [
   // current targets
   moment().format('YYYY-MM'),
+  // previous months targets
+  moment().date(10).subtract(1, 'month').format('YYYY-MM'),
+  // previous months targets
+  moment().date(10).subtract(2, 'month').format('YYYY-MM'),
+  // previous months targets
+  moment().date(10).subtract(3, 'month').format('YYYY-MM'),
   // next month targets, in case the reporting period switches mid-test
   moment().date(10).add(1, 'month').format('YYYY-MM'),
 ];
