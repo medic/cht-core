@@ -2,15 +2,13 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
-const moment = require('moment');
-const sinon = require('sinon');
 const TestRunner = require('cht-conf-test-harness');
 const { getRangeForTask, getTaskTestDays } = require('../test-helpers');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios, deliveryReportScenarios } = require('../form-inputs');
 const harness = new TestRunner();
 
 const MAX_DAYS_FOR_DELIVERY = 336;
-let clock;
+
 describe('Delivery tasks tests', () => {
   before(async () => {
     return await harness.start();
@@ -20,13 +18,9 @@ describe('Delivery tasks tests', () => {
   });
   beforeEach(async () => {
     await harness.clear();
-    //await harness.setNow(now);
-    //await harness.flush(1);
-    return await harness.loadForm('pregnancy');
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
   });
 
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
@@ -53,7 +47,6 @@ describe('Delivery tasks tests', () => {
     for (const day of getTaskTestDays(70, MAX_DAYS_FOR_DELIVERY, deliveryTask, 7)) {
       await harness.setNow('1999-08-01');//LMP date
       await harness.flush(day);
-      clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
 
       if (deliveryTaskDays.includes(day)) {
@@ -74,11 +67,9 @@ describe('Delivery tasks tests', () => {
     for (const day of getTaskTestDays(0, MAX_DAYS_FOR_DELIVERY, deliveryTask, 7)) {
       await harness.setNow('1999-08-01');//10 weeks after LMP date
       await harness.flush(day);
-      clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
 
       if (deliveryTaskDays.includes(day) && cleared === false) {
-        //expect(taskForDelivery).to.have.property('length', 1);
         expect(taskForDelivery.length).to.eq(1);
         await harness.loadForm('pregnancy_home_visit');
         const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.clearAll);
@@ -102,7 +93,6 @@ describe('Delivery tasks tests', () => {
     for (const day of getTaskTestDays(70, MAX_DAYS_FOR_DELIVERY, deliveryTask, 7)) {
       await harness.setNow('1999-08-01');//10 weeks after LMP date
       await harness.flush(day);
-      clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
       const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
       if (deliveryTaskDays.includes(day) && resolved === false) {
         expect(taskForDelivery.length).to.eq(1);//there is also a home-visit task
