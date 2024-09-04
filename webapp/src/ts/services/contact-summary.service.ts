@@ -100,8 +100,6 @@ export class ContactSummaryService {
     const chtScriptApi = await this.chtDatasourceService.get();
     chtScriptApi.v1.analytics.getTargetDocs = () => targetDocs;
 
-    console.warn(targetDocs);
-
     try {
       const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDocs[0]);
       return this.applyFilters(summary);

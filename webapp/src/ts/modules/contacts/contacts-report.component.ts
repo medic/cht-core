@@ -163,15 +163,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getEnketoEditedStatus),
       this.store.select(Selectors.getCancelCallback),
-      this.store.select(Selectors.getUserFacilityIds),
-      this.store.select(Selectors.getUserContactId),
-    ).subscribe(([
-      enketoStatus,
-      enketoSaving,
-      enketoError,
-      enketoEdited,
-      cancelCallback,
-    ]) => {
+    ).subscribe(([ enketoStatus, enketoSaving, enketoError, enketoEdited, cancelCallback]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;

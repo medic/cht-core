@@ -57,9 +57,7 @@ export class ContactsEffects {
   selectContact = createEffect(() => {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
-      withLatestFrom(
-        this.store.select(Selectors.getForms),
-      ),
+      withLatestFrom(this.store.select(Selectors.getForms)),
       exhaustMap(([{ payload: { id, silent } }, forms]) => {
         if (!id) {
           return of(this.contactsActions.clearSelection());
