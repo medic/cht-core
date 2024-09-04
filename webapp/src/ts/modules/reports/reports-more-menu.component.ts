@@ -31,7 +31,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   private hasUpdatePermission = false;
   private selectMode = false;
   private loadingContent?: boolean;
-  private snapshotData: Data | undefined;
+  private snapshotData: Data | null = null;
   private isOnlineOnly?: boolean;
   private dialogRef: MatDialogRef<any> | undefined;
   private bottomSheetRef: MatBottomSheetRef<any> | undefined;

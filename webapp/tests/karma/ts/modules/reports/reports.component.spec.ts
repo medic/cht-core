@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -133,7 +134,8 @@ describe('Reports Component', () => {
           RouterTestingModule,
           ComponentsModule,
           BrowserAnimationsModule,
-          MatExpansionModule
+          MatExpansionModule,
+          MatIconModule,
         ],
         declarations: [
           ReportsComponent,

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
@@ -113,6 +114,7 @@ describe('Contacts content component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatIconModule,
         ],
         declarations: [
           ContactsContentComponent,
@@ -175,7 +177,7 @@ describe('Contacts content component', () => {
   describe('load the user home place on mobile', () => {
     it(`should not load the user's home place when on mobile`, fakeAsync(() => {
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-      store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+      store.overrideSelector(Selectors.getUserFacilityId, [ 'homeplace' ]);
       responsiveService.isMobile.returns(true);
       activatedRoute.params = of({});
       activatedRoute.snapshot.params = {};
@@ -189,7 +191,7 @@ describe('Contacts content component', () => {
 
   it(`should not load the user's home place when a param id is set`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    store.overrideSelector(Selectors.getUserFacilityId, [ 'homeplace' ]);
     activatedRoute.params = of({ id: 'contact-1234' });
     activatedRoute.snapshot.params = { id: 'contact-1234' };
 
@@ -203,7 +205,7 @@ describe('Contacts content component', () => {
 
   it(`should not load the user's home place when a search term exists`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    store.overrideSelector(Selectors.getUserFacilityId, [ 'homeplace' ]);
     store.overrideSelector(Selectors.getFilters, { search: 'text' });
     component.ngOnInit();
     flush();
@@ -215,7 +217,7 @@ describe('Contacts content component', () => {
   it(`should load the user's home place when a param id not set and no search term exists`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
     store.overrideSelector(Selectors.getUserFacilityId, ['homeplace']);
-    store.overrideSelector(Selectors.getFilters, undefined);
+    store.overrideSelector(Selectors.getFilters, {});
     activatedRoute.params = of({});
     activatedRoute.snapshot.params = {};
     component.ngOnInit();
@@ -228,7 +230,7 @@ describe('Contacts content component', () => {
 
   it('should unset selected contact when a param id not set and no search term exists', fakeAsync(() => {
     const clearSelectionStub = sinon.stub(ContactsActions.prototype, 'clearSelection');
-    store.overrideSelector(Selectors.getFilters, undefined);
+    store.overrideSelector(Selectors.getFilters, {});
     sinon.resetHistory();
 
     component.ngOnInit();

@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
+import { MatSidenavModule } from '@angular/material/sidenav';
 
 import { HeaderComponent } from '@mm-components/header/header.component';
 import { PipesModule } from '@mm-pipes/pipes.module';
@@ -43,6 +44,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 
 @NgModule({
   declarations: [
@@ -71,6 +73,7 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     ErrorLogComponent,
     ModalLayoutComponent,
     PanelHeaderComponent,
+    SidebarMenuComponent,
   ],
   imports: [
     CommonModule,
@@ -84,6 +87,7 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     MatBottomSheetModule,
     MatDialogModule,
     MatListModule,
+    MatSidenavModule,
     BsDropdownModule,
   ],
   exports: [
@@ -111,6 +115,7 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     AnalyticsTargetsDetailsComponent,
     ModalLayoutComponent,
     PanelHeaderComponent,
+    SidebarMenuComponent,
   ]
 })
 export class ComponentsModule { }

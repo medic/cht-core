@@ -13,6 +13,7 @@
   </div>
 
   <mm-privacy-policy [overlay]="true" *ngIf="showPrivacyPolicy && !privacyPolicyAccepted"></mm-privacy-policy>
+  <mm-sidebar-menu [canLogOut]="canLogOut"/>
 
   <div class="container-fluid" *ngIf="initialisationComplete">
     <mm-header [adminUrl]="adminUrl" [canLogOut]="canLogOut"></mm-header>

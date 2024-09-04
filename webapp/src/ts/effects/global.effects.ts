@@ -13,7 +13,7 @@ import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/naviga
 
 @Injectable()
 export class GlobalEffects {
-  private globalActions;
+  private globalActions: GlobalActions;
 
   constructor(
     private actions$: Actions,
@@ -66,7 +66,7 @@ export class GlobalEffects {
       .toPromise();
   }
 
-  private navigate(nextUrl: string, cancelCallback: () => void) {
+  private navigate(nextUrl: string, cancelCallback: (() => void) | null) {
     try {
       if (nextUrl) {
         return this.router.navigateByUrl(nextUrl);
@@ -108,4 +108,20 @@ export class GlobalEffects {
       }),
     );
   }, { dispatch: false });
+
+  openSidebarMenu = createEffect(
+    ():any => this.actions$.pipe(
+      ofType(GlobalActionsList.openSidebarMenu),
+      tap(() => this.globalActions.setSidebarMenu({ isOpen: true })),
+    ),
+    { dispatch: false }
+  );
+
+  closeSidebarMenu = createEffect(
+    ():any => this.actions$.pipe(
+      ofType(GlobalActionsList.closeSidebarMenu),
+      tap(() => this.globalActions.setSidebarMenu({ isOpen: false })),
+    ),
+    { dispatch: false }
+  );
 }

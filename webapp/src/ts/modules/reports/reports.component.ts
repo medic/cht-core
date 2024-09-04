@@ -505,4 +505,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   getFastActionButtonType() {
     return this.fastActionButtonService.getButtonTypeForContentList();
   }
+
+  openMenu() {
+    this.globalActions.openSidebarMenu();
+  }
 }

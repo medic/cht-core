@@ -528,4 +528,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
       .sort((a, b) => a.id?.localeCompare(b.id));
   }
 
+  openMenu() {
+    this.globalActions.openSidebarMenu();
+  }
+
 }
