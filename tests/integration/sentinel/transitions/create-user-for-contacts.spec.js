@@ -76,7 +76,7 @@ describe('create_user_for_contacts', () => {
     const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
 
     const collectLogs = await utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
-    await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
+    await utils.updateSettings(getSettings({ token_login: { enabled: false } }), { ignoreReload: 'sentinel' });
     // Wait a bit before collecting logs. Cannot wait on directly on Sentinel because no docs are being processed
     await sentinelUtils.getCurrentSeq();
     const logs = await collectLogs();
@@ -90,7 +90,7 @@ describe('create_user_for_contacts', () => {
     const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
 
     const collectLogs = await utils.collectSentinelLogs(appUrlErrorPattern, transitionsDisabledPattern);
-    await utils.updateSettings(getSettings({ app_url: '' }), 'sentinel');
+    await utils.updateSettings(getSettings({ app_url: '' }), { ignoreReload: 'sentinel' });
     // Wait a bit before collecting logs. Cannot wait on directly on Sentinel because no docs are being processed
     await sentinelUtils.getCurrentSeq();
     const logs = await collectLogs();
@@ -99,7 +99,7 @@ describe('create_user_for_contacts', () => {
   });
 
   it('does nothing when no users should be created for the contact', async () => {
-    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
@@ -120,7 +120,7 @@ describe('create_user_for_contacts', () => {
   });
 
   it('replaces user but does not create a new user for the same contact in the same transition', async () => {
-    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     // Can log in as user
@@ -213,7 +213,7 @@ describe('create_user_for_contacts', () => {
     };
 
     it('replaces user for contact', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       // Can log in as user
@@ -266,7 +266,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('replaces user for a contact when the contact is associated with multiple users', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       const otherUser = { ...ORIGINAL_USER, username: 'other_user', contact: ORIGINAL_PERSON._id };
@@ -327,7 +327,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('replaces multiple users for a contact', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       const otherUser = { ...ORIGINAL_USER, username: 'other_user', contact: ORIGINAL_PERSON._id };
@@ -398,7 +398,10 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not replace user when transition is disabled', async () => {
-      await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), 'sentinel');
+      await utils.updateSettings(
+        getSettings({ transitions: { create_user_for_contacts: false } }),
+        { ignoreReload: 'sentinel' }
+      );
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
@@ -423,7 +426,7 @@ describe('create_user_for_contacts', () => {
     it('does not replace user when the new contact does not exist', async () => {
       const missingPersonPattern = /Failed to find person/;
       const collectLogs = await utils.collectSentinelLogs(missingPersonPattern);
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -447,7 +450,7 @@ describe('create_user_for_contacts', () => {
     it('does not replace user when the original user does not exist', async () => {
       const missingUserPattern = /Failed to find user with name \[original_person] in the \[(users|medic)] database\./;
       const collectLogs = await utils.collectSentinelLogs(missingUserPattern);
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.saveDocs([ORIGINAL_PERSON, NEW_PERSON]);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
       originalContact.user_for_contact = {
@@ -472,7 +475,7 @@ describe('create_user_for_contacts', () => {
       const newPerson = { ...NEW_PERSON, phone: undefined };
 
       const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(newPerson);
@@ -499,7 +502,7 @@ describe('create_user_for_contacts', () => {
       const newPerson = { ...NEW_PERSON, phone: 12345 };
 
       const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(newPerson);
@@ -526,7 +529,7 @@ describe('create_user_for_contacts', () => {
       const newPerson = { ...NEW_PERSON, name: undefined };
 
       const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(newPerson);
@@ -552,7 +555,7 @@ describe('create_user_for_contacts', () => {
       const missingIdPattern = /No id was provided for the new replacement contact\./;
 
       const collectLogs = await utils.collectSentinelLogs(missingIdPattern);
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
@@ -574,7 +577,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not replace user when the replace status is not READY', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
@@ -602,7 +605,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not replace user when the contact being replaced is not a person', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
@@ -637,7 +640,7 @@ describe('create_user_for_contacts', () => {
     };
 
     it('creates user for new contact with multiple roles', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
 
       const originalContact = {
         roles: ['chw', 'other-role'],
@@ -679,7 +682,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('creates user for new contact with single role', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
 
       const originalContact = {
         role: 'chw',
@@ -721,7 +724,10 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not create user when transition is disabled', async () => {
-      await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), 'sentinel');
+      await utils.updateSettings(
+        getSettings({ transitions: { create_user_for_contacts: false } }),
+        { ignoreReload: 'sentinel' }
+      );
 
       const originalContact = {
         roles: ['chw', 'other-role'],
@@ -741,7 +747,7 @@ describe('create_user_for_contacts', () => {
       const missingRolePattern = /must have a "role" or "roles" property/;
       const collectLogs = await utils.collectSentinelLogs(missingRolePattern);
 
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
 
       const originalContact = {
         ...NEW_PERSON,
@@ -760,7 +766,7 @@ describe('create_user_for_contacts', () => {
       const missingPhonePattern = /Missing required fields: phone/;
       const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
 
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
 
       const originalContact = {
         ...NEW_PERSON,
@@ -781,7 +787,7 @@ describe('create_user_for_contacts', () => {
       const invalidPhonePattern = /A valid phone number is required for SMS login/;
       const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
 
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
 
       const originalContact = {
         ...NEW_PERSON,
@@ -802,7 +808,7 @@ describe('create_user_for_contacts', () => {
       const missingNamePattern = /Contact \[new_person] must have a name\./;
       const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
 
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
 
       const originalContact = {
         ...NEW_PERSON,
@@ -820,7 +826,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it(`does not create user when the create is not 'true'`, async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
@@ -841,7 +847,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not create user when the contact being added is not a person', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
@@ -865,7 +871,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not create user when editing contact', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
 
       await utils.saveDoc(NEW_PERSON);
       await sentinelUtils.waitForSentinel(NEW_PERSON._id);

@@ -1,9 +1,8 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
-
 
 describe('Navigation tests', () => {
   describe('Navigation functionality', () => {
@@ -75,6 +74,12 @@ describe('Navigation tests', () => {
 
         await utils.updatePermissions(user.roles, [], permissionsToRemove);
         await loginPage.login(user);
+      });
+
+      after(async () => {
+        await utils.deleteUsers([user]);
+        await utils.revertDb([/^form:/], true);
+        await utils.revertSettings(true);
       });
 
       it('should display tab labels, when some tabs are enabled', async () => {

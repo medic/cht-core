@@ -20,7 +20,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -46,7 +46,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -73,7 +73,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -98,7 +98,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -123,7 +123,7 @@ describe('generate_patient_id_on_people', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))

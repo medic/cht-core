@@ -32,7 +32,8 @@ const globalState: GlobalState = {
   showPrivacyPolicy: true,
   unreadCount: { report: 2 },
   translationsLoaded: false,
-  userFacilityId: [ 'facility_uuid' ],
+  userFacilityIds: ['facility_uuid'],
+  userContactId: 'contact_uuid',
   enketoStatus: { edited: true, saving: false, error: 'has error', form: true },
   sidebarMenu: { isOpen: false },
   lastChangedDoc: { _id: '1234' },
@@ -213,9 +214,11 @@ describe('Selectors', () => {
     });
 
     it('should getUserFacilityId', () => {
-      expect(Selectors.getUserFacilityId.projector(state.global)).to.have.members(
-        clonedState.global.userFacilityId as string[]
-      );
+      expect(Selectors.getUserFacilityIds.projector(state.global)).to.deep.equal(clonedState.global.userFacilityIds);
+    });
+
+    it('should getUserContactId', () => {
+      expect(Selectors.getUserContactId.projector(state.global)).to.equal(clonedState.global.userContactId);
     });
 
     it('should getEnketoStatus', () => {
@@ -245,7 +248,12 @@ describe('Selectors', () => {
     // null checks
     it('should null check global state', () => {
       // @ts-ignore
-      expect(Selectors.getUserFacilityId.projector(null)).to.equal(undefined);
+      expect(Selectors.getUserFacilityIds.projector({})).to.equal(undefined);
+    });
+
+    it('should null check enketo state', () => {
+      // @ts-ignore
+      expect(Selectors.getEnketoError.projector({})).to.equal(undefined);
     });
   });
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
@@ -97,7 +97,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   private getUserFacility() {
     const subscription = this.store
-      .select(Selectors.getUserFacilityId)
+      .select(Selectors.getUserFacilityIds)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityIds) => {
         const shouldDisplayHomePlace = userFacilityIds &&

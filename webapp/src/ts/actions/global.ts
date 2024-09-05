@@ -1,6 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
 
-import { createSingleValueAction, createMultiValueAction } from '@mm-actions/actionUtils';
+import { createMultiValueAction, createSingleValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
@@ -31,7 +31,8 @@ export const Actions = {
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
-  setUserFacilityId: createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
+  setUserFacilityIds: createSingleValueAction('SET_USER_FACILITY_IDS', 'userFacilityIds'),
+  setUserContactId: createSingleValueAction('SET_USER_CONTACT_ID', 'userContactId'),
   setTrainingCardFormId: createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
   setSidebarMenu: createSingleValueAction('SET_SIDEBAR_MENU', 'sidebarMenu'),
   closeSidebarMenu: createAction('CLOSE_SIDEBAR_MENU'),
@@ -199,8 +200,12 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTranslationsLoaded());
   }
 
-  setUserFacilityId(userFacilityId) {
-    return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
+  setUserFacilityIds(userFacilityIds) {
+    return this.store.dispatch(Actions.setUserFacilityIds(userFacilityIds));
+  }
+
+  setUserContactId(userContactId) {
+    return this.store.dispatch(Actions.setUserContactId(userContactId));
   }
 
   setTrainingCardFormId(trainingCard) {

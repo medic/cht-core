@@ -14,8 +14,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - run: npm ci
     - name: Cleanup
       run: |
         cd scripts/ci
-        npm ci
         node ./cleanup.js

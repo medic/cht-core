@@ -20,7 +20,7 @@ export class FeedbackService {
     private versionService:VersionService,
     private debugService: DebugService,
     private languageService: LanguageService,
-    private telemetryService : TelemetryService,
+    private telemetryService : TelemetryService
   ) {
   }
 
@@ -191,7 +191,7 @@ export class FeedbackService {
   }
 
   private async create(info, isManual?) {
-    const { version } = await this.versionService.getLocal();
+    const { version } = await this.versionService.getServiceWorker();
     const language = await this.languageService.get();
 
     const time = new Date().toISOString();

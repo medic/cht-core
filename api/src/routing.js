@@ -467,6 +467,7 @@ app.postJson('/api/v1/places/:id', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
+app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
 
 app.postJson('/api/v1/people', function(req, res) {
@@ -481,6 +482,7 @@ app.postJson('/api/v1/people', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
+app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);

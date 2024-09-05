@@ -8,13 +8,14 @@ const targetAggregatesConfig = require('../config/target-aggregates');
 
 const generateRandomNumber = (max) => Math.floor(Math.random() * max);
 
-const updateSettings = async (targetsConfig, user, contactSummary) => {
+const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummary) => {
   const settings = await utils.getSettings();
-  const tasks = settings.tasks;
-  tasks.targets.items = targetsConfig;
-  const permissions = settings.permissions;
-  permissions.can_aggregate_targets = user.roles;
-  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
+  settings.tasks.targets.items = targetsConfig;
+  settings.permissions.can_aggregate_targets = user.roles;
+  await utils.updateSettings(
+    { tasks: settings.tasks, permissions: settings.permissions, contact_summary: contactSummary },
+    { ignoreReload: true }
+  );
   await commonPage.closeReloadModal();
   await commonPage.goToBase();
 };
@@ -36,6 +37,12 @@ const generateTargetValuesByContact = (contactNames) => {
 const docTags = [
   // current targets
   moment().format('YYYY-MM'),
+  // previous months targets
+  moment().date(10).subtract(1, 'month').format('YYYY-MM'),
+  // previous months targets
+  moment().date(10).subtract(2, 'month').format('YYYY-MM'),
+  // previous months targets
+  moment().date(10).subtract(3, 'month').format('YYYY-MM'),
   // next month targets, in case the reporting period switches mid-test
   moment().date(10).add(1, 'month').format('YYYY-MM'),
 ];
@@ -181,7 +188,7 @@ const getDocsByPlace = (contactDocs, placeId) => {
 };
 
 module.exports = {
-  updateSettings,
+  updateAggregateTargetsSettings,
   generateTargetValuesByContact,
   docTags,
   generateContactsAndTargets,
