@@ -7,6 +7,7 @@ import {
   AfterViewInit,
   Output,
   ViewChild,
+  HostBinding,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -101,5 +102,10 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  @HostBinding('class.search-open')
+  get isSearchOpen(): boolean {
+    return this.openSearch;
   }
 }

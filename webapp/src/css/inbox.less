@@ -210,6 +210,15 @@ body {
   height: @filters-bar-desktop-height;
   white-space: nowrap;
   padding: 5px 0;
+  width: 100vw;
+
+  .tab-title {
+    display: inline-block;
+    text-overflow: ellipsis;
+    width: calc(100vw - 100px);
+    line-height: 26px;
+    color: @medium-black;
+  }
 
   .navigation {
     display: none;
@@ -886,7 +895,7 @@ mm-fast-action-button.mobile-only {
 .analytics {
   .content {
     .inner {
-      max-width: 100%;
+      width: 100%;
       .page {
         max-width: 100%;
       }
@@ -1070,6 +1079,7 @@ mm-search-bar {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  flex-direction: row-reverse;
 
   mm-search-bar,
   contacts-filters,
@@ -1331,6 +1341,10 @@ mm-sidebar-menu .mat-sidenav-container {
         display: none;
       }
     }
+
+    mm-analytics-filters {
+      display: none;
+    }
   }
 
   .more-options-menu-container {
@@ -1340,6 +1354,9 @@ mm-sidebar-menu .mat-sidenav-container {
   #mobile-detection {
     display: inline;
   }
+
+  .desktop-fab {
+    display: none;
 
   mm-fast-action-button.mobile-only {
     display: initial;
@@ -1531,6 +1548,24 @@ mm-sidebar-menu .mat-sidenav-container {
     .fast-action-trigger:not(.embed-fast-action) {
       bottom: @fab-bottom-margin;
     }
+    .app-menu-button {
+      display: none;
+    }
+    .tab-title {
+      display: none;
+    }
+    .filters.tab-bar .inner {
+      flex-direction: initial;
+    }
+    .app-menu-button {
+      display: none;
+    }
+    .tab-title {
+      display: none;
+    }
+    .filters.tab-bar .inner {
+      flex-direction: initial;
+    }
   }
 
   .show-from {
@@ -1610,6 +1645,17 @@ mm-sidebar-menu .mat-sidenav-container {
         .search-bar-left-icon {
           margin: 0 10px;
         }
+      }
+    }
+  }
+
+  .filters.tab-bar .inner {
+    mm-search-bar.search-open {
+      width: 100%;
+
+      ~ .app-menu-button,
+      ~ .tab-title {
+        display: none;
       }
     }
   }
