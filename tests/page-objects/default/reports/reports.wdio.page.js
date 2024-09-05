@@ -158,16 +158,19 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
+const toggleReportSummary = async (expand = false) => {
+  const reportSummary = await rightPanelSelectors.reportSummary();
+  await reportSummary.waitForClickable();
+  await reportSummary.click();
+  await (await rightPanelSelectors.reportBodyDetails()).waitForDisplayed({ reverse: expand });
+};
+
 const expandSelectedReportSummary = async () => {
-  await (await rightPanelSelectors.reportSummary()).waitForClickable();
-  await (await rightPanelSelectors.reportSummary()).click();
-  await (await rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+  await toggleReportSummary();
 };
 
 const collapseSelectedReportSummary = async () => {
-  await (await rightPanelSelectors.reportSummary()).waitForClickable();
-  await (await rightPanelSelectors.reportSummary()).click();
-  await (await rightPanelSelectors.reportBodyDetails()).waitForDisplayed({ reverse: true });
+  await toggleReportSummary(true);
 };
 
 const deleteSelectedReports = async () => {
@@ -217,22 +220,22 @@ const isReportSelected = async (uuid) => {
   return await (await checkbox).isExisting();
 };
 
-const selectReports = async (uuids) => {
+const toggleSelectReport = async (selectReport, uuids, verifyFn, shouldHideElements = false) => {
   for (const uuid of uuids) {
-    if (!(await isReportSelected(uuid))) {
+    const isSelected = await isReportSelected(uuid);
+    if ((selectReport && !isSelected) || (!selectReport && isSelected)) {
       await (await leftPanelSelectors.reportCheckbox(uuid)).click();
     }
   }
-  return verifyMultiselectElementsDisplay();
+  return verifyFn(shouldHideElements);
 };
 
-const deselectReports = async (uuids, shouldHideElements=false) => {
-  for (const uuid of uuids) {
-    if (await isReportSelected(uuid)) {
-      await (await leftPanelSelectors.reportCheckbox(uuid)).click();
-    }
-  }
-  return verifyMultiselectElementsDisplay(shouldHideElements);
+const selectReports = async (uuids) => {
+  return await toggleSelectReport(true, uuids, verifyMultiselectElementsDisplay);
+};
+
+const deselectReports = async (uuids, shouldHideElements= false) => {
+  return await toggleSelectReport(false, uuids, verifyMultiselectElementsDisplay, shouldHideElements);
 };
 
 const filterByDate = async (startDate, endDate) => {
@@ -361,26 +364,27 @@ const openReport = async (reportId) => {
   await rightPanelSelectors.reportBodyDetails().waitForDisplayed();
 };
 
-const editReport = async () => {
-  await commonElements.openMoreOptionsMenu();
-  await (await kebabMenuSelectors.edit()).waitForClickable();
-  await (await kebabMenuSelectors.edit()).click();
-};
-
 const fieldByIndex = async (index) => {
   return await (await $(`${REPORT_BODY_DETAILS} li:nth-child(${index}) p`)).getText();
 };
 
-const exportReports = async () => {
+const performMenuAction = async (actionSelector) => {
   await commonElements.openMoreOptionsMenu();
-  await (await kebabMenuSelectors.export()).waitForClickable();
-  await (await kebabMenuSelectors.export()).click();
+  const actionElement = await actionSelector();
+  await actionElement.waitForClickable();
+  await actionElement.click();
+};
+
+const editReport = async () => {
+  await performMenuAction(kebabMenuSelectors.edit());
+};
+
+const exportReports = async () => {
+  await performMenuAction(kebabMenuSelectors.export());
 };
 
 const deleteReport = async () => {
-  await commonElements.openMoreOptionsMenu();
-  await (await kebabMenuSelectors.delete()).waitForClickable();
-  await (await kebabMenuSelectors.delete()).click();
+  await performMenuAction(kebabMenuSelectors.delete());
 };
 
 const openReview = async () => {
@@ -464,6 +468,7 @@ module.exports = {
   selectAll,
   deselectAll,
   isReportSelected,
+  toggleSelectReport,
   selectReports,
   deselectReports,
   expandSelectedReportSummary,

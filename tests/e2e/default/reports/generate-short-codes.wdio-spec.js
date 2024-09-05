@@ -6,8 +6,6 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const place = require('@factories/cht/contacts/place');
 
-
-
 describe('Generating short codes', () => {
   const places = place.generateHierarchy();
   const clinic = places.get('clinic');
@@ -28,6 +26,11 @@ describe('Generating short codes', () => {
     await utils.updateSettings({ forms, registrations, transitions }, { ignoreReload: true });
 
     await loginPage.cookieLogin();
+  });
+
+  after(async () => {
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
   });
 
   it('should create case ID', async () => {

@@ -17,36 +17,30 @@ const verifyMultiselectElementsDisplay = async (shouldHide=false) => {
   };
 };
 
+const toggleSelection = async (selector, shouldHide = false) => {
+  const element = await $(selector);
+  await element.waitForDisplayed();
+  await element.click();
+  await element.waitForDisplayed({ reverse: true });
+  return await verifyMultiselectElementsDisplay(shouldHide);
+};
+
 const selectAll = async () => {
-  await (await $(SELECT_ALL)).waitForDisplayed();
-  await (await $(SELECT_ALL)).click();
-  await (await $(SELECT_ALL)).waitForDisplayed({ reverse: true });
-  return await verifyMultiselectElementsDisplay();
+  await toggleSelection(SELECT_ALL);
 };
 
 const deselectAll = async () => {
-  await (await $(DESELECT_ALL)).waitForDisplayed();
-  await (await $(DESELECT_ALL)).click();
-  await (await $(DESELECT_ALL)).waitForDisplayed({ reverse: true });
-  return await verifyMultiselectElementsDisplay(true);
+  await toggleSelection(DESELECT_ALL, true);
 };
 
 const selectReports = async (uuids) => {
-  for (const uuid of uuids) {
-    if (!(await reportsPageDefault.isReportSelected(uuid))) {
-      await (await reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid)).click();
-    }
-  }
-  return verifyMultiselectElementsDisplay();
+  return await reportsPageDefault.toggleSelectReport(true, uuids, verifyMultiselectElementsDisplay);
 };
 
 const deselectReports = async (uuids, shouldHideElements=false) => {
-  for (const uuid of uuids) {
-    if (await reportsPageDefault.isReportSelected(uuid)) {
-      await (await reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid)).click();
-    }
-  }
-  return verifyMultiselectElementsDisplay(shouldHideElements);
+  return await reportsPageDefault.toggleSelectReport(
+    false, uuids, verifyMultiselectElementsDisplay, shouldHideElements
+  );
 };
 
 const deleteSelectedReports = async () => {

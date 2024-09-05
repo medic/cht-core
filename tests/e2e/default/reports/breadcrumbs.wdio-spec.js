@@ -94,6 +94,11 @@ describe('Reports tab breadcrumbs', () => {
     await utils.createUsers([ onlineUser, offlineUser ]);
   });
 
+  after(async () => {
+    await utils.deleteUsers([onlineUser, offlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   afterEach(async () => await commonElements.logout());
 
   it('should display reports with breadcrumbs for online user', async () => {

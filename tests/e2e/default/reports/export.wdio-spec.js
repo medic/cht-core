@@ -28,6 +28,7 @@ describe('Export Reports', () => {
   ];
 
   const savedReportIds = [];
+
   beforeEach(async () => {
     await fileDownloadUtils.setupDownloadFolder();
     await utils.saveDocs([ ...places.values(), patient ]);
@@ -36,6 +37,11 @@ describe('Export Reports', () => {
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToReports();
+  });
+
+  after(async () => {
+    await utils.deleteUsers([onlineUser]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should download export file', async () => {

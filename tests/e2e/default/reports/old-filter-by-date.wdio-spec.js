@@ -55,6 +55,12 @@ describe('Report Filter', () => {
     await commonElements.goToReports();
   });
 
+  after(async () => {
+    await utils.deleteUsers([user]);
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
+  });
+
   it('should filter by date using the old filter and search', async () => {
     await (await reportsTab.leftPanelSelectors.firstReport()).waitForDisplayed();
 
