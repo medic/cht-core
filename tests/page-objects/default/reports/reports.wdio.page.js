@@ -376,15 +376,15 @@ const performMenuAction = async (actionSelector) => {
 };
 
 const editReport = async () => {
-  await performMenuAction(kebabMenuSelectors.edit());
+  await performMenuAction(kebabMenuSelectors.edit);
 };
 
 const exportReports = async () => {
-  await performMenuAction(kebabMenuSelectors.export());
+  await performMenuAction(kebabMenuSelectors.export);
 };
 
 const deleteReport = async () => {
-  await performMenuAction(kebabMenuSelectors.delete());
+  await performMenuAction(kebabMenuSelectors.delete);
 };
 
 const openReview = async () => {
