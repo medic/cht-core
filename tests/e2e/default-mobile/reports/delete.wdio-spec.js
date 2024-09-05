@@ -37,11 +37,17 @@ describe('Delete Reports', () => {
   ];
 
   const savedReportIds = [];
-  beforeEach(async () => {
+
+  before(async () => {
     await utils.saveDocs([ ...places.values(), patient ]);
     (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
     await utils.createUsers([ onlineUser ]);
     await loginPage.login(onlineUser);
+  });
+
+  after(async () => {
+    await utils.deleteUsers([onlineUser]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('Should delete report', async () => {

@@ -29,6 +29,8 @@ describe('Search Reports', () => {
     await loginPage.cookieLogin();
   });
 
+  after(async () =>  await utils.revertDb([/^form:/], true) );
+
   it('should return results matching the search term and then return all data when clearing search', async () => {
     const [ hospitalSMS, healthCenterSMS, hospitalReport, healthCenterReport ] = reportDocs;
     await commonPage.goToReports();

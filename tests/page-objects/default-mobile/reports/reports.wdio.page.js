@@ -26,11 +26,11 @@ const toggleSelection = async (selector, shouldHide = false) => {
 };
 
 const selectAll = async () => {
-  await toggleSelection(SELECT_ALL);
+  return await toggleSelection(SELECT_ALL);
 };
 
 const deselectAll = async () => {
-  await toggleSelection(DESELECT_ALL, true);
+  return await toggleSelection(DESELECT_ALL, true);
 };
 
 const selectReports = async (uuids) => {

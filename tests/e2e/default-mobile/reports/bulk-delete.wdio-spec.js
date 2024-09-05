@@ -40,11 +40,17 @@ describe('Bulk delete reports', () => {
   ];
 
   const savedUuids = [];
+
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient ]);
     await utils.createUsers([ offlineUser ]);
     (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
     await loginPage.login(offlineUser);
+  });
+
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should select, deselect and delete only selected reports', async () => {
