@@ -49,6 +49,7 @@
     "font-awesome": "^4.7.0",
     "jquery": "3.5.1",
     "lodash-es": "^4.17.21",
+    "moment-locales-webpack-plugin": "^1.2.0",
     "ngrx-store-logger": "^0.2.4",
     "ngx-bootstrap": "^11.0.2",
     "ngx-cookie-service": "^17.1.0",

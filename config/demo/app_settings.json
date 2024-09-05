@@ -2,7 +2,7 @@
   "languages": [
     {
       "locale": "bm",
-      "enabled": true
+      "enabled": false
     },
     {
       "locale": "en",
@@ -18,11 +18,11 @@
     },
     {
       "locale": "hi",
-      "enabled": true
+      "enabled": false
     },
     {
       "locale": "id",
-      "enabled": true
+      "enabled": false
     },
     {
       "locale": "ne",

@@ -338,4 +338,23 @@ describe('Global Reducer', () => {
     state = globalReducer(state, Actions.setTrainingCardFormId('training:another_new_change'));
     expect(state).to.deep.equal({ trainingCardFormId: 'training:another_new_change' });
   });
+
+  it('should set userFacilityIds in state', () => {
+    state = globalReducer(state, Actions.setUserFacilityIds('facility_id'));
+    expect(state).to.deep.equal({ userFacilityIds: ['facility_id'] });
+
+    state = globalReducer(state, Actions.setUserFacilityIds('other'));
+    expect(state).to.deep.equal({ userFacilityIds: ['other'] });
+
+    state = globalReducer(state, Actions.setUserFacilityIds(['others']));
+    expect(state).to.deep.equal({ userFacilityIds: ['others'] });
+  });
+
+  it('should set userContactId in state', () => {
+    state = globalReducer(state, Actions.setUserContactId('contact_id'));
+    expect(state).to.deep.equal({ userContactId: 'contact_id' });
+
+    state = globalReducer(state, Actions.setUserContactId('other'));
+    expect(state).to.deep.equal({ userContactId: 'other' });
+  });
 });

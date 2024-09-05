@@ -1670,4 +1670,35 @@ describe('sms parser', () => {
     chai.expect(config.translate.callCount).to.equal(2);
   });
 
+  it('should correctly parse and standardize BS Year from Devanagari digits using parseField', () => {
+    const bsYearField = { type: 'bsYear' };
+    const input = '२०८०'; // 2080 in Devanagari
+    const expected = '2080';
+    const result = smsparser.parseField(bsYearField, input, 'year');
+    chai.expect(result).to.equal(expected);
+  });
+
+  it('should correctly parse and standardize BS Month from Devanagari digits using parseField', () => {
+    const bsMonthField = { type: 'bsMonth' };
+    const input = '०४'; // 04 in Devanagari
+    const expected = '04';
+    const result = smsparser.parseField(bsMonthField, input, 'month');
+    chai.expect(result).to.equal(expected);
+  });
+
+  it('should correctly parse and standardize BS Day from Devanagari digits using parseField', () => {
+    const bsDayField = { type: 'bsDay' };
+    const input = '१५'; // 15 in Devanagari
+    const expected = '15';
+    const result = smsparser.parseField(bsDayField, input, 'day');
+    chai.expect(result).to.equal(expected);
+  });
+
+  it('should correctly parse and standardize BS Year from Devanagari digits and strip invisible characters', () => {
+    const bsYearField = { type: 'bsYear' };
+    const input = '२\u200B०८०'; // 2080 in Devanagari with a zero-width space
+    const expected = '2080';
+    const result = smsparser.parseField(bsYearField, input, 'year');
+    chai.expect(result).to.equal(expected);
+  });
 });

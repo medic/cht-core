@@ -22,14 +22,6 @@ const neighborhoodDropdown = (formId = FORM) => {
 
 const patientNameErrorLabel = (formId = FORM) => $(`${formId} label.invalid-constraint`);
 
-const phoneFieldRequiredMessage = () => {
-  return $('input[name="/enketo_widgets_test/enketo_test_select/phone"] ~ .or-required-msg.active');
-};
-
-const phoneFieldConstraintMessage = () => {
-  return $('input[name="/enketo_widgets_test/enketo_test_select/phone"] ~ .or-constraint-msg.active');
-};
-
 const openDropdown = async (element) => {
   const dropdownButton = element.nextElement().$('.dropdown-toggle');
   await dropdownButton.waitForClickable();
@@ -81,8 +73,6 @@ module.exports = {
   getDropdownTotalOptions,
   selectDropdownOptions,
   patientNameErrorLabel,
-  phoneFieldRequiredMessage,
-  phoneFieldConstraintMessage,
   clickTimer,
   imagePreview,
   selectImage,

@@ -1,0 +1,68 @@
+#!/bin/bash
+
+function usage() {
+  echo "Usage: $0 <namespace> [since]"
+  echo
+  echo "This script saves current and previous logs from all pods within the specified namespace into local files and then creates a tar.gz archive of these logs."
+  echo
+  echo "Arguments:"
+  echo "  namespace   - The namespace from which to retrieve and archive pod logs."
+  echo "  since       - (Optional) Only return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to all logs."
+  echo
+  echo "Example: $0 mynamespace 24h"
+  echo
+  echo "Note: Logs may contain Personally Identifiable Information (PII). Handle and store them securely."
+  exit 1
+}
+
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+  usage
+fi
+
+NAMESPACE=$1
+SINCE=${2:-} # Optional since parameter
+TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+LOG_DIR=$(mktemp -d "${NAMESPACE}-logs_${TIMESTAMP}-XXXXXX")
+
+trap 'rm -rf "$LOG_DIR"' EXIT
+
+# Get a list of all pod names in the namespace
+PODS=$(kubectl -n "$NAMESPACE" get pods -o jsonpath="{.items[*].metadata.name}")
+
+if [ -z "$PODS" ]; then
+  echo "No Pods found in Namespace $NAMESPACE."
+  exit 1
+fi
+
+# Loop through all pod names and fetch logs, saving them to individual files
+for POD in $PODS; do
+  echo "Fetching logs for pod: $POD"
+
+  # Fetch current logs
+  if [ -z "$SINCE" ]; then
+    kubectl -n "$NAMESPACE" logs "$POD" > "$LOG_DIR/${POD}_current.log"
+  else
+    kubectl -n "$NAMESPACE" logs --since="$SINCE" "$POD" > "$LOG_DIR/${POD}_current.log"
+  fi
+
+  # Fetch previous logs
+  if [ -z "$SINCE" ]; then
+    kubectl -n "$NAMESPACE" logs --previous "$POD" > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
+  else
+    kubectl -n "$NAMESPACE" logs --since="$SINCE" --previous "$POD" > "$LOG_DIR/${POD}_previous.log" 2>/dev/null
+  fi
+
+  # If previous log file is empty, remove it
+  if [ ! -s "$LOG_DIR/${POD}_previous.log" ]; then
+    rm "$LOG_DIR/${POD}_previous.log"
+  fi
+done
+
+# Create a tar.gz archive of the log files
+if tar -czf "$NAMESPACE-logs_$TIMESTAMP.tar.gz" "$LOG_DIR"; then
+  echo "Logs archived in $NAMESPACE-logs_$TIMESTAMP.tar.gz"
+  echo "Note: Logs may contain Personally Identifiable Information (PII). Handle and store them securely."
+else
+  echo "Failed to create archive."
+  exit 1
+fi

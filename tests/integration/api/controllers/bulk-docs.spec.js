@@ -985,7 +985,7 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
@@ -1133,7 +1133,7 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
@@ -1280,7 +1280,7 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => utils.saveDocsRevs(existentDocs))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };

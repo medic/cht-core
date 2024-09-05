@@ -9,7 +9,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 

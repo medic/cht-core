@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 import { DbService } from '@mm-services/db.service';
 
@@ -6,8 +8,10 @@ import { DbService } from '@mm-services/db.service';
   providedIn: 'root'
 })
 export class VersionService {
-  constructor(private dbService: DbService) {
-  }
+  constructor(
+    private dbService: DbService,
+    private http: HttpClient,
+  ) {}
 
   private formatRev(rev) {
     return rev.split('-')[0];
@@ -33,6 +37,14 @@ export class VersionService {
           rev: this.formatRev(ddoc._rev)
         };
       });
+  }
+
+  async getServiceWorker():Promise<{ version }> {
+    const obs = this.http.get('/deploy-info.json');
+    const response = await firstValueFrom(obs);
+    return {
+      version: this.getDeployVersion(response),
+    };
   }
 
   getRemoteRev() {
