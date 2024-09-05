@@ -68,7 +68,7 @@ const setupTokenLoginSettings = (configureAppUrl = false) => {
     settings.app_url = utils.getOrigin();
   }
   return utils
-    .updateSettings(settings, true)
+    .updateSettings(settings, { ignoreReload: true })
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
 

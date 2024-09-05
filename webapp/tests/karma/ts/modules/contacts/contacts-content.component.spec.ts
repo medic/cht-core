@@ -177,7 +177,7 @@ describe('Contacts content component', () => {
   describe('load the user home place on mobile', () => {
     it(`should not load the user's home place when on mobile`, fakeAsync(() => {
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-      store.overrideSelector(Selectors.getUserFacilityId, [ 'homeplace' ]);
+      store.overrideSelector(Selectors.getUserFacilityIds, 'homeplace');
       responsiveService.isMobile.returns(true);
       activatedRoute.params = of({});
       activatedRoute.snapshot.params = {};
@@ -191,7 +191,7 @@ describe('Contacts content component', () => {
 
   it(`should not load the user's home place when a param id is set`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, [ 'homeplace' ]);
+    store.overrideSelector(Selectors.getUserFacilityIds, 'homeplace');
     activatedRoute.params = of({ id: 'contact-1234' });
     activatedRoute.snapshot.params = { id: 'contact-1234' };
 
@@ -205,7 +205,7 @@ describe('Contacts content component', () => {
 
   it(`should not load the user's home place when a search term exists`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, [ 'homeplace' ]);
+    store.overrideSelector(Selectors.getUserFacilityIds, 'homeplace');
     store.overrideSelector(Selectors.getFilters, { search: 'text' });
     component.ngOnInit();
     flush();
@@ -216,8 +216,8 @@ describe('Contacts content component', () => {
 
   it(`should load the user's home place when a param id not set and no search term exists`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, ['homeplace']);
-    store.overrideSelector(Selectors.getFilters, {});
+    store.overrideSelector(Selectors.getUserFacilityIds, ['homeplace']);
+    store.overrideSelector(Selectors.getFilters, undefined);
     activatedRoute.params = of({});
     activatedRoute.snapshot.params = {};
     component.ngOnInit();

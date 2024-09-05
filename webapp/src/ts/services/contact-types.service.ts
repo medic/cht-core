@@ -80,6 +80,11 @@ export class ContactTypesService {
       .then(config => contactTypesUtils.getPersonTypes(config));
   }
 
+  async getPlaceChildTypes(type) {
+    const childTypes = await this.getChildren(type);
+    return childTypes.filter(type => !contactTypesUtils.isPersonType(type));
+  }
+
   /**
    * @returns {string} returns the contact type id of a given contact document
    */
@@ -92,9 +97,15 @@ export class ContactTypesService {
   }
 
   /**
-   *  @returns {boolean} returns whether the provided type is a person type
+   *  @returns {boolean} returns whether the provided contact has a person type
    */
-  isPersonType(type?) {
+  async isPerson(contact) {
+    let type;
+    if (typeof contact.type === 'object') {
+      type = contact.type;
+    } else {
+      type = await this.get(this.getTypeId(contact));
+    }
     return contactTypesUtils.isPersonType(type);
   }
 

@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
@@ -85,11 +85,18 @@ describe('CHTScriptApiService service', () => {
       const result = await service.get();
 
       expect(result).to.contain.keys([ 'v1' ]);
-      expect(result.v1).to.contain.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib', 'person' ]);
+      expect(result.v1).to.contain.keys([
+        'hasPermissions',
+        'hasAnyPermission',
+        'getExtensionLib',
+        'person',
+        'analytics'
+      ]);
       expect(result.v1.hasPermissions).to.be.a('function');
       expect(result.v1.hasAnyPermission).to.be.a('function');
       expect(result.v1.getExtensionLib).to.be.a('function');
       expect(result.v1.person).to.be.a('object');
+      expect(result.v1.analytics).to.be.a('object');
     });
 
     it('should initialize extension libs', async () => {

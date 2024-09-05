@@ -247,7 +247,7 @@ describe('schedules alternative start_from', () => {
     const expectedDue5_1 = expectedDueDate(moment(), '9', 'days');
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([patient, clinic]))
       .then(() => sentinelUtils.waitForSentinel([patient._id, clinic._id]))
       .then(() => sentinelUtils.getInfoDocs([patient._id, clinic._id]))
@@ -277,7 +277,7 @@ describe('schedules alternative start_from', () => {
         chai.expect(moment(sch3_2.due).format('YYYY-MM-DD')).to.equal(expectedDue3_2, 'schedule 2 of sch3');
         // schedules from sch4; Not expected this to be created
         chai.expect(moment(sch5_1.due).format('YYYY-MM-DD')).to.equal(expectedDue5_1, 'schedule 1 of sch5');
-        
+
         chai.expect(updWithClinic.scheduled_tasks).to.be.ok;
         chai.expect(updWithClinic.scheduled_tasks).to.have.lengthOf(4);
 

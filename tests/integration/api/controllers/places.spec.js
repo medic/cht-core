@@ -31,7 +31,7 @@ describe('Places API', () => {
       ...settings.permissions,
       'can_create_places': ['national_admin'],
     };
-    await utils.updateSettings({ permissions }, true);
+    await utils.updateSettings({ permissions }, { ignoreReload: true });
     await utils.createUsers(users);
   });
 

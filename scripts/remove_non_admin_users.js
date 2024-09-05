@@ -8,7 +8,7 @@
 const https = require('https');
 const http = require('http');
 const url = require('url');
-const _ = require('underscore');
+const _ = require('lodash');
 
 let instance_url;
 let httpHandler;

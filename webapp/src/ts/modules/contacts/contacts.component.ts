@@ -222,7 +222,6 @@ export class ContactsComponent implements OnInit, OnDestroy {
     const facilityIds = this
       .getUserFacilityId(userSettings)
       .filter(id => !!id);
-    this.globalActions.setUserFacilityId(facilityIds);
 
     let homePlaces = await this.getDataRecordsService.get(facilityIds);
     homePlaces = homePlaces?.filter(place => !!place);

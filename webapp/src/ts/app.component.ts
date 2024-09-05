@@ -45,9 +45,11 @@ import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { FormService } from '@mm-services/form.service';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
 import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 
 const SYNC_STATUS = {
@@ -136,6 +138,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     private trainingCardsService: TrainingCardsService,
     private matIconRegistry: MatIconRegistry,
     private browserDetectorService: BrowserDetectorService,
+    private userSettingsService: UserSettingsService,
+    private formService: FormService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -284,6 +288,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.chtDatasourceService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => (this.initialisationComplete = true))
+      .then(() => this.initUser())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
@@ -307,6 +312,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.initAnalyticsModules();
+  }
+
+  private async initUser() {
+    const userSettings:UserSettings = await this.userSettingsService.get();
+    this.globalActions.setUserContactId(userSettings.contact_id);
+    this.globalActions.setUserFacilityIds(userSettings.facility_id);
   }
 
   ngAfterViewInit() {
@@ -468,6 +479,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.trainingCardFormId = trainingCardFormId || '';
       this.displayTrainingCards();
+    });
+
+    combineLatest([
+      this.store.select(Selectors.getUserContactId),
+      this.store.select(Selectors.getUserFacilityIds),
+    ]).subscribe(([ userContactId, userFacilityIds ]) => {
+      this.formService.setUserContext(userFacilityIds, userContactId);
     });
   }
 
