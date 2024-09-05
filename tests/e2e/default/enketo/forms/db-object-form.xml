@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:cht="https://communityhealthtoolkit.org" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>DB Object Form</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/db-object-form/people/person_test_all:label">
+            <value>Select a person from all</value>
+          </text>
+          <text id="/db-object-form/people/person_test_same_parent:label">
+            <value>Select a person from the same parent</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <db-object-form delimiter="#" id="db-object-form" prefix="J1!db-object-form!" version="2024-09-05 00:00:00">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <user>
+              <contact_id/>
+              <name/>
+              <sex/>
+            </user>
+            <user_contact>
+              <_id/>
+              <name/>
+              <sex/>
+            </user_contact>
+          </inputs>
+          <people>
+            <user_contact>
+              <_id/>
+              <name/>
+              <sex/>
+            </user_contact>
+            <person_test_same_parent/>
+            <person_test_all/>
+          </people>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </db-object-form>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/db-object-form/inputs" relevant="false()"/>
+      <bind nodeset="/db-object-form/inputs/user/contact_id" type="string"/>
+      <bind nodeset="/db-object-form/inputs/user/name" type="string"/>
+      <bind nodeset="/db-object-form/inputs/user/sex" type="string"/>
+      <bind calculate="../../user/contact_id" nodeset="/db-object-form/inputs/user_contact/_id" type="string"/>
+      <bind nodeset="/db-object-form/inputs/user_contact/name" type="string"/>
+      <bind nodeset="/db-object-form/inputs/user_contact/sex" type="string"/>
+      <bind calculate="../../../inputs/user/contact_id" nodeset="/db-object-form/people/user_contact/_id" type="string"/>
+      <bind nodeset="/db-object-form/people/user_contact/name" type="string"/>
+      <bind nodeset="/db-object-form/people/user_contact/sex" type="string"/>
+      <bind nodeset="/db-object-form/people/person_test_same_parent" type="string"/>
+      <bind nodeset="/db-object-form/people/person_test_all" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/db-object-form/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group ref="/db-object-form/inputs">
+      <group ref="/db-object-form/inputs/user">
+        <input appearance="hidden select-contact type-person" ref="/db-object-form/inputs/user/contact_id"/>
+      </group>
+      <group ref="/db-object-form/inputs/user_contact">
+        <input appearance="hidden select-contact type-person" ref="/db-object-form/inputs/user_contact/_id"/>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/db-object-form/people">
+      <group ref="/db-object-form/people/user_contact">
+        <input appearance="hidden select-contact type-person" ref="/db-object-form/people/user_contact/_id"/>
+      </group>
+      <input appearance="select-contact type-person descendant-of-current-contact" ref="/db-object-form/people/person_test_same_parent">
+        <label ref="jr:itext('/db-object-form/people/person_test_same_parent:label')"/>
+      </input>
+      <input appearance="select-contact type-person" ref="/db-object-form/people/person_test_all">
+        <label ref="jr:itext('/db-object-form/people/person_test_all:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>

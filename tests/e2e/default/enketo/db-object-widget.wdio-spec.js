@@ -25,7 +25,7 @@ describe('DB Object Widget', () => {
   const personArea2 = personFactory.build({ name: 'Patricio', parent: { _id: area2._id, parent: area2.parent } });
 
   before(async () => {
-    await commonEnketoPage.uploadForm('db_object_form');
+    await commonEnketoPage.uploadForm('db-object-form');
     await utils.saveDocs([ ...places.values(), area2, personArea1, personArea2 ]);
     await utils.createUsers([ offlineUser ]);
     await loginPage.login(offlineUser);
@@ -33,7 +33,7 @@ describe('DB Object Widget', () => {
 
   it('should load contacts in non-relevant inputs group and from calculations', async () => {
     await commonPage.goToReports();
-    await commonPage.openFastActionReport('db_object_form', false);
+    await commonPage.openFastActionReport('db-object-form', false);
 
     await genericForm.submitForm();
 
@@ -68,14 +68,14 @@ describe('DB Object Widget', () => {
 
   it('should display only the contacts from the parent contact', async () => {
     await commonPage.goToPeople(area1._id);
-    await commonPage.openFastActionReport('db_object_form');
+    await commonPage.openFastActionReport('db-object-form');
 
-    const sameParent = await genericForm.getDBObjectWidgetValues('/db_object_form/people/person_test_same_parent');
+    const sameParent = await genericForm.getDBObjectWidgetValues('/db-object-form/people/person_test_same_parent');
     await sameParent[0].click();
     expect(sameParent.length).to.equal(1);
     expect(sameParent[0].name).to.equal(personArea1.name);
 
-    const allContacts = await genericForm.getDBObjectWidgetValues('/db_object_form/people/person_test_all');
+    const allContacts = await genericForm.getDBObjectWidgetValues('/db-object-form/people/person_test_all');
     await allContacts[2].click();
     expect(allContacts.length).to.equal(3);
     expect(allContacts[0].name).to.equal(personArea1.name);
@@ -87,12 +87,12 @@ describe('DB Object Widget', () => {
 
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal(offlineUser.contact.name);
-    expect(firstReport.form).to.equal('db_object_form');
+    expect(firstReport.form).to.equal('db-object-form');
 
     await reportsPage.openReport(firstReport.dataId);
-    expect((await reportsPage.getDetailReportRowContent('report.db_object_form.people.person_test_same_parent'))
+    expect((await reportsPage.getDetailReportRowContent('report.db-object-form.people.person_test_same_parent'))
       .rowValues[0]).to.equal(personArea1._id);
-    expect((await reportsPage.getDetailReportRowContent('report.db_object_form.people.person_test_all'))
+    expect((await reportsPage.getDetailReportRowContent('report.db-object-form.people.person_test_all'))
       .rowValues[0]).to.equal(personArea2._id);
   });
 
