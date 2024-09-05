@@ -319,14 +319,21 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async (timeout = 20000) => {
+const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
+  if (!retry) {
+    throw new Error('Failed to sync after 10 retries');
+  }
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
   if (await (await syncInProgress()).isExisting()) {
     await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   }
-  await (await syncSuccess()).waitForDisplayed({ timeout });
+
+  if (await (await syncSuccess()).isDisplayed()) {
+    return;
+  }
+  await syncAndWaitForSuccess(--retry);
 };
 
 const hideModalOverlay = () => {
