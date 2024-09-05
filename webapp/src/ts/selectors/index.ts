@@ -32,7 +32,8 @@ export const Selectors = {
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
   getUnreadCount: createSelector(getGlobalState, (globalState) => globalState.unreadCount),
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
-  getUserFacilityIds: createSelector(getGlobalState, (globalState) => globalState?.userFacilityIds),
+  getUserFacilityIds: createSelector(getGlobalState, (globalState) => globalState.userFacilityIds),
+  getUserContactId: createSelector(getGlobalState, (globalState) => globalState.userContactId),
   getTrainingCardFormId: createSelector(getGlobalState, (globalState) => globalState.trainingCardFormId),
 
   // enketo

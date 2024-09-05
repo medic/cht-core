@@ -198,7 +198,8 @@ export interface GlobalState {
   unreadCount: Record<string, any>;
   snackbarContent: SnackbarState;
   translationsLoaded: boolean;
-  userFacilityId: null | string[];
+  userFacilityIds: null | string[];
+  userContactId: null | string;
   trainingCardFormId: null | string;
 }
 

@@ -247,10 +247,12 @@ describe('Selectors', () => {
 
     // null checks
     it('should null check global state', () => {
+      // @ts-ignore
       expect(Selectors.getUserFacilityIds.projector({})).to.equal(undefined);
     });
 
     it('should null check enketo state', () => {
+      // @ts-ignore
       expect(Selectors.getEnketoError.projector({})).to.equal(undefined);
     });
   });
