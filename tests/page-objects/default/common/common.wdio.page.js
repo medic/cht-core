@@ -323,6 +323,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
   if (!retry) {
     throw new Error('Failed to sync after 10 retries');
   }
+  await closeReloadModal(false, 1000);
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
