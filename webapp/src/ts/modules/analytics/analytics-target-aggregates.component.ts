@@ -123,7 +123,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
     aggregate.reportingMonth = reportingMonth;
     aggregate.reportingPeriod = reportingPeriod;
-    if (this.targetAggregatesService.isPreviousPeriod(aggregate.reportingPeriod)) {
+    if (aggregate.reportingPeriod === ReportingPeriod.PREVIOUS) {
       filtersToDisplay.push(aggregate.reportingMonth);
     }
     aggregate.filtersToDisplay = filtersToDisplay;
