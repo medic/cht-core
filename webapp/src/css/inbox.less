@@ -214,8 +214,6 @@ body {
 
   .tab-title {
     display: inline-block;
-    text-overflow: ellipsis;
-    width: calc(100vw - 100px);
     line-height: 26px;
     color: @medium-black;
   }
@@ -349,10 +347,17 @@ body {
 }
 
 .analytics .filters {
-  display: flex;
   width: 100vw;
   .analytics-module {
     margin-left: 8px;
+  }
+}
+
+mm-analytics-filters {
+  margin-left: auto;
+
+  .mm-dropdown {
+    display: none;
   }
 }
 
@@ -1086,6 +1091,33 @@ mm-search-bar {
   reports-filters {
     flex-grow: 2;
   }
+
+  .app-menu-button {
+    order: 4;
+  }
+  .tab-title {
+    order: 3;
+    min-width: 30vw;
+  }
+  mm-search-bar {
+    order: 2;
+    padding-left: 30px;
+  }
+  mm-reports-more-menu {
+    order: 1;
+  }
+}
+
+.app-root {
+  &.sidebar-filter-active {
+    .filters.tab-bar {
+      .inner {
+        .tab-title {
+          min-width: 22vw;
+        }
+      }
+    }
+  }
 }
 
 .fast-action-trigger {
@@ -1335,15 +1367,22 @@ mm-sidebar-menu .mat-sidenav-container {
       }
     }
 
-    &.select-mode,
-    &.error {
+    &.select-mode {
       mm-header {
+        display: none;
+      }
+      .app-menu-button {
+        display: none;
+      }
+      .tab-title {
         display: none;
       }
     }
 
-    mm-analytics-filters {
-      display: none;
+    &.error {
+      mm-header {
+        display: none;
+      }
     }
   }
 
@@ -1652,11 +1691,17 @@ mm-sidebar-menu .mat-sidenav-container {
   .filters.tab-bar .inner {
     mm-search-bar.search-open {
       width: 100%;
+      padding-left: 5px;
 
       ~ .app-menu-button,
       ~ .tab-title {
         display: none;
       }
+    }
+
+    .tab-title {
+      text-overflow: ellipsis;
+      width: calc(100vw - 100px);
     }
   }
 }

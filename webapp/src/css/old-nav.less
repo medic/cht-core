@@ -53,12 +53,16 @@
   &.about,
   &.testing,
   &.privacy-policy {
+    .filters {
+      height: 0;
+    }
     .header .tabs .selected {
       background-color: @messages-color;
     }
-
-    .page {
-      top: @top-without-filter;
+    .content {
+      .page {
+        top: @top-without-filter;
+      }
     }
   }
 
@@ -251,14 +255,72 @@
     margin: 10px;
   }
 
-  .mm-badge-border {
-    border: solid 1px @white;
-  }
-
-  .filters {
+  .filters .inner {
+    .navigation a {
+      color: @text-normal-color;
+    }
     .tab-title {
       display: none;
     }
+    mm-search-bar {
+      padding-left: 5px;
+    }
+    .right-side-filter {
+      .fa-sliders {
+        display: initial;
+      }
+    }
+
+    .btn.open-filter {
+      display: initial;
+    }
+  }
+
+  &.analytics .filters.tab-bar .inner {
+    display: initial;
+  }
+
+  mm-analytics-filters {
+    .mm-dropdown {
+      display: initial;
+    }
+  }
+
+  .analytics-sidebar-filter {
+    display: flex;
+    align-items: center;
+  }
+
+  mm-navigation {
+    display: none;
+  }
+
+  &.show-content {
+    mm-navigation {
+      display: initial;
+    }
+  }
+
+  .mat-icon-filter {
+    display: none;
+  }
+
+  mm-search-bar {
+    .fa {
+      color: @gray-ultra-dark;
+    }
+    .fa-sliders {
+      display: initial;
+    }
+  }
+  .mm-navigation-menu {
+    display: block;
+  }
+  .powered-by {
+    margin: 0;
+  }
+  .mm-badge-border {
+    border: solid 1px @white;
   }
 }
 
