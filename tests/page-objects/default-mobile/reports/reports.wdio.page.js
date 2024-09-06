@@ -34,13 +34,21 @@ const deselectAll = async () => {
 };
 
 const selectReports = async (uuids) => {
-  return await reportsPageDefault.toggleSelectReport(true, uuids, verifyMultiselectElementsDisplay);
+  for (const uuid of uuids) {
+    if (!(await reportsPageDefault.isReportSelected(uuid))) {
+      await (await reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid)).click();
+    }
+  }
+  return verifyMultiselectElementsDisplay();
 };
 
 const deselectReports = async (uuids, shouldHideElements=false) => {
-  return await reportsPageDefault.toggleSelectReport(
-    false, uuids, verifyMultiselectElementsDisplay, shouldHideElements
-  );
+  for (const uuid of uuids) {
+    if (await reportsPageDefault.isReportSelected(uuid)) {
+      await (await reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid)).click();
+    }
+  }
+  return verifyMultiselectElementsDisplay(shouldHideElements);
 };
 
 const deleteSelectedReports = async () => {

@@ -220,22 +220,22 @@ const isReportSelected = async (uuid) => {
   return await (await checkbox).isExisting();
 };
 
-const toggleSelectReport = async (selectReport, uuids, verifyFn, shouldHideElements = false) => {
+const selectReports = async (uuids) => {
   for (const uuid of uuids) {
-    const isSelected = await isReportSelected(uuid);
-    if ((selectReport && !isSelected) || (!selectReport && isSelected)) {
+    if (!(await isReportSelected(uuid))) {
       await (await leftPanelSelectors.reportCheckbox(uuid)).click();
     }
   }
-  return verifyFn(shouldHideElements);
-};
-
-const selectReports = async (uuids) => {
-  return await toggleSelectReport(true, uuids, verifyMultiselectElementsDisplay);
+  return verifyMultiselectElementsDisplay();
 };
 
 const deselectReports = async (uuids, shouldHideElements= false) => {
-  return await toggleSelectReport(false, uuids, verifyMultiselectElementsDisplay, shouldHideElements);
+  for (const uuid of uuids) {
+    if (await isReportSelected(uuid)) {
+      await (await leftPanelSelectors.reportCheckbox(uuid)).click();
+    }
+  }
+  return verifyMultiselectElementsDisplay(shouldHideElements);
 };
 
 const filterByDate = async (startDate, endDate) => {
@@ -468,7 +468,6 @@ module.exports = {
   selectAll,
   deselectAll,
   isReportSelected,
-  toggleSelectReport,
   selectReports,
   deselectReports,
   expandSelectedReportSummary,
