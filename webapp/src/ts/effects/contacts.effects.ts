@@ -211,7 +211,7 @@ export class ContactsEffects {
     const trackPerformance = this.performanceService.track();
     const selected = this.selectedContact;
     return this.contactSummaryService
-      .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
+      .get(selected.doc, selected.reports, selected.lineage, selected.children, selected.targetDoc)
       .catch(error => {
         this.contactsActions.updateSelectedContactSummary({ errorStack: error.stack });
         throw error;

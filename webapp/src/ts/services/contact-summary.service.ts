@@ -40,6 +40,7 @@ export class ContactSummaryService {
           'contact',
           'reports',
           'lineage',
+          'children',
           'uhcStats',
           'cht',
           'targetDoc',
@@ -78,11 +79,11 @@ export class ContactSummaryService {
     return summary;
   }
 
-  get(contact, reports, lineage, targetDocs) {
-    return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDocs));
+  get(contact, reports, lineage, children, targetDocs) {
+    return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, children, targetDocs));
   }
 
-  private async _get(contact, reports, lineage, targetDocs) {
+  private async _get(contact, reports, lineage, children, targetDocs) {
     if (!this.settings) {
       this.settings = await this.settingsService.get();
     }
@@ -101,7 +102,8 @@ export class ContactSummaryService {
     chtScriptApi.v1.analytics.getTargetDocs = () => targetDocs;
 
     try {
-      const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDocs[0]);
+      // eslint-disable-next-line max-len
+      const summary = generatorFunction(contact, reports || [], lineage || [], children || [], uhcStats, chtScriptApi, targetDocs[0]);
       return this.applyFilters(summary);
     } catch (error) {
       console.error('Configuration error in contact-summary function: ', error);

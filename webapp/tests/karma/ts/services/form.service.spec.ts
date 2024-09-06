@@ -398,7 +398,12 @@ describe('Form service', () => {
         expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
         expect(ContactSummary.args[0][2].length).to.equal(1);
         expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
-        expect(ContactSummary.args[0][3]).to.deep.equal([{ _id: 't1' }, { _id: 't2' }]);
+        console.log('The contact summary data:');
+        console.log(ContactSummary);
+        console.log(ContactSummary.args[0]);
+        console.log(ContactSummary.args[0][3]);
+        // Verify child addition
+        expect(ContactSummary.args[0][4]).to.deep.equal([{ _id: 't1' }, { _id: 't2' }]);
       });
     });
 
