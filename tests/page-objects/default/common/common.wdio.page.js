@@ -320,7 +320,7 @@ const syncAndNotWaitForSuccess = async () => {
 };
 
 const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
-  if (!retry) {
+  if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
   await closeReloadModal(false, 1000);
