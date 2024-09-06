@@ -17,7 +17,20 @@ class DynamicUrlWidget extends Widget {
     const urlElement = currentElement.find('.url');
     const setHref = () => currentElement.attr('href', urlElement.text());
     setHref();
-    urlElement.on('DOMSubtreeModified', setHref);
+
+    const observer = new MutationObserver(mutationList => {
+      mutationList.forEach(mutation => {
+        if (mutation.type === 'childList' || mutation.type === 'characterData') {
+          setHref();
+        }
+      });
+    });
+
+    observer.observe(urlElement[0], {
+      childList: true,     // Monitor direct child nodes
+      characterData: true, // Monitor text content changes
+      subtree: true        // Monitor all descendants
+    });
   }
 }
 
