@@ -279,6 +279,11 @@ mm-panel-header {
       border-radius: @radius-size;
     }
   }
+
+  .app-root.show-content:not(.old-nav) #snackbar {
+    bottom: calc(@fab-height + @fab-bottom-padding + @snackbar-fab-gap);
+  }
+
   .material {
     .card:not(.compact-card) {
       border-radius: 0;
