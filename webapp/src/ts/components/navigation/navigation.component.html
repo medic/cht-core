@@ -1,6 +1,10 @@
 <div class="right-pane navigation">
   <a *ngIf="isCancelCallbackSet" (click)="navigationCancel()" class="filter-bar-back">
-    <span class="fa fa-times" [ngClass]="{ 'mm-icon-disabled': enketoSaving }" translate [title]="'close' | translate"></span>
+    <mat-icon
+      class="mat-icon-close"
+      svgIcon="icon-close"
+      [ngClass]="{ 'mm-icon-disabled': enketoSaving }" translate [title]="'close' | translate">
+    </mat-icon>
   </a>
   <a *ngIf="!isCancelCallbackSet" (click)="navigateBack()" class="filter-bar-back">
     <span class="fa fa-chevron-left" translate [title]="'Back' | translate"></span>
