@@ -25,6 +25,7 @@ import { FastAction, FastActionButtonService } from '@mm-services/fast-action-bu
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
@@ -42,6 +43,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private isOnlineOnly = false;
   private canDefaultFilter = false;
   private trackInitialLoadPerformance;
+  readonly buttonType = ButtonType;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -525,9 +527,5 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
     return isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
-  }
-
-  getFastActionButtonType() {
-    return this.fastActionButtonService.getButtonTypeForContentList();
   }
 }
