@@ -239,7 +239,7 @@ describe('db-sync', () => {
 
       // if the test fails, it helps to see which reports are read or not in the failpic
       await commonElements.goToReports();
-      await (await reportsPage.reportList()).waitForDisplayed();
+      await (await reportsPage.leftPanelSelectors.reportList()).waitForDisplayed();
 
       await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '2');
     });

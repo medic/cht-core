@@ -2,58 +2,42 @@ const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const personFactory = require('@factories/cht/contacts/person');
 
 describe('Bulk delete reports', () => {
   const docs = [
-    {
-      fields: {
-        lmp_date: 'Feb 3, 2016'
-      },
-      form: 'P',
-      type: 'data_record',
-      content_type: 'xml',
-      reported_date: 1462333250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      fields: {
-        lmp_date: 'Feb 15, 2016'
-      },
-      form: 'P',
-      type: 'data_record',
-      content_type: 'xml',
-      reported_date: 1462338250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      fields: {
-        ok: 'Yes!'
-      },
-      form: 'V',
-      type: 'data_record',
-      content_type: 'xml',
-      reported_date: 1462538250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      name: 'Sharon',
-      phone: '+555',
-      type: 'person',
-      reported_date: 1462538250374,
-      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-    }
+    reportFactory
+      .report()
+      .build({
+        fields: { lmp_date: 'Feb 3, 2016' },
+        form: 'P',
+        content_type: 'xml',
+        contact: { _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32' },
+        reported_date: 1462333250374,
+        from: '+555',
+      }),
+    reportFactory
+      .report()
+      .build({
+        fields: { lmp_date: 'Feb 15, 2016' },
+        form: 'P',
+        content_type: 'xml',
+        contact: { _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32' },
+        reported_date: 1462338250374,
+        from: '+555',
+      }),
+    reportFactory
+      .report()
+      .build({
+        fields: { ok: 'Yes!' },
+        form: 'V',
+        content_type: 'xml',
+        contact: { _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32' },
+        reported_date: 1462538250374,
+        from: '+555',
+      }),
+    personFactory.build({ phone: '+555', _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32', reported_date: 1462538250374 })
   ];
 
   const savedUuids = [];
@@ -87,8 +71,8 @@ describe('Bulk delete reports', () => {
 
     await reportsPage.deleteSelectedReports();
     expect(await (await reportsPage.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(savedUuids[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(savedUuids[1])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(savedUuids[2])).isDisplayed()).to.be.false;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedUuids[0])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedUuids[1])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedUuids[2])).isDisplayed()).to.be.false;
   });
 });

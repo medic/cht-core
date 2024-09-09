@@ -49,7 +49,7 @@ describe('Training Cards', () => {
 
     await commonPage.goToReports();
     await commonElements.waitForPageLoaded();
-    expect(await reportsPage.allReports()).to.be.empty;
+    expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
   it('should display training after it was canceled and the training doc was updated', async () => {
@@ -117,7 +117,7 @@ describe('Training Cards', () => {
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
     await commonPage.goToReports();
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const firstReport = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
     expect(firstReport.heading).to.equal('OfflineUser');
     expect(firstReport.form).to.equal(formDocId);
   });
