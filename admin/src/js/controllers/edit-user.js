@@ -91,6 +91,13 @@ angular
             return $q.resolve({});
           }
 
+          // Start with the password masked.
+          $scope.model.passwordFieldType  = 'password';
+
+          // Images for button for masking/showing password.
+          $scope.model.showPasswordIcon = '/login/images/show-password.svg';
+          $scope.model.hidePasswordIcon = '/login/images/hide-password.svg';
+
           const facilityId = getFacilityId();
           const tokenLoginData = $scope.model.token_login;
           const tokenLoginEnabled = tokenLoginData &&
@@ -116,6 +123,9 @@ angular
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
             tokenLoginEnabled: tokenLoginEnabled,
+            passwordFieldType: $scope.model.passwordFieldType,
+            showPasswordIcon: $scope.model.showPasswordIcon,
+            hidePasswordIcon: $scope.model.hidePasswordIcon,
           });
         });
     };
@@ -523,6 +533,12 @@ angular
       } else {
         $scope.editUserModel.roles.splice(index, 1);
       }
+    };
+
+    // Mask or show the password.
+    $scope.togglePasswordMasking = () => {
+      $scope.editUserModel.passwordFieldType = $scope.editUserModel.passwordFieldType ===
+      'password' ? 'text' : 'password';
     };
 
     // #edit-user-profile is the admin view, which has additional fields.
