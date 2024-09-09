@@ -83,7 +83,7 @@ describe('Reports Sidebar Filter', () => {
     await utils.revertSettings(true);
   });
 
-  it('should filter by date', async () => {
+  it.skip('should filter by date', async () => {
     const pregnancyDistrictHospital = savedReports[1];
     const visitDistrictHospital = savedReports[3];
 

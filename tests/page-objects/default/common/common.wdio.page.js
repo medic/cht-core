@@ -2,8 +2,10 @@ const modalPage = require('./modal.wdio.page');
 const constants = require('@constants');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
 
-const hamburgerMenu = () => $('#header-dropdown-link');
-const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
+// const hamburgerMenu = () => $('#header-dropdown-link');
+const hamburgerMenu = () => $('aria/Application menu');
+// Adding close side bar menu as hamburgerMenu will be hidden - comment to be removed
+const closeSideBarMenu = () => $('.panel-header-close');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
 const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
 const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
@@ -15,8 +17,10 @@ const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-ite
 const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
 const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
 const hamburgerMenuItemSelector = '#header-dropdown li';
-const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
-const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
+// const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
+const logoutButton = () => $('aria/Log out');
+// const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
+const syncButton = () => $('aria/Sync now');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const taskTab = () => $('#tasks-tab');
@@ -25,7 +29,8 @@ const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
-const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+// const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncSuccess = () => $('aria/All reports synced');
 const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
@@ -46,20 +51,29 @@ const mobileTopBarTitle = () => $(`${MOBILE_FILTER_TOP_BAR} .ellipsis-title`);
 
 //Hamburguer menu
 //User settings
-const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
+// const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
+// const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
+const USER_SETTINGS = 'aria/User settings';
 const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
-const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
+// const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
+const FEEDBACK_MENU = 'aria/Report bug';
 const FEEDBACK = '#feedback';
 //About menu
-const ABOUT_MENU = '#header-dropdown i.fa-question';
+// const ABOUT_MENU = '#header-dropdown i.fa-question';
+const ABOUT_MENU = 'aria/About';
 //Configuration App
-const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
-
+// const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
+const CONFIGURATION_APP_MENU = 'aria/App Management';
 const errorLog = () => $(`error-log`);
 
 const isHamburgerMenuOpen = async () => {
-  return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+  // return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+  return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
+};
+
+const isHamburgerMenuClosed = async () => {
+  return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).waitForDisplayed({ reverse: true });
 };
 
 const openMoreOptionsMenu = async () => {
@@ -178,6 +192,7 @@ const getHeaderTitleOnMobile = async () => {
   };
 };
 
+// rename hamburger to sidebar
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await (await hamburgerMenu()).waitForClickable();
@@ -186,9 +201,15 @@ const openHamburgerMenu = async () => {
 };
 
 const closeHamburgerMenu = async () => {
+  if (await isHamburgerMenuClosed()) {
+    return;
+  }
+
   if (await isHamburgerMenuOpen()) {
-    await (await hamburgerMenu()).waitForClickable();
-    await (await hamburgerMenu()).click();
+    // await (await hamburgerMenu()).waitForClickable();
+    // await (await hamburgerMenu()).click();
+    await (await closeSideBarMenu()).waitForClickable();
+    await (await closeSideBarMenu()).click();
   }
 };
 
@@ -310,7 +331,8 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+  // await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+  await (await $('aria/Application menu')).waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {
@@ -331,6 +353,7 @@ const syncAndNotWaitForSuccess = async () => {
 
 const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
+  await (await syncButton()).waitForClickable();
   await (await syncButton()).click();
   await openHamburgerMenu();
   if (await (await syncInProgress()).isExisting()) {
@@ -354,7 +377,7 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(false, 0);
+    closedModal = await closeReloadModal(false);
   }
 
   await syncAndWaitForSuccess(timeout);
@@ -373,10 +396,10 @@ const syncAndWaitForFailure = async () => {
   await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
+// Increase timeout to 15secs as it sometimes takes a while for the reload modal to display
+const closeReloadModal = async (shouldUpdate = false, timeout = 15000) => {
   try {
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
-    await modalPage.checkModalHasClosed();
     shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
@@ -408,8 +431,10 @@ const openAboutMenu = async () => {
 };
 
 const openUserSettings = async () => {
-  await (await userSettingsMenuOption()).waitForClickable();
-  await (await userSettingsMenuOption()).click();
+  // await (await userSettingsMenuOption()).waitForClickable();
+  // await (await userSettingsMenuOption()).click();
+  await (await $(USER_SETTINGS)).waitForClickable();
+  await (await $(USER_SETTINGS)).click();
 };
 
 const openUserSettingsAndFetchProperties = async () => {

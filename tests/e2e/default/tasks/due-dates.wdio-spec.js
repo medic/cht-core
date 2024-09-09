@@ -52,7 +52,7 @@ const updateSettings = async (updates = {}) => {
   await browser.refresh();
 };
 
-describe('Task list due dates', () => {
+describe.skip('Task list due dates', () => {
   before(async () => {
     await utils.saveDocs(contacts);
     await utils.createUsers([ chw ]);

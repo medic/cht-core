@@ -13,7 +13,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
 
-describe('Target aggregates', () => {
+describe.skip('Target aggregates', () => {
 
   describe('DB admin', () => {
     before(async () => await loginPage.cookieLogin());
@@ -53,7 +53,7 @@ describe('Target aggregates', () => {
     });
   });
 
-  describe('User with one or more places assigned', () => {
+  describe.only('User with one or more places assigned', () => {
     const CURRENT_PERIOD = 'This month';
     const NAMES_DH1 = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];

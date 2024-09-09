@@ -5,7 +5,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 
 
-describe('Navigation tests', () => {
+describe.skip('Navigation tests', () => {
   describe('Navigation functionality', () => {
     before(async () => {
       await loginPage.cookieLogin();

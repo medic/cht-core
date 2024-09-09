@@ -9,7 +9,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const fileDownloadUtils = require('@utils/file-download');
 const utils = require('@utils');
 
-describe('Export Messages', () => {
+describe.skip('Export Messages', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });

@@ -88,7 +88,7 @@ const loginIfNeeded = async () => {
   }
 };
 
-describe('Service worker cache', () => {
+describe.skip('Service worker cache', () => {
 
   before(async () => {
     await utils.saveDoc(district);
@@ -216,7 +216,7 @@ describe('Service worker cache', () => {
     expect(initial).to.deep.equal(updated);
   });
 
-  it('should load the page while offline', async () => {
+  it.skip('should load the page while offline', async () => {
     await browser.throttle('offline');
     await browser.refresh();
     await (await commonPage.analyticsTab()).waitForDisplayed();

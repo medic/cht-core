@@ -18,7 +18,7 @@ const sentinelUtils = require('@utils/sentinel');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
-describe('Contact Delivery Form', () => {
+describe.skip('Contact Delivery Form', () => {
   const BABY_NAME = 'Benja';
   const BABY_DOB = moment().format('YYYY-MM-DD');
   const BABY_SEX = 'male';

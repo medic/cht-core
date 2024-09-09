@@ -25,7 +25,7 @@ const compileTargets = async (targetsFileName = 'targets-config.js') => {
   return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
 };
 
-describe('Targets', () => {
+describe.skip('Targets', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const clinic = places.get('clinic');

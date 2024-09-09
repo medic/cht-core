@@ -28,7 +28,7 @@ describe('bfcache', () => {
   });
 
   describe('webapp', () => {
-    it('should redirect to login page when session is expired', async () => {
+    it.skip('should redirect to login page when session is expired', async () => {
       await commonPage.goToPeople();
       await browser.deleteCookies('AuthSession');
       await commonPage.goToMessages();

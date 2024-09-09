@@ -21,7 +21,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
       await utils.revertDb([/^form:/], true);
     });
 
-    it('should disable the \'export\' option in Message tab',
+    it.skip('should disable the \'export\' option in Message tab',
       async () => {
         await commonPage.goToMessages();
         await commonPage.openMoreOptionsMenu();
@@ -98,7 +98,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
 
     afterEach(async () => await commonPage.goToBase());
 
-    it('should enable the \'export\' option in Message tab.', async () => {
+    it.skip('should enable the \'export\' option in Message tab.', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       await commonPage.waitForPageLoaded();

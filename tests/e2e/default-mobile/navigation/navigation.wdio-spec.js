@@ -55,7 +55,6 @@ describe('Navigation', () => {
   });
 
   it('should load reports list when navigating from a report that was opened from reports tab', async () => {
-    await commonPage.goToReports();
     await (await reportsPage.reportsPageDefault.firstReport()).waitForDisplayed();
 
     await reportsPage.reportsPageDefault.openReport(reportDocs[1].id);

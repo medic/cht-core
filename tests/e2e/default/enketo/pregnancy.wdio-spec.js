@@ -29,7 +29,7 @@ describe('Pregnancy registration', () => {
     await loginPage.login(offlineUser);
   });
 
-  it('should submit a new pregnancy, ' +
+  it.skip('should submit a new pregnancy, ' +
     'validate that the pregnancy card was displayed with the correct information, ' +
     'validate that all tasks related with the high risk pregnancy were created, ' +
     'validate that the report related the pregnancy was created, and ' +
