@@ -19,16 +19,13 @@ class DynamicUrlWidget extends Widget {
     setHref();
 
     const observer = new MutationObserver(mutationList => {
-      mutationList.forEach(mutation => {
-        if (mutation.type === 'childList' || mutation.type === 'characterData') {
-          setHref();
-        }
+      mutationList.forEach(() => {
+        setHref();
       });
     });
 
     observer.observe(urlElement[0], {
       childList: true,     // Monitor direct child nodes
-      characterData: true, // Monitor text content changes
       subtree: true        // Monitor all descendants
     });
   }
