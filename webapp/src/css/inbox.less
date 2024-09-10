@@ -62,6 +62,12 @@ body {
         .tab-title {
           color: @white;
         }
+
+        .app-menu-button .mat-icon[fonticon="fa-bars"] {
+          &:before {
+            color: @white;
+          }
+        }
       }
       .partners > h3 {
         margin-top: 100px;
@@ -216,7 +222,7 @@ body {
   .tab-title {
     display: inline-block;
     line-height: 26px;
-    color: @medium-black;
+    color: @filter-text-color;
   }
 
   .navigation {
@@ -228,7 +234,7 @@ body {
     a {
       display: inline-block;
       text-align: center;
-      color: @medium-black;
+      color: @filter-text-color;
       font-size: @font-extra-extra-large;
       float: left;
       width: 50px;
@@ -383,6 +389,7 @@ mm-analytics-filters {
     position: absolute;
     width: 100%;
     max-width: @content-width;
+    z-index: 0;
     padding-left: @tab-navbar-size;
   }
 
@@ -929,6 +936,7 @@ mm-fast-action-button.mobile-only {
 
         &.sidebar-open {
           margin-right: 0;
+          z-index: initial;
         }
       }
     }
@@ -1053,6 +1061,7 @@ mm-search-bar {
   height: 26px;
   &:before {
     font-size: @font-extra-extra-large;
+    color: @filter-text-color;
   }
 }
 
@@ -1114,7 +1123,6 @@ mm-search-bar {
   }
   mm-search-bar {
     order: 2;
-    padding-left: 30px;
   }
   mm-reports-more-menu {
     order: 1;
@@ -1122,7 +1130,6 @@ mm-search-bar {
   .mat-icon-filter {
     margin-right: 10px;
     width: 20px;
-    height: 20px;
     color: @medium-black;
   }
 }
@@ -1535,7 +1542,8 @@ mm-sidebar-menu .mat-sidenav-container {
   }
   .content {
     .page {
-      top: calc(@filters-bar-mobile-height + 2px);
+      top: @filters-bar-mobile-height;
+      z-index: initial;
     }
     .meta {
       padding-bottom: 0;
@@ -1690,7 +1698,7 @@ mm-sidebar-menu .mat-sidenav-container {
 
       .btn.open-filter {
         margin: 0;
-        padding: 0 15px 0 5px;
+        padding: 0 5px;
 
         .filter-counter {
           position: absolute;
@@ -1744,7 +1752,7 @@ mm-sidebar-menu .mat-sidenav-container {
     padding-right: 6px;
   }
   .content .page {
-    top: calc(@filters-bar-mobile-height + 2px);
+    top: @filters-bar-mobile-height;
   }
   .mobile-only {
     display: initial;
@@ -1756,6 +1764,7 @@ mm-sidebar-menu .mat-sidenav-container {
   .app-root.testing {
     .page {
       top: 55px;
+      margin-bottom: calc(@bottom-navbar-height + 10px);
     }
   }
 }
