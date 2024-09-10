@@ -49,7 +49,7 @@ describe('DB Object Widget', () => {
     await genericForm.submitForm();
     await commonPage.goToReports();
 
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const firstReport = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
     expect(firstReport.heading).to.equal(offlineUser.contact.name);
     expect(firstReport.form).to.equal('db-object-widget');
 

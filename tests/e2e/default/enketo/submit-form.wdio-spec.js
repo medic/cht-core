@@ -40,7 +40,7 @@ describe('Submit Enketo form', () => {
     await (await genericForm.cancelButton()).click();
 
     await commonElements.waitForPageLoaded();
-    await (await reportsPage.noReportSelectedLabel()).waitForDisplayed();
+    await (await reportsPage.rightPanelSelectors.noReportSelectedLabel()).waitForDisplayed();
     // No new report added
     expect(await reportsPage.getAllReportsText()).to.deep.equal(originalReportsText);
   });
@@ -54,7 +54,7 @@ describe('Submit Enketo form', () => {
 
     await modalPage.submit();
     await commonElements.waitForPageLoaded();
-    await (await reportsPage.noReportSelectedLabel()).waitForDisplayed();
+    await (await reportsPage.rightPanelSelectors.noReportSelectedLabel()).waitForDisplayed();
     // No new report added
     expect(await reportsPage.getAllReportsText()).to.deep.equal(originalReportsText);
   });
