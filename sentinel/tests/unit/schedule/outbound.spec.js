@@ -784,5 +784,77 @@ describe('outbound schedule', () => {
         assert.isUndefined(dueConfigs[INVALID_CRON]);
       });
     });
+
+    it('should not process tasks if they do not have due configurations', () => {
+      const attachInfoDocs = sinon.stub();
+      const queuedTasks = sinon.stub();
+      const removeInvalidTasks = sinon.stub();
+      const singlePush = sinon.stub();
+      restores.push(outbound.__set__('attachInfoDocs', attachInfoDocs));
+      restores.push(outbound.__set__('queuedTasks', queuedTasks));
+      restores.push(outbound.__set__('removeInvalidTasks', removeInvalidTasks));
+      restores.push(outbound.__set__('singlePush', singlePush));
+
+      const VALID_CRON = 'outbound-with-due-cron';
+      const VALID_CRON_2 = 'outbound-with-due-cron-2';
+
+
+      const configs = {
+        [VALID_CRON]: {
+          cron: '* * * * *'
+        },
+        [VALID_CRON_2]: {
+          cron: '15 * * * *'
+        }
+      };
+      const task1 = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: [VALID_CRON]
+      };
+      const task2 = {
+        _id: 'task:outbound:test-doc-2',
+        doc_id: 'test-doc-2',
+        queue: ['test-push-2']
+      };
+      const doc1 = {
+        _id: 'test-doc-1', some: 'data-1'
+      };
+      const doc2 = {
+        _id: 'test-doc-2', some: 'data-2'
+      };
+      const doc1Info = {
+        _id: 'test-doc-1-info'
+      };
+      const doc2Info = {
+        _id: 'test-doc-2-info'
+      };
+
+      configGet.returns(configs);
+      singlePush.resolvesArg(0);
+      queuedTasks.onCall(0).resolves({
+        validTasks: [{ task: task1, doc: doc1 }, { task: task2, doc: doc2 }],
+        invalidTasks: [],
+        lastDocId: task2._id,
+      });
+      queuedTasks.onCall(1).resolves();
+      removeInvalidTasks.resolves();
+      attachInfoDocs
+        .onCall(0).resolves([{ task: task1, doc: doc1, info: doc1Info }, { task: task2, doc: doc2, info: doc2Info }])
+        .onCall(1).resolves([]);
+
+      singlePush.resolves();
+
+      clock = sinon.useFakeTimers(new Date('2024-09-10T03:05:00+0000').getTime());
+
+      return outbound.execute().then(() => {
+        assert.equal(singlePush.callCount, 1);
+        assert.equal(singlePush.args[0][0], task1);
+        assert.equal(singlePush.args[0][1], doc1);
+        assert.equal(singlePush.args[0][2], doc1Info);
+        assert.equal(singlePush.args[0][3], configs[VALID_CRON]);
+        assert.equal(singlePush.args[0][4], VALID_CRON);
+      });
+    });
   });
 });

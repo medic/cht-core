@@ -168,7 +168,7 @@ const attachInfoDocs = tasks => {
   });
 };
 
-const batch = (configuredPushes, startKey) => {
+const batch = (dueConfiguredPushes, startKey) => {
   let nextKey;
   return queuedTasks(startKey)
     .then(({ validTasks = [], invalidTasks = [], lastDocId } = {}) => {
@@ -183,8 +183,9 @@ const batch = (configuredPushes, startKey) => {
     .then(validTasks => {
       const pushes = validTasks.reduce((acc, {task, doc, info}) => {
         const pushesForDoc =
-                getConfigurationsToPush(configuredPushes, task)
-                  .map(([key, config]) => ({task, doc, info, config, key}));
+                getConfigurationsToPush(dueConfiguredPushes, task)
+                  .map(([key, config]) => ({task, doc, info, config, key}))
+                  .filter(({config}) => config && Object.keys(config).length > 0); // Filter out tasks without configs
 
         return acc.concat(pushesForDoc);
       }, []);
@@ -200,7 +201,7 @@ const batch = (configuredPushes, startKey) => {
         Promise.resolve()
       );
     })
-    .then(() => nextKey && batch(configuredPushes, nextKey));
+    .then(() => nextKey && batch(dueConfiguredPushes, nextKey));
 };
 
 // Coordinates the attempted pushing of documents that need it
