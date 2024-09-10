@@ -248,7 +248,7 @@ describe('Bikram Sambat date display', () => {
 
     await commonPage.goToPeople();
     await commonPage.goToReports();
-    const firstReport = await reportsPage.firstReport();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await firstReport.click();
 
     const dateFormat = bikramSambat.toBik_text(tenWeeksAgo);
@@ -271,7 +271,7 @@ describe('Bikram Sambat date display', () => {
 
     await commonPage.goToPeople();
     await commonPage.goToReports();
-    const firstReport = await reportsPage.firstReport();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await firstReport.click();
 
     const dateFormat = bikramSambat.toBik_text(nineWeeksAgo);

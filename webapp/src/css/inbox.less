@@ -107,7 +107,7 @@ body {
   }
 
   a {
-    .button-text-inverse;
+    .button-text-inverse(@nav-icon-gray);
     outline: 0;
     padding-top: 3px;
   }
@@ -223,6 +223,7 @@ body {
       position: relative;
       overflow: hidden;
       word-wrap: break-word;
+      color: @nav-icon-gray;
     }
 
     a {
@@ -235,6 +236,8 @@ body {
       .mm-icon {
         display: block;
         padding: 5px 0;
+        height: 34px;
+        width: 54px;
 
         svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
           &, &:before {
@@ -248,10 +251,12 @@ body {
       }
 
       &.selected {
+        text-shadow: none;
         .button-label,
         .mm-icon:hover,
         .resource-icon {
           .button-text(@white);
+          text-shadow: none;
         }
       }
 
@@ -627,7 +632,7 @@ body {
 }
 
 .loading-status {
-  margin: 10px 10px @bottom-navbar-height;
+  margin: 10px 10px calc(@bottom-navbar-height + 10px);
   text-align: center;
   font-size: @font-small;
   color: @label-color;
@@ -929,6 +934,10 @@ a.fa:hover {
   display: none;
 }
 
+.mobile-fab {
+  display: none;
+}
+
 .upgrade-config .status {
   text-align: center;
 }
@@ -1054,7 +1063,7 @@ mm-search-bar {
 
       .filter-counter {
         color: @chip-text-color;
-        font-size: @font-extra-extra-small;
+        font-size: @font-XXXS;
         background: @chip-background-color;
         border-radius: 50%;
         padding: 1px 5px;
@@ -1389,11 +1398,11 @@ mm-sidebar-menu .mat-sidenav-container {
       .tabs {
         .button-label {
           top: 0;
-          font-size: @font-extra-smaller;
+          font-size: @font-XXS;
           padding-top: 5px;
         }
         a {
-          min-width: 0;
+          min-width: 65px;
           .mm-icon {
             padding: 8px 0;
           }
@@ -1420,6 +1429,15 @@ mm-sidebar-menu .mat-sidenav-container {
   #mobile-detection {
     display: inline;
   }
+  
+  .desktop-fab {
+    display: none;
+  }
+
+  .mobile-fab {
+    display: initial;
+  }
+
   .item-content {
     padding: 0;
   }
@@ -1600,7 +1618,7 @@ mm-sidebar-menu .mat-sidenav-container {
       left: 0;
     }
     .fast-action-trigger:not(.embed-fast-action) {
-      bottom: 17px;
+      bottom: @fab-bottom-padding;
     }
   }
 

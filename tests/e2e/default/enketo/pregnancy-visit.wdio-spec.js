@@ -38,7 +38,7 @@ describe('Pregnancy Visit', () => {
 
     // Verify created report
     await commonPage.goToReports();
-    const { heading, form } = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const { heading, form } = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
     expect(heading).to.equal(pregnantWoman.name);
     expect(form).to.equal('Pregnancy home visit');
 
