@@ -4,7 +4,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const loginPage = require('@page-objects//default/login/login.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
+const smsPregnancy = require('@factories/cht/reports/sms-pregnancy');
 
 const CREDENTIAL_PASS = 'yabbadabbadoo';
 const CREDENTIAL_KEY = 'africastalking.com:incoming';
@@ -74,7 +74,7 @@ describe.skip('africas talking api', () => {
     };
 
     beforeEach(() => {
-      testReport = smsPregancy.pregnancy().build();
+      testReport = smsPregnancy.pregnancy().build();
       return utils
         .saveDoc(testReport)
         .then(result => {
@@ -94,7 +94,7 @@ describe.skip('africas talking api', () => {
 
     it('- shows content', async () => {
       await commonPage.goToReports();
-      const firstReport = await reportsPage.firstReport();
+      const firstReport = await reportsPage.leftPanelSelectors.firstReport();
       const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
       expect(firstReportInfo.heading).to.equal('Shannon');
@@ -107,7 +107,7 @@ describe.skip('africas talking api', () => {
       expect(automaticReply.message).to.include(testReport.tasks[0].messages[0].message);
       expect(automaticReply.recipient).to.include(testReport.tasks[0].messages[0].to);
 
-      expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
+      expect(await (await reportsPage.rightPanelSelectors.reportTasks()).isDisplayed()).to.be.true;
 
       const deliveredTask = await reportsPage.getTaskDetails(1, 1);
       expect(deliveredTask.message).to.contain(testReport.scheduled_tasks[0].messages[0].message);

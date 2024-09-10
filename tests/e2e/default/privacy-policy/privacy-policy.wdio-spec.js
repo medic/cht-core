@@ -5,12 +5,13 @@ const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy
 const userFactory = require('@factories/cht/users/users');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const placeFactory = require('@factories/cht/contacts/place');
-const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
 
 describe('Privacy policy', () => {
+  const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
   const englishTexts = privacyPolicyFactory.english;
   const frenchTexts = privacyPolicyFactory.french;
   const spanishTexts = privacyPolicyFactory.spanish;
+
   const users = [
     userFactory.build({ username: 'offlineuser', isOffline: true }),
     userFactory.build({ username: 'onlineuser', roles: ['program_officer']})
@@ -73,9 +74,6 @@ describe('Privacy policy', () => {
       });
 
       it.skip('should show if the user policy changes', async () => {
-        await browser.setCookies({ name: 'locale', value: 'en' });
-        await browser.refresh();
-
         const text = {
           header: 'New privacy policy',
           paragraph: 'This is a new privacy policy',
@@ -89,12 +87,19 @@ describe('Privacy policy', () => {
           { privacy_policies: { en: updated.key } },
           { attachments: [updated] },
         );
+
+        await browser.setCookies({ name: 'locale', value: 'en' });
+        await browser.refresh();
+
         await privacyPage.updatePrivacyPolicy(updatedPolicy);
+
         if (user.isOffline) {
           await commonElements.sync();
         }
+
         await browser.refresh();
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), text);
+
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
     });

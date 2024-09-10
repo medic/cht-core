@@ -10,6 +10,7 @@
   position: relative;
   &, &:focus {
     .button-text(@white);
+    text-shadow: none;
   }
   &:hover, &.active {
     .button-text-hover;
@@ -18,7 +19,7 @@
 
 .mm-icon-inverse {
   &, &:focus {
-    .button-text-inverse(@gray-medium);
+    .button-text-inverse(@nav-icon-gray);
   }
 }
 

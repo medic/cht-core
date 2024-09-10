@@ -61,7 +61,8 @@ describe('Creating custom places', () => {
     translations = customTypeFactory.translationKeys(contacts);
     forms = customTypeFactory.formsForTypes(contacts, ngoCreateXML);
     await utils.addTranslations('en', translations);
-    await utils.updateSettings({ contact_types: contacts }, true);
+    await utils.updateSettings({ contact_types: contacts }, { ignoreReload: true });
+
     await utils.saveDocs(forms);
     await login.cookieLogin();
   });
@@ -82,7 +83,7 @@ describe('Creating custom places', () => {
     settings.contact_types.push(secondTopLevel);
     const forms = customTypeFactory.formsForTypes([secondTopLevel], ngoCreateXML);
     await utils.revertSettings(true);
-    await utils.updateSettings({ contact_types: settings.contact_types }, true);
+    await utils.updateSettings({ contact_types: settings.contact_types }, { ignoreReload: true });
     await utils.saveDocs(forms);
     await login.cookieLogin();
     await commonPage.goToPeople();

@@ -205,12 +205,16 @@ const addPerson = async ({
   return (await contactCardSelectors.contactCardName()).getText();
 };
 
-const editPerson = async (currentName, { name, phone, dob }) => {
-  await selectLHSRowByText(currentName);
+const openEditContactForm = async () => {
   await waitForContactLoaded();
   await commonPage.openMoreOptionsMenu();
   await (await menuSelectors.editContactButton()).waitForClickable();
   await (await menuSelectors.editContactButton()).click();
+};
+
+const editPerson = async (currentName, { name, phone, dob }) => {
+  await selectLHSRowByText(currentName);
+  await openEditContactForm();
   await (await genericForm.nextPage());
 
   if (name !== undefined) {
@@ -279,11 +283,7 @@ const allContactsList = async () => {
 
 const editPlace = async (currentName, editedName) => {
   await selectLHSRowByText(currentName, true);
-  await waitForContactLoaded();
-
-  await commonPage.openMoreOptionsMenu();
-  await (await menuSelectors.editContactButton()).waitForClickable();
-  await (await menuSelectors.editContactButton()).click();
+  await openEditContactForm();
 
   await commonEnketoPage.setInputValue('Name of this', editedName);
   await genericForm.submitForm();
@@ -408,6 +408,7 @@ module.exports = {
   getAllRHSPeopleNames,
   waitForContactLoaded,
   waitForContactUnloaded,
+  openEditContactForm,
   editPerson,
   editPersonName,
   editPlace,

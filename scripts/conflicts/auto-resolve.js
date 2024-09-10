@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const parseArgs = require('minimist');
 const diff = require('just-diff').diff;
 

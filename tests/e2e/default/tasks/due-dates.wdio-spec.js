@@ -41,15 +41,13 @@ const getTasksInfos = async (tasks) => {
   return infos;
 };
 
-const updateSettings = async (updates = {}) => {
+const updateDueDatesSettings = async (updates = {}) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, 'config/due-dates-config.js');
 
   const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
   updates.tasks = tasks;
-  await utils.updateSettings(updates, 'api');
-  await commonPage.sync(true);
-  await browser.refresh();
+  await utils.updateSettings(updates, { ignoreReload: 'api', sync: true, refresh: true });
 };
 
 describe.skip('Task list due dates', () => {
@@ -67,7 +65,7 @@ describe.skip('Task list due dates', () => {
   });
 
   it('should display correct due dates with default settings', async () => {
-    await updateSettings();
+    await updateDueDatesSettings();
 
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
@@ -103,7 +101,7 @@ describe.skip('Task list due dates', () => {
   });
 
   it('should display correct due dates with taskDaysOverdue setting', async () => {
-    await updateSettings({ task_days_overdue: true });
+    await updateDueDatesSettings({ task_days_overdue: true });
 
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
@@ -140,7 +138,7 @@ describe.skip('Task list due dates', () => {
 
   it('should display correct due dates with taskDaysOverdue setting and simple translation', async () => {
     await utils.addTranslations('en', { 'task.overdue.days': 'Late' });
-    await updateSettings({ task_days_overdue: true });
+    await updateDueDatesSettings({ task_days_overdue: true });
 
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());

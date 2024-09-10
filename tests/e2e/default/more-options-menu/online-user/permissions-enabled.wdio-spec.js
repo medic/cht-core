@@ -109,7 +109,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
     it('should enable the \'export\', \'review\' and \'delete\' options and hide the \'edit\' option in Report tab ' +
       'when a NON XML report is opened.', async () => {
       await reportPage.goToReportById(smsReportId);
-      await (await reportPage.reportBodyDetails()).waitForDisplayed();
+      await (await reportPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
       expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
@@ -120,7 +120,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
     it('should enable the \'export\', \'review\', \'edit\' and \'delete\' options in Report tab ' +
       'when a XML report is opened.', async () => {
       await reportPage.goToReportById(xmlReportId);
-      await reportPage.reportBodyDetails().waitForDisplayed();
+      await reportPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
       expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;

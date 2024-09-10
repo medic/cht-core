@@ -36,7 +36,7 @@ describe('Health Facility ANC Reminder task', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await reportsPage.openSelectedReport(await reportsPage.firstReport());
+    await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.firstReport());
     pregnancyId = await reportsPage.getCurrentReportId();
 
     await commonPage.goToTasks();
@@ -51,7 +51,7 @@ describe('Health Facility ANC Reminder task', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await reportsPage.openSelectedReport(await reportsPage.firstReport());
+    await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.firstReport());
     await commonPage.waitForPageLoaded();
 
     //The pregnancyId value should be loaded into the "pregnancy_facility_visit_reminder" form via the "contact-summary"

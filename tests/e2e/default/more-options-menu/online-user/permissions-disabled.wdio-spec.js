@@ -67,7 +67,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       'enable the \'edit\', \'delete\' and \'review\' options when a report is opened', async () => {
       await commonPage.goToReports();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
-      (await reportPage.firstReport()).click();
+      (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
@@ -103,7 +103,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     it('should hide the \'delete\' option and ' +
       'enable the \'edit\', \'export\' and \'review\' options when a report is opened', async () => {
       await commonPage.goToReports();
-      (await reportPage.firstReport()).click();
+      (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
@@ -132,7 +132,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     it('should hide the \'edit\', \'delete\' and \'review\' options and ' +
       'enable the \'export\' option when a report is opened', async () => {
       await commonPage.goToReports();
-      (await reportPage.firstReport()).click();
+      (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;

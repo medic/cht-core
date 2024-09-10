@@ -94,7 +94,7 @@ describe('Pregnancy registration', () => {
 
     // Validate the created report
     await commonPage.goToReports();
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const firstReport = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
     expect(firstReport.heading).to.equal(pregnantWoman.name);
     expect(firstReport.form).to.equal('Pregnancy registration');
 

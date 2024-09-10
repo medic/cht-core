@@ -216,7 +216,7 @@ describe('infodocs', () => {
       const settings = {
         transitions: { generate_shortcode_on_contacts: true }
       };
-      await utils.updateSettings(settings, 'sentinel');
+      await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
 
       const doc = { _id: uuid(), type: 'person' };
       const { rev } = await utils.saveDoc(doc);

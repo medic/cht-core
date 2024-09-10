@@ -12,19 +12,6 @@ const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
-const updateSettings = async (settings) => {
-  await utils.updateSettings(settings, 'api');
-  await commonPage.sync(true);
-  await browser.refresh();
-};
-
-const compileTargets = async (targetsFileName = 'targets-config.js') => {
-  await chtConfUtils.initializeConfigDir();
-  const targetFilePath = path.join(__dirname, `config/${targetsFileName}`);
-
-  return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
-};
-
 describe.skip('Targets', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
@@ -41,7 +28,14 @@ describe.skip('Targets', () => {
     parent: { _id: clinic._id, parent: clinic.parent }
   });
 
-  const chw = userFactory.build({ place: healthCenter._id, roles: ['chw'], contact });
+  const chw = userFactory.build({ place: healthCenter._id, contact: contact });
+
+  const compileTargets = async (targetsFileName = 'targets-config.js') => {
+    await chtConfUtils.initializeConfigDir();
+    const targetFilePath = path.join(__dirname, `config/${targetsFileName}`);
+
+    return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
+  };
 
   before(async () => {
     await utils.saveDocs([...places.values(), owl]);
@@ -75,7 +69,8 @@ describe.skip('Targets', () => {
 
   it('should display correct message when no target found', async () => {
     const settings = await compileTargets();
-    await updateSettings(settings);
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
+
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
@@ -89,7 +84,7 @@ describe.skip('Targets', () => {
     const tasks = {
       targets: { enabled: false }
     };
-    await updateSettings({ tasks });
+    await utils.updateSettings({ tasks }, { ignoreReload: 'api', sync: true, refresh: true });
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
@@ -103,7 +98,7 @@ describe.skip('Targets', () => {
 
   it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
-    await updateSettings(settings);
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
     await analyticsPage.goToTargets();
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

@@ -6,6 +6,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const personFactory = require('@factories/cht/contacts/person');
+const { reportsPageDefault }  = reportsPage;
 
 describe('Bulk delete reports', () => {
   const places = placeFactory.generateHierarchy();
@@ -39,16 +40,22 @@ describe('Bulk delete reports', () => {
   ];
 
   const savedUuids = [];
+
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient ]);
     await utils.createUsers([ offlineUser ]);
     (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
     await loginPage.login(offlineUser);
-    await commonElements.goToReports();
   });
 
-  // Skipped due to error: done() called multiple times in test
-  it.skip('should select, deselect and delete only selected reports', async () => {
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
+
+  it('should select, deselect and delete only selected reports', async () => {
+    await commonElements.goToReports();
+
     const selectOne = await reportsPage.selectReports([ savedUuids[0] ]);
     expect(selectOne.countLabel).to.equal('1');
     expect(selectOne.selectedCount).to.equal(1);
@@ -69,10 +76,10 @@ describe('Bulk delete reports', () => {
     expect(deselectSomeResult.selectedCount).to.equal(1);
 
     await reportsPage.deleteSelectedReports();
-    expect(await (await reportsPage.reportsPageDefault.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(savedUuids[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(savedUuids[1])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportsPageDefault.reportByUUID(savedUuids[2])).isDisplayed()).to.be.false;
+    expect(await (await reportsPageDefault.reportsListDetails()).length).to.equal(2);
+    expect(await (await reportsPageDefault.leftPanelSelectors.reportByUUID(savedUuids[0])).isDisplayed()).to.be.true;
+    expect(await (await reportsPageDefault.leftPanelSelectors.reportByUUID(savedUuids[1])).isDisplayed()).to.be.true;
+    expect(await (await reportsPageDefault.leftPanelSelectors.reportByUUID(savedUuids[2])).isDisplayed()).to.be.false;
   });
 
   it('should open a selected report and a no selected report', async () => {
@@ -80,13 +87,13 @@ describe('Bulk delete reports', () => {
     expect(selectOne.countLabel).to.equal('1');
     expect(selectOne.selectedCount).to.equal(1);
 
-    await reportsPage.reportsPageDefault.openReport(savedUuids[0]);
+    await reportsPageDefault.openReport(savedUuids[0]);
     await reportsPage.closeReport();
     let currentCount = await reportsPage.verifyMultiselectElementsDisplay();
     expect(currentCount.countLabel).to.equal('1');
     expect(currentCount.selectedCount).to.equal(1);
 
-    await reportsPage.reportsPageDefault.openReport(savedUuids[1]);
+    await reportsPageDefault.openReport(savedUuids[1]);
     await reportsPage.closeReport();
     currentCount = await reportsPage.verifyMultiselectElementsDisplay();
     expect(currentCount.countLabel).to.equal('1');

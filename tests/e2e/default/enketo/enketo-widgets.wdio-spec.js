@@ -47,8 +47,8 @@ describe('Enketo Widgets', () => {
     );
   };
 
-  const verifyReport = async (selectMultiple, selectOne, country, city, neighborhood, uuid, id, name, phoneNumber) => {
-    const firstReport = await reportsPage.firstReport();
+  const verifyReport = async (selectMultiple, selectOne, country, city, neighborhood, uuid, id, name) => {
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
     expect(firstReportInfo.heading).to.equal(name);
@@ -73,7 +73,6 @@ describe('Enketo Widgets', () => {
     expect((await reportsPage.getDetailReportRowContent('patient_uuid')).rowValues[0]).to.equal(uuid);
     expect((await reportsPage.getDetailReportRowContent('patient_id')).rowValues[0]).to.equal(id);
     expect((await reportsPage.getDetailReportRowContent('patient_name')).rowValues[0]).to.equal(name);
-    expect((await reportsPage.getDetailReportRowContent('phone')).rowValues[0]).to.equal(phoneNumber);
   };
 
   before(async () => {
@@ -100,20 +99,6 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'd');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option d');
-
-    // try to move to next page without filling the mandatory phone number field
-    await genericForm.nextPage(1, false);
-    expect(await enketoWidgetsPage.phoneFieldRequiredMessage().getAttribute('data-i18n'))
-      .to.equal('constraint.required');
-
-    // try to move to next page with an invalid phone number
-    await commonEnketoPage.setInputValue('Phone Number', '+4076');
-    await genericForm.nextPage(1, false);
-    expect(await enketoWidgetsPage.phoneFieldConstraintMessage().getAttribute('data-itext-id'))
-      .to.equal('/enketo_widgets_test/enketo_test_select/phone:jr:constraintMsg');
-
-    // finally set a valid phone number and continue
-    await commonEnketoPage.setInputValue('Phone Number', phoneNumber);
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('usa', 'nyc', 'bronx', 3, 2);
@@ -149,7 +134,6 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'a');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option a');
-    await commonEnketoPage.setInputValue('Phone Number', phoneNumber);
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('nl', 'dro', 'havendr', 3, 1);

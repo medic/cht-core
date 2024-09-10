@@ -251,7 +251,7 @@ const expectTransitions = (infodoc, ...transitions) => {
 const processSMS = (settings) => {
   let ids;
   const watchChanges = apiUtils.getApiSmsChanges(messages);
-  return utils.updateSettings(settings, true)
+  return utils.updateSettings(settings, { ignoreReload: true })
     .then(() => Promise.all([
       watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))

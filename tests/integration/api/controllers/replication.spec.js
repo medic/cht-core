@@ -294,7 +294,7 @@ describe('replication', () => {
 
       it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled',
         async () => {
-          await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
+          await utils.updateSettings({ district_admins_access_unallocated_messages: true }, { ignoreReload: true });
           await utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' });
           const response = await requestDocs('bob');
           assertDocIds(response, ...bobsIds, 'unallocated_report');
@@ -337,7 +337,10 @@ describe('replication', () => {
       });
 
       it('should show contacts to a user only if they are within the configured depth', async () => {
-        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true);
+        await utils.updateSettings(
+          { replication_depth: [{ role: 'district_admin', depth: 1 }] },
+          { ignoreReload: true }
+        );
         const response = await requestDocs('chw');
         assertDocIds(response, ...chwIds, 'depth_clinic');
 
@@ -353,7 +356,7 @@ describe('replication', () => {
               { role: 'analytics', depth: 2 },
             ]
           },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(docs);
         const response = await requestDocs('chw');
@@ -423,7 +426,7 @@ describe('replication', () => {
 
         await utils.updateSettings(
           { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(contacts);
         await utils.saveDocs(reports);
@@ -498,7 +501,7 @@ describe('replication', () => {
             replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }],
             permissions,
           },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(contacts);
         await utils.saveDocs(reports);
@@ -563,7 +566,7 @@ describe('replication', () => {
 
         await utils.updateSettings(
           { replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] },
-          true
+          { ignoreReload: true }
         );
         await utils.saveDocs(docs);
         const response = await requestDocs('chw');
@@ -638,7 +641,7 @@ describe('replication', () => {
           }
         };
 
-        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true);
+        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, { ignoreReload: true });
         await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -697,7 +700,10 @@ describe('replication', () => {
           }
         };
 
-        await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }]}, true);
+        await utils.updateSettings(
+          { replication_depth: [{ role: 'district_admin', depth: 1 }]},
+          { ignoreReload: true }
+        );
         await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -770,7 +776,10 @@ describe('replication', () => {
           }
         };
 
-        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }]}, true);
+        await utils.updateSettings(
+          {replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }]},
+          { ignoreReload: true }
+        );
         await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
@@ -1076,7 +1085,10 @@ describe('replication', () => {
       await utils.saveDocs(reports);
 
       const seq = await sentinelUtils.getCurrentSeq();
-      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
+      await utils.updateSettings(
+        { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
+        { ignoreReload: true }
+      );
       await utils.stopSentinel();
       await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);
@@ -1099,7 +1111,10 @@ describe('replication', () => {
 
       await utils.saveDocs(reports);
       const seq = await sentinelUtils.getCurrentSeq();
-      await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
+      await utils.updateSettings(
+        { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
+        { ignoreReload: true }
+      );
       await utils.stopSentinel();
       await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);

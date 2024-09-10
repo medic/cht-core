@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { combineLatest, Subscription, Subject } from 'rxjs';
+import { combineLatest, Subject, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { Selectors } from '@mm-selectors/index';
@@ -8,6 +8,8 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
+
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 @Component({
   selector: 'analytics-target-aggregates-detail',
@@ -106,7 +108,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   }
 
   private getReportingPeriodText(aggregate) {
-    if (this.targetAggregatesService.isCurrentPeriod(aggregate.reportingPeriod)) {
+    if (aggregate.reportingPeriod === ReportingPeriod.CURRENT) {
       return this.translateService.instant(this.selected.subtitle_translation_key);
     }
 

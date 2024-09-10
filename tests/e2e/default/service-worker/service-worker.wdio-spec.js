@@ -131,6 +131,7 @@ describe.skip('Service worker cache', () => {
       '/login/images/hide-password.svg',
       '/login/images/show-password.svg',
       '/main.js',
+      '/deploy-info.json',
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
