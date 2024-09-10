@@ -78,7 +78,7 @@ describe('Old Navigation', () => {
 
   it('should navigate to the Reports section and open the first report listed', async () => {
     await oldNavigationPage.goToReports();
-    await reportsPage.openSelectedReport(await reportsPage.firstReport());
+    await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectorsfirstReport());
     await waitForPageLoaded();
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(person.name);
