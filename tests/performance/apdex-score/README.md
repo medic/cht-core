@@ -3,12 +3,14 @@
 ## Setup
 
 1. Enable the developer mode in your phone and enable the USB Debugger mode.
-2. Connect the phone to the computer
-3. Create a settings file:
+   - ensure your device does not have a lock screen pin/passcode
+2. Connect your phone to the computer using the appropriate device cable or you can follow [these steps](https://developer.android.com/studio/run/device#wireless) to connect your device using Wi-Fi. 
+   - run `adb devices` command to see your connected device listed as one of the devices attached
+3. Create a settings file or reuse one of the [sample settings](tests/performance/apdex-score/sample-settings-files) files
 
 <details> <summary>Expand to see settings file structure </summary>
 
-```json
+```
 {
   "iterations": 1,
   "instanceURL": "<instance url>",
@@ -214,12 +216,24 @@
 
 </details>
 
-- Find the android version by running `adb shell getprop | grep ro.build.version.release`
-- Find the device name by running `adb shell getprop | grep ro.product.model`
+4. Set the environment variable `APDEX_TEST_SETTINGS` with the path of your settings file (apdex-settings.json).
+   - Ensure the apdex-settings.json file has been updated with the correct instance url, login credentials and assertion texts for page navigation, forms and other app interactions
+   - Under the skip section of the settings file, set `true` for tests you want to skip and `false` for the tests to be executed
+   - Update the fields for `platformVersion` and `deviceName` to match the value for your device
+     - Find the android version by running `adb shell getprop | grep ro.build.version.release`
+     - Find the device name by running `adb shell getprop | grep ro.product.model`
+5. Ensure all dependencies have been properly installed - run `npm ci` from the root directory 
+6. Run `npm run apdex-test` from the root directory to execute the selected tests
 
-4. Set the environment variable `APDEX_TEST_SETTINGS` with the path of your settings file.
+### Test Execution
 
-```sh {"id":"01J2WE5FDN0D40ZJ5XA7ZHHH4Z"}
+
+- Ensure that USB debugging is enabled on your phone
+  - ensure your device does not have a lock screen pin/passcode
+- 
+- 
+
+```
 export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 ```
 
@@ -337,6 +351,7 @@ Elements to assert that are displayed in the screen.
 | scrollDown | Number | Times to scroll down to reach to the element specified in the "selector". | No |
 | scrollUp | Number | Times to scroll up to reach to the element specified in the "selector". | No |
 
+
 ## Tips
 
 - Take time to understand the forms you are testing:
@@ -347,7 +362,7 @@ Elements to assert that are displayed in the screen.
 - Test how many scrolls you need by plugging the phone in the computer and run these adb commands:
    - Scroll down: `adb shell input swipe 500 1000 300 300`
    - Scroll up: `adb shell input swipe 300 300 500 1000`
-   - For example, if you need to run 3 times the scroll down command, then you add 3 like this: `"scrollDown": 3,`
+   - For example, if you need to run the scroll down command 3 times, then you add 3 as the value for scrollDown like this: `"scrollDown": 3,`
 - In some cases, it's necessary to unfocus a selected element, trigger a click in a label. For example:
 
 ```
