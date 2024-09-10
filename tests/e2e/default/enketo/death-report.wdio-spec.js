@@ -25,8 +25,8 @@ describe('Submit a death report', () => {
     await loginPage.login(offlineUser);
   });
 
-  it.skip('should create and edit a death, verify the report created and the tile from the Targets section.', 
-    async () => {
+  // eslint-disable-next-line max-len
+  it.skip('should create and edit a death, verify the report created and the tile from the Targets section.', async () => {
     const deathDate = moment();
     const deathNote = 'Test note';
 
