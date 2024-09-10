@@ -9,15 +9,11 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     all: [
       './**/*.wdio-spec.js',
       //'../default/login/login-logout.wdio-spec.js',
-      '../default/navigation/navigation.wdio-spec.js',
       //'../default/navigation/hamburger-menu.wdio-spec.js',
+      '../default/navigation/navigation.wdio-spec.js',
       '../default/reports/delete.wdio-spec.js',
-
     ]
   },
-  exclude: [
-    './**/bulk-delete.wdio-spec.js',
-  ],
   beforeSuite: async () => {
     // We tried the browser.emulateDevice('...') function but it's not stable enough,
     // it looses the mobile view and switches back to desktop
