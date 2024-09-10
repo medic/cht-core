@@ -53,7 +53,7 @@ describe.skip('Target aggregates', () => {
     });
   });
 
-  describe.only('User with one or more places assigned', () => {
+  describe('User with one or more places assigned', () => {
     const CURRENT_PERIOD = 'This month';
     const NAMES_DH1 = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
