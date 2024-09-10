@@ -229,7 +229,7 @@ describe('RapidPro SMS Gateway', () => {
       await loginPage.cookieLogin();
       await commonPage.goToReports();
 
-      const firstReport = await reportsPage.firstReport();
+      const firstReport = await reportsPage.leftPanelSelectors.firstReport();
       const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
       expect(firstReportInfo.heading).to.equal('the_phone');

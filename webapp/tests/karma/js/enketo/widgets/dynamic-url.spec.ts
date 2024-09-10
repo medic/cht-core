@@ -40,14 +40,17 @@ describe('Enketo: Dynamic URL Widget', () => {
     expect($(DynamicUrlWidget.selector).attr('href')).to.equal('http://google.com?q=');
   });
 
-  it('should update the href for the dynamically generated URL when the dynamic value changes', () => {
+  it('should update the href for the dynamically generated URL when the dynamic value changes', (done) => {
     buildHtml('helloWorld');
 
     new DynamicUrlWidget($(DynamicUrlWidget.selector)[0]);
     const dynamic = 'worldHello';
     $('.url span').text(dynamic);
 
-    expect($(DynamicUrlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`);
+    setTimeout(() => {
+      expect($(DynamicUrlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`);
+      done();
+    }, 0);
   });
 
   it('should not modify elements besides dynamic-url links', () => {

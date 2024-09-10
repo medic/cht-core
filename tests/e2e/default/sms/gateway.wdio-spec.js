@@ -3,7 +3,7 @@ const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
+const smsPregnancy = require('@factories/cht/reports/sms-pregnancy');
 
 const pollSmsApi = body => {
   return utils.request({
@@ -57,7 +57,7 @@ describe('sms-gateway api', () => {
     let savedDoc;
 
     beforeEach(async () => {
-      const report = smsPregancy.pregnancy().build();
+      const report = smsPregnancy.pregnancy().build();
       const result = await utils.saveDoc(report);
       savedDoc = result.id;
       const body = {
@@ -79,8 +79,7 @@ describe('sms-gateway api', () => {
       await reportsPage.goToReportById(savedDoc);
 
       // tasks
-
-      const sentTask = await (await reportsPage.sentTask()).getText();
+      const sentTask = await (await reportsPage.rightPanelSelectors.sentTask()).getText();
       const deliveredTask = (await reportsPage.getTaskDetails(1, 1)).state;
       const scheduledTask = (await reportsPage.getTaskDetails(1, 2)).state;
       const failedTask = (await reportsPage.getTaskDetails(2, 1)).state;
@@ -97,7 +96,7 @@ describe('sms-gateway api', () => {
     let reportWithTwoMessagesToSend;
 
     beforeEach(async () => {
-      reportWithTwoMessagesToSend = smsPregancy.pregnancy().build();
+      reportWithTwoMessagesToSend = smsPregnancy.pregnancy().build();
       // First scheduled message is in forwarded-to-gateway state.
       reportWithTwoMessagesToSend.scheduled_tasks[0].state = 'forwarded-to-gateway';
       reportWithTwoMessagesToSend.scheduled_tasks[0].state_history.push({
@@ -124,7 +123,7 @@ describe('sms-gateway api', () => {
       await reportsPage.goToReportById(savedDoc);
 
       // tasks
-      const forwardedMessage = await (await reportsPage.sentTask()).getText();
+      const forwardedMessage = await (await reportsPage.rightPanelSelectors.sentTask()).getText();
       expect(forwardedMessage).to.equal('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
