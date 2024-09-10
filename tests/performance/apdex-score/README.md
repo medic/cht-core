@@ -225,14 +225,6 @@
 5. Ensure all dependencies have been properly installed - run `npm ci` from the root directory 
 6. Run `npm run apdex-test` from the root directory to execute the selected tests
 
-### Test Execution
-
-
-- Ensure that USB debugging is enabled on your phone
-  - ensure your device does not have a lock screen pin/passcode
-- 
-- 
-
 ```
 export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
 ```
@@ -351,7 +343,6 @@ Elements to assert that are displayed in the screen.
 | scrollDown | Number | Times to scroll down to reach to the element specified in the "selector". | No |
 | scrollUp | Number | Times to scroll up to reach to the element specified in the "selector". | No |
 
-
 ## Tips
 
 - Take time to understand the forms you are testing:
@@ -377,4 +368,3 @@ Elements to assert that are displayed in the screen.
   - Find an element containing a text _anywhere_ in the screen: `"//*[text()[contains(.,\"Eric Patt\")]"`
   - Use [Appium Inspector](https://github.com/appium/appium-inspector) to help you find the XPath selectors. Sometimes it produces very long selectors but you can find a way to make them shorter.
      - If it fails to start after setting up with capabilities. Try running `appium server` in the terminal then run the Appium Inspector.
-
