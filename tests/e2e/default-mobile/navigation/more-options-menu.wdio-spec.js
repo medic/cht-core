@@ -52,8 +52,6 @@ describe('More Options Menu - Offline User', () => {
     await loginPage.login(offlineUser);
   });
 
-  afterEach(async () => await commonPage.goToBase());
-
   describe('Message tab', () => {
     it('should hide the kebab menu.', async () => {
       await sms.sendSms('testing', contact.phone);

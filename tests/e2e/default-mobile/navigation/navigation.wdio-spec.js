@@ -39,11 +39,6 @@ describe('Navigation', () => {
     await loginPage.login(offlineUser);
   });
 
-  beforeEach(async () => {
-    await commonPage.goToBase();
-    await commonPage.waitForPageLoaded();
-  });
-
   it('should load reports list when navigating from a report that was opened from a contact page', async () => {
     await commonPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);

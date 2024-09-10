@@ -7,7 +7,6 @@ const placeFactory = require('@factories/cht/contacts/place');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const personFactory = require('@factories/cht/contacts/person');
 const { reportsPageDefault }  = reportsPage;
-const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Bulk delete reports', () => {
   const places = placeFactory.generateHierarchy();
@@ -47,11 +46,6 @@ describe('Bulk delete reports', () => {
     await utils.createUsers([ offlineUser ]);
     (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
     await loginPage.login(offlineUser);
-  });
-
-  beforeEach(async () => {
-    await commonPage.goToBase();
-    await commonPage.waitForPageLoaded();
   });
 
   after(async () => {
