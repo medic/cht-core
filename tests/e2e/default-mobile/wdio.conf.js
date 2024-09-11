@@ -11,6 +11,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       '../default/login/login-logout.wdio-spec.js',
       '../default/navigation/navigation.wdio-spec.js',
       '../default/navigation/hamburger-menu.wdio-spec.js',
+      '../default/contacts/list-view-login-visual.js',
     ]
   },
   beforeSuite: async () => {
