@@ -1,36 +1,29 @@
 function(doc) {
-  var include = [ 'name', 'external_id', 'notes' ];
-
-  var usedKeys = [];
-  var emitMaybe = function(key, value) {
-    if (usedKeys.indexOf(key) === -1 && // Not already used
-        key.length > 2 // Not too short
-    ) {
-      usedKeys.push(key);
-      emit([key], value);
-    }
-  };
-
   var emitField = function(key, value, order) {
     if (!key || !value) {
       return;
     }
+
     key = key.toLowerCase();
-    if (include.indexOf(key) === -1 || /_date$/.test(key)) {
-      return;
-    }
+
     if (typeof value === 'string') {
       value = value.toLowerCase();
       value.split(/\s+/).forEach(function(word) {
-        emitMaybe(word, order);
+        if (word.length <= 2) {
+          return;
+        }
+
+        emit([word], order);
       });
     }
+
     if (typeof value === 'number' || typeof value === 'string') {
-      emitMaybe(key + ':' + value, order);
+      emit([key + ':' + value], order); // TODO: only `case_id`
     }
   };
 
-  var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+  var include = ['name', 'external_id', 'notes']; // TODO: add the other fields
+  var types = ['district_hospital', 'health_center', 'clinic', 'person'];
   var idx;
   if (doc.type === 'contact') {
     idx = types.indexOf(doc.contact_type);
@@ -41,11 +34,12 @@ function(doc) {
     idx = types.indexOf(doc.type);
   }
 
-  if (idx !== -1) {
+  var isContactOrPlace = idx !== -1;
+  if (isContactOrPlace) {
     var dead = !!doc.date_of_death;
     var muted = !!doc.muted;
     var order = dead + ' ' + muted + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
-    Object.keys(doc).forEach(function(key) {
+    include.forEach(function(key) {
       emitField(key, doc[key], order);
     });
   }
