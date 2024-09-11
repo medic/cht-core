@@ -40,7 +40,7 @@ describe('Report - Send message action', () => {
 
   it('should display option to send message', async () => {
     await commonElements.goToReports();
-    const firstReport = await reportsPage.firstReport();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await reportsPage.openSelectedReport(firstReport);
 
     expect(await commonElements.isReportActionDisplayed()).to.equal(true);
