@@ -18,6 +18,8 @@ const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trig
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
 const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
+const contactsButton = () => $(`${hamburgerMenuItemSelector} a[routerlink="contacts"]`);
+const contactsTab = () => $('#contacts-tab');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const taskTab = () => $('#tasks-tab');
@@ -477,6 +479,7 @@ module.exports = {
   logout,
   logoutButton,
   getLogoutMessage,
+  contactsTab,
   messagesTab,
   analyticsTab,
   goToReports,
@@ -490,6 +493,7 @@ module.exports = {
   sync,
   syncAndNotWaitForSuccess,
   syncButton,
+  contactsButton,
   closeReloadModal,
   goToMessages,
   goToTasks,
@@ -501,6 +505,7 @@ module.exports = {
   isTargetMenuItemPresent,
   isTargetAggregatesMenuItemPresent,
   openHamburgerMenu,
+  closeHamburgerMenu,
   openAboutMenu,
   openUserSettingsAndFetchProperties,
   openUserSettings,
@@ -529,5 +534,6 @@ module.exports = {
   goToUrl,
   getFastActionItemsLabels,
   getActionBarLabels,
-  getErrorLog
+  getErrorLog,
+  accessDeniedBackButton,
 };
