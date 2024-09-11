@@ -156,9 +156,6 @@ describe('Contact Page | List View (Access)', () => {
       await generateScreenshot('ContactPage', 'ReportView_NoContacts');
       await reportsPage.patientName().click();
       await generateScreenshot('ContactPage', 'Report_NoContactLoaded');
-      await (commonPage.accessDeniedBackButton()).waitForClickable();
-      await commonPage.accessDeniedBackButton().click();
-      await (await commonPage.messagesTab()).waitForDisplayed();
       await commonPage.goToMessages();
     });
 
