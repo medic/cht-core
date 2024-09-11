@@ -103,6 +103,10 @@
     }
 
     .tabs {
+      .button-label {
+        color: @button-text-inverse-color;
+      }
+      
       a {
         border-radius: 10px 10px 0 0;
         cursor: pointer;
@@ -264,6 +268,15 @@
     }
     mm-search-bar {
       padding-left: 5px;
+      .fa {
+        color: @gray-ultra-dark;
+      }
+      .fa-sliders {
+        display: initial;
+      }
+      .mm-search-bar-container {
+        justify-content: flex-end;
+      }
     }
     .right-side-filter {
       .fa-sliders {
@@ -304,15 +317,6 @@
   .mat-icon-filter {
     display: none;
   }
-
-  mm-search-bar {
-    .fa {
-      color: @gray-ultra-dark;
-    }
-    .fa-sliders {
-      display: initial;
-    }
-  }
   .mm-navigation-menu {
     display: block;
   }
@@ -341,7 +345,7 @@
         display: flex;
         justify-content: space-between;
         width: 100%;
-        padding: 0;
+        padding: 0 0 0 2px;
         a {
           min-width: 40px;
           .button-label {
@@ -404,7 +408,6 @@
   .old-nav {
     .header {
       .tabs {
-        padding-left: 2px;
         a {
           min-width: 40px;
           .button-label {

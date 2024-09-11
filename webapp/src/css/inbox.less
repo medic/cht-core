@@ -361,7 +361,7 @@ body {
 .analytics .filters {
   width: 100vw;
   .analytics-module {
-    margin-left: 8px;
+    margin-left: 4px;
   }
 }
 
@@ -1520,7 +1520,8 @@ mm-sidebar-menu .mat-sidenav-container {
   }
 
   .analytics:not(.show-content) .filters {
-    padding-top: 2px;
+    display: flex;
+    align-items: center;
   }
 
   .analytics.show-content .filters {
@@ -1685,7 +1686,6 @@ mm-sidebar-menu .mat-sidenav-container {
     padding: 5px;
     .mm-search-bar-container {
       background: transparent;
-      justify-content: flex-end;
       min-height: 40px;
 
       mm-freetext-filter.filter {
