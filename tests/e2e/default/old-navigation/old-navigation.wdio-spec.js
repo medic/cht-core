@@ -43,7 +43,7 @@ describe('Old Navigation', () => {
     permissions.can_view_old_navigation = offlineUser.roles;
     await utils.updateSettings({ tasks, permissions }, true);
 
-    await loginPage.login(offlineUser);
+    await loginPage.login(offlineUser, true);
   });
 
   after(async () => {
@@ -68,7 +68,7 @@ describe('Old Navigation', () => {
   });
 
   it('should navigate to the Task section and open the first task listed', async () => {
-    await oldNavigationPage.goToTasks();
+    await oldNavigationPage.goToTasks(true);
     await taskPage.openTaskById(
       pregnancyReport._id,
       '~pregnancy-danger-sign-follow-up~anc.pregnancy_danger_sign_followup'
@@ -77,22 +77,22 @@ describe('Old Navigation', () => {
   });
 
   it('should navigate to the Reports section and open the first report listed', async () => {
-    await oldNavigationPage.goToReports();
-    await reportsPage.openSelectedReport(await reportsPage.firstReport());
-    await waitForPageLoaded();
+    await oldNavigationPage.goToReports('', true);
+    await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.firstReport());
+    await waitForPageLoaded(true);
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(person.name);
     expect(openReportInfo.reportName).to.equal('Pregnancy registration');
   });
 
   it('should navigate to the People section and open the created Health Center', async () => {
-    await oldNavigationPage.goToPeople();
+    await oldNavigationPage.goToPeople('', true, true);
     await contactPage.selectLHSRowByText(healthCenter.name);
     expect(await contactPage.getContactInfoName()).to.equal(healthCenter.name);
   });
 
   it('should navigate to the Targets section, and open a target aggregate', async () => {
-    await oldNavigationPage.goToAnalytics();
+    await oldNavigationPage.goToAnalytics(true);
     await targetAggregatesPage.goToTargetAggregates(true);
     await targetAggregatesPage.openTargetDetails(targetsConfig[0]);
   });

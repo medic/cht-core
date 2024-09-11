@@ -17,7 +17,7 @@ const getErrorMessage = async () => {
   return await (await errorMessageField()).getText();
 };
 
-const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }, isOldNav = false) => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
   }
@@ -36,7 +36,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
 
   if (loadPage) {
     const waitForPartialLoad = privacyPolicy || adminApp;
-    waitForPartialLoad ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded();
+    waitForPartialLoad ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded(isOldNav);
   }
 };
 

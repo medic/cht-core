@@ -343,15 +343,18 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
-const waitForAngularLoaded = async (timeout = 40000) => {
-  // await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
-  await (await $('aria/Application menu')).waitForDisplayed({ timeout });
+const waitForAngularLoaded = async (isOldNav = false, timeout = 40000) => {
+  if (isOldNav) {
+    await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+  } else {
+    await (await $('aria/Application menu')).waitForDisplayed({ timeout });
+  }
 };
 
-const waitForPageLoaded = async () => {
+const waitForPageLoaded = async (isOldNav = false) => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
-  await waitForAngularLoaded();
+  await waitForAngularLoaded(isOldNav);
   // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
   // get all loaders.
   do {

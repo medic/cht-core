@@ -14,28 +14,28 @@ const goToMessages = async () => {
   await (await messagesTab()).waitForDisplayed();
 };
 
-const goToTasks = async () => {
+const goToTasks = async (isOldNav = false) => {
   await commonPage.goToUrl(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
-  await commonPage.waitForPageLoaded();
+  await commonPage.waitForPageLoaded(isOldNav);
 };
 
-const goToReports = async (reportId = '') => {
+const goToReports = async (reportId = '', isOldNav = false) => {
   await commonPage.goToUrl(`/#/reports/${reportId}`);
-  await commonPage.waitForPageLoaded();
+  await commonPage.waitForPageLoaded(isOldNav);
 };
 
-const goToPeople = async (contactId = '', shouldLoad = true) => {
+const goToPeople = async (contactId = '', shouldLoad = true, isOldNav = false) => {
   await commonPage.goToUrl(`/#/contacts/${contactId}`);
   if (shouldLoad) {
-    await commonPage.waitForPageLoaded();
+    await commonPage.waitForPageLoaded(isOldNav);
   }
 };
 
-const goToAnalytics = async () => {
+const goToAnalytics = async (isOldNav = false) => {
   await commonPage.goToUrl(`/#/analytics`);
   await (await analyticsTab()).waitForDisplayed();
-  await commonPage.waitForPageLoaded();
+  await commonPage.waitForPageLoaded(isOldNav);
 };
 
 const hideModalOverlay = () => {
