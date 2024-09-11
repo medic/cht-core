@@ -535,5 +535,4 @@ module.exports = {
   getFastActionItemsLabels,
   getActionBarLabels,
   getErrorLog,
-  accessDeniedBackButton,
 };

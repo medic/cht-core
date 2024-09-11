@@ -26,10 +26,10 @@ const getReportContext = (patient, submitter) => {
 };
 
 const createData = ({ healthCenter, user, nbrClinics=10, nbrPersons=10 }) => {
-    // Create clinics with a primary contact and a matching name
-    const personPhoneNumber = phoneNumber;
+  // Create clinics with a primary contact and a matching name
+  const personPhoneNumber = phoneNumber;
 
-    const clinics = Array.from({ length: nbrClinics }).map(() => {
+  const clinics = Array.from({ length: nbrClinics }).map(() => {
     // Generate the primary person's name
     const firstName = Faker.faker.person.firstName();
     const lastName = Faker.faker.person.lastName();
@@ -58,17 +58,15 @@ const createData = ({ healthCenter, user, nbrClinics=10, nbrPersons=10 }) => {
   });
 
   // Create additional persons for each clinic (excluding the primary contact)
-  const persons = clinics.flatMap(({ clinic }) =>
-    Array.from({ length: nbrPersons - 1 }).map(() => {
-      const additionalPersonName = `${Faker.faker.person.firstName('female')} ${Faker.faker.person.lastName()}`;
-      return personFactory.build({
-        parent: { _id: clinic._id, parent: clinic.parent },
-        name: additionalPersonName, // Additional persons get unique names
-        patient_id: 65421,
-        phone: personPhoneNumber
-      });
-    })
-  );
+  const persons = clinics.flatMap(({ clinic }) => Array.from({ length: nbrPersons - 1 }).map(() => {
+    const additionalPersonName = `${Faker.faker.person.firstName('female')} ${Faker.faker.person.lastName()}`;
+    return personFactory.build({
+      parent: { _id: clinic._id, parent: clinic.parent },
+      name: additionalPersonName, // Additional persons get unique names
+      patient_id: 65421,
+      phone: personPhoneNumber
+    });
+  }));
 
   // Include the primary contacts in the persons list
   const allPersons = [
@@ -97,7 +95,7 @@ const createHierarchy = ({ name, user=false, nbrClinics=50, nbrPersons=10 }) => 
     name: `${name}`,
     phone: '+12068881234'
   };
-  user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'] , contact: contact});
+  user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: contact});
 
   const places = [...hierarchy.values()].map(place => {
     place.name = `${name} ${place.type}`;

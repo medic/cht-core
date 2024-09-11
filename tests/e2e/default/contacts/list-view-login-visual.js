@@ -11,12 +11,12 @@ const MOBILE_HEIGHT = 570;
 const DESKTOP_WIDTH = 1000;
 const DESKTOP_HEIGHT = 820;
 
-async function isMobile() {
+const isMobile = async () => {
   const { width } = await browser.getWindowSize();
   return width < 768;
-}
+};
 
-async function resizeWindowForScreenshots() {
+const resizeWindowForScreenshots = async () => {
   if (await isMobile()) {
     await browser.emulateDevice({
       viewport: {
@@ -30,9 +30,9 @@ async function resizeWindowForScreenshots() {
   } else {
     await browser.setWindowSize(DESKTOP_WIDTH, DESKTOP_HEIGHT);
   }
-}
+};
 
-async function generateScreenshot(scenario, step) {
+const generateScreenshot = async (scenario, step) => {
   // Determine the device type
   const device = await isMobile() ? 'mobile' : 'desktop';
 
@@ -67,7 +67,7 @@ async function generateScreenshot(scenario, step) {
 
   // Save the resized image
   await screenshotSharp.toFile(filename);
-}
+};
 
 describe('Contact Page | List View (Access)', () => {
   const updatePermissions = async (roleValue, addPermissions, removePermissions = []) => {
@@ -111,7 +111,8 @@ describe('Contact Page | List View (Access)', () => {
   });
 
   describe('Log in', () => {
-    it('having can_view_contact and can_view_contacts_tab permissions, should show contacts page as tab, hidden from menu option', async () => {
+    it('having can_view_contact and can_view_contacts_tab permissions, ' +
+      'should show contacts page as tab, hidden from menu option', async () => {
       await (await commonPage.contactsTab()).waitForDisplayed();
       await generateScreenshot('ContactPage', 'TabVisible');
 
@@ -136,7 +137,8 @@ describe('Contact Page | List View (Access)', () => {
       await commonPage.goToMessages();
     });
 
-    it.only('not having can_view_contact and having can_view_contacts_tab permissions, should hide contacts page as tab, hidden from menu option as well', async () => {
+    it('not having can_view_contact and having can_view_contacts_tab permissions, ' +
+      'should hide contacts page as tab, hidden from menu option as well', async () => {
       await updatePermissions('chw', [], ['can_view_contacts']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
@@ -160,7 +162,8 @@ describe('Contact Page | List View (Access)', () => {
       await commonPage.goToMessages();
     });
 
-    it('having can_view_contact and not having can_view_contacts_tab permissions, should hide contacts page as tab, show from menu option', async () => {
+    it('having can_view_contact and not having can_view_contacts_tab permissions, ' +
+      'should hide contacts page as tab, show from menu option', async () => {
       await updatePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
@@ -185,7 +188,8 @@ describe('Contact Page | List View (Access)', () => {
       await commonPage.goToMessages();
     });
 
-    it('not having can_view_contact and can_view_contacts_tab permissions, should hide contacts page as tab, hidden from menu option as well', async () => {
+    it('should hide contacts page as a tab and from the menu ' +
+      'if user lacks can_view_contact and can_view_contacts_tab permissions', async () => {
       await updatePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
