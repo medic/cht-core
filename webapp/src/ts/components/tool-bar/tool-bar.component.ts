@@ -12,7 +12,9 @@ export class ToolBarComponent {
   @Input() title?: string;
   @Input() cssClasses?: string[];
 
-  constructor(private store: Store) {
+  constructor(
+    private store: Store,
+  ) {
     this.globalActions = new GlobalActions(store);
   }
 

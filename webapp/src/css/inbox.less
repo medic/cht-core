@@ -1131,7 +1131,7 @@ mm-search-bar {
   .mat-icon-filter {
     margin-right: 10px;
     width: 20px;
-    color: @medium-black;
+    color: @filter-icon-color;
   }
 }
 
@@ -1368,6 +1368,14 @@ mm-sidebar-menu .mat-sidenav-container {
   }
 
   .app-root:not(.old-nav) {
+    &.messages,
+    &.tasks,
+    &.reports,
+    &.contacts {
+      .loading-status {
+        margin: 10px 10px calc(@bottom-navbar-height + 10px);
+      }
+    }
     mm-header {
       position: relative;
     }
@@ -1487,7 +1495,7 @@ mm-sidebar-menu .mat-sidenav-container {
       text-overflow: ellipsis;
       width: calc(100vw - 100px); // Give space to "more options" menu
       text-align: left;
-      color: @medium-black;
+      color: @filter-text-color;
     }
     .dropdown,
     .navigation .mm-button {
@@ -1740,6 +1748,14 @@ mm-sidebar-menu .mat-sidenav-container {
       padding-left: 4px;
     }
   }
+
+  .app-root.about,
+  .app-root.testing {
+    .page {
+      top: 55px;
+      margin-bottom: calc(@bottom-navbar-height + 10px);
+    }
+  }
 }
 
 @media (max-width: @media-small-mobile) {
@@ -1760,13 +1776,6 @@ mm-sidebar-menu .mat-sidenav-container {
   }
   .desktop-only {
     display: none;
-  }
-  .app-root.about,
-  .app-root.testing {
-    .page {
-      top: 55px;
-      margin-bottom: calc(@bottom-navbar-height + 10px);
-    }
   }
 }
 
