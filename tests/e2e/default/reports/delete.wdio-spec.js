@@ -1,5 +1,4 @@
 const moment = require('moment');
-
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -20,24 +19,19 @@ describe('Delete Reports', () => {
     reportFactory
       .report()
       .build(
-        {
-          form: 'P',
-          reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
-        },
+        { form: 'P', reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf() },
         { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' } },
       ),
     reportFactory
       .report()
       .build(
-        {
-          form: 'P',
-          reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
-        },
+        { form: 'P', reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf() },
         { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' } },
       ),
   ];
 
   const savedReportIds = [];
+
   beforeEach(async () => {
     await utils.saveDocs([ ...places.values(), patient ]);
     (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
@@ -47,17 +41,22 @@ describe('Delete Reports', () => {
     await commonElements.goToReports();
   });
 
-  it('Should delete report', async () => {
-    await (await reportsPage.firstReport()).waitForDisplayed();
+  after(async () => {
+    await utils.deleteUsers([onlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
 
-    expect(await (await reportsPage.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
+  it('Should delete report', async () => {
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
 
     await reportsPage.openReport(savedReportIds[1]);
     await reportsPage.deleteReport();
     await commonElements.goToReports();
 
-    expect(await (await reportsPage.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
   });
 });

@@ -17,7 +17,6 @@ describe('Reports Sidebar Filter', () => {
   const districtHospitalUser = userFactory.build({
     username: 'user_filter_district_hospital',
     place: districtHospital._id,
-    roles: [ 'chw' ],
     contact: districtHospitalContact,
   });
 
@@ -90,23 +89,27 @@ describe('Reports Sidebar Filter', () => {
     await utils.revertSettings(true);
   });
 
+  after(async () => await utils.deleteUsers([ districtHospitalUser, healthCenterUser ]));
+
   it('should filter by date', async () => {
     await loginPage.login(districtHospitalUser);
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.firstReport()).waitForDisplayed();
-    expect((await reportsPage.allReports()).length).to.equal(reports.length);
-    
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
+
     await reportsPage.openSidebarFilter();
     await reportsPage.openSidebarFilterDateAccordion();
     await reportsPage.setSidebarFilterFromDate();
     await reportsPage.setSidebarFilterToDate();
     await commonPage.waitForPageLoaded();
 
-    expect((await reportsPage.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(pregnancyDistrictHospital._id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(visitDistrictHospital._id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id))
+      .isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id))
+      .isDisplayed()).to.be.true;
   });
 
   it('should filter by form', async () => {
@@ -114,16 +117,17 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.firstReport()).waitForDisplayed();
-    expect((await reportsPage.allReports()).length).to.equal(reports.length);
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
 
     await reportsPage.openSidebarFilter();
     await reportsPage.filterByForm('Pregnancy home visit');
     await commonPage.waitForPageLoaded();
 
-    expect((await reportsPage.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(visitDistrictHospital._id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id))
+      .isDisplayed()).to.be.true;
   });
 
   it('should filter by place', async () => {
@@ -131,16 +135,17 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.firstReport()).waitForDisplayed();
-    expect((await reportsPage.allReports()).length).to.equal(reports.length);
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
 
     await reportsPage.openSidebarFilter();
     await reportsPage.filterByFacility(districtHospital.name, healthCenter.name);
     await commonPage.waitForPageLoaded();
 
-    expect((await reportsPage.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter._id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
+      .isDisplayed()).to.be.true;
   });
 
   it('should filter by status', async () => {
@@ -148,16 +153,18 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.firstReport()).waitForDisplayed();
-    expect((await reportsPage.allReports()).length).to.equal(reports.length);
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
 
     await reportsPage.openSidebarFilter();
     await reportsPage.filterByStatus('Reviewed: correct');
     await commonPage.waitForPageLoaded();
 
-    expect((await reportsPage.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter._id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(visitDistrictHospital._id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
+      .isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id))
+      .isDisplayed()).to.be.true;
   });
 
   it('should filter by user associated place when the permission to default filter is enabled', async () => {
@@ -171,11 +178,12 @@ describe('Reports Sidebar Filter', () => {
     await utils.updateSettings(newSettings);
 
     await commonPage.goToReports();
-    await (await reportsPage.firstReport()).waitForDisplayed();
+    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
 
-    expect((await reportsPage.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter._id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
+      .isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
   });
 });
 

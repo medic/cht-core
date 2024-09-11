@@ -58,7 +58,7 @@ describe('Submit a death report', () => {
 
     // Verify that the report was created
     await commonPage.goToReports();
-    const firstReportInfo = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const firstReportInfo = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
     await reportsPage.openReport(firstReportInfo.dataId);
     expect(firstReportInfo.heading).to.equal(person.name);
     expect(firstReportInfo.form).to.equal('Death report');

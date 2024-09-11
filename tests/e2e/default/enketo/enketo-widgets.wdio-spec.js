@@ -48,7 +48,7 @@ describe('Enketo Widgets', () => {
   };
 
   const verifyReport = async (selectMultiple, selectOne, country, city, neighborhood, uuid, id, name) => {
-    const firstReport = await reportsPage.firstReport();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
     expect(firstReportInfo.heading).to.equal(name);
