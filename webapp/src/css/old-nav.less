@@ -262,11 +262,22 @@
 
 @media (max-width: @media-mobile) {
   .app-root.old-nav {
+    .inner {
+      display: flex;
+      justify-content: space-between;
+      width: 100vw;
+      flex-direction: row-reverse;
+      flex-wrap: nowrap;
+    }
+
     .header {
       background-color: @top-header-color;
       position: relative;
 
       .tabs {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
         padding: 0;
         a {
           min-width: 40px;

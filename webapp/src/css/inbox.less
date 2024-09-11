@@ -109,6 +109,7 @@ body {
   z-index: 3;
   background-color: @top-header-color;
   text-align: center;
+  height: 100vh;
   .button-text-inverse;
 
   .logo,
@@ -116,7 +117,7 @@ body {
     display: none;
   }
 
-  &, .inner {
+  .inner {
     height: 100vh;
   }
 
@@ -132,8 +133,10 @@ body {
     a {
       .button-text-inverse(@nav-icon-gray);
       outline: 0;
+      text-shadow: none;
       border-radius: @radius-size @radius-size 0 0;
-      padding: 3px 5px 0 5px;
+      padding: 0 5px;
+      margin-top: 30px;
       cursor: pointer;
       min-width: 80px;
 
@@ -145,6 +148,11 @@ body {
       &.selected {
         text-shadow: none;
 
+        .mm-icon {
+          border-radius: 999px;
+          background-color: @tab-selected-color;
+        }
+
         .button-label,
         .mm-icon:hover,
         .resource-icon {
@@ -155,7 +163,7 @@ body {
     }
 
     a .button-label {
-      top: -5px;
+      margin-top: 3px;
       position: relative;
       overflow: hidden;
       word-wrap: break-word;
@@ -165,11 +173,12 @@ body {
 
     a .mm-icon {
       display: block;
-      padding: 5px 0;
+      padding: 8px 0;
       height: 34px;
       width: 54px;
       margin: 0 auto;
       font-size: @font-extra-large;
+      text-shadow: none;
 
       svg,
       span:not(.mm-badge-overlay):not(.mm-badge),
@@ -182,6 +191,10 @@ body {
           overflow: hidden;
         }
       }
+    }
+
+    a .mm-badge {
+      margin-right: 0;
     }
   }
 }
@@ -1285,20 +1298,6 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  .header {
-    .tabs {
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-
-      a {
-        flex-grow: 1;
-        min-width: 70px;
-        max-width: 100px;
-      }
-    }
-  }
-
   .app-root:not(.old-nav) {
     mm-header {
       position: relative;
@@ -1313,36 +1312,21 @@ mm-sidebar-menu .mat-sidenav-container {
       bottom: 0;
 
       .inner {
-        height: @bottom-navbar-height;
-      }
-
-      .logo,
-      .extras {
-        display: none;
+        height: 100%;
       }
 
       .tabs {
         flex-direction: row;
-
-        .button-label {
-          top: 0;
-          padding-top: 5px;
-        }
+        align-items: center;
+        justify-content: center;
 
         a {
           min-width: 65px;
-
-          .mm-icon {
-            padding: 8px 0;
-          }
-
-          &.selected .mm-icon {
-            border-radius: 999px;
-            background-color: @tab-selected-color;
-          }
+          margin-top: 3px;
         }
       }
     }
+
     &.select-mode,
     &.error {
       mm-header {
