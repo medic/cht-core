@@ -14,6 +14,7 @@ import { TasksActions } from '@mm-actions/tasks';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -71,6 +72,7 @@ describe('TasksComponent', () => {
       declarations: [
         TasksComponent,
         NavigationComponent,
+        ToolBarComponent,
       ],
     });
 
