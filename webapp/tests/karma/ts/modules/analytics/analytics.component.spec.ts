@@ -8,6 +8,7 @@ import { expect } from 'chai';
 
 import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
@@ -56,6 +57,7 @@ describe('AnalyticsComponent', () => {
           AnalyticsComponent,
           AnalyticsFilterComponent,
           NavigationComponent,
+          ToolBarComponent,
         ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),

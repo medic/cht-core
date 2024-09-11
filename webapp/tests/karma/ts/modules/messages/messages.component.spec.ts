@@ -22,6 +22,7 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
 import { SessionService } from '@mm-services/session.service';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExportService } from '@mm-services/export.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -80,7 +81,8 @@ describe('Messages Component', () => {
           RelativeDatePipe,
           NavigationComponent,
           MessagesMoreMenuComponent,
-          FastActionButtonComponent
+          FastActionButtonComponent,
+          ToolBarComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
