@@ -17,6 +17,7 @@ const getErrorMessage = async () => {
   return await (await errorMessageField()).getText();
 };
 
+// eslint-disable-next-line max-len
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }, isOldNav = false) => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
