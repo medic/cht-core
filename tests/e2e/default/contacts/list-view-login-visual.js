@@ -121,7 +121,7 @@ describe('Contact Page | List View (Access)', () => {
 
       await commonPage.closeHamburgerMenu();
       await commonPage.goToPeople();
-      expect(await commonPage.isPeopleListPresent());
+      expect(await commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('ContactPage', 'PeopleListVisible');
 
       await commonPage.goToReports();
@@ -170,7 +170,7 @@ describe('Contact Page | List View (Access)', () => {
       await (await commonPage.contactsButton()).waitForClickable();
       await generateScreenshot('ContactPage', 'MenuOptionVisible');
       await (await commonPage.contactsButton()).click();
-      expect(await commonPage.isPeopleListPresent());
+      expect(await commonPage.isPeopleListPresent()).to.be.true;;
       await commonPage.waitForPageLoaded();
       await generateScreenshot('ContactPage', 'ContactsInPeopleList');
       await commonPage.goToReports();
