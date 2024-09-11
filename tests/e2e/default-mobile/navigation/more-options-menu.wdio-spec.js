@@ -34,7 +34,7 @@ describe('More Options Menu - Offline User', () => {
     .report()
     .build(
       { form: 'home_visit', content_type: 'xml' },
-      { patient, submitter: contact }
+      { patient, submitter: contact },
     );
 
   const smsReport = reportFactory
@@ -45,7 +45,7 @@ describe('More Options Menu - Offline User', () => {
     );
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), contact, patient]);
+    await utils.saveDocs([ ...places.values(), contact, patient ]);
     xmlReportId = (await utils.saveDoc(xmlReport)).id;
     smsReportId = (await utils.saveDoc(smsReport)).id;
     await utils.createUsers([offlineUser]);
