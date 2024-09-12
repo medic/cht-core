@@ -8,7 +8,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
-describe.skip('Message Tab - Sender Data', () => {
+describe('Message Tab - Sender Data', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const healthCenter1 = places.get('health_center');

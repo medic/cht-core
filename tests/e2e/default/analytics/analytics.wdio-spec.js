@@ -12,7 +12,7 @@ const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
-describe.skip('Targets', () => {
+describe('Targets', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const clinic = places.get('clinic');

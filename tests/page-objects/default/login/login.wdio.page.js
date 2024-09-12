@@ -17,8 +17,7 @@ const getErrorMessage = async () => {
   return await (await errorMessageField()).getText();
 };
 
-// eslint-disable-next-line max-len
-const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }, isOldNav = false) => {
+const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
   }
@@ -37,7 +36,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
 
   if (loadPage) {
     const waitForPartialLoad = privacyPolicy || adminApp;
-    waitForPartialLoad ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded(isOldNav);
+    waitForPartialLoad ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded();
   }
 };
 

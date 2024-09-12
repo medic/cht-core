@@ -17,7 +17,7 @@ const deliveryReport = require('@page-objects/default/enketo/default-delivery-re
 const sentinelUtils = require('@utils/sentinel');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
-describe.skip('Contact Delivery Form', () => {
+describe('Contact Delivery Form', () => {
   const BABY_NAME = 'Benja';
   const BABY_DOB = moment().format('YYYY-MM-DD');
   const BABY_SEX = 'male';

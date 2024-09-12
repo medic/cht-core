@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects//default/sms/messages.wdio.page');
 
-describe.skip('Send message', () => {
+describe('Send message', () => {
   const rawNumber = '+50683858585';
   const anotherRawNumber = '+50689232323';
   const places = placeFactory.generateHierarchy();
