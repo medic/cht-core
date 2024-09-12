@@ -24,6 +24,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -36,6 +37,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private listContains;
   private destroyed?: boolean;
   private isOnlineOnly?: boolean;
+  readonly buttonType = ButtonType;
 
   fastActionList?: FastAction[];
   contactsList;
