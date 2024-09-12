@@ -56,6 +56,7 @@
     .header .tabs .selected {
       background-color: @messages-color;
     }
+
     .page {
       top: @top-without-filter;
     }
@@ -67,12 +68,6 @@
     position: relative;
     display: block;
     padding-top: 5px;
-
-    .mm-icon {
-      margin: 0 auto;
-      font-size: 1.5rem;
-    }
-
     .inner {
       height: @top-navbar-height;
     }
@@ -88,13 +83,16 @@
 
     .mm-icon {
       margin: 0 auto;
-      font-size: @font-extra-large;
+      :before {
+        font-size: @font-extra-extra-large;
+      }
     }
 
     a {
       .button-text-inverse(@nav-icon-gray);
       outline: 0;
-      padding-top: 3px;
+      padding-top: 6px;
+
       &:hover, &:active, &:focus {
         text-decoration: none;
       }
@@ -121,7 +119,8 @@
         }
 
         .button-label {
-          font-size: @font-XXS;
+          font-size: @font-small;
+          color: @button-text-inverse-color;
         }
 
         &.selected {
@@ -137,12 +136,10 @@
     .extras {
       float: right;
       padding-right: 5px;
-
       a {
         width: @header-bar-extras;
         margin-top: 10px;
         border-radius: @radius-size @radius-size 0 0;
-
         .mm-icon {
           width: inherit;
         }
@@ -154,7 +151,6 @@
 
       .open > a {
         background-color: @white;
-
         .mm-icon {
           color: @top-header-color;
         }
@@ -164,7 +160,6 @@
     .extras,
     .tabs {
       height: 100%;
-
       a {
         height: 100%;
         display: inline-block;
@@ -240,6 +235,7 @@
     &, &:focus {
       .button-text;
     }
+
     &:hover, &.active {
       .button-text-hover;
     }
@@ -281,6 +277,9 @@
         padding: 0;
         a {
           min-width: 40px;
+          .button-label {
+            font-size: @font-XXXS;
+          }
         }
       }
 
@@ -293,12 +292,17 @@
         top: 8px;
         right: 5px;
       }
+
       .extras a {
         padding-top: 2px;
         margin-top: 2px;
         .fa-bars {
           font-size: @font-extra-extra-large;
         }
+      }
+
+      #header-dropdown-link {
+        padding-top: 6px;
       }
     }
 
@@ -339,9 +343,15 @@
         // Use bigger font when there are 4 or less tabs.
         .elements-label(a, button-label, 4, @font-extra-small);
       }
+
       .mm-badge-overlay {
-        right: 10%;
+        right: 0;
       }
+
+      .mm-badge-overlay-top {
+        top: -8px;
+      }
+
       .inner {
         height: @top-navbar-height;
       }
