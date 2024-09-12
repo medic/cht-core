@@ -8,10 +8,6 @@ describe('Content Security Policy', () => {
     await loginPage.cookieLogin();
   });
 
-  after(async () => {
-    await commonPage.logout();
-  });
-
   // If this test fails, you've probably changed the inline telemetry script
   // If the change is intentional, take the hash recommended in this error and replace the telemetry hash in the
   // API helmet configuration
