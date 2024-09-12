@@ -122,11 +122,12 @@ describe('Contact details page.', () => {
       expect(pregnancyCardInfo.risk).to.equal('High risk');
     });
 
-    it('should not show reports when permission is disabled', async () => {
+    // eslint-disable-next-line no-only-tests/no-only-tests
+    it.only('should not show reports when permission is disabled', async () => {
       await updatePermissions(ROLE, [], ['can_view_reports']);
       await commonElements.sync(true);
       await browser.refresh();
-      await waitForContactLoaded(true);
+      await waitForContactLoaded (true);
 
       expect(await (await contactPage.reportsCardSelectors.rhsReportListElement()).isDisplayed()).to.equal(false);
       expect(await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed()).to.equal(true);

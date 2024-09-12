@@ -2,7 +2,11 @@ const modalPage = require('./modal.wdio.page');
 const constants = require('@constants');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
 
-const hamburgerMenu = () => $('#header-dropdown-link');
+// Ani's changes
+//const hamburgerMenu = () => $('#header-dropdown-link');
+const hamburgerMenu = () => $('aria/Application menu');
+const closeSideBarMenu = () => $('.panel-header-close');
+
 const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
 const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
@@ -16,7 +20,11 @@ const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-ite
 const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
-const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
+
+// Ani's changes
+// const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
+const syncButton = () => $('aria/Sync now');
+
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const taskTab = () => $('#tasks-tab');
@@ -25,7 +33,11 @@ const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
-const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+
+// Ani's changes
+// const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncSuccess = () => $('aria/All reports synced');
+
 const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
@@ -61,7 +73,8 @@ const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 const errorLog = () => $(`error-log`);
 
 const isHamburgerMenuOpen = async () => {
-  return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+  //return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+  return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
 };
 
 const openMoreOptionsMenu = async () => {
@@ -200,8 +213,11 @@ const openHamburgerMenu = async () => {
 
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
-    await (await hamburgerMenu()).waitForClickable();
-    await (await hamburgerMenu()).click();
+    // Ani's changes
+    /*await (await hamburgerMenu()).waitForClickable();
+    await (await hamburgerMenu()).click();*/
+    await (await closeSideBarMenu()).waitForClickable();
+    await (await closeSideBarMenu()).click();
   }
 };
 
@@ -322,8 +338,11 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
-const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+const waitForAngularLoaded = async (/*timeout = 40000*/) => {
+  // Comment this because we don't have the hamburger menu yet,
+  // until tha is changed we are going to add an explicit wait here instead
+  // await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+  await browser.pause(2000);
 };
 
 const waitForPageLoaded = async () => {
@@ -344,12 +363,15 @@ const syncAndNotWaitForSuccess = async () => {
 
 const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
+  await (await syncButton()).waitForClickable();
   await (await syncButton()).click();
   await openHamburgerMenu();
   if (await (await syncInProgress()).isExisting()) {
     await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   }
   await (await syncSuccess()).waitForDisplayed({ timeout });
+  // Ani's changes
+  await closeHamburgerMenu();
 };
 
 const hideModalOverlay = () => {
@@ -376,7 +398,6 @@ const sync = async (expectReload, timeout) => {
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess(timeout);
-  await closeHamburgerMenu();
 };
 
 const syncAndWaitForFailure = async () => {
