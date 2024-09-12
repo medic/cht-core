@@ -29,26 +29,26 @@
 body {
   overflow-y: hidden;
   .app-root {
-    &.messages .filters {
+    &.messages .tool-bar {
       background-color: @messages-color;
     }
-    &.tasks .filters {
+    &.tasks .tool-bar {
       background-color: @tasks-color;
     }
-    &.reports .filters {
+    &.reports .tool-bar {
       background-color: @reports-color;
     }
-    &.analytics .filters {
+    &.analytics .tool-bar {
       background-color: @analytics-color;
     }
-    &.contacts .filters {
+    &.contacts .tool-bar {
       background-color: @contacts-color;
     }
-    &.user .filters {
+    &.user .tool-bar {
       background-color: @admin-color;
     }
-    &.error .filters,
-    &testing .filters {
+    &.error .tool-bar,
+    &testing .tool-bar {
       background-color: @error-color;
     }
 
@@ -56,17 +56,15 @@ body {
     &.testing,
     &.user,
     &.privacy-policy {
-      .filters {
+      .tool-bar {
         background-color: @top-header-color;
 
         .tab-title {
-          color: @white;
+          color: @text-inverse-color;
         }
 
-        .app-menu-button .mat-icon[fonticon="fa-bars"] {
-          &:before {
-            color: @white;
-          }
+        .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
+          color: @text-inverse-color;
         }
       }
       .partners > h3 {
@@ -97,7 +95,6 @@ body {
 
 .row .inner {
   max-width: @content-width;
-  margin: 0 auto;
 }
 
 .app-root:not(.old-nav) mm-header {
@@ -213,16 +210,18 @@ body {
   }
 }
 
-.filters {
-  height: @filters-bar-desktop-height;
+.tool-bar {
+  display: flex;
+  height: @toolbar-desktop-height;
   white-space: nowrap;
   padding: 5px 0;
   width: 100vw;
 
   .tab-title {
     display: inline-block;
-    line-height: 26px;
     color: @filter-text-color;
+    font-size: @font-XXXL;
+    padding-left: 15px;
   }
 
   .navigation {
@@ -235,7 +234,7 @@ body {
       display: inline-block;
       text-align: center;
       color: @filter-text-color;
-      font-size: @font-extra-extra-large;
+      font-size: @font-XXL;
       float: left;
       width: 50px;
       line-height: 38px;
@@ -358,7 +357,7 @@ body {
   }
 }
 
-.analytics .filters {
+.analytics .tool-bar {
   width: 100vw;
   .analytics-module {
     margin-left: 4px;
@@ -384,7 +383,7 @@ mm-analytics-filters {
 
 .content {
   .page {
-    top: @filters-bar-desktop-height;
+    top: @toolbar-desktop-height;
     bottom: 0;
     position: absolute;
     width: 100%;
@@ -424,7 +423,7 @@ mm-analytics-filters {
   text-align: center;
   color: #c2c2c2;
   text-shadow: 1px 1px 4px rgba(255, 255, 255, 1);
-  font-size: @font-extra-extra-large;
+  font-size: @font-XXL;
 
   > div {
     display: flex;
@@ -941,7 +940,7 @@ mm-fast-action-button.mobile-only {
       }
     }
   }
-  .filters {
+  .tool-bar {
     .inner {
       max-width: @content-width;
     }
@@ -1053,14 +1052,14 @@ mm-search-bar {
 .more-options-menu-container .mat-icon[fonticon="fa-ellipsis-v"] {
   height: 24px;
   &:before {
-    font-size: @font-extra-extra-large;
+    font-size: @font-XXL;
   }
 }
 
 .app-menu-button .mat-icon[fonticon="fa-bars"] {
   height: 26px;
   &:before {
-    font-size: @font-extra-extra-large;
+    font-size: @font-XXL;
     color: @filter-text-color;
   }
 }
@@ -1102,49 +1101,52 @@ mm-search-bar {
   }
 }
 
-.filters.tab-bar .inner {
+.tool-bar .inner {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   flex-direction: row-reverse;
+  width: 100vw;
 
   mm-search-bar,
   contacts-filters,
   reports-filters {
     flex-grow: 2;
-    padding-left: 30px;
   }
 
   .app-menu-button {
     order: 4;
+    min-width: 80px;
   }
+
   .tab-title {
     order: 3;
     min-width: 30vw;
   }
+
   mm-search-bar {
     order: 2;
   }
+
   mm-reports-more-menu {
     order: 1;
   }
+
+  mm-messages-more-menu {
+    display: flex;
+    flex-grow: 2;
+    justify-content: flex-end;
+  }
+
   .mat-icon-filter {
     margin-right: 10px;
-    width: 20px;
+    width: @icon-extra-small;
     color: @filter-icon-color;
   }
 }
 
-.app-root {
-  &.sidebar-filter-active {
-    .filters.tab-bar {
-      .inner {
-        .tab-title {
-          min-width: 22vw;
-        }
-      }
-    }
-  }
+.app-root.sidebar-filter-active .tool-bar .inner .tab-title {
+  min-width: 22vw;
 }
 
 .fast-action-trigger {
@@ -1208,7 +1210,7 @@ mm-search-bar {
 
       mat-icon:before {
         color: @mm-mat-primary;
-        font-size: @font-extra-extra-large;
+        font-size: @font-XXL;
       }
 
       .resource-icon {
@@ -1375,10 +1377,8 @@ mm-sidebar-menu .mat-sidenav-container {
       .loading-status {
         margin: 10px 10px calc(@bottom-navbar-height + 10px);
       }
-      &.show-content {
-        .loading-status {
-          margin-bottom: 10px;
-        }
+      &.show-content .loading-status {
+        margin-bottom: 10px;
       }
     }
     mm-header {
@@ -1414,12 +1414,8 @@ mm-sidebar-menu .mat-sidenav-container {
     }
 
     &.select-mode {
-      mm-header {
-        display: none;
-      }
-      .app-menu-button {
-        display: none;
-      }
+      mm-header,
+      .app-menu-button,
       .tab-title {
         display: none;
       }
@@ -1469,14 +1465,17 @@ mm-sidebar-menu .mat-sidenav-container {
   .contacts h4 {
     padding-left: 0;
   }
-  .filters {
-    height: @filters-bar-mobile-height;
+  .tool-bar {
+    height: @toolbar-mobile-height;
     padding: 0;
+    display: block;
+    .app-menu-button {
+      min-width: 0;
+    }
     .navigation {
-      display: inline-block;
       .mat-icon-close {
-        width: 17px;
-        height: 17px;
+        width: @icon-XXS;
+        height: @icon-XXS;
         overflow: initial;
       }
     }
@@ -1504,7 +1503,7 @@ mm-sidebar-menu .mat-sidenav-container {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      width: calc(100vw - 100px); // Give space to "more options" menu
+      width: calc(@content-width - @tab-title-right-margin); // Give space to "more options" menu
       text-align: left;
       color: @filter-text-color;
     }
@@ -1539,12 +1538,12 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  .analytics:not(.show-content) .filters {
+  .analytics:not(.show-content) .tool-bar {
     display: flex;
     align-items: center;
   }
 
-  .analytics.show-content .filters {
+  .analytics.show-content .tool-bar {
     .navigation {
       position: relative;
       display: block;
@@ -1563,7 +1562,7 @@ mm-sidebar-menu .mat-sidenav-container {
   }
   .content {
     .page {
-      top: @filters-bar-mobile-height;
+      top: @toolbar-mobile-height;
       z-index: initial;
     }
     .meta {
@@ -1621,6 +1620,8 @@ mm-sidebar-menu .mat-sidenav-container {
 
   .app-root.show-content {
     .header,
+    .app-menu-button,
+    .tab-title,
     mm-analytics-filters,
     mm-multiselect-bar,
     mm-search-bar {
@@ -1650,14 +1651,11 @@ mm-sidebar-menu .mat-sidenav-container {
     .filters.tab-bar .inner {
       flex-direction: initial;
     }
-    .app-menu-button {
-      display: none;
-    }
-    .tab-title {
-      display: none;
-    }
-    .filters.tab-bar .inner {
+    .tool-bar .inner {
       flex-direction: initial;
+      .navigation {
+        display: inline-block;
+      }
     }
   }
 
@@ -1742,7 +1740,10 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  .filters.tab-bar .inner {
+  .tool-bar .inner {
+    .app-menu-button {
+      min-width: initial;
+    }
     mm-search-bar.search-open {
       width: 100%;
       padding-left: 5px;
@@ -1755,15 +1756,15 @@ mm-sidebar-menu .mat-sidenav-container {
 
     .tab-title {
       text-overflow: ellipsis;
-      width: calc(100vw - 100px);
+      width: calc(@content-width - @tab-title-right-margin);
       padding-left: 4px;
+      font-size: @font-extra-large;
     }
   }
 
   .app-root.about,
   .app-root.testing {
     .page {
-      top: 55px;
       margin-bottom: calc(@bottom-navbar-height + 10px);
     }
   }
@@ -1773,14 +1774,14 @@ mm-sidebar-menu .mat-sidenav-container {
   .logo {
     display: none;
   }
-  .filters .filter {
+  .tool-bar .filter {
     width: 17%;
   }
   .right-side-filter {
     padding-right: 6px;
   }
   .content .page {
-    top: @filters-bar-mobile-height;
+    top: @toolbar-mobile-height;
   }
   .mobile-only {
     display: initial;

@@ -53,12 +53,14 @@
   &.about,
   &.testing,
   &.privacy-policy {
-    .filters {
+    .tool-bar {
       height: 0;
     }
+
     .header .tabs .selected {
       background-color: @messages-color;
     }
+
     .content {
       .page {
         top: @top-without-filter;
@@ -92,7 +94,7 @@
       .mm-badge-overlay {
         right: 3%;
       }
-      
+
       :before {
         font-size: @font-extra-extra-large;
       }
@@ -241,7 +243,7 @@
 
   .content {
     .page {
-      top: 123px;
+      top: @old-nav-top-desktop-height;
     }
   }
 
@@ -265,37 +267,35 @@
     margin: 10px;
   }
 
-  .filters .inner {
-    .navigation a {
-      color: @text-normal-color;
-    }
-    .tab-title {
-      display: none;
-    }
-    mm-search-bar {
-      padding-left: 5px;
-      .fa {
-        color: @gray-ultra-dark;
-      }
-      .fa-sliders {
-        display: initial;
-      }
-      .mm-search-bar-container {
-        justify-content: flex-end;
-      }
-    }
-    .right-side-filter {
-      .fa-sliders {
-        display: initial;
-      }
-    }
+  .tool-bar {
+    height: @old-nav-filters-bar-height;
 
-    .btn.open-filter {
-      display: initial;
+    .inner {
+      .navigation a {
+        color: @text-normal-color;
+      }
+
+      .tab-title {
+        display: none;
+      }
+
+      mm-search-bar {
+        padding-left: 5px;
+        .fa {
+          color: @gray-ultra-dark;
+        }
+
+        .mm-search-bar-container {
+          justify-content: flex-end;
+        }
+      }
+       mm-messages-more-menu {
+        display: initial;
+      }
     }
   }
 
-  &.analytics .filters.tab-bar .inner {
+  &.analytics .tool-bar .inner {
     display: initial;
   }
 
@@ -320,9 +320,6 @@
     }
   }
 
-  .mat-icon-filter {
-    display: none;
-  }
   .mm-navigation-menu {
     display: block;
   }
@@ -371,10 +368,9 @@
       }
 
       .extras a {
-        padding-top: 2px;
         margin-top: 2px;
         .fa-bars {
-          font-size: @font-extra-extra-large;
+          font-size: @font-XXL;
         }
       }
 
@@ -383,13 +379,17 @@
       }
     }
 
-    .filters .ellipsis-title {
-      color: @text-normal-color;
+    .tool-bar {
+      height: @toolbar-mobile-height;
+
+      .ellipsis-title {
+        color: @text-normal-color;
+      }
     }
 
     .content {
       .page {
-        top: 115px;
+        top: @old-nav-top-mobile-height;
         z-index: initial;
       }
     }
