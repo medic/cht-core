@@ -122,8 +122,7 @@ describe('Contact details page.', () => {
       expect(pregnancyCardInfo.risk).to.equal('High risk');
     });
 
-    // eslint-disable-next-line no-only-tests/no-only-tests
-    it.only('should not show reports when permission is disabled', async () => {
+    it('should not show reports when permission is disabled', async () => {
       await updatePermissions(ROLE, [], ['can_view_reports']);
       await commonElements.sync(true);
       await browser.refresh();

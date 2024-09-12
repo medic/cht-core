@@ -365,6 +365,10 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).waitForClickable();
   await (await syncButton()).click();
+  //needs to be removed
+  await hideModalOverlay();
+  await browser.pause(5000);
+
   await openHamburgerMenu();
   if (await (await syncInProgress()).isExisting()) {
     await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
