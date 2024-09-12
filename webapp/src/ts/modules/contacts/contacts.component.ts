@@ -518,10 +518,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  getFastActionButtonType() {
-    return this.fastActionButtonService.getButtonTypeForContentList();
-  }
-
   exportContacts() {
     this.exportService.export('contacts', this.filters, { humanReadable: true });
   }
