@@ -64,6 +64,8 @@ export class FormService {
     this.servicesActions = new ServicesActions(this.store);
   }
 
+  LIMIT_SELECT_ALL_REPORTS = 500;
+
   private globalActions: GlobalActions;
   private servicesActions: ServicesActions;
 
@@ -132,7 +134,11 @@ export class FormService {
     if (shortCode) {
       subjectIds.push(shortCode);
     }
-    return this.searchService.search('reports', { subjectIds: subjectIds }, { include_docs: true });
+    return this.searchService.search(
+      'reports',
+      { subjectIds: subjectIds },
+      { include_docs: true, limit: this.LIMIT_SELECT_ALL_REPORTS }
+    );
   }
 
   private getTargetDocs(contact) {

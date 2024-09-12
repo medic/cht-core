@@ -384,8 +384,11 @@ describe('Form service', () => {
         const xmlStr = new XMLSerializer().serializeToString(summary.xml);
         expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
         expect(Search.callCount).to.equal(1);
-        expect(Search.args[0][0]).to.equal('reports');
-        expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
+        expect(Search.args[0]).to.deep.equal([
+          'reports',
+          { subjectIds: ['fffff', '44509'] },
+          { include_docs: true, limit: 500 }
+        ]);
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);
