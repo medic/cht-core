@@ -24,6 +24,7 @@ describe('Contact Page | List View (Access)', () => {
     user: true,
     nbrClinics: 10,
     nbrPersons: 4,
+    useRealNames: true,
   });
 
   before(async () => {
@@ -105,7 +106,7 @@ describe('Contact Page | List View (Access)', () => {
       await (await commonPage.contactsButton()).waitForClickable();
       await generateScreenshot('ContactPage', 'MenuOptionVisible');
       await (await commonPage.contactsButton()).click();
-      expect(await commonPage.isPeopleListPresent()).to.be.true;;
+      expect(await commonPage.isPeopleListPresent()).to.be.true;
       await commonPage.waitForPageLoaded();
       await generateScreenshot('ContactPage', 'ContactsInPeopleList');
       await commonPage.goToReports();

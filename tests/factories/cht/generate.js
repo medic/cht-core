@@ -5,10 +5,15 @@ const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 
-// Define fixed lists
-const firstNames = ['Alice', 'Bob', 'Charlie', 'David', 'Eva', 'Frank', 'Grace', 'Hannah', 'Ivy', 'Jack'];
-const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
-const phoneNumbers = ['+256414345783', '+256414345784', '+256414345785', '+256414345786', '+256414345787', '+256414345788', '+256414345789', '+256414345790', '+256414345791', '+256414345792'];
+// Fixed lists for real-world names
+const firstNames = ['Amanda', 'Beatrice', 'Dana', 'Fatima', 'Gina', 'Helen', 'Isabelle', 'Jessica', 'Ivy', 'Sara'];
+const lastNames = ['Allen', 'Bass', 'Dearborn', 'Flair', 'Gorman', 'Hamburg', 'Ivanas', 'James', 'Moore', 'Taylor'];
+const phoneNumbers = [
+  '+256414345783', '+256414345784', '+256414345785',
+  '+256414345786', '+256414345787', '+256414345788',
+  '+256414345789', '+256414345790', '+256414345791',
+  '+256414345792'
+];
 
 const getReportContext = (patient, submitter) => {
   const context = {
@@ -27,7 +32,32 @@ const getReportContext = (patient, submitter) => {
   return context;
 };
 
-const createData = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
+const createDataWithFixedNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
+  const clinics = Array.from({ length: nbrClinics }).map((_, idx) => placeFactory.place().build({
+    type: 'clinic',
+    parent: { _id: healthCenter._id, parent: healthCenter.parent },
+    name: `clinic_${idx}`
+  }));
+
+  const persons = [
+    ...clinics.map(clinic => Array.from({ length: nbrPersons }).map((_, idx) => personFactory.build({
+      parent: { _id: clinic._id, parent: clinic.parent },
+      name: `person_${clinic.name}_${idx}`,
+    }))),
+  ].flat();
+
+  const reports = [
+    ...persons.map(person => [
+      deliveryFactory.build(getReportContext(person, user)),
+      pregnancyFactory.build(getReportContext(person, user)),
+      pregnancyVisitFactory.build(getReportContext(person, user)),
+    ]),
+  ].flat();
+
+  return { clinics, reports, persons };
+};
+
+const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
   const clinics = Array.from({ length: nbrClinics }).map((_, index) => {
     const firstName = firstNames[index % firstNames.length];
     const lastName = lastNames[index % lastNames.length];
@@ -59,7 +89,6 @@ const createData = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) =>
     return { clinic, primaryPerson };
   });
 
-  // Create additional persons for each clinic (excluding the primary contact)
   const persons = clinics.flatMap(({ clinic }) => Array.from({ length: nbrPersons - 1 }).map((_, index) => {
     const additionalPersonName = `${firstNames[index % firstNames.length]} ${lastNames[index % lastNames.length]}`;
     const additionalPhoneNumber = phoneNumbers[index % phoneNumbers.length];
@@ -71,34 +100,31 @@ const createData = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) =>
     });
   }));
 
-  // Include the primary contacts in the persons list
   const allPersons = [
     ...clinics.map(({ primaryPerson }) => primaryPerson),
     ...persons
   ];
 
-  // Generate reports for each person
   const reports = allPersons.flatMap(person => [
     deliveryFactory.build(getReportContext(person, user)),
     pregnancyFactory.build(getReportContext(person, user)),
     pregnancyVisitFactory.build(getReportContext(person, user)),
   ]);
 
-  // Extract clinic objects separately
   const clinicList = clinics.map(({ clinic }) => clinic);
 
   return { clinics: clinicList, reports, persons: allPersons };
 };
 
-const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10 }) => {
+const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames = false }) => {
+  const createDataFunc = useRealNames ? createDataWithRealNames : createDataWithFixedNames;
+  return createDataFunc({ healthCenter, user, nbrClinics, nbrPersons });
+};
+
+const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10, useRealNames = false }) => {
   const hierarchy = placeFactory.generateHierarchy();
   const healthCenter = hierarchy.get('health_center');
-  const contact = {
-    _id: 'fixture:user:user1',
-    name: `${name}`,
-    phone: '+12068881234'
-  };
-  user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: contact });
+  user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'] });
 
   const places = [...hierarchy.values()].map(place => {
     place.name = `${name} ${place.type}`;
@@ -106,8 +132,7 @@ const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10 
   });
 
   healthCenter.name = `${name}'s Area`;
-  healthCenter.contact = contact;
-  const { clinics, reports, persons } = createData({ healthCenter, nbrClinics, nbrPersons, user });
+  const { clinics, reports, persons } = createData({ healthCenter, nbrClinics, nbrPersons, user, useRealNames });
 
   return {
     user,
