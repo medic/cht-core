@@ -1,10 +1,12 @@
 function(doc) {
+  var emitCaseId = function(value, order) {
+    emit(['case_id:' + value], order);
+  };
+
   var emitField = function(key, value, order) {
     if (!key || !value) {
       return;
     }
-
-    key = key.toLowerCase();
 
     if (typeof value === 'string') {
       value = value.toLowerCase();
@@ -15,10 +17,6 @@ function(doc) {
 
         emit([word], order);
       });
-    }
-
-    if (typeof value === 'number' || typeof value === 'string') {
-      emit([key + ':' + value], order); // TODO: only `case_id`
     }
   };
 
@@ -42,5 +40,6 @@ function(doc) {
     include.forEach(function(key) {
       emitField(key, doc[key], order);
     });
+    emitCaseId(doc.case_id, order);
   }
 }
