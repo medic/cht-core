@@ -1,6 +1,13 @@
 function(doc) {
-  var emitCaseId = function(value, order) {
-    emit(['case_id:' + value], order);
+  var usedKeys = [];
+  var emitMaybe = function(key, value) {
+    if (
+      usedKeys.indexOf(key) === -1 && // Not already used
+      key.length > 2 // Not too short
+    ) {
+      usedKeys.push(key);
+      emit([key], value);
+    }
   };
 
   var emitField = function(key, value, order) {
@@ -11,11 +18,7 @@ function(doc) {
     if (typeof value === 'string') {
       value = value.toLowerCase();
       value.split(/\s+/).forEach(function(word) {
-        if (word.length <= 2) {
-          return;
-        }
-
-        emit([word], order);
+        emitMaybe(word, order);
       });
     }
   };
@@ -42,6 +45,6 @@ function(doc) {
     include.forEach(function(key) {
       emitField(key, doc[key], order);
     });
-    emitCaseId(doc.case_id, order);
+    emitMaybe('case_id:' + doc.case_id, order);
   }
 }
