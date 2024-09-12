@@ -11,7 +11,7 @@ describe.skip('Navigation tests', () => {
     });
 
     after(async () => {
-      await commonPage.logout();
+      await browser.deleteCookies();
     });
 
     it('should open Messages tab', async () => {
@@ -50,8 +50,9 @@ describe.skip('Navigation tests', () => {
       before(async () => {
         await loginPage.cookieLogin();
       });
+
       after(async () => {
-        await commonPage.logout();
+        await browser.deleteCookies();
       });
 
       it('should display tab labels, when all tabs are enabled', async () => {
