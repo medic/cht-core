@@ -20,7 +20,7 @@ function(doc) {
     }
   };
 
-  var include = ['name', 'external_id', 'notes']; // TODO: add the other fields
+  var include = ['name', 'case_id', 'place_id', 'patient_id', 'external_id', 'house_number', 'notes'];
   var types = ['district_hospital', 'health_center', 'clinic', 'person'];
   var idx;
   if (doc.type === 'contact') {
