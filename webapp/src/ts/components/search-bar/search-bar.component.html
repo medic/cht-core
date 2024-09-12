@@ -14,7 +14,6 @@
   </mm-sort-filter>
 
   <button class="btn open-filter" *ngIf="showFilter" (click)="toggleFilter.emit()">
-    <span class="fa fa-sliders"></span>
     <mat-icon class="mat-icon-filter" svgIcon="icon-filter"></mat-icon>
     <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
     <span class="filter-counter" *ngIf="activeFilters">{{ activeFilters.toString() | translate }}</span>

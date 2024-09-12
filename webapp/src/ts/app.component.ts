@@ -97,10 +97,10 @@ export class AppComponent implements OnInit, AfterViewInit {
   hasOldNav = false;
   initialisationComplete = false;
   trainingCardFormId = '';
-  private readonly SVG_ICONS = {
-    'icon-close': './img/icon-close.svg',
-    'icon-filter': './img/icon-filter.svg'
-  };
+  private readonly SVG_ICONS = new Map([
+    ['icon-close', './img/icon-close.svg'],
+    ['icon-filter', './img/icon-filter.svg'],
+  ]);
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -166,11 +166,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   private registerMaterialIcons() {
     this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
     this.matIconRegistry.setDefaultFontSetClass('fa');
-    this.registerSvgIcons();
-  }
 
-  private registerSvgIcons() {
-    Object.entries(this.SVG_ICONS).forEach(([iconName, iconPath]) => {
+    this.SVG_ICONS.forEach((iconPath, iconName) => {
       const iconUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(iconPath);
       this.matIconRegistry.addSvgIcon(iconName, iconUrl);
     });

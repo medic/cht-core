@@ -9,8 +9,7 @@ import { GlobalActions } from '@mm-actions/global';
 })
 export class ToolBarComponent {
   private globalActions: GlobalActions;
-  @Input() title?: string;
-  @Input() cssClasses?: string[];
+  @Input() title: string = '';
 
   constructor(
     private store: Store,

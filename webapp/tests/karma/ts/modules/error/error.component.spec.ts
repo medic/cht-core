@@ -51,7 +51,7 @@ describe('ErrorComponent', () => {
       })
       .overrideComponent(ErrorComponent, {
         set: {
-          template: `<div></div>`
+          template: '<div></div>'
         }
       })
       .compileComponents();
