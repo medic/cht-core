@@ -258,17 +258,16 @@
 
 @media (max-width: @media-mobile) {
   .app-root.old-nav {
-    .inner {
-      display: flex;
-      justify-content: space-between;
-      width: 100vw;
-      flex-direction: row-reverse;
-      flex-wrap: nowrap;
-    }
-
     .header {
       background-color: @top-header-color;
       position: relative;
+      .inner {
+        display: flex;
+        justify-content: space-between;
+        width: 100vw;
+        flex-direction: row-reverse;
+        flex-wrap: nowrap;
+      }
 
       .tabs {
         display: flex;
