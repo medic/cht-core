@@ -127,7 +127,7 @@ describe('Contact details page.', () => {
       await updatePermissions(ROLE, [], ['can_view_reports']);
       await commonElements.sync(true);
       await browser.refresh();
-      await waitForContactLoaded (true);
+      await waitForContactLoaded(true);
 
       expect(await (await contactPage.reportsCardSelectors.rhsReportListElement()).isDisplayed()).to.equal(false);
       expect(await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed()).to.equal(true);
