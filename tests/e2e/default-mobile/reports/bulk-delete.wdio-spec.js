@@ -83,6 +83,8 @@ describe('Bulk delete reports', () => {
   });
 
   it('should open a selected report and a no selected report', async () => {
+    await commonElements.goToReports();
+
     const selectOne = await reportsPage.selectReports([ savedUuids[0] ]);
     expect(selectOne.countLabel).to.equal('1');
     expect(selectOne.selectedCount).to.equal(1);
