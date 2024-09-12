@@ -50,7 +50,6 @@ const mobileTopBarTitle = () => $(`${MOBILE_FILTER_TOP_BAR} .ellipsis-title`);
 const USER_SETTINGS = 'aria/User settings';
 const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
-const FEEDBACK_MENU = 'aria/Report bug';
 const feedbackMenuOption = () => $('aria/Report bug');
 const FEEDBACK = '#feedback';
 //About menu

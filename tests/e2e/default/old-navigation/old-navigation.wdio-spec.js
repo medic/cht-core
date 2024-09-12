@@ -3,7 +3,6 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
-const loginPage = require('@page-objects/default/login/login.wdio.page');
 const oldNavigationPage = require('@page-objects/default/old-navigation/old-navigation.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
