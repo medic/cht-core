@@ -29,10 +29,8 @@ const resizeWindowForScreenshots = async () => {
 const generateScreenshot = async (scenario, step) => {
   const isCI = process.env.CI === 'true';
   if (!isCI) {
-    // Determine the device type
     const device = await isMobile() ? 'mobile' : 'desktop';
 
-    // Construct the filename
     const filename = `./${scenario}_${step}_${device}.png`;
 
     const fullScreenshotBuffer = Buffer.from(await browser.takeScreenshot(), 'base64');
@@ -40,11 +38,9 @@ const generateScreenshot = async (scenario, step) => {
     let extractHeight;
     let screenshotSharp = sharp(fullScreenshotBuffer);
 
-    // Get the metadata of the screenshot
     const metadata = await screenshotSharp.metadata();
 
     if (await isMobile()) {
-      // Ensure we don't extract more than the actual image size
       extractWidth = Math.min(MOBILE_WIDTH, metadata.width);
       extractHeight = Math.min(MOBILE_HEIGHT, metadata.height);
       screenshotSharp = screenshotSharp.extract({
@@ -61,7 +57,6 @@ const generateScreenshot = async (scenario, step) => {
     // Resize the image to 2x for high-density displays
     screenshotSharp = screenshotSharp.resize(extractWidth * 2, extractHeight * 2);
 
-    // Save the resized image
     await screenshotSharp.toFile(filename);
   }
 };
