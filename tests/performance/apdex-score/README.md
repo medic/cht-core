@@ -3,10 +3,10 @@
 ## Setup
 
 1. Enable the developer mode in your phone and enable the USB Debugger mode.
-   - ensure your device does not have a lock screen pin/passcode
-2. Connect your phone to the computer using the appropriate device cable or you can follow [these steps](https://developer.android.com/studio/run/device#wireless) to connect your device using Wi-Fi. 
-   - run `adb devices` command to see your connected device listed as one of the devices attached
-3. Create a settings file or reuse one of the [sample settings](tests/performance/apdex-score/sample-settings-files) files
+   - Ensure your device does not have a lock screen PIN/Passcode.
+2. Connect your phone to the computer using the appropriate device cable or you can follow [these steps](https://developer.android.com/studio/run/device#wireless) to connect your device using Wi-Fi.
+   - Run the `adb devices` command to confirm that your device is listed among the attached devices.
+3. Create a settings file or reuse one of the provided [sample settings](tests/performance/apdex-score/sample-settings-files) files.
 
 <details> <summary>Expand to see settings file structure </summary>
 
@@ -217,17 +217,16 @@
 </details>
 
 4. Set the environment variable `APDEX_TEST_SETTINGS` with the path of your settings file (apdex-settings.json).
-   - Ensure the apdex-settings.json file has been updated with the correct instance url, login credentials and assertion texts for page navigation, forms and other app interactions
-   - Under the skip section of the settings file, set `true` for tests you want to skip and `false` for the tests to be executed
-   - Update the fields for `platformVersion` and `deviceName` to match the value for your device
-     - Find the android version by running `adb shell getprop | grep ro.build.version.release`
-     - Find the device name by running `adb shell getprop | grep ro.product.model`
-5. Ensure all dependencies have been properly installed - run `npm ci` from the root directory 
-6. Run `npm run apdex-test` from the root directory to execute the selected tests
-
-```
-export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
-```
+    ```
+    export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
+    ```
+   - Ensure the `apdex-settings.json` file has been updated with the correct instance url, login credentials and assertion texts for page navigation, forms and other app interactions.
+   - Under the skip section of the settings file, set `true` for the tests you want to skip and `false` for those you want to execute.
+   - Update the fields for `platformVersion` and `deviceName` to match the value for your device.
+     - Find the android version by running `adb shell getprop | grep ro.build.version.release`.
+     - Find the device name by running `adb shell getprop | grep ro.product.model`.
+5. Ensure all dependencies have been properly installed - run `npm ci` from the root directory.
+6. Run `npm run apdex-test` from the root directory to execute the selected tests.
 
 ## Settings file
 
