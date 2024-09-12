@@ -27,40 +27,43 @@ const resizeWindowForScreenshots = async () => {
 };
 
 const generateScreenshot = async (scenario, step) => {
-  // Determine the device type
-  const device = await isMobile() ? 'mobile' : 'desktop';
+  const isCI = process.env.CI === 'true';
+  if (!isCI) {
+    // Determine the device type
+    const device = await isMobile() ? 'mobile' : 'desktop';
 
-  // Construct the filename
-  const filename = `./${scenario}_${step}_${device}.png`;
+    // Construct the filename
+    const filename = `./${scenario}_${step}_${device}.png`;
 
-  const fullScreenshotBuffer = Buffer.from(await browser.takeScreenshot(), 'base64');
-  let extractWidth;
-  let extractHeight;
-  let screenshotSharp = sharp(fullScreenshotBuffer);
+    const fullScreenshotBuffer = Buffer.from(await browser.takeScreenshot(), 'base64');
+    let extractWidth;
+    let extractHeight;
+    let screenshotSharp = sharp(fullScreenshotBuffer);
 
-  // Get the metadata of the screenshot
-  const metadata = await screenshotSharp.metadata();
+    // Get the metadata of the screenshot
+    const metadata = await screenshotSharp.metadata();
 
-  if (await isMobile()) {
-    // Ensure we don't extract more than the actual image size
-    extractWidth = Math.min(MOBILE_WIDTH, metadata.width);
-    extractHeight = Math.min(MOBILE_HEIGHT, metadata.height);
-    screenshotSharp = screenshotSharp.extract({
-      width: extractWidth,
-      height: extractHeight,
-      left: 0,
-      top: 0
-    });
-  } else {
-    extractWidth = Math.min(DESKTOP_WIDTH, metadata.width);
-    extractHeight = Math.min(DESKTOP_HEIGHT, metadata.height);
+    if (await isMobile()) {
+      // Ensure we don't extract more than the actual image size
+      extractWidth = Math.min(MOBILE_WIDTH, metadata.width);
+      extractHeight = Math.min(MOBILE_HEIGHT, metadata.height);
+      screenshotSharp = screenshotSharp.extract({
+        width: extractWidth,
+        height: extractHeight,
+        left: 0,
+        top: 0
+      });
+    } else {
+      extractWidth = Math.min(DESKTOP_WIDTH, metadata.width);
+      extractHeight = Math.min(DESKTOP_HEIGHT, metadata.height);
+    }
+
+    // Resize the image to 2x for high-density displays
+    screenshotSharp = screenshotSharp.resize(extractWidth * 2, extractHeight * 2);
+
+    // Save the resized image
+    await screenshotSharp.toFile(filename);
   }
-
-  // Resize the image to 2x for high-density displays
-  screenshotSharp = screenshotSharp.resize(extractWidth * 2, extractHeight * 2);
-
-  // Save the resized image
-  await screenshotSharp.toFile(filename);
 };
 
 module.exports = {

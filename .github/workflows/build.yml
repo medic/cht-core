@@ -90,7 +90,7 @@ jobs:
     name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -216,7 +216,7 @@ jobs:
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
-    
+
     env:
       CHROME_VERSION: ${{ matrix.chrome-version }}
       JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
@@ -298,6 +298,9 @@ jobs:
       run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: Install cht-conf
       run:  npm install -g cht-conf
+    - name: Print environment variables
+      run: |
+        echo "CI environment variable: $CI"
     - run: npm ci
     - name: Fetch allure history
       uses: actions/checkout@v4
@@ -376,7 +379,7 @@ jobs:
     name: Publish branch build
     runs-on: ubuntu-22.04
     timeout-minutes: 60
-    
+
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
