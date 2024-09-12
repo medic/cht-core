@@ -1,10 +1,13 @@
 function(doc) {
-  var include = [ 'patient_uuid', 'patient_name', 'form' ];
+  if (doc.type !== 'data_record' || !doc.form) {
+    return;
+  }
 
   var usedKeys = [];
   var emitMaybe = function(key, value) {
-    if (usedKeys.indexOf(key) === -1 && // Not already used
-        key.length > 2 // Not too short
+    if (
+      usedKeys.indexOf(key) === -1 && // Not already used
+      key.length > 2 // Not too short
     ) {
       usedKeys.push(key);
       emit([key], value);
@@ -15,34 +18,33 @@ function(doc) {
     if (!key || !value) {
       return;
     }
-    key = key.toLowerCase();
-    if (include.indexOf(key) === -1 || /_date$/.test(key)) {
-      return;
-    }
+
     if (typeof value === 'string') {
       value = value.toLowerCase();
       value.split(/\s+/).forEach(function(word) {
         emitMaybe(word, reportedDate);
       });
     }
-    if (typeof value === 'number' || typeof value === 'string') {
-      emitMaybe(key + ':' + value, reportedDate);
-    }
   };
 
-  if (doc.type === 'data_record' && doc.form) {
-    Object.keys(doc).forEach(function(key) {
-      if (include.includes(key)) {
-        emitField(key, doc[key], doc.reported_date);
-      }
-    });
+  var include = ['patient_id', 'patient_uuid', 'place_id', 'case_id', 'patient_name'];
+  include.forEach(function(key) {
+    emitField(key, doc[key], doc.reported_date);
+
     if (doc.fields) {
-      Object.keys(doc.fields).forEach(function(key) {
-        emitField(key, doc.fields[key], doc.reported_date);
-      });
+      emitField(key, doc.fields[key], doc.reported_date);
     }
-    if (doc.contact && doc.contact._id) {
-      emitMaybe('contact:' + doc.contact._id.toLowerCase(), doc.reported_date);
-    }
+  });
+
+  if (doc.contact && doc.contact._id) {
+    emitMaybe('contact:' + doc.contact._id.toLowerCase(), doc.reported_date);
+  }
+
+  if (doc.case_id) {
+    emitMaybe('case_id:' + doc.case_id, doc.reported_date);
+  }
+
+  if (doc.fields && doc.fields.case_id) {
+    emitMaybe('case_id:' + doc.fields.case_id, doc.reported_date);
   }
 }
