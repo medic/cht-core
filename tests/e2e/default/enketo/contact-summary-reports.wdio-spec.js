@@ -1,0 +1,50 @@
+const familyForm = require('@page-objects/default/enketo/add-family.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const utils = require('@utils');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const chtConfUtils = require('@utils/cht-conf');
+const path = require('path');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const reportsFactory = require('@factories/cht/reports/generic-report');
+
+describe('Contact summary', () => {
+
+  const places = placeFactory.generateHierarchy();
+  const clinic = places.get('clinic');
+  const patient = personFactory.build({
+    name: 'Patient',
+    phone: '+50683444444',
+    patient_id: '12345',
+    parent: { _id: clinic._id, parent: clinic.parent }
+  });
+  const reports = Array
+    .from({ length: 100 })
+    .map(() => reportsFactory.report().build(
+      { form: 'home_visit', content_type: 'xml' },
+      { patient }
+    ));
+
+  before(async () => {
+    await commonEnketoPage.uploadForm('contact-summary-reports');
+    await chtConfUtils.initializeConfigDir();
+    const contactSummaryFile = path.join(__dirname, 'config/contact-summary-reports.js');
+    const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+    await utils.updateSettings({ contact_summary: contactSummary }, true);
+
+    await utils.saveDocs([...places.values(), patient, ...reports]);
+
+    await cookieLogin();
+  });
+
+  it('should load all reports', async () => {
+    await commonPage.goToPeople(patient._id);
+    await browser.pause(5437854353);
+    await commonPage.openFastActionReport('contact-summary-reports', true);
+
+    expect(await commonEnketoPage.getInputValue('Number of reports')).to.equal(reports.length.toString());
+  });
+});

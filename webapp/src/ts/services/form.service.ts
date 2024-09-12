@@ -26,6 +26,7 @@ import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
+import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -58,13 +59,12 @@ export class FormService {
     private chtDatasourceService: CHTDatasourceService,
     private enketoService: EnketoService,
     private targetAggregatesService: TargetAggregatesService,
+    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
     this.servicesActions = new ServicesActions(this.store);
   }
-
-  LIMIT_SELECT_ALL_REPORTS = 500;
 
   private globalActions: GlobalActions;
   private servicesActions: ServicesActions;
@@ -129,16 +129,7 @@ export class FormService {
   }
 
   private getContactReports(contact) {
-    const subjectIds = [contact._id];
-    const shortCode = contact.patient_id || contact.place_id;
-    if (shortCode) {
-      subjectIds.push(shortCode);
-    }
-    return this.searchService.search(
-      'reports',
-      { subjectIds: subjectIds },
-      { include_docs: true, limit: this.LIMIT_SELECT_ALL_REPORTS }
-    );
+    return this.contactViewModelGeneratorService.loadReports({ doc: contact }, []);
   }
 
   private getTargetDocs(contact) {
