@@ -10,10 +10,6 @@ const hamburgerMenu = () => $('#header-dropdown-link');
 const syncInProgress = () => $('*="Currently syncing"');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const loaders = () => $$('.container-fluid .loader');
-const loginButton = () => $('#login');
-const userField = () => $('#user');
-const passwordField = () => $('#password');
-const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
 const goToMessages = async () => {
   await commonPage.goToUrl(`/#/messages`);
@@ -97,42 +93,6 @@ const sync = async (expectReload, timeout) => {
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess(timeout);
   await closeHamburgerMenu();
-};
-
-// eslint-disable-next-line max-len
-const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
-  if (utils.isMinimumChromeVersion) {
-    await browser.url('/');
-  }
-  await setPasswordValue(password);
-  await (await userField()).setValue(username);
-  await changeLocale(locale);
-  await (await loginButton()).click();
-
-  if (createUser) {
-    await browser.waitUntil(async () => {
-      const cookies = await browser.getCookies('userCtx');
-      return cookies.some(cookie => cookie.name === 'userCtx');
-    });
-    await utils.setupUserDoc(username);
-  }
-
-  if (loadPage) {
-    const waitForPartialLoad = privacyPolicy || adminApp;
-    waitForPartialLoad ? await commonPage.waitForLoaders() : await waitForPageLoaded();
-  }
-};
-
-const setPasswordValue = async (password) => {
-  await (await passwordField()).waitForDisplayed();
-  await (await passwordField()).setValue(password);
-};
-
-const changeLocale = async locale => {
-  if (!locale) {
-    return;
-  }
-  return (await localeByName(locale)).click();
 };
 
 const getVisibleLoaders = async () => {

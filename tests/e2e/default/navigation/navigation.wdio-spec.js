@@ -4,7 +4,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 
-describe.skip('Navigation tests', () => {
+describe('Navigation tests', () => {
   describe('Navigation functionality', () => {
     before(async () => {
       await loginPage.cookieLogin();

@@ -55,7 +55,6 @@ const FEEDBACK = '#feedback';
 //About menu
 const ABOUT_MENU = 'aria/About';
 //Configuration App
-// const CONFIGURATION_APP_MENU = 'aria/App Management';
 const configurationAppMenuOption = () => $('aria/App Management');
 const errorLog = () => $(`error-log`);
 
@@ -330,7 +329,7 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await $('aria/Application menu')).waitForDisplayed({ timeout });
+  await (await hamburgerMenu()).waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {

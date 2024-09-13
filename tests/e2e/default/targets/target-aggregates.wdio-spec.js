@@ -14,7 +14,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
 
-describe.skip('Target aggregates', () => {
+describe('Target aggregates', () => {
 
   describe('DB admin', () => {
     before(async () => await loginPage.cookieLogin());
