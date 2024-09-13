@@ -51,22 +51,18 @@ describe('Contact Page | List View (Access)', () => {
       'should show contacts page as tab, hidden from menu option', async () => {
       await (await commonPage.contactsTab()).waitForDisplayed();
       await generateScreenshot('ContactPage', 'TabVisible');
-
       await commonPage.openHamburgerMenu();
       await generateScreenshot('ContactPage', 'MenuOpened');
-
       await commonPage.closeHamburgerMenu();
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('ContactPage', 'PeopleListVisible');
-
       await commonPage.goToReports();
       const firstReport = await reportsPage.firstReport();
       await firstReport.waitForClickable();
       await reportsPage.openSelectedReport(firstReport);
       await reportsPage.patientName().waitForClickable();
       await generateScreenshot('ContactPage', 'ReportsVisible');
-
       await reportsPage.patientName().click();
       await contactPage.waitForContactLoaded();
       await generateScreenshot('ContactPage', 'ContactLoaded');

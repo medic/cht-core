@@ -31,7 +31,7 @@ const generateScreenshot = async (scenario, step) => {
   if (!isCI) {
     const device = await isMobile() ? 'mobile' : 'desktop';
 
-    const filename = `./${scenario}_${step}_${device}.png`;
+    const filename = `./documentation/${scenario}_${step}_${device}.png`;
 
     const fullScreenshotBuffer = Buffer.from(await browser.takeScreenshot(), 'base64');
     let extractWidth;
