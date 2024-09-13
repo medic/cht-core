@@ -21,6 +21,8 @@ const defaultConfig = Object.assign(wdioBaseConfig.config, {
     '../default/sms/rapidpro.wdio-spec.js',
     '../default/sms/send-message.wdio-spec.js',
     '../default/targets/target-aggregates.wdio-spec.js',
+    '../default/tasks/due-dates.wdio-spec.js',
+    '../default/tasks/tasks.wdio-spec.js',
     '../default/translations/nepali-dates-and-numbers.wdio-spec.js',
     '../default/translations/new-language.wdio-spec.js',
   ],

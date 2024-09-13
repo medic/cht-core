@@ -50,7 +50,7 @@ const updateDueDatesSettings = async (updates = {}) => {
   await utils.updateSettings(updates, { ignoreReload: 'api', sync: true, refresh: true });
 };
 
-describe.skip('Task list due dates', () => {
+describe('Task list due dates', () => {
   before(async () => {
     await utils.saveDocs(contacts);
     await utils.createUsers([ chw ]);

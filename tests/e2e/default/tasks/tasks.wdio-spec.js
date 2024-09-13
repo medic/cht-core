@@ -55,8 +55,7 @@ describe('Tasks', () => {
     await utils.revertSettings(true);
   });
 
-  // Skipped due to error: done() called multiple times
-  it.skip('Should show error message for bad config', async () => {
+  it('Should show error message for bad config', async () => {
     const settings = await compileTasks('tasks-error-config.js');
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     await commonPage.goToTasks();

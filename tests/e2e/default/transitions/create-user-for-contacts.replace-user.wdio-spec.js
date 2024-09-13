@@ -386,8 +386,8 @@ describe('Create user for contacts', () => {
         expect(cookie.value).to.include(newUserSettings.name);
       });
 
-      // eslint-disable-next-line max-len
-      it.skip('creates new user from latest replace_user form data if multiple are submitted before syncing', async () => {
+      it('creates new user from latest replace_user form data'
+      + 'if multiple are submitted before syncing', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;

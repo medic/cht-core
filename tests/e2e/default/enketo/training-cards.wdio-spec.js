@@ -11,7 +11,7 @@ const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
-describe.skip('Training Cards', () => {
+describe('Training Cards', () => {
 
   const expectedConfirmMessage = 'This training is not finished. ' +
     'If you leave now, you will lose your progress and be prompted again later to complete it.';
