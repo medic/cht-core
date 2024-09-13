@@ -391,18 +391,18 @@ describe('Monitoring service', () => {
       chai.expect(actual.replication_limit.count).to.equal(1);
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-scripts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
         [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}medic/_changes`,
+          url: `${environment.serverUrl}${environment.db}/_changes`,
           qs: {
             limit: 0,
             since: undefined
@@ -531,18 +531,18 @@ describe('Monitoring service', () => {
       chai.expect(actual.connected_users.count).to.equal(2);
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-scripts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
         [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}medic/_changes`,
+          url: `${environment.serverUrl}${environment.db}/_changes`,
           qs: {
             limit: 0,
             since: undefined
@@ -643,14 +643,14 @@ describe('Monitoring service', () => {
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-scripts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
         [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
       ]);
     });
@@ -770,14 +770,14 @@ describe('Monitoring service', () => {
       chai.expect(actual.connected_users).to.deep.equal({ count: -1 });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-scripts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/medic-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
         [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
       ]);
     });
