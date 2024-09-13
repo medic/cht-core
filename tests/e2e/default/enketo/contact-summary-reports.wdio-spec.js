@@ -39,7 +39,6 @@ describe('Contact summary', () => {
 
   it('should load all reports', async () => {
     await commonPage.goToPeople(patient._id);
-    await browser.pause(5437854353);
     await commonPage.openFastActionReport('contact-summary-reports', true);
 
     expect(await commonEnketoPage.getInputValue('Number of reports')).to.equal(reports.length.toString());
