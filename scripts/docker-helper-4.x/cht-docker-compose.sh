@@ -263,7 +263,7 @@ get_system_and_docker_info(){
   echo "CHT Containers: $(get_running_container_count)"
   echo "Global Containers $(get_global_running_container_count)"
   echo
-  echo $"$info" | column -t
+#  echo $"$info" | column -t
 }
 
 if [ "$(docker_not_installed)" ];then
@@ -468,9 +468,31 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
-docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
-docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
+
+
+
+
+if [[ -n ${DEBUG+x} ]];then
+  echo
+  echo "installing dig, checking IP for local-ip.medicmobile.org with 'dig +short local-ip.medicmobile.org':"
+  docker exec "$nginxContainerId" bash -c "apk add bind-tools"  2>/dev/null
+  docker exec "$nginxContainerId" bash -c "dig +short local-ip.medicmobile.org"  2>/dev/null
+  echo
+  echo "running curl command:"
+  echo
+  docker exec "$nginxContainerId" bash -c "curl -vvv -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
+  docker exec "$nginxContainerId" bash -c "curl  -vvv -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
+  docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
+  echo
+  echo "Cert info on nginx container (${nginxContainerId}):"
+  docker exec  "$nginxContainerId" bash -c "openssl  x509 -noout -text -in /etc/nginx/private/cert.pem  | head -n 15"
+  echo
+else
+  docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
+  docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
+  docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
+fi
+
 
 echo ""
 echo ""
