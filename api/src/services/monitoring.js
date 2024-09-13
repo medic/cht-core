@@ -100,7 +100,6 @@ const getCouchVersion = () => {
 };
 
 const defaultNumber = x => typeof x === 'number' ? x : -1;
-const defaultBoolean = x => typeof x === 'boolean' ? x : false;
 
 const sumArray = numbers => numbers.reduce((acc, curr) => acc + curr, 0);
 
@@ -123,7 +122,6 @@ const mapDbInfo = (dbKey, dbInfo, viewIndexInfos) => {
     doc_count: defaultNumber(dbInfo.doc_count),
     doc_del_count: defaultNumber(dbInfo.doc_del_count),
     fragmentation: getFragmentation(dbInfo, viewIndexInfos),
-    compact_running: defaultBoolean(dbInfo.compact_running),
     sizes: {
       active: defaultNumber(dbInfo.sizes?.active),
       file: defaultNumber(dbInfo.sizes?.file),
@@ -134,8 +132,6 @@ const mapDbInfo = (dbKey, dbInfo, viewIndexInfos) => {
   VIEW_INDEXES_TO_MONITOR[dbKey].forEach((viewIndexName, i) => {
     result.view_index[viewIndexName] = {
       name: viewIndexInfos[i].name || '',
-      compact_running: defaultBoolean(viewIndexInfos[i].view_index?.compact_running),
-      updater_running: defaultBoolean(viewIndexInfos[i].view_index?.updater_running),
       sizes: {
         active: defaultNumber(viewIndexInfos[i].view_index?.sizes?.active),
         file: defaultNumber(viewIndexInfos[i].view_index?.sizes?.file),

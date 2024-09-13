@@ -19,7 +19,6 @@ const dbInfos = [
       update_seq: '100-abc',
       doc_count: 20,
       doc_del_count: 10,
-      compact_running: true,
       sizes: {
         active: 600,
         file: 700
@@ -32,7 +31,6 @@ const dbInfos = [
       update_seq: '200-def',
       doc_count: 30,
       doc_del_count: 20,
-      compact_running: false,
       sizes: {
         active: 500,
         file: 500
@@ -45,7 +43,6 @@ const dbInfos = [
       update_seq: '300-hij',
       doc_count: 40,
       doc_del_count: 30,
-      compact_running: true,
       sizes: {
         active: 500,
         file: 5000
@@ -58,7 +55,6 @@ const dbInfos = [
       update_seq: '400-klm',
       doc_count: 50,
       doc_del_count: 40,
-      compact_running: false,
       sizes: {
         active: 500,
         file: 501
@@ -85,8 +81,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'medic': {
     name: 'medic',
     view_index: {
-      compact_running: true,
-      updater_running: true,
       sizes: {
         active: 600,
         file: 7007
@@ -96,8 +90,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'medic-admin': {
     name: 'medic-admin',
     view_index: {
-      compact_running: false,
-      updater_running: true,
       sizes: {
         active: 6533400,
         file: 7005334
@@ -107,8 +99,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'medic-client': {
     name: 'medic-client',
     view_index: {
-      compact_running: true,
-      updater_running: false,
       sizes: {
         active: 22600,
         file: 33700
@@ -118,8 +108,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'medic-conflicts': {
     name: 'medic-conflicts',
     view_index: {
-      compact_running: false,
-      updater_running: false,
       sizes: {
         active: 6,
         file: 7
@@ -129,8 +117,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'medic-scripts': {
     name: 'medic-scripts',
     view_index: {
-      compact_running: true,
-      updater_running: true,
       sizes: {
         active: 1,
         file: 1
@@ -140,8 +126,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'medic-sms': {
     name: 'medic-sms',
     view_index: {
-      compact_running: false,
-      updater_running: true,
       sizes: {
         active: 100,
         file: 700
@@ -151,8 +135,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'sentinel': {
     name: 'sentinel',
     view_index: {
-      compact_running: true,
-      updater_running: false,
       sizes: {
         active: 700,
         file: 700
@@ -162,8 +144,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'users-meta': {
     name: 'users-meta',
     view_index: {
-      compact_running: false,
-      updater_running: false,
       sizes: {
         active: 600,
         file: 700
@@ -173,8 +153,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
   'users': {
     name: 'users',
     view_index: {
-      compact_running: true,
-      updater_running: true,
       sizes: {
         active: 600,
         file: 700
@@ -268,8 +246,6 @@ const getExpectedViewIndex = (dbName) => {
   VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
     result[designDoc] = {
       name: VIEW_INDEX_INFO_BY_DESIGN[designDoc].name,
-      compact_running: VIEW_INDEX_INFO_BY_DESIGN[designDoc].view_index.compact_running,
-      updater_running: VIEW_INDEX_INFO_BY_DESIGN[designDoc].view_index.updater_running,
       sizes: VIEW_INDEX_INFO_BY_DESIGN[designDoc].view_index.sizes,
     };
   });
@@ -281,8 +257,6 @@ const getExpectedEmptyViewIndex = (dbName) => {
   VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
     result[designDoc] = {
       name: '',
-      compact_running: false,
-      updater_running: false,
       sizes: {
         active: -1,
         file: -1
@@ -320,7 +294,6 @@ describe('Monitoring service', () => {
       });
       chai.expect(actual.couchdb).to.deep.equal({
         medic: {
-          compact_running: true,
           doc_count: 20,
           doc_del_count: 10,
           fragmentation: 1.074747453489672,
@@ -333,7 +306,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedViewIndex(environment.db)
         },
         sentinel: {
-          compact_running: false,
           doc_count: 30,
           doc_del_count: 20,
           fragmentation: 1,
@@ -346,7 +318,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedViewIndex(`${environment.db}-sentinel`)
         },
         users: {
-          compact_running: false,
           doc_count: 50,
           doc_del_count: 40,
           fragmentation: 1.0918181818181818,
@@ -359,7 +330,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedViewIndex('_users')
         },
         usersmeta: {
-          compact_running: true,
           doc_count: 40,
           doc_del_count: 30,
           fragmentation: 5.181818181818182,
@@ -433,7 +403,6 @@ describe('Monitoring service', () => {
       });
       chai.expect(actual.couchdb).to.deep.equal({
         medic: {
-          compact_running: true,
           doc_count: 20,
           doc_del_count: 10,
           fragmentation: 1.074747453489672,
@@ -446,7 +415,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedViewIndex(environment.db)
         },
         sentinel: {
-          compact_running: false,
           doc_count: 30,
           doc_del_count: 20,
           fragmentation: 1,
@@ -459,7 +427,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedViewIndex(`${environment.db}-sentinel`)
         },
         users: {
-          compact_running: false,
           doc_count: 50,
           doc_del_count: 40,
           fragmentation: 1.0918181818181818,
@@ -472,7 +439,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedViewIndex('_users')
         },
         usersmeta: {
-          compact_running: true,
           doc_count: 40,
           doc_del_count: 30,
           fragmentation: 5.181818181818182,
@@ -574,7 +540,6 @@ describe('Monitoring service', () => {
       });
       chai.expect(actual.couchdb).to.deep.equal({
         medic: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
@@ -587,7 +552,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedEmptyViewIndex(environment.db)
         },
         sentinel: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
@@ -600,7 +564,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedEmptyViewIndex(`${environment.db}-sentinel`)
         },
         users: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
@@ -613,7 +576,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedEmptyViewIndex('_users')
         },
         usersmeta: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
@@ -674,7 +636,6 @@ describe('Monitoring service', () => {
       });
       chai.expect(actual.couchdb).to.deep.equal({
         medic: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
@@ -687,7 +648,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedEmptyViewIndex(environment.db)
         },
         sentinel: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
@@ -700,7 +660,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedEmptyViewIndex(`${environment.db}-sentinel`)
         },
         users: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
@@ -713,7 +672,6 @@ describe('Monitoring service', () => {
           view_index: getExpectedEmptyViewIndex('_users')
         },
         usersmeta: {
-          compact_running: false,
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,

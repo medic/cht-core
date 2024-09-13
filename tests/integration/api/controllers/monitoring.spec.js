@@ -39,18 +39,13 @@ const getExpectedViewIndex = (db) => {
   return result;
 };
 
-const INDETERMINATE_FIELDS = [
-  'current', 'uptime', 'date', 'fragmentation', 'node', 'sizes', 'updater_running', 'compact_running'
-];
+const INDETERMINATE_FIELDS = ['current', 'uptime', 'date', 'fragmentation', 'node', 'sizes'];
 
 const assertCouchDbDataSizeFields = (couchData) => {
   chai.expect(couchData.fragmentation).to.be.gte(0);
-  chai.expect(couchData.compact_running).to.be.a('boolean');
   chai.expect(couchData.sizes.active).to.be.gte(0);
   chai.expect(couchData.sizes.file).to.be.gte(0);
   VIEW_INDEXES_BY_DB[couchData.name].forEach(viewIndex => {
-    chai.expect(couchData.view_index[viewIndex].compact_running).to.be.a('boolean');
-    chai.expect(couchData.view_index[viewIndex].updater_running).to.be.a('boolean');
     chai.expect(couchData.view_index[viewIndex].sizes.active).to.be.gte(0);
     chai.expect(couchData.view_index[viewIndex].sizes.file).to.be.gte(0);
   });
