@@ -95,7 +95,7 @@ body {
 
 .app-root:not(.old-nav) mm-header {
   height: 100vh;
-  width: @tab-nav-size;
+  width: @tab-navbar-size;
   position: fixed;
   top: @filters-bar-desktop-height;
   left: 0;
@@ -107,7 +107,7 @@ body {
   position: relative;
   display: block;
   z-index: 3;
-  background-color: @top-header-color;
+  background-color: @tab-navbar-color;
   text-align: center;
   height: 100vh;
   .button-text-inverse;
@@ -168,6 +168,7 @@ body {
       word-wrap: break-word;
       color: @nav-icon-gray;
       font-size: @font-XXS;
+      text-overflow: ellipsis;
     }
 
     a .mm-icon {
@@ -362,7 +363,7 @@ body {
     position: absolute;
     width: 100%;
     max-width: @content-width;
-    padding-left: @tab-nav-size;
+    padding-left: @tab-navbar-size;
   }
 
   .inbox {
@@ -1304,9 +1305,9 @@ mm-sidebar-menu .mat-sidenav-container {
 
     .header {
       display: block;
-      height: @tab-nav-size;
+      height: @tab-navbar-size;
       width: 100vw;
-      background-color: @bottom-navbar-color;
+      background-color: @tab-navbar-color;
       position: fixed;
       bottom: 0;
       .inner {
