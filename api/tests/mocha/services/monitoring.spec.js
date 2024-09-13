@@ -66,7 +66,7 @@ const dbInfos = [
   }
 ];
 
-const VIEW_INDEXS_BY_DB = {
+const VIEW_INDEXES_BY_DB = {
   [`${environment.db}`]: [
     'medic',
     'medic-admin',
@@ -187,8 +187,8 @@ const setUpMocks = () => {
   sinon.stub(request, 'get')
     .withArgs(sinon.match({ url: environment.serverUrl })).resolves({ version: 'v3.3.3' })
     .withArgs(sinon.match({ url: `${environment.couchUrl}/_changes` })).resolves({ pending: 24 });
-  Object.keys(VIEW_INDEXS_BY_DB).forEach(dbName => {
-    VIEW_INDEXS_BY_DB[dbName].forEach(designDoc => {
+  Object.keys(VIEW_INDEXES_BY_DB).forEach(dbName => {
+    VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
       request.get
         .withArgs(sinon.match({ url: `${environment.serverUrl}/${dbName}/_design/${designDoc}/_info` }))
         .resolves(VIEW_INDEX_INFO_BY_DESIGN[designDoc]);
@@ -264,7 +264,7 @@ const setupV2Mocks = (statusCounters) => {
 
 const getExpectedViewIndex = (dbName) => {
   const result  = {};
-  VIEW_INDEXS_BY_DB[dbName].forEach(designDoc => {
+  VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
     result[designDoc] = {
       name: VIEW_INDEX_INFO_BY_DESIGN[designDoc].name,
       compact_running: VIEW_INDEX_INFO_BY_DESIGN[designDoc].view_index.compact_running,
@@ -277,7 +277,7 @@ const getExpectedViewIndex = (dbName) => {
 
 const getExpectedEmptyViewIndex = (dbName) => {
   const result  = {};
-  VIEW_INDEXS_BY_DB[dbName].forEach(designDoc => {
+  VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
     result[designDoc] = {
       name: '',
       compact_running: false,
@@ -817,7 +817,7 @@ describe('Monitoring service', () => {
       const ddocNames = await getCurrentDdocNames(db);
       chai.expect(ddocNames).to.not.be.empty;
       // If you have added a new design doc, you should include it in the view_index monitoring!
-      chai.expect(ddocNames).to.deep.equalInAnyOrder(VIEW_INDEXS_BY_DB[dbName]);
+      chai.expect(ddocNames).to.deep.equalInAnyOrder(VIEW_INDEXES_BY_DB[dbName]);
     });
   });
 });

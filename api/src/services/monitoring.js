@@ -13,7 +13,7 @@ const DBS_TO_MONITOR = {
   'users': '_users'
 };
 
-const VIEW_INDEXS_TO_MONITOR = {
+const VIEW_INDEXES_TO_MONITOR = {
   medic: [
     'medic',
     'medic-admin',
@@ -131,7 +131,7 @@ const mapDbInfo = (dbKey, dbInfo, viewIndexInfos) => {
     view_index: { }
   };
 
-  VIEW_INDEXS_TO_MONITOR[dbKey].forEach((viewIndexName, i) => {
+  VIEW_INDEXES_TO_MONITOR[dbKey].forEach((viewIndexName, i) => {
     result.view_index[viewIndexName] = {
       name: viewIndexInfos[i].name || '',
       compact_running: defaultBoolean(viewIndexInfos[i].view_index?.compact_running),
@@ -171,10 +171,10 @@ const fetchViewIndexInfo = (db, designDoc) => request
   });
 
 const fetchViewIndexInfosForDb = (db) => Promise.all(
-  VIEW_INDEXS_TO_MONITOR[db].map(viewIndexName => fetchViewIndexInfo(DBS_TO_MONITOR[db], viewIndexName))
+  VIEW_INDEXES_TO_MONITOR[db].map(viewIndexName => fetchViewIndexInfo(DBS_TO_MONITOR[db], viewIndexName))
 );
 
-const fetchAllViewIndexInfos = () => Promise.all(Object.keys(VIEW_INDEXS_TO_MONITOR).map(fetchViewIndexInfosForDb));
+const fetchAllViewIndexInfos = () => Promise.all(Object.keys(VIEW_INDEXES_TO_MONITOR).map(fetchViewIndexInfosForDb));
 
 const getDbInfos = async () => {
   const [dbInfos, viewIndexInfos] = await Promise.all([fetchDbsInfo(), fetchAllViewIndexInfos()]);

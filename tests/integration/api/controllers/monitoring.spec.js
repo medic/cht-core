@@ -4,6 +4,20 @@ chai.use(chaiExclude);
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 
+const VIEW_INDEXES_BY_DB = {
+  ['medic-test']: [
+    'medic',
+    'medic-admin',
+    'medic-client',
+    'medic-conflicts',
+    'medic-scripts',
+    'medic-sms',
+  ],
+  ['medic-test-sentinel']: ['sentinel'],
+  ['medic-test-users-meta']: ['users-meta'],
+  _users: ['users'],
+};
+
 const getAppVersion = async () => {
   const deployInfo = await utils.request({ path: '/api/deploy-info' });
   return deployInfo.version;
@@ -17,6 +31,40 @@ const getCouchDBVersion = async () => {
 const getInfo = (db) => utils.request({ path: `/${db}` });
 const getUpdateSeq = (info) => parseInt(info.update_seq.split('-')[0]);
 
+const getExpectedViewIndex = (db) => {
+  const result = {};
+  VIEW_INDEXES_BY_DB[db].forEach(viewIndex => {
+    result[viewIndex] = { name: viewIndex };
+  });
+  return result;
+};
+
+const INDETERMINATE_FIELDS = [
+  'current', 'uptime', 'date', 'fragmentation', 'node', 'sizes', 'updater_running', 'compact_running'
+];
+
+const assertCouchDbDataSizeFields = (couchData) => {
+  chai.expect(couchData.fragmentation).to.be.gte(0);
+  chai.expect(couchData.compact_running).to.be.a('boolean');
+  chai.expect(couchData.sizes.active).to.be.gte(0);
+  chai.expect(couchData.sizes.file).to.be.gte(0);
+  VIEW_INDEXES_BY_DB[couchData.name].forEach(viewIndex => {
+    chai.expect(couchData.view_index[viewIndex].compact_running).to.be.a('boolean');
+    chai.expect(couchData.view_index[viewIndex].updater_running).to.be.a('boolean');
+    chai.expect(couchData.view_index[viewIndex].sizes.active).to.be.gte(0);
+    chai.expect(couchData.view_index[viewIndex].sizes.file).to.be.gte(0);
+  });
+};
+
+const assertIndeterminateFields = (result) => {
+  // Cannot have precise expectations about the values of these fields
+  chai.expect(result.date.current).to.be.gt(0);
+  chai.expect(result.date.uptime).to.be.gt(0);
+  chai.expect(result.version.node).to.be.a('string');
+  const { couchdb: { medic, sentinel, usersmeta, users } } = result;
+  [medic, sentinel, usersmeta, users].forEach(assertCouchDbDataSizeFields);
+};
+
 describe('monitoring', () => {
   beforeEach(() => sentinelUtils.waitForSentinel());
   afterEach(() => utils.revertDb([], true));
@@ -29,7 +77,8 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v1/monitoring' });
-      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation', 'node']).to.deep.equal({
+
+      chai.expect(result).excludingEvery(INDETERMINATE_FIELDS).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),
@@ -40,24 +89,28 @@ describe('monitoring', () => {
             update_sequence: getUpdateSeq(medicInfo),
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
+            view_index: getExpectedViewIndex('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
             update_sequence: getUpdateSeq(sentinelInfo),
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
+            view_index: getExpectedViewIndex('medic-test-sentinel'),
           },
           usersmeta: {
             name: 'medic-test-users-meta',
             update_sequence: getUpdateSeq(usersMetaInfo),
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
+            view_index: getExpectedViewIndex('medic-test-users-meta'),
           },
           users: {
             name: '_users',
             update_sequence: getUpdateSeq(usersInfo),
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
+            view_index: getExpectedViewIndex('_users'),
           },
         },
         sentinel: {
@@ -90,6 +143,8 @@ describe('monitoring', () => {
           count: 1, //not logged in browser
         },
       });
+
+      assertIndeterminateFields(result);
     });
   });
 
@@ -101,7 +156,7 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v2/monitoring' });
-      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation', 'node']).to.deep.equal({
+      chai.expect(result).excludingEvery(INDETERMINATE_FIELDS).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),
@@ -112,24 +167,28 @@ describe('monitoring', () => {
             update_sequence: getUpdateSeq(medicInfo),
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
+            view_index: getExpectedViewIndex('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
             update_sequence: getUpdateSeq(sentinelInfo),
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
+            view_index: getExpectedViewIndex('medic-test-sentinel'),
           },
           usersmeta: {
             name: 'medic-test-users-meta',
             update_sequence: getUpdateSeq(usersMetaInfo),
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
+            view_index: getExpectedViewIndex('medic-test-users-meta'),
           },
           users: {
             name: '_users',
             update_sequence: getUpdateSeq(usersInfo),
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
+            view_index: getExpectedViewIndex('_users'),
           },
         },
         sentinel: {
@@ -188,6 +247,8 @@ describe('monitoring', () => {
           count: 1,
         },
       });
+
+      assertIndeterminateFields(result);
     });
   });
 });
