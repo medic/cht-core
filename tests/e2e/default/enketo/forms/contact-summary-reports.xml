@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml">
+  <h:head>
+    <h:title>Just a form</h:title>
+    <model>
+      <instance>
+        <contact-summary-reports id="contact-summary-reports" prefix="J1!contact-summary-reports!" delimiter="#" version="2020-08-14_10-05">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <user>
+              <contact_id/>
+              <facility_id/>
+            </user>
+          </inputs>
+          <contact>
+            <parent>PARENT</parent>
+            <type>person</type>
+            <name/>
+            <phone/>
+            <role/>
+            <external_id/>
+            <notes/>
+            <meta tag="hidden">
+              <created_by/>
+              <created_by_person_uuid/>
+              <created_by_place_uuid/>
+            </meta>
+          </contact>
+          <nbr_reports/>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </contact-summary-reports>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/contact-summary-reports/nbr_reports" type="string" calculate="instance('contact-summary')/context/nbr_reports"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input ref="/contact-summary-reports/nbr_reports">
+      <label>Number of reports:</label>
+    </input>
+  </h:body>
+</h:html>
