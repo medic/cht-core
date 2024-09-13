@@ -293,9 +293,8 @@ const getExpectedEmptyViewIndex = (dbName) => {
 
 const getCurrentDdocNames = (db) => ddocs.getDdocs({ db })
   .then(ddocs => ddocs
-   .map(ddoc => ddoc._id)
-   .map(ddocId => ddocId.split('/')[1])
-  );
+    .map(ddoc => ddoc._id)
+    .map(ddocId => ddocId.split('/')[1]));
 
 describe('Monitoring service', () => {
 
