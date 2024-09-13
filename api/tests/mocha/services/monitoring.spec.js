@@ -241,29 +241,11 @@ const setupV2Mocks = (statusCounters) => {
     .resolves({ rows: mutedRows });
 };
 
-const getExpectedViewIndex = (dbName) => {
-  const result  = {};
-  VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
-    result[designDoc] = {
-      name: VIEW_INDEX_INFO_BY_DESIGN[designDoc].name,
-      sizes: VIEW_INDEX_INFO_BY_DESIGN[designDoc].view_index.sizes,
-    };
-  });
-  return result;
-};
-
-const getExpectedEmptyViewIndex = (dbName) => {
-  const result  = {};
-  VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
-    result[designDoc] = {
-      name: '',
-      sizes: {
-        active: -1,
-        file: -1
-      },
-    };
-  });
-  return result;
+const getExpectedViewIndexes = (dbName) => {
+  return VIEW_INDEXES_BY_DB[dbName].map(designDoc => ({
+    name: VIEW_INDEX_INFO_BY_DESIGN[designDoc].name,
+    sizes: VIEW_INDEX_INFO_BY_DESIGN[designDoc].view_index.sizes,
+  }));
 };
 
 const getCurrentDdocNames = (db) => getBundledDdocs(db)
@@ -303,7 +285,7 @@ describe('Monitoring service', () => {
             active: 600,
             file: 700
           },
-          view_index: getExpectedViewIndex(environment.db)
+          view_indexes: getExpectedViewIndexes(environment.db)
         },
         sentinel: {
           doc_count: 30,
@@ -315,7 +297,7 @@ describe('Monitoring service', () => {
             active: 500,
             file: 500
           },
-          view_index: getExpectedViewIndex(`${environment.db}-sentinel`)
+          view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`)
         },
         users: {
           doc_count: 50,
@@ -327,7 +309,7 @@ describe('Monitoring service', () => {
             active: 500,
             file: 501
           },
-          view_index: getExpectedViewIndex('_users')
+          view_indexes: getExpectedViewIndexes('_users')
         },
         usersmeta: {
           doc_count: 40,
@@ -339,7 +321,7 @@ describe('Monitoring service', () => {
             active: 500,
             file: 5000
           },
-          view_index: getExpectedViewIndex(`${environment.db}-users-meta`)
+          view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`)
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -412,7 +394,7 @@ describe('Monitoring service', () => {
             active: 600,
             file: 700
           },
-          view_index: getExpectedViewIndex(environment.db)
+          view_indexes: getExpectedViewIndexes(environment.db)
         },
         sentinel: {
           doc_count: 30,
@@ -424,7 +406,7 @@ describe('Monitoring service', () => {
             active: 500,
             file: 500
           },
-          view_index: getExpectedViewIndex(`${environment.db}-sentinel`)
+          view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`)
         },
         users: {
           doc_count: 50,
@@ -436,7 +418,7 @@ describe('Monitoring service', () => {
             active: 500,
             file: 501
           },
-          view_index: getExpectedViewIndex('_users')
+          view_indexes: getExpectedViewIndexes('_users')
         },
         usersmeta: {
           doc_count: 40,
@@ -448,7 +430,7 @@ describe('Monitoring service', () => {
             active: 500,
             file: 5000
           },
-          view_index: getExpectedViewIndex(`${environment.db}-users-meta`)
+          view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`)
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -549,7 +531,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex(environment.db)
+          view_indexes: []
         },
         sentinel: {
           doc_count: -1,
@@ -561,7 +543,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex(`${environment.db}-sentinel`)
+          view_indexes: []
         },
         users: {
           doc_count: -1,
@@ -573,7 +555,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex('_users')
+          view_indexes: []
         },
         usersmeta: {
           doc_count: -1,
@@ -585,7 +567,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex(`${environment.db}-users-meta`)
+          view_indexes: []
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -645,7 +627,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex(environment.db)
+          view_indexes: []
         },
         sentinel: {
           doc_count: -1,
@@ -657,7 +639,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex(`${environment.db}-sentinel`)
+          view_indexes: []
         },
         users: {
           doc_count: -1,
@@ -669,7 +651,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex('_users')
+          view_indexes: []
         },
         usersmeta: {
           doc_count: -1,
@@ -681,7 +663,7 @@ describe('Monitoring service', () => {
             active: -1,
             file: -1
           },
-          view_index: getExpectedEmptyViewIndex(`${environment.db}-users-meta`)
+          view_indexes: []
         }
       });
       chai.expect(actual.messaging).to.deep.equal({

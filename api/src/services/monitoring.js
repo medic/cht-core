@@ -115,8 +115,8 @@ const getFragmentation = ({ sizes }, viewIndexInfos) => {
   return totalFile / totalActive;
 };
 
-const mapDbInfo = (dbKey, dbInfo, viewIndexInfos) => {
-  const result = {
+const mapDbInfo = (dbInfo, viewIndexInfos) => {
+  return {
     name: dbInfo.db_name || '',
     update_sequence: getSequenceNumber(dbInfo.update_seq),
     doc_count: defaultNumber(dbInfo.doc_count),
@@ -126,19 +126,14 @@ const mapDbInfo = (dbKey, dbInfo, viewIndexInfos) => {
       active: defaultNumber(dbInfo.sizes?.active),
       file: defaultNumber(dbInfo.sizes?.file),
     },
-    view_index: { }
-  };
-
-  VIEW_INDEXES_TO_MONITOR[dbKey].forEach((viewIndexName, i) => {
-    result.view_index[viewIndexName] = {
-      name: viewIndexInfos[i].name || '',
+    view_indexes: viewIndexInfos.map(viewIndexInfo => ({
+      name: viewIndexInfo.name || '',
       sizes: {
-        active: defaultNumber(viewIndexInfos[i].view_index?.sizes?.active),
-        file: defaultNumber(viewIndexInfos[i].view_index?.sizes?.file),
+        active: defaultNumber(viewIndexInfo.view_index?.sizes?.active),
+        file: defaultNumber(viewIndexInfo.view_index?.sizes?.file),
       }
-    };
-  });
-  return result;
+    }))
+  };
 };
 
 const fetchDbsInfo = () => request
@@ -163,12 +158,12 @@ const fetchViewIndexInfo = (db, designDoc) => request
   })
   .catch(err => {
     logger.error('Error fetching view index info: %o', err);
-    return { };
+    return null;
   });
 
 const fetchViewIndexInfosForDb = (db) => Promise.all(
   VIEW_INDEXES_TO_MONITOR[db].map(viewIndexName => fetchViewIndexInfo(DBS_TO_MONITOR[db], viewIndexName))
-);
+).then((viewIndexInfos) => viewIndexInfos.filter(info => info));
 
 const fetchAllViewIndexInfos = () => Promise.all(Object.keys(VIEW_INDEXES_TO_MONITOR).map(fetchViewIndexInfosForDb));
 
@@ -176,7 +171,7 @@ const getDbInfos = async () => {
   const [dbInfos, viewIndexInfos] = await Promise.all([fetchDbsInfo(), fetchAllViewIndexInfos()]);
   const result = {};
   Object.keys(DBS_TO_MONITOR).forEach((dbKey, i) => {
-    result[dbKey] = mapDbInfo(dbKey, dbInfos[i], viewIndexInfos[i]);
+    result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i]);
   });
   return result;
 };

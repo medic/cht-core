@@ -31,12 +31,10 @@ const getCouchDBVersion = async () => {
 const getInfo = (db) => utils.request({ path: `/${db}` });
 const getUpdateSeq = (info) => parseInt(info.update_seq.split('-')[0]);
 
-const getExpectedViewIndex = (db) => {
-  const result = {};
-  VIEW_INDEXES_BY_DB[db].forEach(viewIndex => {
-    result[viewIndex] = { name: viewIndex };
-  });
-  return result;
+const getExpectedViewIndexes = (db) => {
+  return VIEW_INDEXES_BY_DB[db].map(viewIndex => ({
+    name: viewIndex
+  }));
 };
 
 const INDETERMINATE_FIELDS = ['current', 'uptime', 'date', 'fragmentation', 'node', 'sizes'];
@@ -45,9 +43,12 @@ const assertCouchDbDataSizeFields = (couchData) => {
   chai.expect(couchData.fragmentation).to.be.gte(0);
   chai.expect(couchData.sizes.active).to.be.gte(0);
   chai.expect(couchData.sizes.file).to.be.gte(0);
-  VIEW_INDEXES_BY_DB[couchData.name].forEach(viewIndex => {
-    chai.expect(couchData.view_index[viewIndex].sizes.active).to.be.gte(0);
-    chai.expect(couchData.view_index[viewIndex].sizes.file).to.be.gte(0);
+
+  const expectedViewIndexNames = VIEW_INDEXES_BY_DB[couchData.name];
+  chai.expect(couchData.view_indexes).to.have.lengthOf(expectedViewIndexNames.length);
+  couchData.view_indexes.forEach(viewIndex => {
+    chai.expect(viewIndex.sizes.active).to.be.gte(0);
+    chai.expect(viewIndex.sizes.file).to.be.gte(0);
   });
 };
 
@@ -84,28 +85,28 @@ describe('monitoring', () => {
             update_sequence: getUpdateSeq(medicInfo),
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
-            view_index: getExpectedViewIndex('medic-test'),
+            view_indexes: getExpectedViewIndexes('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
             update_sequence: getUpdateSeq(sentinelInfo),
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
-            view_index: getExpectedViewIndex('medic-test-sentinel'),
+            view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
           },
           usersmeta: {
             name: 'medic-test-users-meta',
             update_sequence: getUpdateSeq(usersMetaInfo),
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
-            view_index: getExpectedViewIndex('medic-test-users-meta'),
+            view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
           },
           users: {
             name: '_users',
             update_sequence: getUpdateSeq(usersInfo),
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
-            view_index: getExpectedViewIndex('_users'),
+            view_indexes: getExpectedViewIndexes('_users'),
           },
         },
         sentinel: {
@@ -162,28 +163,28 @@ describe('monitoring', () => {
             update_sequence: getUpdateSeq(medicInfo),
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
-            view_index: getExpectedViewIndex('medic-test'),
+            view_indexes: getExpectedViewIndexes('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
             update_sequence: getUpdateSeq(sentinelInfo),
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
-            view_index: getExpectedViewIndex('medic-test-sentinel'),
+            view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
           },
           usersmeta: {
             name: 'medic-test-users-meta',
             update_sequence: getUpdateSeq(usersMetaInfo),
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
-            view_index: getExpectedViewIndex('medic-test-users-meta'),
+            view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
           },
           users: {
             name: '_users',
             update_sequence: getUpdateSeq(usersInfo),
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
-            view_index: getExpectedViewIndex('_users'),
+            view_indexes: getExpectedViewIndexes('_users'),
           },
         },
         sentinel: {
