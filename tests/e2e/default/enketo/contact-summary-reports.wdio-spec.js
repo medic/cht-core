@@ -1,8 +1,5 @@
-const familyForm = require('@page-objects/default/enketo/add-family.wdio.page');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
-const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');

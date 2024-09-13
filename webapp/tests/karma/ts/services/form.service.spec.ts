@@ -388,7 +388,9 @@ describe('Form service', () => {
         const xmlStr = new XMLSerializer().serializeToString(summary.xml);
         expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-        expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal([ { doc: instanceData.contact }, [] ]);
+        expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal(
+          [ { doc: instanceData.contact }, [] ]
+        );
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);
