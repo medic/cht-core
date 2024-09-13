@@ -7,7 +7,8 @@ const db = require('../../../src/db');
 const environment = require('@medic/environment');
 const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
-const ddocs = require('../../../src/services/setup/ddocs');
+const { getBundledDdocs } = require('../../../src/services/setup/utils');
+const { DATABASES } = require('../../../src/services/setup/databases');
 
 let clock;
 
@@ -291,7 +292,7 @@ const getExpectedEmptyViewIndex = (dbName) => {
   return result;
 };
 
-const getCurrentDdocNames = (db) => ddocs.getDdocs({ db })
+const getCurrentDdocNames = (db) => getBundledDdocs(db)
   .then(ddocs => ddocs
     .map(ddoc => ddoc._id)
     .map(ddocId => ddocId.split('/')[1]));
@@ -807,16 +808,17 @@ describe('Monitoring service', () => {
   });
 
   it('includes view_index data for all supported databases', async () => {
-    [
-      [`${environment.db}`, db.medic],
-      [`${environment.db}-sentinel`, db.sentinel],
-      [`${environment.db}-users-meta`, db.medicUsersMeta],
-      ['_users', db.users],
-    ].forEach(async ([dbName, db]) => {
+    for (const dbName of [
+      `${environment.db}`,
+      `${environment.db}-sentinel`,
+      `${environment.db}-users-meta`,
+      '_users',
+    ]) {
+      const db = DATABASES.find(db => db.name === dbName);
       const ddocNames = await getCurrentDdocNames(db);
       chai.expect(ddocNames).to.not.be.empty;
       // If you have added a new design doc, you should include it in the view_index monitoring!
       chai.expect(ddocNames).to.deep.equalInAnyOrder(VIEW_INDEXES_BY_DB[dbName]);
-    });
+    }
   });
 });
