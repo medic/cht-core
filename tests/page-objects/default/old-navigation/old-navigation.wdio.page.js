@@ -1,5 +1,4 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const utils = require('@utils');
 
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
@@ -128,6 +127,5 @@ module.exports = {
   goToPeople,
   goToAnalytics,
   sync,
-  login,
   waitForPageLoaded,
 };
