@@ -57,13 +57,10 @@ const ABOUT_MENU = 'aria/About';
 //Configuration App
 const configurationAppMenuOption = () => $('aria/App Management');
 const errorLog = () => $(`error-log`);
+const sideBarMenuTitle = () => $('aria/Menu');
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
-};
-
-const isHamburgerMenuClosed = async () => {
-  return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).waitForDisplayed({ reverse: true });
 };
 
 const openMoreOptionsMenu = async () => {
@@ -198,17 +195,20 @@ const openHamburgerMenu = async () => {
     await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
   }
+
+  // Adding pause here as we have to wait for sidebar nav menu animation to load
+  await browser.pause(500);
+
+  await (await sideBarMenuTitle()).waitForDisplayed();
 };
 
 const closeHamburgerMenu = async () => {
-  if (await isHamburgerMenuClosed()) {
-    return;
-  }
-
   if (await isHamburgerMenuOpen()) {
     await (await closeSideBarMenu()).waitForClickable();
     await (await closeSideBarMenu()).click();
   }
+
+  await (await sideBarMenuTitle()).waitForDisplayed({ reverse: true });
 };
 
 const navigateToLogoutModal = async () => {
