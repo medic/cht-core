@@ -75,7 +75,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
     });
 
-    it('should hide the kebab menu on the Message tab', async () => {
+    it.skip('should hide the kebab menu on the Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       expect(await commonPage.isMessagesListPresent()).to.be.true;

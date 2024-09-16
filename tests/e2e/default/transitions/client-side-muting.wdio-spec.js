@@ -381,7 +381,7 @@ describe.skip('Muting', () => {
       ]);
     });
 
-    it( 'should mute and unmute a person while "offline", without processing in between', async () => {
+    it.skip( 'should mute and unmute a person while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 
@@ -694,7 +694,7 @@ describe.skip('Muting', () => {
       ]);
     });
 
-    it( 'should mute a clinic and unmute a patient while "offline", without processing in between', async () => {
+    it.skip( 'should mute a clinic and unmute a patient while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateClientSideMutingSettings(settings);
 

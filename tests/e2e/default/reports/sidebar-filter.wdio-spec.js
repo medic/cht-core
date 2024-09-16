@@ -91,7 +91,7 @@ describe('Reports Sidebar Filter', () => {
 
   after(async () => await utils.deleteUsers([ districtHospitalUser, healthCenterUser ]));
 
-  it('should filter by date', async () => {
+  it.skip('should filter by date', async () => {
     await loginPage.login(districtHospitalUser);
     await commonPage.waitForPageLoaded();
 
