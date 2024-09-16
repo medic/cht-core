@@ -31,6 +31,6 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       './**/*.wdio-spec.js',
     ]
   },
-  capabilities: [mobileCapability,desktopCapability],
+  capabilities: [mobileCapability, desktopCapability],
   maxInstances: 1,
 });
