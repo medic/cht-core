@@ -4,26 +4,30 @@
 
 #### Prerequisites
 
-Before continuing with the setup steps below, ensure you have done the following on your machine:
+Before continuing with the setup steps below, ensure you have a cht instance deployed and running either locally or globally - check out the [documentation](https://docs.communityhealthtoolkit.org/contribute/code/core/dev-environment/) on how to do this. 
 
-1. Install [NodeJS](https://nodejs.org/en/download) and [Java JDK](https://www.oracle.com/java/technologies/downloads/) and ensure JAVA_HOME path is correctly set up
+Also, ensure you have done the following installations on your machine:
+
+1. Install [NodeJS](https://nodejs.org/en/download) and [Java JDK](https://www.oracle.com/java/technologies/downloads/) then ensure JAVA_HOME path is correctly set up.
       ```
       export JAVA_HOME=$(/usr/libexec/java_home)
       ```
-2. Install and Set-up [Android studio](https://developer.android.com/studio/install) and the `adb tool` to enable you run adb commands
-   - Add the Android SDK directory to your system’s ANDROID_HOME environment variable
+2. Install and Set-up [Android studio](https://developer.android.com/studio/install) and the `adb tool` to enable you run adb commands.
+   - Add the Android SDK directory to your system’s ANDROID_HOME environment variable.
      ```
       export ANDROID_HOME="/Users/yourpath/Library/Android/sdk/"
       export PATH=$ANDROID_HOME/platform-tools:$PATH
       export PATH=$ANDROID_HOME/tools:$PATH
      ```
    - To set up an Android Virtual Device (AVD), open Android Studio, click on the More Actions > Virtual Device Manager button, and proceed with the virtual device creation by selecting the hardware and system image.
-3. Install appium and appium doctor
+3. Install appium and appium doctor.
    ```
    npm install -g appium@next
    npm install -g appium-doctor
    ```
 4. Install appium driver - `appium driver install uiautomator2`
+
+If you do not have the CHT Android app already installed on your mobile device, you can download the preferred [apk version](https://github.com/medic/cht-android/releases) and then set the path to the file as the value for `app` in the capabilities section of the settings file.
 
 #### Steps
 
