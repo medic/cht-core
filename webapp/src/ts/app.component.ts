@@ -87,6 +87,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   currentTab = '';
   privacyPolicyAccepted;
   isSidebarFilterOpen = false;
+  openSearch = false;
   showPrivacyPolicy;
   selectMode;
   adminUrl;
@@ -168,7 +169,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.matIconRegistry.setDefaultFontSetClass('fa');
 
     this.SVG_ICONS.forEach((iconPath, iconName) => {
-      const iconUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(iconPath);
+      // Disabling Sonar because we trust the SVG_ICONS defined as readonly above
+      const iconUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(iconPath); //NoSONAR
       this.matIconRegistry.addSvgIcon(iconName, iconUrl);
     });
   }
@@ -459,17 +461,19 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getSelectMode),
+      this.store.select(Selectors.getSearchBar),
     ]).subscribe(([
       replicationStatus,
       androidAppVersion,
       currentTab,
       selectMode,
+      searchBar,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab || '';
-
       this.selectMode = selectMode;
+      this.openSearch = !!searchBar.isOpen;
     });
 
     combineLatest([
