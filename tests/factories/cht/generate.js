@@ -33,10 +33,12 @@ const getReportContext = (patient, submitter) => {
 };
 
 const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
-  const clinics = Array.from({ length: nbrClinics }).map((_, idx) => placeFactory.place().build({
+  const clinics = Array
+  .from({ length: nbrClinics })
+  .map((_, idx) => placeFactory.place().build({
     type: 'clinic',
     parent: { _id: healthCenter._id, parent: healthCenter.parent },
-    name: `clinic_${idx}`
+    name: `clinic_${idx}`,
   }));
 
   const persons = [
