@@ -242,7 +242,47 @@ body {
   }
 
   .inner {
-    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-direction: row-reverse;
+    width: 100vw;
+
+    mm-search-bar,
+    contacts-filters,
+    reports-filters {
+      flex-grow: 2;
+    }
+
+    .app-menu-button {
+      order: 4;
+      min-width: 80px;
+    }
+
+    .tab-title {
+      order: 3;
+      min-width: 30vw;
+    }
+
+    mm-search-bar {
+      order: 2;
+    }
+
+    mm-reports-more-menu {
+      order: 1;
+    }
+
+    mm-messages-more-menu {
+      display: flex;
+      flex-grow: 2;
+      justify-content: flex-end;
+    }
+
+    .mat-icon-filter {
+      margin-right: 10px;
+      width: @icon-extra-small;
+      color: @filter-icon-color;
+    }
   }
 
   .filter {
@@ -1098,50 +1138,6 @@ mm-search-bar {
     svg path {
       fill: @report-review-verified-color;
     }
-  }
-}
-
-.tool-bar .inner {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-direction: row-reverse;
-  width: 100vw;
-
-  mm-search-bar,
-  contacts-filters,
-  reports-filters {
-    flex-grow: 2;
-  }
-
-  .app-menu-button {
-    order: 4;
-    min-width: 80px;
-  }
-
-  .tab-title {
-    order: 3;
-    min-width: 30vw;
-  }
-
-  mm-search-bar {
-    order: 2;
-  }
-
-  mm-reports-more-menu {
-    order: 1;
-  }
-
-  mm-messages-more-menu {
-    display: flex;
-    flex-grow: 2;
-    justify-content: flex-end;
-  }
-
-  .mat-icon-filter {
-    margin-right: 10px;
-    width: @icon-extra-small;
-    color: @filter-icon-color;
   }
 }
 
