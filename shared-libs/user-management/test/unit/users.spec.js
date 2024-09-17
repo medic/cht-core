@@ -2897,6 +2897,28 @@ describe('Users service', () => {
       });
     });
 
+    it('should update contact on user and user settings', () => {
+      const data = {
+        contact: 'maricica'
+      };
+
+      db.users.get.resolves({ facility_id: ['maine'], contact_id: 'june' });
+      db.medic.get.withArgs('org.couchdb.user:paul').resolves({ facility_id: ['maine'], contact_id: 'june' });
+      db.medic.get.withArgs('maricica').resolves({ _id: 'maricica', type: 'person', parent: { _id: 'maine' } });
+      sinon.stub(people, 'isAPerson').returns(true);
+
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
+
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
+      return service.updateUser('paul', data, true).then(() => {
+        chai.expect(db.medic.put.callCount).to.equal(1);
+        chai.expect(db.medic.put.args[0][0]).to.deep.include({ facility_id: ['maine'], contact_id: 'maricica' });
+        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(db.users.put.args[0][0]).to.deep.include({ facility_id: ['maine'], contact_id: 'maricica' });
+      });
+    });
+
     it('removes facility_id/contact on user and user settings for online user', () => {
       const data = {
         place: null,
