@@ -4,9 +4,11 @@
 
 #### Prerequisites
 
-Before continuing with the setup steps below, ensure you have a cht instance deployed and running either locally or globally - check out the [documentation](https://docs.communityhealthtoolkit.org/contribute/code/core/dev-environment/) on how to do this. 
+Before continuing with the setup steps below, ensure you have a cht instance deployed and running either locally or globally - check out the [documentation](https://docs.communityhealthtoolkit.org/contribute/code/core/dev-environment/) on how to do this.
 
-Also, ensure you have done the following installations on your machine:
+Also, make sure you have some pre-existing users and data already loaded on the app - you can use the [test-data-generator](https://github.com/medic/test-data-generator) tool to achieve this.
+
+Finally, ensure you have done the following installations on your machine:
 
 1. Install [NodeJS](https://nodejs.org/en/download) and [Java JDK](https://www.oracle.com/java/technologies/downloads/) then ensure JAVA_HOME path is correctly set up.
       ```
@@ -27,7 +29,7 @@ Also, ensure you have done the following installations on your machine:
    ```
 4. Install appium driver - `appium driver install uiautomator2`
 
-If you do not have the CHT Android app already installed on your mobile device, you can download the preferred [apk version](https://github.com/medic/cht-android/releases) and then set the path to the file as the value for `app` in the capabilities section of the settings file.
+If you do not have the CHT Android app already installed on your mobile device, you can download the preferred [apk version](https://github.com/medic/cht-android/releases) and then set the path to the file as the value for `appPath` in the capabilities section of the settings file.
 
 #### Steps
 
