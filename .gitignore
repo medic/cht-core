@@ -58,5 +58,5 @@ webapp/analyzer.report.html
 user-password-change.txt
 user-password-change.csv
 /tests/helm/values.yaml
-/documentation/*.png
+/tests/e2e/visual/images/*.png
 
