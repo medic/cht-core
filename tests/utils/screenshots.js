@@ -35,30 +35,24 @@ const generateScreenshot = async (scenario, step) => {
 
   const filename = `./documentation/${scenario}_${step}_${device}.png`;
 
-  const fullScreenshotBuffer = Buffer.from(await browser.takeScreenshot(), 'base64');
-  let extractWidth;
-  let extractHeight;
-  let screenshotSharp = sharp(fullScreenshotBuffer);
-
+  const newScreenshot = await browser.takeScreenshot();
+  let screenshotSharp = sharp(Buffer.from(newScreenshot, 'base64'));
   const metadata = await screenshotSharp.metadata();
 
-  if (await isMobile()) {
-    extractWidth = Math.min(MOBILE_VIEWPORT_WIDTH, metadata.width);
-    extractHeight = Math.min(MOBILE_VIEWPORT_HEIGHT, metadata.height);
-    screenshotSharp = screenshotSharp.extract({
+  const isMobile = await isMobile();
+  const extractWidth = Math.min(isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH, metadata.width);
+  const extractHeight = Math.min(isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT, metadata.height);
+  screenshotSharp = screenshotSharp.extract({   // can we do this for desktop and mobile?
       width: extractWidth,
       height: extractHeight,
       left: 0,
-      top: 0
-    });
-  } else {
-    extractWidth = Math.min(DESKTOP_WINDOW_WIDTH, metadata.width);
-    extractHeight = Math.min(DESKTOP_WINDOW_HEIGHT, metadata.height);
-  }
+      top: 0,
+  });
 
-  screenshotSharp = screenshotSharp
-    .resize(extractWidth * HIGH_DENSITY_DISPLAY_2X,
-      extractHeight * HIGH_DENSITY_DISPLAY_2X);
+  screenshotSharp = screenshotSharp.resize(
+      extractWidth * HIGH_DENSITY_DISPLAY_2X,
+      extractHeight * HIGH_DENSITY_DISPLAY_2X
+    );
 
   await screenshotSharp.toFile(filename);
 };
