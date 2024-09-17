@@ -252,7 +252,7 @@ If you do not have the CHT Android app already installed on your mobile device, 
     ```
     export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
     ```
-   - Ensure the `apdex-settings.json` file has been updated with the correct instance url, login credentials and assertion texts for page navigation, forms and other app interactions.
+   - Ensure the `apdex-settings.json` file has been updated with the correct instance url, login credentials and assertion texts (which correspond to the data in your cht instance) for page navigation, forms and other app interactions.
    - Under the skip section of the settings file, set `true` for the tests you want to skip and `false` for those you want to execute.
    - Update the fields for `platformVersion` and `deviceName` to match the value for your device.
      - Find the android version (`platformVersion`) by running `adb shell getprop | grep ro.build.version.release`.
