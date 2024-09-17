@@ -5,7 +5,7 @@ const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 
-// Fixed lists for real-world names
+// Fixed collection of real-world data
 const firstNames = ['Amanda', 'Beatrice', 'Dana', 'Fatima', 'Gina', 'Helen', 'Isabelle', 'Jessica', 'Ivy', 'Sara'];
 const lastNames = ['Allen', 'Bass', 'Dearborn', 'Flair', 'Gorman', 'Hamburg', 'Ivanas', 'James', 'Moore', 'Taylor'];
 const phoneNumbers = [
