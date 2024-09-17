@@ -76,5 +76,4 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
 
     await modalPage.cancel();
   });
-
 });

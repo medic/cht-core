@@ -8,6 +8,7 @@ const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-re
 const hamburgerMenu = () => $('#header-dropdown-link');
 const syncInProgress = () => $('*="Currently syncing"');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const loaders = () => $$('.container-fluid .loader');
 
 const goToMessages = async () => {
   await commonPage.goToUrl(`/#/messages`);
@@ -17,25 +18,25 @@ const goToMessages = async () => {
 const goToTasks = async () => {
   await commonPage.goToUrl(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
-  await commonPage.waitForPageLoaded();
+  await waitForPageLoaded();
 };
 
 const goToReports = async (reportId = '') => {
   await commonPage.goToUrl(`/#/reports/${reportId}`);
-  await commonPage.waitForPageLoaded();
+  await waitForPageLoaded();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
   await commonPage.goToUrl(`/#/contacts/${contactId}`);
   if (shouldLoad) {
-    await commonPage.waitForPageLoaded();
+    await waitForPageLoaded();
   }
 };
 
 const goToAnalytics = async () => {
   await commonPage.goToUrl(`/#/analytics`);
   await (await analyticsTab()).waitForDisplayed();
-  await commonPage.waitForPageLoaded();
+  await waitForPageLoaded();
 };
 
 const hideModalOverlay = () => {
@@ -93,6 +94,32 @@ const sync = async (expectReload, timeout) => {
   await closeHamburgerMenu();
 };
 
+const getVisibleLoaders = async () => {
+  const visible = [];
+  for (const loader of await loaders()) {
+    if (await loader.isDisplayedInViewport()) {
+      visible.push(loader);
+    }
+  }
+
+  return visible;
+};
+
+const waitForAngularLoaded = async (timeout = 40000) => {
+  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+};
+
+const waitForPageLoaded = async () => {
+  // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
+  // so waiting for the main page to load.
+  await waitForAngularLoaded();
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
+  do {
+    await commonPage.waitForLoaders();
+  } while ((await getVisibleLoaders()).length > 0);
+};
+
 module.exports = {
   goToMessages,
   goToTasks,
@@ -100,4 +127,5 @@ module.exports = {
   goToPeople,
   goToAnalytics,
   sync,
+  waitForPageLoaded,
 };

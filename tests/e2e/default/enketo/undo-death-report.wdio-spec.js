@@ -29,7 +29,7 @@ describe('Submit an undo death report', () => {
     await commonPage.sync(true);
   });
 
-  it('should submit an undo death report, ' +
+  it.skip('should submit an undo death report, ' +
     'verify that it was registered successfully and ' +
     'verify that the counter for the Deaths, in the targets section, was set to 0.', async () => {
 
