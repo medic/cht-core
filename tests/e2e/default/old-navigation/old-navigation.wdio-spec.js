@@ -11,7 +11,6 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
-const { waitForPageLoaded } = require('@page-objects/default/common/common.wdio.page');
 
 describe('Old Navigation', () => {
   const places = placeFactory.generateHierarchy();
@@ -43,7 +42,8 @@ describe('Old Navigation', () => {
     permissions.can_view_old_navigation = offlineUser.roles;
     await utils.updateSettings({ tasks, permissions }, true);
 
-    await loginPage.login(offlineUser);
+    await loginPage.login({ ...offlineUser, loadPage: false });
+    await oldNavigationPage.waitForPageLoaded();
   });
 
   after(async () => {
@@ -79,7 +79,7 @@ describe('Old Navigation', () => {
   it('should navigate to the Reports section and open the first report listed', async () => {
     await oldNavigationPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.firstReport());
-    await waitForPageLoaded();
+    await oldNavigationPage.waitForPageLoaded();
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(person.name);
     expect(openReportInfo.reportName).to.equal('Pregnancy registration');

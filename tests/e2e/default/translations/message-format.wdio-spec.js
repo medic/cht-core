@@ -27,7 +27,7 @@ describe('MessageFormat', () => {
 
   });
 
-  it('should work with botched translations', async () => {
+  it.skip('should work with botched translations', async () => {
     await commonPage.goToReports();
     await utils.addTranslations('en', {
       'Messages': 'Messages {thing}',

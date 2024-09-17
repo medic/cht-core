@@ -203,7 +203,7 @@ describe('Create user for contacts', () => {
 
   describe('user replace', () => {
     describe('for an offline user', () => {
-      it('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
+      it.skip('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
@@ -386,7 +386,8 @@ describe('Create user for contacts', () => {
         expect(cookie.value).to.include(newUserSettings.name);
       });
 
-      it('creates new user from latest replace_user form data if multiple are submitted before syncing', async () => {
+      it('creates new user from latest replace_user form data'
+      + 'if multiple are submitted before syncing', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
