@@ -49,7 +49,7 @@ describe('Contact Page | List View (Access)', () => {
   describe('Log in', () => {
     it('should show contacts page tab when can_view_contact and can_view_contacts_tab permissions are enabled', async () => {
       await (await commonPage.contactsTab()).waitForDisplayed();
-      await generateScreenshot('ContactPage', 'TabVisible');
+      await generateScreenshot('contact-page', 'tab-visible');
       await commonPage.openHamburgerMenu();
       await generateScreenshot('ContactPage', 'MenuOpened');
       await commonPage.closeHamburgerMenu();
