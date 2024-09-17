@@ -188,7 +188,7 @@ export interface GlobalState {
   facilities: Record<string, any>[];
   filters: Record<string, any>; // Selected criteria to filter data.
   sidebarFilter: SidebarFilterState;
-  searchBar: searchBarState;
+  searchBar: SearchBarState;
   sidebarMenu: SidebarMenuState;
   forms: null | Record<string, any>[];
   lastChangedDoc: boolean | Record<string, any>;
@@ -212,7 +212,7 @@ interface SidebarMenuState {
   isOpen: boolean;
 }
 
-interface searchBarState {
+interface SearchBarState {
   isOpen: boolean;
 }
 
