@@ -1,34 +1,48 @@
 .app-root.old-nav {
+  .content .page {
+    padding-left: 0;
+  }
+
+  .app-menu-button {
+    display: none;
+  }
+
   &.messages {
     .header .tabs .selected {
       background-color: @messages-color;
     }
   }
+
   &.tasks {
     .header .tabs .selected {
       background-color: @tasks-color;
     }
   }
+
   &.reports {
     .header .tabs .selected {
       background-color: @reports-color;
     }
   }
+
   &.analytics {
     .header .tabs .selected {
       background-color: @analytics-color;
     }
   }
+
   &.contacts {
     .header .tabs .selected {
       background-color: @contacts-color;
     }
   }
+
   &.user {
     .header .tabs .selected {
       background-color: @admin-color;
     }
   }
+
   &.error,
   &.testing {
     .header .tabs .selected {
@@ -42,37 +56,170 @@
     .header .tabs .selected {
       background-color: @messages-color;
     }
+
     .page {
       top: @top-without-filter;
     }
   }
 
   .header {
+    background-color: @top-header-color;
+    text-align: center;
+    position: relative;
     display: block;
     padding-top: 5px;
+    .inner {
+      height: @top-navbar-height;
+    }
+
+    .logo {
+      float: left;
+      opacity: 0.9;
+      padding: 2px 10px;
+      img {
+        height: 50px;
+      }
+    }
 
     .mm-icon {
       margin: 0 auto;
-      font-size: 1.5rem;
+      :before {
+        font-size: @font-extra-extra-large;
+      }
+    }
+
+    a {
+      .button-text-inverse(@nav-icon-gray);
+      outline: 0;
+      padding-top: 6px;
+
+      &:hover, &:active, &:focus {
+        text-decoration: none;
+      }
     }
 
     .tabs {
       a {
+        border-radius: 10px 10px 0 0;
+        cursor: pointer;
+        min-width: 80px;
+        padding-left: 5px;
+        padding-right: 5px;
+
         .mm-icon {
           display: block;
-          svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+          svg,
+          span:not(.mm-badge-overlay):not(.mm-badge),
+          img {
             &, &:before {
               height: 24px;
               max-width: 24px;
             }
           }
         }
+
+        .button-label {
+          font-size: @font-small;
+          color: @button-text-inverse-color;
+        }
+
         &.selected {
           .button-label,
           .mm-icon:hover,
           .resource-icon {
             .button-text;
           }
+        }
+      }
+    }
+
+    .extras {
+      float: right;
+      padding-right: 5px;
+      a {
+        width: @header-bar-extras;
+        margin-top: 10px;
+        border-radius: @radius-size @radius-size 0 0;
+        .mm-icon {
+          width: inherit;
+        }
+      }
+
+      .dropdown-menu a {
+        border-radius: 0;
+      }
+
+      .open > a {
+        background-color: @white;
+        .mm-icon {
+          color: @top-header-color;
+        }
+      }
+    }
+
+    .extras,
+    .tabs {
+      height: 100%;
+      a {
+        height: 100%;
+        display: inline-block;
+      }
+    }
+
+    .dropdown ul a {
+      width: 100%;
+      height: auto;
+    }
+
+    .dropdown.options.open.show {
+      display: inline !important; // Overriding BS' "display" that uses !important;
+    }
+
+    .options .dropdown-menu {
+      width: @header-dropdown-width;
+      top: 0 !important; // Overriding element.style
+      left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
+      margin-top: 30px;
+      font-size: 0;
+
+      a {
+        text-shadow: none;
+        padding: 10px 20px;
+        color: @gray-ultra-darker;
+        margin-top: 0;
+        white-space: normal;
+        font-size: @font-medium;
+      }
+
+      .disabled a {
+        color: @gray-disabled;
+      }
+
+      .divider {
+        margin: 0;
+      }
+
+      .sync-status {
+        margin-top: 10px;
+        margin-bottom: 10px;
+
+        a {
+          padding-top: 0;
+          padding-bottom: 0;
+          color: @label-color;
+
+          &:hover {
+            background-color: transparent;
+            cursor: default;
+          }
+        }
+
+        .success {
+          color: @ok-color;
+        }
+
+        .required {
+          color: @error-color;
         }
       }
     }
@@ -88,6 +235,7 @@
     &, &:focus {
       .button-text;
     }
+
     &:hover, &.active {
       .button-text-hover;
     }
@@ -113,13 +261,25 @@
     .header {
       background-color: @top-header-color;
       position: relative;
-
-      .tabs {
-        padding: 0;
+      .inner {
+        display: flex;
+        justify-content: space-between;
+        width: 100vw;
+        flex-direction: row-reverse;
+        flex-wrap: nowrap;
       }
 
-      .inner {
-        height: @top-navbar-height;
+      .tabs {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0;
+        a {
+          min-width: 40px;
+          .button-label {
+            font-size: @font-XXXS;
+          }
+        }
       }
 
       .logo {
@@ -131,12 +291,17 @@
         top: 8px;
         right: 5px;
       }
+
       .extras a {
         padding-top: 2px;
         margin-top: 2px;
         .fa-bars {
           font-size: @font-extra-extra-large;
         }
+      }
+
+      #header-dropdown-link {
+        padding-top: 6px;
       }
     }
 
@@ -177,9 +342,15 @@
         // Use bigger font when there are 4 or less tabs.
         .elements-label(a, button-label, 4, @font-extra-small);
       }
+
       .mm-badge-overlay {
-        right: 10%;
+        right: 0;
       }
+
+      .mm-badge-overlay-top {
+        top: -8px;
+      }
+
       .inner {
         height: @top-navbar-height;
       }

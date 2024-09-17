@@ -93,165 +93,65 @@ body {
   margin: 0 auto;
 }
 
-.header {
-  display: none;
-  background-color: @top-header-color;
-  text-align: center;
-  padding-top: 5px;
+.app-root:not(.old-nav) mm-header {
+  height: 100vh;
+  width: @tab-navbar-size;
+  position: fixed;
+  top: @filters-bar-desktop-height;
+  left: 0;
   z-index: 3;
+  overflow: hidden;
+}
+
+.app-root:not(.old-nav) .header {
   position: relative;
+  display: block;
+  z-index: 3;
+  background-color: @tab-navbar-color;
+  text-align: center;
+  height: 100vh;
   .button-text-inverse;
 
-  .inner {
-    height: @top-navbar-height;
-  }
-
-  a {
-    .button-text-inverse(@nav-icon-gray);
-    outline: 0;
-    padding-top: 3px;
-  }
-
-  .mm-icon {
-    margin: 0 auto;
-    font-size: @font-extra-large;
-  }
-
-  .logo {
-    float: left;
-    opacity: 0.9;
-    padding: 2px 10px;
-    img {
-      height: 50px;
-    }
-  }
-
-  .extras,
-  .tabs {
-    &,
-    a {
-      height: 100%;
-    }
-    a {
-      display: inline-block;
-    }
-  }
-
+  .logo,
   .extras {
-    float: right;
-    padding-right: 5px;
-
-    a {
-      width: @header-bar-extras;
-      margin-top: 10px;
-      border-radius: @radius-size @radius-size 0 0;
-
-      .mm-icon {
-        width: inherit;
-      }
-    }
-
-    .dropdown-menu a {
-      border-radius: 0;
-    }
-
-    .open > a {
-      background-color: @white;
-
-      .mm-icon {
-        color: @top-header-color;
-      }
-    }
+    display: none;
   }
 
-  .dropdown ul a {
-    width: 100%;
-    height: auto;
-  }
-
-  .dropdown.options.open.show {
-    display: inline !important; // Overriding BS' "display" that uses !important;
-  }
-
-  .options .dropdown-menu {
-    width: @header-dropdown-width;
-    top: 0 !important; // Overriding element.style
-    left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
-    margin-top: 30px;
-    font-size: 0;
-    a {
-      text-shadow: none;
-      padding: 10px 20px;
-      color: @gray-ultra-darker;
-      margin-top: 0;
-      white-space: normal;
-      font-size: @font-medium;
-    }
-    .disabled a {
-      color: @gray-disabled;
-    }
-    .divider {
-      margin: 0;
-    }
-    .sync-status {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      a {
-        padding-top: 0;
-        padding-bottom: 0;
-        color: @label-color;
-        &:hover {
-          background-color: transparent;
-          cursor: default;
-        }
-      }
-      .success {
-        color: @ok-color;
-      }
-      .required {
-        color: @error-color;
-      }
-    }
+  .inner {
+    height: 100vh;
   }
 
   .tabs {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 0 15px;
     overflow: hidden;
     white-space: nowrap;
 
-    .button-label {
-      top: -5px;
-      position: relative;
-      overflow: hidden;
-      word-wrap: break-word;
-      color: @nav-icon-gray;
-    }
-
     a {
+      .button-text-inverse(@nav-icon-gray);
+      outline: 0;
+      text-shadow: none;
       border-radius: @radius-size @radius-size 0 0;
+      padding: 0 5px;
+      margin-top: 30px;
       cursor: pointer;
       min-width: 80px;
-      padding-left: 5px;
-      padding-right: 5px;
 
-      .mm-icon {
-        display: block;
-        padding: 5px 0;
-        height: 34px;
-        width: 54px;
-
-        svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
-          &, &:before {
-            display: block;
-            margin: auto;
-            height: 20px;
-            max-width: 20px;
-            overflow: hidden;
-          }
-        }
+      &:hover,
+      &:focus {
+        text-decoration: none;
       }
 
       &.selected {
         text-shadow: none;
+        .mm-icon {
+          border-radius: 999px;
+          background-color: @tab-selected-color;
+        }
+
         .button-label,
         .mm-icon:hover,
         .resource-icon {
@@ -259,11 +159,42 @@ body {
           text-shadow: none;
         }
       }
+    }
 
-      &:hover,
-      &:focus {
-        text-decoration: none;
+    a .button-label {
+      margin-top: 3px;
+      position: relative;
+      overflow: hidden;
+      word-wrap: break-word;
+      color: @nav-icon-gray;
+      font-size: @font-XXS;
+      text-overflow: ellipsis;
+    }
+
+    a .mm-icon {
+      display: block;
+      padding: 8px 0;
+      height: 34px;
+      width: 54px;
+      margin: 0 auto;
+      font-size: @font-extra-large;
+      text-shadow: none;
+
+      svg,
+      span:not(.mm-badge-overlay):not(.mm-badge),
+      img {
+        &, &:before {
+          display: block;
+          margin: auto;
+          height: 20px;
+          max-width: 20px;
+          overflow: hidden;
+        }
       }
+    }
+
+    a .mm-badge {
+      margin-right: 0;
     }
   }
 }
@@ -432,6 +363,7 @@ body {
     position: absolute;
     width: 100%;
     max-width: @content-width;
+    padding-left: @tab-navbar-size;
   }
 
   .inbox {
@@ -479,6 +411,7 @@ body {
 .content-pane {
   height: 100%;
 }
+
 .message-content-wrapper {
   height: 100%;
   .item-content {
@@ -1096,10 +1029,6 @@ mm-search-bar {
   }
 }
 
-div.old-nav .app-menu-button {
-  display: none;
-}
-
 .verify-report-options-wrapper {
   .verify-report-options-body {
     display: flex;
@@ -1344,6 +1273,10 @@ mm-sidebar-menu .mat-sidenav-container {
 }
 
 @media (max-width: @media-mobile) {
+  .content .page {
+    padding-left: 0;
+  }
+
   .fast-action-trigger:not(.embed-fast-action) {
     position: fixed;
     bottom: calc(@bottom-navbar-height + @fab-bottom-padding);
@@ -1365,55 +1298,33 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  .header {
-    .tabs {
-      display: flex;
-      flex-direction: row;
-      padding: 0 15px;
-      justify-content: center;
-      a {
-        flex-grow: 1;
-        min-width: 70px;
-        max-width: 100px;
-      }
-    }
-  }
   .app-root:not(.old-nav) {
+    mm-header {
+      position: relative;
+    }
+
     .header {
       display: block;
+      height: @tab-navbar-size;
       width: 100vw;
-      background-color: @bottom-navbar-color;
+      background-color: @tab-navbar-color;
       position: fixed;
       bottom: 0;
-
       .inner {
-        height: @bottom-navbar-height;
-      }
-
-      .logo,
-      .extras {
-        display: none;
+        height: 100%;
       }
 
       .tabs {
-        .button-label {
-          top: 0;
-          font-size: @font-XXS;
-          padding-top: 5px;
-        }
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
         a {
           min-width: 65px;
-          .mm-icon {
-            padding: 8px 0;
-          }
-          &.selected
-          .mm-icon {
-            border-radius: 999px;
-            background-color: @tab-selected-color;
-          }
+          margin-top: 3px;
         }
       }
     }
+
     &.select-mode,
     &.error {
       mm-header {
