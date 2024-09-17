@@ -25,6 +25,7 @@ export class SnackbarComponent implements OnInit {
   message;
   action;
   active = false;
+  displayAboveFab = true;
 
   constructor(
     private store:Store,
@@ -75,6 +76,7 @@ export class SnackbarComponent implements OnInit {
   }
 
   private show(message, action) {
+    this.displayAboveFab = this.isFABDisplayed();
     clearTimeout(this.hideTimeout);
     this.hideTimeout = undefined;
     clearTimeout(this.showNextMessageTimeout);
@@ -98,5 +100,9 @@ export class SnackbarComponent implements OnInit {
 
   private resetMessage() {
     this.globalActions.setSnackbarContent();
+  }
+
+  private isFABDisplayed(): boolean {
+    return !!$('.fast-action-fab-button:visible').length;
   }
 }

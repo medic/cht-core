@@ -272,15 +272,18 @@ mm-panel-header {
 
 @media (max-width: @media-mobile) {
   .app-root:not(.old-nav) #snackbar {
-    bottom: calc(@bottom-navbar-height + @fab-offset-height);
     margin: 0 18px;
 
     .snackbar-content {
       border-radius: @radius-size;
     }
+
+    &.display-above-fab {
+      bottom: calc(@bottom-navbar-height + @fab-offset-height);
+    }
   }
 
-  .app-root.show-content:not(.old-nav) #snackbar {
+  .app-root.show-content:not(.old-nav) #snackbar.display-above-fab {
     bottom: calc(@fab-height + @fab-bottom-padding + @snackbar-fab-gap);
   }
 
