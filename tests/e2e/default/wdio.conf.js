@@ -4,7 +4,7 @@ const { suites } = require('./suites');
 // Override specific properties from wdio base config
 const defaultConfig = Object.assign(wdioBaseConfig.config, {
   suites,
-  specs: ['**/contacts/contact-details.wdio-spec.js'],
+  specs: ['**/*.wdio-spec.js'],
 });
 
 exports.config = defaultConfig;
