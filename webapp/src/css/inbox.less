@@ -67,8 +67,17 @@ body {
           color: @text-inverse-color;
         }
       }
+
       .partners > h3 {
         margin-top: 100px;
+      }
+    }
+
+    &.about,
+    &.testing,
+    &.error {
+      .page {
+        padding-left: calc(@tab-navbar-size + 15px);
       }
     }
   }
@@ -101,7 +110,7 @@ body {
   height: 100vh;
   width: @tab-navbar-size;
   position: fixed;
-  top: @filters-bar-desktop-height;
+  top: @toolbar-desktop-height;
   left: 0;
   z-index: 3;
   overflow: hidden;
@@ -217,13 +226,6 @@ body {
   padding: 5px 0;
   width: 100vw;
 
-  .tab-title {
-    display: inline-block;
-    color: @filter-text-color;
-    font-size: @font-XXXL;
-    padding-left: 15px;
-  }
-
   .navigation {
     display: none;
     float: left;
@@ -261,7 +263,11 @@ body {
 
     .tab-title {
       order: 3;
-      min-width: 30vw;
+      min-width: 33vw;
+      display: inline-block;
+      color: @filter-text-color;
+      font-size: @font-XXXL;
+      padding-left: 20px;
     }
 
     mm-search-bar {
@@ -1142,7 +1148,7 @@ mm-search-bar {
 }
 
 .app-root.sidebar-filter-active .tool-bar .inner .tab-title {
-  min-width: 22vw;
+  min-width: 25vw;
 }
 
 .fast-action-trigger {
@@ -1377,6 +1383,15 @@ mm-sidebar-menu .mat-sidenav-container {
         margin-bottom: 10px;
       }
     }
+
+    &.about,
+    &.testing,
+    &.error {
+      .page {
+        padding-left: 15px;
+      }
+    }
+
     mm-header {
       position: relative;
     }
@@ -1405,6 +1420,7 @@ mm-sidebar-menu .mat-sidenav-container {
 
         a {
           min-width: 65px;
+          margin-top: 3px;
 
           .mm-icon {
             padding: 8px 0;
