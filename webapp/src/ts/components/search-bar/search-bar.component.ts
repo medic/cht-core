@@ -7,11 +7,11 @@ import {
   AfterViewInit,
   Output,
   ViewChild,
-  HostBinding,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
+import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
@@ -32,6 +32,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   private filters;
+  private globalActions;
   subscription: Subscription = new Subscription();
   activeFilters: number = 0;
   openSearch = false;
@@ -42,7 +43,9 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     private store: Store,
     private responsiveService: ResponsiveService,
     private searchFiltersService: SearchFiltersService,
-  ) { }
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   ngAfterContentInit() {
     this.subscribeToStore();
@@ -56,9 +59,11 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     const subscription = combineLatest(
       this.store.select(Selectors.getSidebarFilter),
       this.store.select(Selectors.getFilters),
-    ).subscribe(([sidebarFilter, filters]) => {
+      this.store.select(Selectors.getSearchBar),
+    ).subscribe(([sidebarFilter, filters, searchBar]) => {
       this.activeFilters = sidebarFilter?.filterCount?.total || 0;
       this.filters = filters;
+      this.openSearch = searchBar.isOpen;
 
       if (!this.openSearch && this.filters?.search) {
         this.toggleMobileSearch();
@@ -80,9 +85,10 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
       return;
     }
 
-    this.openSearch = forcedValue !== undefined ? forcedValue : !this.openSearch;
+    const isSearchOpen = forcedValue !== undefined ? forcedValue : !this.openSearch;
+    this.globalActions.setSearchBar({ isOpen: isSearchOpen });
 
-    if (this.openSearch) {
+    if (isSearchOpen) {
       // To automatically display the mobile's soft keyboard.
       setTimeout(() => $('.mm-search-bar-container #freetext').focus());
     }
@@ -102,10 +108,5 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-  }
-
-  @HostBinding('class.search-open')
-  get isSearchOpen(): boolean {
-    return this.openSearch;
   }
 }

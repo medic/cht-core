@@ -1406,9 +1406,19 @@ mm-sidebar-menu .mat-sidenav-container {
           padding-top: 5px;
           text-overflow: ellipsis;
         }
+
         a {
           min-width: 65px;
-          margin-top: 3px;
+
+          .mm-icon {
+            padding: 8px 0;
+          }
+
+          &.selected
+          .mm-icon {
+            border-radius: 999px;
+            background-color: @tab-selected-color;
+          }
         }
       }
     }
@@ -1472,6 +1482,7 @@ mm-sidebar-menu .mat-sidenav-container {
     .app-menu-button {
       min-width: 0;
     }
+
     .navigation {
       .mat-icon-close {
         width: @icon-XXS;
@@ -1479,12 +1490,15 @@ mm-sidebar-menu .mat-sidenav-container {
         overflow: initial;
       }
     }
+
     .filter {
       margin: 0;
     }
+
     .mm-button-icon {
       padding: 5px 0 0 5px;
     }
+
     .right-pane {
       position: absolute;
       top: 0;
@@ -1495,9 +1509,11 @@ mm-sidebar-menu .mat-sidenav-container {
         }
       }
     }
+
     h2 {
       display: initial;
     }
+
     .ellipsis-title {
       display: inline-block;
       white-space: nowrap;
@@ -1507,17 +1523,21 @@ mm-sidebar-menu .mat-sidenav-container {
       text-align: left;
       color: @filter-text-color;
     }
+
     .dropdown,
     .navigation .mm-button {
       vertical-align: top;
     }
+
     .dropdown.analytics-module {
       width: 80px;
     }
+
     .mm-button-text {
       width: 0;
       visibility: hidden;
     }
+
     mm-freetext-filter {
       width: auto;
 
@@ -1532,6 +1552,7 @@ mm-sidebar-menu .mat-sidenav-container {
         }
       }
     }
+
     .sort-dropdown {
       position: absolute;
       right: 0;
@@ -1725,17 +1746,27 @@ mm-sidebar-menu .mat-sidenav-container {
           border: 1px solid @chip-border-color;
         }
       }
+    }
+  }
 
-      &.open-search {
-        background-color: rgba(255, 255, 255, 0.8);
+  .app-root.open-search mm-search-bar {
+    width: 100%;
+    padding-left: 5px;
 
-        mm-freetext-filter {
-          display: inherit;
-        }
+    ~ .app-menu-button,
+    ~ .tab-title {
+      display: none;
+    }
 
-        .search-bar-left-icon {
-          margin: 0 10px;
-        }
+    .mm-search-bar-container {
+      background-color: rgba(255, 255, 255, 0.8);
+
+      mm-freetext-filter {
+        display: inherit;
+      }
+
+      .search-bar-left-icon {
+        margin: 0 10px;
       }
     }
   }
@@ -1743,15 +1774,6 @@ mm-sidebar-menu .mat-sidenav-container {
   .tool-bar .inner {
     .app-menu-button {
       min-width: initial;
-    }
-    mm-search-bar.search-open {
-      width: 100%;
-      padding-left: 5px;
-
-      ~ .app-menu-button,
-      ~ .tab-title {
-        display: none;
-      }
     }
 
     .tab-title {
