@@ -59,7 +59,7 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
   return { clinics, reports, persons };
 };
 
-const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
+const createHierarchyWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
   const clinics = Array.from({ length: nbrClinics }).map((_, index) => {
     const firstName = firstNames[index % firstNames.length];
     const lastName = lastNames[index % lastNames.length];
