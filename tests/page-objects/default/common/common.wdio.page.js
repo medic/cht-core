@@ -198,7 +198,6 @@ const openHamburgerMenu = async () => {
 
   // Adding pause here as we have to wait for sidebar nav menu animation to load
   await browser.pause(500);
-
   await (await sideBarMenuTitle()).waitForDisplayed();
 };
 
@@ -374,7 +373,7 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(false);
+    closedModal = await closeReloadModal(false, 15000);
   }
 
   await syncAndWaitForSuccess(timeout);

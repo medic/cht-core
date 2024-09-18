@@ -32,7 +32,7 @@ const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion
     'ignore-certificate-errors',
     'window-size=1200,900'
   ];
-const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG;//.concat(['headless']);
+const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
 
 const baseConfig = {
   //
@@ -195,7 +195,7 @@ const baseConfig = {
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
-    //retries: DEBUG ? 0 : 5,
+    retries: DEBUG ? 0 : 5,
   },
   //
   // =====
