@@ -49,7 +49,7 @@ describe('Message Tab - Sender Data', () => {
   const patient = personFactory.build({
     _id: 'patient1',
     phone: '+14152223344',
-    name: 'patient1',
+    name: 'patient 1',
     parent: { _id: clinic._id, parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }}}
   });
   const contactWithManyPlaces = personFactory.build({
