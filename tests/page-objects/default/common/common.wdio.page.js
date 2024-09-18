@@ -351,6 +351,7 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).waitForClickable();
   await (await syncButton()).click();
+  await closeReloadModal(false);
   await openHamburgerMenu();
   if (await (await syncInProgress()).isExisting()) {
     await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
@@ -373,7 +374,7 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(false, 15000);
+    closedModal = await closeReloadModal(true);
   }
 
   await syncAndWaitForSuccess(timeout);
@@ -394,6 +395,7 @@ const syncAndWaitForFailure = async () => {
 
 const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
+    await browser.waitUntil( async () => await modalPage.modal().isDisplayed(), { timeout: 10000, interval: 500 } );
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
     shouldUpdate && await waitForAngularLoaded();
     return true;
