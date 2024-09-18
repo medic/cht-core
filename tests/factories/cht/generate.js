@@ -14,6 +14,7 @@ const phoneNumbers = [
   '+256414345789', '+256414345790', '+256414345791',
   '+256414345792'
 ];
+const patientIds = [65421, 65422, 65423, 65424, 65425, 65426, 65427, 65428, 65429, 65430];
 
 const getReportContext = (patient, submitter) => {
   const context = {
@@ -59,61 +60,51 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
   return { clinics, reports, persons };
 };
 
-const createHierarchyWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
-  const clinics = Array
-    .from({ length: nbrClinics })
-    .map((_, index) => {
+const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
+  const clinics = Array.from({ length: nbrClinics }).map((_, index) => {
     const firstName = firstNames[index % firstNames.length];
     const lastName = lastNames[index % lastNames.length];
     const personName = `${firstName} ${lastName}`;
     const personPhoneNumber = phoneNumbers[index % phoneNumbers.length];
 
-    // Create primary contact
-    const contact = {
-      _id: 'fixture:primary:person',
+    const primaryContact = personFactory.build({
       name: personName,
       phone: personPhoneNumber
-    };
+    });
 
-    // Create the clinic with the name based on the primary person's name
     const clinic = placeFactory.place().build({
       type: 'clinic',
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
       name: `${personName} Family`,
-      contact: contact
+      contact: primaryContact
     });
 
-    // Create the primary contact for this clinic
-    const primaryPerson = personFactory.build({
-      parent: { _id: clinic._id, parent: clinic.parent },
-      name: personName,
-      phone: personPhoneNumber
+    primaryContact.parent = { _id: clinic._id, parent: clinic.parent };
+
+    const additionalPersons = Array.from({ length: nbrPersons - 1 }).map((_, i) => {
+      const additionalPersonName = `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
+      const additionalPhoneNumber = phoneNumbers[i % phoneNumbers.length];
+      return personFactory.build({
+        parent: { _id: clinic._id, parent: clinic.parent },
+        name: additionalPersonName,
+        patient_id: patientIds[i % patientIds.length],
+        phone: additionalPhoneNumber
+      });
     });
 
-    return { clinic, primaryPerson };
+    return { clinic, persons: [primaryContact, ...additionalPersons] };
   });
 
-  const persons = clinics.flatMap(({ clinic }) => Array.from({ length: nbrPersons - 1 }).map((_, index) => {
-    const additionalPersonName = `${firstNames[index % firstNames.length]} ${lastNames[index % lastNames.length]}`;
-    const additionalPhoneNumber = phoneNumbers[index % phoneNumbers.length];
-    return personFactory.build({
-      parent: { _id: clinic._id, parent: clinic.parent },
-      name: additionalPersonName,
-      patient_id: 65421,
-      phone: additionalPhoneNumber
-    });
-  }));
+  const allPersons = clinics.flatMap(({ persons }) => persons);
 
-  const allPersons = [
-    ...clinics.map(({ primaryPerson }) => primaryPerson),
-    ...persons
-  ];
-
-  const reports = allPersons.flatMap(person => [
-    deliveryFactory.build(getReportContext(person, user)),
-    pregnancyFactory.build(getReportContext(person, user)),
-    pregnancyVisitFactory.build(getReportContext(person, user)),
-  ]);
+  const reports = [];
+  allPersons.forEach(person => {
+    reports.push(
+      deliveryFactory.build(getReportContext(person, user)),
+      pregnancyFactory.build(getReportContext(person, user)),
+      pregnancyVisitFactory.build(getReportContext(person, user))
+    );
+  });
 
   const clinicList = clinics.map(({ clinic }) => clinic);
 
@@ -121,7 +112,7 @@ const createHierarchyWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbr
 };
 
 const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames = false }) => {
-  const createDataFunc = useRealNames ? createDataWithRealNames : createDataWithFixedNames;
+  const createDataFunc = useRealNames ? createDataWithRealNames : createDataWithFixedData;
   return createDataFunc({ healthCenter, user, nbrClinics, nbrPersons });
 };
 

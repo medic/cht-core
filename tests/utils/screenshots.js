@@ -1,3 +1,11 @@
+// This file uses the 'sharp' library for image manipulation because WebdriverIO's native
+// functions have limitations when resizing windows and taking screenshots.
+// Specifically, WebdriverIO's `setWindowSize` function has a minimum width limit of 500px,
+// but we need smaller sizes for mobile screenshots.
+// While the viewport size can be set to a smaller dimension, WebdriverIO's `takeScreenshot`
+// functionality captures the entire window size, not just the viewport.
+// To handle this, we capture the screenshot using WebdriverIO and then use 'sharp'
+// to resize the image to match the smaller viewport size we need for documentation purposes.
 const sharp = require('sharp');
 
 const MOBILE_WINDOW_WIDTH = 768;
@@ -33,7 +41,7 @@ const resizeWindowForScreenshots = async () => {
 const generateScreenshot = async (scenario, step) => {
   const device = await isMobile() ? 'mobile' : 'desktop';
 
-  const filename = `./documentation/${scenario}_${step}_${device}.png`;
+  const filename = `./tests/e2e/visual/images/${scenario}-${step}-${device}.png`;
 
   const newScreenshot = await browser.takeScreenshot();
   let screenshotSharp = sharp(Buffer.from(newScreenshot, 'base64'));

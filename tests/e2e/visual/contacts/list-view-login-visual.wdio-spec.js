@@ -51,82 +51,81 @@ describe('Contact Page | List View (Access)', () => {
       await (await commonPage.contactsTab()).waitForDisplayed();
       await generateScreenshot('contact-page', 'tab-visible');
       await commonPage.openHamburgerMenu();
-      await generateScreenshot('ContactPage', 'MenuOpened');
+      await generateScreenshot('contact-page', 'menu-opened');
       await commonPage.closeHamburgerMenu();
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
-      await generateScreenshot('ContactPage', 'PeopleListVisible');
+      await generateScreenshot('contact-page', 'people-list-visible');
       await commonPage.goToReports();
       await reportsPage.openFirstReport();
       await reportsPage.rightPanelSelectors.patientName().waitForClickable();
-      await generateScreenshot('ContactPage', 'ReportsVisible');
+      await generateScreenshot('contact-page', 'reports-visible');
       await reportsPage.rightPanelSelectors.patientName().click();
       await contactPage.waitForContactLoaded();
-      await generateScreenshot('ContactPage', 'ContactLoaded');
+      await generateScreenshot('contact-page', 'contact-loaded');
       await commonPage.goToMessages();
     });
-
-    it('not having can_view_contact and having can_view_contacts_tab permissions, ' +
-      'should hide contacts page as tab, hidden from menu option as well', async () => {
+    it('should hide contacts page as tab and from menu option ' +
+      'when can_view_contacts_tab permissions is enable but can_view_contact permission is not' , async () => {
       await updateRolePermissions('chw', [], ['can_view_contacts']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
-      await generateScreenshot('ContactPage', 'NoTabVisible');
+      await generateScreenshot('contact-page', 'no-tab-visible');
       await commonPage.openHamburgerMenu();
       await (await commonPage.contactsButton()).waitForClickable({ reverse: true });
-      await generateScreenshot('ContactPage', 'NoMenuOption');
+      await generateScreenshot('contact-page', 'no-menu-option');
       await commonPage.closeHamburgerMenu();
       await commonPage.goToReports();
       await reportsPage.openFirstReport();
       await (reportsPage.rightPanelSelectors.patientName()).waitForClickable();
-      await generateScreenshot('ContactPage', 'ReportView_NoContacts');
+      await generateScreenshot('contact-page', 'report-view-no-contacts');
       await reportsPage.rightPanelSelectors.patientName().click();
-      await generateScreenshot('ContactPage', 'Report_NoContactLoaded');
+      await generateScreenshot('contact-page', 'report-no-contact-loaded');
       await commonPage.goToMessages();
     });
 
-    it('having can_view_contact and not having can_view_contacts_tab permissions, ' +
-      'should hide contacts page as tab, show from menu option', async () => {
+    it('should hide contacts page as tab, show from menu option ' +
+      'when can_view_contact permissions is enable but can_view_contact permission is not' , async () => {
       await updateRolePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
-      await generateScreenshot('ContactPage', 'NoTabVisible');
+      await generateScreenshot('contact-page', 'no-tab-visible');
       await commonPage.openHamburgerMenu();
       await (await commonPage.contactsButton()).waitForClickable();
-      await generateScreenshot('ContactPage', 'MenuOptionVisible');
+      await generateScreenshot('contact-page', 'menu-option-visible');
       await (await commonPage.contactsButton()).click();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await commonPage.waitForPageLoaded();
-      await generateScreenshot('ContactPage', 'ContactsInPeopleList');
+      await generateScreenshot('contact-page', 'contacts-in-people-list');
       await commonPage.goToReports();
       await reportsPage.openFirstReport();
       await (reportsPage.rightPanelSelectors.patientName()).waitForClickable();
-      await generateScreenshot('ContactPage', 'ReportView_WithContacts');
+      await generateScreenshot('contact-page', 'report-view-with-contacts');
       await reportsPage.rightPanelSelectors.patientName().click();
       await contactPage.waitForContactLoaded();
-      await generateScreenshot('ContactPage', 'Report_ContactLoaded');
+      await generateScreenshot('contact-page', 'report-contact-loaded');
       await commonPage.goToMessages();
     });
 
-    it('should hide contacts page as a tab and from the menu ' +
-      'if user lacks can_view_contact and can_view_contacts_tab permissions', async () => {
+    it('should hide contacts page as a tab and from menu option ' +
+      'when can_view_contact and can_view_contact permissions are disable', async () => {
       await updateRolePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
-      await generateScreenshot('ContactPage', 'NoTabVisible_NoPerms');
+      await generateScreenshot('contact-page', 'no-tab-visible-oPerms');
       await commonPage.openHamburgerMenu();
       await (await commonPage.contactsButton()).waitForClickable({ reverse: true });
-      await generateScreenshot('ContactPage', 'NoMenuOption_NoPerms');
+      await generateScreenshot('contact-page', 'no-menu-option-no-Perms');
       await commonPage.closeHamburgerMenu();
       await commonPage.goToReports();
       await reportsPage.openFirstReport();
       await (reportsPage.rightPanelSelectors.patientName()).waitForClickable();
-      await generateScreenshot('ContactPage', 'ReportView_NoContacts_NoPerms');
+      await generateScreenshot('contact-page', 'report-view-no-contacts-no-perms');
       await reportsPage.rightPanelSelectors.patientName().click();
-      await generateScreenshot('ContactPage', 'Report_NoContactLoaded_NoPerms');
+      await generateScreenshot('contact-page', 'report-no-contact-loaded-no-perms');
       await commonPage.goToMessages();
     });
   });
