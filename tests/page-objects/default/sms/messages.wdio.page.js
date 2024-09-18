@@ -61,10 +61,10 @@ const getMessageContent = async  (index = 1) => {
   };
 };
 
-const searchSelect = async (recipient, option) => {
-  await (await recipientField()).setValue(recipient);
+const searchSelect = async (recipientPhone, entryText) => {
+  await (await recipientField()).setValue(entryText);
   await (await $('.loading-results')).waitForDisplayed({ reverse: true });
-  const selection = await (await $('.select2-results__options')).$(`.*=${option}`);
+  const selection = await (await $('.select2-results__options')).$(`.*=${recipientPhone}`);
   await selection.click();
   await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
 };
