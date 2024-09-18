@@ -47,20 +47,20 @@ const generateScreenshot = async (scenario, step) => {
   let screenshotSharp = sharp(Buffer.from(newScreenshot, 'base64'));
   const metadata = await screenshotSharp.metadata();
 
-  const isMobile = await isMobile();
-  const extractWidth = Math.min(isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH, metadata.width);
-  const extractHeight = Math.min(isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT, metadata.height);
-  screenshotSharp = screenshotSharp.extract({   // can we do this for desktop and mobile?
-      width: extractWidth,
-      height: extractHeight,
-      left: 0,
-      top: 0,
+  const isMobileDevice = await isMobile();
+  const extractWidth = Math.min(isMobileDevice ? MOBILE_VIEWPORT_WIDTH : DESKTOP_WINDOW_WIDTH, metadata.width);
+  const extractHeight = Math.min(isMobileDevice ? MOBILE_VIEWPORT_HEIGHT : DESKTOP_WINDOW_HEIGHT, metadata.height);
+  screenshotSharp = screenshotSharp.extract({
+    width: extractWidth,
+    height: extractHeight,
+    left: 0,
+    top: 0,
   });
 
   screenshotSharp = screenshotSharp.resize(
       extractWidth * HIGH_DENSITY_DISPLAY_2X,
       extractHeight * HIGH_DENSITY_DISPLAY_2X
-    );
+  );
 
   await screenshotSharp.toFile(filename);
 };

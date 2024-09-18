@@ -47,7 +47,8 @@ describe('Contact Page | List View (Access)', () => {
   });
 
   describe('Log in', () => {
-    it('should show contacts page tab when can_view_contact and can_view_contacts_tab permissions are enabled', async () => {
+    it('should show contacts page tab '+
+      'when can_view_contact and can_view_contacts_tab permissions are enabled', async () => {
       await (await commonPage.contactsTab()).waitForDisplayed();
       await generateScreenshot('contact-page', 'tab-visible');
       await commonPage.openHamburgerMenu();
@@ -66,7 +67,7 @@ describe('Contact Page | List View (Access)', () => {
       await commonPage.goToMessages();
     });
     it('should hide contacts page as tab and from menu option ' +
-      'when can_view_contacts_tab permissions is enable but can_view_contact permission is not' , async () => {
+      'when can_view_contacts_tab permissions is enable but can_view_contact permission is not', async () => {
       await updateRolePermissions('chw', [], ['can_view_contacts']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
@@ -86,7 +87,7 @@ describe('Contact Page | List View (Access)', () => {
     });
 
     it('should hide contacts page as tab, show from menu option ' +
-      'when can_view_contact permissions is enable but can_view_contact permission is not' , async () => {
+      'when can_view_contact permissions is enable but can_view_contact permission is not', async () => {
       await updateRolePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
