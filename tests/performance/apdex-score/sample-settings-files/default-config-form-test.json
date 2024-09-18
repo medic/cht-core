@@ -1,0 +1,419 @@
+{
+  "iterations": 1,
+  "instanceURL": "<instance url>",
+  "hasPrivacyPolicy": false,
+  "capabilities": [
+    {
+      "platformVersion": "<android version>",
+      "deviceName": "<phone model>",
+      "appPath": "<path to cht android apk>",
+      "noReset": false
+    }
+  ],
+
+  "skip": {
+    "login": false,
+
+    "loadContactList": false,
+    "loadCHWArea": false,
+    "loadHousehold": false,
+    "loadPatient": false,
+    "loadMessageList": false,
+    "loadTaskList": false,
+    "loadAnalytics": false,
+    "loadReportList": false,
+    "searchContact": false,
+    "searchReport": false,
+
+    "submitTask": true,
+    "createPatient": true,
+    "submitPatientReport": true
+  },
+
+  "users": [
+    {
+      "type": "offline",
+      "role": "chw",
+      "username": "<username>",
+      "password": "<password>"
+    }
+  ],
+
+  "commonElements": {
+    "fab": "",
+    "formSubmit": "",
+    "formNext": "",
+    "menuListTitle": "//*[@text=\"Tasks\"]",
+    "searchBox": "//android.widget.EditText"
+  },
+  
+  "pages": {
+    "contact-list": {
+      "navigation": [
+        { "selector": "//*[@text=\"Reports\"]" },
+        {
+          "selector": "//*[@text=\"People\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"Kentwood's CHVArea\")]" } ]
+        }
+      ]
+    },
+    "chwArea": {
+      "navigation": [
+        {
+          "selector": "//*[contains(@text, \"Kentwood's CHVArea\")]",
+          "asserts": [
+            {
+              "selector": "//*[@text=\"Commodities\"]"
+            },
+            {
+              "selector": "//*[contains(@text, \"First Aid Kit\")]"
+            },
+            {
+              "scrollDown": 2,
+              "selector": "//*[@text=\"Reports\"]"
+            }
+          ]
+        }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+    "household": {
+      "navigation": [
+        { "selector": "//*[@text=\"People\"]" },
+        { "selector": "//*[contains(@text, \"Pattieshire's\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Primary phone\")]" },
+            { "selector": "//*[contains(@text, \"People\")]" },
+            {
+              "scrollDown": 2,
+              "selector": "//*[@text=\"Reports\"]"
+            }
+          ]
+        }
+      ]
+    },
+    "patient": {
+      "navigation": [
+        { "selector": "//*[@text=\"People\"]" },
+        { "selector": "//*[contains(@text, \"Pattieshire's\")]" },
+        {
+          "selector": "//*[contains(@text, \"Stephany Angel\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"46 years\")]" },
+            { "selector": "//*[contains(@text, \"Family Planning\")]" },
+            {
+              "scrollDown": 2,
+              "selector": "//*[contains(@text, \"Reports\")]"
+            }
+          ]
+        }
+      ]
+    },
+    "messages": {
+      "navigation": [
+        { "selector": "//*[@text=\"Messages\"]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"months ago\")]" },
+            { "selector": "//*[contains(@text, \"Maegan Taylor\")]" },
+            {
+              "scrollDown": 1,
+              "selector": "//*[contains(@text, \"No more messages\")]"
+            }
+          ]
+        },
+        { "scrollUp": 1,
+          "selector": "//*[contains(@text, \"Maegan Taylor\")]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"pending\")]" }
+          ]
+        }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+    "tasks": {
+      "navigation": [
+        { "selector": "//*[@text=\"Tasks\"]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Alan Patt\")]" },
+            { 
+              "scrollDown": 3,
+              "selector": "//*[contains(@text, \"No more tasks\")]" 
+            }
+          ]
+        }
+      ]
+    },
+    "reports": {
+      "navigation": [
+        { "selector": "//*[@text=\"Reports\"]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Sexual and Gender Based Violence\")]" },
+            {
+              "scrollDown": 15,
+              "selector": "//*[contains(@text, \"No more reports\")]"
+            }
+          ]
+        },
+        { "scrollUp": 15,
+          "selector": "//*[@text=\"Sexual and Gender Based Violence\"]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Sexual and Gender Based Violence\")]" },
+            { "selector": "//*[contains(@text, \"patient\")]" },
+            {
+              "scrollDown": 2,
+              "selector": "//*[contains(@text, \"summary\")]"
+            }
+          ]
+        }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+    "targets": {
+      "navigation": [
+        { "selector": "//*[@text=\"Performance\"]",
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Total males\")]" },
+            { "selector": "//*[contains(@text, \"Total females\")]" },
+            {
+              "scrollDown": 1,
+              "selector": "//*[contains(@text, \"Active Pregnancies\")]"
+            },
+            { "selector": "//*[contains(@text, \"Under 5\")]" },
+            { "scrollDown": 2,
+              "selector": "//*[contains(@text, \"Malaria Treatments\")]" 
+            },
+            {
+              "selector": "//*[contains(@text, \"Total Referrals\")]" 
+            }
+          ]
+        }
+      ]
+    }
+  },
+  
+  "forms": {
+    "patientTask": {
+      "navigation": [{
+        "scrollUp": 3,
+        "selector": "//*[contains(@text, \"Bergefort's\")]"
+      }],
+      "pages": [
+        {
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Health Facility Notes\")]" }
+          ],
+          "fields": [
+            { "selector": "//android.widget.RadioButton[@text=\"Yes\"]" },
+            { "selector": "//*[contains(@text, \"health facility?\")]//android.widget.RadioButton[@text=\"Yes\"]" }
+          ]
+        },
+        {
+          "asserts": [
+            { "selector": "//*[@text=\"REFERRAL FOLLOW UP RESULTS\"]" },
+            { "selector": "//*[contains(@text, \"Alan Patt\")]" }
+          ]
+        }
+      ],
+      "postSubmitAssert": [{
+        "scrollDown": 7,
+        "selector": "//*[contains(@text, \"No more tasks\")]" 
+      }]
+    },
+
+    "patientReport": {
+      "navigation": [{
+        "scrollDown": 1,
+        "selector": "//*[@text=\"Sexual and Gender Based Violence\"]"
+      }],
+      "pages": [
+        {
+          "asserts": [
+            { "selector": "//*[contains(@text, \"Observe for signs of\")]" }
+          ],
+          "fields": [
+            { "selector": "//android.widget.RadioButton[@text=\"Yes\"]" },
+            {
+              "selector": "//android.widget.EditText",
+              "value": "SGBV Report"
+            },
+            { 
+              "scrollDown": 1,
+              "selector": "//*[contains(@text, \"Have you referred them to the CHA\")]//android.widget.RadioButton[@text=\"Yes\"]" 
+            }
+          ],
+          "scrollDown": 1
+        },
+        {
+          "asserts": [
+            { "selector": "//*[@text=\"SGBV REFERRAL NOTE\"]" },
+            { "selector": "//*[contains(@text, \"Alan Patt\")]" }
+          ]
+        }
+      ],
+      "postSubmitAsserts": [
+        { "select": "//android.widget.TextView[contains(@text, \"Submitted by Emma\")]" }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+
+    "patientContact": {
+      "navigation": [
+        { "selector": "//*[@text=\"Add new Person\"]" }
+      ],
+      "pages": [
+        {
+          "asserts": [
+            { "selector": "//*[contains(@text, \"First name\")]" }
+          ],
+          "fields": [
+            {
+              "id": "first_name",
+              "selector": "//*[@text=\"First name\"]//parent::android.view.View/android.widget.EditText",
+              "value": "Alan "
+            },
+            {
+              "id": "last_name",
+              "selector": "//*[contains(@text, \"Last name\")]//parent::android.view.View/android.widget.EditText",
+              "value": "Patt"
+            },
+            {
+              "id": "gender",
+              "selector": "//android.widget.RadioButton[@text=\"Male\"]"
+            },
+            {
+              "id": "dob_option",
+              "selector": "//android.widget.RadioButton[@text=\"Date of birth with current age\"]"
+            },
+            {
+              "id": "dob_age",
+              "scrollDown": 1,
+              "selector": "//*[@text=\"Age* Age in years\"]",
+              "keycodes": [ 9, 10 ]
+            },
+            {
+              "id": "dob_months",
+              "selector": "//*[contains(@text, \"Months* And how many months\")]",
+              "keycodes": [ 10 ]
+            },
+            {
+              "id": "nationality",
+              "selector": "//*[contains(@text,\"Kenyan?\")]//android.widget.RadioButton[@text=\"Yes\"]"
+            },
+            {
+              "id": "birth_nationality",
+              "selector": "//*[contains(@text,\"born in Kenya?\")]//android.widget.RadioButton[@text=\"Yes\"]"
+            },
+            {
+              "id": "birth_county",
+              "selector": "//*[contains(@text, \"County of birth*\")]",
+              "dropdownOption": "//android.widget.CheckedTextView[@text=\"BOMET\"]"
+            },
+            {
+              "id": "county_residence",
+              "selector": "//android.view.View[contains(@text, \"County of residence\")]",
+              "dropdownOption": "//android.widget.CheckedTextView[@resource-id=\"android:id/text1\" and @text=\"BARINGO\"]"
+            },
+            {
+              "id": "sub_county_residence",
+              "scrollDown": 1,
+              "selector": "//android.view.View[@text=\"Sub county*\"]",
+              "dropdownOption": "//android.widget.CheckedTextView[@resource-id=\"android:id/text1\" and @text=\"BARINGO NORTH\"]"
+            },
+            {
+              "id": "ward_residence",
+              "selector": "//android.view.View[@text=\"Ward*\"]",
+              "dropdownOption": "//android.widget.CheckedTextView[@resource-id=\"android:id/text1\" and @text=\"BARTABWA\"]"
+            },
+            {
+              "id": "village_name",
+              "selector": "//*[@text=\"Village\"]//parent::android.view.View/android.widget.EditText",
+              "keycodes": [ 35, 43, 36, 37 ]
+            },
+            {
+              "id": "phone",
+              "selector": "//*[contains(@text,\"have a phone number?\")]//android.widget.RadioButton[@text=\"No\"]"
+            },
+            {
+              "id": "passport_option",
+              "selector": "//android.widget.RadioButton[@text=\"Passport\"]"
+            },
+            {
+              "id": "passport",
+              "scrollDown": 1,
+              "selector": "//*[@text=\"Passport\"]//parent::android.view.View/android.widget.EditText",
+              "value": "XXBB2233"
+            },
+            {
+              "id": "next_kin",
+              "selector": "//*[contains(@text, \"next of kin\")]//parent::android.view.View/android.widget.EditText",
+              "value": "Elizabeth Kelly"
+            },
+            {
+              "id": "next_kin_relationship_label",
+              "selector": "//*[contains(@text, \"What is Alan Patt's relationship with\")]"
+            },
+            {
+              "id": "next_kin_relationship",
+              "selector": "//android.widget.RadioButton[@text=\"Mother\"]"
+            },
+            {
+              "id": "address",
+              "scrollDown": 1,
+              "selector": "//*[contains(@text, \"Physical address\")]//parent::android.view.View/android.widget.EditText",
+              "value": "3752 Western Lane"
+            },
+            {
+              "id": "relationship_with_owner",
+              "scrollDown": 1,
+              "selector": "//*[contains(@text,\"household head?\")]//android.widget.RadioButton[@text=\"Sibling\"]"
+            },
+            {
+              "id": "disabilities",
+              "selector": "//*[contains(@text,\"known disability?\")]//android.widget.RadioButton[@text=\"No\"]"
+            },
+            {
+              "id": "chronic_illness",
+              "selector": "//*[contains(@text,\"chronic illness?\")]//android.widget.RadioButton[@text=\"No\"]"
+            }
+          ]
+        }
+      ],
+      "postSubmitAsserts": [
+        { "selector": "//*[@text=\"Alan Patt\"]" }
+      ],
+      "postTestPath": [ { "selector": "//*[@text=\"Back\"]" } ]
+    },
+
+    "patientSearch": {
+      "navigation": [
+        {
+          "selector": "//*[@text=\"People\"]",
+          "asserts": [ { "selector": "//*[contains(@text, \"Lemketown's CHVArea\")]" } ]
+        },
+        { "selector": "//android.widget.TextView[@text=\"\"]" }
+      ],
+      "pages": [
+        {
+          "asserts": [
+            { "selector": "//android.widget.EditText" }
+          ],
+          "fields": [
+            {
+              "selector": "//android.widget.EditText",
+              "value": "Alan Pat"
+            },
+            { "keycodes": [ 66 ] }
+          ]
+        }
+      ],
+      "postSubmitAsserts": [ 
+        { "selector": "//*[@text=\"Alan Patt\"]" },
+        { 
+          "scrollDown": 5,
+          "selector": "//*[contains(@text, \"No more people\")]" }
+      ],
+      "postTestPath": [ { "selector": "(//android.widget.TextView[@text=\"\"])[2]" } ],
+      "postSubmitAssert": [ { "selector": "//*[contains(@text, \"Lemketown's CHVArea\")]" } ]
+    }
+  }
+}
