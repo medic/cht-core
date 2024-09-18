@@ -374,7 +374,7 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(true);
+    closedModal = await closeReloadModal();
   }
 
   await syncAndWaitForSuccess(timeout);
