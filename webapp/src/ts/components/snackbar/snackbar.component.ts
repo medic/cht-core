@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -10,7 +10,7 @@ import { GlobalActions } from '@mm-actions/global';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './snackbar.component.html'
 })
-export class SnackbarComponent implements OnInit {
+export class SnackbarComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();
 
   private readonly SHOW_DURATION = 5000;
@@ -48,14 +48,12 @@ export class SnackbarComponent implements OnInit {
       .subscribe((snackbarContent) => {
         if (!snackbarContent?.message) {
           this.hide();
-
           return;
         }
 
         const { message, action } = snackbarContent;
         if (this.active) {
           this.queueShowMessage(message, action);
-
           return;
         }
 
@@ -63,6 +61,10 @@ export class SnackbarComponent implements OnInit {
       });
     this.subscription.add(reduxSubscription);
     this.hide();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   private queueShowMessage(message, action) {
