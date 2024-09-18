@@ -854,6 +854,10 @@ describe('outbound schedule', () => {
         assert.equal(singlePush.args[0][2], doc1Info);
         assert.equal(singlePush.args[0][3], configs[VALID_CRON]);
         assert.equal(singlePush.args[0][4], VALID_CRON);
+        assert.equal(singlePush.args.find(arg => arg[0] === task2), undefined);
+        assert.equal(attachInfoDocs.args[0][0][0].task, task1);
+        assert.equal(attachInfoDocs.args[0][0][1].task, task2);
+        assert.equal(removeInvalidTasks.callCount, 0);
       });
     });
   });
