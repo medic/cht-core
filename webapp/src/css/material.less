@@ -273,18 +273,22 @@ mm-panel-header {
 @media (max-width: @media-mobile) {
   .app-root:not(.old-nav) #snackbar {
     margin: 0 18px;
+    bottom: calc(@tab-navbar-size + @snackbar-margin);
 
     .snackbar-content {
       border-radius: @radius-size;
     }
 
     &.display-above-fab {
-      bottom: calc(@bottom-navbar-height + @fab-offset-height);
+      bottom: calc(@tab-navbar-size + @fab-offset-height);
     }
   }
 
-  .app-root.show-content:not(.old-nav) #snackbar.display-above-fab {
-    bottom: calc(@fab-height + @fab-bottom-padding + @snackbar-fab-gap);
+  .app-root.show-content:not(.old-nav) #snackbar {
+    bottom: @snackbar-margin;
+    &.display-above-fab {
+      bottom: @fab-offset-height;
+    }
   }
 
   .material {
