@@ -104,7 +104,9 @@
       <div class="help-block" translate>configuration.enable.token.login.refresh.help</div>
     </div>
 
-    <div class="form-group password-container" ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
+   <div 
+      class="form-group" 
+      ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
       <label for="edit-password" translate>Password</label>
       <div class="password-input-group">
         <input id="edit-password" name="edit-password" type="{{editUserModel.passwordFieldType}}" class="form-control" ng-model="editUserModel.password" ng-disabled="editUserModel.role === '_admin'"/>
