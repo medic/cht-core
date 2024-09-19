@@ -565,7 +565,7 @@ body {
 }
 
 .loading-status {
-  margin: 10px 10px calc(@bottom-navbar-height + 10px);
+  margin: 10px 10px calc(@tab-navbar-size + 10px);
   text-align: center;
   font-size: @font-small;
   color: @label-color;
@@ -1279,7 +1279,7 @@ mm-sidebar-menu .mat-sidenav-container {
 
   .fast-action-trigger:not(.embed-fast-action) {
     position: fixed;
-    bottom: calc(@bottom-navbar-height + @fab-bottom-padding);
+    bottom: calc(@tab-navbar-size + @fab-bottom-margin);
     right: 18px;
     top: auto;
   }
@@ -1529,7 +1529,7 @@ mm-sidebar-menu .mat-sidenav-container {
       left: 0;
     }
     .fast-action-trigger:not(.embed-fast-action) {
-      bottom: @fab-bottom-padding;
+      bottom: @fab-bottom-margin;
     }
   }
 
