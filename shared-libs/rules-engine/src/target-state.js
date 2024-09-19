@@ -49,6 +49,7 @@ module.exports = {
   },
 
   storeTargetEmissions: (state, contactIds, targetEmissions) => {
+    // console.warn('storeTargetEmissions', state, contactIds, targetEmissions);
     let isUpdated = false;
     if (!Array.isArray(targetEmissions)) {
       throw Error('targetEmissions argument must be an array');
@@ -93,6 +94,7 @@ module.exports = {
   },
 
   aggregateStoredTargetEmissions: (state, targetEmissionFilter) => {
+    // console.warn('aggregateStoredTargetEmissions');
     const pick = (obj, attrs) => attrs
       .reduce((agg, attr) => {
         if (Object.hasOwnProperty.call(obj, attr)) {
