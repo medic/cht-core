@@ -19,7 +19,6 @@ import { LocationService } from '@mm-services/location.service';
 import { ModalService } from '@mm-services/modal.service';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { environment } from '@mm-environments/environment';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { JsonFormsService } from '@mm-services/json-forms.service';
@@ -383,7 +382,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
 
         } else {
-          !environment.production && this.globalActions.setSnackbarContent(`${change.id} changed`);
+          console.debug(`${change.id} changed`);
           this.showUpdateReady();
         }
       },
