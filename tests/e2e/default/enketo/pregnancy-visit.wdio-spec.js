@@ -26,7 +26,7 @@ describe('Pregnancy Visit', () => {
     await loginPage.login(offlineUser);
   });
 
-  it.skip('should submit a pregnancy visit and validate that the report was created successfully.', async () => {
+  it('should submit a pregnancy visit and validate that the report was created successfully.', async () => {
     // Create a pregnancy
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy');

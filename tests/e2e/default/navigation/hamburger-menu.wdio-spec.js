@@ -15,7 +15,7 @@ describe('Hamburger Menu tests', () => {
     await commonPage.openAboutMenu();
   });
 
-  it.skip('should open User settings', async () => {
+  it('should open User settings', async () => {
     await commonPage.openHamburgerMenu();
     await commonPage.openUserSettingsAndFetchProperties();
   });

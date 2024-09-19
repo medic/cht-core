@@ -45,7 +45,7 @@ describe('Testing Incorrect locale', () => {
     await browser.setCookies({ name: 'locale', value: 'en' });
   });
   
-  it.skip('should work with incorrect locale', async () => {
+  it('should work with incorrect locale', async () => {
     await loginPage.cookieLogin();
     await utils.saveDoc(contact);
     await sentinelUtils.waitForSentinel();
