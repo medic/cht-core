@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router, ActivationEnd } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -238,6 +238,12 @@ describe('AppComponent', () => {
           template: '<div>Sidebar Menu Mock</div>',
         },
       })
+      .overrideComponent(SnackbarComponent, {
+        set: {
+          selector: 'snackbar',
+          template: '<div>Snackbar Mock</div>',
+        },
+      })
       .compileComponents();
     store = TestBed.inject(MockStore);
   });
@@ -300,7 +306,8 @@ describe('AppComponent', () => {
       .resolves(false);
     await getComponent();
     await component.ngAfterViewInit();
-    tick();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.hasOldNav).to.be.false;
   }));
@@ -312,7 +319,8 @@ describe('AppComponent', () => {
       .resolves(true);
     await getComponent();
     await component.ngAfterViewInit();
-    tick();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.hasOldNav).to.be.true;
   }));
@@ -324,7 +332,8 @@ describe('AppComponent', () => {
       .resolves(true);
     await getComponent();
     await component.ngAfterViewInit();
-    tick();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.hasOldNav).to.be.false;
   }));
@@ -336,7 +345,8 @@ describe('AppComponent', () => {
 
     store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
     store.refreshState();
-    tick();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.isSidebarFilterOpen).to.be.true;
   }));
@@ -452,7 +462,8 @@ describe('AppComponent', () => {
 
     await getComponent();
     observable.next(true);
-    tick();
+    flush();
+    discardPeriodicTasks();
 
     expect(databaseConnectionMonitorService.listenForDatabaseClosed.callCount).to.equal(1);
     expect(modalService.show.callCount).to.equal(1);
@@ -660,7 +671,8 @@ describe('AppComponent', () => {
       }]);
 
       await getComponent();
-      tick();
+      flush();
+      discardPeriodicTasks();
 
       expect(consoleErrorStub.callCount).to.equal(0);
       expect(analyticsModulesService.get.callCount).to.equal(1);
@@ -678,7 +690,8 @@ describe('AppComponent', () => {
       analyticsModulesService.get.throws({ error: 'Oops' });
 
       await getComponent();
-      tick();
+      flush();
+      discardPeriodicTasks();
 
       expect(consoleErrorStub.callCount).to.equal(1);
       expect(consoleErrorStub.args[0]).to.deep.equal([
@@ -693,7 +706,8 @@ describe('AppComponent', () => {
       chtDatasourceService.isInitialized.throws({ error: 'some error'});
 
       await getComponent();
-      tick();
+      flush();
+      discardPeriodicTasks();
 
       expect(consoleErrorStub.callCount).to.equal(1);
       expect(consoleErrorStub.args[0]).to.deep.equal([

@@ -21,7 +21,7 @@ export class ModalService {
     this.globalActions = new GlobalActions(store);
   }
 
-  show(component: ComponentType<any>, config?:Record<string, any>): MatDialogRef<any> {
+  show(component: ComponentType<any>, config:Record<string, any> = {}): MatDialogRef<any> {
     const oldModalRef = this.matDialog.openDialogs.find(modal => {
       return modal.componentInstance?.constructor?.name === component.name;
     });
@@ -31,8 +31,11 @@ export class ModalService {
       return oldModalRef;
     }
 
-    const isMobile = this.responsiveService.isMobile();
     this.globalActions.closeSidebarMenu();
+    const isMobile = this.responsiveService.isMobile();
+    if (isMobile) {
+      config.position = { top: '30px' };
+    }
 
     return this.matDialog.open(component, {
       autoFocus: false,

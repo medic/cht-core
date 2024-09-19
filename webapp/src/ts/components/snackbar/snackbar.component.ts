@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { filter, delay } from 'rxjs/operators';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -28,9 +30,10 @@ export class SnackbarComponent implements OnInit, OnDestroy {
   displayAboveFab = true;
 
   constructor(
-    private store:Store,
-    private changeDetectorRef:ChangeDetectorRef,
-    private ngZone:NgZone,
+    private store: Store,
+    private changeDetectorRef: ChangeDetectorRef,
+    private ngZone: NgZone,
+    private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -42,6 +45,7 @@ export class SnackbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.subscribeToRoute();
     this.changeDetectorRef.detach();
     const reduxSubscription = this.store
       .select(Selectors.getSnackbarContent)
@@ -65,6 +69,21 @@ export class SnackbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  private subscribeToRoute() {
+    const subscription = this.router.events
+      .pipe(
+        delay(500), // Waiting for FAB component to render
+        filter(event => event instanceof NavigationEnd),
+      ).subscribe(() => {
+        if (!this.active) {
+          return;
+        }
+        this.displayAboveFab = this.isFABDisplayed();
+        this.changeDetectorRef.detectChanges(); // Running outside Angular's zone, so calling detectChanges
+      });
+    this.subscription.add(subscription);
   }
 
   private queueShowMessage(message, action) {
