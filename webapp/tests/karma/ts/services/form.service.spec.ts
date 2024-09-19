@@ -35,6 +35,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
+import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -92,6 +93,7 @@ describe('Form service', () => {
   let feedbackService;
   let extractLineageService;
   let targetAggregatesService;
+  let contactViewModelGeneratorService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -159,6 +161,7 @@ describe('Form service', () => {
     feedbackService = { submit: sinon.stub() };
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
     targetAggregatesService = { getTargetDocs: sinon.stub() };
+    contactViewModelGeneratorService = { loadReports: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -189,6 +192,7 @@ describe('Form service', () => {
         { provide: FeedbackService, useValue: feedbackService },
         { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: TargetAggregatesService, useValue: targetAggregatesService },
+        { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
       ],
     });
 
@@ -371,7 +375,7 @@ describe('Form service', () => {
         }
       };
       ContactSummary.resolves({ context: { pregnant: true } });
-      Search.resolves([{ _id: 'somereport' }]);
+      contactViewModelGeneratorService.loadReports.resolves([{ _id: 'somereport' }]);
       targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
       const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
@@ -383,9 +387,10 @@ describe('Form service', () => {
         expect(summary.id).to.equal('contact-summary');
         const xmlStr = new XMLSerializer().serializeToString(summary.xml);
         expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
-        expect(Search.callCount).to.equal(1);
-        expect(Search.args[0][0]).to.equal('reports');
-        expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal(
+          [ { doc: instanceData.contact }, [] ]
+        );
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);

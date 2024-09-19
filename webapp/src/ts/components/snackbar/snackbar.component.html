@@ -1,4 +1,4 @@
-<div id="snackbar" [class.active]="active">
+<div id="snackbar" [class.active]="active" [class.display-above-fab]="displayAboveFab">
   <span class="snackbar-content">
     <span class="snackbar-message">{{message}}</span>
     <span class="snackbar-action" *ngIf="action" (click)="action.onClick()">{{action.label}}</span>

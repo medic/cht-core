@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -10,7 +10,7 @@ import { GlobalActions } from '@mm-actions/global';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './snackbar.component.html'
 })
-export class SnackbarComponent implements OnInit {
+export class SnackbarComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();
 
   private readonly SHOW_DURATION = 5000;
@@ -25,6 +25,7 @@ export class SnackbarComponent implements OnInit {
   message;
   action;
   active = false;
+  displayAboveFab = true;
 
   constructor(
     private store:Store,
@@ -47,14 +48,12 @@ export class SnackbarComponent implements OnInit {
       .subscribe((snackbarContent) => {
         if (!snackbarContent?.message) {
           this.hide();
-
           return;
         }
 
         const { message, action } = snackbarContent;
         if (this.active) {
           this.queueShowMessage(message, action);
-
           return;
         }
 
@@ -62,6 +61,10 @@ export class SnackbarComponent implements OnInit {
       });
     this.subscription.add(reduxSubscription);
     this.hide();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   private queueShowMessage(message, action) {
@@ -75,6 +78,7 @@ export class SnackbarComponent implements OnInit {
   }
 
   private show(message, action) {
+    this.displayAboveFab = this.isFABDisplayed();
     clearTimeout(this.hideTimeout);
     this.hideTimeout = undefined;
     clearTimeout(this.showNextMessageTimeout);
@@ -98,5 +102,9 @@ export class SnackbarComponent implements OnInit {
 
   private resetMessage() {
     this.globalActions.setSnackbarContent();
+  }
+
+  private isFABDisplayed(): boolean {
+    return !!$('.fast-action-fab-button:visible').length;
   }
 }

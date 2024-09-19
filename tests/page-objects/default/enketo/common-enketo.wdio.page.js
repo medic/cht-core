@@ -87,6 +87,10 @@ const uploadForm = async (formName, saveDoc = true) => {
     internalId: formName,
     title: formName,
     type: 'form',
+    context: {
+      person: true,
+      place: true,
+    },
     _attachments: {
       xml: {
         content_type: 'application/octet-stream',
