@@ -75,7 +75,8 @@ body {
 
     &.about,
     &.testing,
-    &.error {
+    &.error,
+    &.privacy-policy {
       .page {
         padding-left: calc(@tab-navbar-size + 15px);
       }
@@ -156,6 +157,11 @@ body {
       &:hover,
       &:focus {
         text-decoration: none;
+
+        .mm-icon,
+        .button-label {
+          color: @text-inverse-color;
+        }
       }
 
       &.selected {
@@ -239,7 +245,7 @@ body {
       font-size: @font-XXL;
       float: left;
       width: 50px;
-      line-height: 38px;
+      line-height: 41px;
     }
   }
 
@@ -272,6 +278,7 @@ body {
 
     mm-search-bar {
       order: 2;
+      max-width: 59vw;
     }
 
     mm-reports-more-menu {
@@ -382,11 +389,16 @@ body {
       display: inline-block;
       text-align: center;
       padding: 0 10px;
+      text-decoration: none;
 
       &.disabled {
         cursor: default;
         color: @inactive-color;
       }
+    }
+
+    .open-sort-label {
+      padding: 0 10px;
     }
   }
 
@@ -395,7 +407,7 @@ body {
   }
 
   h2 {
-    line-height: 40px;
+    line-height: 41px;
     overflow: hidden;
     font-weight: bold;
     margin: 0;
@@ -1025,7 +1037,7 @@ mm-search-bar {
       }
 
       .mm-dropdown-menu {
-        left: -215px !important; // Support for old design: Overrides Bootstrap element.style
+        left: -160px !important; // Support for old design: Overrides Bootstrap element.style
         margin: 0;
         box-shadow: 0 6px 12px rgb(0 0 0 / 40%);
 
@@ -1070,9 +1082,13 @@ mm-search-bar {
         box-shadow: none;
       }
 
+      .open-filter-label {
+        margin-right: 6px;
+      }
+
       .filter-counter {
         color: @chip-text-color;
-        font-size: @font-XXXS;
+        font-size: @font-XXXXS;
         background: @chip-background-color;
         border-radius: 50%;
         padding: 1px 5px;
@@ -1095,10 +1111,14 @@ mm-search-bar {
   }
 }
 
-.more-options-menu-container .mat-icon[fonticon="fa-ellipsis-v"] {
-  height: 24px;
-  &:before {
-    font-size: @font-XXL;
+.more-options-menu-container {
+  margin-right: 20px;
+
+  .mat-icon[fonticon="fa-ellipsis-v"] {
+    height: 24px;
+    &:before {
+      font-size: @font-XXL;
+    }
   }
 }
 
@@ -1147,8 +1167,13 @@ mm-search-bar {
   }
 }
 
-.app-root.sidebar-filter-active .tool-bar .inner .tab-title {
-  min-width: 25vw;
+.app-root.sidebar-filter-active .tool-bar .inner {
+  .tab-title {
+    min-width: 25vw;
+  }
+  mm-search-bar {
+    max-width: initial;
+  }
 }
 
 .fast-action-trigger {
@@ -1386,7 +1411,8 @@ mm-sidebar-menu .mat-sidenav-container {
 
     &.about,
     &.testing,
-    &.error {
+    &.error,
+    &.privacy-policy {
       .page {
         padding-left: 15px;
       }
@@ -1451,7 +1477,12 @@ mm-sidebar-menu .mat-sidenav-container {
   }
 
   .more-options-menu-container {
+    margin-right: 0;
     padding: 0 5px;
+
+    .mat-icon[fonticon="fa-ellipsis-v"] {
+      height: 32px;
+    }
   }
 
   #mobile-detection {
@@ -1685,9 +1716,11 @@ mm-sidebar-menu .mat-sidenav-container {
       flex-direction: initial;
     }
     .tool-bar .inner {
-      flex-direction: initial;
+      mm-reports-more-menu {
+        order: 0;
+      }
       .navigation {
-        display: inline-block;
+        display: contents;
       }
     }
   }
@@ -1735,6 +1768,7 @@ mm-sidebar-menu .mat-sidenav-container {
 
   mm-search-bar {
     padding: 5px;
+
     .mm-search-bar-container {
       background: transparent;
       min-height: 40px;
@@ -1747,23 +1781,28 @@ mm-sidebar-menu .mat-sidenav-container {
         margin: 0 12px 0 0;
       }
 
+      .open-sort-label {
+        display: none;
+      }
+
       .btn.open-filter {
         margin: 0;
         padding: 0 5px;
 
         .filter-counter {
           position: absolute;
-          top: 3px;
-          right: -2px;
+          top: -6px;
+          right: 1px;
           border: 1px solid @chip-border-color;
         }
       }
     }
   }
 
-  .app-root.open-search mm-search-bar {
+  .app-root.search-bar-active mm-search-bar {
     width: 100%;
     padding-left: 5px;
+    max-width: initial;
 
     ~ .app-menu-button,
     ~ .tab-title {

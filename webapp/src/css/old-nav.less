@@ -89,7 +89,6 @@
 
     .mm-icon {
       margin: 0 auto;
-      font-size: 1.5rem;
 
       .mm-badge-overlay {
         right: 3%;
@@ -281,6 +280,7 @@
 
       mm-search-bar {
         padding-left: 5px;
+        max-width: initial;
         .fa {
           color: @gray-ultra-dark;
         }
@@ -416,13 +416,6 @@
   .old-nav {
     .header {
       .tabs {
-        a {
-          min-width: 40px;
-          .button-label {
-            font-size: @font-XXXS;
-          }
-        }
-
         // Use bigger font when there are 4 or less tabs.
         .elements-label(a, button-label, 4, @font-extra-small);
       }
