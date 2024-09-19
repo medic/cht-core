@@ -7,6 +7,7 @@ test_scripts:
 
 .PHONY: test_with_docker_compose
 test_with_docker_compose:
+	docker ps
 	sudo ss -lptn 'sport = :5984'
 	docker compose up --build --wait
 	bats with_mock.bats
