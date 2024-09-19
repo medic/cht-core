@@ -1,9 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import {
-  groupBy as _groupBy,
-  partial as _partial,
-  find as _find,
-} from 'lodash-es';
+import { find as _find, groupBy as _groupBy, partial as _partial, } from 'lodash-es';
 
 import registrationUtils from '@medic/registration-utils';
 
@@ -315,7 +311,7 @@ export class ContactViewModelGeneratorService {
 
   private _loadReports(model, forms) {
     const contacts = [ model.doc ];
-    model.children.forEach(group => {
+    model.children?.forEach(group => {
       if (group?.type?.person) {
         group.contacts.forEach(contact => contacts.push(contact.doc));
       }
