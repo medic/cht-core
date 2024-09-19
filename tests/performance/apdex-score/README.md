@@ -2,13 +2,47 @@
 
 ## Setup
 
+#### Prerequisites
+
+Before continuing with the setup steps below, ensure you have a cht instance deployed and running either locally or globally - check out the [documentation](https://docs.communityhealthtoolkit.org/hosting/4.x/app-developer/) on how to do this.
+
+Also, make sure you have some pre-existing users and data already loaded on the app - you can use the [test-data-generator](https://github.com/medic/test-data-generator) tool to achieve this.
+
+Finally, ensure you have done the following installations on your machine:
+
+1. Install [NodeJS](https://nodejs.org/en/download) and [Java JDK](https://www.oracle.com/java/technologies/downloads/) then ensure JAVA_HOME path is correctly set up.
+      ```
+      export JAVA_HOME=$(/usr/libexec/java_home)
+      ```
+2. Install and Set-up [Android studio](https://developer.android.com/studio/install) and the `adb tool` to enable you run adb commands.
+   - Add the Android SDK directory to your system’s ANDROID_HOME environment variable.
+     ```
+      export ANDROID_HOME="/Users/yourpath/Library/Android/sdk/"
+      export PATH=$ANDROID_HOME/platform-tools:$PATH
+      export PATH=$ANDROID_HOME/tools:$PATH
+     ```
+   - To set up an Android Virtual Device (AVD), open Android Studio, click on the More Actions > Virtual Device Manager button, and proceed with the virtual device creation by selecting the hardware and system image.
+3. Install appium and appium doctor.
+   ```
+   npm install -g appium@next
+   npm install -g appium-doctor
+   ```
+4. Install appium driver - `appium driver install uiautomator2`
+
+if you already have the CHT Android app installed just set the `appPath` value (in the capabilities section of the settings file) to an empty string. However, 
+If you do not have the CHT Android app installed on your mobile device, you can download the preferred [apk version](https://github.com/medic/cht-android/releases) and then set the `appPath` value to the absolute path of the apk file.
+
+#### Steps
+
 1. Enable the developer mode in your phone and enable the USB Debugger mode.
-2. Connect the phone to the computer
-3. Create a settings file:
+   - Ensure your device does not have a lock screen PIN/Passcode.
+2. Connect your phone to the computer using the appropriate device cable or you can follow [these steps](https://developer.android.com/studio/run/device#wireless) to connect your device using Wi-Fi.
+   - Run the `adb devices` command to confirm that your device is listed among the attached devices.
+3. Create a settings file or reuse one of the provided [sample settings](https://github.com/medic/cht-core/tree/master/tests/performance/apdex-score/sample-settings-files) files.
 
 <details> <summary>Expand to see settings file structure </summary>
 
-```json
+```
 {
   "iterations": 1,
   "instanceURL": "<instance url>",
@@ -214,14 +248,18 @@
 
 </details>
 
-- Find the android version by running `adb shell getprop | grep ro.build.version.release`
-- Find the device name by running `adb shell getprop | grep ro.product.model`
-
-4. Set the environment variable `APDEX_TEST_SETTINGS` with the path of your settings file.
-
-```sh {"id":"01J2WE5FDN0D40ZJ5XA7ZHHH4Z"}
-export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
-```
+4. Set the environment variable `APDEX_TEST_SETTINGS` with the path of your settings file (apdex-settings.json). 
+    For example, you can use the following command but make sure to replace the path with your actual settings file location:
+    ```
+    export APDEX_TEST_SETTINGS=/Users/pepe/Documents/apdex-settings.json
+    ```
+   - Ensure the `apdex-settings.json` file has been updated with the correct instance url, login credentials and assertion texts (which correspond to the data in your cht instance) for page navigation, forms and other app interactions.
+   - Under the skip section of the settings file, set `true` for the tests you want to skip and `false` for those you want to execute.
+   - Update the fields for `platformVersion` and `deviceName` to match the value for your device.
+     - Find the android version (`platformVersion`) by running `adb shell getprop | grep ro.build.version.release`.
+     - Find the device name (`deviceName`) by running `adb shell getprop | grep ro.product.model`.
+5. Ensure all dependencies have been properly installed - run `npm ci` from the root directory.
+6. Run `npm run apdex-test` from the root directory to execute the selected tests.
 
 ## Settings file
 
@@ -347,7 +385,7 @@ Elements to assert that are displayed in the screen.
 - Test how many scrolls you need by plugging the phone in the computer and run these adb commands:
    - Scroll down: `adb shell input swipe 500 1000 300 300`
    - Scroll up: `adb shell input swipe 300 300 500 1000`
-   - For example, if you need to run 3 times the scroll down command, then you add 3 like this: `"scrollDown": 3,`
+   - For example, if you need to run the scroll down command 3 times, then you add 3 as the value for scrollDown like this: `"scrollDown": 3,`
 - In some cases, it's necessary to unfocus a selected element, trigger a click in a label. For example:
 
 ```
@@ -362,4 +400,3 @@ Elements to assert that are displayed in the screen.
   - Find an element containing a text _anywhere_ in the screen: `"//*[text()[contains(.,\"Eric Patt\")]"`
   - Use [Appium Inspector](https://github.com/appium/appium-inspector) to help you find the XPath selectors. Sometimes it produces very long selectors but you can find a way to make them shorter.
      - If it fails to start after setting up with capabilities. Try running `appium server` in the terminal then run the Appium Inspector.
-
