@@ -369,6 +369,21 @@ describe('Users API', () => {
 
     });
 
+    it('should allow to only update the contact', async () => {
+      await utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        body: {
+          contact: newContactId,
+        },
+      });
+      const userSettingsDoc = await utils.getDoc(getUserId(username));
+      chai.expect(userSettingsDoc.contact_id).to.equal(newContactId);
+
+      const userDoc = await utils.usersDb.get(getUserId(username));
+      chai.expect(userDoc.contact_id).to.equal(newContactId);
+    });
+
   });
 
   describe('/api/v1/users-info', () => {
