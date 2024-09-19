@@ -60,8 +60,8 @@ describe('Send message', () => {
   it('should send messages to all the contacts, under a place, that have a primary phone number assigned', async () => {
     await messagesPage.sendMessage(
       smsMsg(healthCenter.name),
+      `${healthCenter.name} - all`,
       healthCenter.name,
-      `${healthCenter.name} - all`
     );
 
     await browser.waitUntil(async () => (await messagesPage.messagesListLeftPanel()).length === 2);
@@ -83,7 +83,7 @@ describe('Send message', () => {
   });
 
   it('should send a message to a contact with a phone number', async () => {
-    await messagesPage.sendMessage(smsMsg(anne.name), anne.name, anne.phone);
+    await messagesPage.sendMessage(smsMsg(anne.name), anne.phone, anne.name);
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);
     await verifyLastSmsContent(anne.name, 'regular');
@@ -125,7 +125,7 @@ describe('Send message', () => {
 
     await messagesPage.replyAddRecipients(newMessage);
     await verifyMessageModalContent(anne.name, newMessage);
-    await messagesPage.sendReplyNewRecipient(bob.name, bob.phone);
+    await messagesPage.sendReplyNewRecipient(bob.phone, bob.name);
     await verifyLastSmsContent('all', 'add recipient');
 
     await messagesPage.openMessage(bob._id);
