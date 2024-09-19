@@ -7,6 +7,8 @@ const db = require('../../../src/db');
 const environment = require('@medic/environment');
 const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
+const { getBundledDdocs } = require('../../../src/services/setup/utils');
+const { DATABASES } = require('../../../src/services/setup/databases');
 
 let clock;
 
@@ -61,11 +63,116 @@ const dbInfos = [
   }
 ];
 
+const VIEW_INDEXES_BY_DB = {
+  [`${environment.db}`]: [
+    'medic',
+    'medic-admin',
+    'medic-client',
+    'medic-conflicts',
+    'medic-scripts',
+    'medic-sms',
+  ],
+  [`${environment.db}-sentinel`]: ['sentinel'],
+  [`${environment.db}-users-meta`]: ['users-meta'],
+  '_users': ['users'],
+};
+
+const VIEW_INDEX_INFO_BY_DESIGN = {
+  'medic': {
+    name: 'medic',
+    view_index: {
+      sizes: {
+        active: 600,
+        file: 7007
+      }
+    }
+  },
+  'medic-admin': {
+    name: 'medic-admin',
+    view_index: {
+      sizes: {
+        active: 6533400,
+        file: 7005334
+      }
+    }
+  },
+  'medic-client': {
+    name: 'medic-client',
+    view_index: {
+      sizes: {
+        active: 22600,
+        file: 33700
+      }
+    }
+  },
+  'medic-conflicts': {
+    name: 'medic-conflicts',
+    view_index: {
+      sizes: {
+        active: 6,
+        file: 7
+      }
+    }
+  },
+  'medic-scripts': {
+    name: 'medic-scripts',
+    view_index: {
+      sizes: {
+        active: 1,
+        file: 1
+      }
+    }
+  },
+  'medic-sms': {
+    name: 'medic-sms',
+    view_index: {
+      sizes: {
+        active: 100,
+        file: 700
+      }
+    }
+  },
+  'sentinel': {
+    name: 'sentinel',
+    view_index: {
+      sizes: {
+        active: 700,
+        file: 700
+      }
+    }
+  },
+  'users-meta': {
+    name: 'users-meta',
+    view_index: {
+      sizes: {
+        active: 600,
+        file: 700
+      }
+    }
+  },
+  'users': {
+    name: 'users',
+    view_index: {
+      sizes: {
+        active: 600,
+        file: 700
+      }
+    }
+  }
+};
+
 const setUpMocks = () => {
   sinon.stub(deployInfo, 'get').resolves({ version: '5.3.2' });
   sinon.stub(request, 'get')
     .withArgs(sinon.match({ url: environment.serverUrl })).resolves({ version: 'v3.3.3' })
     .withArgs(sinon.match({ url: `${environment.couchUrl}/_changes` })).resolves({ pending: 24 });
+  Object.keys(VIEW_INDEXES_BY_DB).forEach(dbName => {
+    VIEW_INDEXES_BY_DB[dbName].forEach(designDoc => {
+      request.get
+        .withArgs(sinon.match({ url: `${environment.serverUrl}/${dbName}/_design/${designDoc}/_info` }))
+        .resolves(VIEW_INDEX_INFO_BY_DESIGN[designDoc]);
+    });
+  });
   sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
     .resolves(dbInfos);
   sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
@@ -134,6 +241,18 @@ const setupV2Mocks = (statusCounters) => {
     .resolves({ rows: mutedRows });
 };
 
+const getExpectedViewIndexes = (dbName) => {
+  return VIEW_INDEXES_BY_DB[dbName].map(designDoc => ({
+    name: VIEW_INDEX_INFO_BY_DESIGN[designDoc].name,
+    sizes: VIEW_INDEX_INFO_BY_DESIGN[designDoc].view_index.sizes,
+  }));
+};
+
+const getCurrentDdocNames = (db) => getBundledDdocs(db)
+  .then(ddocs => ddocs
+    .map(ddoc => ddoc._id)
+    .map(ddocId => ddocId.split('/')[1]));
+
 describe('Monitoring service', () => {
 
   beforeEach(() => {
@@ -159,30 +278,50 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.1666666666666667,
+          fragmentation: 1.074747453489672,
           name: 'mydb',
-          update_sequence: 100
+          update_sequence: 100,
+          sizes: {
+            active: 600,
+            file: 700
+          },
+          view_indexes: getExpectedViewIndexes(environment.db)
         },
         sentinel: {
           doc_count: 30,
           doc_del_count: 20,
           fragmentation: 1,
           name: 'mydb-sentinel',
-          update_sequence: 200
+          update_sequence: 200,
+          sizes: {
+            active: 500,
+            file: 500
+          },
+          view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`)
         },
         users: {
           doc_count: 50,
           doc_del_count: 40,
-          fragmentation: 1.002,
+          fragmentation: 1.0918181818181818,
           name: '_users',
-          update_sequence: 400
+          update_sequence: 400,
+          sizes: {
+            active: 500,
+            file: 501
+          },
+          view_indexes: getExpectedViewIndexes('_users')
         },
         usersmeta: {
           doc_count: 40,
           doc_del_count: 30,
-          fragmentation: 10,
+          fragmentation: 5.181818181818182,
           name: 'mydb-users-meta',
-          update_sequence: 300
+          update_sequence: 300,
+          sizes: {
+            active: 500,
+            file: 5000
+          },
+          view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`)
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -202,6 +341,26 @@ describe('Monitoring service', () => {
       chai.expect(actual.conflict).to.deep.equal({ count: 40 });
       chai.expect(actual.date.current).to.equal(0);
       chai.expect(actual.replication_limit.count).to.equal(1);
+      chai.expect(request.get.args).to.deep.equalInAnyOrder([
+        [{ json: true, url: environment.serverUrl }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        [{
+          json: true,
+          url: `${environment.serverUrl}${environment.db}/_changes`,
+          qs: {
+            limit: 0,
+            since: undefined
+          }
+        }],
+      ]);
     });
   });
 
@@ -228,30 +387,50 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.1666666666666667,
+          fragmentation: 1.074747453489672,
           name: 'mydb',
-          update_sequence: 100
+          update_sequence: 100,
+          sizes: {
+            active: 600,
+            file: 700
+          },
+          view_indexes: getExpectedViewIndexes(environment.db)
         },
         sentinel: {
           doc_count: 30,
           doc_del_count: 20,
           fragmentation: 1,
           name: 'mydb-sentinel',
-          update_sequence: 200
+          update_sequence: 200,
+          sizes: {
+            active: 500,
+            file: 500
+          },
+          view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`)
         },
         users: {
           doc_count: 50,
           doc_del_count: 40,
-          fragmentation: 1.002,
+          fragmentation: 1.0918181818181818,
           name: '_users',
-          update_sequence: 400
+          update_sequence: 400,
+          sizes: {
+            active: 500,
+            file: 501
+          },
+          view_indexes: getExpectedViewIndexes('_users')
         },
         usersmeta: {
           doc_count: 40,
           doc_del_count: 30,
-          fragmentation: 10,
+          fragmentation: 5.181818181818182,
           name: 'mydb-users-meta',
-          update_sequence: 300
+          update_sequence: 300,
+          sizes: {
+            active: 500,
+            file: 5000
+          },
+          view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`)
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -298,12 +477,32 @@ describe('Monitoring service', () => {
       chai.expect(actual.date.current).to.equal(0);
       chai.expect(actual.replication_limit.count).to.equal(1);
       chai.expect(actual.connected_users.count).to.equal(2);
+      chai.expect(request.get.args).to.deep.equalInAnyOrder([
+        [{ json: true, url: environment.serverUrl }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        [{
+          json: true,
+          url: `${environment.serverUrl}${environment.db}/_changes`,
+          qs: {
+            limit: 0,
+            since: undefined
+          }
+        }],
+      ]);
     });
   });
 
   it('v1 handles errors gracefully', () => {
     sinon.stub(deployInfo, 'get').rejects();
-    sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl })).rejects();
+    sinon.stub(request, 'get').rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
     sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
     sinon.stub(db.medic, 'query').rejects();
@@ -327,28 +526,48 @@ describe('Monitoring service', () => {
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         },
         sentinel: {
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         },
         users: {
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         },
         usersmeta: {
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -366,12 +585,24 @@ describe('Monitoring service', () => {
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });
       chai.expect(actual.feedback).to.deep.equal({ count: -1 });
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
+      chai.expect(request.get.args).to.deep.equalInAnyOrder([
+        [{ json: true, url: environment.serverUrl }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+      ]);
     });
   });
 
   it('v2 handles errors gracefully', () => {
     sinon.stub(deployInfo, 'get').rejects();
-    sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl })).rejects();
+    sinon.stub(request, 'get').rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
     sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
     sinon.stub(db.medic, 'query').rejects();
@@ -391,28 +622,48 @@ describe('Monitoring service', () => {
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         },
         sentinel: {
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         },
         users: {
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         },
         usersmeta: {
           doc_count: -1,
           doc_del_count: -1,
           fragmentation: -1,
           name: '',
-          update_sequence: -1
+          update_sequence: -1,
+          sizes: {
+            active: -1,
+            file: -1
+          },
+          view_indexes: []
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -457,6 +708,18 @@ describe('Monitoring service', () => {
       chai.expect(actual.feedback).to.deep.equal({ count: -1 });
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
       chai.expect(actual.connected_users).to.deep.equal({ count: -1 });
+      chai.expect(request.get.args).to.deep.equalInAnyOrder([
+        [{ json: true, url: environment.serverUrl }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+      ]);
     });
   });
 
@@ -464,6 +727,7 @@ describe('Monitoring service', () => {
     sinon.stub(deployInfo, 'get').resolves({ version: '5.3.2' });
     sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl }))
       .resolves({ version: 'v3.3.3' });
+    request.get.rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
       .resolves(dbInfos);
     sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
@@ -483,4 +747,18 @@ describe('Monitoring service', () => {
     });
   });
 
+  it('includes view_index data for all supported databases', async () => {
+    for (const dbName of [
+      `${environment.db}`,
+      `${environment.db}-sentinel`,
+      `${environment.db}-users-meta`,
+      '_users',
+    ]) {
+      const db = DATABASES.find(db => db.name === dbName);
+      const ddocNames = await getCurrentDdocNames(db);
+      chai.expect(ddocNames).to.not.be.empty;
+      // If you have added a new design doc, you should include it in the view_index monitoring!
+      chai.expect(ddocNames).to.deep.equalInAnyOrder(VIEW_INDEXES_BY_DB[dbName]);
+    }
+  });
 });
