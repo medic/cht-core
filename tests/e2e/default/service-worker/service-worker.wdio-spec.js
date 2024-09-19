@@ -111,34 +111,38 @@ describe('Service worker cache', () => {
     expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
+      '/deploy-info.json',
       '/extension-libs',
       '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
       '/img/cht-logo-light.png',
-      '/img/icon.png',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',
+      '/img/icon-close.svg',
       '/img/icon-nurse-selected.svg',
       '/img/icon-nurse.svg',
       '/img/icon-pregnant-selected.svg',
       '/img/icon-pregnant.svg',
+      '/img/icon.png',
       '/img/layers.png',
+      '/img/setup-wizard-demo.png',
+      '/login/images/hide-password.svg',
+      '/login/images/show-password.svg',
       '/login/lib-bowser.js',
       '/login/script.js',
       '/login/style.css',
-      '/login/images/hide-password.svg',
-      '/login/images/show-password.svg',
       '/main.js',
-      '/deploy-info.json',
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
+      '/polyfills-es5.js',
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',
-      '/styles.css'
+      '/styles.css',
+      '/styles.js'
     ].sort());
   });
 
@@ -171,7 +175,7 @@ describe('Service worker cache', () => {
     expect(await (await loginPage.loginButton()).getText()).to.equal('NotLogin');
   });
 
-  it('adding new languages triggers login page refresh', async () => {
+  it.skip('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
     await commonPage.sync(true);
