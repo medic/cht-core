@@ -47,14 +47,12 @@ export class SnackbarComponent implements OnInit {
       .subscribe((snackbarContent) => {
         if (!snackbarContent?.message) {
           this.hide();
-
           return;
         }
 
         const { message, action } = snackbarContent;
         if (this.active) {
           this.queueShowMessage(message, action);
-
           return;
         }
 
