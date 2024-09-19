@@ -34,7 +34,8 @@ const state = {
     showPrivacyPolicy: 'show policy',
     unreadCount: 1230,
     translationsLoaded: 'have translations loaded',
-    userFacilityId: 'facility_uuid',
+    userFacilityIds: ['facility_uuid'],
+    userContactId: 'contact_uuid',
     enketoStatus: {
       edited: 'is edited',
       saving: 'is saving',
@@ -218,7 +219,11 @@ describe('Selectors', () => {
     });
 
     it('should getUserFacilityId', () => {
-      expect(Selectors.getUserFacilityId.projector(state.global)).to.equal(clonedState.global.userFacilityId);
+      expect(Selectors.getUserFacilityIds.projector(state.global)).to.deep.equal(clonedState.global.userFacilityIds);
+    });
+
+    it('should getUserContactId', () => {
+      expect(Selectors.getUserContactId.projector(state.global)).to.equal(clonedState.global.userContactId);
     });
 
     it('should getEnketoStatus', () => {
@@ -247,7 +252,7 @@ describe('Selectors', () => {
 
     // null checks
     it('should null check global state', () => {
-      expect(Selectors.getUserFacilityId.projector({})).to.equal(undefined);
+      expect(Selectors.getUserFacilityIds.projector({})).to.equal(undefined);
     });
 
     it('should null check enketo state', () => {

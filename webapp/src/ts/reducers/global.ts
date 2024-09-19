@@ -39,7 +39,8 @@ const initialState = {
   version: null,
   snackbarContent: null as any,
   translationsLoaded: false,
-  userFacilityId: null,
+  userFacilityIds: [],
+  userContactId: null,
   trainingCardFormId: null,
 };
 
@@ -204,9 +205,11 @@ const _globalReducer = createReducer(
     return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
   }),
   on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
-  on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
-    return { ...state, userFacilityId };
+  on(Actions.setUserFacilityIds, (state, { payload: { userFacilityIds }}) => {
+    userFacilityIds = Array.isArray(userFacilityIds) ? userFacilityIds : [userFacilityIds];
+    return { ...state, userFacilityIds };
   }),
+  on(Actions.setUserContactId, (state, { payload: { userContactId }}) => ({ ...state, userContactId })),
   on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
     return { ...state, trainingCardFormId };
   }),

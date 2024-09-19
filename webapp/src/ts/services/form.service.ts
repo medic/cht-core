@@ -25,6 +25,8 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
+import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -55,7 +57,9 @@ export class FormService {
     private translateService: TranslateService,
     private ngZone: NgZone,
     private chtDatasourceService: CHTDatasourceService,
-    private enketoService: EnketoService
+    private enketoService: EnketoService,
+    private targetAggregatesService: TargetAggregatesService,
+    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -66,6 +70,8 @@ export class FormService {
   private servicesActions: ServicesActions;
 
   private inited;
+  private userContactId;
+  private userFacilityIds;
 
   private init() {
     if (this.inited) {
@@ -123,12 +129,11 @@ export class FormService {
   }
 
   private getContactReports(contact) {
-    const subjectIds = [contact._id];
-    const shortCode = contact.patient_id || contact.place_id;
-    if (shortCode) {
-      subjectIds.push(shortCode);
-    }
-    return this.searchService.search('reports', { subjectIds: subjectIds }, { include_docs: true });
+    return this.contactViewModelGeneratorService.loadReports({ doc: contact }, []);
+  }
+
+  private getTargetDocs(contact) {
+    return this.targetAggregatesService.getTargetDocs(contact, this.userFacilityIds, this.userContactId);
   }
 
   private getContactSummary(doc, instanceData) {
@@ -140,8 +145,9 @@ export class FormService {
       .all([
         this.getContactReports(contact),
         this.getLineage(contact),
+        this.getTargetDocs(contact),
       ])
-      .then(([reports, lineage]) => this.contactSummaryService.get(contact, reports, lineage));
+      .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
   }
 
   private canAccessForm(formContext: EnketoFormContext) {
@@ -178,6 +184,11 @@ export class FormService {
       const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
       throw new Error(errorMessage + error.message);
     }
+  }
+
+  setUserContext(userFacilityIds, userContactId) {
+    this.userFacilityIds = userFacilityIds;
+    this.userContactId = userContactId;
   }
 
   render(formContext: EnketoFormContext) {

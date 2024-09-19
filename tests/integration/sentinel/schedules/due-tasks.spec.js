@@ -364,7 +364,7 @@ describe('Due Tasks', () => {
   before(() => utils
     .saveDocs(contacts)
     .then(() => utils.addTranslations('test', translations))
-    .then(() => utils.updateSettings(settings, 'sentinel')));
+    .then(() => utils.updateSettings(settings, { ignoreReload: 'sentinel' })));
   after(() => utils.revertDb([], true));
 
   it('should process scheduled messages correctly', async () => {

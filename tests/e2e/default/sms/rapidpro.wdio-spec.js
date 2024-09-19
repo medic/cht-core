@@ -65,7 +65,7 @@ describe('RapidPro SMS Gateway', () => {
     };
 
     it('should fail with no incoming key configured', async () => {
-      await utils.updateSettings({ sms: smsSettings }, true);
+      await utils.updateSettings({ sms: smsSettings }, { ignoreReload: true });
       try {
         await utils.request({
           path: endpoint,
@@ -81,7 +81,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should fail with no authentication provided', async () => {
       await setIncomingKey();
-      await utils.updateSettings({ sms: smsSettings }, true);
+      await utils.updateSettings({ sms: smsSettings }, { ignoreReload: true });
 
       try {
         await utils.request({
@@ -97,7 +97,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should fail with incorrect authentication', async () => {
       await setIncomingKey();
-      await utils.updateSettings({ sms: smsSettings }, true);
+      await utils.updateSettings({ sms: smsSettings }, { ignoreReload: true });
 
       try {
         await utils.request({
@@ -114,7 +114,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should fail with malformed authentication', async () => {
       await setIncomingKey();
-      await utils.updateSettings({ sms: smsSettings }, true);
+      await utils.updateSettings({ sms: smsSettings }, { ignoreReload: true });
 
       try {
         await utils.request({
@@ -131,7 +131,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should fail when message was not created', async () => {
       await setIncomingKey();
-      await utils.updateSettings({ sms: smsSettings }, true);
+      await utils.updateSettings({ sms: smsSettings }, { ignoreReload: true });
 
       try {
         await utils.request({
@@ -159,7 +159,7 @@ describe('RapidPro SMS Gateway', () => {
       };
 
       await setIncomingKey();
-      await utils.updateSettings({ sms: smsSettings }, true);
+      await utils.updateSettings({ sms: smsSettings }, { ignoreReload: true });
       const messageResult = await utils.request({
         path: endpoint,
         method: 'POST',
@@ -215,7 +215,7 @@ describe('RapidPro SMS Gateway', () => {
       };
 
       await setIncomingKey();
-      await utils.updateSettings({ sms: smsSettings, forms }, true);
+      await utils.updateSettings({ sms: smsSettings, forms }, { ignoreReload: true });
 
       const messageResult = await utils.request({
         path: endpoint,
@@ -229,7 +229,7 @@ describe('RapidPro SMS Gateway', () => {
       await loginPage.cookieLogin();
       await commonPage.goToReports();
 
-      const firstReport = await reportsPage.firstReport();
+      const firstReport = await reportsPage.leftPanelSelectors.firstReport();
       const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
       expect(firstReportInfo.heading).to.equal('the_phone');
@@ -297,7 +297,7 @@ describe('RapidPro SMS Gateway', () => {
           rapidpro: { url: utils.hostURL(server.address().port) },
         }
       };
-      await utils.updateSettings(settings, true);
+      await utils.updateSettings(settings, { ignoreReload: true });
     });
 
     afterEach(() => utils.revertDb([], true));

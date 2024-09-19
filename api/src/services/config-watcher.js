@@ -16,6 +16,7 @@ const config = require('../config');
 const environment = require('@medic/environment');
 const dataContext = require('./data-context');
 const extensionLibs = require('./extension-libs');
+const deployInfo = require('./deploy-info');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -148,7 +149,8 @@ const load = () => {
     .then(() => loadSettings())
     .then(() => addUserRolesToDb())
     .then(() => initTransitionLib())
-    .then(() => db.createVault());
+    .then(() => db.createVault())
+    .then(() => deployInfo.store());
 };
 
 const listen = () => {

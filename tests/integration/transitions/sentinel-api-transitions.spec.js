@@ -361,7 +361,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),
@@ -692,7 +692,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -808,7 +808,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -906,7 +906,7 @@ describe('transitions', () => {
     let docId;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -977,7 +977,7 @@ describe('transitions', () => {
     let docId;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -1041,7 +1041,7 @@ describe('transitions', () => {
     };
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([place, person]))
       .then(() => sentinelUtils.waitForSentinel([ place._id, person._id ]))
       .then(() => sentinelUtils.getInfoDocs([ place._id, person._id ]))
@@ -1103,7 +1103,7 @@ describe('transitions', () => {
     const recordsBody = (person) => ({ _meta: { form: 'DR', from: 'phone1' }, patient_id: person.patient_id });
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, { ignoreReload: true })
       .then(() => utils.saveDocs([person1, person2]))
       .then(() => sentinelUtils.waitForSentinel())
       .then(() => utils.request({ path: '/api/v2/records', method: 'POST', body: recordsBody(person1) }))

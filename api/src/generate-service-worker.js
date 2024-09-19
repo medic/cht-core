@@ -80,6 +80,7 @@ const writeServiceWorkerFile = async () => {
 
       // webapp
       'webapp/manifest.json',
+      'webapp/deploy-info.json',
       'webapp/audio/*',
       'webapp/img/*',
       'webapp/*.js',

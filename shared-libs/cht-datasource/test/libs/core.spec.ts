@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import {
-  AbstractDataContext, deepCopy, findById, getLastElement,
+  AbstractDataContext, deepCopy, findById, getLastElement, getPagedGenerator,
   hasField,
   hasFields, isDataObject, isIdentifiable,
   isNonEmptyArray,
@@ -8,7 +8,7 @@ import {
   isString,
   NonEmptyArray
 } from '../../src/libs/core';
-import sinon from 'sinon';
+import sinon, { SinonStub } from 'sinon';
 
 describe('core lib', () => {
   afterEach(() => sinon.restore());
@@ -202,6 +202,70 @@ describe('core lib', () => {
 
       expect(result).to.equal('test');
       expect(testFn.calledOnceWithExactly(ctx)).to.be.true;
+    });
+  });
+
+  describe('getPagedGenerator', () => {
+    let fetchFunctionStub: SinonStub;
+    const limit = 100;
+    const cursor = null;
+
+    beforeEach(() => {
+      fetchFunctionStub = sinon.stub();
+    });
+
+    it('yields document one by one', async () => {
+      const mockDocs = [{ id: 1 }, { id: 2 }, { id: 3 }];
+      const mockPage = { data: mockDocs, cursor };
+      const extraArg = 'value';
+      fetchFunctionStub.resolves(mockPage);
+
+      const generator = getPagedGenerator(fetchFunctionStub, extraArg);
+
+      const results = [];
+
+      for await (const doc of generator) {
+        results.push(doc);
+      }
+
+      expect(results).to.deep.equal(mockDocs);
+      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, cursor, limit)).to.be.true;
+    });
+
+    it('should handle multiple pages',  async () => {
+      const mockDoc = { id: 1 };
+      const mockDocs1 = Array.from({ length: 100 }, () => ({ ...mockDoc }));
+      const mockPage1 = { data: mockDocs1, cursor: '100' };
+      const mockDocs2 = [{ id: 101 }];
+      const mockPage2 = { data: mockDocs2, cursor };
+      const extraArg = 'value';
+
+      fetchFunctionStub.onFirstCall().resolves(mockPage1);
+      fetchFunctionStub.onSecondCall().resolves(mockPage2);
+
+      const generator = getPagedGenerator(fetchFunctionStub, extraArg);
+
+      const results = [];
+      for await (const doc of generator) {
+        results.push(doc);
+      }
+
+      expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
+      expect(fetchFunctionStub.callCount).to.equal(2);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, cursor, limit]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, (Number(cursor) + limit).toString(), limit]);
+    });
+
+    it('should handle empty result', async () => {
+      fetchFunctionStub.resolves({ data: [], cursor });
+
+      const generator = getPagedGenerator(fetchFunctionStub, { limit: 10, cursor });
+
+      const result = await generator.next();
+
+      expect(result.done).to.be.true;
+      expect(result.value).to.be.equal(null);
+      expect(fetchFunctionStub.calledOnce).to.be.true;
     });
   });
 });

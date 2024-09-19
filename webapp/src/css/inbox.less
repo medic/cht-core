@@ -1157,6 +1157,10 @@ a.fa:hover {
   display: none;
 }
 
+mm-fast-action-button.mobile-only {
+  display: none;
+}
+
 .upgrade-config .status {
   text-align: center;
 }
@@ -1403,6 +1407,8 @@ mm-search-bar {
     color: @mat-font-color;
     .fast-action-item-icon {
       margin-right: 20px;
+      display: flex;
+      align-items: center;
 
       mat-icon,
       .fast-action-resource-icon img,
@@ -1421,8 +1427,8 @@ mm-search-bar {
         font-size: @font-extra-extra-large;
       }
 
-      .fast-action-resource-icon {
-        line-height: 60px;
+      .resource-icon {
+        display: block;
       }
     }
 
@@ -1461,6 +1467,15 @@ mm-search-bar {
   #mobile-detection {
     display: inline;
   }
+
+  mm-fast-action-button.mobile-only {
+    display: initial;
+  }
+
+  mm-fast-action-button.desktop-only {
+    display: none;
+  }
+
   .item-content {
     padding: 0;
   }

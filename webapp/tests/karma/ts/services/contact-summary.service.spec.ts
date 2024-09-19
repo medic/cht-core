@@ -28,7 +28,8 @@ describe('ContactSummary service', () => {
     chtScriptApi = {
       v1: {
         hasPermissions: sinon.stub(),
-        hasAnyPermission: sinon.stub()
+        hasAnyPermission: sinon.stub(),
+        analytics: { getTargetDocs: sinon.stub() },
       }
     };
     chtDatasourceService = {
@@ -62,7 +63,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: '' });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports).then(actual => {
+    return service.get(contact, reports, [], []).then(actual => {
       expect(actual.fields.length).to.equal(0);
       expect(actual.cards.length).to.equal(0);
     });
@@ -76,7 +77,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = { name: 'jack' };
     const reports = [ { _id: 1 }, { _id: 2} ];
-    return service.get(contact, reports).then(actual => {
+    return service.get(contact, reports,  [], []).then(actual => {
       expect(actual.fields.length).to.equal(2);
       expect(actual.fields[0].label).to.equal('Notes');
       expect(actual.fields[0].value).to.equal('Hello jack');
@@ -93,7 +94,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports).then(actual => {
+    return service.get(contact, reports, [], []).then(actual => {
       expect(actual.fields.length).to.equal(1);
       expect(actual.fields[0].label).to.equal('Notes');
       expect(actual.fields[0].value).to.equal('olleH');
@@ -111,7 +112,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports).then(actual => {
+    return service.get(contact, reports, [], []).then(actual => {
       expect(actual.fields).to.deep.equal([undefined]);
       expect(actual.cards).to.deep.equal([undefined]);
     });
@@ -127,7 +128,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports).then(actual => {
+    return service.get(contact, reports, [], []).then(actual => {
       expect(actual.fields).to.be.an('array');
       expect(actual.fields.length).to.equal(0);
       expect(actual.cards).to.be.an('array');
@@ -143,7 +144,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
 
     return service
-      .get(contact)
+      .get(contact, [], [], [])
       .then(() => {
         throw new Error('Expected error to be thrown');
       })
@@ -160,8 +161,9 @@ describe('ContactSummary service', () => {
     return {
       fields: [contact.name, lineage[0].name],
       cards: [
-        { fields: reports[0].type },
-        { fields: targetDoc.date_updated }
+        { fields: reports[0].type },       
+        { fields: targetDoc.date_updated },
+        { fields: cht.v1.analytics.getTargetDocs()[1].date_updated },
       ],
     }
     `;
@@ -170,14 +172,18 @@ describe('ContactSummary service', () => {
     const contact = { name: 'boa' };
     const reports = [{ type: 'data' }, { type: 'record' }];
     const lineage = [{ name: 'parent' }, { name: 'grandparent' }];
-    const targetDoc = { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] };
+    const targetDocs = [
+      { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] },
+      { date_updated: 'a month ago', targets: [{ id: 'target', type: 'count' }] },
+    ];
 
-    return service.get(contact, reports, lineage, targetDoc).then(contactSummary => {
+    return service.get(contact, reports, lineage, targetDocs).then(contactSummary => {
       expect(contactSummary).to.deep.equal({
         fields: ['boa', 'parent'],
         cards: [
           { fields: 'data' },
           { fields: 'yesterday' },
+          { fields: 'a month ago' }
         ]
       });
     });
@@ -207,7 +213,7 @@ describe('ContactSummary service', () => {
       end: moment('2021-04-25 23:59:59.999').valueOf()
     });
 
-    const contactSummary = await service.get(contact, reports);
+    const contactSummary = await service.get(contact, reports, [], []);
 
     expect(contactSummary).to.deep.equal({
       cards: [],
@@ -235,7 +241,7 @@ describe('ContactSummary service', () => {
 
     Settings.resolves({ contact_summary: script });
 
-    const contactSummary = await service.get(contact, reports);
+    const contactSummary = await service.get(contact, reports, [], []);
 
     expect(contactSummary).to.deep.equal({
       cards: [],

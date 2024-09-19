@@ -26,9 +26,9 @@ When development is ready to begin one of the engineers should be nominated as a
 Once all issues have been merged into `master` then the release process can start:
 
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`).
-- [ ] Once the CI completes successfully notify the team by writing a message in the #product-team Slack channel:
+- [ ] Once the CI completes successfully notify the team by writing a message in the #development Slack channel:
 ```
-@product_team, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag.
+@channel, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag.
 Please let me know if there’s any final update we need to make.
 If all is good, then in 24h, I will start the release. Thanks!
 ```

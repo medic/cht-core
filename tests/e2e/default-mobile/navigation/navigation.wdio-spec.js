@@ -50,13 +50,13 @@ describe('Navigation', () => {
     expect(report.patientName).to.equal('Mary Smith');
     await reportsPage.closeReport();
 
-    const list = await reportsPage.reportsPageDefault.allReports();
+    const list = await reportsPage.reportsPageDefault.leftPanelSelectors.allReports();
     expect(list.length).to.equal(3);
   });
 
   it('should load reports list when navigating from a report that was opened from reports tab', async () => {
     await commonPage.goToReports();
-    await (await reportsPage.reportsPageDefault.firstReport()).waitForDisplayed();
+    await (await reportsPage.reportsPageDefault.leftPanelSelectors.firstReport()).waitForDisplayed();
 
     await reportsPage.reportsPageDefault.openReport(reportDocs[1].id);
     await commonPage.waitForLoaders();
@@ -64,7 +64,7 @@ describe('Navigation', () => {
     expect(report.patientName).to.equal('Mary Smith');
     await reportsPage.closeReport();
 
-    const list = await reportsPage.reportsPageDefault.allReports();
+    const list = await reportsPage.reportsPageDefault.leftPanelSelectors.allReports();
     expect(list.length).to.equal(3);
   });
 });

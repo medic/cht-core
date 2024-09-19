@@ -7,6 +7,7 @@ import * as Qualifier from '../src/qualifier';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
+import { Page } from '../src/libs/core';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -52,7 +53,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys(['getByUuid', 'getByUuidWithLineage']);
+        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
       });
 
       it('getByUuid', async () => {
@@ -84,6 +85,44 @@ describe('CHT Script API - getDatasource', () => {
         expect(placeGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
+
+      it('getPageByType', async () => {
+        const expectedPlaces: Page<Place.v1.Place> = {data: [], cursor: null};
+        const placeGetPage = sinon.stub().resolves(expectedPlaces);
+        dataContextBind.returns(placeGetPage);
+        const placeType = 'place';
+        const limit = 2;
+        const cursor = '1';
+        const placeTypeQualifier = { contactType: placeType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(placeTypeQualifier);
+
+        const returnedPlaces = await place.getPageByType(placeType, cursor, limit);
+
+        expect(returnedPlaces).to.equal(expectedPlaces);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
+        expect(placeGetPage.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(placeType)).to.be.true;
+      });
+
+      it('getByType', () => {
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+
+        const placeGetAll = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(placeGetAll);
+        const placeType = 'place';
+        const placeTypeQualifier = { contactType: placeType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(placeTypeQualifier);
+
+        const res =  place.getByType(placeType);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.getAll)).to.be.true;
+        expect(placeGetAll.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(placeType)).to.be.true;
+      });
     });
 
     describe('person', () => {
@@ -92,7 +131,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByUuid', 'getByUuidWithLineage']);
+        expect(person).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
       });
 
       it('getByUuid', async () => {
@@ -123,6 +162,44 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getPageByType', async () => {
+        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: null};
+        const personGetPage = sinon.stub().resolves(expectedPeople);
+        dataContextBind.returns(personGetPage);
+        const personType = 'person';
+        const limit = 2;
+        const cursor = '1';
+        const personTypeQualifier = { contactType: personType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const returnedPeople = await person.getPageByType(personType, cursor, limit);
+
+        expect(returnedPeople).to.equal(expectedPeople);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
+      });
+
+      it('getByType', () => {
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+
+        const personGetAll = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(personGetAll);
+        const personType = 'person';
+        const personTypeQualifier = { contactType: personType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const res =  person.getByType(personType);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
+        expect(personGetAll.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
     });
   });

@@ -2,8 +2,11 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
 
+const fs = require('fs');
+
 const environment = require('@medic/environment');
 const db = require('../../../src/db');
+const resources = require('../../../src/resources');
 
 let service;
 
@@ -102,6 +105,40 @@ describe('deploy info', () => {
       } catch (err) {
         expect(err).to.deep.equal({ error: 'whatever' });
       }
+    });
+  });
+
+  describe('store', () => {
+    it('should store deploy info json in webapp build folder', async () => {
+      sinon.stub(resources, 'webappPath').value('/webapp-path/');
+      sinon.stub(fs.promises, 'writeFile').resolves();
+
+      service = rewire('../../../src/services/deploy-info');
+
+      const ddoc = {
+        _id: '_design/medic',
+        deploy_info: {
+          timestamp: 2000,
+          user: 'admin',
+          version: '4.10.0-beta.1',
+        },
+        version: '4.10.0-beta.1',
+      };
+
+      sinon.stub(environment, 'ddoc').value('medic');
+      sinon.stub(db.medic, 'get').resolves(ddoc);
+
+      await service.store();
+
+      expect(fs.promises.writeFile.calledOnce).to.equal(true);
+      expect(fs.promises.writeFile.args[0]).to.deep.equal([
+        '/webapp-path/deploy-info.json',
+        JSON.stringify({
+          timestamp: 2000,
+          user: 'admin',
+          version: '4.10.0-beta.1',
+        })
+      ]);
     });
   });
 });

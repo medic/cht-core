@@ -29,7 +29,7 @@ describe('Token login', () => {
       },
       app_url: utils.getOrigin()
     };
-    return utils.updateSettings(settings, true);
+    return utils.updateSettings(settings, { ignoreReload: true });
   };
 
   const createUser = (user) => {

@@ -4,7 +4,10 @@ const sentinelUtils = require('@utils/sentinel');
 const chtDbUtils = require('@utils/cht-db');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const chai = require('chai');
+const userSettings = require('@factories/cht/users/user-settings');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const genericReportFactory = require('@factories/cht/reports/generic-report');
 const uuid = require('uuid').v4;
 
 /* global window */
@@ -21,167 +24,65 @@ describe('db-sync', () => {
   const report2 = uuid();
   const report3 = uuid();
   const report4 = uuid();
-  const restrictedUser = {
+
+  const contact = { _id: restrictedContactId, parent: { _id: restrictedFacilityId } };
+  
+  const restrictedUser = userSettings.build({
     _id: `org.couchdb.user:${restrictedUserName}`,
     type: 'user',
     name: restrictedUserName,
     password: restrictedPass,
     facility_id: [restrictedFacilityId, restrictedFacilityId2],
     roles: ['chw']
-  };
+  });
 
   const initialDocs = [
-    {
+    userSettings.build({
       _id: `org.couchdb.user:${restrictedUserName}`,
-      language: 'en',
-      known: true,
-      type: 'user-settings',
       roles: ['chw'],
       facility_id: restrictedFacilityId,
       contact_id: restrictedContactId,
       name: restrictedUserName
-    },
-    {
+    }),
+    placeFactory.place().build({
       _id: restrictedFacilityId,
-      parent: {
-        _id: 'this-does-not-matter'
-      },
-      name: 'A CHW area',
       type: 'health_center',
-      reported_date: Date.now(),
-      contact: {
-        _id: restrictedContactId,
-        parent: {
-          _id: restrictedFacilityId,
-          parent: {
-            _id: 'this-does-not-matter'
-          }
-        }
-      }
-    },
-    {
-      _id: restrictedContactId,
-      name: 'CHW User',
-      type: 'person',
-      reported_date: Date.now(),
-      parent: {
-        _id: restrictedFacilityId,
-        parent: {
-          _id: 'this-does-not-matter'
-        }
-      }
-    },
-    {
-      _id: patientId,
-      name: 'A patient',
-      reported_date: Date.now(),
-      type: 'person',
-      parent: {
-        _id: restrictedFacilityId,
-        parent: {
-          _id: 'this-does-not-matter'
-        }
-      }
-    },
-    {
-      _id: patientId2,
-      name: 'A patient',
-      reported_date: Date.now(),
-      type: 'person',
-      parent: {
-        _id: restrictedFacilityId2,
-        parent: {
-          _id: 'this-does-not-matter'
-        }
-      }
-    }
+      contact
+    }),
+    personFactory.build(contact),
+    personFactory.build({ _id: patientId, parent: { _id: restrictedFacilityId } }),
+    personFactory.build({ _id: patientId2, parent: { _id: restrictedFacilityId2 } })
   ];
 
   const initialReports = [
-    {
+    genericReportFactory.report().build({
       _id: report1,
       form: 'form_type_1',
-      type: 'data_record',
       content_type: 'xml',
-      reported_date: Date.now(),
-      contact: {
-        _id: restrictedContactId,
-        parent: {
-          _id: restrictedFacilityId,
-          parent: {
-            _id: 'this-does-not-matter'
-          }
-        }
-      },
-      fields: {
-        patient_id: patientId,
-        patient_name: 'A patient',
-        some: 'data',
-      }
-    },
-    {
+      contact,
+      fields: { patient_id: patientId }
+    }),
+    genericReportFactory.report().build({
       _id: report2,
       form: 'form_type_2',
-      type: 'data_record',
       content_type: 'xml',
-      reported_date: Date.now(),
-      contact: {
-        _id: restrictedContactId,
-        parent: {
-          _id: restrictedFacilityId,
-          parent: {
-            _id: 'this-does-not-matter'
-          }
-        }
-      },
-      fields: {
-        patient_id: patientId,
-        patient_name: 'A patient',
-        some: 'data',
-      }
-    },
-    {
+      contact,
+      fields: { patient_id: patientId }
+    }),
+    genericReportFactory.report().build({
       _id: report3,
       form: 'form_type_3',
-      type: 'data_record',
       content_type: 'xml',
-      reported_date: Date.now(),
-      contact: {
-        _id: restrictedContactId,
-        parent: {
-          _id: restrictedFacilityId,
-          parent: {
-            _id: 'this-does-not-matter'
-          }
-        }
-      },
-      fields: {
-        patient_id: patientId,
-        patient_name: 'A patient',
-        some: 'data',
-      }
-    },
-    {
+      contact,
+      fields: { patient_id: patientId }
+    }),
+    genericReportFactory.report().build({
       _id: report4,
-      form: 'form_type_3',
-      type: 'data_record',
+      form: 'form_type_4',
       content_type: 'xml',
-      reported_date: Date.now(),
-      contact: {
-        _id: restrictedContactId,
-        parent: {
-          _id: restrictedFacilityId,
-          parent: {
-            _id: 'this-does-not-matter'
-          }
-        }
-      },
-      fields: {
-        patient_id: patientId2,
-        patient_name: 'A patient',
-        some: 'data',
-      }
-    },
+      contact,
+      fields: { patient_id: patientId2 }
+    })
   ];
 
   const getServerRevs = async (docIds) => {
@@ -199,6 +100,10 @@ describe('db-sync', () => {
     await sentinelUtils.waitForSentinel();
     await loginPage.login({ username: restrictedUserName, password: restrictedPass });
     await (await commonElements.analyticsTab()).waitForDisplayed();
+  });
+
+  after(async () => {
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should not filter allowed docs', async () => {
@@ -223,12 +128,12 @@ describe('db-sync', () => {
       updatedPatient2,
     ] = await utils.getDocs([report1, report2, patientId, newReport._id, report4, patientId2]);
 
-    chai.expect(updatedReport1.extra).to.equal('1');
-    chai.expect(updatedReport2.extra).to.equal('2');
-    chai.expect(updatedPatient.extra).to.equal('3');
-    chai.expect(updatedNewReport).to.deep.equal(newReport);
-    chai.expect(updatedReport4.extra).to.equal('2');
-    chai.expect(updatedPatient2.extra).to.equal('3');
+    expect(updatedReport1.extra).to.equal('1');
+    expect(updatedReport2.extra).to.equal('2');
+    expect(updatedPatient.extra).to.equal('3');
+    expect(updatedNewReport).to.deep.equal(newReport);
+    expect(updatedReport4.extra).to.equal('2');
+    expect(updatedPatient2.extra).to.equal('3');
   });
 
   it('should not filter deletes', async () => {
@@ -237,7 +142,7 @@ describe('db-sync', () => {
     await commonElements.sync();
 
     const result = await utils.getDocs([report1], true);
-    chai.expect(result.rows[0]).excludingEvery('rev').to.deep.equal({
+    expect(result.rows[0]).excludingEvery('rev').to.deep.equal({
       id: report1,
       key: report1,
       value: { deleted: true },
@@ -260,7 +165,7 @@ describe('db-sync', () => {
     await commonElements.sync();
 
     const updatedServerRevs = await getServerRevs(docIds);
-    chai.expect(serverRevs).to.deep.equal(updatedServerRevs);
+    expect(serverRevs).to.deep.equal(updatedServerRevs);
   });
 
   it('should filter locally purged docs', async () => {
@@ -269,9 +174,9 @@ describe('db-sync', () => {
     await commonElements.sync();
 
     const serverReport = await utils.getDoc(report3);
-    chai.expect(serverReport).excludingEvery('_rev').to.deep.equal(initialReports[2]);
-    chai.expect(serverReport._rev).to.not.equal(localRev);
-    chai.expect(serverReport).to.not.have.property('purged');
+    expect(serverReport).excludingEvery('_rev').to.deep.equal(initialReports[2]);
+    expect(serverReport._rev).to.not.equal(localRev);
+    expect(serverReport).to.not.have.property('purged');
   });
 
   it('should filter ddocs', async () => {
@@ -284,9 +189,9 @@ describe('db-sync', () => {
     await commonElements.sync();
 
     const updatedServerRevs = await getServerRevs(['_design/medic-client']);
-    chai.expect(serverRevs).to.deep.equal(updatedServerRevs);
+    expect(serverRevs).to.deep.equal(updatedServerRevs);
     const result = await utils.getDocs(['_design/test'], true);
-    chai.expect(result.rows[0]).to.deep.equal({
+    expect(result.rows[0]).to.deep.equal({
       key: '_design/test',
       error: 'not_found',
     });
@@ -318,7 +223,7 @@ describe('db-sync', () => {
       await commonElements.sync();
 
       const [remoteDoc] = await utils.getMetaDocs(restrictedUserName, [localDoc._id]);
-      chai.expect(remoteDoc).to.deep.equal(localDoc);
+      expect(remoteDoc).to.deep.equal(localDoc);
     });
 
     it('should replicate meta db down', async () => {
@@ -334,7 +239,7 @@ describe('db-sync', () => {
 
       // if the test fails, it helps to see which reports are read or not in the failpic
       await commonElements.goToReports();
-      await (await reportsPage.reportList()).waitForDisplayed();
+      await (await reportsPage.leftPanelSelectors.reportList()).waitForDisplayed();
 
       await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '2');
     });
