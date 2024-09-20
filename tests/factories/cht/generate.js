@@ -81,7 +81,9 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 
     primaryContact.parent = { _id: clinic._id, parent: clinic.parent };
 
-    const additionalPersons = Array.from({ length: nbrPersons - 1 }).map((_, i) => {
+const additionalPersons = Array
+  .from({ length: nbrPersons - 1 })
+  .map((_, i) => {
       const additionalPersonName = `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
       const additionalPhoneNumber = phoneNumbers[i % phoneNumbers.length];
       return personFactory.build({
@@ -90,7 +92,7 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
         patient_id: patientIds[i % patientIds.length],
         phone: additionalPhoneNumber
       });
-    });
+  });
 
     return { clinic, persons: [primaryContact, ...additionalPersons] };
   });
