@@ -34,6 +34,8 @@
  * }
  */
 
+/* eslint-disable no-console */
+
 module.exports = {
   /**
    * Builds an empty target-state.
@@ -49,7 +51,7 @@ module.exports = {
   },
 
   storeTargetEmissions: (state, contactIds, targetEmissions) => {
-    // console.warn('storeTargetEmissions', state, contactIds, targetEmissions);
+    console.warn('storeTargetEmissions', state, contactIds, targetEmissions);
     let isUpdated = false;
     if (!Array.isArray(targetEmissions)) {
       throw Error('targetEmissions argument must be an array');
@@ -94,7 +96,7 @@ module.exports = {
   },
 
   aggregateStoredTargetEmissions: (state, targetEmissionFilter) => {
-    // console.warn('aggregateStoredTargetEmissions');
+    console.warn('aggregateStoredTargetEmissions');
     const pick = (obj, attrs) => attrs
       .reduce((agg, attr) => {
         if (Object.hasOwnProperty.call(obj, attr)) {
