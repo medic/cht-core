@@ -238,12 +238,6 @@ describe('AppComponent', () => {
           template: '<div>Sidebar Menu Mock</div>',
         },
       })
-      .overrideComponent(SnackbarComponent, {
-        set: {
-          selector: 'snackbar',
-          template: '<div>Snackbar Mock</div>',
-        },
-      })
       .compileComponents();
     store = TestBed.inject(MockStore);
   });

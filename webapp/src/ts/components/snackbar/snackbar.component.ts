@@ -18,8 +18,9 @@ export class SnackbarComponent implements OnInit, OnDestroy {
   private readonly SHOW_DURATION = 5000;
   private readonly ANIMATION_DURATION = 250;
   private readonly ROUND_TRIP_ANIMATION_DURATION = this.ANIMATION_DURATION * 2;
+  private readonly WAIT_FOR_FAB = 500;
 
-  private globalActions;
+  private globalActions: GlobalActions;
   private hideTimeout;
   private showNextMessageTimeout;
   private resetMessageTimeout;
@@ -74,14 +75,15 @@ export class SnackbarComponent implements OnInit, OnDestroy {
   private subscribeToRoute() {
     const subscription = this.router.events
       .pipe(
-        delay(500), // Waiting for FAB component to render
+        delay(this.WAIT_FOR_FAB),
         filter(event => event instanceof NavigationEnd),
       ).subscribe(() => {
         if (!this.active) {
           return;
         }
         this.displayAboveFab = this.isFABDisplayed();
-        this.changeDetectorRef.detectChanges(); // Running outside Angular's zone, so calling detectChanges
+        // Snackbar is running outside Angular's zone (#6719), calling detectChanges to refresh component.
+        this.changeDetectorRef.detectChanges();
       });
     this.subscription.add(subscription);
   }
