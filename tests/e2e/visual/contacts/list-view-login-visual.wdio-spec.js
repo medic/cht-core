@@ -7,7 +7,7 @@ const utils = require('@utils');
 
 const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
 
-describe('Contact Page | List View (Access)', () => {
+describe('Contact List Page', () => {
   const updateRolePermissions = async (roleValue, addPermissions, removePermissions = []) => {
     const roles = [roleValue];
     const settings = await utils.getSettings();
