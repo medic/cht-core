@@ -31,8 +31,8 @@ export class ModalService {
       return oldModalRef;
     }
 
-    this.closeOtherComponents();
     const isMobile = this.responsiveService.isMobile();
+    this.closeOtherComponents(isMobile);
 
     return this.matDialog.open(component, {
       autoFocus: false,
@@ -48,8 +48,10 @@ export class ModalService {
   /**
    * Avoids multiple layers of elements to improve UX.
    */
-  private closeOtherComponents() {
+  private closeOtherComponents(isMobile) {
     this.globalActions.closeSidebarMenu();
-    this.globalActions.setSnackbarContent();
+    if (isMobile) {
+      this.globalActions.setSnackbarContent();
+    }
   }
 }
