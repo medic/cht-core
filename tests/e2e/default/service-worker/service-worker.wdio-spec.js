@@ -132,7 +132,6 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant.svg',
       '/img/icon.png',
       '/img/layers.png',
-      '/img/setup-wizard-demo.png',
       '/login/images/hide-password.svg',
       '/login/images/show-password.svg',
       '/login/lib-bowser.js',
@@ -142,12 +141,10 @@ describe('Service worker cache', () => {
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
-      '/polyfills-es5.js',
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',
       '/styles.css',
-      '/styles.js'
     ].sort());
   });
 
