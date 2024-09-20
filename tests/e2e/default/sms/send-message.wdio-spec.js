@@ -57,6 +57,11 @@ describe('Send message', () => {
     await commonPage.waitForPageLoaded();
   });
 
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should send messages to all the contacts, under a place, that have a primary phone number assigned', async () => {
     await messagesPage.sendMessage(
       smsMsg(healthCenter.name),
