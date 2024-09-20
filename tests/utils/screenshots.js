@@ -52,8 +52,8 @@ const generateScreenshot = async (scenario, step) => {
   const metadata = await screenshotSharp.metadata();
 
   const isMobileDevice = await isMobile();
-  const extractWidth = Math.min(isMobileDevice ? MOBILE_VIEWPORT_WIDTH : DESKTOP_WINDOW_WIDTH, metadata.width);
-  const extractHeight = Math.min(isMobileDevice ? MOBILE_VIEWPORT_HEIGHT : DESKTOP_WINDOW_HEIGHT, metadata.height);
+  const extractWidth = isMobileDevice ? Math.min(MOBILE_VIEWPORT_WIDTH*2, metadata.width) : metadata.width;
+  const extractHeight = isMobileDevice ? Math.min(MOBILE_VIEWPORT_HEIGHT*2, metadata.height) : metadata.height;
   screenshotSharp = screenshotSharp.extract({
     width: extractWidth,
     height: extractHeight,
