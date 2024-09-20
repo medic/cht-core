@@ -18,7 +18,7 @@ const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trig
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
 const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
-const contactsButton = () => $(`${hamburgerMenuItemSelector} a[routerlink="contacts"]`);
+const contactsButton = () => $(hamburgerMenuItemSelector).$('//span[text()="People"]');
 const contactsTab = () => $('#contacts-tab');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
