@@ -96,7 +96,6 @@ angular
           // Start with the password masked.
           $scope.model.passwordFieldType  = 'password';
 
-          // Images for button for masking/showing password.
           $scope.model.showPasswordIcon = SHOW_PASSWORD_ICON;
           $scope.model.hidePasswordIcon = HIDE_PASSWORD_ICON;
 
