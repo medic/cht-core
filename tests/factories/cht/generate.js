@@ -6,15 +6,15 @@ const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 
 // Fixed collection of real-world data
-const firstNames = ['Amanda', 'Beatrice', 'Dana', 'Fatima', 'Gina', 'Helen', 'Isabelle', 'Jessica', 'Ivy', 'Sara'];
-const lastNames = ['Allen', 'Bass', 'Dearborn', 'Flair', 'Gorman', 'Hamburg', 'Ivanas', 'James', 'Moore', 'Taylor'];
-const phoneNumbers = [
+const FIRST_NAMES = ['Amanda', 'Beatrice', 'Dana', 'Fatima', 'Gina', 'Helen', 'Isabelle', 'Jessica', 'Ivy', 'Sara'];
+const LAST_NAMES = ['Allen', 'Bass', 'Dearborn', 'Flair', 'Gorman', 'Hamburg', 'Ivanas', 'James', 'Moore', 'Taylor'];
+const PHONE_NUMBERS = [
   '+256414345783', '+256414345784', '+256414345785',
   '+256414345786', '+256414345787', '+256414345788',
   '+256414345789', '+256414345790', '+256414345791',
   '+256414345792'
 ];
-const patientIds = [65421, 65422, 65423, 65424, 65425, 65426, 65427, 65428, 65429, 65430];
+const PATIENT_IDS = [65421, 65422, 65423, 65424, 65425, 65426, 65427, 65428, 65429, 65430];
 
 const getReportContext = (patient, submitter) => {
   const context = {
