@@ -69,13 +69,13 @@ describe('Login page funcionality tests', () => {
       brandingDoc = await utils.getDoc('branding');
     });
 
-    it.skip('should log in using username and password fields', async () => {
+    it('should log in using username and password fields', async () => {
       await loginPage.login(auth);
       await (await commonPage.analyticsTab()).waitForDisplayed();
       await (await commonPage.messagesTab()).waitForDisplayed();
     });
 
-    it.skip('should set correct cookies', async () => {
+    it('should set correct cookies', async () => {
       await loginPage.login(auth);
       await (await commonPage.analyticsTab()).waitForDisplayed();
 
@@ -113,7 +113,7 @@ describe('Login page funcionality tests', () => {
       });
     });
 
-    it.skip('should display the "session expired" modal and redirect to login page', async () => {
+    it('should display the "session expired" modal and redirect to login page', async () => {
       // Login and ensure it's redirected to webapp
       await loginPage.login(auth);
       await (await commonPage.messagesTab()).waitForDisplayed();
@@ -147,7 +147,7 @@ describe('Login page funcionality tests', () => {
       expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
-    it.skip('should hide and reveal password value, and login with a revealed password', async () => {
+    it('should hide and reveal password value, and login with a revealed password', async () => {
       await loginPage.setPasswordValue('pass-123');
       let revealedPassword = await loginPage.togglePassword();
       expect(revealedPassword.type).to.equal('text');
