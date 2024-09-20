@@ -58,7 +58,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSnapshotData(snapshotData));
   }
 
-  setSnackbarContent(message, action?) {
+  setSnackbarContent(message?, action?) {
     return this.store.dispatch(Actions.setSnackbarContent({ message, action }));
   }
 
