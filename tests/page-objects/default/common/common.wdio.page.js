@@ -326,8 +326,12 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
   }
   await closeReloadModal(false, 0);
   await openHamburgerMenu();
-  await (await syncButton()).click();
-  await openHamburgerMenu();
+
+  if (!await (await syncInProgress()).isDisplayed()) {
+    await (await syncButton()).click();
+    await openHamburgerMenu();
+  }
+
   await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   if (await (await syncSuccess()).isDisplayed()) {
     return;
