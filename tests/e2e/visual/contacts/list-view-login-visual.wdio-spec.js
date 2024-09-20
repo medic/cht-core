@@ -11,7 +11,6 @@ describe('Contact List Page', () => {
   const updateRolePermissions = async (roleValue, addPermissions, removePermissions = []) => {
     const roles = [roleValue];
     const settings = await utils.getSettings();
-    settings.roles[roleValue] = { offline: true };
     const permissions = await utils.getUpdatedPermissions(roles, addPermissions, removePermissions);
     await utils.updateSettings(
       { roles: settings.roles, permissions },
