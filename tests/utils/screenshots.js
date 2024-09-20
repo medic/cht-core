@@ -1,11 +1,15 @@
-// This file uses the 'sharp' library for image manipulation because WebdriverIO's native
-// functions have limitations when resizing windows and taking screenshots.
-// Specifically, WebdriverIO's `setWindowSize` function has a minimum width limit of 500px,
-// but we need smaller sizes for mobile screenshots.
-// While the viewport size can be set to a smaller dimension, WebdriverIO's `takeScreenshot`
-// functionality captures the entire window size, not just the viewport.
-// To handle this, we capture the screenshot using WebdriverIO and then use 'sharp'
-// to resize the image to match the smaller viewport size we need for documentation purposes.
+/**
+ * This file uses the `sharp` library for image manipulation to overcome limitations
+ * in WebdriverIO's native screenshot and window resizing capabilities.
+ *
+ * WebdriverIO's `setWindowSize` function has a minimum width of 500px,
+ * which is insufficient for capturing mobile screenshots. 
+ * And the `takeScreenshot` captures the entire window size, not just the viewport.
+ *
+ * To address this, we capture the screenshot using WebdriverIO and then use
+ * `sharp` to resize the image to match the desired viewport size. This ensures
+ * that our screenshots accurately represent the mobile view of the application.
+ */
 const sharp = require('sharp');
 
 const MOBILE_WINDOW_WIDTH = 768;
