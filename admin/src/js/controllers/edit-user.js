@@ -5,6 +5,8 @@ const cht = require('@medic/cht-datasource');
 const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
+const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
+const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 const ADMIN_ROLE = '_admin';
 const FIELDS_TO_IGNORE = [
@@ -95,8 +97,8 @@ angular
           $scope.model.passwordFieldType  = 'password';
 
           // Images for button for masking/showing password.
-          $scope.model.showPasswordIcon = '/login/images/show-password.svg';
-          $scope.model.hidePasswordIcon = '/login/images/hide-password.svg';
+          $scope.model.showPasswordIcon = SHOW_PASSWORD_ICON;
+          $scope.model.hidePasswordIcon = HIDE_PASSWORD_ICON;
 
           const facilityId = getFacilityId();
           const tokenLoginData = $scope.model.token_login;
