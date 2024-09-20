@@ -739,9 +739,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   @HostListener('window:visibilitychange')
   private refreshRulesEngine() {
     if (document.hidden) {
-      console.warn('before');
       this.rulesEngineService.fetchTargets();
-      console.warn('after');
     }
   }
 
