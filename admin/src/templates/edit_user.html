@@ -120,8 +120,8 @@
         <button type="button" class="toggle-password" ng-click="togglePasswordMasking()">
           <img ng-src="{{editUserModel.passwordFieldType === 'password' ? editUserModel.showPasswordIcon : editUserModel.hidePasswordIcon}}" alt="Toggle password masking" />
         </button>
-        <span class="help-block">{{errors.password}}</span>
       </div>
+      <span class="help-block">{{errors.password}}</span>
     </div>
 
     <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
