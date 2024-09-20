@@ -43,14 +43,14 @@ describe('RapidPro SMS Gateway', () => {
 
   before(() => startMockApp());
 
-  after(() => {
-    stopMockApp();
-    utils.revertDb([/^form:/], true);
-  });
-
   beforeEach(() => {
     broadcastsEndpointRequests = [];
     messagesEndpointRequests = [];
+  });
+
+  after(() => {
+    stopMockApp();
+    utils.revertDb([/^form:/], true);
   });
 
   afterEach(() => utils.revertDb([/^form:/], true));
@@ -259,14 +259,8 @@ describe('RapidPro SMS Gateway', () => {
 
     const pregnancyReportWithTasks = pregnancyReportFactory.pregnancy().build({
       tasks: [
-        {
-          messages: [{ to: 'phone1', message: 'message1', uuid: 'uuid1' }],
-          state: 'pending',
-        },
-        {
-          messages: [{ to: 'phone2', message: 'message2', uuid: 'uuid2' }],
-          state: 'sent',
-        },
+        { messages: [{ to: 'phone1', message: 'message1', uuid: 'uuid1' }], state: 'pending' },
+        { messages: [{ to: 'phone2', message: 'message2', uuid: 'uuid2' }], state: 'sent' },
       ],
       scheduled_tasks: [
         {
@@ -301,7 +295,6 @@ describe('RapidPro SMS Gateway', () => {
     });
 
     afterEach(() => utils.revertDb([], true));
-
 
     it('should not call RapidPro endpoint when credentials are not set', async () => {
       await utils.saveDoc(pregnancyReportWithTasks);
@@ -588,4 +581,3 @@ describe('RapidPro SMS Gateway', () => {
   }); //End describe 'Webapp originating messages and state updates'
 
 });
-
