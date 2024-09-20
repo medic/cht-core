@@ -60,55 +60,65 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
   return { clinics, reports, persons };
 };
 
+const createClinic = (index, healthCenter) => {
+  const firstName = FIRST_NAMES[index % FIRST_NAMES.length];
+  const lastName = LAST_NAMES[index % LAST_NAMES.length];
+  const personName = `${firstName} ${lastName}`;
+  const personPhoneNumber = PHONE_NUMBERS[index % PHONE_NUMBERS.length];
+
+  const primaryContact = personFactory.build({
+    name: personName,
+    phone: personPhoneNumber
+  });
+
+  const clinic = placeFactory.place().build({
+    type: 'clinic',
+    parent: { _id: healthCenter._id, parent: healthCenter.parent },
+    name: `${personName} Family`,
+    contact: primaryContact
+  });
+
+  primaryContact.parent = { _id: clinic._id, parent: clinic.parent };
+
+  return { clinic, primaryContact };
+};
+
+const createAdditionalPersons = (nbrPersons, clinic) => {
+  return Array.from({ length: nbrPersons - 1 }).map((_, i) => {
+    const additionalPersonName = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[i % LAST_NAMES.length]}`;
+    const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
+    return personFactory.build({
+      parent: { _id: clinic._id, parent: clinic.parent },
+      name: additionalPersonName,
+      patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
+      phone: additionalPhoneNumber
+    });
+  });
+};
+
+const createReportsForPerson = (person, user) => {
+  return [
+    deliveryFactory.build(getReportContext(person, user)),
+    pregnancyFactory.build(getReportContext(person, user)),
+    pregnancyVisitFactory.build(getReportContext(person, user))
+  ];
+};
+
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
-  const clinics = Array.from({ length: nbrClinics }).map((_, index) => {
-    const firstName = FIRST_NAMES[index % FIRST_NAMES.length];
-    const lastName = LAST_NAMES[index % LAST_NAMES.length];
-    const personName = `${firstName} ${lastName}`;
-    const personPhoneNumber = PHONE_NUMBERS[index % PHONE_NUMBERS.length];
+  const clinicsData = Array.from({ length: nbrClinics }).map((_, index) => {
+    const { clinic, primaryContact } = createClinic(index, healthCenter);
 
-    const primaryContact = personFactory.build({
-      name: personName,
-      phone: personPhoneNumber
-    });
+    const additionalPersons = createAdditionalPersons(nbrPersons, clinic);
 
-    const clinic = placeFactory.place().build({
-      type: 'clinic',
-      parent: { _id: healthCenter._id, parent: healthCenter.parent },
-      name: `${personName} Family`,
-      contact: primaryContact
-    });
+    const allPersons = [primaryContact, ...additionalPersons];
 
-    primaryContact.parent = { _id: clinic._id, parent: clinic.parent };
-
-const additionalPersons = Array
-  .from({ length: nbrPersons - 1 })
-  .map((_, i) => {
-      const additionalPersonName = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[i % LAST_NAMES.length]}`;
-      const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
-      return personFactory.build({
-        parent: { _id: clinic._id, parent: clinic.parent },
-        name: additionalPersonName,
-        patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
-        phone: additionalPhoneNumber
-      });
+    return { clinic, persons: allPersons };
   });
 
-    return { clinic, persons: [primaryContact, ...additionalPersons] };
-  });
+  const allPersons = clinicsData.flatMap(data => data.persons);
+  const clinicList = clinicsData.map(data => data.clinic);
 
-  const allPersons = clinics.flatMap(({ persons }) => persons);
-
-  const reports = [];
-  allPersons.forEach(person => {
-    reports.push(
-      deliveryFactory.build(getReportContext(person, user)),
-      pregnancyFactory.build(getReportContext(person, user)),
-      pregnancyVisitFactory.build(getReportContext(person, user))
-    );
-  });
-
-  const clinicList = clinics.map(({ clinic }) => clinic);
+  const reports = allPersons.flatMap(person => createReportsForPerson(person, user));
 
   return { clinics: clinicList, reports, persons: allPersons };
 };
