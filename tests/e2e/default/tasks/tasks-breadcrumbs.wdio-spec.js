@@ -1,6 +1,5 @@
 const { v4: uuid } = require('uuid');
 const path = require('path');
-
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
@@ -13,7 +12,6 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 
 describe('Tasks tab breadcrumbs', () => {
-
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const healthCenter1 = places.get('health_center');
@@ -23,16 +21,14 @@ describe('Tasks tab breadcrumbs', () => {
     type: 'health_center',
     parent: { _id: districtHospital._id },
   });
+
   const chwContact = {
     _id: 'fixture:user:user1',
     name: 'chw',
     phone: '+12068881234',
     type: 'person',
     place: healthCenter1._id,
-    parent: {
-      _id: healthCenter1._id,
-      parent: healthCenter1.parent
-    },
+    parent: healthCenter1
   };
   const supervisorContact = {
     _id: 'fixture:user:user2',
@@ -40,10 +36,9 @@ describe('Tasks tab breadcrumbs', () => {
     phone: '+12068881235',
     type: 'person',
     place: districtHospital._id,
-    parent: {
-      _id: districtHospital._id,
-    },
+    parent: districtHospital
   };
+
   const chw = userFactory.build({
     username: 'offlineuser_tasks',
     isOffline: true,
@@ -56,25 +51,11 @@ describe('Tasks tab breadcrumbs', () => {
     place: districtHospital._id,
     contact: supervisorContact._id,
   });
-  const patient = personFactory.build({
-    _id: 'patient1',
-    name: 'patient1',
-    type: 'person',
-    patient_id: 'patient1',
-    parent: { _id: clinic._id, parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }}},
-    reported_date: new Date().getTime(),
-  });
-  const patient2 = personFactory.build({
-    _id: 'patient2',
-    name: 'patient2',
-    type: 'person',
-    patient_id: 'patient2',
-    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }},
-    reported_date: new Date().getTime(),
-  });
-  const contactWithManyPlaces = personFactory.build({
-    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
-  });
+
+  const patient = personFactory.build({ name: 'patient1', type: 'person', parent: clinic });
+  const patient2 = personFactory.build({ name: 'patient2', patient_id: 'patient2', parent: healthCenter1 });
+  const contactWithManyPlaces = personFactory.build({ parent: healthCenter1 });
+
   const userWithManyPlaces = {
     _id: 'org.couchdb.user:offline_many_facilities',
     language: 'en',
@@ -108,6 +89,11 @@ describe('Tasks tab breadcrumbs', () => {
     const tasksFilePath = path.join(__dirname, 'config/tasks-breadcrumbs-config.js');
     const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
     await utils.updateSettings({ tasks }, { ignoreReload: 'api' });
+  });
+
+  after(async () => {
+    await utils.deleteUsers([ chw, supervisor ]);
+    await utils.revertDb([/^form:/], true);
   });
 
   describe('for chw', () => {
@@ -230,5 +216,3 @@ describe('Tasks tab breadcrumbs', () => {
     });
   });
 });
-
-
