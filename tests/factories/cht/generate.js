@@ -62,10 +62,10 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
   const clinics = Array.from({ length: nbrClinics }).map((_, index) => {
-    const firstName = firstNames[index % firstNames.length];
-    const lastName = lastNames[index % lastNames.length];
+    const firstName = FIRST_NAMES[index % FIRST_NAMES.length];
+    const lastName = LAST_NAMES[index % LAST_NAMES.length];
     const personName = `${firstName} ${lastName}`;
-    const personPhoneNumber = phoneNumbers[index % phoneNumbers.length];
+    const personPhoneNumber = PHONE_NUMBERS[index % PHONE_NUMBERS.length];
 
     const primaryContact = personFactory.build({
       name: personName,
@@ -84,12 +84,12 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 const additionalPersons = Array
   .from({ length: nbrPersons - 1 })
   .map((_, i) => {
-      const additionalPersonName = `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
-      const additionalPhoneNumber = phoneNumbers[i % phoneNumbers.length];
+      const additionalPersonName = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[i % LAST_NAMES.length]}`;
+      const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
         name: additionalPersonName,
-        patient_id: patientIds[i % patientIds.length],
+        patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
         phone: additionalPhoneNumber
       });
   });
