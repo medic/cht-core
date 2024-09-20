@@ -79,6 +79,8 @@ const illegalDataModificationAttempts = data => {
     .filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.concat(LEGACY_FIELDS).includes(k));
 };
 
+const forceArray = (arrayOrString) => Array.isArray(arrayOrString) ? arrayOrString : [arrayOrString];
+
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
@@ -132,11 +134,7 @@ const getUsers = async (facilityId, contactId) => {
   if (!facilityId) {
     return usersForContactId;
   }
-
-  return usersForContactId.filter(user => {
-    return user.facility_id === facilityId ||
-           (Array.isArray(user.facility_id) && user.facility_id.includes(facilityId));
-  });
+  return usersForContactId.filter(user => forceArray(user.facility_id).includes(facilityId));
 };
 
 const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
@@ -346,7 +344,7 @@ const hasParent = (facility, id) => {
  * docs somehow get out of sync this might cause confusion.
  */
 const mapUser = (user, setting, facilities) => {
-  const facilityIds = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
+  const facilityIds = forceArray(user.facility_id);
   const places = facilityIds.filter(facilityId => facilityId).map(facility => getDoc(facility, facilities));
   return {
     id: user._id,
@@ -633,24 +631,33 @@ const validateUserFacility = (data, user) => {
   }
 };
 
+const validateNewContact = (data, user) => {
+  const facilityIds = forceArray(data.facility_id || user?.facility_id);
+  return Promise
+    .any(facilityIds.map(facility_id => validateContact(data.contact_id, facility_id)))
+    .catch(errors => {
+      return Promise.reject(errors.errors[0]);
+    });
+};
+
+const validateContactForRoles = (data, user) => {
+  const userRoles = data.roles || user?.roles;
+  if (userRoles.roles && roles.isOffline(userRoles.roles)) {
+    return Promise.reject(error400(
+      'Contact field is required for offline users',
+      'field is required',
+      {'field': 'Contact'}
+    ));
+  }
+};
+
 const validateUserContact = (data, user) => {
   if (data.contact) {
-    return Promise
-      .any(data.facility_id.map(facility_id => validateContact(data.contact_id, facility_id)))
-      .catch(errors => {
-        throw errors.errors[0];
-      });
+    return validateNewContact(data, user);
   }
 
   if (_.isNull(data.contact)) {
-    const userRoles = user?.roles || data.roles;
-    if (userRoles.roles && roles.isOffline(userRoles.roles)) {
-      return Promise.reject(error400(
-        'Contact field is required for offline users',
-        'field is required',
-        {'field': 'Contact'}
-      ));
-    }
+    return validateContactForRoles(data, user);
   }
 };
 
@@ -848,7 +855,7 @@ const getUserDocsByName = (name) => Promise.all(['users', 'medic'].map(dbName =>
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);
   Object.assign(medicUser, _.pick(user, 'name', 'roles', 'contact_id'));
-  medicUser.facility_id = Array.isArray(user.facility_id) ? user.facility_id : [user.facility_id];
+  medicUser.facility_id = forceArray(user.facility_id);
   return hydrateUserSettings(medicUser);
 };
 

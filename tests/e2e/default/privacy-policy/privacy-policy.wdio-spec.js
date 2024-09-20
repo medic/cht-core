@@ -34,12 +34,12 @@ describe('Privacy policy', () => {
         await utils.revertDb([/^form:/], true);
       });
 
-      it.skip('should show the correct privacy policy on login', async () => {
+      it('should show the correct privacy policy on login', async () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
 
-      it.skip('should not show on refresh', async () => {
+      it('should not show on refresh', async () => {
         await browser.url('/');
         await (await commonElements.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
@@ -50,7 +50,7 @@ describe('Privacy policy', () => {
         await privacyPage.waitForPolicy(await privacyPage.privacyConfig(), englishTexts);
       });
 
-      it.skip('should not show on subsequent login', async () => {
+      it('should not show on subsequent login', async () => {
         await browser.reloadSession();
         await browser.url('/');
         await loginPage.login({ username: user.username, password: user.password });
@@ -58,7 +58,7 @@ describe('Privacy policy', () => {
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
       });
 
-      it.skip('should show french policy on secondary login', async () => {
+      it('should show french policy on secondary login', async () => {
         await browser.reloadSession();
         await browser.url('/');
         await loginPage.login({ username: user.username, password: user.password, locale: 'fr', privacyPolicy: true });
@@ -66,14 +66,14 @@ describe('Privacy policy', () => {
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
 
-      it.skip('should show if the user changes their language', async () => {
+      it('should show if the user changes their language', async () => {
         await browser.setCookies({ name: 'locale', value: 'es' });
         await browser.refresh();
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), spanishTexts);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
 
-      it.skip('should show if the user policy changes', async () => {
+      it('should show if the user policy changes', async () => {
         const text = {
           header: 'New privacy policy',
           paragraph: 'This is a new privacy policy',
@@ -130,7 +130,7 @@ describe('Privacy policy', () => {
       }
     });
 
-    it.skip('should not fail due to document conflict for new offline user', async () => {
+    it('should not fail due to document conflict for new offline user', async () => {
       await privacyPage.waitForPolicy(await privacyPage.privacyWrapper(), englishTexts);
       await privacyPage.acceptPrivacyPolicy();
       await commonElements.sync();

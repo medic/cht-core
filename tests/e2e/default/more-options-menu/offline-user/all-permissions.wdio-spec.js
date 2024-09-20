@@ -60,7 +60,7 @@ describe('More Options Menu - Offline User', () => {
   describe('All permissions enabled', () => {
 
     describe('Message tab', () => {
-      it.skip('should hide the kebab menu.', async () => {
+      it('should hide the kebab menu.', async () => {
         await commonPage.goToMessages();
         await sms.sendSms('testing', contact.phone);
         expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
@@ -133,7 +133,7 @@ describe('More Options Menu - Offline User', () => {
 
     after(async () => await utils.revertSettings(true));
 
-    it.skip('should hide the kebab menu in Messages, People and Reports tabs', async () => {
+    it('should hide the kebab menu in Messages, People and Reports tabs', async () => {
       await commonPage.goToMessages();
       await sms.sendSms('testing', contact.phone);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;

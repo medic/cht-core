@@ -5,7 +5,8 @@ const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const hamburgerMenu = () => $('aria/Application menu');
 const closeSideBarMenu = () => $('.panel-header-close');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
-const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
+const NOT_MOBILE_ONLY = 'mm-fast-action-button:not(.mobile-only)';
+const fastActionFAB = () => $(`${NOT_MOBILE_ONLY} ${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
 const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
 const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
 const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
@@ -198,7 +199,7 @@ const openHamburgerMenu = async () => {
 
   // Adding pause here as we have to wait for sidebar nav menu animation to load
   await browser.pause(500);
-  await (await sideBarMenuTitle()).waitForDisplayed();
+  await (await $('mat-sidenav')).waitForDisplayed();
 };
 
 const closeHamburgerMenu = async () => {

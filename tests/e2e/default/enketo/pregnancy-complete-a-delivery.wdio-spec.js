@@ -246,7 +246,7 @@ describe('Contact Delivery Form', () => {
       source_id: '',
       user: {
         contact_id: offlineUser.contact._id,
-        name: offlineUser.username,
+        name: offlineUser.contact.name,
         phone: offlineUser.contact.phone,
       },
       contact: {

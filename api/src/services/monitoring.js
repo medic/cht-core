@@ -13,6 +13,20 @@ const DBS_TO_MONITOR = {
   'users': '_users'
 };
 
+const VIEW_INDEXES_TO_MONITOR = {
+  medic: [
+    'medic',
+    'medic-admin',
+    'medic-client',
+    'medic-conflicts',
+    'medic-scripts',
+    'medic-sms',
+  ],
+  sentinel: ['sentinel'],
+  usersmeta: ['users-meta'],
+  users: ['users'],
+};
+
 const MESSAGE_QUEUE_STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
 const fromEntries = (keys, value) => {
   // "shim" of Object.fromEntries
@@ -87,44 +101,79 @@ const getCouchVersion = () => {
 
 const defaultNumber = x => typeof x === 'number' ? x : -1;
 
-const getFragmentation = sizes => {
-  if (!sizes || sizes.active <= 0) {
+const sumArray = numbers => numbers.reduce((acc, curr) => acc + curr, 0);
+
+const getFragmentation = ({ sizes }, viewIndexInfos) => {
+  const activeSizes = [sizes, ...viewIndexInfos.map(({ view_index }) => view_index?.sizes)]
+    .filter((sizes) => sizes && sizes.active > 0);
+  if (activeSizes.length === 0) {
     return -1;
   }
-  return sizes.file / sizes.active;
+  const totalActive = sumArray(activeSizes.map(({ active }) => active));
+  const totalFile = sumArray(activeSizes.map(({ file }) => file));
+
+  return totalFile / totalActive;
 };
 
-const mapDbInfo = dbInfo => {
+const mapDbInfo = (dbInfo, viewIndexInfos) => {
   return {
     name: dbInfo.db_name || '',
     update_sequence: getSequenceNumber(dbInfo.update_seq),
     doc_count: defaultNumber(dbInfo.doc_count),
     doc_del_count: defaultNumber(dbInfo.doc_del_count),
-    fragmentation: getFragmentation(dbInfo.sizes)
+    fragmentation: getFragmentation(dbInfo, viewIndexInfos),
+    sizes: {
+      active: defaultNumber(dbInfo.sizes?.active),
+      file: defaultNumber(dbInfo.sizes?.file),
+    },
+    view_indexes: viewIndexInfos.map(viewIndexInfo => ({
+      name: viewIndexInfo.name || '',
+      sizes: {
+        active: defaultNumber(viewIndexInfo.view_index?.sizes?.active),
+        file: defaultNumber(viewIndexInfo.view_index?.sizes?.file),
+      }
+    }))
   };
 };
 
-const getDbInfos = () => {
+const fetchDbsInfo = () => request
+  .post({
+    url: `${environment.serverUrl}/_dbs_info`,
+    json: true,
+    body: { keys: Object.values(DBS_TO_MONITOR) },
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(response => response.map(({info}) => info))
+  .catch(err => {
+    logger.error('Error fetching db info: %o', err);
+    return Object
+      .keys(DBS_TO_MONITOR)
+      .map(() => ({ }));
+  });
+
+const fetchViewIndexInfo = (db, designDoc) => request
+  .get({
+    url: `${environment.serverUrl}/${db}/_design/${designDoc}/_info`,
+    json: true
+  })
+  .catch(err => {
+    logger.error('Error fetching view index info: %o', err);
+    return null;
+  });
+
+const fetchViewIndexInfosForDb = (db) => Promise.all(
+  VIEW_INDEXES_TO_MONITOR[db].map(viewIndexName => fetchViewIndexInfo(DBS_TO_MONITOR[db], viewIndexName))
+).then((viewIndexInfos) => viewIndexInfos.filter(info => info));
+
+const fetchAllViewIndexInfos = () => Promise.all(Object.keys(VIEW_INDEXES_TO_MONITOR).map(fetchViewIndexInfosForDb));
+
+const getDbInfos = async () => {
+  const [dbInfos, viewIndexInfos] = await Promise.all([fetchDbsInfo(), fetchAllViewIndexInfos()]);
   const result = {};
-  return request
-    .post({
-      url: `${environment.serverUrl}/_dbs_info`,
-      json: true,
-      body: { keys: Object.values(DBS_TO_MONITOR) },
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(dbInfos => {
-      dbInfos.forEach((dbInfo, i) => {
-        result[Object.keys(DBS_TO_MONITOR)[i]] = mapDbInfo(dbInfo.info);
-      });
-    })
-    .catch(err => {
-      logger.error('Error fetching db info: %o', err);
-      Object.keys(DBS_TO_MONITOR).forEach(key => {
-        result[key] = mapDbInfo({});
-      });
-    })
-    .then(() => result);
+  Object.keys(DBS_TO_MONITOR).forEach((dbKey, i) => {
+    result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i]);
+  });
+  return result;
 };
 
 const getResultCount = result => result.rows.length ? result.rows[0].value : 0;

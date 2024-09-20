@@ -203,7 +203,7 @@ describe('Create user for contacts', () => {
 
   describe('user replace', () => {
     describe('for an offline user', () => {
-      it.skip('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
+      it('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
@@ -334,8 +334,8 @@ describe('Create user for contacts', () => {
         expect(cookie.value).to.include(newUserSettings.name);
       });
 
-      // eslint-disable-next-line max-len
-      it('does not assign new person as primary contact of parent place if original person was not primary', async () => {
+      it('does not assign new person as primary contact of parent place ' +
+        'if original person was not primary', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         const district = await utils.getDoc(DISTRICT._id);
         district.contact = { _id: 'not-the-original-contact' };
@@ -386,8 +386,8 @@ describe('Create user for contacts', () => {
         expect(cookie.value).to.include(newUserSettings.name);
       });
 
-      it('creates new user from latest replace_user form data'
-      + 'if multiple are submitted before syncing', async () => {
+      it('creates new user from latest replace_user form data ' +
+        'if multiple are submitted before syncing', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
@@ -483,8 +483,8 @@ describe('Create user for contacts', () => {
         basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index]));
       });
 
-      // eslint-disable-next-line max-len
-      it('creates new user when replace_user form is submitted for contact associated with multiple users', async () => {
+      it('creates new user when replace_user form is submitted ' +
+        'for contact associated with multiple users', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
 
@@ -550,8 +550,8 @@ describe('Create user for contacts', () => {
         await commonPage.goToPeople(originalContactId);
       });
 
-      // eslint-disable-next-line max-len
-      it('creates new user for the first version of a contact to sync and conflicting replacements ignored', async () => {
+      it('creates new user for the first version of a contact ' +
+        'to sync and conflicting replacements ignored', async () => {
         await utils.updateSettings(SETTINGS, {ignoreReload: 'sentinel'});
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
