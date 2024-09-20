@@ -89,6 +89,11 @@ const loginIfNeeded = async () => {
 };
 
 describe('Service worker cache', () => {
+  const DEFAULT_TRANSLATIONS = {
+    'sync.now': 'Sync now',
+    'sidebar_menu.title': 'Menu',
+    'sync.status.not_required': 'All reports synced',
+  };
 
   before(async () => {
     await utils.saveDoc(district);
@@ -175,13 +180,14 @@ describe('Service worker cache', () => {
     expect(await (await loginPage.loginButton()).getText()).to.equal('NotLogin');
   });
 
-  it.skip('adding new languages triggers login page refresh', async () => {
+  it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
     await commonPage.sync(true);
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
+      ...DEFAULT_TRANSLATIONS,
       'User Name': 'Utilizator',
       'Password': 'Parola',
       'login': 'Autentificare',
@@ -207,6 +213,7 @@ describe('Service worker cache', () => {
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
+      ...DEFAULT_TRANSLATIONS,
       'ran': 'dom',
       'some': 'thing',
     });
