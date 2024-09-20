@@ -6,7 +6,6 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Service worker cache', () => {
-
   // global caches fetch Response navigator
   const getCachedRequests = async (raw) => {
     const cacheDetails = await browser.executeAsync(async (callback) => {
@@ -58,22 +57,7 @@ describe('Service worker cache', () => {
     callback();
   });
 
-  /*const district = {
-    _id: 'fixture:district',
-    type: 'district_hospital',
-    name: 'District',
-    place_id: 'district',
-    reported_date: new Date().getTime(),
-  };*/
   const district = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
-
-  /*const chw = {
-    username: 'bob',
-    password: 'medic.123',
-    place: 'fixture:district',
-    contact: { _id: 'fixture:user:bob', name: 'Bob' },
-    roles: ['chw'],
-  };*/
   const chw = userFactory.build({ place: district._id });
 
   const login = async () => {
