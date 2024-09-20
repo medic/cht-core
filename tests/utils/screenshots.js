@@ -3,7 +3,7 @@
  * in WebdriverIO's native screenshot and window resizing capabilities.
  *
  * WebdriverIO's `setWindowSize` function has a minimum width of 500px,
- * which is insufficient for capturing mobile screenshots. 
+ * which is insufficient for capturing mobile screenshots.
  * And the `takeScreenshot` captures the entire window size, not just the viewport.
  *
  * To address this, we capture the screenshot using WebdriverIO and then use
