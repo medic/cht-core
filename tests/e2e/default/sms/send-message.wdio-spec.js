@@ -22,7 +22,7 @@ describe('Send message', () => {
     parent: {_id: healthCenter._id, parent: healthCenter.parent}
   });
 
-  const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: anne });
+  const offlineUser = userFactory.build({ place: healthCenter._id, contact: anne });
 
   const smsMsg = (person, type = 'regular')  => `Test SMS - ${person} - ${type}`;
 
