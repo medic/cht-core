@@ -62,8 +62,8 @@ const generateScreenshot = async (scenario, step) => {
   });
 
   screenshotSharp = screenshotSharp.resize(
-      extractWidth * HIGH_DENSITY_DISPLAY_2X,
-      extractHeight * HIGH_DENSITY_DISPLAY_2X
+    extractWidth * HIGH_DENSITY_DISPLAY_2X,
+    extractHeight * HIGH_DENSITY_DISPLAY_2X
   );
 
   await screenshotSharp.toFile(filename);
