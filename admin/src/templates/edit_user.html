@@ -118,7 +118,7 @@
           ng-model="editUserModel.password"
           autocomplete="new-password" 
           ng-disabled="editUserModel.role === '_admin'"/>
-        <button type="button" class="toggle-password" ng-click="togglePasswordMasking()">
+        <button type="button" id="password-toggle" ng-click="togglePasswordMasking()">
           <img ng-src="{{editUserModel.passwordFieldType === 'password' ? editUserModel.showPasswordIcon : editUserModel.hidePasswordIcon}}" alt="Toggle password masking" />
         </button>
       </div>
