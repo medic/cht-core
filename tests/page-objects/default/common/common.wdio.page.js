@@ -14,7 +14,8 @@ const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
 const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
 const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
 const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
-const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
+const moreOptionsMenu = () => $('aria/Actions menu');
+const toolBar = () => $('mm-tool-bar');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
@@ -329,7 +330,12 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await hamburgerMenu()).waitForDisplayed({ timeout });
+  const windowSize = await browser.getWindowSize();
+  if (windowSize.width === 500 && windowSize.height === 700) {
+    await (await toolBar()).waitForDisplayed({ timeout });
+  } else {
+    await (await hamburgerMenu()).waitForDisplayed({ timeout });
+  }
 };
 
 const waitForPageLoaded = async () => {
