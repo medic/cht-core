@@ -14,7 +14,7 @@ const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
 const usernameErrorMessage = () => $('span.help-block.ng-binding');
-const passwordErrorMessage = () => $('#edit-password ~ .help-block');
+const passwordErrorMessage = () => $('.password-input-group ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
 const contactErrorMessage = () => $('#contactSelect ~ .help-block');
 const uploadUsersButton = () => $('a#add-users');
@@ -155,6 +155,16 @@ const getPasswordErrorText = async () => {
   return await (await passwordErrorMessage()).getText();
 };
 
+const setUserPassword = async (password) => {
+  await (await userPassword()).waitForDisplayed();
+  await (await userPassword()).setValue(password);
+};
+
+const setUserConfirmPassword = async (password) => {
+  await (await userConfirmPassword()).waitForDisplayed();
+  await (await userConfirmPassword()).setValue(password);
+};
+
 const togglePassword = async () => {
   await (await userPassword()).waitForDisplayed();
   await (await userConfirmPassword()).waitForDisplayed();
@@ -225,6 +235,8 @@ module.exports = {
   getUsernameErrorText,
   getPasswordErrorText,
   togglePassword,
+  setUserPassword,
+  setUserConfirmPassword,
   getPlaceErrorText,
   getContactErrorText,
   openUploadUsersDialog,
