@@ -52,7 +52,8 @@
 
   &.about,
   &.testing,
-  &.privacy-policy {
+  &.privacy-policy,
+  &.user {
     .tool-bar {
       height: 0;
     }
@@ -274,7 +275,7 @@
         color: @text-normal-color;
       }
 
-      .tab-title {
+      .tool-bar-title {
         display: none;
       }
 
@@ -335,6 +336,17 @@
 
 @media (max-width: @media-mobile) {
   .app-root.old-nav {
+    &.about,
+    &.testing,
+    &.privacy-policy,
+    &.user {
+      .content {
+        .page {
+          top: calc(@top-navbar-height + 5px);
+        }
+      }
+    }
+
     .header {
       background-color: @top-header-color;
       position: relative;
