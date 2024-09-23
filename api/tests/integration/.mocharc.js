@@ -1,5 +1,4 @@
 process.env.COUCH_URL='http://admin:pass@localhost:5984/medic';
-console.log(__dirname);
 
 module.exports = {
   allowUncaught: false,
