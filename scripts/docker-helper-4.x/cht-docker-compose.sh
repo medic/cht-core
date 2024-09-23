@@ -478,7 +478,7 @@ while [[ "$running" != "true" ]]; do
 done
 
 # update certs every time we run to ensure they're current
-update_nginx_local_ip_tls_cert $nginxContainerId
+update_nginx_local_ip_tls_cert "$nginxContainerId"
 
 echo ""
 echo ""
