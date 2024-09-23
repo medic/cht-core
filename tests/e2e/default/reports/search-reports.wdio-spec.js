@@ -1,16 +1,15 @@
 const utils = require('@utils');
-
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
 
 describe('Reports Search', () => {
+  let reportDocs;
   const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: 'district_hospital' });
   const potuHospital = placeFactory.place().build({ name: 'Potu Hospital', type: 'district_hospital' });
 
@@ -31,7 +30,6 @@ describe('Reports Search', () => {
     pregnancyFactory.build({ fields: { patient_id: sittuPerson.patient_id, case_id: 'case-12' } }),
     pregnancyFactory.build({ fields: { patient_id: potuPerson.patient_id, case_id: 'case-12' } }),
   ];
-  let reportDocs;
 
   before(async () => {
     await utils.saveDocs([ sittuHospital, sittuPerson, potuHospital, potuPerson ]);
@@ -48,15 +46,15 @@ describe('Reports Search', () => {
     await searchPage.performSearch('sittu');
     await commonPage.waitForLoaders();
     expect((await reportsPage.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
 
     await searchPage.clearSearch();
     expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
-    expect(await (await reportsPage.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(potuSMSPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(potuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
   });
 
   it('should return results when searching by case_id', async () => {
@@ -70,7 +68,7 @@ describe('Reports Search', () => {
     await reportsPage.clickOnCaseId();
     await commonPage.waitForLoaders();
     expect((await reportsPage.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
   });
 });

@@ -5,7 +5,7 @@ const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.pa
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
@@ -15,7 +15,6 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 const deliveryReport = require('@page-objects/default/enketo/default-delivery-report.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
-const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Contact Delivery Form', () => {
@@ -113,8 +112,8 @@ describe('Contact Delivery Form', () => {
 
     //Verify the created report
     await contactPage.openReport();
-    await (await reportPage.reportBodyDetails()).waitForDisplayed();
-    const { patientName, reportName } = await reportPage.getOpenReportInfo();
+    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+    const { patientName, reportName } = await reportsPage.getOpenReportInfo();
     expect(patientName).to.equal(pregnantWoman.name);
     expect(reportName).to.equal('Delivery');
 
@@ -186,7 +185,7 @@ describe('Contact Delivery Form', () => {
     await sentinelUtils.waitForSentinel();
 
     await contactPage.openReport();
-    await (await reportPage.reportBodyDetails()).waitForDisplayed();
+    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -227,7 +226,7 @@ describe('Contact Delivery Form', () => {
     await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
     await browser.refresh();
-    await (await reportPage.reportBodyDetails()).waitForDisplayed();
+    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
 
     const updatedReport = await utils.getDoc(reportId);
     const exclude = [
@@ -247,7 +246,7 @@ describe('Contact Delivery Form', () => {
       source_id: '',
       user: {
         contact_id: offlineUser.contact._id,
-        name: offlineUser.username,
+        name: offlineUser.contact.name,
         phone: offlineUser.contact.phone,
       },
       contact: {
@@ -335,7 +334,7 @@ describe('Contact Delivery Form', () => {
     await genericForm.nextPage();
     await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
-    await (await reportPage.reportBodyDetails()).waitForDisplayed();
+    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
 
     const cesareanReport = await utils.getDoc(reportId);
     expect(cesareanReport.fields)
@@ -388,7 +387,7 @@ describe('Contact Delivery Form', () => {
     await sentinelUtils.waitForSentinel();
 
     await contactPage.openReport();
-    await (await reportPage.reportBodyDetails()).waitForDisplayed();
+    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -419,7 +418,7 @@ describe('Contact Delivery Form', () => {
     await genericForm.nextPage();
     await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
-    await (await reportPage.reportBodyDetails()).waitForDisplayed();
+    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
 
     const updatedReport = await utils.getDoc(reportId);
 
