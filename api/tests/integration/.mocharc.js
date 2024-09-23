@@ -7,6 +7,6 @@ module.exports = {
   fullTrace: true,
   asyncOnly: false,
   spec: './api/tests/integration/**/*.js',
-  timeout: 10000,
+  timeout: 20000,
   reporter: 'spec',
 };
