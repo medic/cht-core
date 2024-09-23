@@ -36,6 +36,14 @@
 # ./add-local-ip-certs-to-docker-4.x.sh cht-3-14 expire
 #
 
+update_nginx_local_ip_tls_cert(){
+  nginxContainerId=$1
+  curl --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
+  curl --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
+  docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem 2>/dev/null
+  docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem 2>/dev/null
+}
+
 container="${1:-cht-nginx}"
 action="${2:-refresh}"
 
@@ -52,16 +60,15 @@ if [ "$status" = "true" ]; then
   result=""
   if [ "$action" = "refresh" ]; then
     result="downloaded fresh local-ip.medicmobile.org"
-    docker exec -it "$container" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
-    docker exec -it "$container" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
+    update_nginx_local_ip_tls_cert "$container"
   elif [ "$action" = "expire" ]; then
     result="installed expired local-ip.medicmobile.org"
-    docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem
-    docker cp ./tls_certificates/local-ip-expired.key "$container":/etc/nginx/private/key.pem
+    docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem 2>/dev/null
+    docker cp ./tls_certificates/local-ip-expired.key "$container":/etc/nginx/private/key.pem 2>/dev/null
   elif [ "$action" = "self" ]; then
     result="installed self-signed"
-    docker cp ./tls_certificates/self-signed.crt "$container":/etc/nginx/private/cert.pem
-    docker cp ./tls_certificates/self-signed.key "$container":/etc/nginx/private/key.pem
+    docker cp ./tls_certificates/self-signed.crt "$container":/etc/nginx/private/cert.pem 2>/dev/null
+    docker cp ./tls_certificates/self-signed.key "$container":/etc/nginx/private/key.pem 2>/dev/null
   fi
 
   if [ "$result" != "" ]; then
@@ -82,6 +89,6 @@ else
   echo
   echo "See this URL for more information on running containers:"
   echo ""
-  echo "    https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/"
+  echo "    https://docs.communityhealthtoolkit.org/building/local-setup/"
   echo ""
 fi
