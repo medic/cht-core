@@ -48,6 +48,5 @@ function(doc) {
     include.forEach(function(key) {
       emitField(type, key, doc[key], order);
     });
-    emitMaybe('case_id:' + doc.case_id, order);
   }
 }
