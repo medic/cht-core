@@ -34,6 +34,8 @@
  * }
  */
 
+/* eslint-disable no-console */
+
 module.exports = {
   /**
    * Builds an empty target-state.
