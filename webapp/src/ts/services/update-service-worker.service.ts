@@ -1,11 +1,7 @@
-/*
-Handles service worker updates
-*/
+/**
+ * Handles service worker updates
+ */
 import { Injectable } from '@angular/core';
-import { Store } from '@ngrx/store';
-
-import { GlobalActions } from '@mm-actions/global';
-import { environment } from '@mm-environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -13,13 +9,8 @@ import { environment } from '@mm-environments/environment';
 export class UpdateServiceWorkerService {
   private readonly retryFailedUpdateAfterSec = 5 * 60;
   private existingUpdateLoop;
-  private globalActions;
 
-  constructor(
-    private store:Store,
-  ) {
-    this.globalActions = new GlobalActions(store);
-  }
+  constructor() {}
 
   update(onSuccess) {
     // This avoids multiple updates retrying in parallel
@@ -41,7 +32,7 @@ export class UpdateServiceWorkerService {
           installingWorker.onstatechange = () => {
             switch (installingWorker.state) {
             case 'activated':
-              !environment.production && this.globalActions.setSnackbarContent('New service worker activated');
+              console.debug('New service worker activated');
               registration.onupdatefound = null;
               onSuccess();
               break;

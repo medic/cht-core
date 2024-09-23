@@ -19,7 +19,7 @@ describe('Create user meta db : ', () => {
 
   before(async () => await loginPage.cookieLogin());
 
-  it.skip('should allow a new user to read/write from meta db', async () => {
+  it('should allow a new user to read/write from meta db', async () => {
     await usersPage.goToAdminUser();
     await usersPage.openAddUserDialog();
     await usersPage.inputAddUserFields(username, fullName, 'program_officer', '', '', password);
