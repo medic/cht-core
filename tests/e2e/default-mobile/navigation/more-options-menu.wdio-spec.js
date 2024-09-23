@@ -15,7 +15,6 @@ describe('More Options Menu - Offline User', () => {
   let smsReportId;
 
   const contact = personFactory.build({
-    name: 'Contact',
     phone: '+12068881234',
     place: health_center._id,
     parent: { _id: health_center._id, parent: health_center.parent },
@@ -28,7 +27,6 @@ describe('More Options Menu - Offline User', () => {
   });
 
   const patient = personFactory.build({
-    name: 'Patient',
     parent: health_center
   });
 
