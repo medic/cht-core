@@ -25,6 +25,7 @@ const submitDefaultPregnancy = async (submitForm = true) => {
   await commonEnketoPage.selectRadioButton('If the woman has a specific upcoming ANC appointment date, ' +
     'enter it here. You will receive a task three days before to remind her to attend.', 'Enter date');
   await setFutureVisitDate(moment().add(2, 'day').format('YYYY-MM-DD'));
+  await genericForm.formTitle().click();
   await genericForm.nextPage(1);
   await commonEnketoPage.selectRadioButton('Is this the woman\'s first pregnancy?', 'No');
   await commonEnketoPage.selectRadioButton('Has the woman had any miscarriages or stillbirths?', 'Yes');

@@ -7,6 +7,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const sms = require('@utils/sms');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
 describe('More Options Menu - Offline User', () => {
   const places = placeFactory.generateHierarchy();
@@ -15,6 +16,7 @@ describe('More Options Menu - Offline User', () => {
   let smsReportId;
 
   const contact = personFactory.build({
+    name: 'Contact',
     phone: '+12068881234',
     place: health_center._id,
     parent: { _id: health_center._id, parent: health_center.parent },
@@ -27,6 +29,7 @@ describe('More Options Menu - Offline User', () => {
   });
 
   const patient = personFactory.build({
+    name: 'Patient',
     parent: health_center
   });
 
@@ -52,6 +55,8 @@ describe('More Options Menu - Offline User', () => {
     await loginPage.login(offlineUser);
   });
 
+  beforeEach(async () => await commonPage.goToBase());
+
   describe('Message tab', () => {
     it('should hide the kebab menu.', async () => {
       await sms.sendSms('testing', contact.phone);
@@ -62,7 +67,8 @@ describe('More Options Menu - Offline User', () => {
   describe('Contact tab', () => {
     it('should hide the \'export\' option and ' +
       'enable the \'edit\' and \'delete\' options when a contact is opened', async () => {
-      await commonPage.goToPeople(patient._id);
+      await commonPage.goToPeople();
+      await contactPage.selectLHSRowByText(patient.name);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
@@ -71,7 +77,8 @@ describe('More Options Menu - Offline User', () => {
 
     it('should hide the \'export\' and \'edit\' options and ' +
       'disable the \'delete\' option when the offline user\'s place is selected', async () => {
-      await commonPage.goToPeople(offlineUser.place);
+      await commonPage.goToPeople();
+      await contactPage.selectLHSRowByText(health_center.name);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
