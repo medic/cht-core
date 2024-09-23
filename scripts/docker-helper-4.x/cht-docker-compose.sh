@@ -101,7 +101,7 @@ show_help_existing_stop_and_destroy() {
     echo "Stop and destroy all project data:"
     echo "    ./cht-docker-compose.sh ENV-FILE.env destroy"
     echo ""
-    echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
+    echo "https://docs.communityhealthtoolkit.org/hosting/4.x/app-developer/"
     echo ""
 }
 
@@ -264,6 +264,15 @@ get_system_and_docker_info(){
   echo "Global Containers $(get_global_running_container_count)"
   echo
   echo $"$info" | column -t
+}
+
+update_nginx_local_ip_tls_cert(){
+  nginxContainerId=$1
+  curl  -s -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain 2>/dev/null
+  curl  -s -o /tmp/local-ip-key https://local-ip.medicmobile.org/key 2>/dev/null
+  docker cp /tmp/local-ip-fullchain ${nginxContainerId}:/etc/nginx/private/cert.pem  2>/dev/null
+  docker cp /tmp/local-ip-key ${nginxContainerId}:/etc/nginx/private/key.pem  2>/dev/null
+  docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
 }
 
 if [ "$(docker_not_installed)" ];then
@@ -468,9 +477,8 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
-docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
-docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
+# update certs every time we run to ensure they're current
+update_nginx_local_ip_tls_cert $nginxContainerId
 
 echo ""
 echo ""
