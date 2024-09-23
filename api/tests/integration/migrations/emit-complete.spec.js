@@ -1,5 +1,3 @@
-const sinon = require('sinon');
-
 const utils = require('./utils');
 
 describe('emit-complete', function() {
