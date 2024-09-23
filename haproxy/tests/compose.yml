@@ -3,7 +3,7 @@ services:
     build:
       context: ../
     ports:
-      - 127.0.0.1:5984:5984
+      - 127.0.0.1:15984:5984
     environment:
       COUCHDB_SERVERS: mock-couchdb1,mock-couchdb2,mock-couchdb3
       COUCHDB_USER: someuser
