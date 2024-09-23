@@ -7,11 +7,6 @@ describe('emit-complete', function() {
     await utils.initDb([]);
   });
 
-  afterEach(() => {
-    utils.tearDown();
-    sinon.restore();
-  });
-
   it('should do nothing when tasks not configured', function() {
     // given
     return utils.initSettings({ tasks: { rules: '' } })

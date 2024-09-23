@@ -33,7 +33,6 @@ const getUserDoc = async (id) => db.users.get(id);
 describe('add-contact-id-to-user migration', function() {
   afterEach(() => {
     sinon.restore();
-    utils.tearDown();
   });
 
   it('migrates the contact_id value from user-settings to _users for all users', async () => {

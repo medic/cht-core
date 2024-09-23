@@ -3,10 +3,6 @@ const utils = require('./utils');
 const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
 describe('add-uuid-to-scheduled-tasks migration', function() {
-  afterEach(function() {
-    return utils.tearDown();
-  });
-
   const FUTURE = moment().add(1, 'week').toISOString();
   const PAST = moment().subtract(1, 'week').toISOString();
 
