@@ -59,7 +59,7 @@ body {
       .tool-bar {
         background-color: @top-header-color;
 
-        .tool-bar-title {
+        .ellipsis-title {
           color: @text-inverse-color;
         }
 
@@ -267,7 +267,7 @@ body {
       min-width: 80px;
     }
 
-    .tool-bar-title {
+    .ellipsis-title {
       order: 3;
       min-width: 33vw;
       display: inline-block;
@@ -1161,7 +1161,7 @@ mm-search-bar {
 }
 
 .app-root.sidebar-filter-active .tool-bar .inner {
-  .tool-bar-title {
+  .ellipsis-title {
     min-width: 25vw;
   }
 
@@ -1459,7 +1459,7 @@ mm-sidebar-menu .mat-sidenav-container {
     &.select-mode {
       mm-header,
       .app-menu-button,
-      .tool-bar-title {
+      .ellipsis-title {
         display: none;
       }
     }
@@ -1547,16 +1547,6 @@ mm-sidebar-menu .mat-sidenav-container {
 
     h2 {
       display: initial;
-    }
-
-    .ellipsis-title {
-      display: inline-block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: calc(@content-width - @tool-bar-title-right-margin); // Give space to "more options" menu
-      text-align: left;
-      color: @filter-text-color;
     }
 
     .dropdown,
@@ -1677,7 +1667,7 @@ mm-sidebar-menu .mat-sidenav-container {
   .app-root.show-content {
     .header,
     .app-menu-button,
-    .tool-bar-title,
+    .ellipsis-title,
     mm-analytics-filters,
     mm-multiselect-bar,
     mm-search-bar {
@@ -1715,6 +1705,16 @@ mm-sidebar-menu .mat-sidenav-container {
       .navigation {
         display: contents;
       }
+    }
+
+    .navigation .ellipsis-title {
+      display: inline-block !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: calc(@content-width - @tool-bar-title-right-margin); // Give space to "more options" menu
+      text-align: left;
+      color: @filter-text-color;
     }
   }
 
@@ -1794,7 +1794,7 @@ mm-sidebar-menu .mat-sidenav-container {
     padding-left: 5px;
 
     ~ .app-menu-button,
-    ~ .tool-bar-title {
+    ~ .ellipsis-title {
       display: none;
     }
 
@@ -1816,7 +1816,7 @@ mm-sidebar-menu .mat-sidenav-container {
       min-width: initial;
     }
 
-    .tool-bar-title {
+    .ellipsis-title {
       text-overflow: ellipsis;
       width: calc(@content-width - @tool-bar-title-right-margin);
       padding-left: 4px;
