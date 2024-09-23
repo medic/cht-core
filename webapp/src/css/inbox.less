@@ -59,7 +59,7 @@ body {
       .tool-bar {
         background-color: @top-header-color;
 
-        .tab-title {
+        .tool-bar-title {
           color: @text-inverse-color;
         }
 
@@ -267,7 +267,7 @@ body {
       min-width: 80px;
     }
 
-    .tab-title {
+    .tool-bar-title {
       order: 3;
       min-width: 33vw;
       display: inline-block;
@@ -345,9 +345,6 @@ body {
         color: @filter-icon-color;
         padding: 2px 2px 0 0;
       }
-    }
-    .fa-sliders {
-      display: none;
     }
   }
 
@@ -1101,10 +1098,6 @@ mm-search-bar {
       color: @filter-icon-color;
     }
 
-    .fa-sliders {
-      display: none;
-    }
-
     &.disabled .search-bar-left-icon .fa {
       color: @inactive-color;
     }
@@ -1115,7 +1108,7 @@ mm-search-bar {
   margin-right: 20px;
 
   .mat-icon[fonticon="fa-ellipsis-v"] {
-    height: 24px;
+    height: @more-options-icon-size-desktop;
     &:before {
       font-size: @font-XXL;
     }
@@ -1168,9 +1161,10 @@ mm-search-bar {
 }
 
 .app-root.sidebar-filter-active .tool-bar .inner {
-  .tab-title {
+  .tool-bar-title {
     min-width: 25vw;
   }
+
   mm-search-bar {
     max-width: initial;
   }
@@ -1402,8 +1396,9 @@ mm-sidebar-menu .mat-sidenav-container {
     &.reports,
     &.contacts {
       .loading-status {
-        margin: 10px 10px calc(@bottom-navbar-height + 10px);
+        margin: 10px 10px calc(@tab-navbar-size + 10px);
       }
+
       &.show-content .loading-status {
         margin-bottom: 10px;
       }
@@ -1464,7 +1459,7 @@ mm-sidebar-menu .mat-sidenav-container {
     &.select-mode {
       mm-header,
       .app-menu-button,
-      .tab-title {
+      .tool-bar-title {
         display: none;
       }
     }
@@ -1481,7 +1476,7 @@ mm-sidebar-menu .mat-sidenav-container {
     padding: 0 5px;
 
     .mat-icon[fonticon="fa-ellipsis-v"] {
-      height: 32px;
+      height: @more-options-icon-size-mobile;
     }
   }
 
@@ -1559,7 +1554,7 @@ mm-sidebar-menu .mat-sidenav-container {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      width: calc(@content-width - @tab-title-right-margin); // Give space to "more options" menu
+      width: calc(@content-width - @tool-bar-title-right-margin); // Give space to "more options" menu
       text-align: left;
       color: @filter-text-color;
     }
@@ -1682,40 +1677,41 @@ mm-sidebar-menu .mat-sidenav-container {
   .app-root.show-content {
     .header,
     .app-menu-button,
-    .tab-title,
+    .tool-bar-title,
     mm-analytics-filters,
     mm-multiselect-bar,
     mm-search-bar {
       display: none;
     }
+
     .content .page {
       top: 46px;
     }
+
     .left-pane {
       left: -100%;
       .fast-action-trigger:not(.embed-fast-action) {
         display: none;
       }
     }
+
     .right-pane {
       left: 0;
     }
+
     .fast-action-trigger:not(.embed-fast-action) {
       bottom: @fab-bottom-margin;
     }
-    .app-menu-button {
-      display: none;
-    }
-    .tab-title {
-      display: none;
-    }
+
     .filters.tab-bar .inner {
       flex-direction: initial;
     }
+
     .tool-bar .inner {
       mm-reports-more-menu {
         order: 0;
       }
+
       .navigation {
         display: contents;
       }
@@ -1770,16 +1766,13 @@ mm-sidebar-menu .mat-sidenav-container {
       background: transparent;
       min-height: 40px;
 
-      mm-freetext-filter.filter {
+      mm-freetext-filter.filter,
+      .open-sort-label {
         display: none;
       }
 
       .search-bar-left-icon {
         margin: 0 12px 0 0;
-      }
-
-      .open-sort-label {
-        display: none;
       }
 
       .btn.open-filter {
@@ -1799,10 +1792,9 @@ mm-sidebar-menu .mat-sidenav-container {
   .app-root.search-bar-active mm-search-bar {
     width: 100%;
     padding-left: 5px;
-    max-width: initial;
 
     ~ .app-menu-button,
-    ~ .tab-title {
+    ~ .tool-bar-title {
       display: none;
     }
 
@@ -1824,9 +1816,9 @@ mm-sidebar-menu .mat-sidenav-container {
       min-width: initial;
     }
 
-    .tab-title {
+    .tool-bar-title {
       text-overflow: ellipsis;
-      width: calc(@content-width - @tab-title-right-margin);
+      width: calc(@content-width - @tool-bar-title-right-margin);
       padding-left: 4px;
       font-size: @font-extra-large;
     }
@@ -1835,7 +1827,7 @@ mm-sidebar-menu .mat-sidenav-container {
   .app-root.about,
   .app-root.testing {
     .page {
-      margin-bottom: calc(@bottom-navbar-height + 10px);
+      margin-bottom: calc(@tab-navbar-size + 10px);
     }
   }
 }
