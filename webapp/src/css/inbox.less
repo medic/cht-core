@@ -1792,6 +1792,7 @@ mm-sidebar-menu .mat-sidenav-container {
   .app-root.search-bar-active mm-search-bar {
     width: 100%;
     padding-left: 5px;
+    max-width: initial;
 
     ~ .app-menu-button,
     ~ .ellipsis-title {
@@ -1825,9 +1826,10 @@ mm-sidebar-menu .mat-sidenav-container {
   }
 
   .app-root.about,
-  .app-root.testing {
+  .app-root.testing,
+  .app-root.privacy-policy {
     .page {
-      margin-bottom: calc(@tab-navbar-size + 10px);
+      margin-bottom: @tab-navbar-size;
     }
   }
 }
