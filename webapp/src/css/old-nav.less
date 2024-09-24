@@ -98,7 +98,7 @@
       margin: 0 auto;
 
       .mm-badge-overlay {
-        right: 3%;
+        right: 15px;
       }
 
       :before {
@@ -381,6 +381,11 @@
           }
         }
 
+        .mm-badge-overlay {
+          right: 0;
+          top: -9px;
+        }
+
         .mm-badge-border {
           margin: 5px 0;
         }
@@ -452,10 +457,6 @@
 
         // Use bigger font when there are 4 or less tabs.
         .elements-label(a, button-label, 4, @font-extra-small);
-      }
-
-      .mm-badge-overlay {
-        right: 0;
       }
 
       .mm-badge-overlay-top {
