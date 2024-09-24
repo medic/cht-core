@@ -1,9 +1,6 @@
 const utils = require('./utils');
 
 describe('namespace-form-fields migration', function() {
-  afterEach(function() {
-    return utils.tearDown();
-  });
 
   it('should put form fields in fields property', function() {
     // given

@@ -5,10 +5,6 @@ const migrate = function() {
 };
 
 describe('create-patient-contacts migration', function() {
-  afterEach(function() {
-    return utils.tearDown();
-  });
-
   it('should run cleanly with no registered patients', function() {
     return utils.initDb([])
       .then(migrate)
