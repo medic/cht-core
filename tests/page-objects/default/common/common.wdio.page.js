@@ -330,12 +330,7 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  const windowSize = await browser.getWindowSize();
-  if (windowSize.width <= 500 && windowSize.height <= 700) {
-    await (await toolBar()).waitForDisplayed({ timeout });
-  } else {
-    await (await hamburgerMenu()).waitForDisplayed({ timeout });
-  }
+  await (await hamburgerMenu()).waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {
