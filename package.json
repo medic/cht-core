@@ -32,7 +32,7 @@
     "-- DEV TEST SCRIPTS": "-----------------------------------------------------------------------------------------------",
     "integration-all-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-all",
     "integration-sentinel-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-sentinel",
-    "integration-api": "mocha 'api/tests/integration/**/*.js' -t 10000",
+    "integration-api": "./api/tests/integration/couch-start.sh && mocha --config ./api/tests/integration/.mocharc.js && ./api/tests/integration/couch-stop.sh",
     "integration-all-k3d-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-all-k3d",
     "integration-sentinel-k3d-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-sentinel-k3d",
     "integration-cht-form": "wdio run ./tests/integration/cht-form/wdio.conf.js",

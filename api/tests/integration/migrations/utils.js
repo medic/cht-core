@@ -3,7 +3,6 @@ const {promisify} = require('util');
 const fs = require('fs');
 const path = require('path');
 const readFileAsync = promisify(fs.readFile);
-const logger = require('@medic/logger');
 const db = require('../../../src/db');
 const { expect } = require('chai');
 
@@ -67,7 +66,7 @@ const matches = (expected, actual) => {
 
 const assertDb = expected => {
   return db
-    .get('medic-test').allDocs({ include_docs: true })
+    .get('medic').allDocs({ include_docs: true })
     .then(results => {
       let actual = results.rows.map(row => _.omit(row.doc, ['_rev']));
       expected.sort(byId);
@@ -153,31 +152,7 @@ const matchDbs = (expected, actual) => {
   }
 };
 
-const realMedicDb = db.medic;
-const realSentinelDb = db.sentinel;
-const realUsersDb = db.users;
-const switchToRealDbs = () => {
-  db.medic = realMedicDb;
-  db.sentinel = realSentinelDb;
-  db.users = realUsersDb;
-};
-
-const switchToTestDbs = () => {
-  db.medic = new PouchDB(
-    realMedicDb.name.replace(/medic$/, 'medic-test')
-  );
-  db.sentinel = new PouchDB(
-    realSentinelDb.name.replace(/medic-sentinel$/, 'medic-sentinel-test')
-  );
-  db.users = new PouchDB(
-    realUsersDb.name.replace(/_users$/, 'users-test')
-  );
-};
-
 const initDb = content => {
-
-  switchToTestDbs();
-
   return _resetDb()
     .then(() => {
       const medicPath = path.join(__dirname, '../../../../build/ddocs/medic.json');
@@ -196,31 +171,10 @@ const initDb = content => {
     });
 };
 
-const _resetDb = (attempts = 0) => {
-  if (attempts === 3) {
-    return Promise.reject(new Error('Unable to reset medic-test db'));
-  }
-
-  return db.exists('medic-test')
-    .then(exists => {
-      if (exists) {
-        return db.get('medic-test').destroy();
-      }
-    })
-    .then(() => {
-      return db.get('medic-test');
-    })
-    .catch(err => {
-      logger.error('Could not create "medic-test" directly after deleting, pausing and trying again');
-      logger.error(err);
-      return new Promise(resolve => {
-        setTimeout(() => resolve(_resetDb(attempts + 1)), 3000);
-      });
-    });
-};
-
-const tearDown = () => {
-  switchToRealDbs();
+const _resetDb = async () => {
+  const res = await db.medic.allDocs();
+  const toDelete = res.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await db.medic.bulkDocs(toDelete);
 };
 
 const runMigration = migration => {
@@ -273,7 +227,6 @@ module.exports = {
   initSettings: initSettings,
   getSettings: getSettings,
   runMigration: runMigration,
-  tearDown: tearDown,
   getDdoc: getDdoc,
   insertAttachment: insertAttachment,
   getDocStub

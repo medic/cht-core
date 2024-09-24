@@ -3,7 +3,6 @@ const utils = require('./utils');
 
 describe('extract-translations', function() {
   afterEach(() => {
-    utils.tearDown();
     sinon.restore();
   });
 
