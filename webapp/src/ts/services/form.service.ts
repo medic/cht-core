@@ -8,7 +8,6 @@ import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { SearchService } from '@mm-services/search.service';
 import { SubmitFormBySmsService } from '@mm-services/submit-form-by-sms.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
