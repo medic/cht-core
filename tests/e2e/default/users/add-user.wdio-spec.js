@@ -9,6 +9,7 @@ const offlineUserRole = 'chw';
 const username = 'jackuser';
 const password = 'Jacktest@123';
 const password2 = 'Jacktest@456';
+const username2 = 'jack_user';
 const incorrectpassword = 'Passwor';
 const places = placeFactory.generateHierarchy();
 const districtHospital = places.get('district_hospital');
