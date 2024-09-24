@@ -6,7 +6,9 @@ const hamburgerMenu = () => $('aria/Application menu');
 const closeSideBarMenu = () => $('.panel-header-close');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
 const NOT_MOBILE_ONLY = 'mm-fast-action-button:not(.mobile-only)';
+const MOBILE_ONLY = 'mm-fast-action-button';
 const fastActionFAB = () => $(`${NOT_MOBILE_ONLY} ${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
+const fastActionFABMobile = () => $(`${MOBILE_ONLY} ${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
 const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
 const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
 const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
@@ -14,7 +16,7 @@ const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
 const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
 const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
 const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
-const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
+const moreOptionsMenu = () => $('aria/Actions menu');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
@@ -44,8 +46,7 @@ const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
 // Mobile
-const MOBILE_FILTER_TOP_BAR = '.filters';
-const mobileTopBarTitle = () => $(`${MOBILE_FILTER_TOP_BAR} .ellipsis-title`);
+const mobileTopBarTitle = () => $('mm-navigation .ellipsis-title');
 
 //User settings
 const USER_SETTINGS = 'aria/User settings';
@@ -89,6 +90,17 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await (await fastActionFAB()).waitForClickable();
   waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
   await (await fastActionFAB()).click();
+  if (waitForList) {
+    await clickFastActionById(actionId);
+  }
+};
+
+const clickFastActionFABMobile = async ({ actionId, waitForList }) => {
+  await closeHamburgerMenu();
+  await (await fastActionFABMobile()).waitForDisplayed();
+  await (await fastActionFABMobile()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
+  await (await fastActionFABMobile()).click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
@@ -500,6 +512,7 @@ module.exports = {
   openMoreOptionsMenu,
   closeFastActionList,
   clickFastActionFAB,
+  clickFastActionFABMobile,
   clickFastActionFlat,
   openFastActionReport,
   getFastActionFABTextById,
