@@ -40,8 +40,8 @@ update_nginx_local_ip_tls_cert(){
   nginxContainerId=$1
   curl --retry 3 --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
   curl --retry 3 --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
-  docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem 2>/dev/null
-  docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem 2>/dev/null
+  docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem 1>/dev/null
+  docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem 1>/dev/null
 }
 
 container="${1:-cht-nginx}"
@@ -63,12 +63,12 @@ if [ "$status" = "true" ]; then
     update_nginx_local_ip_tls_cert "$container"
   elif [ "$action" = "expire" ]; then
     result="installed expired local-ip.medicmobile.org"
-    docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem 2>/dev/null
-    docker cp ./tls_certificates/local-ip-expired.key "$container":/etc/nginx/private/key.pem 2>/dev/null
+    docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem 1>/dev/null
+    docker cp ./tls_certificates/local-ip-expired.key "$container":/etc/nginx/private/key.pem 1>/dev/null
   elif [ "$action" = "self" ]; then
     result="installed self-signed"
-    docker cp ./tls_certificates/self-signed.crt "$container":/etc/nginx/private/cert.pem 2>/dev/null
-    docker cp ./tls_certificates/self-signed.key "$container":/etc/nginx/private/key.pem 2>/dev/null
+    docker cp ./tls_certificates/self-signed.crt "$container":/etc/nginx/private/cert.pem 1>/dev/null
+    docker cp ./tls_certificates/self-signed.key "$container":/etc/nginx/private/key.pem 1>/dev/null
   fi
 
   if [ "$result" != "" ]; then

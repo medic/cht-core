@@ -271,10 +271,10 @@ get_system_and_docker_info(){
 update_nginx_local_ip_tls_cert(){
   nginxContainerId=$1
   rm -f /tmp/local-ip-fullchain /tmp/local-ip-key
-  curl --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
-  curl --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
-  docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem  2>/dev/null
-  docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem  2>/dev/null
+  curl  --retry 3 --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
+  curl  --retry 3 --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
+  docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem  1>/dev/null
+  docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem  1>/dev/null
   docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
 }
 
@@ -283,7 +283,7 @@ validate_tls(){
   # by default curl validates TLS.  If we get back  60 then TLS isn't valid:
   # exitcode: https://everything.curl.dev/usingcurl/verbose/writeout.html
   # 60: https://everything.curl.dev/cmdline/exitcode.html
-  status=$(curl  --write-out "%{exitcode}"  -qs  "$url" -o /dev/null)
+  status=$(curl   --retry 3 --write-out "%{exitcode}"  -qs  "$url" -o /dev/null)
   if [ "$status" = "60" ]; then
     echo "false: status is $status"
   fi
