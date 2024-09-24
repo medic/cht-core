@@ -107,6 +107,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   }
 
   ngOnDestroy() {
+    this.globalActions.setSearchBar({ isOpen: false });
     this.subscription.unsubscribe();
   }
 }
