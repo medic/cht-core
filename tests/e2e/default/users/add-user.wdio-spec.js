@@ -84,7 +84,7 @@ describe('User Test Cases ->', () => {
 
     it('should hide and reveal password value, and add user with a revealed password', async () => {
       await usersAdminPage.inputAddUserFields(
-        username,
+        username2,
         'Jack',
         onlineUserRole,
         districtHospital.name,
