@@ -112,7 +112,7 @@ describe('User Test Cases ->', () => {
       expect(revealedPassword.confirmValue).to.equal(password2);
 
       await usersAdminPage.saveUser();
-      expect(await usersAdminPage.getAllUsernames()).to.include.members([username]);
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([username2]);
     });
   });
 
