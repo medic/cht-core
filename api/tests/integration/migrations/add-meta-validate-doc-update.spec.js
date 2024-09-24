@@ -53,8 +53,6 @@ const assertUserDb = (name) => {
 };
 
 describe('add-meta-validate-doc-update migration', () => {
-  afterEach(() => utils.tearDown());
-
   it('should work with no user dbs', () => {
     return utils
       .initDb([])
