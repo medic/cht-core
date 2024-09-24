@@ -38,8 +38,8 @@
 
 update_nginx_local_ip_tls_cert(){
   nginxContainerId=$1
-  curl --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
-  curl --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
+  curl --retry 3 --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
+  curl --retry 3 --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
   docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem 2>/dev/null
   docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem 2>/dev/null
 }
