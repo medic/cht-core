@@ -52,6 +52,7 @@ const FEEDBACK = '#feedback';
 const ABOUT_MENU = '#header-dropdown i.fa-question';
 //Configuration App
 const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
+const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
 
 const errorLog = () => $(`error-log`);
 
@@ -72,7 +73,7 @@ const waitForSnackbarToClose = async () => {
 
 const clickFastActionById = async (id) => {
   // Wait for the Angular Material's animation to complete.
-  await browser.pause(500);
+  await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await (await fastActionListContainer()).waitForDisplayed();
   await (await fastActionById(id)).waitForClickable();
   await (await fastActionById(id)).click();
@@ -95,7 +96,7 @@ const getFastActionItemsLabels = async () => {
   await (await fastActionFAB()).waitForClickable();
   await (await fastActionFAB()).click();
 
-  await browser.pause(500);
+  await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await (await fastActionListContainer()).waitForDisplayed();
 
   const items = await fastActionItems();
@@ -334,7 +335,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
 
   await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   try {
-    await (await syncSuccess()).waitForDisplayed({ timeout: 1000 });
+    await (await syncSuccess()).waitForDisplayed({ timeout: ELEMENT_DISPLAY_PAUSE });
   } catch {
     await syncAndWaitForSuccess(timeout, retry - 1);
   }
