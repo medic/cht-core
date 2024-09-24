@@ -11,6 +11,8 @@ import { TranslateService } from '@mm-services/translate.service';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
+const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
+const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 
 @Component({
   selector: 'update-password',
@@ -32,8 +34,8 @@ export class UpdatePasswordComponent {
     hidePasswordIcon: string;
   } = {
       passwordFieldType: 'password',
-      showPasswordIcon: '/login/images/show-password.svg',
-      hidePasswordIcon: '/login/images/hide-password.svg',
+      showPasswordIcon: SHOW_PASSWORD_ICON,
+      hidePasswordIcon: HIDE_PASSWORD_ICON,
     };
 
   constructor(
