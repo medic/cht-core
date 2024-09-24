@@ -7,7 +7,7 @@
     </mat-icon>
   </a>
   <a *ngIf="!isCancelCallbackSet" (click)="navigateBack()" class="filter-bar-back">
-    <span class="fa fa-chevron-left" translate [title]="'Back' | translate"></span>
+    <mat-icon class="mat-icon-back" svgIcon="icon-back" translate [title]="'Back' | translate"></mat-icon>
   </a>
   <h2 class="ellipsis-title">{{title}}</h2>
 </div>

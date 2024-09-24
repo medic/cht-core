@@ -282,10 +282,6 @@
     height: @old-nav-filters-bar-height;
 
     .inner {
-      .navigation a {
-        color: @text-normal-color;
-      }
-
       .ellipsis-title {
         display: none;
       }
@@ -330,6 +326,10 @@
     mm-navigation {
       display: initial;
     }
+
+    .navigation .ellipsis-title {
+      display: block;
+    }
   }
 
   .mm-navigation-menu {
@@ -354,6 +354,7 @@
       .content {
         .page {
           top: calc(@top-navbar-height + 5px);
+          padding-left: 15px;
         }
       }
     }
