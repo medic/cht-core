@@ -15,7 +15,6 @@ const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-
 const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
 const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
 const moreOptionsMenu = () => $('aria/Actions menu');
-const toolBar = () => $('mm-tool-bar');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
