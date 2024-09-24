@@ -31,9 +31,9 @@ export class UpdatePasswordComponent {
     showPasswordIcon: string;
     hidePasswordIcon: string;
   } = {
-      passwordFieldType: 'password', // Start with the password masked.
-      showPasswordIcon: '/login/images/show-password.svg', // Icon for showing password.
-      hidePasswordIcon: '/login/images/hide-password.svg' // Icon for masking password.
+      passwordFieldType: 'password',
+      showPasswordIcon: '/login/images/show-password.svg',
+      hidePasswordIcon: '/login/images/hide-password.svg',
     };
 
   constructor(
