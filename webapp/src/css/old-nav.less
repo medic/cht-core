@@ -59,7 +59,13 @@
 
     .page {
       top: @top-without-filter;
+      padding-left: 15px;
+      padding-top: 15px;
     }
+  }
+
+  &.error .page {
+    padding-left: 15px;
   }
 
   .header {
@@ -253,6 +259,7 @@
 
   .mm-badge-border {
     border: solid 1px @white;
+    margin: 0;
   }
 }
 
@@ -275,10 +282,14 @@
         width: 100%;
         padding: 0;
         a {
-          min-width: 40px;
+          min-width: 50px;
           .button-label {
             font-size: @font-XXXS;
           }
+        }
+
+        .mm-badge-border {
+          margin: 5px 0;
         }
       }
 
@@ -333,7 +344,7 @@
       .tabs {
         padding-left: 2px;
         a {
-          min-width: 40px;
+          min-width: 50px;
           .button-label {
             font-size: @font-XXXS;
           }
