@@ -65,8 +65,14 @@
     .content {
       .page {
         top: @top-without-filter;
+        padding-left: 15px;
+        padding-top: 15px;
       }
     }
+  }
+
+  &.error .page {
+    padding-left: 15px;
   }
 
   .header {
@@ -331,6 +337,73 @@
 
   .mm-badge-border {
     border: solid 1px @white;
+    margin: 0;
+  }
+
+  .tool-bar {
+    height: @old-nav-filters-bar-height;
+
+    .inner {
+      .ellipsis-title {
+        display: none;
+      }
+
+      mm-search-bar {
+        padding-left: 5px;
+        max-width: initial;
+        .fa {
+          color: @gray-ultra-dark;
+        }
+
+        .mm-search-bar-container {
+          justify-content: flex-end;
+        }
+      }
+       mm-messages-more-menu {
+        display: initial;
+      }
+    }
+  }
+
+  &.analytics .tool-bar .inner {
+    display: initial;
+  }
+
+  mm-analytics-filters {
+    .mm-dropdown {
+      display: initial;
+    }
+  }
+
+  .analytics-sidebar-filter {
+    display: flex;
+    align-items: center;
+  }
+
+  mm-navigation {
+    display: none;
+  }
+
+  &.show-content {
+    mm-navigation {
+      display: initial;
+    }
+
+    .navigation .ellipsis-title {
+      display: block;
+    }
+  }
+
+  .mm-navigation-menu {
+    display: block;
+  }
+
+  .powered-by {
+    margin: 0;
+  }
+
+  .mm-badge-border {
+    border: solid 1px @white;
   }
 }
 
@@ -364,10 +437,14 @@
         width: 100%;
         padding: 0 0 0 2px;
         a {
-          min-width: 40px;
+          min-width: 50px;
           .button-label {
             font-size: @font-XXXS;
           }
+        }
+
+        .mm-badge-border {
+          margin: 5px 0;
         }
       }
 
@@ -428,6 +505,13 @@
   .old-nav {
     .header {
       .tabs {
+        a {
+          min-width: 50px;
+          .button-label {
+            font-size: @font-XXXS;
+          }
+        }
+
         // Use bigger font when there are 4 or less tabs.
         .elements-label(a, button-label, 4, @font-extra-small);
       }

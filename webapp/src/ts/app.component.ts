@@ -101,6 +101,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   private readonly SVG_ICONS = new Map([
     ['icon-close', './img/icon-close.svg'],
     ['icon-filter', './img/icon-filter.svg'],
+    ['icon-back', './img/icon-back.svg'],
   ]);
 
   constructor (
