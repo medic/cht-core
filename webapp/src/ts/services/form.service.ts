@@ -46,7 +46,6 @@ export class FormService {
     private dbService: DbService,
     private fileReaderService: FileReaderService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
-    private searchService: SearchService,
     private submitFormBySmsService: SubmitFormBySmsService,
     private userContactService: UserContactService,
     private userSettingsService:UserSettingsService,

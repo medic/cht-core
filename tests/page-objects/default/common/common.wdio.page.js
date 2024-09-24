@@ -321,23 +321,23 @@ const syncAndNotWaitForSuccess = async () => {
 };
 
 const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
-  console.warn(retry);
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
   await closeReloadModal(false, 0);
   await openHamburgerMenu();
 
-  if (!await (await syncInProgress()).isDisplayed()) {
+  if (!await (await syncInProgress()).isExisting()) {
     await (await syncButton()).click();
     await openHamburgerMenu();
   }
 
   await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
-  if (await (await syncSuccess()).isDisplayed()) {
-    return;
+  try {
+    await (await syncSuccess()).waitForDisplayed({ timeout: 1000 });
+  } catch {
+    await syncAndWaitForSuccess(timeout, retry - 1);
   }
-  await syncAndWaitForSuccess(timeout, retry - 1);
 };
 
 const hideModalOverlay = () => {
@@ -381,7 +381,7 @@ const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
     shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
-    console.error('Reload modal not showed up');
+    timeout && console.error('Reload modal has not showed up');
     return false;
   }
 };
