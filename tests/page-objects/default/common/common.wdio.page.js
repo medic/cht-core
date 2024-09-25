@@ -329,7 +329,8 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await hamburgerMenu()).waitForDisplayed({ timeout });
+  //await (await hamburgerMenu()).waitForDisplayed({ timeout });
+  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {
