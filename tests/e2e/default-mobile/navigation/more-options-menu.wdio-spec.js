@@ -7,7 +7,6 @@ const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const searchPage = require('@page-objects/default/search/search.wdio.page');
 const sms = require('@utils/sms');
 
 describe('More Options Menu - Offline User', () => {
@@ -17,6 +16,7 @@ describe('More Options Menu - Offline User', () => {
   let smsReportId;
 
   const contact = personFactory.build({
+    name: 'chw_robert',
     phone: '+12068881234',
     place: health_center._id,
     parent: { _id: health_center._id, parent: health_center.parent },
@@ -29,7 +29,7 @@ describe('More Options Menu - Offline User', () => {
   });
 
   const patient = personFactory.build({
-    name: 'patient_name',
+    name: 'patient_sarah',
     parent: health_center
   });
 
@@ -66,10 +66,6 @@ describe('More Options Menu - Offline User', () => {
 
     beforeEach(async () => {
       await commonPage.goToBase();
-    });
-
-    after(async () => {
-      await searchPage.clearSearch();
     });
 
     it('should hide the \'export\' option and ' +
