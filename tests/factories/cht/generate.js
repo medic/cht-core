@@ -128,8 +128,10 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 };
 
 const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames = false }) => {
-  const createDataFunc = useRealNames ? createDataWithRealNames : createDataWithFixedData;
-  return createDataFunc({ healthCenter, user, nbrClinics, nbrPersons });
+  if (useRealNames) { 
+    return createDataWithRealNames({ healthCenter, user, nbrClinics, nbrPersons });
+  }
+  return createDataWithFixedData({ healthCenter, user, nbrClinics, nbrPersons });
 };
 
 const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10, useRealNames = false }) => {
