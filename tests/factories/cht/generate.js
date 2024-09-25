@@ -107,7 +107,9 @@ const createReportsForPerson = (person, user) => {
 };
 
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
-  const clinicsData = Array.from({ length: nbrClinics }).map((_, index) => {
+  const clinicsData = Array
+    .from({ length: nbrClinics })
+    .map((_, index) => {
     const { clinic, primaryContact } = createClinic(index, healthCenter);
 
     const additionalPersons = createAdditionalPersons(nbrPersons, clinic);
