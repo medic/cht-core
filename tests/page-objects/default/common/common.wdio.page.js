@@ -322,6 +322,7 @@ const syncAndNotWaitForSuccess = async () => {
 };
 
 const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
+  console.log('retry', retry, new Date().toISOString());
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
