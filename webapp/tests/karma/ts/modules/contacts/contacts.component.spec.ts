@@ -30,6 +30,7 @@ import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
 
@@ -132,7 +133,8 @@ describe('Contacts component', () => {
           NavigationComponent,
           SortFilterComponent,
           FastActionButtonComponent,
-          SearchBarComponent
+          SearchBarComponent,
+          ToolBarComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

@@ -44,8 +44,8 @@
 @chip-text-color: @white;
 @chip-border-color: @white;
 @sidebar-background-color: @white;
-@filter-icon-color: @gray-ultra-dark;
-@filter-text-color: @black;
+@filter-icon-color: @medium-black;
+@filter-text-color: @medium-black;
 @filter-secondary-text-color: @gray-medium;
 @filter-arrow-color: @gray-medium;
 @progress-bar-background-color: @white;
@@ -102,8 +102,12 @@
 @media-small-mobile: 400px;
 @header-dropdown-width: 250px;
 @header-bar-extras: 40px;
-@filters-bar-desktop-height: 58px;
-@filters-bar-mobile-height: 50px;
+@toolbar-desktop-height: 60px;
+@old-nav-filters-bar-height: 58px;
+@old-nav-top-desktop-height: 123px;
+@old-nav-top-mobile-height: 115px;
+@toolbar-mobile-height: 50px;
+@tool-bar-title-right-margin: 100px;
 @top-navbar-height: 60px;
 @top-without-filter: 75px;
 @snackbar-margin: 15px;
@@ -113,15 +117,17 @@
 @sidebar-menu-height: 100vh;
 @sidebar-menu-mobile-width: 85vw;
 @sidebar-menu-desktop-width: 470px;
-@sidebar-menu-header-mobile: @filters-bar-mobile-height;
-@sidebar-menu-header-desktop: @filters-bar-desktop-height;
+@sidebar-menu-header-mobile: @toolbar-mobile-height;
+@sidebar-menu-header-desktop: @toolbar-desktop-height;
 @tab-navbar-size: 80px;
+@more-options-icon-size-mobile: 32px;
+@more-options-icon-size-desktop: 24px;
 
 /* fonts */
 @font-family-main: Noto, sans-serif;
 
 /* font sizes */
-@font-extra-extra-large: 1.5rem;
+@font-XXL: 1.5rem;
 @font-extra-large: 1.25rem;
 @font-large: 1.125rem;
 @font-medium: 1rem;
@@ -129,6 +135,7 @@
 @font-extra-small: 0.8125rem;
 @font-XXS: 0.75rem;
 @font-XXXS: 0.69rem;
+@font-XXXXS: 0.625rem;
 
 @icon-large: 60px;
 @icon-small: 30px;

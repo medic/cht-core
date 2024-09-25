@@ -87,6 +87,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   currentTab = '';
   privacyPolicyAccepted;
   isSidebarFilterOpen = false;
+  openSearch = false;
   showPrivacyPolicy;
   selectMode;
   adminUrl;
@@ -97,6 +98,11 @@ export class AppComponent implements OnInit, AfterViewInit {
   hasOldNav = false;
   initialisationComplete = false;
   trainingCardFormId = '';
+  private readonly SVG_ICONS = new Map([
+    ['icon-close', './img/icon-close.svg'],
+    ['icon-filter', './img/icon-filter.svg'],
+    ['icon-back', './img/icon-back.svg'],
+  ]);
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -162,8 +168,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   private registerMaterialIcons() {
     this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
     this.matIconRegistry.setDefaultFontSetClass('fa');
-    const iconUrl = this.domSanitizer.bypassSecurityTrustResourceUrl('./img/icon-close.svg');
-    this.matIconRegistry.addSvgIcon('icon-close', iconUrl);
+
+    this.SVG_ICONS.forEach((iconPath, iconName) => {
+      // Disabling Sonar because we trust the SVG_ICONS defined as readonly above
+      const iconUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(iconPath); //NoSONAR
+      this.matIconRegistry.addSvgIcon(iconName, iconUrl);
+    });
   }
 
   private setupRouter() {
@@ -452,17 +462,19 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getSelectMode),
+      this.store.select(Selectors.getSearchBar),
     ]).subscribe(([
       replicationStatus,
       androidAppVersion,
       currentTab,
       selectMode,
+      searchBar,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab || '';
-
       this.selectMode = selectMode;
+      this.openSearch = !!searchBar.isOpen;
     });
 
     combineLatest([
