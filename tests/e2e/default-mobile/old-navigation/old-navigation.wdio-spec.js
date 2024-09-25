@@ -42,8 +42,7 @@ describe('Old Navigation', () => {
     permissions.can_view_old_navigation = offlineUser.roles;
     await utils.updateSettings({ tasks, permissions }, true);
 
-    await loginPage.login({username: offlineUser.username, password: offlineUser.password, loadPage: false});
-    await oldNavigationPage.waitForPageLoaded();
+    await loginPage.login(offlineUser);
   });
 
   after(async () => {
