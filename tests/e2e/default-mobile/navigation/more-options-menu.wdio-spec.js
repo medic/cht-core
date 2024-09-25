@@ -68,10 +68,6 @@ describe('More Options Menu - Offline User', () => {
       await commonPage.goToBase();
     });
 
-    after(async () => {
-      await searchPage.clearSearch();
-    });
-
     it('should hide the \'export\' option and ' +
       'enable the \'edit\' and \'delete\' options when a contact is opened', async () => {
       await commonPage.goToPeople();
