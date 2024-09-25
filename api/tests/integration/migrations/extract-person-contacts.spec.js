@@ -60,7 +60,6 @@ const settings = {
 describe('extract-person-contacts migration', () => {
   afterEach(() => {
     sinon.restore();
-    return utils.tearDown();
   });
 
   it('converts and minifies a 0.4 structure into a 2.x one', async () => {

@@ -11,7 +11,6 @@ const MIGRATION = 'extract-transition-seq';
 
 describe(`${MIGRATION} migration`, function() {
   before(async () => utils.initDb([]));
-  after(async () => utils.tearDown());
 
   const wipe = (dbRef, docName) => {
     return dbRef.get(docName)

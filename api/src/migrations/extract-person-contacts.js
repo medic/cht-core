@@ -136,6 +136,7 @@ const createPerson = function(id, callback) {
       .catch(() => {
         // we tried our best - log the details and exit
         logger.error(`Failed to restore contact on facility "${facilityId}", contact: ${JSON.stringify(oldContact)}`);
+        callback();
       });
   };
 
