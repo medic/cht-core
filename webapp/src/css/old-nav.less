@@ -273,15 +273,12 @@
     margin: 10px;
   }
 
-  .mm-badge-border {
-    border: solid 1px @white;
-    margin: 0;
-  }
-
   .tool-bar {
     height: @old-nav-filters-bar-height;
 
     .inner {
+      height: @toolbar-mobile-height;
+      
       .ellipsis-title {
         display: none;
       }
@@ -324,7 +321,8 @@
 
   &.show-content {
     mm-navigation {
-      display: initial;
+      display: flex;
+      align-items: center;
     }
 
     .navigation .ellipsis-title {
@@ -342,6 +340,7 @@
 
   .mm-badge-border {
     border: solid 1px @white;
+    margin: 0;
   }
 }
 
