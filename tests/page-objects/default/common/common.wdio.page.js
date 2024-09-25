@@ -336,7 +336,8 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
   await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   try {
     await (await syncSuccess()).waitForDisplayed({ timeout: ELEMENT_DISPLAY_PAUSE });
-  } catch {
+  } catch (err) {
+    console.error(err);
     await syncAndWaitForSuccess(timeout, retry - 1);
   }
 };
