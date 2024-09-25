@@ -27,7 +27,7 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
-const syncInProgress = () => $(`${hamburgerMenuItemSelector}.sync-status`).$('*="Currently syncing"');
+const syncInProgress = () => $(`${hamburgerMenuItemSelector}.sync-status .in_progress`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
 
