@@ -5,7 +5,7 @@ const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const hamburgerMenu = () => $('aria/Application menu');
 const closeSideBarMenu = () => $('.panel-header-close');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
-const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
+const fastActionFAB = () => $$(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
 const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
 const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
 const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
@@ -81,12 +81,24 @@ const clickFastActionById = async (id) => {
   await (await fastActionById(id)).click();
 };
 
+/**
+ * There are two FABs, one for desktop and another for mobile. This finds the visible FAB.
+ * @returns {Promise<HTMLElement>}
+ */
+const findVisibleFAB = async () => {
+  for (const button of await fastActionFAB()) {
+    if (await button.isDisplayed()) {
+      return button;
+    }
+  }
+};
+
 const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await closeHamburgerMenu();
-  await (await fastActionFAB()).waitForDisplayed();
-  await (await fastActionFAB()).waitForClickable();
+  const fab = await findVisibleFAB();
+  await fab.waitForClickable();
   waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
-  await (await fastActionFAB()).click();
+  await fab.click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
@@ -94,9 +106,9 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
 
 const getFastActionItemsLabels = async () => {
   await closeHamburgerMenu();
-  await (await fastActionFAB()).waitForDisplayed();
-  await (await fastActionFAB()).waitForClickable();
-  await (await fastActionFAB()).click();
+  const fab = await findVisibleFAB();
+  await fab.waitForClickable();
+  await fab.click();
 
   await browser.pause(500);
   await (await fastActionListContainer()).waitForDisplayed();
