@@ -26,7 +26,7 @@ const isMobile = async () => {
 
 const resizeWindowForScreenshots = async () => {
   if (await isMobile()) {
-    await browser.emulateDevice({
+    return await browser.emulateDevice({
       viewport: {
         width: MOBILE_VIEWPORT_WIDTH,
         height: MOBILE_VIEWPORT_HEIGHT,
@@ -37,9 +37,9 @@ const resizeWindowForScreenshots = async () => {
       'AppleWebKit/537.36 (KHTML, like Gecko) ' +
       'Chrome/92.0.4515.159 Mobile Safari/537.36'
     });
-  } else {
-    await browser.setWindowSize(DESKTOP_WINDOW_WIDTH, DESKTOP_WINDOW_HEIGHT);
-  }
+  } 
+  
+  return await browser.setWindowSize(DESKTOP_WINDOW_WIDTH, DESKTOP_WINDOW_HEIGHT);
 };
 
 const generateScreenshot = async (scenario, step) => {
