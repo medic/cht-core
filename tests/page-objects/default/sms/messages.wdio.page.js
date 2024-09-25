@@ -79,7 +79,7 @@ const sendMessage = async (message, recipient, entryText) => {
 };
 
 const sendMessageOnMobile = async (message, recipient, entryText) => {
-  await commonPage.clickFastActionFABMobile({ waitForList: false });
+  await commonPage.clickFastActionFAB({ waitForList: false });
   await (await sendMessageModal()).waitForDisplayed();
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
