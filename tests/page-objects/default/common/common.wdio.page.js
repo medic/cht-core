@@ -335,7 +335,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
 
   await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   try {
-    await (await syncSuccess()).waitForDisplayed({ timeout });
+    await (await syncSuccess()).waitForDisplayed({ timeout: 2000 });
   } catch {
     await syncAndWaitForSuccess(timeout, retry - 1);
   }
