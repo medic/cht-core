@@ -22,7 +22,6 @@ describe('Performing an upgrade', () => {
     nbrPersons: 1,
   });
 
-
   const getDdocs = async () => {
     const result = await utils.requestOnMedicDb({
       path: '/_all_docs',
