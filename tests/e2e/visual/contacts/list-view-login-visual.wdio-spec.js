@@ -65,6 +65,7 @@ describe('Contact List Page', () => {
       await generateScreenshot('contact-page', 'contact-loaded');
       await commonPage.goToMessages();
     });
+
     it('should hide contacts page as tab and from menu option ' +
       'when can_view_contacts_tab permissions is enable but can_view_contact permission is not', async () => {
       await updateRolePermissions('chw', [], ['can_view_contacts']);
