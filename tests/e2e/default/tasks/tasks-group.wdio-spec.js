@@ -9,8 +9,15 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const chtConfUtils = require('@utils/cht-conf');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
 
-const places = [
+
+const places = placeFactory.generateHierarchy(['district_hospital', 'health_center']);
+const healthCenter = places.get('health_center');
+
+/*const places = [
   {
     _id: 'fixture:district',
     type: 'district_hospital',
@@ -26,9 +33,14 @@ const places = [
     place_id: 'health_center',
     reported_date: new Date().getTime(),
   },
-];
+];*/
 
-const clinics = [
+const politiciansClinic = placeFactory.place().build({ type: 'clinic', name: 'Politicians', parent: healthCenter });
+const artistClinic = placeFactory.place().build({ type: 'clinic', name: 'Artists', parent: healthCenter });
+const scientistsClinic = placeFactory.place().build({ type: 'clinic', name: 'Scientists', parent: healthCenter });
+
+
+/*const clinics = [
   {
     _id: 'fixture:politicians',
     type: 'clinic',
@@ -53,9 +65,21 @@ const clinics = [
     place_id: 'scientists',
     reported_date: new Date().getTime(),
   },
-];
+];*/
 
 const people = [
+  personFactory.build({ name: 'Albert Einstein', patient_id: 'einstein', parent: scientistsClinic }),
+  personFactory.build({ name: 'Charles Darwin', patient_id: 'darwin', parent: scientistsClinic }),
+  personFactory.build({ name: 'Nikola Tesla', patient_id: 'tesla', parent: scientistsClinic }),
+  personFactory.build({ name: 'Leonardo da Vinci', patient_id: 'leonardo', parent: artistClinic }),
+  personFactory.build({ name: 'Francisco Goya', patient_id: 'goya', parent: artistClinic}),
+  personFactory.build({ name: 'Wolfgang Amadeus Mozart', patient_id: 'mozart', parent: artistClinic }),
+  personFactory.build({ name: 'Napoleon Bonaparte', patient_id: 'napoleon', parent: politiciansClinic }),
+  personFactory.build({ name: 'Julius Caesar', patient_id: 'caesar', parent: politiciansClinic }),
+  personFactory.build({ name: 'Queen Victoria', patient_id: 'victoria', parent: politiciansClinic }),
+];
+
+/*const people = [
   {
     _id: 'fixture:einstein',
     name: 'Albert Einstenin',
@@ -128,25 +152,36 @@ const people = [
     parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
     reported_date: new Date().getTime(),
   },
-];
+];*/
+const chw = userFactory.build({
+  username: 'bob',
+  place: healthCenter._id,
+  contact: { _id: 'fixture:user:bob', name: 'Bob' }
+});
 
-const chw = {
+/*const chw = {
   username: 'bob',
   password: 'medic.123',
   place: 'fixture:center',
   contact: { _id: 'fixture:user:bob', name: 'Bob' },
   roles: ['chw'],
   known: true,
-};
+};*/
 
-const supervisor = {
+const supervisor = userFactory.build({
+  username: 'super',
+  place: healthCenter._id,
+  contact: { _id: 'fixture:user:super', name: 'Nemo' },
+  roles: ['chw_supervisor'],
+});
+/*const supervisor = {
   username: 'super',
   password: 'medic.123',
   place: 'fixture:center',
   contact: { _id: 'fixture:user:super', name: 'Nemo' },
   roles: ['chw_supervisor'],
   known: true,
-};
+};*/
 
 const getTaskNamesAndTitles = async (tasks) => {
   const tasksNamesAndTitles = [];
@@ -174,7 +209,7 @@ const expectTasksGroupLeaveModal = async () => {
 
 describe('Tasks group landing page', () => {
   before(async () => {
-    await utils.saveDocs([...places, ...clinics, ...people]);
+    await utils.saveDocs([...places.values(), politiciansClinic, artistClinic, scientistsClinic, ...people]);
     await utils.createUsers([chw, supervisor]);
     await sentinelUtils.waitForSentinel();
 
@@ -201,7 +236,7 @@ describe('Tasks group landing page', () => {
     it('should have tasks', async () => {
       await tasksPage.goToTasksTab();
       const list = await tasksPage.getTasks();
-      expect(list.length).to.equal(people.length + clinics.length + 2);
+      expect(list.length).to.equal(people.length + 5/*clinics.length + 2*/);
     });
 
     it('should display tasks group landing page after task completion', async () => {
