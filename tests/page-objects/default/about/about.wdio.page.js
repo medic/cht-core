@@ -1,7 +1,7 @@
 const userName = () => $('label=User name');
 const partners = () => $('.partners');
 const version = () => $('[test-id="about-version"]');
-const aboutCard = () => $('div*=About');
+const aboutCard = () => $('aria/About');
 const RELOAD_BUTTON = '.about.page .mat-primary';
 
 const getPartnerImage = async (name) => {

@@ -22,7 +22,6 @@ describe('Performing an upgrade', () => {
     nbrPersons: 1,
   });
 
-
   const getDdocs = async () => {
     const result = await utils.requestOnMedicDb({
       path: '/_all_docs',
@@ -62,11 +61,8 @@ describe('Performing an upgrade', () => {
       await commonPage.logout();
     }
 
-    await oldNavigationPage.cookieLogin({
-      username: constants.USERNAME,
-      password: constants.PASSWORD,
-      createUser: false
-    });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
+    await oldNavigationPage.goToBase();
   });
 
   after(async () => {
@@ -138,11 +134,8 @@ describe('Performing an upgrade', () => {
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
-    await oldNavigationPage.cookieLogin({
-      username: constants.USERNAME,
-      password: constants.PASSWORD,
-      createUser: false
-    });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
+    await oldNavigationPage.goToBase();
 
     await deleteUpgradeLogs();
 
