@@ -447,6 +447,12 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
+const openFirstReport = async () => {
+  const firstReport = leftPanelSelectors.firstReport();
+  await firstReport.waitForClickable();
+  await openSelectedReport(firstReport);
+};
+
 module.exports = {
   leftPanelSelectors,
   rightPanelSelectors,
@@ -490,4 +496,5 @@ module.exports = {
   getReportListLoadingStatus,
   openSelectedReport,
   verifyReport,
+  openFirstReport,
 };
