@@ -134,7 +134,7 @@ describe('Performing an upgrade', () => {
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
-    await oldNavigationPage.cookieLogin({
+    await loginPage.cookieLogin({
       username: constants.USERNAME,
       password: constants.PASSWORD,
       createUser: false
