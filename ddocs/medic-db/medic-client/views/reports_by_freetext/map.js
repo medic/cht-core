@@ -27,7 +27,7 @@ function(doc) {
     }
   };
 
-  var include = ['patient_id', 'patient_uuid', 'place_id', 'case_id', 'patient_name'];
+  var include = ['patient_id', 'patient_uuid', 'place_id', 'case_id', 'patient_name', 'form'];
   include.forEach(function(key) {
     emitField(key, doc[key], doc.reported_date);
 

@@ -24,7 +24,7 @@ function(doc) {
   };
 
   var include = [
-    'name', 'case_id', 'place_id', 'patient_id', 'external_id', 'house_number', 'notes', 'search_keywords',
+    'name', 'case_id', 'place_id', 'patient_id', 'external_id', 'house_number', 'notes', 'search_keywords', 'type'
   ];
   var types = ['district_hospital', 'health_center', 'clinic', 'person'];
   var idx;
