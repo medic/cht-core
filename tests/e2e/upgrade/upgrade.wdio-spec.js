@@ -62,8 +62,11 @@ describe('Performing an upgrade', () => {
       await commonPage.logout();
     }
 
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
-    await oldNavigationPage.waitForPageLoaded();
+    await oldNavigationPage.cookieLogin({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      createUser: false
+    });
   });
 
   after(async () => {
@@ -135,7 +138,7 @@ describe('Performing an upgrade', () => {
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
-    await loginPage.cookieLogin({
+    await oldNavigationPage.cookieLogin({
       username: constants.USERNAME,
       password: constants.PASSWORD,
       createUser: false

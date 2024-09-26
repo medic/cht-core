@@ -1,4 +1,6 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const constants = require('@constants');
+const utils = require('@utils');
 
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
@@ -120,6 +122,35 @@ const waitForPageLoaded = async () => {
   } while ((await getVisibleLoaders()).length > 0);
 };
 
+const goToBase = async () => {
+  await browser.goToUrl('/');
+  await waitForPageLoaded();
+};
+
+const cookieLogin = async (options = {}) => {
+  const {
+    username = constants.USERNAME,
+    password = constants.PASSWORD,
+    createUser = true,
+    locale = 'en',
+  } = options;
+  const opts = {
+    path: '/medic/login',
+    body: { user: username, password: password, locale },
+    method: 'POST',
+    simple: false,
+  };
+  const resp = await utils.request(opts);
+  const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
+
+  await browser.url('/');
+  await browser.setCookies(cookieArray);
+  if (createUser) {
+    await utils.setupUserDoc(username);
+  }
+  await goToBase();
+};
+
 module.exports = {
   goToMessages,
   goToTasks,
@@ -128,4 +159,5 @@ module.exports = {
   goToAnalytics,
   sync,
   waitForPageLoaded,
+  cookieLogin,
 };
