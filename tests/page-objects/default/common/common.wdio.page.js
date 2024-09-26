@@ -33,9 +33,6 @@ const jsonError = async () => (await $('pre')).getText();
 const REPORTS_CONTENT_SELECTOR = '#reports-content';
 const reportsFastActionFAB = () => $(`${REPORTS_CONTENT_SELECTOR} .fast-action-fab-button mat-icon`);
 
-const actionBar = () => $('.detail-actions.right-pane');
-const actionBarActions = () => $$('.detail-actions.right-pane span');
-
 //languages
 const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
@@ -277,22 +274,12 @@ const waitForLoaderToDisappear = async (element) => {
 
 const hideSnackbar = () => {
   // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
-  // for example when filling a form, or creating a contact
-  // and intercepts all clicks in the actionbar
+  // for example when filling a form, or creating a contact and intercepts all clicks in the FAB and Flat buttons
   // this action is temporary, and will be undone with a refresh
   return browser.execute(() => {
     // eslint-disable-next-line no-undef
     window.jQuery('.snackbar-content').hide();
   });
-};
-
-const toggleActionbar = (hide) => {
-  // the actiobar can cover elements at the bottom of the page, making clicks land in incorrect places
-  return browser.execute((hide) => {
-    // eslint-disable-next-line no-undef
-    const element = window.jQuery('.detail-actions');
-    hide ? element.hide() : element.show();
-  }, hide);
 };
 
 const getVisibleLoaders = async () => {
@@ -459,14 +446,6 @@ const loadNextInfiniteScrollPage = async () => {
   await waitForLoaderToDisappear(await $('.left-pane'));
 };
 
-const getActionBarLabels = async () => {
-  await (await actionBar()).waitForDisplayed();
-  await (await actionBarActions())[0].waitForDisplayed();
-  const items = await actionBarActions();
-  const labels = await items.map(item => item.getText());
-  return labels.filter(label => !!label);
-};
-
 const getErrorLog = async () => {
   await errorLog().waitForDisplayed();
 
@@ -528,7 +507,6 @@ module.exports = {
   snackbarMessage,
   snackbarAction,
   getTextForElements,
-  toggleActionbar,
   jsonError,
   isMenuOptionEnabled,
   isMenuOptionVisible,
@@ -541,7 +519,6 @@ module.exports = {
   loadNextInfiniteScrollPage,
   goToUrl,
   getFastActionItemsLabels,
-  getActionBarLabels,
   getErrorLog,
   reportsFastActionFAB,
   isReportActionDisplayed
