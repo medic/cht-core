@@ -73,6 +73,21 @@ body {
       }
     }
 
+    &.testing .page {
+      padding-bottom: 15px;
+      input {
+        margin-bottom: 15px;
+      }
+    }
+
+    &.privacy-policy .page {
+      padding: 15px;
+    }
+
+    &.user .page {
+      padding-top: 15px;
+    }
+
     &.about,
     &.testing,
     &.error,
@@ -241,7 +256,7 @@ body {
     a {
       text-align: center;
       color: @filter-text-color;
-      width: 50px;
+      width: 42px;
       height: @font-extra-large;
     }
   }
@@ -270,7 +285,7 @@ body {
       display: inline-block;
       color: @filter-text-color;
       font-size: @font-XXL;
-      padding-left: 20px;
+      padding-left: 12px;
     }
 
     mm-search-bar {
@@ -630,9 +645,7 @@ mm-analytics-filters {
 .inbox-items {
   padding: 0;
   background-color: @form-background-color;
-  border: 1px solid @separator-color;
-  border-top: 0;
-  border-bottom: 0;
+  border-right: 1px solid @separator-color;
 
   .alert {
     margin: 10px;
@@ -1250,6 +1263,7 @@ mm-search-bar {
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       white-space: normal;
+      letter-spacing: normal;
     }
   }
 }
@@ -1287,9 +1301,11 @@ mm-sidebar-menu .mat-sidenav-container {
 
     .panel-header-title {
       font-size: @font-XXL;
+      font-weight: bold;
       line-height: @font-XXL;
       margin-left: 15px;
       color: @text-inverse-color;
+      letter-spacing: normal;
     }
 
     .panel-header-close {
@@ -1771,6 +1787,9 @@ mm-sidebar-menu .mat-sidenav-container {
 
   mm-search-bar {
     padding: 5px;
+    #sort-results-dropdown {
+      left: -215px !important; // Overriding another rule that already has !important
+    }
 
     .mm-search-bar-container {
       background: transparent;
@@ -1793,7 +1812,6 @@ mm-sidebar-menu .mat-sidenav-container {
           position: absolute;
           top: -6px;
           right: 1px;
-          border: 1px solid @chip-border-color;
         }
       }
     }
@@ -1830,7 +1848,7 @@ mm-sidebar-menu .mat-sidenav-container {
     .ellipsis-title {
       text-overflow: ellipsis;
       width: calc(@content-width - @tool-bar-title-right-margin);
-      padding-left: 4px;
+      padding-left: 0;
       font-size: @font-extra-large;
     }
   }
