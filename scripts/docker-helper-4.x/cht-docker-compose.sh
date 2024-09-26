@@ -280,12 +280,20 @@ update_nginx_local_ip_tls_cert(){
 
 validate_tls(){
   url=$1
+  attempt=$2
+  max_retries=3
   # by default curl validates TLS.  If we get back  60 then TLS isn't valid:
   # exitcode: https://everything.curl.dev/usingcurl/verbose/writeout.html
   # 60: https://everything.curl.dev/cmdline/exitcode.html
-  status=$(curl   --retry 3 --write-out "%{exitcode}"  -qs  "$url" -o /dev/null)
+  status=$(curl --retry 3 --write-out "%{exitcode}" -qs  "$url" -o /dev/null)
   if [ "$status" = "60" ]; then
-    echo "false: status is $status"
+    if [ $attempt -gt $max_retries ]; then
+      echo "false: status is $status"
+    else
+      duration_seconds=$((1 * 2 ** $attempt))
+      sleep $duration_seconds
+      validate_tls $url $(($attempt+1))
+    fi
   fi
 }
 
