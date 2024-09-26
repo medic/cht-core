@@ -26,9 +26,10 @@ const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
-const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncInProgress = () => $(`${hamburgerMenuItemSelector}.sync-status .in_progress`);
+const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
+const syncDone = () => $(`${hamburgerMenuItemSelector}.sync-status :is(.required,.success)`);
 const jsonError = async () => (await $('pre')).getText();
 
 const actionBar = () => $('.detail-actions.right-pane');
@@ -330,15 +331,16 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
   await openHamburgerMenu();
 
   if (!await (await syncInProgress()).isExisting()) {
+    console.log('trying to sync');
     await (await syncButton()).click();
     await openHamburgerMenu();
   }
 
-  await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
+  await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
+  await (await syncDone()).waitForDisplayed({ timeout });
   try {
-    await (await syncSuccess()).waitForDisplayed({ timeout: 2000 });
+    await (await syncSuccess()).waitForDisplayed({ timeout: ELEMENT_DISPLAY_PAUSE });
   } catch (err) {
-    console.error(err);
     await syncAndWaitForSuccess(timeout, retry - 1);
   }
 };
