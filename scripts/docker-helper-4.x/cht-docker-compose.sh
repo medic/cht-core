@@ -501,7 +501,7 @@ done
 
 # output a new line with echo and then update certs every time we run to ensure they're current
 echo;update_nginx_local_ip_tls_cert "$nginxContainerId"
-if [ "$(validate_tls "$projectURL")" ];then
+if [ "$(validate_tls "$projectURL" 0)" ];then
   echo ""
   echo -e "${red}Failed to install local-ip TLS certificate. Check for errors above and try again${noColor}"
   get_system_and_docker_info
