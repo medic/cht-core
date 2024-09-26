@@ -84,16 +84,18 @@ const createClinic = (index, healthCenter) => {
 };
 
 const createAdditionalPersons = (nbrPersons, clinic) => {
-  return Array.from({ length: nbrPersons - 1 }).map((_, i) => {
-    const additionalPersonName = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[i % LAST_NAMES.length]}`;
-    const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
-    return personFactory.build({
-      parent: { _id: clinic._id, parent: clinic.parent },
-      name: additionalPersonName,
-      patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
-      phone: additionalPhoneNumber
+  return Array
+    .from({ length: nbrPersons - 1 })
+    .map((_, i) => {
+      const additionalPersonName = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[i % LAST_NAMES.length]}`;
+      const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
+      return personFactory.build({
+        parent: { _id: clinic._id, parent: clinic.parent },
+        name: additionalPersonName,
+        patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
+        phone: additionalPhoneNumber
+      });
     });
-  });
 };
 
 const createReportsForPerson = (person, user) => {
@@ -105,15 +107,17 @@ const createReportsForPerson = (person, user) => {
 };
 
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
-  const clinicsData = Array.from({ length: nbrClinics }).map((_, index) => {
-    const { clinic, primaryContact } = createClinic(index, healthCenter);
+  const clinicsData = Array
+    .from({ length: nbrClinics })
+    .map((_, index) => {
+      const { clinic, primaryContact } = createClinic(index, healthCenter);
 
-    const additionalPersons = createAdditionalPersons(nbrPersons, clinic);
+      const additionalPersons = createAdditionalPersons(nbrPersons, clinic);
 
-    const allPersons = [primaryContact, ...additionalPersons];
+      const allPersons = [primaryContact, ...additionalPersons];
 
-    return { clinic, persons: allPersons };
-  });
+      return { clinic, persons: allPersons };
+    });
 
   const allPersons = clinicsData.flatMap(data => data.persons);
   const clinicList = clinicsData.map(data => data.clinic);
@@ -124,8 +128,10 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 };
 
 const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames = false }) => {
-  const createDataFunc = useRealNames ? createDataWithRealNames : createDataWithFixedData;
-  return createDataFunc({ healthCenter, user, nbrClinics, nbrPersons });
+  if (useRealNames) {
+    return createDataWithRealNames({ healthCenter, user, nbrClinics, nbrPersons });
+  }
+  return createDataWithFixedData({ healthCenter, user, nbrClinics, nbrPersons });
 };
 
 const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10, useRealNames = false }) => {
