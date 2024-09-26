@@ -123,7 +123,7 @@ const waitForPageLoaded = async () => {
 };
 
 const goToBase = async () => {
-  await browser.goToUrl('/');
+  await commonPage.goToUrl('/');
   await waitForPageLoaded();
 };
 
