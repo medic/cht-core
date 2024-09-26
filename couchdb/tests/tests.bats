@@ -34,7 +34,7 @@ setup() {
 	assert_output --partial '"status":"ok"'
 }
 
-@test "data inserted on one couchb can be retrieved from a peer" {
+@test "data inserted on one server can be retrieved from a peer" {
 	local id
 	id=$(
 		</dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-32}"
