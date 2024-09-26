@@ -286,13 +286,13 @@ validate_tls(){
   # exitcode: https://everything.curl.dev/usingcurl/verbose/writeout.html
   # 60: https://everything.curl.dev/cmdline/exitcode.html
   status=$(curl --retry 3 --write-out "%{exitcode}" -qs  "$url" -o /dev/null)
-  if [ "$status" = "60" ]; then
-    if [ $attempt -gt $max_retries ]; then
+  if [ "$status" != "60" ]; then
+    if [ "$attempt" -gt $max_retries ]; then
       echo "false: status is $status"
     else
-      duration_seconds=$((1 * 2 ** $attempt))
+      duration_seconds=$((2 ** attempt))
       sleep $duration_seconds
-      validate_tls $url $(($attempt+1))
+      validate_tls "$url" $((attempt+1))
     fi
   fi
 }
