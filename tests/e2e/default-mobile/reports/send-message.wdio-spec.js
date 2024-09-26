@@ -17,7 +17,7 @@ describe('Report - Send message action', () => {
     parent: { _id: clinic._id, parent: clinic.parent }
   });
 
-  const onlineUser = userFactory.build({ 
+  const onlineUser = userFactory.build({
     place: healthCenter._id,
     roles: ['program_officer'],
   });
@@ -27,9 +27,9 @@ describe('Report - Send message action', () => {
     parent: { _id: clinic._id, parent: clinic.parent }
   });
 
-  const report = pregnancyFactory.build({ 
-    contact: chwContact, 
-    fields: { patient_id: person._id, case_id: 'case-12' } 
+  const report = pregnancyFactory.build({
+    contact: chwContact,
+    fields: { patient_id: person._id, case_id: 'case-12' }
   });
 
   before(async () => {
@@ -40,7 +40,7 @@ describe('Report - Send message action', () => {
 
   it('should display option to send message', async () => {
     await commonElements.goToReports();
-    const firstReport = await reportsPage.firstReport();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await reportsPage.openSelectedReport(firstReport);
 
     expect(await commonElements.isReportActionDisplayed()).to.equal(true);
