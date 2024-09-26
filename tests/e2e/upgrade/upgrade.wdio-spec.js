@@ -62,11 +62,9 @@ describe('Performing an upgrade', () => {
       await commonPage.logout();
     }
 
-    await oldNavigationPage.cookieLogin({
-      username: constants.USERNAME,
-      password: constants.PASSWORD,
-      createUser: false
-    });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
+    await oldNavigationPage.goToBase();
+
   });
 
   after(async () => {
