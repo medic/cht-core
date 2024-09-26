@@ -6,6 +6,7 @@ const reportFactory = require('@factories/cht/reports/generic-report');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const sms = require('@utils/sms');
 
 describe('More Options Menu - Offline User', () => {
@@ -15,6 +16,7 @@ describe('More Options Menu - Offline User', () => {
   let smsReportId;
 
   const contact = personFactory.build({
+    name: 'chw_robert',
     phone: '+12068881234',
     place: health_center._id,
     parent: { _id: health_center._id, parent: health_center.parent },
@@ -27,6 +29,7 @@ describe('More Options Menu - Offline User', () => {
   });
 
   const patient = personFactory.build({
+    name: 'patient_sarah',
     parent: health_center
   });
 
@@ -60,9 +63,15 @@ describe('More Options Menu - Offline User', () => {
   });
 
   describe('Contact tab', () => {
+
+    beforeEach(async () => {
+      await commonPage.goToBase();
+    });
+
     it('should hide the \'export\' option and ' +
       'enable the \'edit\' and \'delete\' options when a contact is opened', async () => {
-      await commonPage.goToPeople(patient._id);
+      await commonPage.goToPeople();
+      await contactsPage.selectLHSRowByText(patient.name);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
@@ -71,7 +80,8 @@ describe('More Options Menu - Offline User', () => {
 
     it('should hide the \'export\' and \'edit\' options and ' +
       'disable the \'delete\' option when the offline user\'s place is selected', async () => {
-      await commonPage.goToPeople(offlineUser.place);
+      await commonPage.goToPeople();
+      await contactsPage.selectLHSRowByText(health_center.name);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;

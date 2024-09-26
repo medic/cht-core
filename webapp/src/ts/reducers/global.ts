@@ -23,6 +23,7 @@ const initialState: GlobalState = {
   facilities: [],
   filters: {}, // Selected criteria to filter data.
   sidebarFilter: {},
+  searchBar: { isOpen: false },
   sidebarMenu: { isOpen: false },
   forms: null,
   lastChangedDoc: false,
@@ -169,6 +170,9 @@ const _globalReducer = createReducer(
   on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
     return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
   }),
+  on(Actions.setSearchBar, (state, { payload: { searchBar } }) => {
+    return { ...state, searchBar: { ...state.searchBar, ...searchBar } };
+  }),
 );
 
 export const globalReducer = (state, action) => {
@@ -184,6 +188,7 @@ export interface GlobalState {
   facilities: Record<string, any>[];
   filters: Record<string, any>; // Selected criteria to filter data.
   sidebarFilter: SidebarFilterState;
+  searchBar: SearchBarState;
   sidebarMenu: SidebarMenuState;
   forms: null | Record<string, any>[];
   lastChangedDoc: boolean | Record<string, any>;
@@ -204,6 +209,10 @@ export interface GlobalState {
 }
 
 interface SidebarMenuState {
+  isOpen: boolean;
+}
+
+interface SearchBarState {
   isOpen: boolean;
 }
 

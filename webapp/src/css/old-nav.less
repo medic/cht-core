@@ -52,15 +52,22 @@
 
   &.about,
   &.testing,
-  &.privacy-policy {
+  &.privacy-policy,
+  &.user {
+    .tool-bar {
+      height: 0;
+    }
+
     .header .tabs .selected {
       background-color: @messages-color;
     }
 
-    .page {
-      top: @top-without-filter;
-      padding-left: 15px;
-      padding-top: 15px;
+    .content {
+      .page {
+        top: @top-without-filter;
+        padding-left: 15px;
+        padding-top: 15px;
+      }
     }
   }
 
@@ -89,8 +96,13 @@
 
     .mm-icon {
       margin: 0 auto;
+
+      .mm-badge-overlay {
+        right: 15px;
+      }
+
       :before {
-        font-size: @font-extra-extra-large;
+        font-size: @font-XXL;
       }
     }
 
@@ -105,6 +117,10 @@
     }
 
     .tabs {
+      .button-label {
+        color: @button-text-inverse-color;
+      }
+
       a {
         border-radius: 10px 10px 0 0;
         cursor: pointer;
@@ -233,7 +249,7 @@
 
   .content {
     .page {
-      top: 123px;
+      top: @old-nav-top-desktop-height;
     }
   }
 
@@ -257,6 +273,72 @@
     margin: 10px;
   }
 
+  .tool-bar {
+    height: @old-nav-filters-bar-height;
+
+    .inner {
+      height: @toolbar-mobile-height;
+
+      .ellipsis-title {
+        display: none;
+      }
+
+      mm-search-bar {
+        padding-left: 5px;
+        max-width: initial;
+        .fa {
+          color: @gray-ultra-dark;
+        }
+
+        .mm-search-bar-container {
+          justify-content: flex-end;
+        }
+      }
+       mm-messages-more-menu {
+        display: initial;
+      }
+    }
+  }
+
+  &.analytics .tool-bar .inner {
+    display: initial;
+  }
+
+  mm-analytics-filters {
+    .mm-dropdown {
+      display: initial;
+    }
+  }
+
+  .analytics-sidebar-filter {
+    display: flex;
+    align-items: center;
+    height: @toolbar-mobile-height;
+  }
+
+  mm-navigation {
+    display: none;
+  }
+
+  &.show-content {
+    mm-navigation {
+      display: flex;
+      align-items: center;
+    }
+
+    .navigation .ellipsis-title {
+      display: block;
+    }
+  }
+
+  .mm-navigation-menu {
+    display: block;
+  }
+
+  .powered-by {
+    margin: 0;
+  }
+
   .mm-badge-border {
     border: solid 1px @white;
     margin: 0;
@@ -265,6 +347,17 @@
 
 @media (max-width: @media-mobile) {
   .app-root.old-nav {
+    &.about,
+    &.testing,
+    &.privacy-policy,
+    &.user {
+      .content {
+        .page {
+          top: calc(@top-navbar-height + 5px);
+        }
+      }
+    }
+
     .header {
       background-color: @top-header-color;
       position: relative;
@@ -280,12 +373,17 @@
         display: flex;
         justify-content: space-between;
         width: 100%;
-        padding: 0;
+        padding: 0 0 0 2px;
         a {
           min-width: 50px;
           .button-label {
             font-size: @font-XXXS;
           }
+        }
+
+        .mm-badge-overlay {
+          right: 0;
+          top: -9px;
         }
 
         .mm-badge-border {
@@ -304,10 +402,9 @@
       }
 
       .extras a {
-        padding-top: 2px;
         margin-top: 2px;
         .fa-bars {
-          font-size: @font-extra-extra-large;
+          font-size: @font-XXL;
         }
       }
 
@@ -316,9 +413,18 @@
       }
     }
 
+    .tool-bar {
+      height: @toolbar-mobile-height;
+
+      .ellipsis-title {
+        color: @text-normal-color;
+      }
+    }
+
     .content {
       .page {
-        top: 115px;
+        top: @old-nav-top-mobile-height;
+        z-index: initial;
       }
     }
 
@@ -342,7 +448,6 @@
   .old-nav {
     .header {
       .tabs {
-        padding-left: 2px;
         a {
           min-width: 50px;
           .button-label {
@@ -352,10 +457,6 @@
 
         // Use bigger font when there are 4 or less tabs.
         .elements-label(a, button-label, 4, @font-extra-small);
-      }
-
-      .mm-badge-overlay {
-        right: 0;
       }
 
       .mm-badge-overlay-top {
