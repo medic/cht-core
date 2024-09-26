@@ -1,7 +1,6 @@
 const utils = require('./utils');
 
 describe('remove-user-language migration', function() {
-  afterEach(() => utils.tearDown());
 
   it('cleans up users with language field', function() {
     const initialUsers = [

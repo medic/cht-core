@@ -1,27 +1,21 @@
-<div class="filters tab-bar">
-  <div class="inner">
-    <button class="app-menu-button" mat-icon-button (click)="openMenu()" aria-label="Application menu">
-      <mat-icon fontIcon="fa-bars"></mat-icon>
-    </button>
-    <mm-navigation></mm-navigation>
-    <mm-search-bar
-      *ngIf="!selectMode"
-      (toggleFilter)="toggleFilter()"
-      (search)="search()"
-      [disabled]="selectMode && selectedReports?.length"
-      [showFilter]="true">
-    </mm-search-bar>
-    <mm-multiselect-bar *ngIf="selectModeAvailable && selectMode && selectedReports?.length"
-      [display]="'mobile'"
-      [selectedCount]="selectedReports?.length"
-      [areAllReportsSelected]="areAllReportsSelected()"
-      (deleteItems)="bulkDeleteReports()"
-      (selectItems)="selectAllReports()"
-      (deselectItems)="deselectAllReports()">
-    </mm-multiselect-bar>
-    <mm-reports-more-menu (exportReports)="exportReports()"></mm-reports-more-menu>
-  </div>
-</div>
+<mm-tool-bar title="Reports">
+  <mm-search-bar
+    *ngIf="!selectMode"
+    (toggleFilter)="toggleFilter()"
+    (search)="search()"
+    [disabled]="selectMode && selectedReports?.length"
+    [showFilter]="true">
+  </mm-search-bar>
+  <mm-multiselect-bar *ngIf="selectModeAvailable && selectMode && selectedReports?.length"
+    [display]="'mobile'"
+    [selectedCount]="selectedReports?.length"
+    [areAllReportsSelected]="areAllReportsSelected()"
+    (deleteItems)="bulkDeleteReports()"
+    (selectItems)="selectAllReports()"
+    (deselectItems)="deselectAllReports()">
+  </mm-multiselect-bar>
+  <mm-reports-more-menu (exportReports)="exportReports()"></mm-reports-more-menu>
+</mm-tool-bar>
 
 <div class="inner">
   <div class="inbox page">

@@ -1,7 +1,4 @@
-<div class="filters tab-bar">
-  <button class="app-menu-button" mat-icon-button (click)="openMenu()" aria-label="Application menu">
-    <mat-icon fontIcon="fa-bars"></mat-icon>
-  </button>
+<div class="analytics-sidebar-filter">
   <span *ngIf="analyticsModules?.length > 1" class="dropdown mm-dropdown analytics-module">
     <span id="module" class="mm-button" data-toggle="dropdown">
       <span class="mm-button-icon">
@@ -24,7 +21,7 @@
 
   <div class="right-side-filter" *ngIf="showFilterButton">
     <button class="btn open-filter" (click)="openSidebar()">
-      <span class="fa fa-sliders"></span>
+      <mat-icon class="mat-icon-filter" svgIcon="icon-filter"></mat-icon>
       <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
     </button>
   </div>

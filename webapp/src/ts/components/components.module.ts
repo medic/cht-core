@@ -45,6 +45,7 @@ import { ErrorLogComponent } from '@mm-components/error-log/error-log.component'
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 @NgModule({
   declarations: [
@@ -74,6 +75,7 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
     ModalLayoutComponent,
     PanelHeaderComponent,
     SidebarMenuComponent,
+    ToolBarComponent,
   ],
   imports: [
     CommonModule,
@@ -116,6 +118,7 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
     ModalLayoutComponent,
     PanelHeaderComponent,
     SidebarMenuComponent,
+    ToolBarComponent,
   ]
 })
 export class ComponentsModule { }

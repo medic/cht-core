@@ -37,6 +37,7 @@ export const Actions = {
   setSidebarMenu: createSingleValueAction('SET_SIDEBAR_MENU', 'sidebarMenu'),
   closeSidebarMenu: createAction('CLOSE_SIDEBAR_MENU'),
   openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
+  setSearchBar: createSingleValueAction('SET_SEARCH_BAR', 'searchBar'),
 };
 
 export class GlobalActions {
@@ -89,6 +90,10 @@ export class GlobalActions {
 
   setSidebarFilter(sidebarFilter) {
     return this.store.dispatch(Actions.setSidebarFilter(sidebarFilter));
+  }
+
+  setSearchBar(searchBar) {
+    return this.store.dispatch(Actions.setSearchBar(searchBar));
   }
 
   clearSidebarFilter() {

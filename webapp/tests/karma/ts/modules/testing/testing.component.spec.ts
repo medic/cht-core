@@ -1,6 +1,8 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideMockStore } from '@ngrx/store/testing';
+import { MatIcon } from '@angular/material/icon';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { CookieService } from 'ngx-cookie-service';
@@ -10,6 +12,9 @@ import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
 import { TestingComponent } from '@mm-modules/testing/testing.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('Testing Component', () => {
   let component: TestingComponent;
@@ -20,6 +25,7 @@ describe('Testing Component', () => {
   let feedbackService;
   let sessionService;
   let cookieService;
+  let navigationService;
 
   beforeEach(waitForAsync(() => {
     database = { destroy: sinon.stub() };
@@ -35,17 +41,23 @@ describe('Testing Component', () => {
       logout: sinon.stub()
     };
     cookieService = { deleteAll: sinon.stub() };
+    navigationService = { goBack: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          FormsModule
+          FormsModule,
+          MatIcon,
         ],
         declarations: [
-          TestingComponent
+          TestingComponent,
+          ToolBarComponent,
+          NavigationComponent,
         ],
         providers: [
+          provideMockStore({ selectors: [] }),
+          { provide: NavigationService, useValue: navigationService },
           { provide: DbService, useValue: dbService },
           { provide: DebugService, useValue: debugService },
           { provide: FeedbackService, useValue: feedbackService },

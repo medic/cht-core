@@ -2,10 +2,6 @@ const utils = require('./utils');
 const DDOC_ID = '_design/medic';
 
 describe('convert-translation-messages-fix migration', function() {
-  afterEach(function() {
-    return utils.tearDown();
-  });
-
   it('converts translation messages structure', () => {
 
     // given
