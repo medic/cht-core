@@ -332,6 +332,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
 
   if (!await (await syncInProgress()).isExisting()) {
     console.log('trying to sync');
+    retry < 10 && await browser.saveScreenshot(`allure-results/beforesync-${Date.now()}.png`);
     await (await syncButton()).click();
     await openHamburgerMenu();
   }
