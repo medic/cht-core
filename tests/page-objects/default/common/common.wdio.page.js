@@ -335,6 +335,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
     retry < 10 && await browser.saveScreenshot(`allure-results/beforesync-${Date.now()}.png`);
     await (await syncButton()).click();
     await openHamburgerMenu();
+    retry < 10 && await browser.saveScreenshot(`allure-results/afterSync-${Date.now()}.png`);
   }
 
   await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
