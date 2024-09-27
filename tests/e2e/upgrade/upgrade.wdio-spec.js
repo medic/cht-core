@@ -122,7 +122,8 @@ describe('Performing an upgrade', () => {
     }
 
     await adminPage.logout();
-    await loginPage.login(docs.user);
+    await loginPage.login({ username: docs.user.username, password: docs.user.password, loadPage: false });
+    await oldNavigationPage.goToBase();
     await commonPage.sync(true);
 
     await browser.refresh();
