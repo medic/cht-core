@@ -124,7 +124,7 @@ describe('Performing an upgrade', () => {
     await adminPage.logout();
     await loginPage.login({ username: docs.user.username, password: docs.user.password, loadPage: false });
     await oldNavigationPage.goToBase();
-    await commonPage.sync(true);
+    await oldNavigationPage.sync(true);
 
     await browser.refresh();
     await commonPage.waitForPageLoaded();
@@ -137,7 +137,7 @@ describe('Performing an upgrade', () => {
 
   it('should display upgrade page even without upgrade logs', async () => {
     if (testFrontend) {
-      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
+      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
     }
 
     await deleteUpgradeLogs();
