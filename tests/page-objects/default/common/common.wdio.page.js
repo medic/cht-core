@@ -15,10 +15,8 @@ const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-ite
 const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
 const moreOptionsMenu = () => $('aria/Actions menu');
 const hamburgerMenuItemSelector = '#header-dropdown li';
-const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
-const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
-const contactsButton = () => $(hamburgerMenuItemSelector).$('//span[text()="People"]');
-const contactsTab = () => $('#contacts-tab');
+const logoutButton = () => $('aria/Log out');
+const syncButton = () => $('aria/Sync now');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const taskTab = () => $('#tasks-tab');
@@ -498,7 +496,6 @@ module.exports = {
   logout,
   logoutButton,
   getLogoutMessage,
-  contactsTab,
   messagesTab,
   analyticsTab,
   goToReports,
@@ -512,7 +509,6 @@ module.exports = {
   sync,
   syncAndNotWaitForSuccess,
   syncButton,
-  contactsButton,
   closeReloadModal,
   goToMessages,
   goToTasks,
