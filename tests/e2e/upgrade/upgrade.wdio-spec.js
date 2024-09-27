@@ -57,13 +57,13 @@ describe('Performing an upgrade', () => {
     if (testFrontend) {
       // a variety of selectors that we use in e2e tests to interact with webapp
       // are not compatible with older versions of the app.
-      await loginPage.login(docs.user);
-      await commonPage.logout();
+      await loginPage.login({ username: docs.user.username, password: docs.user.password, loadPage: false });
+      await oldNavigationPage.goToBase();
+      await oldNavigationPage.logout();
     }
 
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
     await oldNavigationPage.goToBase();
-
   });
 
   after(async () => {
