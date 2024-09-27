@@ -61,7 +61,7 @@ const upgradeVersion = async (branch, tag, testFrontend=true) => {
 
   await (await cancelUpgradeButton()).waitForDisplayed();
   await (await deploymentInProgress()).waitForDisplayed();
-  await (await deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
+  await (await deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 150000 });
 
   if (testFrontend) {
     // https://github.com/medic/cht-core/issues/9186

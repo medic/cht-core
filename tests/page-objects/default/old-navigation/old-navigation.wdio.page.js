@@ -1,4 +1,5 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
@@ -120,7 +121,24 @@ const waitForPageLoaded = async () => {
   } while ((await getVisibleLoaders()).length > 0);
 };
 
+const goToBase = async () => {
+  await commonPage.goToUrl('/');
+  await waitForPageLoaded();
+};
+
+const logout = async () => {
+  await openHamburgerMenu();
+
+  await (await commonPage.logoutButton()).waitForClickable();
+  await (await commonPage.logoutButton()).click();
+
+  await (await modalPage.body()).waitForDisplayed();
+  await modalPage.submit();
+  await browser.pause(100); // wait for login page js to execute
+};
+
 module.exports = {
+  goToBase,
   goToMessages,
   goToTasks,
   goToReports,
@@ -128,4 +146,5 @@ module.exports = {
   goToAnalytics,
   sync,
   waitForPageLoaded,
+  logout,
 };
