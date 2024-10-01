@@ -160,32 +160,53 @@ describe('provider-wireup integration tests', () => {
   });
 
   describe('updateEmissionsFor', () => {
+    beforeEach(async () => {
+      await wireup.initialize(provider, engineSettings(), { });
+    });
     it('empty array', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
+      sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'markFresh').resolves();
+
+      const refreshRulesEmissions = sinon.stub().resolves({
+        targetEmissions: [],
+        taskTransforms: [],
+      });
+      wireup.__set__('refreshRulesEmissions', refreshRulesEmissions);
+
       await wireup.updateEmissionsFor(provider, []);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[[]]]);
     });
 
     it('contact id', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'isDirty').resolves(false);
+      sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
+      sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'markFresh').resolves();
+
       await wireup.updateEmissionsFor(provider, chtDocs.contact._id);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient']]]);
     });
 
     it('patient id', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
       await wireup.updateEmissionsFor(provider, [chtDocs.contact.patient_id]);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient']]]);
     });
 
     it('unknown subject id still gets marked (headless scenario)', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
       await wireup.updateEmissionsFor(provider, 'headless');
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['headless']]]);
     });
 
     it('many', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
       await wireup.updateEmissionsFor(provider, ['headless', 'patient', 'patient_id']);
       // dupes don't matter here
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]);
@@ -193,6 +214,7 @@ describe('provider-wireup integration tests', () => {
 
     it('none', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
+      sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
       await wireup.updateEmissionsFor(provider);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[[]]]);
     });
@@ -219,8 +241,8 @@ describe('provider-wireup integration tests', () => {
         userSettingsId: 'org.couchdb.user:username',
       });
 
-      expect(db.bulkDocs.callCount).to.eq(1);
-      expect(db.bulkDocs.args[0][0][0]).to.nested.include({
+      expect(db.bulkDocs.callCount).to.eq(2);
+      expect(db.bulkDocs.args[1][0][0]).to.nested.include({
         _id: 'headlessTask',
         type: 'task',
         state: 'Cancelled', // invalid due to no emission data
@@ -313,7 +335,7 @@ describe('provider-wireup integration tests', () => {
     it('user rewinds system clock', async () => {
       const getWrittenTaskDoc = () => {
         const expectedId = `task~org.couchdb.user:username~${emission._id}~${Date.now()}`;
-        const committedDocs = db.bulkDocs.args.reduce((agg, arg) => [...agg, ...arg[0]], []);
+        const committedDocs = db.bulkDocs.args.reduce((agg, arg) => [...agg, ...(arg[0].docs || arg[0])], []);
         const doc = committedDocs.find(doc => doc._id === expectedId);
         expect(doc).to.not.be.undefined;
         return doc;
@@ -388,6 +410,8 @@ describe('provider-wireup integration tests', () => {
     });
 
     it('aggregate target doc is written (latest)', async () => {
+      clock.setSystemTime(moment('2024-01-01').valueOf());
+
       sinon.spy(provider, 'commitTargetDoc');
       await wireup.initialize(provider, engineSettings(), {}, {});
       const actual = await wireup.fetchTargets(provider);
@@ -396,43 +420,14 @@ describe('provider-wireup integration tests', () => {
       expect(provider.commitTargetDoc.callCount).to.eq(1);
       await provider.commitTargetDoc.returnValues[0];
 
-      const writtenDoc = await db.get('target~latest~mock_user_id~org.couchdb.user:username');
+      const writtenDoc = await db.get('target~2024-01~mock_user_id~org.couchdb.user:username');
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
-        _id: 'target~latest~mock_user_id~org.couchdb.user:username',
+        _id: 'target~2024-01~mock_user_id~org.couchdb.user:username',
         type: 'target',
-        updated_date: moment(NOW).startOf('day').valueOf(),
+        updated_date: moment().startOf('day').valueOf(),
         owner: 'mock_user_id',
         user: 'org.couchdb.user:username',
-        reporting_period: 'latest',
-      });
-      expect(writtenDoc.targets[0]).to.deep.eq({
-        id: 'deaths-this-month',
-        value: {
-          pass: 0,
-          total: 0,
-        },
-      });
-    });
-
-    it('aggregate target doc is written (date)', async () => {
-      sinon.spy(provider, 'commitTargetDoc');
-      await wireup.initialize(provider, engineSettings(), {}, {});
-      const interval = { start: 1, end: 1000 };
-      const actual = await wireup.fetchTargets(provider, interval);
-      expect(actual.length).to.be.gt(1);
-
-      expect(provider.commitTargetDoc.callCount).to.eq(1);
-      await provider.commitTargetDoc.returnValues[0];
-
-      const expectedId = `target~${moment(1000).format('YYYY-MM')}~mock_user_id~org.couchdb.user:username`;
-      const writtenDoc = await db.get(expectedId);
-      expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
-        _id: expectedId,
-        type: 'target',
-        updated_date: moment(NOW).startOf('day').valueOf(),
-        owner: 'mock_user_id',
-        user: 'org.couchdb.user:username',
-        reporting_period: moment(1000).format('YYYY-MM'),
+        reporting_period: '2024-01',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
         id: 'deaths-this-month',
@@ -650,7 +645,7 @@ describe('provider-wireup integration tests', () => {
         const staleState = {
           rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
           contactState: {},
-          targetState: { uhc: { emissions: {}, id: 'uhc' } },
+          targetState: { targets: { uhc: { emissions: {}, id: 'uhc' } }, aggregate: {} },
           calculatedAt: moment('2020-04-28').valueOf(),
           monthStartDate: 1,
         };
@@ -664,6 +659,7 @@ describe('provider-wireup integration tests', () => {
           mockTargetEmission('uhc', 'doc3', moment('2020-04-16').valueOf(), false), // fail within interval
         ];
         await rulesStateStore.storeTargetEmissions([], emissions);
+        await rulesStateStore.aggregateStoredTargetEmissions();
         rulesStateStore.restore();
 
         clock.setSystemTime(moment('2020-05-02').valueOf()); // next interval
@@ -702,7 +698,7 @@ describe('provider-wireup integration tests', () => {
         const staleState = {
           rulesConfigHash: 'not the same hash!!',
           contactState: {},
-          targetState: { uhc: { id: 'uhc', emissions: {}}},
+          targetState: { targets: { uhc: { id: 'uhc', emissions: {}}}, aggregate: { } },
           calculatedAt: moment('2020-04-14').valueOf(),
           monthStartDate: 1,
         };
@@ -737,7 +733,7 @@ describe('provider-wireup integration tests', () => {
         const staleState = {
           rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
           contactState: {},
-          targetState: { uhc: { emissions: {}, id: 'uhc' } },
+          targetState: { targets: { uhc: { emissions: {}, id: 'uhc' } }, aggregate: { } },
           calculatedAt: moment('2020-05-28').valueOf(),
           monthStartDate: 1,
         };
@@ -778,7 +774,7 @@ describe('provider-wireup integration tests', () => {
         const staleState = {
           rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
           contactState: {},
-          targetState: { uhc: { emissions: {}, id: 'uhc' } },
+          targetState: { targets: { uhc: { emissions: {}, id: 'uhc' } }, aggregate: {} },
           calculatedAt: moment('2020-05-28').valueOf(),
           monthStartDate: 1,
         };
@@ -834,14 +830,13 @@ describe('provider-wireup integration tests', () => {
         const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
 
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
-        expect(provider.commitTargetDoc.callCount).to.equal(0);
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
         const currentInterval = { start: moment('2020-04-01').valueOf(), end: moment('2020-04-30').valueOf() };
         await withMockRefresher(() => wireup.fetchTargets(provider, currentInterval));
 
-        // we didn't have a target doc before, so this is creating it for the first time
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
-        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+        expect(provider.commitTargetDoc.callCount).to.equal(2);
+        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
       });
 
       it('should update targets when in new interval when refreshing tasks', async () => {
@@ -871,13 +866,16 @@ describe('provider-wireup integration tests', () => {
 
         expect(provider.commitTargetDoc.callCount).to.equal(0);
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
-        expect(provider.commitTargetDoc.callCount).to.equal(0);
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
 
         clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
-        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+
+        expect(provider.commitTargetDoc.callCount).to.equal(3);
+        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+        expect(provider.commitTargetDoc.args[2][3]).to.equal('2020-05');
+        expect(provider.commitTargetDoc.args[2][0]).to.deep.equal([{ id: 'uhc', value: { pass: 1, total: 1 }}]);
       });
 
       it('should update targets when in new interval when refreshing targets', async () => {
@@ -919,17 +917,17 @@ describe('provider-wireup integration tests', () => {
         // make sure our state has been "calculated" at least once!
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
 
-        expect(provider.commitTargetDoc.callCount).to.equal(0);
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
 
         clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
         const currentInterval = { start: moment('2020-05-01').valueOf(), end: moment('2020-05-31').valueOf() };
         await withMockRefresher(() => wireup.fetchTargets(provider, currentInterval));
 
-        expect(provider.commitTargetDoc.callCount).to.equal(2);
-        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
-        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-05');
+        expect(provider.commitTargetDoc.callCount).to.equal(3);
+        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+        expect(provider.commitTargetDoc.args[2][3]).to.equal('2020-05');
+        expect(provider.commitTargetDoc.args[2][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
       });
     });
   });
@@ -944,7 +942,13 @@ describe('provider-wireup integration tests', () => {
         reportDocs: [],
       });
       sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
-      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions').returns([]);
+      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions').returns({
+        isUpdated: false,
+        aggregate: {
+          filterInterval: { start: 1, end: 1000 },
+          targets: [],
+        }
+      });
       sinon.stub(provider, 'commitTaskDocs').resolves();
       sinon.stub(provider, 'allTasks').resolves([]);
       sinon.stub(provider, 'commitTargetDoc').resolves();
@@ -1008,6 +1012,7 @@ describe('provider-wireup integration tests', () => {
         chai.expect(refreshRulesEmissions.callCount).to.equal(1);
 
         promiseQueue.pop()(dummyEmissions);
+        await nextTick();
         await nextTick();
         chai.expect(refreshRulesEmissions.callCount).to.equal(2);
 

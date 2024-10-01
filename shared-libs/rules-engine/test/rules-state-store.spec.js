@@ -179,6 +179,8 @@ describe('rules-state-store', () => {
   });
 
   it('target scenario', async () => {
+    const now = moment('2024-10-10T20:00:00');
+    clock.setSystemTime(now.valueOf());
     const mockSettings = {
       targets: [{
         id: 'target',
@@ -187,16 +189,23 @@ describe('rules-state-store', () => {
     const onStateChange = sinon.stub().resolves();
     await rulesStateStore.build(mockSettings, onStateChange);
     rulesStateStore.storeTargetEmissions([], [{
-      id: 'abc', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1000 }
+      id: 'abc', type: 'target', pass: true, contact: { _id: 'a', reported_date: now.valueOf() - 1000 }
     }]);
-    const initialTargets = rulesStateStore.aggregateStoredTargetEmissions();
-    expect(initialTargets).to.deep.eq([{
-      id: 'target',
-      value: {
-        pass: 1,
-        total: 1,
+    const { aggregate, isUpdated } = await rulesStateStore.aggregateStoredTargetEmissions();
+    expect(aggregate).to.deep.equal({
+      filterInterval: {
+        start: now.startOf('month').valueOf(),
+        end: now.endOf('month').valueOf()
       },
-    }]);
+      targets: [{
+        id: 'target',
+        value: {
+          pass: 1,
+          total: 1,
+        },
+      }]
+    });
+    expect(isUpdated).to.equal(true);
   });
 
   describe('marking contacts as dirty when switching reporting intervals', () => {

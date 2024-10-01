@@ -4,7 +4,7 @@ const moment = require('moment');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
 
-const { chtDocs, MS_IN_DAY } = require('./mocks');
+const { chtDocs } = require('./mocks');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
 chai.use(chaiExclude);
@@ -237,8 +237,7 @@ describe('pouchdb provider', () => {
       const ignoredUpdate = await db.get('target~2019-07~user~org.couchdb.user:username');
       expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
 
-      clock.setSystemTime(Date.now() + MS_IN_DAY);
-      await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag);
+      await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag, true);
       expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
         _id: 'target~2019-07~user~org.couchdb.user:username',
         updated_date: moment().startOf('day').valueOf(),
