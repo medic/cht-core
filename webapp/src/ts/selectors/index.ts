@@ -11,8 +11,9 @@ const getTasksState = state => state.tasks || {};
 
 export const Selectors = {
   // global
-  getActionBar: createSelector(getGlobalState, (globalState) => globalState.actionBar),
-  getLoadingSubActionBar: createSelector(getGlobalState, (globalState) => globalState.loadingSubActionBar),
+  getProcessingReportVerification: createSelector(getGlobalState, (globalState) => {
+    return globalState.processingReportVerification;
+  }),
   getReplicationStatus: createSelector(getGlobalState, (globalState) => globalState.replicationStatus),
   getAndroidAppVersion: createSelector(getGlobalState, (globalState) => globalState.androidAppVersion),
   getCurrentTab: createSelector(getGlobalState, (globalState) => globalState.currentTab),
@@ -21,7 +22,6 @@ export const Selectors = {
   getLoadingContent: createSelector(getGlobalState, (globalState) => globalState.loadingContent),
   getShowContent: createSelector(getGlobalState, (globalState) => globalState.showContent),
   getSelectMode: createSelector(getGlobalState, (globalState) => globalState.selectMode),
-  getShowActionBar: createSelector(getGlobalState, (globalState) => globalState.showActionBar),
   getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
   getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
   getSidebarFilter: createSelector(getGlobalState, (globalState) => globalState.sidebarFilter),

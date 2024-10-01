@@ -1,13 +1,8 @@
 <div class="filters tab-bar">
   <div class="inner">
-    <reports-filters
-      *ngIf="!useSidebarFilter && !selectMode"
-      (search)="search()"
-      [disabled]="selectMode && selectedReports?.length">
-    </reports-filters>
     <mm-navigation></mm-navigation>
     <mm-search-bar
-      *ngIf="useSidebarFilter && !selectMode"
+      *ngIf="!selectMode"
       (toggleFilter)="toggleFilter()"
       (search)="search()"
       [disabled]="selectMode && selectedReports?.length"
@@ -107,7 +102,6 @@
 
       <mm-reports-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
-        *ngIf="useSidebarFilter"
         (search)="search()"
         [disabled]="selectMode && selectedReports?.length">
       </mm-reports-sidebar-filter>

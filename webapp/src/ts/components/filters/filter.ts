@@ -1,4 +1,4 @@
-export class InlineFilter {
+export class Filter {
   applyCallback:Function;
   selected = new Set();
 

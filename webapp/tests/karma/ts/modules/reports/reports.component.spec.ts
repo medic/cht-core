@@ -8,13 +8,11 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchService } from '@mm-services/search.service';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
-import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ReportsContentComponent } from '@mm-modules/reports/reports-content.component';
 import { SettingsService } from '@mm-services/settings.service';
 import { ReportsActions } from '@mm-actions/reports';
@@ -135,12 +133,10 @@ describe('Reports Component', () => {
           RouterTestingModule,
           ComponentsModule,
           BrowserAnimationsModule,
-          BsDropdownModule.forRoot(),
           MatExpansionModule
         ],
         declarations: [
           ReportsComponent,
-          ReportsFiltersComponent,
           ReportsSidebarFilterComponent,
           SearchBarComponent,
           ReportsContentComponent,
@@ -206,10 +202,9 @@ describe('Reports Component', () => {
 
     expect(component.isSidebarFilterOpen).to.be.false;
     expect(component.selectModeAvailable).to.be.false;
-    expect(authService.has.calledThrice).to.be.true;
+    expect(authService.has.calledTwice).to.be.true;
     expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
-    expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
-    expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
+    expect(authService.has.args[1][0]).to.equal('can_default_facility_filter');
     expect(setDefaultFacilityFilterSpy.notCalled).to.be.true;
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
@@ -305,10 +300,9 @@ describe('Reports Component', () => {
       expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({
         facility: { _id: 'parent', name: 'parent', parent: { _id: 'grandparent' } }
       });
-      expect(authService.has.calledThrice).to.be.true;
+      expect(authService.has.calledTwice).to.be.true;
       expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
-      expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
-      expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
+      expect(authService.has.args[1][0]).to.equal('can_default_facility_filter');
       expect(searchService.search.notCalled).to.be.true;
     }));
 
@@ -325,9 +319,8 @@ describe('Reports Component', () => {
       flush();
 
       expect(setDefaultFacilityFilter.notCalled).to.be.true;
-      expect(authService.has.calledTwice).to.be.true;
+      expect(authService.has.calledOnce).to.be.true;
       expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
-      expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
       expect(searchService.search.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.callCount).to.equal(2);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });
@@ -370,10 +363,9 @@ describe('Reports Component', () => {
       flush();
 
       expect(setDefaultFacilityFilter.notCalled).to.be.true;
-      expect(authService.has.calledThrice).to.be.true;
+      expect(authService.has.calledTwice).to.be.true;
       expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
-      expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
-      expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
+      expect(authService.has.args[1][0]).to.equal('can_default_facility_filter');
       expect(searchService.search.calledOnce).to.be.true;
       expect(stopPerformanceTrackStub.callCount).to.equal(2);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'report_list:query', recordApdex: true });

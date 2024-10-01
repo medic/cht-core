@@ -280,8 +280,6 @@
     "can_upgrade": [
       "program_officer"
     ],
-    "can_view_old_filter_and_search": [],
-    "can_view_old_action_bar": [],
     "can_default_facility_filter": [],
     "can_have_multiple_places": [],
     "can_export_devices_details": [

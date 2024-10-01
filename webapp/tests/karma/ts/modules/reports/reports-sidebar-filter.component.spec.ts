@@ -139,7 +139,7 @@ describe('Reports Sidebar Filter Component', () => {
     const selectedForms = new Set();
     selectedForms.add('pregnancy_form');
     selectedForms.add('u5_assessment');
-    component.formTypeFilter.inlineFilter.selected = selectedForms;
+    component.formTypeFilter.filter.selected = selectedForms;
     component.fromDateFilter.dateRange.from = new Date();
     const expectedCount = {
       total: 3,

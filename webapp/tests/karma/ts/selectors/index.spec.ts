@@ -5,8 +5,7 @@ import { Selectors } from '@mm-selectors/index';
 
 const state = {
   global: {
-    actionBar: { the: 'actionbar' },
-    loadingSubActionBar: 'is loading sub action bar',
+    processingReportVerification: 'is processing the report verification',
     replicationStatus: 'somereplicationstatus',
     androidAppVersion: '1.0.8',
     currentTab: 'non-existent-tab',
@@ -15,7 +14,6 @@ const state = {
     loadingContent: 'is loading content',
     showContent: 'is showing content',
     selectMode: 'is in select mode',
-    showActionBar: 'is showing action bar',
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
     sidebarFilter: {
@@ -127,12 +125,10 @@ describe('Selectors', () => {
   });
 
   describe('global', () => {
-    it('should getActionBarr', () => {
-      expect(Selectors.getActionBar.projector(state.global)).to.deep.equal(clonedState.global.actionBar);
-    });
-
-    it('should getLoadingSubActionBar', () => {
-      expect(Selectors.getLoadingSubActionBar.projector(state.global)).to.equal(clonedState.global.loadingSubActionBar);
+    it('should getProcessingReportVerification', () => {
+      expect(Selectors.getProcessingReportVerification.projector(state.global)).to.equal(
+        clonedState.global.processingReportVerification
+      );
     });
 
     it('should getReplicationStatus', () => {
@@ -165,10 +161,6 @@ describe('Selectors', () => {
 
     it('should getSelectMode', () => {
       expect(Selectors.getSelectMode.projector(state.global)).to.equal(clonedState.global.selectMode);
-    });
-
-    it('should getShowActionBar', () => {
-      expect(Selectors.getShowActionBar.projector(state.global)).to.equal(clonedState.global.showActionBar);
     });
 
     it('should getForms', () => {
