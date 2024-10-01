@@ -123,18 +123,6 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ filters: {} });
   });
 
-  it('should set filters', () => {
-    state = {};
-    state = globalReducer(state, Actions.setFilters({ search: 'aaaaa' }));
-    expect(state).to.deep.equal({ filters: { search: 'aaaaa' } });
-
-    state = globalReducer(state, Actions.setFilters({ forms: [{ id: 'f1' }, { id: 'f2' }] }));
-    expect(state).to.deep.equal({ filters: { forms: [{ id: 'f1' }, { id: 'f2' }] } });
-
-    state = globalReducer(state, Actions.setFilters({ some: 'thing' }));
-    expect(state).to.deep.equal({ filters: { some: 'thing' } });
-  });
-
   it('should set filter', () => {
     state = {};
     state = globalReducer(state, Actions.setFilter({ search: 'aaaaa' }));

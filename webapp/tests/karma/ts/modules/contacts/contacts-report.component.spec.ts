@@ -266,7 +266,7 @@ describe('contacts report component', () => {
 
       expect(setEnketoError.callCount).to.equal(1);
 
-      store.overrideSelector(Selectors.getEnketoError, true);
+      store.overrideSelector(Selectors.getEnketoError, 'Error submitting form data.');
       store.refreshState();
       component.save();
       flush();

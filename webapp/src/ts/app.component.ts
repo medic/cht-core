@@ -1,4 +1,5 @@
 import { ActivationEnd, ActivationStart, Router } from '@angular/router';
+import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
 import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
@@ -18,7 +19,6 @@ import { LocationService } from '@mm-services/location.service';
 import { ModalService } from '@mm-services/modal.service';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { environment } from '@mm-environments/environment';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { JsonFormsService } from '@mm-services/json-forms.service';
@@ -49,6 +49,7 @@ import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
+import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -86,6 +87,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   currentTab = '';
   privacyPolicyAccepted;
   isSidebarFilterOpen = false;
+  openSearch = false;
   showPrivacyPolicy;
   selectMode;
   adminUrl;
@@ -93,8 +95,14 @@ export class AppComponent implements OnInit, AfterViewInit {
   replicationStatus;
   androidAppVersion;
   unreadCount = {};
+  hasOldNav = false;
   initialisationComplete = false;
-  trainingCardFormId = false;
+  trainingCardFormId = '';
+  private readonly SVG_ICONS = new Map([
+    ['icon-close', './img/icon-close.svg'],
+    ['icon-filter', './img/icon-filter.svg'],
+    ['icon-back', './img/icon-back.svg'],
+  ]);
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -110,6 +118,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private locationService:LocationService,
     private modalService:ModalService,
     private router:Router,
+    private domSanitizer: DomSanitizer,
     private feedbackService:FeedbackService,
     private formatDateService:FormatDateService,
     private xmlFormsService:XmlFormsService,
@@ -139,15 +148,10 @@ export class AppComponent implements OnInit, AfterViewInit {
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
-
-    this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
-    this.matIconRegistry.setDefaultFontSetClass('fa');
+    this.registerMaterialIcons();
     moment.locale(['en']);
-
     this.formatDateService.init();
-
     this.adminUrl = this.locationService.adminPath;
-
     setBootstrapTheme('bs4');
   }
 
@@ -159,6 +163,17 @@ export class AppComponent implements OnInit, AfterViewInit {
       .catch(err => {
         console.error('Error loading language', err);
       });
+  }
+
+  private registerMaterialIcons() {
+    this.matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
+    this.matIconRegistry.setDefaultFontSetClass('fa');
+
+    this.SVG_ICONS.forEach((iconPath, iconName) => {
+      // Disabling Sonar because we trust the SVG_ICONS defined as readonly above
+      const iconUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(iconPath); //NoSONAR
+      this.matIconRegistry.addSvgIcon(iconName, iconUrl);
+    });
   }
 
   private setupRouter() {
@@ -315,6 +330,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.enableOldNav();
     this.subscribeToSideFilterStore();
   }
 
@@ -376,7 +392,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
 
         } else {
-          !environment.production && this.globalActions.setSnackbarContent(`${change.id} changed`);
+          console.debug(`${change.id} changed`);
           this.showUpdateReady();
         }
       },
@@ -446,17 +462,19 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getSelectMode),
+      this.store.select(Selectors.getSearchBar),
     ]).subscribe(([
       replicationStatus,
       androidAppVersion,
       currentTab,
       selectMode,
+      searchBar,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
-      this.currentTab = currentTab;
-
+      this.currentTab = currentTab || '';
       this.selectMode = selectMode;
+      this.openSearch = !!searchBar?.isOpen;
     });
 
     combineLatest([
@@ -470,7 +488,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ]) => {
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
-      this.trainingCardFormId = trainingCardFormId;
+      this.trainingCardFormId = trainingCardFormId || '';
       this.displayTrainingCards();
     });
 
@@ -497,6 +515,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.store
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+  }
+
+  private async enableOldNav() {
+    this.hasOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
   }
 
   private initForms() {

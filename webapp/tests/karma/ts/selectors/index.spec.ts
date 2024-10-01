@@ -2,45 +2,47 @@ import { expect } from 'chai';
 import { cloneDeep } from 'lodash-es';
 
 import { Selectors } from '@mm-selectors/index';
+import { GlobalState } from '@mm-reducers/global';
+
+const globalState: GlobalState = {
+  processingReportVerification: true,
+  replicationStatus: { current: true },
+  androidAppVersion: 'SNAPSHOT',
+  currentTab: 'non-existent-tab',
+  snapshotData: { snapshot: 'data' },
+  snackbarContent: { message: '' },
+  loadingContent: false,
+  showContent: true,
+  selectMode: false,
+  forms: [ { _id: 'these' } ],
+  filters: { some: 'filters' },
+  sidebarFilter: {
+    isOpen: false,
+    filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
+  },
+  searchBar: { isOpen: false },
+  trainingCardFormId: 'training:new_change',
+  navigation: {
+    cancelCallback: function() {},
+    preventNavigation: true,
+    cancelTranslationKey: 'cancel key',
+    recordTelemetry: 'telemetry entry',
+  },
+  title: 'the title',
+  privacyPolicyAccepted: false,
+  showPrivacyPolicy: true,
+  unreadCount: { report: 2 },
+  translationsLoaded: false,
+  userFacilityIds: ['facility_uuid'],
+  userContactId: 'contact_uuid',
+  enketoStatus: { edited: true, saving: false, error: 'has error', form: true },
+  sidebarMenu: { isOpen: false },
+  lastChangedDoc: { _id: '1234' },
+  facilities: [ { _id: '1234' }, { _id: '1234' } ],
+};
 
 const state = {
-  global: {
-    processingReportVerification: 'is processing the report verification',
-    replicationStatus: 'somereplicationstatus',
-    androidAppVersion: '1.0.8',
-    currentTab: 'non-existent-tab',
-    snapshotData: { snapshot: 'data' },
-    snackbarContent: 'this is just some text',
-    loadingContent: 'is loading content',
-    showContent: 'is showing content',
-    selectMode: 'is in select mode',
-    forms: ['these', 'are', 'some', 'forms'],
-    filters: { some: 'filters' },
-    sidebarFilter: {
-      isOpen: false,
-      filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
-    },
-    trainingCardFormId: 'training:new_change',
-    navigation: {
-      cancelCallback: function() {},
-      preventNavigation: 'prevent',
-      cancelTranslationKey: 'cancel key',
-      recordTelemetry: 'telemetry entry',
-    },
-    title: 'the title',
-    privacyPolicyAccepted: 'has accepted policy',
-    showPrivacyPolicy: 'show policy',
-    unreadCount: 1230,
-    translationsLoaded: 'have translations loaded',
-    userFacilityIds: ['facility_uuid'],
-    userContactId: 'contact_uuid',
-    enketoStatus: {
-      edited: 'is edited',
-      saving: 'is saving',
-      error: 'has error',
-      form: 'is form',
-    }
-  },
+  global: globalState,
   services: {
     lastChangedDoc: { this: 'is the last changed doc' },
   },
@@ -132,7 +134,9 @@ describe('Selectors', () => {
     });
 
     it('should getReplicationStatus', () => {
-      expect(Selectors.getReplicationStatus.projector(state.global)).to.equal(clonedState.global.replicationStatus);
+      expect(Selectors.getReplicationStatus.projector(state.global)).to.deep.equal(
+        clonedState.global.replicationStatus
+      );
     });
 
     it('should getAndroidAppVersion', () => {
@@ -148,7 +152,7 @@ describe('Selectors', () => {
     });
 
     it('should getSnackbarContent', () => {
-      expect(Selectors.getSnackbarContent.projector(state.global)).to.equal(clonedState.global.snackbarContent);
+      expect(Selectors.getSnackbarContent.projector(state.global)).to.deep.equal(clonedState.global.snackbarContent);
     });
 
     it('should getLoadingContent', () => {
@@ -203,7 +207,7 @@ describe('Selectors', () => {
     });
 
     it('should getUnreadCount', () => {
-      expect(Selectors.getUnreadCount.projector(state.global)).to.equal(clonedState.global.unreadCount);
+      expect(Selectors.getUnreadCount.projector(state.global)).to.deep.equal(clonedState.global.unreadCount);
     });
 
     it('should getTranslationsLoaded', () => {
@@ -244,10 +248,12 @@ describe('Selectors', () => {
 
     // null checks
     it('should null check global state', () => {
+      // @ts-ignore
       expect(Selectors.getUserFacilityIds.projector({})).to.equal(undefined);
     });
 
     it('should null check enketo state', () => {
+      // @ts-ignore
       expect(Selectors.getEnketoError.projector({})).to.equal(undefined);
     });
   });

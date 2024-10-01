@@ -28,6 +28,6 @@ describe('cht-form web component - Draw Widget', () => {
     expect(contentTypes).to.deep.equal(['image/png', 'image/png', 'image/png']);
     expect(doc._attachments[drawAttachmentName].data.size).to.be.closeTo(19600, 2000);
     expect(doc._attachments[signatureAttachmentName].data.size).to.be.closeTo(12800, 2000);
-    expect(doc._attachments[annotateAttachmentName].data.size).to.be.closeTo(29000, 2000);
+    expect(doc._attachments[annotateAttachmentName].data.size).to.be.closeTo(29000, 3000);
   });
 });

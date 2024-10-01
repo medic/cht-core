@@ -13,7 +13,6 @@ export const Actions = {
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
   clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
-  setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
   clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
@@ -35,6 +34,10 @@ export const Actions = {
   setUserFacilityIds: createSingleValueAction('SET_USER_FACILITY_IDS', 'userFacilityIds'),
   setUserContactId: createSingleValueAction('SET_USER_CONTACT_ID', 'userContactId'),
   setTrainingCardFormId: createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
+  setSidebarMenu: createSingleValueAction('SET_SIDEBAR_MENU', 'sidebarMenu'),
+  closeSidebarMenu: createAction('CLOSE_SIDEBAR_MENU'),
+  openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
+  setSearchBar: createSingleValueAction('SET_SEARCH_BAR', 'searchBar'),
 };
 
 export class GlobalActions {
@@ -56,7 +59,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSnapshotData(snapshotData));
   }
 
-  setSnackbarContent(message, action?) {
+  setSnackbarContent(message?, action?) {
     return this.store.dispatch(Actions.setSnackbarContent({ message, action }));
   }
 
@@ -85,12 +88,12 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setFilter(filter));
   }
 
-  setFilters(filters) {
-    return this.store.dispatch(Actions.setFilters(filters));
-  }
-
   setSidebarFilter(sidebarFilter) {
     return this.store.dispatch(Actions.setSidebarFilter(sidebarFilter));
+  }
+
+  setSearchBar(searchBar) {
+    return this.store.dispatch(Actions.setSearchBar(searchBar));
   }
 
   clearSidebarFilter() {
@@ -213,4 +216,17 @@ export class GlobalActions {
   setTrainingCardFormId(trainingCard) {
     return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
+
+  setSidebarMenu(sidebarMenu) {
+    return this.store.dispatch(Actions.setSidebarMenu(sidebarMenu));
+  }
+
+  openSidebarMenu() {
+    return this.store.dispatch(Actions.openSidebarMenu());
+  }
+
+  closeSidebarMenu() {
+    return this.store.dispatch(Actions.closeSidebarMenu());
+  }
+
 }

@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { filter, delay } from 'rxjs/operators';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -10,14 +12,15 @@ import { GlobalActions } from '@mm-actions/global';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './snackbar.component.html'
 })
-export class SnackbarComponent implements OnInit {
+export class SnackbarComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();
 
   private readonly SHOW_DURATION = 5000;
   private readonly ANIMATION_DURATION = 250;
   private readonly ROUND_TRIP_ANIMATION_DURATION = this.ANIMATION_DURATION * 2;
+  private readonly WAIT_FOR_FAB = 500;
 
-  private globalActions;
+  private globalActions: GlobalActions;
   private hideTimeout;
   private showNextMessageTimeout;
   private resetMessageTimeout;
@@ -25,11 +28,13 @@ export class SnackbarComponent implements OnInit {
   message;
   action;
   active = false;
+  displayAboveFab = true;
 
   constructor(
-    private store:Store,
-    private changeDetectorRef:ChangeDetectorRef,
-    private ngZone:NgZone,
+    private store: Store,
+    private changeDetectorRef: ChangeDetectorRef,
+    private ngZone: NgZone,
+    private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -41,20 +46,19 @@ export class SnackbarComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.subscribeToRoute();
     this.changeDetectorRef.detach();
     const reduxSubscription = this.store
       .select(Selectors.getSnackbarContent)
       .subscribe((snackbarContent) => {
         if (!snackbarContent?.message) {
           this.hide();
-
           return;
         }
 
         const { message, action } = snackbarContent;
         if (this.active) {
           this.queueShowMessage(message, action);
-
           return;
         }
 
@@ -62,6 +66,26 @@ export class SnackbarComponent implements OnInit {
       });
     this.subscription.add(reduxSubscription);
     this.hide();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  private subscribeToRoute() {
+    const subscription = this.router.events
+      .pipe(
+        delay(this.WAIT_FOR_FAB),
+        filter(event => event instanceof NavigationEnd),
+      ).subscribe(() => {
+        if (!this.active) {
+          return;
+        }
+        this.displayAboveFab = this.isFABDisplayed();
+        // Snackbar is running outside Angular's zone (#6719), calling detectChanges to refresh component.
+        this.changeDetectorRef.detectChanges();
+      });
+    this.subscription.add(subscription);
   }
 
   private queueShowMessage(message, action) {
@@ -75,6 +99,7 @@ export class SnackbarComponent implements OnInit {
   }
 
   private show(message, action) {
+    this.displayAboveFab = this.isFABDisplayed();
     clearTimeout(this.hideTimeout);
     this.hideTimeout = undefined;
     clearTimeout(this.showNextMessageTimeout);
@@ -98,5 +123,9 @@ export class SnackbarComponent implements OnInit {
 
   private resetMessage() {
     this.globalActions.setSnackbarContent();
+  }
+
+  private isFABDisplayed(): boolean {
+    return !!$('.fast-action-fab-button:visible').length;
   }
 }
