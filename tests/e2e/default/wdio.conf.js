@@ -5,7 +5,6 @@ const { suites } = require('./suites');
 const defaultConfig = Object.assign(wdioBaseConfig.config, {
   suites,
   specs: ['**/*.wdio-spec.js'],
-  exclude: ['**/new-language.wdio-spec.js'],
 });
 
 exports.config = defaultConfig;
