@@ -10,7 +10,6 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { DbService } from '@mm-services/db.service';
-import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-services/modal.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
@@ -70,7 +69,7 @@ export class ReportsEffects {
           this.trackOpenReport = null;
         }
 
-        return of(this.reportActions.setRightActionBar());
+        return of(model);
       }),
     );
   }, { dispatch: false });
@@ -180,50 +179,6 @@ export class ReportsEffects {
     );
   }, { dispatch: false });
 
-  private getContact(id) {
-    return this.dbService
-      .get()
-      .get(id)
-      .catch(err => {
-        // log the error but continue anyway
-        console.error('Error fetching contact for action bar', err);
-      });
-  }
-
-  setRightActionBar = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ReportActionList.setRightActionBar),
-      withLatestFrom(
-        this.store.select(Selectors.getSelectMode),
-        this.store.select(Selectors.getSelectedReportDoc),
-        this.store.select(Selectors.getVerifyingReport),
-      ),
-      tap(([, selectMode, selectedReportDoc, verifyingReport ]) => {
-        const model:any = {};
-        const doc = !selectMode && selectedReportDoc;
-        if (!doc) {
-          return this.globalActions.setRightActionBar(model);
-        }
-
-        model.verified = doc.verified;
-        model.type = doc.content_type;
-        model.verifyingReport = verifyingReport;
-        model.openSendMessageModal = sendTo => this.modalService.show(SendMessageComponent, { data: { to: sendTo } });
-
-        if (!doc.contact?._id) {
-          return this.globalActions.setRightActionBar(model);
-        }
-
-        return this
-          .getContact(doc.contact._id)
-          .then(contact => {
-            model.sendTo = contact;
-            this.globalActions.setRightActionBar(model);
-          });
-      })
-    );
-  }, { dispatch: false });
-
   launchEditFacilityDialog = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.launchEditFacilityDialog),
@@ -249,7 +204,7 @@ export class ReportsEffects {
           return;
         }
 
-        this.globalActions.setLoadingSubActionBar(true);
+        this.globalActions.setProcessingReportVerification(true);
 
         const promptUserToConfirmVerification = () => {
           const verificationTranslationKey = verified ? 'reports.verify.valid' : 'reports.verify.invalid';
@@ -303,7 +258,6 @@ export class ReportsEffects {
                 report.doc._id,
                 { verified: newVerified, oldVerified },
               );
-              this.globalActions.setRightActionBarVerified(newVerified);
             });
         };
 
@@ -316,7 +270,7 @@ export class ReportsEffects {
             }
           })
           .catch(err => console.error('Error verifying message', err))
-          .finally(() => this.globalActions.setLoadingSubActionBar(false));
+          .finally(() => this.globalActions.setProcessingReportVerification(false));
       }),
     );
   }, { dispatch: false });

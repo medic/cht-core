@@ -1,8 +1,4 @@
-<div class="filters">
-  <div class="inner">
-    <mm-navigation></mm-navigation>
-  </div>
-</div>
+<mm-tool-bar title="Tasks"></mm-tool-bar>
 
 <div class="inner">
   <div class="inbox page">
@@ -13,8 +9,7 @@
             [attr.data-record-id]="task._id"
             [class.selected] = "task.selected"
             [class.overdue]="task.overdue"
-            class="content-row"
-        >
+            class="content-row">
           <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
             <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
             <div class="content">

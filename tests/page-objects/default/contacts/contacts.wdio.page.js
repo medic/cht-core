@@ -295,10 +295,8 @@ const openFormWithWarning = async (formId) => {
 };
 
 const openReport = async () => {
-  await commonPage.toggleActionbar(true);
   await (await reportsCardSelectors.rhsReportListElement()).waitForDisplayed();
   await (await reportsCardSelectors.rhsReportListElement()).click();
-  await commonPage.toggleActionbar();
 };
 
 const getContactCardTitle = async () => {

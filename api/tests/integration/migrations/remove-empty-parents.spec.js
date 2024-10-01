@@ -1,9 +1,6 @@
 const utils = require('./utils');
 
 describe('remove-empty-parents migration', function() {
-  afterEach(function() {
-    return utils.tearDown();
-  });
 
   it('should not affect well-defined parents', function() {
     // given

@@ -10,6 +10,7 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('Search Bar Component', () => {
   let component: SearchBarComponent;
@@ -61,6 +62,7 @@ describe('Search Bar Component', () => {
     sinon.resetHistory();
 
     component.ngAfterViewInit();
+    flush();
 
     expect(searchFiltersService.init.calledOnce).to.be.true;
   }));
@@ -93,18 +95,26 @@ describe('Search Bar Component', () => {
   });
 
   it('should toggle search', () => {
+    const setSearchBarStub = sinon.stub(GlobalActions.prototype, 'setSearchBar');
     responsiveService.isMobile.returns(true);
     component.toggleMobileSearch();
-    expect(component.openSearch).to.be.true;
-    component.toggleMobileSearch();
-    expect(component.openSearch).to.be.false;
+    expect(setSearchBarStub.calledOnceWith({ isOpen: true })).to.be.true;
 
+    setSearchBarStub.resetHistory();
+    component.openSearch = true;
+    component.toggleMobileSearch();
+    expect(setSearchBarStub.calledOnceWith({ isOpen: false })).to.be.true;
+
+    setSearchBarStub.resetHistory();
     responsiveService.isMobile.returns(false);
+    component.openSearch = true;
     component.toggleMobileSearch();
-    expect(component.openSearch).to.be.false;
+    expect(setSearchBarStub.notCalled).to.be.true;
 
+    setSearchBarStub.resetHistory();
+    component.openSearch = false;
     component.toggleMobileSearch(true);
-    expect(component.openSearch).to.be.true;
+    expect(setSearchBarStub.calledOnceWith({ isOpen: true })).to.be.true;
   });
 
   it('should show search icon when searchbar is close and no search terms', fakeAsync(() => {

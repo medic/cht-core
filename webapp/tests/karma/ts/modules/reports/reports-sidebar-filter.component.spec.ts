@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -49,7 +50,8 @@ describe('Reports Sidebar Filter Component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule,
           BrowserAnimationsModule,
-          BsDropdownModule
+          BsDropdownModule,
+          MatIconModule,
         ],
         declarations: [
           ReportsSidebarFilterComponent,
@@ -139,7 +141,7 @@ describe('Reports Sidebar Filter Component', () => {
     const selectedForms = new Set();
     selectedForms.add('pregnancy_form');
     selectedForms.add('u5_assessment');
-    component.formTypeFilter.inlineFilter.selected = selectedForms;
+    component.formTypeFilter.filter.selected = selectedForms;
     component.fromDateFilter.dateRange.from = new Date();
     const expectedCount = {
       total: 3,

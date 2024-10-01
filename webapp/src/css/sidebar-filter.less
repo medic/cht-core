@@ -8,11 +8,6 @@
 }
 
 .sidebar-filter-active {
-  .inbox.page,
-  mm-actionbar .inner {
-    max-width: calc(100vw - @content-margin) !important;
-  }
-
   .sidebar-filter-wrapper {
     position: static;
     right: 0;
@@ -86,11 +81,12 @@
         }
       }
 
-      .sidebar-close {
-        font-size: @font-extra-large;
-        font-weight: lighter;
-        color: @text-normal-color;
-        margin-right: -3px;
+      .sidebar-close mat-icon {
+        width: @icon-XXS;
+        height: @icon-XXS;
+        margin-top: -5px;
+        vertical-align: middle;
+        color: @mat-icon-color;
       }
     }
 
@@ -282,7 +278,7 @@
             &:before {
               content: '\f096'; // http://fontawesome.io/icon/square-o/
               font-family: FontAwesome;
-              font-size: @font-extra-extra-large;
+              font-size: @font-XXL;
               color: @form-field-border;
               vertical-align: middle;
               margin: 5px 7px 5px -30px;
@@ -336,7 +332,7 @@
           }
 
           .accordion-facility-check {
-            font-size: @font-extra-extra-large;
+            font-size: @font-XXL;
             color: @checkbox-border-color;
             display: block;
             position: absolute;
@@ -371,20 +367,9 @@
   }
 }
 
-@media (min-width: @content-width) {
-  .sidebar-filter-active {
-    mm-actionbar .inner {
-      margin-left: @content-margin !important;
-    }
-  }
-}
-
 @media (max-width: @media-mobile) {
-  .sidebar-filter-active {
-    .header,
-    .action-container {
-      z-index: 2;
-    }
+  .sidebar-filter-active .header {
+    z-index: 2;
   }
 
   .sidebar-filter {
