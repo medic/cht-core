@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   couchdb-1.local:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
