@@ -724,13 +724,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   }
 
-  @HostListener('window:visibilitychange')
-  private refreshRulesEngine() {
-    if (document.hidden) {
-      this.rulesEngineService.fetchTargets();
-    }
-  }
-
   private async initAnalyticsModules() {
     try {
       const modules = await this.analyticsModulesService.get();
