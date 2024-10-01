@@ -474,7 +474,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab || '';
       this.selectMode = selectMode;
-      this.openSearch = !!searchBar.isOpen;
+      this.openSearch = !!searchBar?.isOpen;
     });
 
     combineLatest([

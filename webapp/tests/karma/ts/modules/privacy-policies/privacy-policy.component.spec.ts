@@ -1,16 +1,23 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { provideMockStore } from '@ngrx/store/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { MatIcon } from '@angular/material/icon';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { GlobalActions } from '@mm-actions/global';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('PrivacyPoliciesComponent', () => {
   let component: PrivacyPolicyComponent;
   let fixture: ComponentFixture<PrivacyPolicyComponent>;
   let privacyPoliciesService;
+  let navigationService;
 
   beforeEach(waitForAsync(() => {
     privacyPoliciesService = {
@@ -19,13 +26,24 @@ describe('PrivacyPoliciesComponent', () => {
       getPrivacyPolicy: sinon.stub().resolves(),
       decodeUnicode: sinon.stub(),
     };
+    navigationService = { goBack: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
-        declarations: [ PrivacyPolicyComponent ],
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          MatIcon,
+        ],
+        declarations: [
+          PrivacyPolicyComponent,
+          ToolBarComponent,
+          NavigationComponent,
+        ],
         providers: [
           provideMockStore(),
           { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
+          { provide: NavigationService, useValue: navigationService },
         ]
       })
       .compileComponents()

@@ -63,7 +63,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
     ).subscribe(([sidebarFilter, filters, searchBar]) => {
       this.activeFilters = sidebarFilter?.filterCount?.total || 0;
       this.filters = filters;
-      this.openSearch = searchBar.isOpen;
+      this.openSearch = !!searchBar?.isOpen;
 
       if (!this.openSearch && this.filters?.search) {
         this.toggleMobileSearch();
