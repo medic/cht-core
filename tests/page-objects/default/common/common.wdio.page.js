@@ -28,9 +28,10 @@ const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
+const syncInProgress = () => $(`${hamburgerMenuItemSelector}.sync-status .in_progress`);
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
-const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
+const syncDone = () => $(`${hamburgerMenuItemSelector}.sync-status :is(.required,.success)`);
 const jsonError = async () => (await $('pre')).getText();
 const REPORTS_CONTENT_SELECTOR = '#reports-content';
 const reportsFastActionFAB = () => $(`${REPORTS_CONTENT_SELECTOR} .fast-action-fab-button mat-icon`);
@@ -53,6 +54,7 @@ const FEEDBACK = '#feedback';
 const ABOUT_MENU = '#header-dropdown i.fa-question';
 //Configuration App
 const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
+const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
 
 const errorLog = () => $(`error-log`);
 
@@ -73,7 +75,7 @@ const waitForSnackbarToClose = async () => {
 
 const clickFastActionById = async (id) => {
   // Wait for the Angular Material's animation to complete.
-  await browser.pause(500);
+  await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await (await fastActionListContainer()).waitForDisplayed();
   await (await fastActionById(id)).waitForClickable();
   await (await fastActionById(id)).click();
@@ -96,7 +98,7 @@ const getFastActionItemsLabels = async () => {
   await (await fastActionFAB()).waitForClickable();
   await (await fastActionFAB()).click();
 
-  await browser.pause(500);
+  await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await (await fastActionListContainer()).waitForDisplayed();
 
   const items = await fastActionItems();
@@ -322,14 +324,29 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async (timeout = 20000) => {
-  await openHamburgerMenu();
-  await (await syncButton()).click();
-  await openHamburgerMenu();
-  if (await (await syncInProgress()).isExisting()) {
-    await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
+const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
+  console.log('retry', retry, new Date().toISOString());
+  if (retry < 0) {
+    throw new Error('Failed to sync after 10 retries');
   }
-  await (await syncSuccess()).waitForDisplayed({ timeout });
+  await closeReloadModal(false, 0);
+  await openHamburgerMenu();
+
+  if (!await (await syncInProgress()).isExisting()) {
+    console.log('trying to sync');
+    retry < 10 && await browser.saveScreenshot(`allure-results/beforesync-${Date.now()}.png`);
+    await (await syncButton()).click();
+    await openHamburgerMenu();
+    retry < 10 && await browser.saveScreenshot(`allure-results/afterSync-${Date.now()}.png`);
+  }
+
+  await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
+  await (await syncDone()).waitForDisplayed({ timeout });
+  try {
+    await (await syncSuccess()).waitForDisplayed({ timeout: ELEMENT_DISPLAY_PAUSE });
+  } catch (err) {
+    await syncAndWaitForSuccess(timeout, retry - 1);
+  }
 };
 
 const hideModalOverlay = () => {
@@ -373,7 +390,7 @@ const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
     shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
-    console.error('Reload modal not showed up');
+    timeout && console.error('Reload modal has not showed up');
     return false;
   }
 };

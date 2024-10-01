@@ -155,6 +155,7 @@ describe('initial-replication', () => {
     setTimeout(() => browser.refresh(), 3000);
     setTimeout(() => browser.refresh(), 5000);
 
+    await browser.pause(5000);
     await commonPage.waitForPageLoaded();
     await validateReplication();
   });
