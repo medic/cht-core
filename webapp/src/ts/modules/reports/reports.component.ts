@@ -503,12 +503,4 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
     return isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
   }
-
-  getFastActionButtonType() {
-    return this.fastActionButtonService.getButtonTypeForContentList();
-  }
-
-  openMenu() {
-    this.globalActions.openSidebarMenu();
-  }
 }
