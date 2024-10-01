@@ -630,6 +630,7 @@ describe('Contacts effects', () => {
           { _id: 'person', parent: { _id: 'parent' } },
           [{ _id: 'the_report' }],
           [{ _id: 'parent' }, { _id: 'grandparent' }],
+          [],
           [{ _id: 'targetDoc' }],
         ]);
         const updateSelectedContactSummary:any = ContactsActions.prototype.updateSelectedContactSummary;
