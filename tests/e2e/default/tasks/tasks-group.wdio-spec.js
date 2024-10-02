@@ -38,15 +38,60 @@ describe('Tasks group landing page', () => {
   });
 
   const people = [
-    personFactory.build({ name: 'Albert Einstein', parent: scientistsClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Charles Darwin', parent: scientistsClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Nikola Tesla', parent: scientistsClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Leonardo da Vinci', parent: artistClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Francisco Goya', parent: artistClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Wolfgang Amadeus Mozart', parent: artistClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Napoleon Bonaparte', parent: politiciansClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Julius Caesar', parent: politiciansClinic, reported_date: todayDate }),
-    personFactory.build({ name: 'Queen Victoria', parent: politiciansClinic, reported_date: todayDate }),
+    personFactory.build({
+      name: 'Albert Einstein',
+      patient_id: 'einstein',
+      parent: scientistsClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Charles Darwin',
+      patient_id: 'darwin',
+      parent: scientistsClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Nikola Tesla',
+      patient_id: 'tesla',
+      parent: scientistsClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Leonardo da Vinci',
+      patient_id: 'leonardo',
+      parent: artistClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Francisco Goya',
+      patient_id: 'goya',
+      parent: artistClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Wolfgang Amadeus Mozart',
+      patient_id: 'mozart',
+      parent: artistClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Napoleon Bonaparte',
+      patient_id: 'napoleon',
+      parent: politiciansClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Julius Caesar',
+      patient_id: 'caesar',
+      parent: politiciansClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Queen Victoria',
+      patient_id: 'victoria',
+      parent: politiciansClinic,
+      reported_date: todayDate
+    }),
   ];
 
   const chw = userFactory.build({

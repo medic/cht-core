@@ -33,6 +33,6 @@ module.exports = new Factory()
   .attr('sex', 'female')
   .attr('phone', '')
   .attr('phone_alternate', '')
-  .attr('patient_id', uuid.v4)
+  .attr('patient_id', 'test_woman_1')
   .attr('reported_date', () => new Date())
   .attr('role');
