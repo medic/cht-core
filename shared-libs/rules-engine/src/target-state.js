@@ -38,7 +38,7 @@
 
 const moment = require('moment/moment');
 
-const removeOldEmissions = (state, contactIds) => {
+const clearEmissions = (state, contactIds) => {
   if (!contactIds) {
     for (const targetId of Object.keys(state.targets)) {
       state.targets[targetId].emissions = {};
@@ -46,6 +46,10 @@ const removeOldEmissions = (state, contactIds) => {
     return true;
   }
 
+  return clearEmissionsForContacts(state, contactIds);
+};
+
+const clearEmissionsForContacts = (state, contactIds) => {
   let isUpdated = false;
   for (const contactId of contactIds) {
     for (const targetId of Object.keys(state.targets)) {
@@ -107,7 +111,7 @@ module.exports = {
     }
 
     // Remove all emissions that were previously emitted by the contact ("cancelled emissions")
-    isUpdated = removeOldEmissions(state, contactIds);
+    isUpdated = clearEmissions(state, contactIds);
 
     // Merge the emission data into state
     isUpdated = mergeEmissions(state, contactIds, targetEmissions) || isUpdated;
