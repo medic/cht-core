@@ -25,6 +25,7 @@ const leftPanelSelectors = {
   contentRows: () =>  $$(CONTENT_ROW_SELECTOR),
   contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
   contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
+  firstContact: () => $(`${CONTACT_LIST_SELECTOR} li:first-child`),
 };
 
 const rightPanelSelectors = {
@@ -386,6 +387,16 @@ const filterReportViewAll = async () => {
   await (await tabsContainer.$('*=View all')).click();
 };
 
+const openSelectedContact = async (listElement) => {
+  await listElement.click();
+};
+
+const openFirstContact = async () => {
+  const firstContact = leftPanelSelectors.firstContact();
+  await firstContact.waitForClickable();
+  await openSelectedContact(firstContact);
+};
+
 module.exports = {
   genericForm,
   leftPanelSelectors,
@@ -429,4 +440,5 @@ module.exports = {
   getDisplayedContactsNames,
   getCurrentPersonEditFormValues,
   filterReportViewAll,
+  openFirstContact,
 };
