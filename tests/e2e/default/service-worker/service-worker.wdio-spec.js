@@ -6,6 +6,12 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Service worker cache', () => {
+  const DEFAULT_TRANSLATIONS = {
+    'sync.now': 'Sync now',
+    'sidebar_menu.title': 'Menu',
+    'sync.status.not_required': 'All reports synced',
+  };
+
   // global caches fetch Response navigator
   const getCachedRequests = async (raw) => {
     const cacheDetails = await browser.executeAsync(async (callback) => {
@@ -75,12 +81,6 @@ describe('Service worker cache', () => {
     if (!await isLoggedIn()) {
       await login();
     }
-  };
-
-  const DEFAULT_TRANSLATIONS = {
-    'sync.now': 'Sync now',
-    'sidebar_menu.title': 'Menu',
-    'sync.status.not_required': 'All reports synced',
   };
 
   before(async () => {
