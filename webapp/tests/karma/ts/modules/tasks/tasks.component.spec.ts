@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -13,6 +14,7 @@ import { TasksActions } from '@mm-actions/tasks';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -55,6 +57,7 @@ describe('TasksComponent', () => {
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
+        MatIconModule,
       ],
       providers: [
         provideMockStore(),
@@ -69,6 +72,7 @@ describe('TasksComponent', () => {
       declarations: [
         TasksComponent,
         NavigationComponent,
+        ToolBarComponent,
       ],
     });
 
@@ -130,23 +134,26 @@ describe('TasksComponent', () => {
     expect(component.tasksDisabled).to.be.true;
   });
 
-  it('rules engine throws in initialization', async () => {
+  it('rules engine throws in initialization', fakeAsync(async () => {
+    await getComponent();
+    flush();
+
+    sinon.resetHistory();
     const consoleErrorMock = sinon.stub(console, 'error');
+    const setTasksListStub = sinon.stub(TasksActions.prototype, 'setTasksList');
     rulesEngineService.isEnabled.rejects('error');
 
-    await new Promise(resolve => {
-      sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
-      getComponent();
-    });
+    component.ngOnInit();
+    flush();
 
     expect(component.loading).to.be.false;
     expect(!!component.hasTasks).to.be.false;
     expect(!!component.errorStack).to.be.true;
     expect(!!component.tasksDisabled).to.be.false;
-    expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[[]]]);
+    expect(setTasksListStub.args).to.deep.eq([[[]]]);
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error getting tasks for all contacts');
-  });
+  }));
 
   it('tasks render', async () => {
     const now = moment('2020-10-20');

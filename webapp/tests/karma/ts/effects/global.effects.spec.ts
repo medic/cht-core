@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { Selectors } from '@mm-selectors/index';
-import { Actions as GlobalActionsList } from '@mm-actions/global';
+import { Actions as GlobalActionsList, GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
@@ -319,4 +319,24 @@ describe('GlobalEffects', () => {
       }));
     });
   });
+
+  it('should update state of sidebar menu to open', waitForAsync(() => {
+    const setSidebarMenu = sinon.stub(GlobalActions.prototype, 'setSidebarMenu');
+
+    actions$ = of(GlobalActionsList.openSidebarMenu());
+    effects.openSidebarMenu.subscribe();
+
+    expect(setSidebarMenu.calledOnce).to.be.true;
+    expect(setSidebarMenu.args[0][0]).to.deep.equal({ isOpen: true });
+  }));
+
+  it('should update state of sidebar menu to close', waitForAsync(() => {
+    const setSidebarMenu = sinon.stub(GlobalActions.prototype, 'setSidebarMenu');
+
+    actions$ = of(GlobalActionsList.closeSidebarMenu());
+    effects.closeSidebarMenu.subscribe();
+
+    expect(setSidebarMenu.calledOnce).to.be.true;
+    expect(setSidebarMenu.args[0][0]).to.deep.equal({ isOpen: false });
+  }));
 });

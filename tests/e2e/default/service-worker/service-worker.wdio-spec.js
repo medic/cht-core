@@ -77,6 +77,12 @@ describe('Service worker cache', () => {
     }
   };
 
+  const DEFAULT_TRANSLATIONS = {
+    'sync.now': 'Sync now',
+    'sidebar_menu.title': 'Menu',
+    'sync.status.not_required': 'All reports synced',
+  };
+
   before(async () => {
     await utils.saveDoc(district);
     await utils.createUsers([chw]);
@@ -103,34 +109,37 @@ describe('Service worker cache', () => {
     expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
+      '/deploy-info.json',
       '/extension-libs',
       '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
       '/img/cht-logo-light.png',
-      '/img/icon.png',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',
+      '/img/icon-close.svg',
       '/img/icon-nurse-selected.svg',
       '/img/icon-nurse.svg',
       '/img/icon-pregnant-selected.svg',
       '/img/icon-pregnant.svg',
+      '/img/icon-filter.svg',
+      '/img/icon.png',
+      '/img/icon-back.svg',
       '/img/layers.png',
+      '/login/images/hide-password.svg',
+      '/login/images/show-password.svg',
       '/login/lib-bowser.js',
       '/login/script.js',
       '/login/style.css',
-      '/login/images/hide-password.svg',
-      '/login/images/show-password.svg',
       '/main.js',
-      '/deploy-info.json',
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',
-      '/styles.css'
+      '/styles.css',
     ].sort());
   });
 
@@ -170,6 +179,7 @@ describe('Service worker cache', () => {
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
+      ...DEFAULT_TRANSLATIONS,
       'User Name': 'Utilizator',
       'Password': 'Parola',
       'login': 'Autentificare',
@@ -195,6 +205,7 @@ describe('Service worker cache', () => {
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
+      ...DEFAULT_TRANSLATIONS,
       'ran': 'dom',
       'some': 'thing',
     });

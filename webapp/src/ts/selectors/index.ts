@@ -1,6 +1,7 @@
 import { createSelector } from '@ngrx/store';
+import { GlobalState } from '@mm-reducers/global';
 
-const getGlobalState = (state) => state.global || {};
+const getGlobalState = (state): GlobalState => state.global || {};
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
@@ -11,8 +12,10 @@ const getTasksState = state => state.tasks || {};
 
 export const Selectors = {
   // global
-  getActionBar: createSelector(getGlobalState, (globalState) => globalState.actionBar),
-  getLoadingSubActionBar: createSelector(getGlobalState, (globalState) => globalState.loadingSubActionBar),
+  getSidebarMenu: createSelector(getGlobalState, globalState => globalState.sidebarMenu),
+  getProcessingReportVerification: createSelector(getGlobalState, (globalState) => {
+    return globalState.processingReportVerification;
+  }),
   getReplicationStatus: createSelector(getGlobalState, (globalState) => globalState.replicationStatus),
   getAndroidAppVersion: createSelector(getGlobalState, (globalState) => globalState.androidAppVersion),
   getCurrentTab: createSelector(getGlobalState, (globalState) => globalState.currentTab),
@@ -21,10 +24,10 @@ export const Selectors = {
   getLoadingContent: createSelector(getGlobalState, (globalState) => globalState.loadingContent),
   getShowContent: createSelector(getGlobalState, (globalState) => globalState.showContent),
   getSelectMode: createSelector(getGlobalState, (globalState) => globalState.selectMode),
-  getShowActionBar: createSelector(getGlobalState, (globalState) => globalState.showActionBar),
   getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
   getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
   getSidebarFilter: createSelector(getGlobalState, (globalState) => globalState.sidebarFilter),
+  getSearchBar: createSelector(getGlobalState, (globalState) => globalState.searchBar),
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),

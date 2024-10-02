@@ -9,7 +9,6 @@ import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
 @Component({
   selector: 'mm-contacts-more-menu',
@@ -25,14 +24,13 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
   private hasDeletePermission = false;
   private isOnlineOnly = false;
   private loadingContent = true;
-  private snapshotData: Data | undefined;
+  private snapshotData: Data | null = null;
   private userSettings;
 
   selectedContactDoc;
   hasNestedContacts = false;
   isUserFacility = false;
   contactsList;
-  useOldActionBar = false;
 
   constructor(
     private store: Store,
@@ -87,7 +85,6 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
     this.hasEditPermission = await this.authService.has('can_edit');
     this.hasDeletePermission = await this.authService.has('can_delete_contacts');
     this.hasExportPermission = await this.authService.any([[ 'can_export_all' ], [ 'can_export_contacts' ]]);
-    this.useOldActionBar = !this.sessionService.isAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   private getUserSettings() {

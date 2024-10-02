@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { of, Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -57,7 +58,8 @@ describe('Analytics Filter Component', () => {
     await TestBed
       .configureTestingModule({
         imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } })
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatIconModule,
         ],
         declarations: [
           AnalyticsFilterComponent,
@@ -92,9 +94,6 @@ describe('Analytics Filter Component', () => {
 
   it('should display filter button when all conditions of showFilterButton are true', fakeAsync(() => {
     sinon.resetHistory();
-    authService.has
-      .withArgs(['can_view_old_filter_and_search', 'can_view_old_action_bar'])
-      .resolves(false);
     sessionService.isAdmin.returns(false);
     route.snapshot.firstChild.data.moduleId = 'target-aggregates';
     targetAggregatesService.isEnabled.resolves(true);
@@ -129,20 +128,6 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
-  }));
-
-  it('should not display filter button if user old UI permissions', fakeAsync(() => {
-    sinon.resetHistory();
-    authService.has
-      .withArgs(['!can_view_old_filter_and_search', '!can_view_old_action_bar'])
-      .resolves(false);
-
-    component.ngOnInit();
-    flush();
-
-    expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
   }));
 
   it('should not display filter button if targetAggregate is not enabled', fakeAsync(() => {

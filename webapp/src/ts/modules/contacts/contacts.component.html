@@ -1,25 +1,13 @@
-<div class="filters tab-bar">
-  <div class="inner">
-    <contacts-filters
-      *ngIf="!useSearchNewDesign"
-      (search)="search()"
-      (sort)="sort($event)"
-      [disabled]="false"
-      [sortDirection]="sortDirection"
-      [lastVisitedDateExtras]="lastVisitedDateExtras">
-    </contacts-filters>
-    <mm-navigation></mm-navigation>
-    <mm-search-bar
-      *ngIf="useSearchNewDesign"
-      [showSort]="isAllowedToSort"
-      [sortDirection]="sortDirection"
-      [lastVisitedDateExtras]="lastVisitedDateExtras"
-      (sort)="sort($event)"
-      (search)="search()">
-    </mm-search-bar>
-    <mm-contacts-more-menu (exportContacts)="exportContacts()"></mm-contacts-more-menu>
-  </div>
-</div>
+<mm-tool-bar title="Contacts">
+  <mm-search-bar
+    [showSort]="isAllowedToSort"
+    [sortDirection]="sortDirection"
+    [lastVisitedDateExtras]="lastVisitedDateExtras"
+    (sort)="sort($event)"
+    (search)="search()">
+  </mm-search-bar>
+   <mm-contacts-more-menu (exportContacts)="exportContacts()"></mm-contacts-more-menu>
+</mm-tool-bar>
 
 <div class="inner">
   <div class="inbox page">

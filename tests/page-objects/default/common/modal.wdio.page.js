@@ -33,6 +33,7 @@ const cancel = async (timeout) => {
 };
 
 module.exports = {
+  modal,
   body,
   submit,
   cancel,

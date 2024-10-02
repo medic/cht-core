@@ -1,7 +1,10 @@
 <div class="app-root {{currentTab}}"
-     [class.bootstrapped]="initialisationComplete"
-     [class.select-mode]="selectMode"
-     [class.sidebar-filter-active]="isSidebarFilterOpen">
+  [class.bootstrapped]="initialisationComplete"
+  [class.select-mode]="selectMode"
+  [class.sidebar-filter-active]="isSidebarFilterOpen"
+  [class.search-bar-active]="openSearch"
+  [class.old-nav]="hasOldNav">
+
   <div class="bootstrap-layer">
     <div>
       <div class="loader"></div>
@@ -11,15 +14,11 @@
   </div>
 
   <mm-privacy-policy [overlay]="true" *ngIf="showPrivacyPolicy && !privacyPolicyAccepted"></mm-privacy-policy>
-
-  <mm-actionbar *ngIf="useOldActionBar" [reportForms]="reportForms"></mm-actionbar>
+  <mm-sidebar-menu [canLogOut]="canLogOut"/>
 
   <div class="container-fluid" *ngIf="initialisationComplete">
-    <mm-header
-      [adminUrl]="adminUrl"
-      [canLogOut]="canLogOut"
-    ></mm-header>
-    
+    <mm-header [adminUrl]="adminUrl" [canLogOut]="canLogOut"></mm-header>
+
     <div class="row content">
       <router-outlet></router-outlet>
     </div>

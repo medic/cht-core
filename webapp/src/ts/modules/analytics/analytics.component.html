@@ -1,9 +1,6 @@
-<div class="filters">
-  <div class="inner">
-    <mm-analytics-filters [analyticsModules]="analyticsModules"></mm-analytics-filters>
-    <mm-navigation></mm-navigation>
-  </div>
-</div>
+<mm-tool-bar title="Analytics">
+  <mm-analytics-filters [analyticsModules]="analyticsModules"></mm-analytics-filters>
+</mm-tool-bar>
 
 <div class="inner">
   <router-outlet></router-outlet>

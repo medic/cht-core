@@ -3,7 +3,6 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import sinon from 'sinon';
 import * as chai from 'chai';
 import * as chaiExclude from 'chai-exclude';
@@ -12,9 +11,6 @@ chai.use(chaiExclude);
 import { expect } from 'chai';
 
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
-import {
-  MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
@@ -25,13 +21,12 @@ describe('Facility Filter Component', () => {
   let fixture:ComponentFixture<FacilityFilterComponent>;
   let sessionService;
   let store;
-
   let placeHierarchyService;
 
   beforeEach(waitForAsync(() => {
     placeHierarchyService = {
-      get: sinon.stub(),
-      getDescendants: sinon.stub(),
+      get: sinon.stub().resolves(),
+      getDescendants: sinon.stub().resolves(),
     };
 
     sessionService = {
@@ -42,13 +37,11 @@ describe('Facility Filter Component', () => {
       .configureTestingModule({
         imports: [
           BrowserAnimationsModule,
-          BsDropdownModule.forRoot(),
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
         ],
         declarations: [
           FacilityFilterComponent,
-          MultiDropdownFilterComponent,
         ],
         providers: [
           provideMockStore(),
@@ -178,79 +171,6 @@ describe('Facility Filter Component', () => {
           ]
         },
       ]);
-
-      expect(component.flattenedFacilities).excludingEvery('label').to.have.deep.members([
-        {
-          _id: '3',
-          doc: { name: 'alpha' },
-          children: [
-            {
-              _id: 'b',
-              doc: { name: 'eight' },
-              children: [
-                { _id: 'cc', doc: { name: 'enel' } },
-                { _id: 'dd', doc: { name: 'kalas' } },
-              ]
-            },
-            {
-              _id: 'a',
-              doc: { name: 'nine' },
-              children: [
-                { _id: 'bb', doc: { name: 'lint' } },
-                { _id: 'aa', doc: { name: 'oops' } },
-              ]
-            },
-          ],
-        },
-        {
-          _id: 'b',
-          doc: { name: 'eight' },
-          children: [
-            { _id: 'cc', doc: { name: 'enel' } },
-            { _id: 'dd', doc: { name: 'kalas' } },
-          ]
-        },
-        {
-          _id: 'a',
-          doc: { name: 'nine' },
-          children: [
-            { _id: 'bb', doc: { name: 'lint' } },
-            { _id: 'aa', doc: { name: 'oops' } },
-          ]
-        },
-        { _id: 'cc', doc: { name: 'enel' } },
-        { _id: 'dd', doc: { name: 'kalas' } },
-        { _id: 'bb', doc: { name: 'lint' } },
-        { _id: 'aa', doc: { name: 'oops' } },
-        {
-          _id: '2',
-          doc: { name: 'first' },
-        },
-        {
-          _id: '1',
-          doc: { name: 'not_first', },
-          children: [
-            {
-              _id: '2',
-              doc: { name: 'some_child' },
-              children: [
-                { _id: '4', doc: { name: 'five' } },
-                { _id: '3', doc: { name: 'seven' } },
-              ]
-            }
-          ]
-        },
-        {
-          _id: '2',
-          doc: { name: 'some_child' },
-          children: [
-            { _id: '4', doc: { name: 'five' } },
-            { _id: '3', doc: { name: 'seven' } },
-          ]
-        },
-        { _id: '4', doc: { name: 'five' } },
-        { _id: '3', doc: { name: 'seven' } },
-      ]);
     });
 
     it('should not load facilities if sidebar is close', fakeAsync(() => {
@@ -272,7 +192,6 @@ describe('Facility Filter Component', () => {
       placeHierarchyService.get.resolves(facilities);
       store.overrideSelector(Selectors.getSidebarFilter, { isOpen: false });
       store.refreshState();
-      component.inline = true;
 
       component.ngAfterViewInit();
       flush();
@@ -296,10 +215,10 @@ describe('Facility Filter Component', () => {
         ],
       }];
 
+      component.facilities = [];
       placeHierarchyService.get.resolves(facilities);
       store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
       store.refreshState();
-      component.inline = true;
 
       component.ngAfterViewInit();
       flush();
@@ -333,8 +252,8 @@ describe('Facility Filter Component', () => {
     expect(component.trackByFn(0, facility)).to.equal('ab');
   });
 
-  it('should toggle children when toggling parent', () => {
-    const dropdownFilterToggleSpy = sinon.spy(component.dropdownFilter, 'toggle');
+  it('should toggle all children when toggling parent in the filter', () => {
+    const filterToggleSpy = sinon.spy(component.filter, 'toggle');
     const facility = {
       _id: 'parent',
       doc: { _id: 'parent' },
@@ -352,16 +271,16 @@ describe('Facility Filter Component', () => {
       ]
     };
 
-    component.select(null, facility, component.dropdownFilter);
+    component.select(null, facility, true);
 
-    expect(dropdownFilterToggleSpy.callCount).to.equal(5);
-    expect(dropdownFilterToggleSpy.args).to.deep.equal([
+    expect(filterToggleSpy.callCount).to.equal(5);
+    expect(filterToggleSpy.args).to.deep.equal([
       [ 'parent' ], [ 'child1' ], [ 'child3' ], [ 'child4' ], [ 'child2' ],
     ]);
   });
 
-  it('should toggle all children when toggling parent in inline filter', () => {
-    const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
+  it('should toggle unselected children when toggling parent in the filter', () => {
+    const filterToggleSpy = sinon.spy(component.filter, 'toggle');
     const facility = {
       _id: 'parent',
       doc: { _id: 'parent' },
@@ -378,40 +297,13 @@ describe('Facility Filter Component', () => {
         { _id: 'child2', doc: { _id: 'child2'} },
       ]
     };
+    component.filter.selected.add(facility.children[0].children![0].doc._id);
+    component.filter.selected.add(facility.children[1].doc._id);
 
-    component.select(null, facility, component.inlineFilter);
+    component.select(null, facility, true);
 
-    expect(inlineFilterToggleSpy.callCount).to.equal(5);
-    expect(inlineFilterToggleSpy.args).to.deep.equal([
-      [ 'parent' ], [ 'child1' ], [ 'child3' ], [ 'child4' ], [ 'child2' ],
-    ]);
-  });
-
-  it('should toggle unselected children when toggling parent in inline filter', () => {
-    const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
-    const facility = {
-      _id: 'parent',
-      doc: { _id: 'parent' },
-      children: [
-        {
-          _id: 'child1',
-          doc: { _id: 'child1' },
-          children: [{
-            _id: 'child3',
-            doc: { _id: 'child3' },
-            children: [{ _id: 'child4', doc: { _id: 'child4' } }],
-          }],
-        },
-        { _id: 'child2', doc: { _id: 'child2'} },
-      ]
-    };
-    component.inlineFilter.selected.add(facility.children[0].children![0].doc._id);
-    component.inlineFilter.selected.add(facility.children[1].doc._id);
-
-    component.select(null, facility, component.inlineFilter);
-
-    expect(inlineFilterToggleSpy.callCount).to.equal(3);
-    expect(inlineFilterToggleSpy.args).to.deep.equal([ [ 'parent' ], [ 'child1' ], [ 'child4' ] ]);
+    expect(filterToggleSpy.callCount).to.equal(3);
+    expect(filterToggleSpy.args).to.deep.equal([ [ 'parent' ], [ 'child1' ], [ 'child4' ] ]);
   });
 
   describe('getLabel', () => {
@@ -434,34 +326,25 @@ describe('Facility Filter Component', () => {
     });
   });
 
-  it('should clear dropdown filter', () => {
-    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
-    component.clear();
-    expect(dropdownFilterClearSpy.callCount).to.equal(1);
-    expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
-  });
-
-  it('should clear inline filter', () => {
-    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
-    component.inlineFilter.selected.add('place-1');
-    component.inlineFilter.selected.add('place-2');
-    component.inline = true;
+  it('should clear the filter', () => {
+    const filterClearSpy = sinon.spy(component.filter, 'clear');
+    component.filter.selected.add('place-1');
+    component.filter.selected.add('place-2');
 
     component.clear();
 
-    expect(inlineFilterClearSpy.calledOnce).to.be.true;
-    expect(component.inlineFilter.selected.size).to.equal(0);
+    expect(filterClearSpy.calledOnce).to.be.true;
+    expect(component.filter.selected.size).to.equal(0);
   });
 
-  it('should count selected items in inline filter', () => {
-    const inlineFilterCountSelectedSpy = sinon.spy(component.inlineFilter, 'countSelected');
-    component.inlineFilter.selected.add('place-1');
-    component.inlineFilter.selected.add('place-2');
-    component.inline = true;
+  it('should count selected items in the filter', () => {
+    const filterCountSelectedSpy = sinon.spy(component.filter, 'countSelected');
+    component.filter.selected.add('place-1');
+    component.filter.selected.add('place-2');
 
     const result = component.countSelected();
 
-    expect(inlineFilterCountSelectedSpy.calledOnce).to.be.true;
+    expect(filterCountSelectedSpy.calledOnce).to.be.true;
     expect(result).to.equal(2);
   });
 
@@ -478,26 +361,20 @@ describe('Facility Filter Component', () => {
   });
 
   it('should do nothing if component is disabled', () => {
-    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
-    const dropdownFilterToggleSpy = sinon.spy(component.dropdownFilter, 'toggle');
-    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
-    const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
+    const filterClearSpy = sinon.spy(component.filter, 'clear');
+    const filterToggleSpy = sinon.spy(component.filter, 'toggle');
     const spySearch = sinon.spy(component.search, 'emit');
     const facilities = [ '123' ];
     component.disabled = true;
 
     component.clear();
     component.applyFilter(facilities);
-    component.select(null, facilities[0], component.dropdownFilter);
-    component.select(null, facilities[0], component.inlineFilter);
-    component.inline = true;
+    component.select(null, facilities[0], true);
     component.clear();
 
-    expect(dropdownFilterClearSpy.notCalled).to.be.true;
-    expect(dropdownFilterToggleSpy.notCalled).to.be.true;
     expect(spySearch.notCalled).to.be.true;
-    expect(inlineFilterClearSpy.notCalled).to.be.true;
-    expect(inlineFilterToggleSpy.notCalled).to.be.true;
+    expect(filterClearSpy.notCalled).to.be.true;
+    expect(filterToggleSpy.notCalled).to.be.true;
   });
 
   describe('setDefault', () => {
@@ -506,10 +383,10 @@ describe('Facility Filter Component', () => {
         { _id: 'child-1', doc: {  _id: 'child-1', name: 'not_first' } },
         { _id: 'child-2', doc: { _id: 'child-2', name: 'first' } },
       ];
+      component.facilities = [{ _id: 'parent' }];
       placeHierarchyService.getDescendants.resolves(facilities);
       const searchSpy = sinon.spy(component.search, 'emit');
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
-      component.inline = true;
 
       component.setDefault({ _id: 'parent' });
       flush();
@@ -527,7 +404,6 @@ describe('Facility Filter Component', () => {
       placeHierarchyService.getDescendants.resolves(facilities);
       const searchSpy = sinon.spy(component.search, 'emit');
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
-      component.inline = true;
 
       component.setDefault(undefined);
       flush();

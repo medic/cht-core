@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
+import { MatSidenavModule } from '@angular/material/sidenav';
 
 import { HeaderComponent } from '@mm-components/header/header.component';
 import { PipesModule } from '@mm-pipes/pipes.module';
@@ -19,21 +20,16 @@ import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
 } from '@mm-components/status-icons/status-icons.template';
-import {
-  MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
-import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
@@ -48,6 +44,8 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +54,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     ContentRowListItemComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
-    MultiDropdownFilterComponent,
     DateFilterComponent,
     FacilityFilterComponent,
     FormTypeFilterComponent,
@@ -65,12 +62,10 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     FastActionButtonComponent,
     SearchBarComponent,
     MultiselectBarComponent,
-    ResetFiltersComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,
-    ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
     AnalyticsFilterComponent,
@@ -79,6 +74,8 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     ErrorLogComponent,
     ModalLayoutComponent,
     PanelHeaderComponent,
+    SidebarMenuComponent,
+    ToolBarComponent,
   ],
   imports: [
     CommonModule,
@@ -92,6 +89,7 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     MatBottomSheetModule,
     MatDialogModule,
     MatListModule,
+    MatSidenavModule,
     BsDropdownModule,
   ],
   exports: [
@@ -108,12 +106,10 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     SearchBarComponent,
     MultiselectBarComponent,
     FreetextFilterComponent,
-    ResetFiltersComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,
-    ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
     ErrorLogComponent,
@@ -121,6 +117,8 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     AnalyticsTargetsDetailsComponent,
     ModalLayoutComponent,
     PanelHeaderComponent,
+    SidebarMenuComponent,
+    ToolBarComponent,
   ]
 })
 export class ComponentsModule { }
