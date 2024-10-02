@@ -14,7 +14,7 @@ const sharp = require('sharp');
 
 const MOBILE_WINDOW_WIDTH = 768;
 const MOBILE_VIEWPORT_WIDTH = 320;
-const MOBILE_VIEWPORT_HEIGHT = 570;
+const MOBILE_VIEWPORT_HEIGHT = 560;
 const DESKTOP_WINDOW_WIDTH = 1000;
 const DESKTOP_WINDOW_HEIGHT = 820;
 const HIGH_DENSITY_DISPLAY_2X = 2;
@@ -37,8 +37,8 @@ const resizeWindowForScreenshots = async () => {
       'AppleWebKit/537.36 (KHTML, like Gecko) ' +
       'Chrome/92.0.4515.159 Mobile Safari/537.36'
     });
-  } 
-  
+  }
+
   return await browser.setWindowSize(DESKTOP_WINDOW_WIDTH, DESKTOP_WINDOW_HEIGHT);
 };
 
