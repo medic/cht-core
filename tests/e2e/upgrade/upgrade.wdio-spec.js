@@ -6,7 +6,6 @@ const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
-const oldNavigationPage = require('@page-objects/default/old-navigation/old-navigation.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
@@ -57,13 +56,11 @@ describe('Performing an upgrade', () => {
     if (testFrontend) {
       // a variety of selectors that we use in e2e tests to interact with webapp
       // are not compatible with older versions of the app.
-      await loginPage.login({ username: docs.user.username, password: docs.user.password, loadPage: false });
-      await oldNavigationPage.goToBase();
-      await oldNavigationPage.logout();
+      await loginPage.login(docs.user);
+      await commonPage.logout();
     }
 
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
-    await oldNavigationPage.goToBase();
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
   });
 
   after(async () => {
@@ -122,9 +119,7 @@ describe('Performing an upgrade', () => {
     }
 
     await adminPage.logout();
-    await loginPage.login({ username: docs.user.username, password: docs.user.password, loadPage: false });
-    await oldNavigationPage.goToBase();
-    await oldNavigationPage.sync(true);
+    await loginPage.login({ username: docs.user.username, password: docs.user.password });
 
     await browser.refresh();
     await commonPage.waitForPageLoaded();
