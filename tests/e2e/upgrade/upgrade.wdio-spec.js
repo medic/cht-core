@@ -62,12 +62,10 @@ describe('Performing an upgrade', () => {
     }
 
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
-    if (BASE_VERSION === 'latest') {
+    if (testFrontend) {
       await commonPage.goToBase();
-      await commonPage.sync(true);
     } else {
       await oldNavigationPage.goToBase();
-      await oldNavigationPage.sync(true);
     }
   });
 
