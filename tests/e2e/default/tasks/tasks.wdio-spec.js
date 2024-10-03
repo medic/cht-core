@@ -68,9 +68,9 @@ describe('Tasks', () => {
 
     await tasksPage.goToTasksTab();
     const list = await tasksPage.getTasks();
-    const infos = await tasksPage.getTasksListInfos(list)
+    const infos = await tasksPage.getTasksListInfos(list);
     expect(infos).to.have.length(200);
-    for (i = 0; i < infos.length; i++) {
+    for (let i = 0; i < infos.length; i++) {
       expect(infos).to.include.deep.members([
         {
           contactName: 'Owl',
@@ -80,7 +80,7 @@ describe('Tasks', () => {
           overdue: true
         },
       ]);
-    };
+    }
 
     await tasksPage.scrollToLastTaskItem();
     const loadingStatusSelector = await $('#tasks-list p.loading-status');
@@ -95,7 +95,7 @@ describe('Tasks', () => {
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
-    expect(username).to.equal(chws.username);
+    expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching tasks');
     expect(await (await errorStack.isDisplayed())).to.be.true;
