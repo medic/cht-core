@@ -6,6 +6,7 @@ const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
+const oldNavigationPage = require('@page-objects/default/old-navigation/old-navigation.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
@@ -60,7 +61,8 @@ describe('Performing an upgrade', () => {
       await commonPage.logout();
     }
 
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
+    await oldNavigationPage.goToBase();
   });
 
   after(async () => {
