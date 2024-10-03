@@ -83,6 +83,7 @@ module.exports = {
    */
   getInterval: (intervalStartDate, timestamp) => getInterval(intervalStartDate, moment(timestamp)),
 
-  isEqual: (intervalA, intervalB) => intervalA?.start === intervalB?.start &&
+  isEqual: (intervalA, intervalB) => !!intervalA &&
+                                     intervalA?.start === intervalB?.start &&
                                      intervalA?.end === intervalB?.end,
 };

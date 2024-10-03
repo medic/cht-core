@@ -568,4 +568,23 @@ describe('CalendarInterval', () => {
       });
     });
   });
+
+  describe('isEqual', () => {
+    it('should return true when two intervals have same start and end date', async () => {
+      chai.expect(service.isEqual({ start: 0, end: 0 }, { start: 0, end: 0 })).to.equal(true);
+      chai.expect(service.isEqual({ start: 100, end: 200 }, { start: 100, end: 200 })).to.equal(true);
+    });
+
+    it('should return false when intervals are not equal', () => {
+      chai.expect(service.isEqual({ start: 0, end: 0 }, { start: 100, end: 0 })).to.equal(false);
+      chai.expect(service.isEqual({ start: 0, end: 100 }, { start: 0, end: 0 })).to.equal(false);
+      chai.expect(service.isEqual({ start: 200, end: 100 }, { start: 10, end: 20 })).to.equal(false);
+    });
+
+    it('should return false when one interval is undefined', () => {
+      chai.expect(service.isEqual(undefined, { start: 100, end: 0 })).to.equal(false);
+      chai.expect(service.isEqual({ start: 100, end: 0 })).to.equal(false);
+      chai.expect(service.isEqual()).to.equal(false);
+    });
+  });
 });
