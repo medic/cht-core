@@ -19,7 +19,13 @@ let rulesEngine;
 
 
 const TEST_START = 1500000000000;
-const EXPECTED_TASK_ID_PREFIX = 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder'; // eslint-disable-line
+const TASK_ID_PREFIX = (taskId) => `task~org.couchdb.user:username~${taskId}`;
+const FACILITY_REMINDER_TASK_ID = 'report~pregnancy-facility-visit-reminder~anc.facility_reminder';
+const PREGNANCY_REMINDER_12_TASK_ID = 'pregReg~pregnancy-home-visit-week12~anc.pregnancy_home_visit.known_lmp';
+const PREGNANCY_REMINDER_20_TASK_ID = 'pregReg~pregnancy-home-visit-week20~anc.pregnancy_home_visit.known_lmp';
+const PREGNANCY_REMINDER_26_TASK_ID = 'pregReg~pregnancy-home-visit-week26~anc.pregnancy_home_visit.known_lmp';
+const EXPECTED_TASK_ID_PREFIX = TASK_ID_PREFIX(FACILITY_REMINDER_TASK_ID);
+
 const patientContact = {
   _id: 'patient',
   name: 'chw',
@@ -127,6 +133,68 @@ describe(`Rules Engine Integration Tests`, () => {
           expect(nools.getFlow('medic')).to.not.be.undefined;
         });
       }
+
+      it('should refresh emissions for all contacts', async () => {
+        await db.bulkDocs([patientContact, pregnancyFollowupReport, pregnancyRegistrationReport]);
+        sinon.spy(db, 'bulkDocs');
+        sinon.spy(db, 'query');
+
+        await rulesEngine.refreshEmissionsFor();
+
+        expect(db.bulkDocs.callCount).to.equal(2);
+
+        const tasks = db.bulkDocs.args[0][0];
+        expect(tasks.length).to.equal(4);
+        const taskReminder12 = tasks.find(task => task.emission._id === PREGNANCY_REMINDER_12_TASK_ID);
+        expect(taskReminder12).to.deep.include({
+          _id: `${TASK_ID_PREFIX(PREGNANCY_REMINDER_12_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Draft',
+        });
+
+        const taskReminder20 = tasks.find(task => task.emission._id === PREGNANCY_REMINDER_20_TASK_ID);
+        expect(taskReminder20).to.deep.include({
+          _id: `${TASK_ID_PREFIX(PREGNANCY_REMINDER_20_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Draft',
+        });
+
+        const taskReminder26 = tasks.find(task => task.emission._id === PREGNANCY_REMINDER_26_TASK_ID);
+        expect(taskReminder26).to.deep.include({
+          _id: `${TASK_ID_PREFIX(PREGNANCY_REMINDER_26_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Draft',
+        });
+
+        const taskFacilityReminder = tasks.find(task => task.emission._id === FACILITY_REMINDER_TASK_ID);
+        expect(taskFacilityReminder).to.deep.include({
+          _id: `${TASK_ID_PREFIX(FACILITY_REMINDER_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Ready',
+        });
+
+        const targetDoc = db.bulkDocs.args[1][0].docs[0];
+        expect(targetDoc).to.deep.include({
+          _id: `target~2017-07~user~org.couchdb.user:username`,
+          reporting_period: '2017-07',
+        });
+        expect(targetDoc.targets).to.deep.include({
+          id: 'pregnancy-registrations-this-month',
+          value: { pass: 1, total: 1 },
+        });
+        expect(targetDoc.targets).to.deep.include( {
+          id: 'active-pregnancies',
+          value: { pass: 1, total: 1 },
+        },);
+        expect(targetDoc.targets).to.deep.include( {
+          id: 'births-this-month',
+          value: { pass: 0, total: 0 },
+        });
+      });
 
       it('unknown contact yields zero tasks and empty targets', async () => {
         await db.bulkDocs([patientContact, pregnancyFollowupReport]);

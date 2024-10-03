@@ -62,6 +62,17 @@ module.exports = {
       });
   },
 
+  refreshRulesEmissionForContacts: (provider, contactIds) => {
+    if (!rulesEmitter.isEnabled()) {
+      return disabledResponse();
+    }
+
+    return enqueue(async () => {
+      const calculationTimestamp = Date.now();
+      await refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds);
+    });
+  },
+
   /**
    * Refreshes the rules emissions for all contacts
    * Fetches all tasks in non-terminal state owned by the contacts
@@ -164,6 +175,8 @@ module.exports = {
       subjectIds = [subjectIds];
     }
 
+    subjectIds = [...new Set(subjectIds)];
+
     // this function accepts subject ids, but rulesStateStore accepts a contact id, so a conversion is required
     return enqueue(async () => {
       const contactIds = await provider.contactsBySubjectId(subjectIds);
@@ -221,7 +234,6 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
     await provider.commitTaskDocs(refreshed.updatedTaskDocs);
     await storeTargetEmissions(provider, updatedContactIds, refreshed.targetEmissions);
   };
-
 
   const refreshForAllContacts = (calculationTimestamp) => (
     provider.allTaskData(rulesStateStore.currentUserSettings())

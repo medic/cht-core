@@ -1,6 +1,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect, assert } from 'chai';
+import { assert, expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { SessionService } from '@mm-services/session.service';
@@ -43,6 +43,8 @@ describe('RulesEngineService', () => {
   let fetchTargets;
   let fetchTargetsRecursive;
   let fetchTargetsResult;
+  let refreshEmissionsFor;
+  let refreshEmissionsForRecursive;
 
   const settingsDoc = {
     _id: 'settings',
@@ -145,6 +147,18 @@ describe('RulesEngineService', () => {
     });
     fetchTargets.returns({ on: fetchTargetsRecursive });
 
+    refreshEmissionsFor = sinon.stub();
+    refreshEmissionsFor.events = {};
+    refreshEmissionsForRecursive = sinon.stub();
+    refreshEmissionsForRecursive.callsFake((event, fn) => {
+      refreshEmissionsFor.events[event] = refreshEmissionsFor.events[event] || [];
+      refreshEmissionsFor.events[event].push(fn);
+      const promise = () => Promise.resolve();
+      promise.on = refreshEmissionsForRecursive;
+      return promise;
+    });
+    refreshEmissionsFor.returns({ on: refreshEmissionsForRecursive });
+
     rulesEngineCoreStubs = {
       initialize: sinon.stub().resolves(true),
       isEnabled: sinon.stub().returns(true),
@@ -154,6 +168,7 @@ describe('RulesEngineService', () => {
       rulesConfigChange: sinon.stub().returns(true),
       getDirtyContacts: sinon.stub().returns([]),
       fetchTasksBreakdown: sinon.stub(),
+      refreshEmissionsFor: refreshEmissionsFor,
     };
     const rulesEngineCoreFactory= { get: () => rulesEngineCoreStubs };
 
@@ -312,36 +327,37 @@ describe('RulesEngineService', () => {
     const scenarios = [
       {
         doc: { _id: 'person', type: 'person' },
-        expected: 'person',
+        expected: ['person'],
       },
       {
         doc: { _id: 'contact', type: 'contact', contact_type: 'person' },
-        expected: 'contact',
+        expected: ['contact'],
       },
       {
         doc: { _id: 'report', type: 'data_record', form: 'form', patient_id: 'patient' },
-        expected: 'patient',
+        expected: ['patient'],
       },
     ];
 
     for (const scenario of scenarios) {
-      it(`should trigger update for ${scenario.doc._id}`, async () => {
+      it(`should trigger update for ${scenario.doc._id}`, fakeAsync(async () => {
         service = TestBed.inject(RulesEngineService);
 
         const result = await service.isEnabled();
+        await service.fetchTargets(); // clear old timers
+        stopPerformanceTrackStub.resetHistory();
 
         expect(result).to.be.true;
         const change = changesService.subscribe.args[0][0];
         expect(change.filter(changeFeedFormat(scenario.doc))).to.be.true;
         await change.callback(changeFeedFormat(scenario.doc));
+        tick(2000);
         expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.eq(1);
         expect(rulesEngineCoreStubs.updateEmissionsFor.args[0][0]).to.deep.eq(scenario.expected);
-        expect(stopPerformanceTrackStub.callCount).to.equal(2);
+        expect(stopPerformanceTrackStub.callCount).to.equal(1);
         expect(stopPerformanceTrackStub.args[0][0])
-          .to.deep.equal({ name: 'rules-engine:initialize' });
-        expect(stopPerformanceTrackStub.args[1][0])
           .to.deep.equal({ name: 'rules-engine:update-emissions' });
-      });
+      }));
     }
 
     it(`should not trigger`, async () => {
@@ -390,9 +406,11 @@ describe('RulesEngineService', () => {
       expect(changeFeed.filter(changeFeedFormat({ _id: 'task', type: 'task' }))).to.be.false;
     });
 
-    it('should emit when contacts were marked as dirty', async () => {
+    it('should emit when contacts were marked as dirty', fakeAsync(async () => {
       service = TestBed.inject(RulesEngineService);
       await service.isEnabled();
+      await service.fetchTargets(); // clear old timers
+      stopPerformanceTrackStub.resetHistory();
 
       const callback = sinon.stub();
       const subscription = service.contactsMarkedAsDirty(callback);
@@ -401,13 +419,47 @@ describe('RulesEngineService', () => {
       const doc = { _id: 'doc', type: 'data_record', form: 'theform', fields: { patient_id: '65479' } };
       await change.callback(changeFeedFormat(doc));
 
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
+
+      tick(1000);
+
       expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(1);
-      expect(rulesEngineCoreStubs.updateEmissionsFor.args[0]).to.deep.equal(['65479']);
+      expect(rulesEngineCoreStubs.updateEmissionsFor.args[0]).to.deep.equal([['65479']]);
 
       expect(callback.callCount).to.equal(1);
 
       subscription.unsubscribe();
-    });
+    }));
+
+    it('should debounce multiple incoming changes', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+      await service.fetchTargets(); // clear old timers
+      stopPerformanceTrackStub.resetHistory();
+
+      const callback = sinon.stub();
+      const subscription = service.contactsMarkedAsDirty(callback);
+
+      const change = changesService.subscribe.args[0][0];
+      const report = { _id: 'doc', type: 'data_record', form: 'theform', fields: { patient_id: '65479' } };
+      await change.callback(changeFeedFormat(report));
+      await change.callback(changeFeedFormat({ _id: 'contact', type: 'person', patient_id: '65479' }));
+      tick(500);
+      await change.callback(changeFeedFormat({ _id: 'contact2', type: 'person', patient_id: '12312' }));
+      tick(900);
+      await change.callback(changeFeedFormat({ ...report, fields: { patient_id: '5632' } }));
+
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
+
+      tick(1000);
+
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(1);
+      expect(rulesEngineCoreStubs.updateEmissionsFor.args[0][0]).to.have.members(
+        ['65479', 'contact', 'contact2', '5632']
+      );
+      expect(callback.callCount).to.equal(1);
+      subscription.unsubscribe();
+    }));
   });
 
   describe('monitorExternalChanges', () => {
@@ -486,7 +538,7 @@ describe('RulesEngineService', () => {
     expect(telemetryService.record.args[0]).to.deep.equal([ 'rules-engine:tasks:dirty-contacts', 3 ]);
     expect(stopPerformanceTrackStub.callCount).to.equal(3);
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureFreshness:cancel' });
     expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   });
 
@@ -571,35 +623,13 @@ describe('RulesEngineService', () => {
     await service.isEnabled();
     tick(500 * 1000);
 
-    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
-    expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
-    expect(telemetryService.record.callCount).to.equal(2);
-    expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 20]);
-    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:targets:dirty-contacts', 20]);
-    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+    expect(rulesEngineCoreStubs.refreshEmissionsFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(0);
+    expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(0);
+    expect(telemetryService.record.callCount).to.equal(1);
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
-    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets' });
-  }));
-
-  it('should ensure freshness of tasks only', fakeAsync(async () => {
-    fetchTargetsResult = sinon.stub().resolves([]);
-    service = TestBed.inject(RulesEngineService);
-
-    await service.isEnabled();
-    await service.fetchTargets();
-    tick(500 * 1000);
-
-    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
-    expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
-    expect(telemetryService.record.callCount).to.equal(2);
-    expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:targets:dirty-contacts', 0]);
-    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
-    expect(stopPerformanceTrackStub.callCount).to.equal(4);
-    expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
-    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets' });
-    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:emissions:all-contacts' });
   }));
 
   it('should cancel all ensure freshness threads', async () => {
@@ -619,12 +649,11 @@ describe('RulesEngineService', () => {
     expect(telemetryService.record.calledTwice).to.be.true;
     expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:targets:dirty-contacts', 0]);
     expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
-    expect(stopPerformanceTrackStub.callCount).to.equal(5);
+    expect(stopPerformanceTrackStub.callCount).to.equal(4);
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureFreshness:cancel' });
     expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets' });
-    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
-    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
+    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   });
 
   it('should record correct telemetry data with emitted events', async () => {
@@ -649,45 +678,45 @@ describe('RulesEngineService', () => {
       'rules-engine:tasks:dirty-contacts',
       'rules-engine:tasks:dirty-contacts',
     ]);
-    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
-    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureFreshness:cancel' });
 
     fetchTargets.events.queued[0]();
     fetchTasksFor.events.queued[0]();
     fetchTasksFor.events.queued[1]();
 
-    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     fetchTargets.events.running[0]();
-    expect(stopPerformanceTrackStub.callCount).to.equal(4);
-    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:targets:queued' });
+    expect(stopPerformanceTrackStub.callCount).to.equal(3);
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets:queued' });
+
 
     await Promise.resolve();
     clock.tick(5000);
     fetchTargetResultPromise([]);
     await nextTick();
 
-    expect(stopPerformanceTrackStub.callCount).to.equal(5);
-    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:targets' });
+    expect(stopPerformanceTrackStub.callCount).to.equal(4);
+    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:targets' });
     fetchTasksFor.events.running[0]();
-    expect(stopPerformanceTrackStub.callCount).to.equal(6);
-    expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts:queued' });
+    expect(stopPerformanceTrackStub.callCount).to.equal(5);
+    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts:queued' });
     clock.tick(10000);
     fetchTasksResultPromise[1]([]);
 
     await nextTick();
-    expect(stopPerformanceTrackStub.callCount).to.equal(7);
-    expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
+    expect(stopPerformanceTrackStub.callCount).to.equal(6);
+    expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
     fetchTasksFor.events.running[1]();
-    expect(stopPerformanceTrackStub.callCount).to.equal(8);
-    expect(stopPerformanceTrackStub.args[7][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts:queued' });
+    expect(stopPerformanceTrackStub.callCount).to.equal(7);
+    expect(stopPerformanceTrackStub.args[6][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts:queued' });
     clock.tick(550);
     fetchTasksResultPromise[3]([]);
 
     await nextTick();
-    expect(stopPerformanceTrackStub.callCount).to.equal(9);
-    expect(stopPerformanceTrackStub.args[8][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
+    expect(stopPerformanceTrackStub.callCount).to.equal(8);
+    expect(stopPerformanceTrackStub.args[7][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
   });
 
   it('should record correct telemetry data for disabled actions', async () => {
@@ -713,22 +742,20 @@ describe('RulesEngineService', () => {
       'rules-engine:tasks:dirty-contacts'
     ]);
 
-    expect(stopPerformanceTrackStub.calledThrice).to.be.true;
+    expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
-    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureFreshness:cancel' });
 
     await nextTick();
 
     // queued and running events are not emitted!
 
-    expect(stopPerformanceTrackStub.callCount).to.equal(6);
+    expect(stopPerformanceTrackStub.callCount).to.equal(5);
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureTargetFreshness:cancel' });
-    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:ensureTaskFreshness:cancel' });
-    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:targets' });
-    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
-    expect(stopPerformanceTrackStub.args[5][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:ensureFreshness:cancel' });
+    expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:targets' });
+    expect(stopPerformanceTrackStub.args[3][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
+    expect(stopPerformanceTrackStub.args[4][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
   });
 
   describe('fetchTasksBreakdown', () => {

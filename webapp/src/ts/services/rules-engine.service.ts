@@ -27,6 +27,7 @@ interface DebounceActive {
     active?: boolean;
     debounceRef?: any;
     performance?: any;
+    params?:any;
   };
 }
 
@@ -127,35 +128,20 @@ export class RulesEngineService implements OnDestroy {
                   this.assignMonthStartDate(settingsDoc);
                   this.monitorChanges(rulesEngineContext);
 
-                  const tasksDebounceRef = _debounce(() => {
-                    this.debounceActive.tasks.active = false;
-                    this.fetchTaskDocsForAllContacts();
+                  const rulesDebounceRef = _debounce(() => {
+                    this.debounceActive.freshness.active = false;
+                    this.refreshEmissions();
                   }, this.ENSURE_FRESHNESS_SECS * 1000);
 
-                  this.debounceActive.tasks = {
+                  this.debounceActive.freshness = {
                     active: true,
                     performance: {
-                      name: [ 'rules-engine', 'ensureTaskFreshness', 'cancel' ],
+                      name: [ 'rules-engine', 'ensureFreshness', 'cancel' ],
                       track: this.performanceService.track()
                     },
-                    debounceRef: tasksDebounceRef
+                    debounceRef: rulesDebounceRef
                   };
-                  this.debounceActive.tasks.debounceRef();
-
-                  const targetsDebounceRef = _debounce(() => {
-                    this.debounceActive.targets.active = false;
-                    this.fetchTargets();
-                  }, this.ENSURE_FRESHNESS_SECS * 1000);
-
-                  this.debounceActive.targets = {
-                    active: true,
-                    performance: {
-                      name: [ 'rules-engine', 'ensureTargetFreshness', 'cancel' ],
-                      track: this.performanceService.track()
-                    },
-                    debounceRef: targetsDebounceRef
-                  };
-                  this.debounceActive.targets.debounceRef();
+                  this.debounceActive.freshness.debounceRef();
                 }
 
                 trackPerformance?.stop({ name: [ 'rules-engine', 'initialize' ].join(':') });
@@ -175,8 +161,12 @@ export class RulesEngineService implements OnDestroy {
       debounceInfo.performance.track.stop({ name: debounceInfo.performance.name.join(':') });
     }
 
+    const params = debounceInfo.params;
     debounceInfo.debounceRef.cancel();
     debounceInfo.active = false;
+    debounceInfo.params = undefined;
+
+    return params;
   }
 
   private getRulesEngineContext(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi){
@@ -213,20 +203,41 @@ export class RulesEngineService implements OnDestroy {
   private monitorChanges(rulesEngineContext) {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
 
+    const key = 'mark-contacts-dirty';
+
     const dirtyContactsSubscription = this.changesService.subscribe({
-      key: 'mark-contacts-dirty',
+      key: key,
       filter: change => !!change.doc && (this.contactTypesService.includes(change.doc) || isReport(change.doc)),
       callback: change => {
-        const subjectIds = isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id;
+        const subjectIds = [isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id];
         const trackPerformance = this.performanceService.track();
 
-        return this.rulesEngineCore
-          .updateEmissionsFor(subjectIds)
-          .then((result) => {
-            this.observable.next(subjectIds);
-            trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
-            return result;
-          });
+        const oldSubjectIds = this.cancelDebounce(key);
+        if (oldSubjectIds) {
+          subjectIds.push(...oldSubjectIds);
+        }
+
+        console.warn(key, subjectIds);
+
+        const debounceRef = _debounce(async () => {
+          console.warn('--------marking dirty------------', this.debounceActive[key].params);
+          this.debounceActive[key].active = false;
+
+          await this.rulesEngineCore.updateEmissionsFor(this.debounceActive[key].params);
+          this.observable.next(this.debounceActive[key].params);
+          trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
+        }, 1000);
+
+        this.debounceActive[key] = {
+          active: true,
+          performance: {
+            name: [ 'rules-engine', 'update-emissions', 'cancel' ],
+            track: this.performanceService.track()
+          },
+          debounceRef: debounceRef,
+          params: subjectIds,
+        };
+        this.debounceActive[key].debounceRef();
       }
     });
     this.subscriptions.add(dirtyContactsSubscription);
@@ -313,6 +324,36 @@ export class RulesEngineService implements OnDestroy {
     return this.initialized.then(this.rulesEngineCore.isEnabled);
   }
 
+  private refreshEmissions() {
+    return this.ngZone.runOutsideAngular(() => this._refreshEmissions());
+  }
+
+  private async _refreshEmissions() {
+    const trackName = [ 'rules-engine', 'emissions', 'all-contacts' ];
+    let trackPerformanceQueueing;
+    let trackPerformanceRunning;
+
+    await this.initialized;
+    this.telemetryService.record(
+      'rules-engine:emissions:dirty-contacts',
+      this.rulesEngineCore.getDirtyContacts().length
+    );
+    this.cancelDebounce('freshness');
+
+    await this.rulesEngineCore
+      .refreshEmissionsFor()
+      .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+      .on('running', () => {
+        trackPerformanceRunning = this.performanceService.track();
+        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+      });
+
+    if (!trackPerformanceRunning) {
+      trackPerformanceRunning = this.performanceService.track();
+    }
+    trackPerformanceRunning.stop({ name: trackName.join(':') });
+  }
+
   fetchTaskDocsForAllContacts() {
     return this.ngZone.runOutsideAngular(() => this._fetchTaskDocsForAllContacts());
   }
@@ -328,7 +369,7 @@ export class RulesEngineService implements OnDestroy {
           'rules-engine:tasks:dirty-contacts',
           this.rulesEngineCore.getDirtyContacts().length
         );
-        this.cancelDebounce('tasks');
+        this.cancelDebounce('freshness');
         return this.rulesEngineCore
           .fetchTasksFor()
           .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
@@ -413,7 +454,7 @@ export class RulesEngineService implements OnDestroy {
           'rules-engine:targets:dirty-contacts',
           this.rulesEngineCore.getDirtyContacts().length
         );
-        this.cancelDebounce('targets');
+        this.cancelDebounce('freshness');
         const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
         return this.rulesEngineCore
           .fetchTargets(relevantInterval)
