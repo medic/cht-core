@@ -2,6 +2,7 @@ const path = require('path');
 const chtConfUtils = require('@utils/cht-conf');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
@@ -43,7 +44,11 @@ describe('Tasks', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), contact, owl]);
     await utils.createUsers([chw]);
+  });
+
+  beforeEach(async () => {
     await loginPage.login(chw);
+    await commonPage.waitForPageLoaded();
   });
 
   after(async () => {
@@ -53,6 +58,34 @@ describe('Tasks', () => {
 
   afterEach(async () => {
     await utils.revertSettings(true);
+    await browser.refresh();
+    await commonPage.logout();
+  });
+
+  it('should load multiple pages of tasks on infinite scrolling', async () => {
+    const settings = await compileTasks('tasks-multiple-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+
+    await tasksPage.goToTasksTab();
+    const list = await tasksPage.getTasks();
+    const infos = await tasksPage.getTasksListInfos(list)
+    expect(infos).to.have.length(200);
+    for (i = 0; i < infos.length; i++) {
+      expect(infos).to.include.deep.members([
+        {
+          contactName: 'Owl',
+          formTitle: `person_create_${i + 1}`,
+          lineage: 'clinic2',
+          dueDateText: 'Due today',
+          overdue: true
+        },
+      ]);
+    };
+
+    await tasksPage.scrollToLastTaskItem();
+    const loadingStatusSelector = await $('#tasks-list p.loading-status');
+    const elementText = await loadingStatusSelector.getText();
+    expect(elementText).to.contain('No more tasks');
   });
 
   it('Should show error message for bad config', async () => {
@@ -62,7 +95,7 @@ describe('Tasks', () => {
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
-    expect(username).to.equal(chw.username);
+    expect(username).to.equal(chws.username);
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching tasks');
     expect(await (await errorStack.isDisplayed())).to.be.true;
