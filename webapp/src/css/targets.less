@@ -79,7 +79,7 @@
             color: @gray-dark;
           }
           label {
-            font-size: @font-extra-extra-large;
+            font-size: @font-XXL;
             line-height: 1;
             margin-bottom: 0;
           }
@@ -186,8 +186,6 @@
         color: @targets-above-goal;
       }
     }
-
-
   }
 }
 
@@ -243,7 +241,13 @@
       margin: 10px 12px 0 12px;
     }
     .target:last-child {
-      margin-bottom: 10px;
+      margin-bottom: calc(@tab-navbar-size + 15px);
+    }
+  }
+
+  .page {
+    #target-aggregates-list.inbox-items {
+      padding-bottom: calc(@tab-navbar-size + 5px);
     }
   }
 }
@@ -257,7 +261,7 @@
       margin: 10px 12px 0 12px;
     }
     .target:last-child {
-      margin-bottom: 10px;
+      margin-bottom: calc(@tab-navbar-size + 15px);
     }
   }
 }

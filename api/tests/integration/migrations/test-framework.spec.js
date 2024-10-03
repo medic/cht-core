@@ -6,10 +6,6 @@
 const utils = require('./utils');
 
 describe('migrations integration test framework', function() {
-  afterEach(function() {
-    return utils.tearDown();
-  });
-
   describe('no-op', function() {
     it('should leave an empty db empty', function() {
       // given

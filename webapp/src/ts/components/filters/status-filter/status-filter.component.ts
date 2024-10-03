@@ -1,41 +1,27 @@
-import { Component, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
-import {
-  MultiDropdownFilterComponent,
-  MultiDropdownFilter,
-} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
-import { AbstractFilter } from '@mm-components/filters/abstract-filter';
-import { InlineFilter } from '@mm-components/filters/inline-filter';
+import { Filter } from '@mm-components/filters/filter';
 
 @Component({
   selector: 'mm-status-filter',
   templateUrl: './status-filter.component.html'
 })
-export class StatusFilterComponent implements AbstractFilter {
-  private globalActions;
-  inlineFilter: InlineFilter;
+export class StatusFilterComponent {
+  @Input() disabled;
+  @Input() fieldId;
+  @Output() search: EventEmitter<any> = new EventEmitter();
+  private globalActions: GlobalActions;
+  filter: Filter;
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
   };
 
-  allStatuses = [...this.statuses.valid, ...this.statuses.verified];
-
-  @Input() disabled;
-  @Input() inline;
-  @Input() fieldId;
-  @Output() search: EventEmitter<any> = new EventEmitter();
-
-  // initialize variable to avoid change detection errors
-  @ViewChild(MultiDropdownFilterComponent) dropdownFilter = new MultiDropdownFilter();
-
-  constructor(
-    private store: Store,
-  ) {
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
-    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
+    this.filter = new Filter(this.applyFilter.bind(this));
   }
 
   private getValidStatus(statuses) {
@@ -74,24 +60,15 @@ export class StatusFilterComponent implements AbstractFilter {
     this.search.emit();
   }
 
-  getFilterLabel() {
-    return 'Any status';
-  }
-
   clear() {
     if (this.disabled) {
       return;
     }
 
-    if (this.inline) {
-      this.inlineFilter.clear();
-      return;
-    }
-
-    this.dropdownFilter?.clear(false);
+    this.filter.clear();
   }
 
   countSelected() {
-    return this.inline && this.inlineFilter?.countSelected();
+    return this.filter?.countSelected();
   }
 }

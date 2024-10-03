@@ -11,7 +11,9 @@
       <p class="sidebar-title">
         {{ 'reports.sidebar.filter.title' | translate }}
       </p>
-      <a class="sidebar-close fa fa-times" (click)="toggleSidebarFilter()"></a>
+      <a class="sidebar-close" (click)="toggleSidebarFilter()">
+        <mat-icon svgIcon="icon-close"></mat-icon>
+      </a>
     </div>
 
     <div class="sidebar-body">

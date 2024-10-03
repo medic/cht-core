@@ -64,14 +64,13 @@ describe('Date Filter Component', () => {
 
   it('ngAfterViewInit should initialize daterangepicker', () => {
     clock = sinon.useFakeTimers(moment().valueOf());
-    component.isRange = true;
 
     component.ngAfterViewInit();
 
     // value is 2 here because the component was already initialized
     expect(dateRangePicker.callCount).to.equal(2);
     expect(dateRangePicker.args[1][0]).to.deep.include({
-      startDate: moment().subtract(1, 'months'),
+      startDate: moment(),
       endDate: moment(),
       maxDate: moment(),
     });
@@ -84,7 +83,7 @@ describe('Date Filter Component', () => {
     const to = moment().subtract(1, 'months');
     callback(from, to);
     expect(setFilter.callCount).to.equal(1);
-    expect(setFilter.args[0]).to.deep.equal([{ date: { from, to } }]);
+    expect(setFilter.args[0]).to.deep.equal([{ date: { to } }]);
   });
 
   it('should clear the value', () => {

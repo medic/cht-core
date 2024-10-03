@@ -9,7 +9,6 @@ import sinon from 'sinon';
 
 import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
-import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
@@ -18,7 +17,6 @@ describe('Reports More Menu Component', () => {
   let component: ReportsMoreMenuComponent;
   let fixture: ComponentFixture<ReportsMoreMenuComponent>;
   let store: MockStore;
-  let sessionService;
   let authService;
   let responsiveService;
   let matBottomSheet;
@@ -37,7 +35,6 @@ describe('Reports More Menu Component', () => {
       any: sinon.stub().resolves(false),
       online: sinon.stub().returns(false),
     };
-    sessionService = { isAdmin: sinon.stub().returns(false) };
     responsiveService = { isMobile: sinon.stub().returns(false) };
     matBottomSheet = { open: sinon.stub() };
     matDialog = { open: sinon.stub() };
@@ -52,7 +49,6 @@ describe('Reports More Menu Component', () => {
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: AuthService, useValue: authService },
-          { provide: SessionService, useValue: sessionService },
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: MatBottomSheet, useValue: matBottomSheet },
           { provide: MatDialog, useValue: matDialog },

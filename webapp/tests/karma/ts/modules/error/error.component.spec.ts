@@ -7,6 +7,7 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { DOCUMENT } from '@angular/common';
 
 import { ErrorComponent } from '@mm-modules/error/error.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NavigationService } from '@mm-services/navigation.service';
 
 describe('ErrorComponent', () => {
@@ -33,7 +34,10 @@ describe('ErrorComponent', () => {
 
     await TestBed
       .configureTestingModule({
-        declarations: [ ErrorComponent ],
+        declarations: [
+          ErrorComponent,
+          ToolBarComponent,
+        ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
@@ -44,6 +48,11 @@ describe('ErrorComponent', () => {
           { provide: ActivatedRoute, useValue: {} },
           { provide: DOCUMENT, useValue: documentMock },
         ]
+      })
+      .overrideComponent(ErrorComponent, {
+        set: {
+          template: '<div></div>'
+        }
       })
       .compileComponents();
     fixture = TestBed.createComponent(ErrorComponent);

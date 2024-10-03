@@ -1,29 +1,17 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { provideMockStore } from '@ngrx/store/testing';
 
-import { GlobalActions } from '@mm-actions/global';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 
 describe('UpdateServiceWorker service', () => {
   let service;
-  let globalActions;
   let windowServiceWorker;
 
   beforeEach(() => {
-    globalActions = {
-      setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent')
-    };
     windowServiceWorker = {
       getRegistrations: window.navigator.serviceWorker.getRegistrations
     };
-
-    TestBed.configureTestingModule({
-      providers: [
-        provideMockStore(),
-      ],
-    });
 
     service = TestBed.inject(UpdateServiceWorkerService);
   });
@@ -52,6 +40,7 @@ describe('UpdateServiceWorker service', () => {
 
   it('should execute callback when service worker activated', fakeAsync(() => {
     const callback = sinon.stub();
+    const consoleDebug = sinon.stub(console, 'debug');
     const registration: any = {
       installing: { state: 'activated' },
       update: sinon.stub(),
@@ -72,7 +61,7 @@ describe('UpdateServiceWorker service', () => {
     expect(registration.update.callCount).to.equal(1);
     expect(registration.onupdatefound).to.equal(null);
     expect(callback.callCount).to.equal(1);
-    expect(globalActions.setSnackbarContent.callCount).to.equal(1);
+    expect(consoleDebug.calledOnceWith('New service worker activated')).to.be.true;
   }));
 
   it('should retry to execute callback when service worker is marked as redundant', fakeAsync(() => {

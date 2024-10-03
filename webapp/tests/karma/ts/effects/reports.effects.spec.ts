@@ -351,7 +351,6 @@ describe('Reports effects', () => {
     let setVerifyingReport;
     let setTitle;
     let markReportRead;
-    let setRightActionBar;
     let settingSelected;
 
     beforeEach(() => {
@@ -359,7 +358,6 @@ describe('Reports effects', () => {
       setVerifyingReport = sinon.stub(ReportsActions.prototype, 'setVerifyingReport');
       setTitle = sinon.stub(ReportsActions.prototype, 'setTitle');
       markReportRead = sinon.stub(ReportsActions.prototype, 'markReportRead');
-      setRightActionBar = sinon.stub(ReportsActions.prototype, 'setRightActionBar');
       settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
     });
 
@@ -371,7 +369,7 @@ describe('Reports effects', () => {
       ]);
       effects.openReportContent.subscribe();
 
-      expect(setRightActionBar.callCount).to.equal(0);
+      expect(settingSelected.callCount).to.equal(0);
     }));
 
     it('should call correct actions when not refreshing', () => {
@@ -397,7 +395,6 @@ describe('Reports effects', () => {
       expect(setTitle.args[0]).to.deep.equal([expandedModel]);
       expect(markReportRead.callCount).to.equal(1);
       expect(markReportRead.args[0]).to.deep.equal(['report']);
-      expect(setRightActionBar.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(stopPerformanceTrackStub.calledOnce).to.be.true;
@@ -430,7 +427,6 @@ describe('Reports effects', () => {
       expect(setTitle.args[0]).to.deep.equal([expandedModel]);
       expect(markReportRead.callCount).to.equal(1);
       expect(markReportRead.args[0]).to.deep.equal(['report']);
-      expect(setRightActionBar.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(stopPerformanceTrackStub.notCalled).to.be.true;
@@ -597,190 +593,6 @@ describe('Reports effects', () => {
       effects.markRead.subscribe();
       expect(markReadService.markAsRead.callCount).to.equal(1);
       expect(updateUnreadCount.callCount).to.equal(0);
-    });
-  });
-
-  describe('setRightActionBar', () => {
-    let setRightActionBar;
-
-    beforeEach(() => {
-      setRightActionBar = sinon.stub(GlobalActions.prototype, 'setRightActionBar');
-    });
-
-    it('should not be triggered by random actions', () => {
-      actions$ = of([
-        ReportActionList.selectReport(''),
-        ReportActionList.removeSelectedReport({}),
-        ReportActionList.selectReportToOpen({}),
-      ]);
-
-      effects.setRightActionBar.subscribe();
-      expect(setRightActionBar.callCount).to.equal(0);
-    });
-
-    it('should set empty model when in select mode and no selected docs', waitForAsync(() => {
-      store.overrideSelector(Selectors.getSelectMode, true);
-      store.overrideSelector(Selectors.getSelectedReportDoc, undefined);
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-      actions$ = of(ReportActionList.setRightActionBar);
-
-      effects.setRightActionBar.subscribe();
-      expect(setRightActionBar.callCount).to.equal(1);
-      expect(setRightActionBar.args[0]).to.deep.equal([{}]);
-    }));
-
-    it('should set empty model when in select mode and selected docs', waitForAsync(() => {
-      store.overrideSelector(Selectors.getSelectMode, true);
-      store.overrideSelector(Selectors.getSelectedReportDoc, { _id: 'doc' });
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-      actions$ = of(ReportActionList.setRightActionBar);
-
-      effects.setRightActionBar.subscribe();
-      expect(setRightActionBar.callCount).to.equal(1);
-      expect(setRightActionBar.args[0]).to.deep.equal([{}]);
-    }));
-
-    it('should set empty model when not in select mode and no selected docs', waitForAsync(() => {
-      store.overrideSelector(Selectors.getSelectMode, false);
-      store.overrideSelector(Selectors.getSelectedReportDoc, undefined);
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-      actions$ = of(ReportActionList.setRightActionBar);
-
-      effects.setRightActionBar.subscribe();
-      expect(setRightActionBar.callCount).to.equal(1);
-      expect(setRightActionBar.args[0]).to.deep.equal([{}]);
-    }));
-
-    it('should set correct model when not in select mode and selected doc without contact', waitForAsync(() => {
-      const report = {
-        _id: 'report',
-        verified: false,
-        content_type: 'xml',
-      };
-      store.overrideSelector(Selectors.getSelectMode, false);
-      store.overrideSelector(Selectors.getSelectedReportDoc, report);
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-      actions$ = of(ReportActionList.setRightActionBar);
-
-      effects.setRightActionBar.subscribe();
-      expect(setRightActionBar.callCount).to.equal(1);
-      expect(setRightActionBar.args[0][0]).to.deep.include({
-        verified: false,
-        type: 'xml',
-      });
-    }));
-
-    it('should set correct model when not in select mode and selected doc with false contact', waitForAsync(() => {
-      const report = {
-        _id: 'report',
-        verified: 'true',
-        content_type: 'xml',
-        contact: false,
-      };
-      store.overrideSelector(Selectors.getSelectMode, false);
-      store.overrideSelector(Selectors.getSelectedReportDoc, report);
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-      actions$ = of(ReportActionList.setRightActionBar);
-
-      effects.setRightActionBar.subscribe();
-      expect(setRightActionBar.callCount).to.equal(1);
-      expect(setRightActionBar.args[0][0]).to.deep.include({
-        verified: 'true',
-        type: 'xml',
-      });
-    }));
-
-    it('should set correct model when not in select mode and selected doc with contact', fakeAsync(async () => {
-      const report = {
-        _id: 'report',
-        verified: true,
-        content_type: 'not_xml',
-        contact: { _id: 'the_contact' },
-      };
-      dbService.get.resolves({ _id: 'the_contact', phone: '12345' });
-      store.overrideSelector(Selectors.getSelectMode, false);
-      store.overrideSelector(Selectors.getSelectedReportDoc, report);
-      store.overrideSelector(Selectors.getVerifyingReport, true);
-
-      actions$ = of(ReportActionList.setRightActionBar);
-      effects.setRightActionBar.subscribe();
-      tick(); // wait for db request to fulfill
-      expect(dbService.get.callCount).to.equal(1);
-      expect(dbService.get.args[0]).to.deep.equal(['the_contact']);
-      expect(setRightActionBar.callCount).to.equal(1);
-      expect(setRightActionBar.args[0][0]).to.deep.include({
-        verified: true,
-        type: 'not_xml',
-        sendTo: { _id: 'the_contact', phone: '12345' },
-        verifyingReport: true,
-      });
-    }));
-
-    it('should catch db get errors', fakeAsync(async() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
-      const report = {
-        _id: 'report',
-        verified: 'something',
-        content_type: 'sms', // not an actual content_type
-        contact: { _id: 'non-existing' },
-      };
-      dbService.get.rejects({ error: 'boom' });
-      store.overrideSelector(Selectors.getSelectMode, false);
-      store.overrideSelector(Selectors.getSelectedReportDoc, report);
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-
-      actions$ = of(ReportActionList.setRightActionBar);
-      effects.setRightActionBar.subscribe();
-      flush(); // wait for db request to fulfill
-      expect(setRightActionBar.callCount).to.equal(1);
-      expect(setRightActionBar.args[0][0]).to.deep.include({
-        verified: 'something',
-        type: 'sms',
-        sendTo: undefined,
-        verifyingReport: false,
-      });
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error fetching contact for action bar');
-    }));
-
-    it('openSendMessageModal function should open correct modal', () => {
-      const report = {};
-      store.overrideSelector(Selectors.getSelectMode, false);
-      store.overrideSelector(Selectors.getSelectedReportDoc, report);
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-
-      actions$ = of(ReportActionList.setRightActionBar);
-      effects.setRightActionBar.subscribe();
-
-      expect(setRightActionBar.callCount).to.equal(1);
-      const openSendMessageModal = setRightActionBar.args[0][0].openSendMessageModal;
-      expect(modalService.show.callCount).to.equal(0);
-      openSendMessageModal('number');
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.args[0]).to.deep.equal([
-        SendMessageComponent,
-        { data: { to: 'number' } },
-      ]);
-    });
-
-    it('should catch modal show promise rejections', () => {
-      const report = {};
-      store.overrideSelector(Selectors.getSelectMode, false);
-      store.overrideSelector(Selectors.getSelectedReportDoc, report);
-      store.overrideSelector(Selectors.getVerifyingReport, false);
-
-      actions$ = of(ReportActionList.setRightActionBar);
-      effects.setRightActionBar.subscribe();
-
-      expect(setRightActionBar.callCount).to.equal(1);
-      const openSendMessageModal = setRightActionBar.args[0][0].openSendMessageModal;
-      expect(modalService.show.callCount).to.equal(0);
-      openSendMessageModal('send to');
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.args[0]).to.deep.equal([
-        SendMessageComponent,
-        { data: { to: 'send to' } },
-      ]);
     });
   });
 

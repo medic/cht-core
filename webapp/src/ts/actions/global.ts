@@ -10,16 +10,9 @@ export const Actions = {
   setSnackbarContent: createMultiValueAction('SET_SNACKBAR_CONTENT'),
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
-  setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
-  setLeftActionBar: createSingleValueAction('SET_LEFT_ACTION_BAR', 'left'),
-  updateLeftActionBar: createSingleValueAction('UPDATE_LEFT_ACTION_BAR', 'left'),
-  setRightActionBar: createSingleValueAction('SET_RIGHT_ACTION_BAR', 'right'),
-  setRightActionBarVerified: createSingleValueAction('SET_ACTION_BAR_RIGHT_VERIFIED', 'verified'),
-  updateRightActionBar: createSingleValueAction('UPDATE_RIGHT_ACTION_BAR', 'right'),
   clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
-  setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
   clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
@@ -34,13 +27,17 @@ export const Actions = {
   setNavigation: createMultiValueAction('SET_NAVIGATION'),
   setPreventNavigation: createSingleValueAction('SET_PREVENT_NAVIGATION', 'preventNavigation'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
-  setLoadingSubActionBar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
+  setProcessingReportVerification: createSingleValueAction('SET_PROCESSING_REPORT_VERIFICATION', 'loading'),
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityIds: createSingleValueAction('SET_USER_FACILITY_IDS', 'userFacilityIds'),
   setUserContactId: createSingleValueAction('SET_USER_CONTACT_ID', 'userContactId'),
   setTrainingCardFormId: createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
+  setSidebarMenu: createSingleValueAction('SET_SIDEBAR_MENU', 'sidebarMenu'),
+  closeSidebarMenu: createAction('CLOSE_SIDEBAR_MENU'),
+  openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
+  setSearchBar: createSingleValueAction('SET_SEARCH_BAR', 'searchBar'),
 };
 
 export class GlobalActions {
@@ -62,7 +59,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSnapshotData(snapshotData));
   }
 
-  setSnackbarContent(message, action?) {
+  setSnackbarContent(message?, action?) {
     return this.store.dispatch(Actions.setSnackbarContent({ message, action }));
   }
 
@@ -78,18 +75,9 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setShowContent(showContent));
   }
 
-  setShowActionBar(showActionBar) {
-    return this.store.dispatch(Actions.setShowActionBar(showActionBar));
-  }
-
   settingSelected() {
     this.store.dispatch(Actions.setLoadingContent(false));
-    // todo The original code wrapped these 2 next lines in a $timeout
-    // I can't see a reason for this, maybe it's because of the actionbar?
-    // Test if the actionbar appears before the content is loaded, we might need to refactor this action into two
-    // actions that are called from the component and use lifecycle hooks
     this.setShowContent(true);
-    this.setShowActionBar(true);
   }
 
   clearFilters(skip?) {
@@ -100,12 +88,12 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setFilter(filter));
   }
 
-  setFilters(filters) {
-    return this.store.dispatch(Actions.setFilters(filters));
-  }
-
   setSidebarFilter(sidebarFilter) {
     return this.store.dispatch(Actions.setSidebarFilter(sidebarFilter));
+  }
+
+  setSearchBar(searchBar) {
+    return this.store.dispatch(Actions.setSearchBar(searchBar));
   }
 
   clearSidebarFilter() {
@@ -128,7 +116,6 @@ export class GlobalActions {
   unsetComponents() {
     this.setShowContent(false);
     this.setLoadingContent(false);
-    this.setShowActionBar(false);
     this.setTitle();
   }
 
@@ -174,30 +161,6 @@ export class GlobalActions {
     return this.store.dispatch(Actions.deleteDocConfirm(doc));
   }
 
-  setLeftActionBar(value) {
-    return this.store.dispatch(Actions.setLeftActionBar(value));
-  }
-
-  updateLeftActionBar(value) {
-    return this.store.dispatch(Actions.updateLeftActionBar(value));
-  }
-
-  setRightActionBar(value) {
-    return this.store.dispatch(Actions.setRightActionBar(value));
-  }
-
-  setRightActionBarVerified(verified) {
-    return this.store.dispatch(Actions.setRightActionBarVerified(verified));
-  }
-
-  updateRightActionBar(value) {
-    return this.store.dispatch(Actions.updateRightActionBar(value));
-  }
-
-  clearRightActionBar() {
-    return this.store.dispatch(Actions.setRightActionBar({}));
-  }
-
   setPrivacyPolicyAccepted(accepted) {
     return this.store.dispatch(Actions.setPrivacyPolicyAccepted(accepted));
   }
@@ -226,8 +189,8 @@ export class GlobalActions {
     return this.store.dispatch(Actions.navigationCancel(nextUrl));
   }
 
-  setLoadingSubActionBar(loading) {
-    return this.store.dispatch(Actions.setLoadingSubActionBar(loading));
+  setProcessingReportVerification(loading) {
+    return this.store.dispatch(Actions.setProcessingReportVerification(loading));
   }
 
   setUnreadCount(unreadCount) {
@@ -253,4 +216,17 @@ export class GlobalActions {
   setTrainingCardFormId(trainingCard) {
     return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
+
+  setSidebarMenu(sidebarMenu) {
+    return this.store.dispatch(Actions.setSidebarMenu(sidebarMenu));
+  }
+
+  openSidebarMenu() {
+    return this.store.dispatch(Actions.openSidebarMenu());
+  }
+
+  closeSidebarMenu() {
+    return this.store.dispatch(Actions.closeSidebarMenu());
+  }
+
 }
