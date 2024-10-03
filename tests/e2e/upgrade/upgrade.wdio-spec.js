@@ -62,7 +62,13 @@ describe('Performing an upgrade', () => {
     }
 
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
-    await oldNavigationPage.goToBase();
+    if (BASE_VERSION === 'latest') {
+      await commonPage.goToBase();
+      await commonPage.sync(true);
+    } else {
+      await oldNavigationPage.goToBase();
+      await oldNavigationPage.sync(true);
+    }
   });
 
   after(async () => {
