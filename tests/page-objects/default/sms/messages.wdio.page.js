@@ -1,5 +1,5 @@
-const commonPage = require('../common/common.wdio.page');
-const modalPage = require('../common/modal.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 const MESSAGES_LIST = '#message-list';
 const MESSAGE_HEADER = '#message-header';
