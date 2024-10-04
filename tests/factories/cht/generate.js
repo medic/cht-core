@@ -19,11 +19,16 @@ const PATIENT_IDS = [65421, 65422, 65423, 65424, 65425, 65426, 65427, 65428, 654
 const DATE_OF_BIRTHS = ['1999-02-01', '2022-02-01', '2013-02-01', '2016-02-01'];
 
 const getReportContext = (patient, submitter) => {
+  const daysAgo = Math.floor(Math.random() * 10) + 1;
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() - daysAgo);
   const context = {
     fields: {
       patient_id: patient._id,
       patient_uuid: patient._id,
       patient_name: patient.name,
+      visited_contact_uuid: patient.parent._id,
+      visited_date: currentDate
     },
   };
   if (submitter) {
@@ -53,7 +58,7 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 
   const reports = [
     ...persons.map(person => [
-      deliveryFactory.build(getReportContext(person, user)),
+      //deliveryFactory.build(getReportContext(person, user)),
       pregnancyFactory.build(getReportContext(person, user)),
       pregnancyVisitFactory.build(getReportContext(person, user)),
     ]),
