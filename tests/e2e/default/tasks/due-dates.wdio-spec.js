@@ -51,7 +51,7 @@ describe('Task list due dates', () => {
   it('should display correct due dates with default settings', async () => {
     await updateDueDatesSettings();
 
-    await commonPage.goToTasks()
+    await commonPage.goToTasks();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
