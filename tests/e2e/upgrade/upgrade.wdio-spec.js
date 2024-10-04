@@ -59,6 +59,8 @@ describe('Performing an upgrade', () => {
       // are not compatible with older versions of the app.
       await loginPage.login({ username: docs.user.username, password: docs.user.password });
       await commonPage.logout();
+      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
+      return;
     }
 
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
@@ -70,7 +72,7 @@ describe('Performing an upgrade', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  it('should have an upgrade_log after installing', async () => {
+  it('should have an upgrade_log after installing the app, without logs upgrade is aborted', async () => {
     const logs = await getUpgradeLogs();
     expect(logs.length).to.equal(1);
     expect(logs[0]).to.include({
@@ -79,11 +81,7 @@ describe('Performing an upgrade', () => {
     });
   });
 
-  it('should have valid semver after installing', async () => {
-    if (!testFrontend) {
-      return;
-    }
-
+  (testFrontend ? it : xit)('should have valid semver after installing', async () => {
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });
