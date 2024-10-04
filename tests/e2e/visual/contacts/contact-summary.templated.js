@@ -1,6 +1,6 @@
 const moment = require('moment');
 const extras = require('./contact-summary-extras');
-const { today, MAX_DAYS_IN_PREGNANCY, IMMUNIZATION_LIST, isHighRiskPregnancy, getNewestReport, getSubsequentPregnancyFollowUps,
+const { today, MAX_DAYS_IN_PREGNANCY, isHighRiskPregnancy, getNewestReport, getSubsequentPregnancyFollowUps,
   getSubsequentDeliveries, isAlive, isReadyForNewPregnancy, isReadyForDelivery, isActivePregnancy, countANCFacilityVisits,
   getAllRiskFactors, getLatestDangerSignsForPregnancy, getNextANCVisitDate,
   getMostRecentLMPDateForPregnancy, getMostRecentEDDForPregnancy, getDeliveryDate, getFormArraySubmittedInWindow,
