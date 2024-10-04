@@ -163,7 +163,7 @@ describe('Tasks group landing page', () => {
     });
 
     it('should have tasks', async () => {
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       const list = await tasksPage.getTasks();
       expect(list.length).to.equal(people.length + 5);
     });
@@ -265,7 +265,7 @@ describe('Tasks group landing page', () => {
     });
 
     it('should not show page when there are no more household tasks', async () => {
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       await (await commonPage.waitForPageLoaded());
       await tasksPage.getTasks();
       const task = await tasksPage.getTaskByContactAndForm('Napoleon Bonaparte', 'person_create');
@@ -320,7 +320,7 @@ describe('Tasks group landing page', () => {
     });
 
     it('should have tasks', async () => {
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       const list = await tasksPage.getTasks();
       const taskNamesAndTitles = await getTaskNamesAndTitles(list);
       expect(taskNamesAndTitles).to.include.deep.members([

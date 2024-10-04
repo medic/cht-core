@@ -107,7 +107,7 @@ describe('Tasks tab breadcrumbs', () => {
     it('should not remove facility from breadcrumbs when offline user has many facilities associated', async () => {
       await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
       await commonPage.waitForPageLoaded();
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks()
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
       expect(infos).to.have.deep.members([
@@ -138,7 +138,7 @@ describe('Tasks tab breadcrumbs', () => {
     it('should display correct tasks with breadcrumbs for chw', async () => {
       await loginPage.login(chw);
       await commonPage.waitForPageLoaded();
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
       expect(infos).to.have.deep.members([
@@ -169,7 +169,7 @@ describe('Tasks tab breadcrumbs', () => {
     it('should open task with expression', async () => {
       await loginPage.login(chw);
       await commonPage.waitForPageLoaded();
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       const task = await tasksPage.getTaskByContactAndForm('patient1', 'person_create');
       await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
@@ -187,7 +187,7 @@ describe('Tasks tab breadcrumbs', () => {
     });
 
     it('should display correct tasks with breadcrumbs for supervisor', async () => {
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
       expect(infos).to.have.deep.members([

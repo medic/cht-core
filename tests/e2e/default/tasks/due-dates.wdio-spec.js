@@ -51,7 +51,7 @@ describe('Task list due dates', () => {
   it('should display correct due dates with default settings', async () => {
     await updateDueDatesSettings();
 
-    await tasksPage.goToTasksTab();
+    await commonPage.goToTasks()
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
@@ -87,7 +87,7 @@ describe('Task list due dates', () => {
   it('should display correct due dates with taskDaysOverdue setting', async () => {
     await updateDueDatesSettings({ task_days_overdue: true });
 
-    await tasksPage.goToTasksTab();
+    await commonPage.goToTasks();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
@@ -124,7 +124,7 @@ describe('Task list due dates', () => {
     await utils.addTranslations('en', { 'task.overdue.days': 'Late' });
     await updateDueDatesSettings({ task_days_overdue: true });
 
-    await tasksPage.goToTasksTab();
+    await commonPage.goToTasks();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([

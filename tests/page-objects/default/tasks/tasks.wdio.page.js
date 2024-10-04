@@ -47,15 +47,6 @@ const getTaskByContactAndForm = async (name, title) => {
   }
 };
 
-const goToTasksTab = async () => {
-  await browser.url('/#/tasks');
-  await (await tasksList()).waitForDisplayed();
-  await browser.waitUntil(async () => (await getTasks()).length, {
-    timeout: 4000,
-    timeoutMsg: 'Timed out waiting for tasks to load'
-  });
-};
-
 const waitForTaskContentLoaded = async (name) => {
   await (await $(FORM_TITLE_SELECTOR)).waitForDisplayed();
   await browser.waitUntil(async () => {
@@ -87,7 +78,6 @@ const openTaskById = async (id, taskType) => {
 
 module.exports = {
   getTasks,
-  goToTasksTab,
   getTaskByContactAndForm,
   waitForTaskContentLoaded,
   getTaskInfo,
