@@ -1504,6 +1504,16 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
   await updateSettings({permissions}, { ignoreReload: ignoreReload });
 };
 
+const updateRolePermissions = async (roleValue, addPermissions, removePermissions = []) => {
+  const roles = [roleValue];
+  const settings = await getSettings();
+  const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
+  await updateSettings(
+    { roles: settings.roles, permissions },
+    { revert: true, ignoreReload: true, refresh: true, sync: true }
+  );
+};
+
 const getSentinelDate = () => getContainerDate('sentinel');
 const getPodName = async (service, silent) => {
   const cmd = await runCommand(
@@ -1621,4 +1631,5 @@ module.exports = {
   isK3D,
   stopCouchDb,
   startCouchDb,
+  updateRolePermissions,
 };
