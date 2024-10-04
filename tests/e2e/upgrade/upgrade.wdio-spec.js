@@ -114,15 +114,15 @@ describe('Performing an upgrade', () => {
       state: 'finalized',
     });
 
-    if (!testFrontend) {
-      return;
-    }
-
     await adminPage.logout();
+  });
+
+  (testFrontend ? it : xit)('should display current branch in the about page', async () => {
     await loginPage.login({ username: docs.user.username, password: docs.user.password });
     await commonPage.sync(true);
     await browser.refresh();
     await commonPage.waitForPageLoaded();
+
     await commonPage.goToAboutPage();
     await (await aboutPage.aboutCard()).waitForDisplayed();
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
@@ -131,12 +131,8 @@ describe('Performing an upgrade', () => {
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
-    if (testFrontend) {
-      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
-    }
-
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
     await deleteUpgradeLogs();
-
     await upgradePage.goToUpgradePage();
 
     const currentVersion = await upgradePage.getCurrentVersion();
