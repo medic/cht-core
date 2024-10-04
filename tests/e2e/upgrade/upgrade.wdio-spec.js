@@ -59,7 +59,7 @@ describe('Performing an upgrade', () => {
       // are not compatible with older versions of the app.
       await loginPage.login({ username: docs.user.username, password: docs.user.password });
       await commonPage.logout();
-      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
+      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
       return;
     }
 
@@ -120,7 +120,7 @@ describe('Performing an upgrade', () => {
 
     await adminPage.logout();
     await loginPage.login({ username: docs.user.username, password: docs.user.password });
-
+    await commonPage.sync(true);
     await browser.refresh();
     await commonPage.waitForPageLoaded();
     await commonPage.goToAboutPage();
