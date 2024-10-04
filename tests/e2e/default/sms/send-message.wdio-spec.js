@@ -63,7 +63,7 @@ describe('Send message', () => {
   });
 
   it('should send messages to all the contacts, under a place, that have a primary phone number assigned', async () => {
-    await messagesPage.sendMessage(
+    await messagesPage.sendMessageDesktop(
       smsMsg(healthCenter.name),
       healthCenter.name,
       `${healthCenter.name} - all`
@@ -81,14 +81,14 @@ describe('Send message', () => {
   });
 
   it('should send a message to a raw phone number', async () => {
-    await messagesPage.sendMessage(smsMsg('raw'), rawNumber, rawNumber);
+    await messagesPage.sendMessageDesktop(smsMsg('raw'), rawNumber, rawNumber);
     await messagesPage.openMessage(rawNumber);
     await verifyMessageHeader(rawNumber, '');
     await verifyLastSmsContent('raw');
   });
 
   it('should send a message to a contact with a phone number', async () => {
-    await messagesPage.sendMessage(smsMsg(anne.name), anne.name, anne.phone);
+    await messagesPage.sendMessageDesktop(smsMsg(anne.name), anne.name, anne.phone);
     await messagesPage.openMessage(anne._id);
     await verifyMessageHeader(anne.name, anne.phone);
     await verifyLastSmsContent(anne.name, 'regular');

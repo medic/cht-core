@@ -73,7 +73,7 @@ describe('Message Tab - Sender Data', () => {
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
-    await messagesPage.sendMessage('Contact', patient.phone, patient.name);
+    await messagesPage.sendMessageDesktop('Contact', patient.phone, patient.name);
 
     const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name.concat(healthCenter1.name, districtHospital.name);
@@ -85,7 +85,7 @@ describe('Message Tab - Sender Data', () => {
     await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
-    await messagesPage.sendMessage('Contact', patient.phone, patient.name);
+    await messagesPage.sendMessageDesktop('Contact', patient.phone, patient.name);
 
     const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name.concat(healthCenter1.name);

@@ -70,7 +70,6 @@ const searchSelect = async (recipient, option) => {
 };
 
 const sendMessage = async (message, recipient, entryText) => {
-  await commonPage.clickFastActionFlat({ waitForList: false });
   await (await sendMessageModal()).waitForDisplayed();
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
@@ -78,13 +77,14 @@ const sendMessage = async (message, recipient, entryText) => {
   await modalPage.checkModalHasClosed();
 };
 
+const sendMessageDesktop = async (message, recipient, entryText) => {
+  await commonPage.clickFastActionFlat({ waitForList: false });
+  await sendMessage(message, recipient, entryText);
+};
+
 const sendMessageOnMobile = async (message, recipient, entryText) => {
   await commonPage.clickFastActionFAB({ waitForList: false });
-  await (await sendMessageModal()).waitForDisplayed();
-  await searchSelect(recipient, entryText);
-  await (await messageText()).setValue(message);
-  await modalPage.submit();
-  await modalPage.checkModalHasClosed();
+  await sendMessage(message, recipient, entryText);
 };
 
 const sendReplyNewRecipient = async (recipient, entryText) => {
@@ -146,7 +146,7 @@ module.exports = {
   getMessageInListDetails,
   getMessageHeader,
   getMessageContent,
-  sendMessage,
+  sendMessageDesktop,
   sendMessageOnMobile,
   sendReplyNewRecipient,
   sendMessageToContact,
