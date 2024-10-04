@@ -33,6 +33,12 @@ describe('Contact List Page', () => {
     await commonPage.waitForPageLoaded();
   };
 
+  const compileAndUploadForms = async () => {
+    await chtConfUtils.initializeConfigDir();
+    const formsPath = path.join(__dirname, 'forms');
+    await chtConfUtils.compileAndUploadAppForms(formsPath);
+  };
+
   const docs = dataFactory.createHierarchy({
     name: 'Janet Mwangi',
     user: true,
@@ -46,29 +52,23 @@ describe('Contact List Page', () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
     await utils.addTranslations('en', {'contact.last.visit.unknown': 'Last Visited'});
+    await loginPage.login(docs.user);
+    await updateContactSummarySettings();
   });
 
   after(async () => {
     await utils.deleteUsers([docs.user]);
     await utils.revertDb([/^form:/], true);
-  });
-
-  beforeEach(async () => {
-
+    await utils.revertSettings();
   });
 
   afterEach(async () => {
     await commonPage.goToBase();
-    await utils.revertSettings();
-    await commonPage.goToBase();
-    await commonPage.logout();
   });
 
   describe('Contact and user management workflow', () => {
     it('should show contacts list, search, profiles (person and family), '+
       'contact summary, condition cards and care guides', async () => {
-      await loginPage.login(docs.user);
-      updateContactSummarySettings();
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('people', 'list');
@@ -84,34 +84,7 @@ describe('Contact List Page', () => {
       await generateScreenshot('people', 'profile-person');
     });
 
-    it('should show profiles (area and branch)', async () => {
-      await loginPage.login(docs.user);
-      updateContactSummarySettings();
-      await commonPage.logout();
-      await loginPage.cookieLogin();
-      await commonPage.goToPeople();
-      expect(await commonPage.isPeopleListPresent()).to.be.true;
-      await contactPage.selectLHSRowByText(`Janet Mwangi's Area`);
-      await generateScreenshot('people', 'profile-area');
-      await commonPage.goToBase();
-      await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(`Kiambu Branch`);
-      await generateScreenshot('people', 'profile-branch');
-    });
-
-    it('should show UHC sort', async () => {
-      await loginPage.login(docs.user);
-      await modifyRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
-      await commonPage.waitForPageLoaded();
-      await commonPage.goToPeople();
-      await sortPage.selectSortOrder('By date last visited');
-      await sortPage.openSortMenu();
-      await generateScreenshot('people', 'sort');
-    });
-
     it('should show condition cards', async () => {
-      await loginPage.login(docs.user);
-      updateContactSummarySettings();
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await contactPage.selectLHSRowByText('Beatrice Bass');
@@ -124,11 +97,33 @@ describe('Contact List Page', () => {
       //await generateScreenshot('people', 'condition-card-inmunization');
     });
 
-    it.only('should show cares guides', async () => {
+    it('should show profiles (area and branch)', async () => {
+      await commonPage.logout();
+      await loginPage.cookieLogin();
+      await commonPage.goToPeople();
+      expect(await commonPage.isPeopleListPresent()).to.be.true;
+      await contactPage.selectLHSRowByText(`Janet Mwangi's Area`);
+      await generateScreenshot('people', 'profile-area');
+      await commonPage.goToBase();
+      await commonPage.goToPeople();
+      await contactPage.selectLHSRowByText(`Kiambu Branch`);
+      await generateScreenshot('people', 'profile-branch');
+      await commonPage.goToBase();
+      await commonPage.logout();
       await loginPage.login(docs.user);
-      await chtConfUtils.initializeConfigDir();
-      const formsPath = path.join(__dirname, 'forms');
-      await chtConfUtils.compileAndUploadAppForms(formsPath);
+    });
+
+    it('should show UHC sort', async () => {
+      await modifyRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
+      await commonPage.waitForPageLoaded();
+      await commonPage.goToPeople();
+      await sortPage.selectSortOrder('By date last visited');
+      await sortPage.openSortMenu();
+      await generateScreenshot('people', 'sort');
+    });
+
+    it('should show cares guides', async () => {
+      await compileAndUploadForms();
       await modifyRolePermissions('chw', [],['can_view_call_action', 'can_view_message_action']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
